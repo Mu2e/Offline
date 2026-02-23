@@ -4,8 +4,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -50,6 +48,7 @@ namespace mu2e {
             fhicl::Atom<double>        nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
+            fhicl::Atom<double>        ADCToMeV           { Name("ADCToMeV"),           Comment("ADC to MeV conversion factor") };
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
 
@@ -64,6 +63,7 @@ namespace mu2e {
            nSigmaNoise_       (config().nSigmaNoise()),
            caphriEDepMax_     (config().caphriEDepMax()),
            caphriEDepMin_     (config().caphriEDepMin()),
+           ADCToMeV_          (config().ADCToMeV()),
            diagLevel_         (config().diagLevel())
         {
             produces<CaloHitCollection>("calo");
@@ -89,6 +89,7 @@ namespace mu2e {
         double              nSigmaNoise_;
         float               caphriEDepMax_;
         float               caphriEDepMin_;
+        double              ADCToMeV_;
         int                 diagLevel_;
     };
 
@@ -123,9 +124,6 @@ namespace mu2e {
    //--------------------------------------------------------------------------------------------------------------
    void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset)
    {
-
-       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-
        pulseMapType pulseMap;
        for (const auto& caloDigi : caloDigis)
        {
@@ -135,7 +133,7 @@ namespace mu2e {
            double baseline(0);
            for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
            baseline /= nSamPed;
-           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*calorimeterCalibrations->ADC2MeV(caloDigi.SiPMID());//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
+           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*ADCToMeV_;//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
            double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_ - pbtOffset;                      //Giani's definition
            //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - shiftTime_; //Bertrand's definition
 

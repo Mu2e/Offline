@@ -98,7 +98,7 @@
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
-// MTP
-#include "Offline/RecoDataProducts/inc/MTPHit.hh"
+// MSD
+#include "Offline/RecoDataProducts/inc/MSDHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

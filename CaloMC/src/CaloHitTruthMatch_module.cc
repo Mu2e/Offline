@@ -7,8 +7,6 @@
 #include "art_root_io/TFileDirectory.h"
 #include "fhiclcpp/types/Atom.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 #include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -40,9 +38,12 @@ namespace mu2e {
              using Comment = fhicl::Comment;
              fhicl::Atom<art::InputTag>  caloShowerSimCollection  { Name("caloShowerSimCollection"),  Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag>  caloHitCollection        { Name("caloHitCollection"),        Comment("Name of CaloHit collection") };
-             fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),              Comment("PrimaryParticle producer")};
+             fhicl::Atom<art::InputTag>  primaryParticle          { Name("primaryParticle"),          Comment("PrimaryParticle producer")};
+             fhicl::Atom<std::string>    pulseFileName            { Name("pulseFileName"),            Comment("Calo pulse file name") };
+             fhicl::Atom<std::string>    pulseHistName            { Name("pulseHistName"),            Comment("Calo pulse hist name") };
              fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") };
              fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") };
+             fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),       Comment("MeV to ADC conversion factor") };
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
              fhicl::Atom<int>            diagLevel                { Name("diagLevel"),                Comment("Diag Level"),0 };
          };
@@ -53,8 +54,11 @@ namespace mu2e {
            caloShowerSimToken_ {consumes<CaloShowerSimCollection> (config().caloShowerSimCollection())},
            caloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
+           pulseFileName_      (config().pulseFileName()),
+           pulseHistName_      (config().pulseHistName()),
            digiSampling_       (config().digiSampling()),
            minAmplitude_       (config().minAmplitude()),
+           MeVToADC_           (config().MeVToADC()),
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {
@@ -79,9 +83,12 @@ namespace mu2e {
          const art::ProductToken<CaloShowerSimCollection> caloShowerSimToken_;
          const art::ProductToken<CaloHitCollection>       caloHitToken_;
          const art::ProductToken<PrimaryParticle>         ppToken_;
+         std::string                                      pulseFileName_;
+         std::string                                      pulseHistName_;
          double                                           deltaTimeMinus_;
          double                                           digiSampling_;
          double                                           minAmplitude_;
+         double                                           MeVToADC_;
          bool                                             fillDetailedMC_;
          std::vector<double>                              wf_;
          size_t                                           wfBinMax_;
@@ -122,14 +129,11 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void CaloHitTruthMatch::beginRun(art::Run& aRun)
   {
-      CaloPulseShape cps(digiSampling_);
+      CaloPulseShape cps(pulseFileName_,pulseHistName_,digiSampling_);
       cps.buildShapes();
 
-      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-      double MeVToADC = calorimeterCalibrations->MeV2ADC(0);
-
       wf_ = cps.digitizedPulse(0);
-      for (auto& v : wf_) v *= MeVToADC;
+      for (auto& v : wf_) v *= MeVToADC_;
       wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));
   }
 

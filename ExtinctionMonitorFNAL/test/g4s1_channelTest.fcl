@@ -22,7 +22,6 @@ services : {
     RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService : { inputFile : "Offline/ExtinctionMonitorFNAL/test/geom_channelTest.txt" }
-    ConditionsService : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     SeedService       : @local::automaticSeeds
     Mu2eG4Helper : { }

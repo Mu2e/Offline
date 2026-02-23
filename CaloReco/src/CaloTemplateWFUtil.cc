@@ -57,8 +57,9 @@ namespace
 namespace mu2e {
 
 
-   CaloTemplateWFUtil::CaloTemplateWFUtil(double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) :
-      pulseCache_(CaloPulseShape(digiSampling)),
+   CaloTemplateWFUtil::CaloTemplateWFUtil(const std::string& pulseFileName, const std::string& pulseHistName,
+                                          double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) :
+      pulseCache_(CaloPulseShape(pulseFileName, pulseHistName, digiSampling)),
       minPeakAmplitude_(minPeakAmplitude),
       minDTPeaks_(minDTPeaks),
       fitStrategy_(1),
