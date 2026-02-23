@@ -3,14 +3,10 @@ cet_make_library(
       src/TrkMCTools.cc
     LIBRARIES PUBLIC
       Offline::BFieldGeom
-      Offline::ConfigTools
-      Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
-      Offline::ParticleID
       Offline::RecoDataProducts
-      Offline::SeedService
       Offline::TrackerGeom
 )
 
