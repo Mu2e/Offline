@@ -1025,6 +1025,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       mu2e::CrvDigi const& digi(crvDigis->at(j));
       int index = digi.GetScintillatorBarIndex().asInt();
       int sipm  = digi.GetSiPMNumber();
+      size_t channel  = index*4 + sipm;
+      double timeOffset = _calib->timeOffset(channel);
       std::string multigraphName = Form("Waveform (%s) SiPM %i",moduleLabel.c_str(),sipm);
       std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end())
@@ -1050,7 +1052,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<digi.GetADCs().size(); k++)
         {
-          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod+timeOffset,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }
