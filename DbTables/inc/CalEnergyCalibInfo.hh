@@ -85,8 +85,8 @@ class CalEnergyCalibInfo : public DbTable {
 
   void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
     Row const& r = _rows.at(irow);
-    sstream << std::fixed << std::setprecision(5);
     sstream << r.roid() << ",";
+    sstream << std::fixed << std::setprecision(5);
     sstream << r.ADC2MeV() << ",";
     sstream << r.ADC2MeV_err() << ",";
     sstream << r.status_code() << ",";
