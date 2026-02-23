@@ -67,6 +67,7 @@ class CalEnergyCalibInfo : public DbTable {
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); }
   size_t size() const override { return baseSize() + nrow() * sizeof(Row); }
+  tableType type() const override { return Adhoc; }
   virtual std::size_t nrowFix() const override { return CaloConst::_nChannelDB; }
   const std::string orderBy() const { return std::string("roid"); }
 
