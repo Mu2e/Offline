@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include "cetlib_except/exception.h"
 #include "Offline/DbTables/inc/DbTable.hh"
@@ -40,7 +41,7 @@ class CalEnergyCalibInfo : public DbTable {
           _ADC2MeV(ADC2MeV),
           _ADC2MeV_err(ADC2MeV_err),
           _status_code(status_code),
-          _status_message(status_message) {}
+          _status_message(std::move(status_message)) {}
 
     CaloSiPMId roid() const { return _roid; }
     float ADC2MeV() const { return _ADC2MeV; }
