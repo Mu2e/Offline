@@ -18,7 +18,7 @@ physics : {
    producers : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
-         stmTag : "daq:STM"
+         stmTag : "daq:ContainerSTM"
       }
    }
 
@@ -32,13 +32,14 @@ physics : {
     stmPrint :
     {
       module_type : STMPrintFragments
+      stmTag : "daq:ContainerSTM"
     }
 
    }
 
   t1 : [ makeSTMDigis ]
-    e1 : [ stmOutput ]
-  # e1 : [ stmPrint, stmOutput ]
+   # e1 : [ stmOutput ]
+   e1 : [ stmPrint ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]

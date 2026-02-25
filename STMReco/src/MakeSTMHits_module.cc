@@ -53,7 +53,7 @@ namespace mu2e {
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmMWDDigisToken(consumes<STMMWDDigiCollection>(config().stmMWDDigisTag()))
-    ,_channel(STMUtils::getChannel(config().stmMWDDigisTag()))
+    ,_channel(STMChannel::LaBr)
     ,_stmEnergyCalib_h()
     {
       produces<STMHitCollection>();

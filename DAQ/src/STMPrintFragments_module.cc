@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
 #include <artdaq-core/Data/Fragment.hh>
+#include "artdaq-core/Data/ContainerFragment.hh"
 
 #include <iostream>
 #include <string>
@@ -32,6 +33,7 @@ class art::STMPrintFragments : public EDAnalyzer
   public:
   struct Config
    {
+     fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("stmTag for new file")};
   //   //    fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
   //   //    fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"),
   //   //                                               fhicl::Comment("crv Fragments Tag")};
@@ -44,6 +46,8 @@ class art::STMPrintFragments : public EDAnalyzer
   virtual void analyze(const Event&);
 
   private:
+
+  art::InputTag _stmFragmentsTag;
   //  int decompressCrvDigi(uint8_t adc);
   //  int16_t decompressCrvDigi(int16_t adc);
 
@@ -57,6 +61,7 @@ class art::STMPrintFragments : public EDAnalyzer
 
 STMPrintFragments::STMPrintFragments(const art::EDAnalyzer::Table<Config>& config) :
     art::EDAnalyzer{config}
+    ,_stmFragmentsTag(config().stmTag())
 {
   //  produces<mu2e::CrvDigiCollection>();
 }
@@ -67,11 +72,11 @@ void STMPrintFragments::analyze(const Event& event)
 {
   art::EventNumber_t eventNumber = event.event();
 
-  auto STMFragments = event.getValidHandle<artdaq::Fragments>("daq:STM");
+  auto STMContainerFragments = event.getValidHandle<artdaq::Fragments>(_stmFragmentsTag); //Changed from STMFragments -> STMContainerFragments
 
   std::cout << std::dec << "Analyzer: Run " << event.run() << ", subrun " << event.subRun()
             << ", event " << eventNumber << " has " << std::endl;
-  std::cout << STMFragments->size() << " STM fragments." << std::endl;
+  std::cout << STMContainerFragments->size() << " STM fragments." << std::endl;
 
   // std::vector<art::Handle<std::vector<artdaq::Fragment>>> fragmentHandles;
   // fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
@@ -84,19 +89,25 @@ void STMPrintFragments::analyze(const Event& event)
   //   }
   // }
   int frag_counter = 0;
-  for (auto& frag : *STMFragments) {
+  for (auto& frag : *STMContainerFragments) {
     ++frag_counter;
-
+    
+    //New lines
+    artdaq::ContainerFragment contf(frag); // interpret the fragment as a ContainerFragemnt (Will look inside here)
+    std::cout<<"N Blocks in the container = " << std::endl; //Should be 3 for the 3 STM Fragments
     //    auto stm_frag = static_cast<mu2e::STMFragment>(frag);
-    const auto dataBegin = frag.dataBegin();
-    const auto dataEnd = frag.dataEnd();
-    const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
-    const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
-    auto frag_id = frag.fragmentID();
-    std::cout << "frag_id = " << frag_id << std::endl;
-    for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
-      std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
-    }
+
+    for (size_t ii = 0; ii< contf.block_count(); ++ii){
+      
+      const auto dataBegin = frag.dataBegin();
+      const auto dataEnd = frag.dataEnd();
+      const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
+      const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
+      auto frag_id = frag.fragmentID();
+      std::cout << "frag_id = " << frag_id << std::endl;
+      for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
+	std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
+      }
 
     // //    std::cout << "Trigger Header Address: " << stm_frag.GetTHdr() << std::endl;
     // std::cout << "Frag #" << frag_counter << ": EvNum: " << *(stm_frag.EvNum()) << std::endl;
@@ -111,8 +122,8 @@ void STMPrintFragments::analyze(const Event& event)
     // std::cout << std::endl;
     //    std::cout << "Trigger Header Channel: " << *(stm_frag.GetTHdr()) << std::endl;
     //    std::cout << "Trigger Header EvNum: " << *(stm_frag.GetTHdr()+8) << std::endl;
+    }
   }
-
 } // produce()
 
 // ======================================================================

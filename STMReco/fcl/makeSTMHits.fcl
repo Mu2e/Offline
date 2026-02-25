@@ -17,7 +17,7 @@ physics: {
                     stmMWDDigisTag : "mwdHPGe"
     }
     stmHitsLaBr : { module_type : MakeSTMHits
-                    stmMWDDigisTag : "mwdLaBr"
+                    stmMWDDigisTag : "makeSTMDigis:mwd"
     }
   }
   filters : {
@@ -25,9 +25,9 @@ physics: {
   analyzers : {
   }
   # setup paths
-  HPGePath : [ stmHitsHPGe ]
+ # HPGePath : [ stmHitsHPGe ]
   LaBrPath : [ stmHitsLaBr ]
-  trigger_paths: [ HPGePath, LaBrPath ]
+  trigger_paths: [LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }

@@ -1,4 +1,4 @@
-// ======================================================================
+// =====================================================================
 //
 // STMDigisFromFragments: create all types of STMDigis from STMFragments
 //
@@ -14,6 +14,7 @@
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
+#include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
 
 #include <string>
@@ -94,48 +95,51 @@ void STMDigisFromFragments::produce(Event& event)
 
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
-  const auto STMFragments = STMFragmentsH.product();
+  const auto STMContainerFragments = STMFragmentsH.product();
+  
+  for (const auto& frag : *STMContainerFragments) {
+    // const auto& stm_frag = static_cast<mu2e::STMFragment>(frag); //What was here originally to read other file
+    artdaq::ContainerFragment contf(frag);
 
-  for (const auto& frag : *STMFragments) {
-    const auto& stm_frag = static_cast<mu2e::STMFragment>(frag);
+    for (size_t ii = 0; ii < contf.block_count(); ++ii){
+      const auto& art_frag = *contf[ii];
+      const auto& stm_frag = static_cast<mu2e::STMFragment>(art_frag);
+      mu2e::STMWaveformDigi stm_waveform;
+      
+       if (stm_frag.isRaw()) {
+	 stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+	 raw_waveform_digis->emplace_back(stm_waveform);
+       }
+       else if (stm_frag.isZS()) {
+	 stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+	 zs_waveform_digis->emplace_back(stm_waveform);
+       }
+       else if (stm_frag.isMWD()) {
 
-    mu2e::STMWaveformDigi stm_waveform;
-
-    if (stm_frag.isRaw()) {
-      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
-      raw_waveform_digis->emplace_back(stm_waveform);
-    }
-    else if (stm_frag.isZS()) {
-      stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
-      zs_waveform_digis->emplace_back(stm_waveform);
-    }
-    else if (stm_frag.isMWD()) {
-
-      int n_MWD_digis = stm_frag.payloadWords(); //number read -> to digis
+	 int n_MWD_digis = stm_frag.payloadWords(); //number read -> to digis
            
-      for (int i_MWD = 0 ; i_MWD < n_MWD_digis; ++i_MWD){
+	 for (int i_MWD = 0 ; i_MWD < n_MWD_digis; ++i_MWD){
 
-	auto const* pointer  = stm_frag.payloadBegin(); //tells where to read data
-        int16_t i_pointer = pointer[i_MWD]; //Retrives value of ith index of pointer
+	   auto const* pointer  = stm_frag.payloadBegin(); //tells where to read data
+	   int16_t i_pointer = pointer[i_MWD]; //Retrives value of ith index of pointer
 
-	mu2e::STMMWDDigi mwd_digi(0,i_pointer);
+	   mu2e::STMMWDDigi mwd_digi(0,i_pointer);
 
-	mwd_digis->emplace_back(mwd_digi);
+	   mwd_digis->emplace_back(mwd_digi);
 	//mu2e::STMMWDDigi mwd_digi(0,i_pointer);
 	//mwd_digi->emplace_back(mwd_digi);
 
        
 	//stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());//original
 	//mwd_waveform_digis->emplace_back(stm_waveform);}//original
-      }
+	 }
+       }
     }
-    
   }
 
-  event.put(std::move(raw_waveform_digis), "raw");
-  event.put(std::move(zs_waveform_digis), "zs");
-  event.put(std::move(mwd_digis), "mwd");
-
+    event.put(std::move(raw_waveform_digis), "raw");
+    event.put(std::move(zs_waveform_digis), "zs");
+    event.put(std::move(mwd_digis), "mwd");
 } // produce()
 
 // ======================================================================

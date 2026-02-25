@@ -97,7 +97,7 @@ namespace mu2e {
 
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-
+    std::cout<<"size = "<<waveformsHandle->size()<<std::endl;
     for (const auto& waveform : *waveformsHandle) {
 
       histname.str("");
@@ -120,8 +120,7 @@ namespace mu2e {
 	  auto content = adc;
 	  if (_subtractPedestal) {
 	    content -= pedestal;
-	  }
-	  
+	  }  
 	  hWaveform->SetBinContent(i_adc+1,content);
 	  }
 	  
