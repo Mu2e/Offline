@@ -1141,8 +1141,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
       std::string particlename=ptable->particle(particle.pdgId()).name();
-      std::string startVolumeName="unknown volume";
-      std::string endVolumeName="unknown volume";
+      std::string startVolumeName="volume index "+std::to_string(particle.startVolumeIndex());
+      std::string endVolumeName="volume index "+std::to_string(particle.endVolumeIndex());
       if(physicalVolumesMulti!=nullptr)
       {
         mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti);
