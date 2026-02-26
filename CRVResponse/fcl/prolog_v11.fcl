@@ -146,6 +146,7 @@ BEGIN_PROLOG
                                                 //capacitance of one pixel (8.84e-14C) * overvoltage (3.0V)
       minVoltage                   : 0.0275 //27.5mV (corresponds to 5.5PE)
       noise                        : 4.0e-4 //0.4mV
+      useTimeOffsetDB              : false  //will be applied at reco
       timeOffsetScale              : 1.0    //scale factor for the time offsets from the database
                                             //examples:
                                             //-if a database table of measured time offset is used,
@@ -153,10 +154,6 @@ BEGIN_PROLOG
                                             //-if a database table of a random gaussian distribution of time offsets
                                             // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                             // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
-      timeOffsetCutoffLow          :-3.0    //the time offsets are cut off at -3ns
-      timeOffsetCutoffHigh         : 3.0    //the time offsets are cut off at +3ns
-                                            //note: if measured time offsets are used, the cutoffs should be set to the maximum values
-      useTimeOffsetDB              : false  //will be applied at reco
       numberSamplesZS              : 12
       numberSamplesNZS             : @local::NumberSamplesNZS
       simulateNZS                  : @local::SimulateNZS
