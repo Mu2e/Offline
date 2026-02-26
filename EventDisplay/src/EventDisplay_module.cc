@@ -95,7 +95,7 @@ namespace mu2e
       {
         int eventNumber=event.id().event();
         if(eventNumber==eventToFind) _frame->setEvent(event,_firstLoop,calib);
-        else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
+//        else std::cout<<"event skipped, since this is not the event we are looking for"<<std::endl;
       }
       else
       {

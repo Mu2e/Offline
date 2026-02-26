@@ -64,7 +64,6 @@ BEGIN_PROLOG
                                          //-if a database table of a random gaussian distribution of time offsets
                                          // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                          // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
-                                         //note: if measured time offsets are used, the cutoffs should be set to the maximum values
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
     }
 

@@ -8,6 +8,7 @@ using namespace std;
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/EventDisplay/src/Cube.h"
 #include "Offline/EventDisplay/src/Cylinder.h"
@@ -247,7 +248,7 @@ void DataInterface::fillGeometry()
       int idLayer =  s.id().getLayer();
       int idPanel =  s.id().getPanel();
       int idPlane =  s.id().getPlane();
-      int id = s.id().asUint16();
+      size_t id = s.id().asUint16();
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("Straw %i  Layer %i  Panel %i  Plane %i",idStraw,idLayer,idPanel,idPlane);
@@ -385,7 +386,7 @@ void DataInterface::fillGeometry()
 
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
-    int icrystal=0;
+    size_t icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
@@ -531,7 +532,7 @@ void DataInterface::fillGeometry()
           for (int ib = 0; ib < nBars; ++ib)
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
-            int index = bar.index().asInt();
+            size_t index = bar.index().asUint();
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
             double x=barOffset.x();
             double y=barOffset.y();
@@ -541,7 +542,7 @@ void DataInterface::fillGeometry()
             findBoundaryP(_crvMinmax, x-dx, y-dy, z-dz);
 
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-            std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
+            std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %lu)",shieldName.c_str(),im,il,ib, index);
             info->setName(c.c_str());
             info->setText(0,c.c_str());
             info->setText(1,Form("Dimension x: %.f mm, y: %.f mm, z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm));
@@ -608,7 +609,7 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
 
 void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
 {
-  std::map<int, boost::shared_ptr<Cube> >::const_iterator crvbars;
+  std::map<size_t, boost::shared_ptr<Cube> >::const_iterator crvbars;
   for(crvbars=_crvscintillatorbars.begin(); crvbars!=_crvscintillatorbars.end(); crvbars++)
   {
     crvbars->second->makeGeometryVisible(visible);
@@ -620,19 +621,19 @@ void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
 
 void DataInterface::toForeground()
 {
-  std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
+  std::map<size_t,boost::shared_ptr<Straw> >::const_iterator straw;
   for(straw=_straws.begin(); straw!=_straws.end(); straw++)
   {
     straw->second->toForeground();
   }
 
-  std::map<int,boost::shared_ptr<VirtualShape> >::const_iterator crystal;
+  std::map<size_t,boost::shared_ptr<VirtualShape> >::const_iterator crystal;
   for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
   {
     crystal->second->toForeground();
   }
 
-  std::map<int,boost::shared_ptr<Cube> >::const_iterator crvbar;
+  std::map<size_t,boost::shared_ptr<Cube> >::const_iterator crvbar;
   for(crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
   {
     crvbar->second->toForeground();
@@ -842,11 +843,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=steppointMChits->begin(); iter!=steppointMChits->end(); iter++)
     {
       const mu2e::StepPointMC& hit = *iter;
-      int sid = hit.strawId().asUint16();
+      size_t sid = hit.strawId().asUint16();
       int trackid = hit.trackId().asInt();
       double time = hit.time();
       double energy = hit.eDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+      std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -878,11 +879,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=strawhits->begin(); iter!=strawhits->end(); iter++, hitnumber++)
     {
       const mu2e::StrawHit& hit = *iter;
-      int sid  = hit.strawId().asUint16();
+      size_t sid  = hit.strawId().asUint16();
       double time = hit.time();
       double dt = hit.dt();
       double energy = hit.energyDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+      std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -916,10 +917,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       for(size_t j=0; j<hits.size(); j++)
       {
         const mu2e::TrkStrawHitSeed &hit = hits.at(j);
-        int    sid = hit.strawId().asUint16();
+        size_t sid = hit.strawId().asUint16();
         double time = hit.time();
 
-        std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+        std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
         if(straw!=_straws.end() && !std::isnan(time))
         {
           double previousStartTime=straw->second->getStartTime();
@@ -948,11 +949,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calosteppoints->begin(); iter!=calosteppoints->end(); iter++)
     {
       const mu2e::StepPointMC& calohit = *iter;
-      int crystalid = calohit.volumeId();
+      size_t crystalid = calohit.volumeId();
       int trackid = calohit.trackId().asInt();
       double time = calohit.time();
       double energy = calohit.eDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -983,11 +984,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int crystalid = calohit.crystalID();
+      size_t crystalid = static_cast<size_t>(calohit.crystalID());
 
       double time = calohit.time();
       double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -1009,7 +1010,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
 //CRV waveforms
-  for(std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
+  for(std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
   {
     crvbar->second->getComponentInfo()->getHistVector().clear();
   }
@@ -1023,12 +1024,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(size_t j=0; j<crvDigis->size(); j++)
     {
       mu2e::CrvDigi const& digi(crvDigis->at(j));
-      int index = digi.GetScintillatorBarIndex().asInt();
+      size_t index = digi.GetScintillatorBarIndex().asUint();
       int sipm  = digi.GetSiPMNumber();
-      size_t channel  = index*4 + sipm;
+      size_t channel  = index*mu2e::CRVId::nChanPerBar + sipm;
       double timeOffset = _calib->timeOffset(channel);
       std::string multigraphName = Form("Waveform (%s) SiPM %i",moduleLabel.c_str(),sipm);
-      std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
+      std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end())
       {
         //each digi collection and each SiPM gets its own multigraph
@@ -1066,15 +1067,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(size_t i=0; i<crvRecoPulses->size(); i++)
     {
       const mu2e::CrvRecoPulse &recoPulse = crvRecoPulses->at(i);
-      int    index = recoPulse.GetScintillatorBarIndex().asInt();
+      size_t index = recoPulse.GetScintillatorBarIndex().asUint();
       int    sipm  = recoPulse.GetSiPMNumber();
       double time  = recoPulse.GetPulseTime();
       int    PEs   = recoPulse.GetPEs();
 
-      size_t channel  = index*4 + sipm;
+      size_t channel  = index*mu2e::CRVId::nChanPerBar + sipm;
       double recoPulsePedestal = _calib->pedestal(channel);
 
-      std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
+      std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end() && !std::isnan(time))
       {
         double previousStartTime=crvbar->second->getStartTime();
