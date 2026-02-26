@@ -35,7 +35,6 @@ namespace mu2e
       {
         fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
         //for currently wrongly encoded subevent headers
-        fhicl::Atom<bool> useSubsystem0{fhicl::Name("useSubsystem0"), fhicl::Comment("consider subevents encoded with subsystem 0")};
         fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce NZS digi collection"), true};
         fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), true};
       };
@@ -46,7 +45,6 @@ namespace mu2e
 
     private:
       int                                      _diagLevel;
-      bool                                     _useSubsystem0;
       bool                                     _produceZS;
       bool                                     _produceNZS;
       mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
@@ -55,7 +53,6 @@ namespace mu2e
   CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _diagLevel(config().diagLevel()),
-    _useSubsystem0(config().useSubsystem0()),
     _produceZS(config().produceZS()),
     _produceNZS(config().produceNZS())
     {
@@ -110,17 +107,16 @@ namespace mu2e
 
         //collect sub events
         auto dtcSubEvents = dtcEventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
-        if(_useSubsystem0)
-        {
-          auto dtcSubEventsTmp = dtcEventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);  //currently wrongly encoded in the DTC Subevent header
-          dtcSubEvents.insert(dtcSubEvents.end(),dtcSubEventsTmp.begin(),dtcSubEventsTmp.end()); //temporarily add fragments with wrongly encoded headers
-        }
-
         if(dtcSubEvents.empty())
         {
           if(_diagLevel>3)
           {
             std::cout << "This fragment has no CRV subEvents. Size: " << dtcEventFragment.getData().GetEventByteCount() << std::endl;
+            size_t nSubEvents = dtcEventFragment.getData().GetSubEvents().size();
+            if(nSubEvents>0)
+            {
+              std::cout << "It has " << nSubEvents << " subEvents of subsystem ID " << (int)dtcEventFragment.getData().GetSubEvents().at(0).GetSubsystem() << std::endl;
+            }
           }
           continue;
         }
