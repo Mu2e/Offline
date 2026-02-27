@@ -163,7 +163,7 @@ namespace mu2e {
                       << std::endl;
           }
           double wrapped_time = std::fmod(css.time(), mbtime);
-          if(wrapped_time < mbtime) wrapped_time += wrapped_time;
+          if(wrapped_time < 0.0) wrapped_time += mbtime;
           primary_edep += edep_step;
           primary_time += edep_step*wrapped_time;
           primary_pos  += edep_step*stepPosition(css);
