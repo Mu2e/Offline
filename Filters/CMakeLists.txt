@@ -25,6 +25,7 @@ cet_build_plugin(CaloPileupDtsFilter art::module
       Offline::GeometryService
       Offline::GlobalConstantsService
       Offline::MCDataProducts
+      ROOT::Hist
 )
 
 cet_build_plugin(CaloShowerSimFilter art::module
