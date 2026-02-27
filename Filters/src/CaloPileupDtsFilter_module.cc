@@ -106,6 +106,12 @@ namespace mu2e {
     if(maxTotalEnergy_ <= minTotalEnergy_) throw cet::exception("BADCONFIG") << "Maximum total energy must be > minimum total energy\n";
     if(timeWindow_ < 0.)                   throw cet::exception("BADCONFIG") << "Time window must be >= 0\n";
     if(spaceWindow_ < 0.)                  throw cet::exception("BADCONFIG") << "Space window must be >= 0\n";
+
+    // Declare data dependencies to avoid implicit consumption.
+    for (auto const& tag : caloStepsTags_) {
+      consumes<CaloShowerStepCollection>(tag);
+    }
+    consumes<PrimaryParticle>(primaryTag_);
   }
 
   //--------------------------------------------------------------------------------
