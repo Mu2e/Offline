@@ -99,7 +99,7 @@ namespace mu2e {
     , nPassed_(0)
   {
     if(caloStepsTags_.size() == 0)         throw cet::exception("BADCONFIG") << "At least one CaloShowerStep collection must be specified\n";
-    if(minPrimaryEnergy_ < 0.)             throw cet::exception("BADCONFIG") << "Minimum primary energy must be > 0\n";
+    if(minPrimaryEnergy_ < 0.)             throw cet::exception("BADCONFIG") << "Minimum primary energy must be >= 0\n";
     if(maxTotalEnergy_ <= 0.)              throw cet::exception("BADCONFIG") << "Maximum total energy must be > 0\n";
     if(minTotalEnergy_ < 0.)               throw cet::exception("BADCONFIG") << "Minimum total energy must be >= 0\n";
     if(maxTotalEnergy_ <= minTotalEnergy_) throw cet::exception("BADCONFIG") << "Maximum total energy must be > minimum total energy\n";
