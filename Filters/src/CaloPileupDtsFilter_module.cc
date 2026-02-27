@@ -31,6 +31,8 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <iostream>
+#include <cmath>
 
 namespace mu2e {
 
