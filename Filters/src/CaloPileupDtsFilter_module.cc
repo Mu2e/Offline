@@ -28,9 +28,6 @@
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 
 // C++
-#include <string>
-#include <map>
-#include <sstream>
 #include <iostream>
 #include <cmath>
 
@@ -102,7 +99,7 @@ namespace mu2e {
     , nPassed_(0)
   {
     if(caloStepsTags_.size() == 0)         throw cet::exception("BADCONFIG") << "At least one CaloShowerStep collection must be specified\n";
-    if(minPrimaryEnergy_ <= 0.)            throw cet::exception("BADCONFIG") << "Minimum primary energy must be > 0\n";
+    if(minPrimaryEnergy_ < 0.)             throw cet::exception("BADCONFIG") << "Minimum primary energy must be > 0\n";
     if(maxTotalEnergy_ <= 0.)              throw cet::exception("BADCONFIG") << "Maximum total energy must be > 0\n";
     if(minTotalEnergy_ < 0.)               throw cet::exception("BADCONFIG") << "Minimum total energy must be >= 0\n";
     if(maxTotalEnergy_ <= minTotalEnergy_) throw cet::exception("BADCONFIG") << "Maximum total energy must be > minimum total energy\n";
@@ -117,7 +114,7 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------
-  bool CaloPileupDtsFilter::goodParticle(SimParticle const& simp) const {
+  bool CaloPileupDtsFilter::goodParticle(SimParticle const& /*simp*/) const {
     // Check if the SimParticle is a valid particle to consider for pileup filtering
     return true; // For now, accept all particles
   }
@@ -165,8 +162,10 @@ namespace mu2e {
                       << " position = " << stepPosition(css)
                       << std::endl;
           }
+          double wrapped_time = std::fmod(css.time(), mbtime);
+          if(wrapped_time < mbtime) wrapped_time += wrapped_time;
           primary_edep += edep_step;
-          primary_time += edep_step*std::fmod(css.time(), mbtime);
+          primary_time += edep_step*wrapped_time;
           primary_pos  += edep_step*stepPosition(css);
         }
       }
@@ -219,10 +218,12 @@ namespace mu2e {
         if(&(*sim_step) == &sim) continue; // skip steps from the primary particle itself
         if(css.energyDepBirks() < minCaloStepEnergy_) continue; // skip low energy steps
         if(!goodParticle(*sim_step)) continue; // skip steps from particles we don't care about
-        double time_diff = std::fabs(std::fmod(css.time(), mbtime) - primary_time);
+        const double step_time = std::fmod(css.time(), mbtime);
+        double time_diff = std::fabs(step_time - primary_time);
+        time_diff = std::min(time_diff, mbtime - time_diff); // in case it's close to the edge
         if(time_diff < timeWindow_) {
-          auto step_pos   = stepPosition(css);
-          double space_diff = (step_pos - primary_pos).mag();
+          const auto step_pos = stepPosition(css);
+          const double space_diff = (step_pos - primary_pos).mag();
           if(space_diff < spaceWindow_) {
             pileup_edep += css.energyDepBirks();
             if(diagLevel_ > 2) {
@@ -236,12 +237,13 @@ namespace mu2e {
                         << " space diff = " << space_diff
                         << std::endl;
             }
+            if(primary_edep + pileup_edep > maxTotalEnergy_) break; // early exit
           }
         }
       }
     }
 
-    double total_edep = pileup_edep + primary_edep;
+    const double total_edep = pileup_edep + primary_edep;
     const bool result = (total_edep >= minTotalEnergy_ && total_edep <= maxTotalEnergy_);
     if(diagLevel_ > 3 || (result && diagLevel_ > 0))
       std::cout << "[CaloPileupDtsFilter::"
@@ -277,6 +279,7 @@ namespace mu2e {
                 << " N(primaries) = " << primary.primarySimParticles().size()
                 << std::endl;
       for(const auto& p : primary.primarySimParticles()) {
+        if(p.isNull()) continue;
         std::cout << "  Primary particle: PDG = " << p->pdgId()
                   << " E = " << p->startMomentum().e()
                   << " t = " << p->startGlobalTime()

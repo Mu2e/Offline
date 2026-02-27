@@ -21,18 +21,15 @@
 // Offline
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
-#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 
 // C++
-#include <string>
-#include <map>
-#include <sstream>
+#include <iostream>
+#include <cmath>
 
 // ROOT
 #include "TH2.h"
@@ -68,6 +65,11 @@ namespace mu2e {
     CLHEP::Hep3Vector stepPosition(const CaloShowerStep& step) const;
     void sortStepsByTime(std::vector<const CaloShowerStep*>& steps) const;
     void fillStepsList(std::vector<const CaloShowerStep*>& steps, const art::Event& event) const;
+    double wrappedTime(double time, double mbtime) {
+      double wrapped_time = std::fmod(time, mbtime);
+      if(wrapped_time < 0.) wrapped_time += mbtime;
+      return mbtime;
+    }
     bool checkClusterHistogram(const std::unique_ptr<TH2D>& hist) const;
     bool findSpacialCluster(const std::vector<const CaloShowerStep*>& steps, size_t first_index, size_t last_index);
     bool findCluster(const std::vector<const CaloShowerStep*>& steps);
@@ -145,7 +147,11 @@ namespace mu2e {
   void CaloDtsClusterFilter::sortStepsByTime(std::vector<const CaloShowerStep*>& steps) const {
     const double mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
     std::sort(steps.begin(), steps.end(), [mbtime](const CaloShowerStep* a, const CaloShowerStep* b) {
-      return std::fmod(a->time(), mbtime) < std::fmod(b->time(), mbtime);
+      double t_a = std::fmod(a->time(), mbtime);
+      double t_b = std::fmod(b->time(), mbtime);
+      if(t_a < 0.) t_a += mbtime; // put negative times to the end of the event
+      if(t_b < 0.) t_b += mbtime;
+      return t_a < t_b;
     });
   }
 
@@ -160,8 +166,7 @@ namespace mu2e {
         if(sim_step.isNull()) continue;
         if(!goodParticle(*sim_step)) continue; // skip steps from particles we don't care about
         if(css.energyDepBirks() < minCaloStepEnergy_) continue; // skip low energy steps
-        double wrapped_time = std::fmod(css.time(), mbtime);
-        if(wrapped_time < 0.) wrapped_time += mbtime; // ensure time is in [0, mbtime)
+        const double wrapped_time = wrappedTime(css.time(), mbtime);
         if(wrapped_time < minCaloStepTime_) continue; // skip steps that are too early in time
         if(css.time() > maxCaloStepTime_) continue; // skip steps that are too far in time to properly apply fmod
         steps.push_back(&css);
@@ -228,7 +233,7 @@ namespace mu2e {
     if(diagLevel_ > 2
        || (clusterHistD0_->GetMaximum() > minClusterEnergy_ && diagLevel_ > 1)
        || (clusterHistD1_->GetMaximum() > minClusterEnergy_ && diagLevel_ > 1)) {
-      std::cout << "Time cluster from " << steps[first_index]->time() << " to " << steps[last_index]->time()
+      std::cout << "Time cluster from " << first_index << " to " << last_index
                 << " with " << last_index - first_index + 1 << " steps"
                 << " Disk 0 max = " << clusterHistD0_->GetMaximum()
                 << " Disk 1 max = " << clusterHistD1_->GetMaximum()
@@ -254,7 +259,7 @@ namespace mu2e {
       if(diagLevel_ > 3) {
         std::cout << "Step " << index
                   << " raw time = " << step_i->time()
-                  << " time = " << std::fmod(step_i->time(), mbtime)
+                  << " time = " << wrappedTime(step_i->time(), mbtime)
                   << " edep = " << step_i->energyDepBirks()
                   << " pdg = " << step_i->simParticle()->pdgId()
                   << std::endl;
@@ -262,7 +267,7 @@ namespace mu2e {
 
       // Check if the first hit is within the cluster, if not move the start to the next step
       const auto* step_first = steps[first_index];
-      while(std::fmod(step_i->time(), mbtime) - std::fmod(step_first->time(), mbtime) > timeWindow_) {
+      while(wrappedTime(step_i->time(), mbtime) - std::wrappedTime(step_first->time(), mbtime) > timeWindow_) {
         if(first_index == index) break;
         ++first_index;
         edep_cluster -= step_first->energyDepBirks();
@@ -270,16 +275,16 @@ namespace mu2e {
       }
 
       // Check if the next step is within the cluster, if so continue adding to the cluster
-      if(index < nsteps - 1 && (std::fmod(steps[index+1]->time(), mbtime) - std::fmod(step_first->time(), mbtime)) < timeWindow_) {
+      if(index < nsteps - 1 && (wrappedTime(steps[index+1]->time(), mbtime) - wrappedTime(step_first->time(), mbtime)) < timeWindow_) {
         continue;
       }
 
       if(diagLevel_ > 2 || (edep_cluster > minClusterEnergy_ && diagLevel_ > 1)) {
         std::cout << "Step " << index
-                  << " time = " << std::fmod(step_i->time(), mbtime)
+                  << " time = " << wrappedTime(step_i->time(), mbtime)
                   << " edep = " << step_i->energyDepBirks()
                   << " first index = " << first_index
-                  << " first time = " << std::fmod(steps[first_index]->time(), mbtime)
+                  << " first time = " << wrappedTime(steps[first_index]->time(), mbtime)
                   << " cluster edep = " << edep_cluster
                   << std::endl;
       }
