@@ -267,7 +267,7 @@ namespace mu2e {
 
       // Check if the first hit is within the cluster, if not move the start to the next step
       const auto* step_first = steps[first_index];
-      while(wrappedTime(step_i->time(), mbtime) - std::wrappedTime(step_first->time(), mbtime) > timeWindow_) {
+      while(wrappedTime(step_i->time(), mbtime) - wrappedTime(step_first->time(), mbtime) > timeWindow_) {
         if(first_index == index) break;
         ++first_index;
         edep_cluster -= step_first->energyDepBirks();
