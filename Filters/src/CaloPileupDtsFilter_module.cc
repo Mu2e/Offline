@@ -220,19 +220,22 @@ namespace mu2e {
         if(css.energyDepBirks() < minCaloStepEnergy_) continue; // skip low energy steps
         if(!goodParticle(*sim_step)) continue; // skip steps from particles we don't care about
         double time_diff = std::fabs(std::fmod(css.time(), mbtime) - primary_time);
-        double space_diff = (stepPosition(css) - primary_pos).mag();
-        if(time_diff < timeWindow_ && space_diff < spaceWindow_) {
-          pileup_edep += css.energyDepBirks();
-          if(diagLevel_ > 2) {
-            std::cout << "  Pileup step: PDG = " << sim_step->pdgId()
-                      << " E = " << sim_step->startMomentum().e()
-                      << " Process = " << sim_step->creationCode()
-                      << " step E birks = " << css.energyDepBirks()
-                      << " time = " << css.time()
-                      << " position = " << stepPosition(css)
-                      << " time diff = " << time_diff
-                      << " space diff = " << space_diff
-                      << std::endl;
+        if(time_diff < timeWindow_) {
+          auto step_pos   = stepPosition(css);
+          double space_diff = (step_pos - primary_pos).mag();
+          if(space_diff < spaceWindow_) {
+            pileup_edep += css.energyDepBirks();
+            if(diagLevel_ > 2) {
+              std::cout << "  Pileup step: PDG = " << sim_step->pdgId()
+                        << " E = " << sim_step->startMomentum().e()
+                        << " Process = " << sim_step->creationCode()
+                        << " step E birks = " << css.energyDepBirks()
+                        << " time = " << css.time()
+                        << " position = " << step_pos
+                        << " time diff = " << time_diff
+                        << " space diff = " << space_diff
+                        << std::endl;
+            }
           }
         }
       }
