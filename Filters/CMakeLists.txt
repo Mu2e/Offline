@@ -7,6 +7,27 @@ cet_build_plugin(BunchIntensityFilter art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(CaloPileupDtsFilter art::module
+    REG_SOURCE src/CaloPileupDtsFilter_module.cc
+    LIBRARIES REG
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(CaloDtsClusterFilter art::module
+    REG_SOURCE src/CaloDtsClusterFilter_module.cc
+    LIBRARIES REG
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      ROOT::Hist
+)
+
 cet_build_plugin(CaloShowerSimFilter art::module
     REG_SOURCE src/CaloShowerSimFilter_module.cc
     LIBRARIES REG
@@ -23,7 +44,7 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
-    LIBRARIES REG      
+    LIBRARIES REG
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
