@@ -65,10 +65,10 @@ namespace mu2e {
     CLHEP::Hep3Vector stepPosition(const CaloShowerStep& step) const;
     void sortStepsByTime(std::vector<const CaloShowerStep*>& steps) const;
     void fillStepsList(std::vector<const CaloShowerStep*>& steps, const art::Event& event) const;
-    double wrappedTime(double time, double mbtime) {
+    double wrappedTime(double time, double mbtime) const {
       double wrapped_time = std::fmod(time, mbtime);
       if(wrapped_time < 0.) wrapped_time += mbtime;
-      return mbtime;
+      return wrapped_time;
     }
     bool checkClusterHistogram(const std::unique_ptr<TH2D>& hist) const;
     bool findSpacialCluster(const std::vector<const CaloShowerStep*>& steps, size_t first_index, size_t last_index);
