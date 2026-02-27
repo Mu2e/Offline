@@ -1,6 +1,6 @@
 // "Cluster" calo detector steps together and then filter on these clusters
 // Steps are first clustered in time using a moving window
-// Time clustered hits are then histogrammed in (x,y) to search for spacial clusters
+// Time clustered hits are then histogrammed in (x,y) to search for 3x3 bin spacial clusters
 // Original author; Michael MacKenzie, 2026
 
 // Framework
@@ -114,8 +114,8 @@ namespace mu2e {
     if(maxCaloStepTime_ < 0.)               throw cet::exception("BADCONFIG") << "Maximum Calo step time must be >= 0\n";
     if(minCaloStepTime_ > maxCaloStepTime_) throw cet::exception("BADCONFIG") << "Minimum Calo step time must be <= Maximum Calo step time\n";
     if(minClusterEnergy_ < 0.)              throw cet::exception("BADCONFIG") << "Minimum cluster energy must be >= 0\n";
-    if(timeWindow_ < 0.)                    throw cet::exception("BADCONFIG") << "Time window must be >= 0\n";
-    if(spaceWindow_ < 0.)                   throw cet::exception("BADCONFIG") << "Space window must be >= 0\n";
+    if(timeWindow_ <= 0.)                   throw cet::exception("BADCONFIG") << "Time window must be > 0\n";
+    if(spaceWindow_ <= 0.)                  throw cet::exception("BADCONFIG") << "Space window must be > 0\n";
 
     constexpr double hist_range = 1000.; // -1000 - 1000 mm in (x,y)
     const int n_space_bins = 2.*hist_range/spaceWindow_; // bin width = space window
@@ -125,10 +125,14 @@ namespace mu2e {
     clusterHistD1_ = std::make_unique<TH2D>("clusterHistD1", "Hit x vs. y",
                                           n_space_bins, -hist_range, hist_range,
                                           n_space_bins, -hist_range, hist_range);
+
+    for (auto const& tag : caloStepsTags_) {
+      consumes<CaloShowerStepCollection>(tag);
+    }
   }
 
   //--------------------------------------------------------------------------------
-  bool CaloDtsClusterFilter::goodParticle(SimParticle const& simp) const {
+  bool CaloDtsClusterFilter::goodParticle(SimParticle const& /*simp*/) const {
     // Check if the SimParticle is a valid particle to consider for pileup filtering
     return true; // For now, accept all particles
   }
@@ -186,26 +190,25 @@ namespace mu2e {
     const int n_bins_y = hist->GetNbinsY();
     for(int x_bin = 1; x_bin <= n_bins_x; ++x_bin) {
       for(int y_bin = 1; y_bin <= n_bins_y; ++y_bin) {
-        const double e_bin = hist->GetBinContent(x_bin, y_bin);
-        // if(e_bin < minClusterEnergy_/2.) continue; // skip bins that are too low to be interesting
-        // Check if there are neighboring bins that together with this bin would pass the threshold
-        for(int dx = -1; dx <= 0; ++dx) { // only need to check half the neighbors to avoid double counting
+        double e_cluster = 0.;
+        // Check if with the neighboring bins together 3x3 region would pass the threshold
+        for(int dx = -1; dx <= 1; ++dx) {
           for(int dy = -1; dy <= 1; ++dy) {
-            if(dx == 0 && dy >= 0) continue; // skip the central and upper middle bin
             const int x_bin_n = x_bin + dx;
             const int y_bin_n = y_bin + dy;
             if(x_bin_n < 1 || x_bin_n > n_bins_x || y_bin_n < 1 || y_bin_n > n_bins_y) continue; // skip out of range bins
-            const double e_bin_n = hist->GetBinContent(x_bin_n, y_bin_n);
-            if(e_bin + e_bin_n > minClusterEnergy_) {
-              if(diagLevel_ > 0) {
-                std::cout << "  Found neighboring bins above threshold: (" << hist->GetXaxis()->GetBinCenter(x_bin) << ", " << hist->GetYaxis()->GetBinCenter(y_bin) << ") with e = " << e_bin
-                          << " and (" << hist->GetXaxis()->GetBinCenter(x_bin_n) << ", " << hist->GetYaxis()->GetBinCenter(y_bin_n) << ") with e = " << e_bin_n
-                          << " total e = " << e_bin + e_bin_n
-                          << std::endl;
-              }
-              return true;
-            }
+            const double e_bin = hist->GetBinContent(x_bin_n, y_bin_n);
+            e_cluster += e_bin;
           }
+        }
+        if(e_cluster > minClusterEnergy_) {
+          if(diagLevel_ > 0) {
+            std::cout << "  Found 3x3 bin cluster above threshold: center = ("
+                      << hist->GetXaxis()->GetBinCenter(x_bin) << ", "
+                      << hist->GetYaxis()->GetBinCenter(y_bin) << ") with e = " << e_cluster
+                      << std::endl;
+          }
+         return true;
         }
       }
     }

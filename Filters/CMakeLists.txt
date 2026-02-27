@@ -17,7 +17,7 @@ cet_build_plugin(CaloPileupDtsFilter art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(CaloPileupDtsFilter art::module
+cet_build_plugin(CaloDtsClusterFilter art::module
     REG_SOURCE src/CaloDtsClusterFilter_module.cc
     LIBRARIES REG
       Offline::CalorimeterGeom
@@ -44,7 +44,7 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
-    LIBRARIES REG      
+    LIBRARIES REG
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )

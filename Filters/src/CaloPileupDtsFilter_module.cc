@@ -211,6 +211,7 @@ namespace mu2e {
     double pileup_edep = 0.;
 
     for(const auto& tag : caloStepsTags_) {
+      if(primary_edep + pileup_edep > maxTotalEnergy_) break; // early exit
       const auto handle = event.getValidHandle<CaloShowerStepCollection>(tag);
       for(const auto& css : *handle) {
         const auto sim_step = css.simParticle();
