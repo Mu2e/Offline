@@ -55,6 +55,13 @@ services.TimeTracker : {
         overwrite : false ## true
     }
 }
+#------------------------------------------------------------------------------
+# make makeSD print everything
+#------------------------------------------------------------------------------
+services.message.destinations.log.categories.MAKE_SD: {
+    reportEvery : 1
+    limit       : -1
+}
 
 outputs:  {
     defaultOutput :  {
