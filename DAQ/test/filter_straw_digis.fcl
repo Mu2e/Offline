@@ -37,6 +37,13 @@ services.DbService.textFile : [ "Offline/TrackerConditions/data/TrkPanelMap.txt"
 
 services.ProditionsService.trackerPanelMap.useDb : true
 services.scheduler.wantSummary                   : true
+#------------------------------------------------------------------------------
+# make makeSD print everything
+#------------------------------------------------------------------------------
+services.message.destinations.log.categories.MAKE_SD: {
+    reportEvery : 1
+    limit       : -1
+}
 
 outputs:  {
     defaultOutput :  {
