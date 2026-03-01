@@ -1,8 +1,0 @@
-#include "Offline/TrkDiag/fcl/BkgDiag.fcl"
-#include "Offline/TrkHitReco/fcl/epilog_station.fcl"
-#include "Offline/TrkHitReco/fcl/epilog_FBH_station.fcl"
-physics.producers.makePH.TestFlag : true
-physics.producers.makeSTH.TestFlag : true
-physics.producers.FlagBkgHits.OutputLevel : "station"
-physics.analyzers.BD.ExpectedCHLevel : "station"
-physics.producers.makeSTH.DebugLevel : 0

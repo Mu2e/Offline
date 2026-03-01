@@ -16,21 +16,6 @@ cet_make_library(
       ROOT::Minuit2
 )
 
-cet_build_plugin(CosmicAnalyzer art::module
-    REG_SOURCE src/CosmicAnalyzer_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrkDiag
-)
-
 cet_build_plugin(CosmicFitDisplay art::module
     REG_SOURCE src/CosmicFitDisplay_module.cc
     LIBRARIES REG
@@ -42,26 +27,9 @@ cet_build_plugin(CosmicFitDisplay art::module
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
-      Offline::TrkDiag
       ROOT::Geom
 )
 
-cet_build_plugin(CosmicMCRecoDiff art::module
-    REG_SOURCE src/CosmicMCRecoDiff_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkDiag
-)
 
 cet_build_plugin(CosmicMuonInfo art::module
     REG_SOURCE src/CosmicMuonInfo_module.cc
@@ -91,23 +59,6 @@ cet_build_plugin(CosmicShowerFilter art::module
       Offline::TrackerConditions
 )
 
-cet_build_plugin(CosmicTrackDetails art::module
-    REG_SOURCE src/CosmicTrackDetails_module.cc
-    LIBRARIES REG
-      Offline::CosmicReco
-
-      Offline::DataProducts
-      Offline::GeneralUtilities
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::ProditionsService
-      Offline::RecoDataProducts
-      Offline::TrackerConditions
-      Offline::TrackerGeom
-      Offline::TrkDiag
-)
-
 cet_build_plugin(CosmicTrackDiag art::module
     REG_SOURCE src/CosmicTrackDiag_module.cc
     LIBRARIES REG
@@ -120,7 +71,6 @@ cet_build_plugin(CosmicTrackDiag art::module
       Offline::Mu2eUtilities
       Offline::ProditionsService
       Offline::RecoDataProducts
-      Offline::TrkDiag
 )
 
 cet_build_plugin(CosmicTrackFinder art::module
