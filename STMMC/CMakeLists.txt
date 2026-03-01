@@ -57,6 +57,22 @@ cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(SimParticleDump art::module
+    REG_SOURCE src/SimParticleDump_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(SimParticleAndVDBacktrace art::module
+    REG_SOURCE src/SimParticleAndVDBacktrace_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(STMResamplingProducer art::module
     REG_SOURCE src/STMResamplingProducer_module.cc
     LIBRARIES REG

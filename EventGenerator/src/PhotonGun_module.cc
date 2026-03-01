@@ -4,6 +4,7 @@
 
 // stdlib includes
 #include <cmath>
+#include <iostream>
 
 // art includes
 #include "art/Framework/Core/EDProducer.h"
@@ -38,7 +39,11 @@ namespace mu2e {
       fhicl::Atom<double> z{ Name("z"), Comment("z position of generated photon")};
       fhicl::OptionalAtom<double> px{ Name("px"), Comment("x momentum of generated photon")};
       fhicl::OptionalAtom<double> py{ Name("py"), Comment("y momentum of generated photon")};
+      fhicl::OptionalAtom<double> deltax{ Name("deltax"), Comment("Difference in x position of generated photon, use to calculate targeted position")};
+      fhicl::OptionalAtom<double> deltay{ Name("deltay"), Comment("Difference in y position of generated photon, use to calculate targeted position")};
+      fhicl::OptionalAtom<double> deltaz{ Name("deltaz"), Comment("Difference in z position of generated photon, use to calculate targeted position")};
       fhicl::Atom<double> E{ Name("E"), Comment("Energy of generated photon")};
+      fhicl::OptionalAtom<bool> verbose{ Name("verbose"), Comment("Print verbose messages")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit PhotonGun(const Parameters& conf);
@@ -46,7 +51,9 @@ namespace mu2e {
   private:
     double x = 0.0, y = 0.0, z = 0.0;
     double px = 0.0, py = 0.0, pz = 0.0;
+    double deltax = 0.0, deltay = 0.0, deltaz = 0.0;
     double E = 0.0;
+    bool verbose = false;
   };
 
   PhotonGun::PhotonGun(const Parameters& conf):
@@ -56,17 +63,33 @@ namespace mu2e {
     z(conf().z()),
     E(conf().E()) {
       produces<GenParticleCollection>();
+      if (E < std::numeric_limits<double>::epsilon())
+        throw cet::exception("RANGE") << "Energy must be greater than zero, exiting.";
       px = conf().px() ? *conf().px() : 0;
-      px = conf().py() ? *conf().py() : 0;
+      py = conf().py() ? *conf().py() : 0;
       if ((px*px + py*py) > (E*E))
         throw cet::exception("RANGE") << "magnitude of px and py is greater than E, exiting.";
       pz = std::sqrt(E*E - px*px - py*py);
+      deltax = conf().deltax() ? *conf().deltax() : 0;
+      deltay = conf().deltay() ? *conf().deltay() : 0;
+      deltaz = conf().deltaz() ? *conf().deltaz() : 0;
+      if ((std::abs(px) > std::numeric_limits<double>::epsilon() || std::abs(py) > std::numeric_limits<double>::epsilon()) && (std::abs(deltax) > std::numeric_limits<double>::epsilon() || std::abs(deltay) > std::numeric_limits<double>::epsilon() || std::abs(deltaz) > std::numeric_limits<double>::epsilon()))
+        throw cet::exception("RANGE") << "Cannot specify both momentum and delta position, exiting.";
+      verbose = conf().verbose() ? *conf().verbose() : false;
     };
 
   void PhotonGun::produce(art::Event& event) {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     const CLHEP::Hep3Vector pos(x, y, z);
-    const CLHEP::Hep3Vector p(px, py, pz);
+    CLHEP::Hep3Vector p(px, py, pz);
+    if (std::abs(deltax) > std::numeric_limits<double>::epsilon() ||
+        std::abs(deltay) > std::numeric_limits<double>::epsilon() ||
+        std::abs(deltaz) > std::numeric_limits<double>::epsilon()) {
+      if (verbose)
+        std::cout << "PhotonGun: Using delta position to calculate momentum." << std::endl;
+      const CLHEP::Hep3Vector delta(deltax, deltay, deltaz);
+      p = delta.unit() * E;
+    }
     CLHEP::HepLorentzVector mom(p, E);
     output->push_back(GenParticle(PDGCode::gamma, GenId::particleGun, pos, mom, 0.));
     event.put(std::move(output));

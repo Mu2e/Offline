@@ -1,0 +1,107 @@
+# Extracts parameters from STM simulation scripts into ROOT TTrees for use in the scripts defined it Mu2e/STMAnalysis repository
+# This generates ROOT files containing different things depending on which analyzer is selected in the o1 path:
+#  - stage1virtualdetectorStepPointMCs : Dumps StepPointMCs from the virtual detector in Stage 1 simulation
+#  - stage2virtualdetectorStepPointMCs : Dumps StepPointMCs from the virtual detector in Stage 2 simulation
+#  - HPGeWaveforms : Dumps HPGe waveforms from Stage 2 simulation
+#  - LaBrWaveforms : Dumps LaBr3 waveforms from Stage 2 simulation (not implemented yet)
+#  - ZSwaveforms : Dumps zero-suppressed waveforms from HPGe digitisers in Stage 2 simulation (not implemented yet)
+#  - MWDspectra : Dumps MWD spectra from HPGe digitisers in Stage 2 simulation
+# Usage:
+#  1. Select which data you want to dump to a ROOT TTree by replacing "@nil" in the list o1 (keeping the [BRAKCETS]!) with the single analyer you want to run, e.g. o1: [stage1virtualdetectorStepPointMCs]
+#  2. Set the output ROOT file name in services.TFileService.fileName
+#  3. Prepare a text file containing a list of input STMMC data files (one file name per line)
+#  3. Run as: `mu2e -c ROOTAnalysisDump.fcl -S FileWithListOfDataFiles.txt`
+#
+# Original author: Pawel Plesniak
+
+#include "Offline/STMMC/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: ROOTAnalysisDump
+
+source : {
+  module_type : RootInput
+  fileNames: @nil
+}
+services : {
+  message : @local::default_message
+  GlobalConstantsService : {
+    inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
+  }
+}
+physics: {
+  analyzers : {
+    # Simulation stage 1 ROOT files
+    Stage1virtualdetectorStepPointMCs : {
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : @local::ROOTAnalysisDump.Stage1.StepPointMCsTag # 1809
+      SimParticlemvTag : @local::ROOTAnalysisDump.Stage2.SimParticlemvTag
+    }
+    Stage1SimParticeandVirtualDetectorBacktrace : {
+      module_type : SimParticleAndVDBacktrace
+      StepPointMCsTag : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage1
+      StartVirtualDetectorId : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage1
+      TraceVirtualdetectorIds : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage1
+    }
+
+    # Simulation stage 2 ROOT files
+    Stage2virtualdetectorStepPointMCs : {
+      module_type : VirtualDetectorTree
+      StepPointMCsTag : @local::ROOTAnalysisDump.Stage2.StepPointMCsTagVirtualdetector
+      SimParticlemvTag : @local::ROOTAnalysisDump.Stage2.SimParticlemvTag
+    }
+    Stage2SimParticeandVirtualDetectorBacktrace : {
+      module_type : SimParticleAndVDBacktrace
+      StepPointMCsTag : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage2
+      StartVirtualDetectorId : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage2
+      TraceVirtualdetectorIds : @local::ROOTAnalysisDump.SimParticleVirtualDetectorBacktrace.StepPointMCsTag.Stage2
+    }
+    # TODO - see if this can be removed.
+    # ROOTDump : {
+    #   module_type : SignalParticleBacktraceVDs
+    #   # StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector" #Stage 1
+    #   # # StepPointMCsTag: "compressDetStepMCsSTM:" #Stage 1 1809 as Stage 1 Mu3
+    #   # StartVirtualDetectorId : 101
+    #   # TrackVirtualDetectorIDs : [101, 100, 10, 9, 8, 2, 1]
+    #   StepPointMCsTag : "compressSTMDet:virtualdetector" #Stage 2
+    #   StartVirtualDetectorId : 90
+    #   TrackVirtualDetectorIDs : [90, 100, 10, 9, 8, 2, 1]
+    #   EnergyWindowSize : 0.1
+    # }
+
+    # HPGe energy depositions in crystal - MC truth
+    HPGeEDeps : {
+      module_type : HPGeTree
+      StepPointMCsTag : "compressSTMDet:STMDet"
+      SimParticlemvTag : "compressSTMDet:"
+      Detector: @local::ROOTAnalysisDump.Stage2.DetectorName.HPGe
+    }
+#    HPGeZSWaveforms : {
+#      module_type : @nil # Doesn't exist yet!
+#      StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+#      SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag # TODO: Remove the SimParticle dependency
+#      Detector: @local::SimplifyStage2Data.DetectorName.HPGe
+#    }
+    HPGeMWDspectra : {
+      module_type : MWDTree
+      STMMWDDigiTag : @local::STMMCAnalysis.MWD.HPGe.STMMWDDigiTag
+      EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin # Once the proditions are implemneted, this should be removed.
+    }
+
+    # LaBr3 waveform ROOT files - not implemented yet
+    LaBrWaveforms : {
+      module_type : @nil
+    }
+    LaBrZSWaveforms : {
+      module_type : @nil
+    }
+    LaBrMWDspectra : {
+      module_type : @nil
+    }
+  }
+
+  o1 : ["HPGeMWDspectra"] # Populate me!
+  end_paths: [o1]
+}
+
+services.TFileService.fileName : "tree.root" # Populate me!
