@@ -59,6 +59,8 @@ namespace mu2e {
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),Comment("Add additional printout"), 0};
         fhicl::Atom<std::string> RPCType{Name("RPCType"),Comment("a process code, should be either RPCInternal or RPCExternal") };
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
+        fhicl::Atom<double> czmin{Name("czmin"), Comment("Restrict cos(theta_z) minimum"), -1.};
+        fhicl::Atom<double> czmax{Name("czmax"), Comment("Restrict cos(theta_z) maximum"),  1.};
         fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),Comment("Assume pion decay was turned off, produce event weights"), true};
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),Comment("Produce debug histograms"), false};
     };
@@ -79,6 +81,8 @@ namespace mu2e {
     CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
     BinnedSpectrum    spectrum_;
+    const double czmin_;
+    const double czmax_;
     bool pionDecayOff_;
     bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
@@ -119,9 +123,11 @@ namespace mu2e {
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
+    , czmin_(conf().czmin())
+    , czmax_(conf().czmax())
     , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
-    , randomUnitSphere_ {eng_}
+    , randomUnitSphere_ {eng_, czmin_, czmax_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
@@ -133,6 +139,12 @@ namespace mu2e {
       throw   cet::exception("BADINPUT")
         <<"RPCGun::produce(): no such process, must be mu2eInternalRPC or mu2eExternalRPC";
     }
+
+    // Validate the input cz values
+    if(czmin_ > czmax_ || czmin_ < -1. || czmax_ > 1.) throw cet::exception("BADINPUT") << "RPCGun cos(theta_z) range is not defined\n";
+    if(process_ == ProcessCode::mu2eInternalRPC && (std::abs(czmin_ + 1.) > 1.e-3 || std::abs(czmax_ - 1.) > 1.e-3))
+      throw cet::exception("BADINPUT") << "RPCGun cos(theta_z) restriction can't be used with internal conversion\n";
+
     if ( doHistograms_ ) {
         art::ServiceHandle<art::TFileService> tfs;
         art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );

@@ -7,4 +7,10 @@ TABLE CRVBadChan
 #status 16 (bit 4): no calibration constant
 #status 32 (bit 5): noisy
 #channel,status
+281,3
+296,3
+518,3
+520,3
+863,3
 1107,3
+1587,3

@@ -5,4 +5,4 @@ services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom
 services.ProditionsService.crvCalib.useDb            : true
 services.ProditionsService.crvStatus.useDb           : true
 #comment out this line, if displaying simulated events
-services.DbService.textFile                          : ["Offline/CRVConditions/data/status_extracted_20260214.txt","Offline/CRVConditions/data/calib_extracted_20260214.txt"]
+services.DbService.textFile                          : ["Offline/CRVConditions/data/status_extracted_20260221.txt","Offline/CRVConditions/data/calib_extracted_20260221.txt"]
