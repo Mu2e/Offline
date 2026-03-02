@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace mu2e {
 
@@ -17,9 +18,9 @@ class CalCosmicEnergyCalibInfo : public DbTable {
         _cID(cID),
         _FirstCalibRun(FirstCalibRun),
         _LastCalibRun(LastCalibRun),
-        _EnergyMethod(EnergyMethod),
-        _FitMethod(FitMethod),
-        _Comment(Comment) {}
+        _EnergyMethod(std::move(EnergyMethod)),
+        _FitMethod(std::move(FitMethod)),
+        _Comment(std::move(Comment)) {}
     int cID() const {return _cID; }
     int FirstCalibRun() const { return _FirstCalibRun; }
     int LastCalibRun() const { return _LastCalibRun; }
