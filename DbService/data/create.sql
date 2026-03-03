@@ -448,4 +448,10 @@ CREATE TABLE cal.cosmicenergycalibinfo
 GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
 
+CREATE TABLE cal.energycalibinfolink
+  (energycalibcid INTEGER, energycalibinfocid INTEGER, comment TEXT,
+   create_time TIMESTAMP WITH TIME ZONE NOT NULL,
+   create_user TEXT NOT NULL );
+GRANT SELECT ON cal.energycalibinfolink TO PUBLIC;
+GRANT INSERT ON cal.energycalibinfolink TO cal_role;
 
