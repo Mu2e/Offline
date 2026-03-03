@@ -7,6 +7,7 @@
 //
 
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "cetlib_except/exception.h"
 #include <sstream>
 #include <string>
 #include <utility>
@@ -45,6 +46,11 @@ class CalEnergyCalibInfoLink : public DbTable {
   tableType type() const override { return Adhoc; }
 
   void addRow(const std::vector<std::string>& columns) override {
+    if (columns.size() < 3) {
+      throw cet::exception("CALENERGYCALIBINFOLINK_BAD_COLUMNS")
+          << "CalEnergyCalibInfoLink::addRow expected at least 3 columns, got "
+          << columns.size() << "\n";
+    }
     std::string comment = columns[2];
     for (std::size_t i = 3; i < columns.size(); ++i) {
       comment += ",";
