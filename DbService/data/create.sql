@@ -440,6 +440,20 @@ CREATE TABLE cal.cosmicenergycalib
 GRANT SELECT ON cal.cosmicenergycalib TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalib TO cal_role;
 
+CREATE TABLE cal.sourceenergycalib
+  (cid INTEGER,
+   roid INTEGER, fullepeak NUMERIC, fullerrepeak NUMERIC,
+   fullwidth NUMERIC, fullerrwidth NUMERIC,
+   firstescepeak NUMERIC, firstescerrepeak NUMERIC,
+   firstescwidth NUMERIC, firstescerrwidth NUMERIC,
+   secescepeak NUMERIC, secescerrepeak NUMERIC,
+   secescwidth NUMERIC, secescerrwidth NUMERIC,
+   frfull NUMERIC, frfirst NUMERIC, frsecond NUMERIC,
+   chisq NUMERIC, ndf INTEGER,
+   CONSTRAINT cal_sourceenergycalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.sourceenergycalib TO PUBLIC;
+GRANT INSERT ON cal.sourceenergycalib TO cal_role;
+
 CREATE TABLE cal.cosmicenergycalibinfo
   (cid INTEGER, firstcalibrun INTEGER, lastcalibrun INTEGER,
    energymethod TEXT, fitmethod TEXT, comment TEXT,
