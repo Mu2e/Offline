@@ -10,7 +10,6 @@
 #include "cetlib_except/exception.h"
 #include <sstream>
 #include <string>
-#include <utility>
 
 namespace mu2e {
 
@@ -18,10 +17,11 @@ class CalEnergyCalibInfo : public DbTable {
  public:
   class Row {
    public:
-    Row(int energyCalibCid, int combinedEnergyCalibCid, std::string comment) :
+    Row(int energyCalibCid, int combinedEnergyCalibCid,
+        const std::string& comment) :
         _energyCalibCid(energyCalibCid),
         _combinedEnergyCalibCid(combinedEnergyCalibCid),
-        _comment(std::move(comment)) {}
+        _comment(comment) {}
 
     int energyCalibCid() const { return _energyCalibCid; }
     int combinedEnergyCalibCid() const { return _combinedEnergyCalibCid; }
