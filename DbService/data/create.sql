@@ -440,20 +440,6 @@ CREATE TABLE cal.cosmicenergycalib
 GRANT SELECT ON cal.cosmicenergycalib TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalib TO cal_role;
 
-CREATE TABLE cal.sourceenergycalib
-  (cid INTEGER,
-   roid INTEGER, fullepeak NUMERIC, fullerrepeak NUMERIC,
-   fullwidth NUMERIC, fullerrwidth NUMERIC,
-   firstescepeak NUMERIC, firstescerrepeak NUMERIC,
-   firstescwidth NUMERIC, firstescerrwidth NUMERIC,
-   secescepeak NUMERIC, secescerrepeak NUMERIC,
-   secescwidth NUMERIC, secescerrwidth NUMERIC,
-   frfull NUMERIC, frfirst NUMERIC, frsecond NUMERIC,
-   chisq NUMERIC, ndf INTEGER,
-   CONSTRAINT cal_sourceenergycalib_pk PRIMARY KEY (cid,roid) );
-GRANT SELECT ON cal.sourceenergycalib TO PUBLIC;
-GRANT INSERT ON cal.sourceenergycalib TO cal_role;
-
 CREATE TABLE cal.cosmicenergycalibinfo
   (cid INTEGER, firstcalibrun INTEGER, lastcalibrun INTEGER,
    energymethod TEXT, fitmethod TEXT, comment TEXT,
@@ -462,17 +448,4 @@ CREATE TABLE cal.cosmicenergycalibinfo
 GRANT SELECT ON cal.cosmicenergycalibinfo TO PUBLIC;
 GRANT INSERT ON cal.cosmicenergycalibinfo TO cal_role;
 
-CREATE TABLE cal.energycalibinfo
-  (cid INTEGER,
-   roid INTEGER, adc2mev NUMERIC, adc2mev_err NUMERIC,
-   status_code INTEGER, status_message TEXT,
-   CONSTRAINT cal_energycalibinfo_pk PRIMARY KEY (cid,roid) );
-GRANT SELECT ON cal.energycalibinfo TO PUBLIC;
-GRANT INSERT ON cal.energycalibinfo TO cal_role;
 
-CREATE TABLE cal.energycalibinfolink
-  (energycalibcid INTEGER, energycalibinfocid INTEGER, comment TEXT,
-   create_time TIMESTAMP WITH TIME ZONE NOT NULL,
-   create_user TEXT NOT NULL );
-GRANT SELECT ON cal.energycalibinfolink TO PUBLIC;
-GRANT INSERT ON cal.energycalibinfolink TO cal_role;
