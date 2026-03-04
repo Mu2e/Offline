@@ -95,7 +95,9 @@ namespace mu2e {
       hits.reserve(caloHits.size());
       for (size_t i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
 
-      auto functorTime = [&caloHits,&hits](auto a, auto b) {return caloHits[a].time() < caloHits[b].time();};
+      auto functorTime = [&caloHits,&hits](auto a, auto b) {return caloHits[a].time() < caloHits[b].time() ||
+                                                                   (fabs(caloHits[a].time() - caloHits[b].time())<1e-3 &&
+                                                                    caloHits[a].crystalID() <caloHits[b].crystalID());};
       std::stable_sort(hits.begin(),hits.end(),functorTime);
 
       auto iterSeed = hits.begin();
