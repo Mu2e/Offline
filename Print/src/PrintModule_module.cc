@@ -50,7 +50,6 @@
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
 #include "Offline/Print/inc/HelixSeedPrinter.hh"
 #include "Offline/Print/inc/CosmicTrackSeedPrinter.hh"
-#include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -238,8 +237,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<BkgClusterPrinter>(conf().bkgClusterPrinter()));
   _printers.push_back(make_unique<BkgQualPrinter>(conf().bkgQualPrinter()));
-  _printers.push_back(
-      make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
   _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));
