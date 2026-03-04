@@ -6,12 +6,8 @@
   Stores the combined ADC/MeV constants, uncertainties, and status flags
   from the cosmic + source calibration combination algorithm.
 
-  Status codes:
-    0   - updated: cosmic + source, consistent
-    1   - fallback: methods inconsistent, kept old value
-    2   - fallback: all methods statistically invalid
-    101 - updated using cosmic only
-    102 - updated using source only
+  Status-code values and descriptions are defined in:
+    Offline/CaloConditions/inc/CalCombinedEnergyCalibStatus.hh
 
   Author: W. Zhou 2025
 */
@@ -22,6 +18,7 @@
 #include <utility>
 #include <vector>
 #include "cetlib_except/exception.h"
+#include "Offline/CaloConditions/inc/CalCombinedEnergyCalibStatus.hh"
 #include "Offline/DbTables/inc/DbTable.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
