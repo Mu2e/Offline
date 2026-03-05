@@ -46,7 +46,6 @@ cet_make_library(
       src/TriggerResultsPrinter.cc
     LIBRARIES PUBLIC
       KinKal::General
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService

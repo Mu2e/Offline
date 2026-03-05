@@ -60,7 +60,6 @@ cet_build_plugin(CaloHitFinderInspect art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::GlobalConstantsService
       Offline::MCDataProducts

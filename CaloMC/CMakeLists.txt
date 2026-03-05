@@ -9,7 +9,6 @@ cet_make_library(
     LIBRARIES PUBLIC
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::Mu2eUtilities
       Offline::SeedService
@@ -30,7 +29,6 @@ cet_build_plugin(CaloDigiMaker art::module
       Offline::CaloMC
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DAQConditions
       Offline::DataProducts
       Offline::GeometryService
@@ -46,7 +44,6 @@ cet_build_plugin(CaloHitTruthMatch art::module
     LIBRARIES REG
       Offline::CaloMC
       
-      Offline::ConditionsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
@@ -58,7 +55,6 @@ cet_build_plugin(CaloShowerROMaker art::module
       Offline::CaloMC
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DAQConditions
       Offline::DataProducts
       Offline::GeometryService
