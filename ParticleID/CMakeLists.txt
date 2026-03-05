@@ -22,6 +22,23 @@ cet_build_plugin(ParticleIDRead art::module
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_dt_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_ele_dt_v4_2_4.tab		     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_ep_vs_path_v4_2_4.tab	      ${CURRENT_BINARY_DIR} data/pid_ele_ep_vs_path_v4_2_4.tab	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_ele_xs_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_ele_xs_v4_2_4.tab		     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_muo_dt_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_muo_dt_v4_2_4.tab		     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_muo_ep_vs_path_v4_2_4.tab	      ${CURRENT_BINARY_DIR} data/pid_muo_ep_vs_path_v4_2_4.tab	     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/pid_muo_xs_v4_2_4.tab		      ${CURRENT_BINARY_DIR} data/pid_muo_xs_v4_2_4.tab		     )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_ele_dedx.rtbl       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_ele_dedx.rtbl      )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_ele_dt.tbl	       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_ele_dt.tbl	        )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_ele_ep_vs_path.tbl  ${CURRENT_BINARY_DIR} data/v5_7_9/pid_ele_ep_vs_path.tbl )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_ele_xdrds.tbl       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_ele_xdrds.tbl      )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_dedx.rtbl       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_dedx.rtbl      )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_dt.tbl	       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_dt.tbl	        )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_ep_vs_path.tbl  ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_ep_vs_path.tbl )
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/v5_7_9/pid_muo_xdrds.tbl       ${CURRENT_BINARY_DIR} data/v5_7_9/pid_muo_xdrds.tbl      )
+
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/ParticleID)
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/ParticleID/fcl)
