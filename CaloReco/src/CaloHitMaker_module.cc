@@ -202,7 +202,7 @@ namespace mu2e {
                                 std::vector<CaloRecoDigiPtr>& buffer, CaloHitCollection& caloHits)
   {
       //TODO: get conditions to check if a sensor is noisy or dead. Until then, consider hit with a single sensor to be bkg.
-      if (nSiPM<2) return;
+      //if (nSiPM<2) return;
 
       caloHits.emplace_back(CaloHit(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer));
 
