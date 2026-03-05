@@ -88,6 +88,7 @@ cet_build_plugin(ProtonBunchTimeMCFromProtonBunchTime art::module
 cet_build_plugin(SelectRecoMC art::module
     REG_SOURCE src/SelectRecoMC_module.cc
     LIBRARIES REG
+      Offline::CommonMC
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -95,6 +96,7 @@ cet_build_plugin(SelectRecoMC art::module
       Offline::RecoDataProducts
       Offline::TrackerConditions
       Offline::TrackerGeom
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(SimParticleDaughterSelector art::module
