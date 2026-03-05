@@ -152,7 +152,7 @@ namespace mu2e {
 
       event.put(std::move(caloHitMCTruth));
       event.put(std::move(caloHitMCs));
-      if (fillDetailedMC_) event.put(std::move(caloHitMCTruth));
+      if (fillDetailedMC_) event.put(std::move(caloShowerMCTruth));
   }
 
 
