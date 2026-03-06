@@ -25,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -65,7 +66,8 @@ namespace mu2e {
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
              fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
-             fhicl::Atom<double>        pePerMeV             { Name("readoutPEPerMeV"),        Comment("Number of pe / MeV for Readout") };
+             fhicl::Atom<double>        pePerMeV             { Name("readoutPEPerMeV"),        Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<double>        pePerMeVLyso         { Name("readoutPEPerMeVLyso"),    Comment("Number of pe / MeV for Readout for LYSO") };
              fhicl::Atom<double>        MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
@@ -86,6 +88,7 @@ namespace mu2e {
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
             pePerMeV_          (config().pePerMeV()),
+            pePerMeVLyso_      (config().pePerMeVLyso()),
             MeVToADC_          (config().MeVToADC()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
@@ -130,6 +133,7 @@ namespace mu2e {
        double                  startTimeBuffer_;
        int                     maxADCCounts_;
        double                  pePerMeV_;
+       double                  pePerMeVLyso_;
        double                  MeVToADC_;
        CaloPulseShape          pulseShape_;
        CaloWFExtractor         wfExtractor_;
@@ -228,7 +232,12 @@ namespace mu2e {
                                  const ProtonBunchTimeMC& pbtmc)
   {
       bool  isEmpty(true);
-      float scaleFactor(MeVToADC_/pePerMeV_);
+
+      int crystalID = CaloSiPMId(iRO).crystal().id();
+      bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
+                                crystalID) != CaloConst::_caphriId.end();
+      auto pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeV_;
+      auto scaleFactor(MeVToADC_/pePerMeV);
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
