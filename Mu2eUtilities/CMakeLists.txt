@@ -54,7 +54,6 @@ cet_make_library(
     LIBRARIES PUBLIC
       art_root_io::tfile_support
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeneralUtilities

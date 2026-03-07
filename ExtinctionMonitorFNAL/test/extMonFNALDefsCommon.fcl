@@ -27,11 +27,6 @@ services : {
         configStatsVerbosity : 0
     }
 
-    ConditionsService: {
-        printConfig : true
-        configStatsVerbosity : 0
-    }
-
     GlobalConstantsService: {
         inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"
         printConfig : true

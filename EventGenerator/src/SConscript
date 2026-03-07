@@ -19,7 +19,6 @@ rootlibs  = env['ROOTLIBS']
 mainlib = helper.make_mainlib ( [
                           'mu2e_GlobalConstantsService',
                           'mu2e_GeometryService',
-                          'mu2e_ConditionsService',
                           'mu2e_CalorimeterGeom',
                           'mu2e_TrackerGeom',
                           'mu2e_CosmicRayShieldGeom',
@@ -71,7 +70,6 @@ mainlib = helper.make_mainlib ( [
 helper.make_plugins( [ mainlib,
                        'mu2e_SeedService',
                        'mu2e_Mu2eUtilities',
-                       'mu2e_ConditionsService',
                        'mu2e_GeometryService',
                        'mu2e_GlobalConstantsService',
                        'mu2e_ExtinctionMonitorFNAL_Utilities',

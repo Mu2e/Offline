@@ -111,7 +111,6 @@ namespace mu2e {
   {
 
       /*
-      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
