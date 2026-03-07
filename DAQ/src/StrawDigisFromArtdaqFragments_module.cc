@@ -181,54 +181,6 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
 
   produces<mu2e::IntensityInfoTrackerHits>();
 
-  // // if data is properly embedded in DTC_Events, then skip DTC-level header
-  // // when deserializing
-  // if (!config().missingDTCHeaders()){
-  //   roc_payload_offset_ = static_cast<uint8_t>(sizeof(DTCLib::DTC_EventHeader));
-  // }
-
-  // // initialize geographic mapping of minnesota-labled panels
-  // for (const auto& entry: config().geography()){
-  //   const auto& minnesota = entry.minnesota();
-  //   const auto mid = parse_minnesota_label(minnesota);
-  //   auto plane = entry.plane();
-  //   auto panel = entry.panel();
-  //   mu2e::StrawId pid(plane, panel, 0);
-  //   if (0 < minnesota_map_.count(mid)){
-  //     std::string msg = "duplicate mapping of panel " + minnesota;
-  //     throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-  //   }
-  //   minnesota_map_[mid] = pid.getPanelId().asUint16();
-  // }
-
-  // // initialize fallback mapping of dtc links to minnesota-labeling
-  // for (size_t i = 0 ; i < mu2e::StrawId::_nplanes ; i++){
-  //   for (size_t j = 0 ; j < mu2e::StrawId::_npanels ; j++){
-  //     channel_map_[i][j] = StrawDigisFromArtdaqFragments::invalid_minnesota_;
-  //   }
-  // }
-  // const auto channeling = config().channeling();
-  // if (channeling.has_value()){
-  //   for (const auto& entry: channeling.value()){
-  //     uint16_t dtc = entry.dtc();
-  //     if (!(dtc < mu2e::StrawId::_nplanes)){
-  //       std::string msg = "invalid DTC ID: " + std::to_string(dtc);
-  //       throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-  //     }
-  //     uint16_t link = entry.link();
-  //     if (!(link < mu2e::StrawId::_npanels)){
-  //       std::string msg = "invalid DTC Link number: " + std::to_string(link);
-  //       throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-  //     }
-  //     std::string minnesota = entry.minnesota();
-  //     uint16_t mid = parse_minnesota_label(minnesota);
-  //     if (minnesota_map_.count(mid) < 1){
-  //       std::string msg = "dtc link mapping defined for unmapped panel " + minnesota;
-  //       throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-  //     }
-  //     channel_map_[dtc][link] = mid;
-  //   }
-  // }
 //-----------------------------------------------------------------------------
 // initialize debug bits  : debugBits: [ "bit0:1" , "bit14:1" ]
 //-----------------------------------------------------------------------------
@@ -264,16 +216,20 @@ std::vector<std::string> splitString(const std::string& str, const std::string& 
 
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, const std::source_location& location) {
-  //  if (DiagLevel > diagLevel_) return;
 
   std::string s;
   if (event_) s = std::format("event: {}:{}:{} ",event_->run(),event_->subRun(),event_->event());
 
   std::vector<std::string> ss = splitString(location.file_name(),"/");
 
-  mf::LogVerbatim("") << s << ss.back() << ":" << location.line()
-    //            << location.function_name()
-                      << " : " << Message;
+  mf::LogVerbatim("MAKE_SD")
+     << s << ss.back() << ":" << location.line()
+     //            << location.function_name()
+     << " : " << Message;
+
+  // std::cout << s << ss.back() << ":" << location.line()
+  //   //            << location.function_name()
+  //      << " : " << Message << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -327,7 +283,6 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
   // IntensityInfoTrackerHits
   std::unique_ptr<mu2e::IntensityInfoTrackerHits> intInfo(new mu2e::IntensityInfoTrackerHits);
-
 //-----------------------------------------------------------------------------
 // defined by the first hit
 //-----------------------------------------------------------------------------
@@ -335,6 +290,11 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   artdaq::FragmentPtrs containerFragments;
 
   auto fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+
+  if (debugMode_ > 0) {
+    std::string msg = std::format("n(fragments):{}",fragmentHandles.size());
+    print_(msg);
+  }
 
   for (auto handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty())     continue;
@@ -357,16 +317,26 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
       int nfrag = handle->size();
       for (int ifrag=0; ifrag<nfrag; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
-        uint8_t* fdata = (uint8_t*) (frag->dataBegin());
-
-                                        // runs > 107236
-        if (not missingDTCHeaders_) {
-          fdata += sizeof(DTCLib::DTC_EventHeader);
-        }
 
         if (debugMode_ and (debugBit_[0] > 0)) {
-          print_(std::format("-- fragment number:{}",ifrag));
+          print_(std::format("-- fragment number:{} version:{} data_size:{} type:{} DTC_SubEventHeader.size:{}",
+                             ifrag,frag->version(),frag->dataSizeBytes(),frag->typeString(),sizeof(DTCLib::DTC_SubEventHeader)));
           print_fragment(frag);
+        }
+
+        uint8_t* fdata = (uint8_t*) (frag->dataBegin());
+        if (not missingDTCHeaders_) {
+//-----------------------------------------------------------------------------
+// skip fragments with the payload size less than the DTC header size
+// do it only for the current data format (runs > 107236)
+//-----------------------------------------------------------------------------
+          if (frag->dataSizeBytes() <= sizeof(DTCLib::DTC_SubEventHeader)) {
+            std::string msg = std::format("ERROR: fragment:{} data size:{} < DTC_SubEventHeader.size:{}. SKIP FRAGMENT",
+                                          ifrag,frag->dataSizeBytes(),sizeof(DTCLib::DTC_SubEventHeader));
+            print_(msg);
+            continue;
+          }
+          fdata += sizeof(DTCLib::DTC_EventHeader);
         }
 //-----------------------------------------------------------------------------
 // skip non-tracker fragments
@@ -423,6 +393,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
                 print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data",
                                    dtc_id,link_id));
+                
+                roc_data += (nhits*np_per_hit_+1)*packet_size;
                 continue;
               }
             }
@@ -468,8 +440,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               }
 // in principle, could this could become an 'else if'
               if (tpm->mnid() != mnid) {
-                print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}",
-                                   hit_data->StrawIndex, dtc_id, link_id));
+                print_(std::format("ERROR: mnid:{:3d} tpm->mnid():{:3d} hit chid:{:04x} inconsistent with the dtc_id:{:2d} and link_id:{}",
+                                   mnid,tpm->mnid(),hit_data->StrawIndex, dtc_id, link_id));
 //-----------------------------------------------------------------------------
 // in case of a single channel ID error no need to skip the rest of the ROC data -
 // force geographical address and mark the produced digi
