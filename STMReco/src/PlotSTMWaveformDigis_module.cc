@@ -66,6 +66,7 @@ namespace mu2e {
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
     _channel(STMChannel::findByName("HPGe")) // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
+
   { }
 
   void PlotSTMWaveformDigis::beginJob(){
@@ -125,11 +126,10 @@ namespace mu2e {
 	  }
 	  
 	}
-       
-      }
-
-      ++count;
+      ++count;  
     }
+
+  }
 }
     
 

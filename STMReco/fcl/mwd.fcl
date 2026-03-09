@@ -19,33 +19,38 @@ physics: {
   producers : {
     mwdHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "zeroSuppressHPGe"
-      verbosityLevel : 1
+      stmWaveformDigisTag : "makeSTMDigis:zs"
+      verbosityLevel : 6
       tau : @local::STM.HPGe.tau
       M : @local::STM.HPGe.M
       L : @local::STM.HPGe.L
       nsigma_cut : @local::STM.HPGe.nsigma_cut
       thresholdgrad : @local::STM.HPGe.thresholdgrad
+      defaultBaselineMean: @local::STM.HPGe.defaultBaselineMean
+      defaultBaselineSD: @local::STM.HPGe.defaultBaselineSD
     }
 
     mwdLaBr : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "zeroSuppressLaBr"
-      verbosityLevel : 1
+      stmWaveformDigisTag : "makeSTMDigis:zs"
+      verbosityLevel : 6
       tau : @local::STM.LaBr.tau
       M : @local::STM.LaBr.M
       L : @local::STM.LaBr.L
       nsigma_cut : @local::STM.LaBr.nsigma_cut
       thresholdgrad : @local::STM.LaBr.thresholdgrad
+      defaultBaselineMean: @local::STM.HPGe.defaultBaselineMean
+      defaultBaselineSD: @local::STM.HPGe.defaultBaselineSD
+      xAxis: "sample_number"
     }
   }
   filters : {  }
   analyzers : {  }
 
   # setup paths
-  HPGePath : [ mwdHPGe ]
+ # HPGePath : [ mwdHPGe ]
   LaBrPath : [ mwdLaBr ]
-  trigger_paths: [ HPGePath, LaBrPath ]
+  trigger_paths: [ LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }

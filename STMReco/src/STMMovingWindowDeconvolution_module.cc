@@ -145,7 +145,7 @@ namespace mu2e {
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
     art::EDProducer{conf},
     _stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(conf().stmWaveformDigisTag())),
-    channel(STMUtils::getChannel(conf().stmWaveformDigisTag())),
+    channel(STMChannel::findByName("HPGe")), // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
     tau(conf().tau()),
     M(conf().M()),
     L(conf().L()),
@@ -160,6 +160,7 @@ namespace mu2e {
       if (verbosityLevel > 10)
         verbosityLevel = 10;
       _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
+      std::cout<<"BG"<<_xAxis<<std::endl;
       makeTTreeMWD = conf().makeTTreeMWD() ? *(conf().makeTTreeMWD()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
       TTreeEnergyCalib = conf().TTreeEnergyCalib() ? *(conf().TTreeEnergyCalib()) : 1.0;
@@ -182,7 +183,7 @@ namespace mu2e {
         ttree->Branch("E", &E, "E/D");
         ttree->Branch("waveformID", &waveformID, "waveformID/i");
       };
-      if (_xAxis != "") {
+      if (_xAxis == "") {
         if (verbosityLevel >= 5) {
           throw cet::exception("STMMovingWindowDecomposition") << "No xAxis scale defined despite requesting verbosity level >= 5" << std::endl;
         };

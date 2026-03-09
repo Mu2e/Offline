@@ -37,6 +37,7 @@
 #include <TString.h>
 #include <TLine.h>
 #include <TGraph.h>
+#include <stdbool.h> //temporary
 
 namespace art
 {
@@ -96,50 +97,161 @@ void STMDigisFromFragments::produce(Event& event)
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
   const auto STMContainerFragments = STMFragmentsH.product();
+
+
+    //Variables to keep track of all zero element arrays& empty arrays
   
+    size_t zeroRaw_arrays = 0;
+    size_t zeroZS_arrays = 0;
+    size_t emptyRaw_arrays = 0;
+    size_t emptyZS_arrays = 0;
+    
   for (const auto& frag : *STMContainerFragments) {
     // const auto& stm_frag = static_cast<mu2e::STMFragment>(frag); //What was here originally to read other file
     artdaq::ContainerFragment contf(frag);
 
+    
     for (size_t ii = 0; ii < contf.block_count(); ++ii){
-      const auto& art_frag = *contf[ii];
+      const artdaq::Fragment art_frag = *contf[ii];
       const auto& stm_frag = static_cast<mu2e::STMFragment>(art_frag);
       mu2e::STMWaveformDigi stm_waveform;
+
+      // std::cout<<"ii = "<< ii<<" isRaw = "<< stm_frag.isRaw()<<" isZS = "<<stm_frag.isZS()<<" isMWD = "<<stm_frag.isMWD()<<std::endl;//Check for what we are reading per index
       
        if (stm_frag.isRaw()) {
-	 stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
-	 raw_waveform_digis->emplace_back(stm_waveform);
+	 
+	 //A check to see what inside these arrays
+	 auto payloadarray= stm_frag.payloadBegin();
+	 auto N = stm_frag.payloadWords();	 
+	 bool allZeros = true; //Assume we have an array with all zeros
+	 bool first20hasZeros = false; //Checking header
+	 
+	 if(N ==0){ //If payloadwords = 0 then the array is empty
+	   ++emptyRaw_arrays;
+	   std::cout<< "Found empty Raw array at ii = "<<ii<< " \n";// extra check ->Raw has no empty arrays it seems
+	 }else{
+	   for(size_t k = 0; k< N; ++k){
+	     if(payloadarray[k] != 0){
+	       allZeros = false; //Break if you find an element that isn't zero
+	       break;
+	     }
+	   }
+	   //Check to see if first 20 elements have any zero
+	   for(size_t z20 =0; z20 < std::min<size_t>(N,20); ++z20){
+	     if(payloadarray[z20] == 0){
+	       first20hasZeros = true;//Break if you find any element with a zero, will disrupt header
+	       break;
+	     }
+	   }
+	   
+	   if (allZeros == true || first20hasZeros == true){
+	     ++zeroRaw_arrays; //Adds to the zero array counter
+	     std::cout<<"PayloadWords for zeroRaw array: "<<N<< std::endl; //extra check
+	     for(size_t zz = 0; zz < std::min<size_t>(N,10);++zz){
+	       std::cout<<payloadarray[zz]<<" "; //Prints out first 10 elemenmts to check we have all zeros 
+	     }
+	     std::cout<<" Raw ii = " << ii<< "\n";
+	       
+	   } else {
+	     for(size_t kk = 0; kk < std::min<size_t>(N,20); ++kk){
+	       std::cout<<payloadarray[kk]<<" "; // prints out the first 20 elements
+	     }
+	     std::cout<<" Raw ii = "<< ii <<"\n";
+	     stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+	     raw_waveform_digis->emplace_back(stm_waveform);
+	   }
+	 }
+       
+	 //end of check
+
+	 //Originally outside the check
+	 //stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+	 //raw_waveform_digis->emplace_back(stm_waveform);
+	 
        }
        else if (stm_frag.isZS()) {
-	 stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
-	 zs_waveform_digis->emplace_back(stm_waveform);
+         //A check to see what inside these arrays                                                                                                                                                                             
+	 auto payloadarray= stm_frag.payloadBegin();
+         auto N = stm_frag.payloadWords();
+         bool allZeros = true; //Assume we have an array with all zeros                                                                                                                                                        
+         bool first20hasZeros = false; //Checking header                                                                                                                                                                       
+
+         if(N ==0){ //If payloadwords = 0 then the array is empty                                                                
+           ++emptyZS_arrays;
+           std::cout<< "Found empty ZS array at ii = "<<ii<< " \n";// extra check ->Raw has no empty arrays it seems                                                                                                          
+         }else{
+           for(size_t k = 0; k< N; ++k){
+             if(payloadarray[k] != 0){
+               allZeros = false; //Break if you find an element that isn't zero                                                                       
+               break;
+             }
+           }
+           //Check to see if first 20 elements have any zero                                                                                                                                                                   
+           for(size_t z20 =0; z20 < std::min<size_t>(N,20); ++z20){
+             if(payloadarray[z20] == 0){
+               first20hasZeros = true;//Break if you find any element with a zero, will disrupt header                                                                                                                         
+               break;
+             }
+           }
+
+           if (allZeros == true || first20hasZeros == true){
+             ++zeroZS_arrays; //Adds to the zero array counter                                                                                                                                                               
+             std::cout<<"PayloadWords for zeroZS array: "<<N<< std::endl; //extra check                                                                                                                                       
+             for(size_t zz = 0; zz < std::min<size_t>(N,10);++zz){
+               std::cout<<payloadarray[zz]<<" "; //Prints out first 10 elemenmts to check we have all zeros                                                                                                                    
+             }
+             std::cout<<" ZS ii = " << ii<< "\n";
+
+           } else {
+             for(size_t kk = 0; kk < std::min<size_t>(N,20); ++kk){
+               std::cout<<payloadarray[kk]<<" "; // prints out the first 20 elements                                                                                                                                           
+             }
+             std::cout<<" ZS ii = "<< ii <<"\n";
+             stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+             zs_waveform_digis->emplace_back(stm_waveform);
+           }
+         }
+
+	 //end of check         
+  
+	 //stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());
+	 //zs_waveform_digis->emplace_back(stm_waveform);
+       
        }
        else if (stm_frag.isMWD()) {
-
 	 int n_MWD_digis = stm_frag.payloadWords(); //number read -> to digis
-           
 	 for (int i_MWD = 0 ; i_MWD < n_MWD_digis; ++i_MWD){
-
 	   auto const* pointer  = stm_frag.payloadBegin(); //tells where to read data
 	   int16_t i_pointer = pointer[i_MWD]; //Retrives value of ith index of pointer
-
 	   mu2e::STMMWDDigi mwd_digi(0,i_pointer);
-
 	   mwd_digis->emplace_back(mwd_digi);
-	//mu2e::STMMWDDigi mwd_digi(0,i_pointer);
-	//mwd_digi->emplace_back(mwd_digi);
-
-       
-	//stm_waveform.set_data(stm_frag.payloadWords(), stm_frag.payloadBegin());//original
-	//mwd_waveform_digis->emplace_back(stm_waveform);}//original
+	   std::cout<< "mwd_digis size = " << mwd_digis->size()<<"\n";
 	 }
+
        }
     }
   }
 
-    event.put(std::move(raw_waveform_digis), "raw");
-    event.put(std::move(zs_waveform_digis), "zs");
-    event.put(std::move(mwd_digis), "mwd");
+  //Final checks
+  std::cout<<"---------------------------------------------------------\n"<<"\n";
+  std::cout << "raw_waveform_digis total size = "<<raw_waveform_digis->size()<<"\n"; //Check before being put in
+  std::cout << "zs_waveform_digis total size = "<<zs_waveform_digis->size()<<"\n";
+  std::cout << "mwd_digis total size = " << mwd_digis->size()<<"\n";
+
+  std::cout<<"---------------------------------------------------------\n"<<"\n";
+  std::cout<< "Number of Zero arrays for Raw = " <<zeroRaw_arrays<<"\n";
+  std::cout<< "Number of Zero arrays for ZS = " <<zeroZS_arrays<<"\n";
+
+  std::cout<<"---------------------------------------------------------\n"<<"\n";
+  std::cout<< "Number of empty arrays for Raw = " <<emptyRaw_arrays<<"\n";
+  std::cout<< "Number of empty arrays for ZS = " <<emptyZS_arrays<<"\n";
+
+
+  
+  event.put(std::move(raw_waveform_digis), "raw");
+  event.put(std::move(zs_waveform_digis), "zs");
+  event.put(std::move(mwd_digis), "mwd");
+    
 } // produce()
 
 // ======================================================================
