@@ -18,8 +18,11 @@ namespace mu2e
    class CaloHitMC
    {
        public:
-          CaloHitMC()                                     : edeps_()      {};
-          CaloHitMC(const std::vector<CaloEDepMC>& edeps) : edeps_(edeps) {};
+          CaloHitMC() : edeps_(), crystalId_(-1) {};
+          CaloHitMC(const std::vector<CaloEDepMC>& edeps, int crystalId) :
+           edeps_(edeps),
+           crystalId_(crystalId)
+          {};
 
           void resetSim(SimParticleRemapping const& remap);
 
@@ -30,9 +33,11 @@ namespace mu2e
           float                          time            ()           const {return edeps_.empty() ? 0.0 : edeps_.at(0).time();}
           float                          totalEnergyDep  ()           const;
           float                          totalEnergyDepG4()           const;
+          int                            crystalID       ()           const { return crystalId_;}
 
        private:
           std::vector<CaloEDepMC> edeps_;
+          int                     crystalId_;
    };
 
    using  CaloHitMCCollection = std::vector<mu2e::CaloHitMC>;
