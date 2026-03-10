@@ -277,8 +277,7 @@ namespace mu2e {
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
               if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr);
 
-              bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
-                                        crystalID) != CaloConst::_caphriId.end();
+              bool isCaphri = CrystalId(crystalID).isCaphri();
               float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
 
               // Generate individual PEs and their arrival times

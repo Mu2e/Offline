@@ -24,7 +24,7 @@ namespace mu2e
            crystalID_(crystalId)
           {};
           CaloHitMC(const std::vector<CaloEDepMC>&& edeps, int crystalId) :
-           edeps_(edeps),
+           edeps_(std::move(edeps)),
            crystalID_(crystalId)
           {};
 
