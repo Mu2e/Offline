@@ -277,12 +277,13 @@ namespace mu2e {
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
               if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr);
 
+              bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
+                                        crystalID) != CaloConst::_caphriId.end();
+              float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeV_;
+
               // Generate individual PEs and their arrival times
               for (int i=0; i<nROs; ++i)
               {
-                  bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
-                                            crystalID) != CaloConst::_caphriId.end();
-                  float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeV_;
                   int SiPMID = SiPMIDBase + i;
                   int NPE    = randPoisson_.fire(edep_corr*pePerMeV);
                   if (NPE==0) continue;
