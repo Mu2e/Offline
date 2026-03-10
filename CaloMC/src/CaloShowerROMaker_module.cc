@@ -96,7 +96,7 @@ namespace mu2e {
              fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationBuffer       { Name("digitizationBuffer"),       Comment("Digi time buffer for photon propagation inside crystal") };
              fhicl::Atom<float>              crystalNonUniformity     { Name("crystalNonUniformity"),     Comment("LRU parameter 0") };
-             fhicl::Atom<float>              pePerMeV                 { Name("readoutPEPerMeV"),          Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<float>              pePerMeVCsI              { Name("readoutPEPerMeVCsI"),       Comment("Number of pe / MeV for Readout for CsI") };
              fhicl::Atom<float>              pePerMeVLyso             { Name("readoutPEPerMeVLyso"),      Comment("Number of pe / MeV for Readout for LYSO") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
@@ -113,7 +113,7 @@ namespace mu2e {
             digitizationEnd_     (config().digitizationEnd()),
             digitizationBuffer_  (config().digitizationBuffer()),
             crystalNonUniformity_(config().crystalNonUniformity()),
-            pePerMeV_            (config().pePerMeV()),
+            pePerMeVCsI_         (config().pePerMeVCsI()),
             pePerMeVLyso_        (config().pePerMeVLyso()),
             LRUCorrection_       (config().LRUCorrection()),
             BirksCorrection_     (config().BirksCorrection()),
@@ -153,7 +153,7 @@ namespace mu2e {
          float                   digitizationEnd_;
          float                   digitizationBuffer_;
          float                   crystalNonUniformity_;
-         float                   pePerMeV_;
+         float                   pePerMeVCsI_;
          float                   pePerMeVLyso_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
@@ -279,7 +279,7 @@ namespace mu2e {
 
               bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
                                         crystalID) != CaloConst::_caphriId.end();
-              float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeV_;
+              float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
 
               // Generate individual PEs and their arrival times
               for (int i=0; i<nROs; ++i)

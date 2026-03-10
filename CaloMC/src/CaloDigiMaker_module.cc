@@ -66,7 +66,7 @@ namespace mu2e {
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
              fhicl::Atom<float>         digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
-             fhicl::Atom<float>         pePerMeV             { Name("readoutPEPerMeV"),        Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<float>         pePerMeVCsI          { Name("readoutPEPerMeVCsI"),     Comment("Number of pe / MeV for Readout for CsI") };
              fhicl::Atom<float>         pePerMeVLyso         { Name("readoutPEPerMeVLyso"),    Comment("Number of pe / MeV for Readout for LYSO") };
              fhicl::Atom<float>         MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
@@ -87,7 +87,7 @@ namespace mu2e {
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
-            pePerMeV_          (config().pePerMeV()),
+            pePerMeVCsI_       (config().pePerMeVCsI()),
             pePerMeVLyso_      (config().pePerMeVLyso()),
             MeVToADC_          (config().MeVToADC()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
@@ -132,7 +132,7 @@ namespace mu2e {
        unsigned                bufferDigi_;
        float                   startTimeBuffer_;
        int                     maxADCCounts_;
-       float                   pePerMeV_;
+       float                   pePerMeVCsI_;
        float                   pePerMeVLyso_;
        float                   MeVToADC_;
        CaloPulseShape          pulseShape_;
@@ -231,12 +231,9 @@ namespace mu2e {
   bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
                                  const ProtonBunchTimeMC& pbtmc)
   {
-      bool  isEmpty(true);
-
-      int crystalID = CaloSiPMId(iRO).crystal().id();
-      bool isCaphri = std::find(CaloConst::_caphriId.begin(),CaloConst::_caphriId.end(),
-                                crystalID) != CaloConst::_caphriId.end();
-      auto pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeV_;
+      bool isEmpty  = true;
+      bool isCaphri = CaloSiPMId(iRO).crystal().isCaphri();
+      auto pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
       auto scaleFactor = MeVToADC_/pePerMeV;
 
       for (const auto& CaloShowerRO : CaloShowerROs)
