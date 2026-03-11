@@ -20,7 +20,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -173,7 +172,7 @@ namespace mu2e {
     auto bnom = bfmgr->getBField(vpoint_mu2e);
     _bdir = bnom.unit();
     // B in units of mm/MeV/c
-    _bnom = bnom.mag()*BField::mmTeslaToMeVc;
+    _bnom = bnom.mag()*CLHEP::c_light/1000.0;
     // pre-compute momentum thresholds for straight, arc, and curler
     const Tracker& tracker = *GeomHandle<Tracker>();
     _rstraw = tracker.strawProperties()._strawInnerRadius;
@@ -320,7 +319,7 @@ namespace mu2e {
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();
     auto pperp = pdir.perp(_bdir);
-    float bendrms = 0.5*std::min(_rstraw,mom*pperp/_bnom); // bend radius spread.  0.5 factor givs RMS of a circle
+    float bendrms = 0.5*std::min(_rstraw,mom*pperp/std::max(_bnom,float(1e-6))); // bend radius spread.  0.5 factor givs RMS of a circle. Protect against 0 field
     // only sigitta perp to the wire counts
     float sint = (_bdir.cross(pdir).cross(straw.getDirection())).mag();
     static const float prms(1.0/(12.0*sqrt(5.0))); // RMS for a parabola.  This includes a factor 1/8 for the sagitta calculation too

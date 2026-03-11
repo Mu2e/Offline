@@ -15,7 +15,6 @@ cet_build_plugin(CaloExample art::module
       art_root_io::TFileService_service
       Offline::CaloCluster
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -35,7 +34,6 @@ cet_build_plugin(CaloNeutron art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -47,7 +45,6 @@ cet_build_plugin(CaloNNDiag art::module
       art_root_io::TFileService_service
       Offline::CaloCluster
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts

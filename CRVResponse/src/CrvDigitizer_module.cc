@@ -10,6 +10,7 @@
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 
+#include "Offline/CRVConditions/inc/CRVADCRange.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -109,7 +110,7 @@ namespace mu2e
         //the waveform generator makes sure that the start time - TDC0time is a multiple of the digitization period
         startTime-=TDC0time;
 
-        _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod);
+        _makeCrvDigis->SetWaveform(voltages,_ADCconversionFactor,_pedestal, startTime, CRVDigitizationPeriod, CRVMinADC, CRVMaxADC);
         const std::vector<int16_t> &ADCs = _makeCrvDigis->GetADCs();
         uint16_t startTDC = _makeCrvDigis->GetTDC();
 

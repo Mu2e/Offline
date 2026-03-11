@@ -1,7 +1,6 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
@@ -14,29 +13,29 @@
 
 namespace mu2e {
 
-   CaloPhotonPropagation::CaloPhotonPropagation(CLHEP::HepRandomEngine& engine) :
+   CaloPhotonPropagation::CaloPhotonPropagation(const std::string& fileName, const std::string& histName, CLHEP::HepRandomEngine& engine) :
       timeProp_ (),
       cdf_      (),
       nTimeDiv_ (0),
       nZDiv_ (0),
       dzTime_   (0),
       randFlat_ (engine),
+      fileName_(fileName),
+      histName_(histName),
       lightSpeed_(300)
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloPhotonPropagation::buildTable()
    {
-       //prepare structure for scintillating photon time propagation generation
-       ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-       std::string fileName = calorimeterCalibrations->propagFileName();
-       std::string histName = calorimeterCalibrations->propagHistName();
+       ConfigFileLookupPolicy resolveFullPath;
+       std::string fullFileName = resolveFullPath(fileName_);
 
        TH2F *hist(0);
-       TFile file(fileName.c_str());
-          if (file.IsOpen()) hist = (TH2F*) file.Get(histName.c_str());
-          if (!hist) throw cet::exception("CATEGORY")<<"CaloROStepMaker:: Hitsogram "<<histName.c_str()
-                                                     <<" from file "<<fileName.c_str()<<" does not exist\n";
+       TFile file(fullFileName.c_str());
+          if (file.IsOpen()) hist = (TH2F*) file.Get(histName_.c_str());
+          if (!hist) throw cet::exception("CATEGORY")<<"CaloROStepMaker:: Histogram "<<histName_.c_str()
+                                                     <<" from file "<<fileName_.c_str()<<" does not exist\n";
           hist->SetDirectory(0);
        file.Close();
 

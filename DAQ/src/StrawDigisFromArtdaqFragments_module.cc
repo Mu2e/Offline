@@ -38,6 +38,7 @@
 #include <artdaq-core/Data/ContainerFragment.hh>
 
 #include <iostream>
+#include <format>
 
 #include <regex>
 #include <string>
@@ -319,8 +320,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
 
         if (debugMode_ and (debugBit_[0] > 0)) {
-          print_(std::format("-- fragment number:{} version:{} data_size:{} type:{} DTC_SubEventHeader.size:{}",
-                             ifrag,frag->version(),frag->dataSizeBytes(),frag->typeString(),sizeof(DTCLib::DTC_SubEventHeader)));
+          print_(std::format("-- fragment number:{} version:{} timestamp:{} data_size:{} type:{} DTC_SubEventHeader.size:{}",
+                             ifrag,frag->version(),frag->timestamp(),frag->dataSizeBytes(),
+                             frag->typeString(),sizeof(DTCLib::DTC_SubEventHeader)));
           print_fragment(frag);
         }
 

@@ -4,7 +4,6 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardProducers.fcl"
 #include "Offline/fcl/standardServices.fcl"
-#include "Offline/TrkDiag/fcl/prolog.fcl"
 
 process_name : TestFindMCPrimary
 source : { module_type : RootInput }

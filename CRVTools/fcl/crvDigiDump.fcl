@@ -36,5 +36,3 @@ physics : {
 
   ana : [ crvDigiDump ]
   end_paths : [ ana ]
-}
-

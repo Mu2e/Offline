@@ -10,7 +10,6 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
-#include "BTrk/TrkBase/TrkErrCode.hh"
 #include "TH1F.h"
 #include "Math/VectorUtil.h"
 #include "Math/Vector2D.h"

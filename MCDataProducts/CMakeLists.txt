@@ -22,9 +22,8 @@ cet_make_library(
       src/StepPointMC.cc
       src/StrawDigiMC.cc
       src/SurfaceStep.cc
-      src/TrackSummaryTruthAssns.cc
     LIBRARIES PUBLIC
-      
+
       Offline::DataProducts
       Offline::RecoDataProducts
 )
@@ -34,6 +33,11 @@ art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
      DICTIONARY_LIBRARIES
       Offline::MCDataProducts
-)
+    )
+
+if( BUILD_PYTHON_INTERFACE )
+    mu2e_swig(MCDataProducts_swig src/pywrap.i MCDataProducts)
+endif()
+
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

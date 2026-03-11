@@ -12,7 +12,6 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 
-#include "Offline/TrkReco/inc/TrkPrintUtils.hh"
 
 using namespace std;
 

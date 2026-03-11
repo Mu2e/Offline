@@ -56,6 +56,7 @@ BEGIN_PROLOG
                                         //threshold used to determine the pulse area for the no-fit option
       doublePulseSeparation     : 0.25  //25% of both ADC peaks of the double pulse
                                         //threshold at which double pulses can be separated in the no-fit option
+      useTimeOffsetDB           : true   //applies time offsets from the DB
       timeOffsetScale           : 1.0    //scale factor for the time offsets from the database
                                          //examples:
                                          //-if a database table of measured time offset is used,
@@ -63,10 +64,6 @@ BEGIN_PROLOG
                                          //-if a database table of a random gaussian distribution of time offsets
                                          // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                          // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
-      timeOffsetCutoffLow       :-3.0    //the time offsets are cut off at -3ns
-      timeOffsetCutoffHigh      : 3.0    //the time offsets are cut off at +3ns
-                                         //note: if measured time offsets are used, the cutoffs should be set to the maximum values
-      useTimeOffsetDB           : true   //applies time offsets from the DB
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
     }
 
@@ -76,7 +73,6 @@ BEGIN_PROLOG
       verboseLevel                     : 0
       crvRecoPulsesModuleLabel         : "CrvRecoPulses"
       #cluster settings
-      initialClusterMaxDistance        : 250 //mm
       clusterMaxTimeDifference         : 60  //ns                               //use looser cut for cluster time values
       clusterMinOverlapTime            : 10  //ns //when pulse overlap is used  //to allow hits from SiPMs of opposite
                                                                                 //counter ends to be included
@@ -92,9 +88,10 @@ BEGIN_PROLOG
           minOverlapTime                   : 30  //30ns (=at least 3 ADC samples)
           minSlope :-2
           maxSlope : 5  //width direction over thickness direction
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 200  //200 PEs   //higher threshold for this sector
+          initialClusterMaxDistance : 250 //mm
         },
         {
           CRVSector : "R2"
@@ -103,11 +100,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0  //0 PEs (=no cut on total PEs of a coincidence cluster)
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "R3"
@@ -116,11 +114,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "R4"
@@ -129,11 +128,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "R5"
@@ -142,11 +142,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "R6"
@@ -155,11 +156,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "L1"
@@ -170,9 +172,10 @@ BEGIN_PROLOG
           minOverlapTime : 30
           minSlope :-5
           maxSlope : 3
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 100   //higher threshold
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "L2"
@@ -181,11 +184,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "L3"
@@ -194,37 +198,40 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T1"
-          PEthreshold : 8
+          PEthreshold : 15
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
           minSlope :-5
           maxSlope : 2
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 60   //higher threshold
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T2"
-          PEthreshold : 8
+          PEthreshold : 15
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
           minSlope :-5
           maxSlope : 2
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 60   //higher threshold
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T3"
@@ -235,9 +242,10 @@ BEGIN_PROLOG
           minOverlapTime : 30
           minSlope :-4
           maxSlope : 3
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T4"
@@ -246,11 +254,12 @@ BEGIN_PROLOG
           maxTimeDifference : 20  //to increase veto efficiency
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "T5"
@@ -259,102 +268,110 @@ BEGIN_PROLOG
           maxTimeDifference : 20  //to increase veto efficiency
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 250
         },
         {
           CRVSector : "E1"
-          PEthreshold : 12
+          PEthreshold : 20
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
           minOverlapTimeAdjacentPulses : 40   //higher threshold
           minOverlapTime : 30
           minSlope : 0
           maxSlope : 3
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 200  //higher threshold
+          initialClusterMaxDistance : 100
         },
         {
           CRVSector : "E2"
-          PEthreshold : 12
+          PEthreshold : 20
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
           minOverlapTimeAdjacentPulses : 40   //higher threshold
           minOverlapTime : 30
           minSlope : 0
           maxSlope : 3
-          maxSlopeDifference : 4
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 200  //higher threshold
+          initialClusterMaxDistance : 100
         },
         {
           CRVSector : "U"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
-          maxTimeDifference : 20  //because of single-ended readout
+          maxTimeDifference : 30  //because of single-ended readout
           minOverlapTimeAdjacentPulses : 40   //higher threshold
           minOverlapTime : 30
           minSlope : -2
-          maxSlope :  0.01    //so that all slopes of 0 are included even if they appear as e.g. 1.0e-14
-          maxSlopeDifference : 4
+          maxSlope :  0.01    //so that all slopes of 0 are included even if they appear as e.g. 1.0e-15
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 60  //higher threshold
+          initialClusterMaxDistance : 100
         },
         {
           CRVSector : "D1"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
-          maxTimeDifference : 10
+          maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "D2"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
-          maxTimeDifference : 10
+          maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "D3"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
-          maxTimeDifference : 10
+          maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "D4"
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
-          maxTimeDifference : 10
+          maxTimeDifference : 20
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "C1"
@@ -363,11 +380,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "C2"
@@ -376,11 +394,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "C3"
@@ -389,11 +408,12 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         },
         {
           CRVSector : "C4"
@@ -402,18 +422,19 @@ BEGIN_PROLOG
           maxTimeDifference : 10
           minOverlapTimeAdjacentPulses : 30
           minOverlapTime : 30
-          minSlope :-11
-          maxSlope : 11
-          maxSlopeDifference : 4
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
           coincidenceLayers : 3
           minClusterPEs : 0
+          initialClusterMaxDistance : 150
         }
       ]
       #other settings
-      usePulseOverlaps                 : true   //automatically uses noFitReco option
-      useNoFitReco                     : true
+      usePulseOverlaps                 : false  //automatically uses noFitReco option
+      useNoFitReco                     : false
       usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
-      bigClusterThreshold              : 500
+      bigClusterThreshold              : 50000  //disables it
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)

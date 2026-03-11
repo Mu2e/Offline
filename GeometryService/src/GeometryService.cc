@@ -148,9 +148,6 @@ namespace mu2e {
   GeometryService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
-      if( _run_count == 2 ){
-        mf::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";
-      }
       return;
     }
 

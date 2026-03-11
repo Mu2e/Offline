@@ -7,6 +7,8 @@
 #include "cetlib/map_vector.h"
 #include "boost/array.hpp"
 #include <vector>
+#include <utility>
+#include <TString.h>
 
 // PDG
 #include "Offline/DataProducts/inc/PDGCode.hh"
@@ -58,6 +60,10 @@
 // STM
 #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
+
+// Filter
+#include "Offline/DataProducts/inc/FilterFraction.hh"
+#include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
 
 // General
 #include "Offline/DataProducts/inc/SurfaceId.hh"

@@ -16,18 +16,6 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 
-//For Drift:
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BbrGeom/Trajectory.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/BbrGeom/HepPoint.h"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-
 //Fitting
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 #include "Offline/Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"

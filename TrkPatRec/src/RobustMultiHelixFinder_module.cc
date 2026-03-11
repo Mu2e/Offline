@@ -22,6 +22,7 @@
 
 #include <numeric>
 #include <stdint.h>
+#include <cmath>
 
 
 namespace {
@@ -437,6 +438,7 @@ chi2dXY = bestHelix.fita_zt_;
           float denominator = 2*(x2*y3 - x3*y2);
           float numeratorX  = x12x12y12y12*y3 - x13x13y13y13*y2;
           float numeratorY  = x13x13y13y13*x2 - x12x12y12y12*x3;
+          if (std::abs(denominator)<1e-9) continue;
 
           float centerX = numeratorX/denominator+x1;
           float centerY = numeratorY/denominator+y1;
@@ -477,7 +479,7 @@ chi2dXY = bestHelix.fita_zt_;
              else if (chisq<val_prev) {val_prev = chisq; ilast=i;}
           }
           if (ilast<chcol.size()) {stubby.push_back(hits[ilast]);nsh += chcol[hits[ilast]].nStrawHits(); sumChisq+=val_prev;}
-          sumChisq /= nsh;
+          if (nsh>0) sumChisq /= nsh;
 
           art::Ptr<CaloCluster> thisCaloPtr{};
           if (caloPtr && caloPtr->energyDep()>ccMinEnergy_) {
@@ -557,7 +559,7 @@ chi2dXY = bestHelix.fita_zt_;
     //perform dz/dphi fit and filter hits based on the fit result
     init_dzdp(helix,chcol,helicity);
     fit_dzdp(helix,chcol,helicity);
-    if (abs(helix.fita_zp_)<1e-3) {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
+    if (std::abs(helix.fita_zp_)<1e-3) {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
     filterZPhi(helix,chcol,maxDPhiHelFit_);
 
     //Perform a dz/dt fit and filter hits based on the fit result
@@ -589,6 +591,8 @@ chi2dXY = bestHelix.fita_zt_;
     //final dz/dphi and dz/dt refit
     fit_dzdp(helix,chcol,helicity);
     fit_dzdt(helix,chcol);
+    if (std::abs(helix.fita_zp_)<1e-3 || std::abs(helix.fita_zt_)<1e-3) {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
+    if (!std::isnormal(helix.fita_zp_)  || !std::isnormal(helix.fita_zt_))  {helix.hitIndices_.clear(); helix.nStrawHits_=0; return;}
 
     helix.nStrawHits_=0;
     for (const auto& ich : helix.hitIndices_) helix.nStrawHits_ += chcol[ich].nStrawHits();
@@ -691,6 +695,7 @@ chi2dXY = bestHelix.fita_zt_;
 
     float fa = zphiFitter.fa();
     float fb = zphiFitter.fb();
+
     if ((helicity==Helicity::poshel && fa<1e-3) || (helicity==Helicity::neghel  && fa>-1e-3)) return;
 
     circle.fita_zp_ = fa;
@@ -727,8 +732,8 @@ chi2dXY = bestHelix.fita_zt_;
        --it;
        unsigned ich = circle.hitIndices_[it];
        float phi    = polyAtan2(chcol[ich].pos().y() - circle.y_,chcol[ich].pos().x() - circle.x_);
-       int   n      = round((phi-(chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_)/6.293185);
-       float delta  = abs((chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_-phi+n*6.293185);
+       int   n      = round((phi-(chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_)/6.283185);
+       float delta  = abs((chcol[ich].pos().z()-circle.fitb_zp_)/circle.fita_zp_-phi+n*6.283185);
        if (delta < maxDphi) continue;
 
        circle.remove(it,  chcol[ich].nStrawHits());

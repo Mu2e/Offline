@@ -2,7 +2,7 @@
 #define RecoDataProducts_CosmicTrackSeed_hh
 
 // Mu2e includes
-#include "BTrk/TrkBase/TrkT0.hh"
+#include "Offline/BTrkLegacy/inc/TrkT0.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
@@ -34,7 +34,8 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed> const& trkstrawhits() const { return _trkstrawhits;}
     std::vector<TrkStrawHitSeed>  _trkstrawhits; //vector of associated trkstrawhits
   };
-   typedef std::vector<mu2e::CosmicTrackSeed> CosmicTrackSeedCollection;
+   using CosmicTrackSeedCollection = std::vector<mu2e::CosmicTrackSeed>;
+   using CosmicTrackSeedPtrCollection = std::vector<art::Ptr<mu2e::CosmicTrackSeed>>;
 }
 
 #endif /* RecoDataProducts_CosmicTrackSeed_hh */

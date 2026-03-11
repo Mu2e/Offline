@@ -19,6 +19,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
+#include "cetlib_except/exception.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -28,8 +29,6 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 using namespace std;
 
@@ -89,50 +88,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool CosmicFilter::filter(art::Event& anEvent) {
-
-    const KalRep*   trk;
-    double          d0, z0;
-    int             n_good_tracks;
-
-    bool rc = false;
-
-    art::Handle<KalRepPtrCollection> krepsHandle;
-    anEvent.getByLabel(fTrkPatRecModuleLabel,"DownstreameMinus", krepsHandle);
-    const KalRepPtrCollection*  list_of_kreps(0);
-
-
-    _nTracks = 0;
-    if (krepsHandle.isValid()) {
-      list_of_kreps = krepsHandle.product();
-      _nTracks      = list_of_kreps->size();
-    }
-
-
-    n_good_tracks = 0;
-    for (int i=0; i<_nTracks; i++) {
-      trk = list_of_kreps->at(i).get();
-
-      d0 = trk->helix(0).d0();
-      z0 = trk->helix(0).z0();
-
-      _hist.fTrackD0->Fill(d0);
-      _hist.fTrackZ0[0]->Fill(z0);
-      if (fabs(d0) < fMaxD0) _hist.fTrackZ0[1]->Fill(z0);
-
-      if ((fabs(d0) < fMaxD0) && (fabs(z0) < fMaxZ0)) {
-        n_good_tracks += 1;
-      }
-
-      CLHEP::Hep3Vector mom = trk->momentum(0); // at S=0
-      _hist.fP->Fill(mom.mag());
-    }
-
-    _hist.fNTracks->Fill(_nTracks);
-    _hist.fNGoodTracks->Fill(n_good_tracks);
-
-    rc = (n_good_tracks > 0);
-
-    return rc;
+    throw cet::exception("TRIGGER") << "This module needs to ben migrated to  KinKal" << std::endl;
+    return false;
   }
 }
 

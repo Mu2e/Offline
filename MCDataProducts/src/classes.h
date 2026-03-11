@@ -66,7 +66,6 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 
 // tracking
-#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 
 // CRV

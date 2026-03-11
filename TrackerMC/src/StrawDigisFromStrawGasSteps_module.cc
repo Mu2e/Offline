@@ -27,7 +27,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
-#include "BTrk/BField/BField.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"

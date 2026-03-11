@@ -134,6 +134,7 @@ namespace mu2e {
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
       fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+      fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
 
     public:
@@ -159,6 +160,7 @@ namespace mu2e {
     int print_;
     float seedmom_;
     PDGCode::type fpart_;
+    TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -195,6 +197,8 @@ namespace mu2e {
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
+      std::string fdir;
+      if(settings().fitDirection(fdir))fdir_ = fdir;
       // collection handling
       for(const auto& seedtag : settings().modSettings().seedCollections()) { seedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(seedtag)); }
       produces<KKTRKCOL>();
@@ -355,6 +359,13 @@ namespace mu2e {
     KinKal::VEC4 pos(hseed._track.MinuitParams.A0, 0, hseed._track.MinuitParams.B0, hseed._t0._t0);
     XYZVectorF mom3(hseed._track.MinuitParams.A1, -1, hseed._track.MinuitParams.B1);
     mom3 = mom3.Unit()*seedmom_;
+    if (fdir_ == TrkFitDirection::FitDirection::downstream){
+      if (mom3.z() < 0)
+        mom3 *= -1;
+    }else if (fdir_ == TrkFitDirection::FitDirection::upstream){
+      if (mom3.z() > 0)
+        mom3 *= -1;
+    }
     KinKal::MOM4 mom(mom3.x(),mom3.y(),mom3.z(),mass_);
 
     auto seedtraj = KTRAJ(pos,mom,charge_,bnom,Mu2eKinKal::timeBounds(hseed.hits()));

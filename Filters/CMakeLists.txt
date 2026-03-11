@@ -7,22 +7,32 @@ cet_build_plugin(BunchIntensityFilter art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(CaloPileupDtsFilter art::module
+    REG_SOURCE src/CaloPileupDtsFilter_module.cc
+    LIBRARIES REG
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(CaloDtsClusterFilter art::module
+    REG_SOURCE src/CaloDtsClusterFilter_module.cc
+    LIBRARIES REG
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      ROOT::Hist
+)
+
 cet_build_plugin(CaloShowerSimFilter art::module
     REG_SOURCE src/CaloShowerSimFilter_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::MCDataProducts
-)
-
-cet_build_plugin(ChooseTrackFilter art::module
-    REG_SOURCE src/ChooseTrackFilter_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::CalorimeterGeom
-      Offline::DataProducts
-      Offline::GeometryService
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
 )
 
 cet_build_plugin(CompressPhysicalVolumes art::module
@@ -34,8 +44,7 @@ cet_build_plugin(CompressPhysicalVolumes art::module
 
 cet_build_plugin(CompressStepPointMCs art::module
     REG_SOURCE src/CompressStepPointMCs_module.cc
-    LIBRARIES REG      
-      Offline::ConditionsService
+    LIBRARIES REG
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
@@ -44,7 +53,6 @@ cet_build_plugin(CosmicMixingFilter art::module
     REG_SOURCE src/CosmicMixingFilter_module.cc
     LIBRARIES REG
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
@@ -56,7 +64,6 @@ cet_build_plugin(CosmicMixingFilter art::module
 cet_build_plugin(DetectorStepFilter art::module
     REG_SOURCE src/DetectorStepFilter_module.cc
     LIBRARIES REG
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
 )
@@ -237,14 +244,16 @@ cet_build_plugin(StrawDigiMCFilter art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(TrackerStepPointFilter art::module
-    REG_SOURCE src/TrackerStepPointFilter_module.cc
+cet_build_plugin(StrawGasStepFilter art::module
+    REG_SOURCE src/StrawGasStepFilter_module.cc
     LIBRARIES REG
       Offline::MCDataProducts
+      Offline::ProditionsService
+      Offline::TrackerConditions
 )
 
-cet_build_plugin(TrackSummaryTruthUpdater art::module
-    REG_SOURCE src/TrackSummaryTruthUpdater_module.cc
+cet_build_plugin(TrackerStepPointFilter art::module
+    REG_SOURCE src/TrackerStepPointFilter_module.cc
     LIBRARIES REG
       Offline::MCDataProducts
 )
@@ -253,13 +262,6 @@ cet_build_plugin(TriggerResultsFilter art::module
     REG_SOURCE src/TriggerResultsFilter_module.cc
     LIBRARIES REG
       Offline::Mu2eUtilities
-)
-
-cet_build_plugin(TrkPatRecFilter art::module
-    REG_SOURCE src/TrkPatRecFilter_module.cc
-    LIBRARIES REG
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
 )
 
 cet_build_plugin(TrkQualFilter art::module

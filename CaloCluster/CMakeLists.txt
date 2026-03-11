@@ -48,7 +48,6 @@ cet_build_plugin(CaloTrigger art::module
       Offline::CaloCluster
       
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::RecoDataProducts
 )

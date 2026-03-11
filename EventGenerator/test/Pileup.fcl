@@ -39,7 +39,7 @@ physics : {
             },
             {
                spectrum: {
-                  spectrumFileName: "Offline/ConditionsService/data/neutronSpectrum.txt"
+                  spectrumFileName: "Offline/EventGenerator/data/neutronSpectrum.txt"
                   spectrumShape: "tabulated"
                }
                spectrumVariable: "kineticEnergy"

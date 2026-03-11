@@ -11,7 +11,8 @@ namespace mu2e {
   class CaloTemplateWFUtil  {
 
      public:
-        CaloTemplateWFUtil(double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel=-1);
+        CaloTemplateWFUtil(const std::string& pulseFileName, const std::string& pulseHistName,
+                           double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel=-1);
 
         void                        initialize    ();
         void                        setXYVector   (const std::vector<double>& xvec, const std::vector<double>& yvec);

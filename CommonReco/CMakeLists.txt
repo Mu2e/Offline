@@ -1,7 +1,6 @@
 cet_build_plugin(SelectReco art::module
   REG_SOURCE src/SelectReco_module.cc
   LIBRARIES REG
-  Offline::ConditionsService
   Offline::DataProducts
   Offline::GeometryService
   Offline::ProditionsService

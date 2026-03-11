@@ -1,0 +1,66 @@
+// Based off Mu2eG4/geom/geom_run1_a.txt
+// Run1B version with Trackr First
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+//-------------------------------------------
+// Run1B specific overrides
+//-------------------------------------------
+
+// Disable proton absorber, STM, and TSdA for Run1B
+bool hasProtonAbsorber  = false;
+bool hasSTM             = false;
+bool hasTSdA            = false;
+
+// Disable DS3 service pipes completely for Run1B
+bool ds.hasServicePipes = false;
+// Disable rails completely for Run1B (use very small value to avoid zero-length solid errors)
+double ds.lengthRail2   = 0.1; // Effectively disabled - DS2 rails
+double ds.lengthRail3   = 0.1; // Effectively disabled - DS3 rails
+
+// Virtual detector option (set to false to disable)
+bool hasVirtualDetector = true; // Re-enable virtual detectors
+
+// Stopping target configuration
+bool stoppingTarget.foilTarget_supportStructure = false;
+vector<double> stoppingTarget.halfThicknesses = { 3.175 };
+double stoppingTarget.holeRadius = 0.001;//21.5;
+
+// Coll51 material override - set to vacuum
+string ts.coll5.material1Name = "DSVacuum";
+
+// Calorimeter and tracker position settings - matching dpalo/main
+// dpalo uses tracker at 7000 and calorimeter at 8700/11220
+double calorimeter.caloMotherZ0 = 8700;
+double calorimeter.caloMotherZ1 = 11220;
+vector<double> calorimeter.diskZMotherShift   = {0.0,2000};
+// Set stopping target position AFTER calorimeter configuration
+double stoppingTarget.z0InMu2e = 4185;
+vector<double> stoppingTarget.radii  =  {600.00};
+// Tracker positions - matching dpalo/main
+double tracker.mother.z0          = 7000;  // mm - dpalo position
+double tracker.mother.halfLength  = 1640;  // mm - increased to fully contain end rings (upstream +1606±25.4, downstream -1614±25.4)
+double tracker.z0                 = 7000;
+
+// Place tracker and calorimeter in DS2Vacuum (instead of DS3Vacuum) for Run1B
+// This extends DS2Vacuum towards MBS and fixes the overlap issue
+bool tracker.inDS2Vacuum = true;
+bool calorimeter.inDS2Vacuum = true;
+
+// Extend DS2Vacuum to contain tracker and calorimeter at dpalo positions
+// DS2/DS3 split = torusRadius + 2*TS5_halfLength + 2*DS2_halfLength
+// Tracker extends to ~8635 mm, calorimeter to 11220 mm
+// Need DS2Vacuum to extend beyond calorimeter end
+// Default is 2080 mm, increasing to ~3646 mm extends DS2Vacuum to contain calorimeter
+double ds2.halfLength = 3646; // Extended to contain calorimeter ending at 11220 mm
+
+// Final bearing block adjustments to eliminate all remaining overlaps
+// Move X centers further outward to ±550 mm and reduce size to 30% of original
+vector<double> ds.outlineBBlockU = {16.5, 18.2, 18.2, 13.0, 29.25, 29.25, 39.0, 29.25, -29.25, -39.0, -29.25, -29.25, -13.0, -18.2, -18.2, -16.5};
+vector<double> ds.outlineBBlockV = {0.0, -3.25, -6.5, -14.95, -14.95, -3.25, -3.25, 13.0, 13.0, -3.25, -3.25, -14.95, -14.95, -6.5, -3.25, 0.0};
+vector<double> ds.xCentersBBlock = {550, -550, 550, -550, 550, -550, 550, -550, 550, -550, 550, -550, 550, -550, 550, -550, 550, -550, 550, -550};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

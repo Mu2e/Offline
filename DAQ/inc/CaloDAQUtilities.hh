@@ -60,7 +60,7 @@ public:
       return "Unknown";
     }
   }
-  
+
 
   CaloHitError isHitGood(std::pair<CalorimeterDataDecoder::CalorimeterHitDataPacket, std::vector<uint16_t>> const& Hit) {
     if (Hit.first.Reserved1 != 0xAAA)
@@ -137,7 +137,7 @@ public:
 
 
   // Function to get art fragments from event
-  artdaq::Fragments getFragments(art::Event& event) {
+  artdaq::Fragments getFragments(art::Event const& event) {
 
     artdaq::Fragments fragments;
     artdaq::FragmentPtrs containerFragments;

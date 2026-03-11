@@ -26,6 +26,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
@@ -63,6 +64,8 @@ namespace mu2e {
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time);
     //----------------------------------------------------------------
   private:
+    const PDGCode::type electronId_ = PDGCode::e_minus; // for mass only
+
     double muonLifeTime_;
     art::ProductToken<SimParticleCollection> const simsToken_;
     unsigned verbosity_;
@@ -75,8 +78,8 @@ namespace mu2e {
 
     double _mass;
     BinnedSpectrum    spectrum_;
-    RandomUnitSphere*   randomUnitSphere_;
-    CLHEP::RandGeneral* randSpectrum_;
+    std::unique_ptr<RandomUnitSphere>   randomUnitSphere_;
+    std::unique_ptr<CLHEP::RandGeneral> randSpectrum_;
     double endPointEnergy_;
 
   };
@@ -90,8 +93,8 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
     , pdgId_(conf().pdgId())
+    ,_mass(GlobalConstantsHandle<ParticleDataList>()->particle(electronId_).mass())
     , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
-
   {
     produces<mu2e::StageParticleCollection>();
     pid_ = static_cast<PDGCode::type>(pdgId_);
@@ -106,8 +109,8 @@ namespace mu2e {
         <<"LeadingLogGenerator::produce(): No process associated with chosen PDG id : "<<pid_<<std::endl;
     }
 
-    randomUnitSphere_ = new RandomUnitSphere(eng_);
-    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+    randomUnitSphere_ = std::make_unique<RandomUnitSphere>(eng_);
+    randSpectrum_ = std::make_unique<CLHEP::RandGeneral>(eng_, spectrum_.getPDF(), spectrum_.getNbins());
   }
 
   //================================================================
@@ -139,7 +142,6 @@ namespace mu2e {
     const double p = sqrt((energy + _mass) * (energy - _mass));
     CLHEP::Hep3Vector p3 = randomUnitSphere_->fire(p);
     CLHEP::HepLorentzVector fourmom(p3, energy);
-
 
     output->emplace_back(mustop,
                        process_,
