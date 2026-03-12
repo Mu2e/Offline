@@ -1,5 +1,0 @@
-#include "Production/JobConfig/recoMC/OnSpill.fcl"
-services.DbService.purpose: MDC2025_best
-services.DbService.version: v1_4
-outputs.LoopHelixOutput.fileName: "mcs.mu2e.test.v1.sequencer.art"
-//services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_run1_a.txt"
