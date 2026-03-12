@@ -18,13 +18,15 @@ namespace mu2e {
   class STMWaveformDigi {
   public:
     // Initialise all variables
-    STMWaveformDigi() : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(std::vector<int16_t>()) {};
+    STMWaveformDigi() : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(std::vector<int16_t>()), _tmp_sim_time(0) {};
     // Constructor for timing plus trig offset
-    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _adcs(adcs), _tmp_sim_time(0) {};
     // Constructor for peak fitting
-    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, double peak_fitTime1, double peak_fitTime2, double peak_sep, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(peak_fitTime1), _peak_fitTime2(peak_fitTime2), _peak_sep(peak_sep), _adcs(adcs) {};
+    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, double peak_fitTime1, double peak_fitTime2, double peak_sep, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(peak_fitTime1), _peak_fitTime2(peak_fitTime2), _peak_sep(peak_sep), _adcs(adcs), _tmp_sim_time(0) {};
     // Basic constructor
-    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(adcs) {};
+    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(adcs), _tmp_sim_time(0) {};
+    // Constructor for simulation validation
+    STMWaveformDigi(double sim_time, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(adcs), _tmp_sim_time(sim_time) {};
 
     int16_t                     DetID  () const { return _DetID; }
     uint64_t                    EWT    () const { return _EWT; }
@@ -35,6 +37,7 @@ namespace mu2e {
     double                      peak_fitTime2 () const { return _peak_fitTime2; }
     double                      peak_sep      () const { return _peak_sep; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
+    double                      tmp_sim_time() const { return _tmp_sim_time; }
     
   private:
     int16_t  _DetID;
@@ -46,6 +49,7 @@ namespace mu2e {
     double   _peak_fitTime2; // fit time of second rising edge (ns)
     double   _peak_sep; // separation time (ns)
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
+    double   _tmp_sim_time; // temporary storage of sim time for validation (ns)
   };
 
   typedef std::vector<STMWaveformDigi> STMWaveformDigiCollection;
