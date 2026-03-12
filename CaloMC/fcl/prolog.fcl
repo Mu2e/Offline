@@ -21,7 +21,7 @@ CaloMC : {
       digiSampling            : @local::HitMakerDigiSampling
       nMaxFragment            : 1000
       minPeakADC              : @local::HitMakerMinPeakADC
-      readoutPEPerMeV         : @local::readoutPEPerMeV
+      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
       MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
@@ -55,7 +55,8 @@ CaloMC : { @table::CaloMC
       digitizationEnd          : @local::HitMakerDigitizationEnd
       digitizationBuffer       : 10
       crystalNonUniformity     : 1.05
-      readoutPEPerMeV          : @local::readoutPEPerMeV
+      readoutPEPerMeVCsI       : @local::readoutPEPerMeVCsI
+      readoutPEPerMeVLyso      : @local::readoutPEPerMeVLyso
       LRUCorrection            : true
       BirksCorrection          : true
       PEStatCorrection         : true
@@ -81,7 +82,8 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
-      readoutPEPerMeV         : @local::readoutPEPerMeV
+      readoutPEPerMeVCsI      : @local::readoutPEPerMeVCsI
+      readoutPEPerMeVLyso     : @local::readoutPEPerMeVLyso
       MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }

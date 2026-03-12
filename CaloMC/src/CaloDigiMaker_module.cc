@@ -25,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -60,13 +61,14 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> pbtmcTag             { Name("protonBunchTimeMC"),      Comment("ProtonBunchTimeMC producer") };
              fhicl::Atom<std::string>   pulseFileName        { Name("pulseFileName"),          Comment("Calo pulse file name") };
              fhicl::Atom<std::string>   pulseHistName        { Name("pulseHistName"),          Comment("Calo pulse hist name") };
-             fhicl::Atom<double>        digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
-             fhicl::Atom<double>        digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
+             fhicl::Atom<float>         digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
+             fhicl::Atom<float>         digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
-             fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
-             fhicl::Atom<double>        pePerMeV             { Name("readoutPEPerMeV"),        Comment("Number of pe / MeV for Readout") };
-             fhicl::Atom<double>        MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
+             fhicl::Atom<float>         digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
+             fhicl::Atom<float>         pePerMeVCsI          { Name("readoutPEPerMeVCsI"),     Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<float>         pePerMeVLyso         { Name("readoutPEPerMeVLyso"),    Comment("Number of pe / MeV for Readout for LYSO") };
+             fhicl::Atom<float>         MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
              fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") };
@@ -85,7 +87,8 @@ namespace mu2e {
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
-            pePerMeV_          (config().pePerMeV()),
+            pePerMeVCsI_       (config().pePerMeVCsI()),
+            pePerMeVLyso_      (config().pePerMeVLyso()),
             MeVToADC_          (config().MeVToADC()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
@@ -122,15 +125,16 @@ namespace mu2e {
        const art::ProductToken<CaloShowerROCollection> caloShowerToken_;
        art::InputTag           ewMarkerTag_;
        art::InputTag           pbtmcTag_;
-       double                  digitizationStart_;
-       double                  digitizationEnd_;
-       double                  timeFromProtonsToDRMarker_;
-       double                  digiSampling_;
+       float                   digitizationStart_;
+       float                   digitizationEnd_;
+       float                   timeFromProtonsToDRMarker_;
+       float                   digiSampling_;
        unsigned                bufferDigi_;
-       double                  startTimeBuffer_;
+       float                   startTimeBuffer_;
        int                     maxADCCounts_;
-       double                  pePerMeV_;
-       double                  MeVToADC_;
+       float                   pePerMeVCsI_;
+       float                   pePerMeVLyso_;
+       float                   MeVToADC_;
        CaloPulseShape          pulseShape_;
        CaloWFExtractor         wfExtractor_;
        CLHEP::HepRandomEngine& engine_;
@@ -227,8 +231,10 @@ namespace mu2e {
   bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
                                  const ProtonBunchTimeMC& pbtmc)
   {
-      bool  isEmpty(true);
-      float scaleFactor(MeVToADC_/pePerMeV_);
+      bool isEmpty  = true;
+      bool isCaphri = CaloSiPMId(iRO).crystal().isCaphri();
+      auto pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
+      auto scaleFactor = MeVToADC_/pePerMeV;
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
