@@ -6,6 +6,7 @@ cet_make_library(
       src/SurfaceMap.cc
       src/TestCRV.cc
       src/Tracker.cc
+      src/Calo.cc
     LIBRARIES PUBLIC
       KinKal::Geometry
       Offline::GeneralUtilities
