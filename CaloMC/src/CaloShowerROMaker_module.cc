@@ -367,11 +367,11 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------------------------------
-  // apply a correction of type Energy = ((1-s)*Z/HL+s)*energy where Z position along the crystal, HL is the crystal half-length
-  // and s is the intercept at Z=0 (i.e. non-uniformity factor, e.g. 5% -> s = 1.05)
+  // apply a correction of type Energy = (a*(Z/HL-1)+1)*energy where Z position along the crystal, HL is the crystal half-length
+  // and a is the level of non-uniformity (e.g. 5%)
   float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit)
   {
-      float factor = (1.0-crystalNonUniformity_)*normalizedPosZ + crystalNonUniformity_;
+      float factor = crystalNonUniformity_*(normalizedPosZ-1.0)+1.0;
       float edep   = edepInit*factor;
 
       if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::LRUCorrection] before / after LRU -> edep_corr = "
