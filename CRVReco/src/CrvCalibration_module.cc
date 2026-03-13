@@ -40,6 +40,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
+      fhicl::Atom<bool>        useNZS{Name("useNZS"), Comment("use NZS data"), false};
       fhicl::Atom<int>         histBinsPulseArea{Name("histBinsPulseArea"), Comment("pulseArea histogram bins"), 300};
       fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 300};
       fhicl::Atom<double>      histMaxPulseArea{Name("histMaxPulseArea"), Comment("end range of pulseArea histogram"), 3000.0};
@@ -69,6 +70,7 @@ namespace mu2e
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
+    bool               _useNZS;
     int                _histBinsPulseArea, _histBinsPulseHeight;
     double             _histMaxPulseArea, _histMaxPulseHeight;
     double             _fitRangeStart, _fitRangeEnd;
@@ -92,6 +94,7 @@ namespace mu2e
   CrvCalibration::CrvCalibration(const Parameters& conf) :
     art::EDAnalyzer(conf),
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
+    _useNZS(conf().useNZS()),
     _histBinsPulseArea(conf().histBinsPulseArea()),
     _histBinsPulseHeight(conf().histBinsPulseHeight()),
     _histMaxPulseArea(conf().histMaxPulseArea()),
@@ -200,7 +203,7 @@ namespace mu2e
   void CrvCalibration::analyze(const art::Event& event)
   {
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
-    if(!event.getByLabel(_crvRecoPulsesModuleLabel,"NZS",crvRecoPulseCollection)) return;
+    if(!event.getByLabel(_crvRecoPulsesModuleLabel,(_useNZS?"NZS":""),crvRecoPulseCollection)) return;
 
     //find pedestals and time offsets from first event
     //need to assume that this is only used for calibration runs where both values stay constant over the entire run
