@@ -61,10 +61,10 @@ class DataInterface
                                    //ROOT needs a bare pointer to this object when dealing
                                    //with context menus (the function which gets called
                                    //from the context menu belongs to this object)
-  std::list<boost::shared_ptr<VirtualShape> >       _components;
-  std::map<int, boost::shared_ptr<Straw> >          _straws;
-  std::map<int, boost::shared_ptr<VirtualShape> >   _crystals;
-  std::map<int, boost::shared_ptr<Cube> >           _crvscintillatorbars;
+  std::list<boost::shared_ptr<VirtualShape> >          _components;
+  std::map<size_t, boost::shared_ptr<Straw> >          _straws;
+  std::map<size_t, boost::shared_ptr<VirtualShape> >   _crystals;
+  std::map<size_t, boost::shared_ptr<Cube> >           _crvscintillatorbars;
   std::vector<boost::shared_ptr<Straw> >        _hits;
   std::vector<boost::shared_ptr<VirtualShape> > _crystalhits;
   std::vector<boost::shared_ptr<Cylinder> >     _driftradii;

@@ -137,7 +137,7 @@ public:
 
 
   // Function to get art fragments from event
-  artdaq::Fragments getFragments(art::Event& event) {
+  artdaq::Fragments getFragments(art::Event const& event) {
 
     artdaq::Fragments fragments;
     artdaq::FragmentPtrs containerFragments;

@@ -70,7 +70,7 @@ namespace mu2e {
       unsigned sourceNumber(VirtualDetectorId vid) { return vid.id() - VirtualDetectorId::EMFBoxFront; }
       VirtualDetectorId vdFromSrcNum(unsigned st)  { return VirtualDetectorId(st + VirtualDetectorId::EMFBoxFront); }
 
-      // FIXME: this number is known to ConditionsService, which is not available at beginJob()
+      // FIXME: this number should come from a central source
       const double deBuncherPeriod = 1694.;
 
       //================================================================

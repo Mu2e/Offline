@@ -37,7 +37,6 @@
 #include "Offline/Validation/inc/ValStrawHit.hh"
 #include "Offline/Validation/inc/ValStrawHitFlag.hh"
 #include "Offline/Validation/inc/ValTimeCluster.hh"
-#include "Offline/Validation/inc/ValTrackSummary.hh"
 #include "Offline/Validation/inc/ValTriggerInfo.hh"
 #include "Offline/Validation/inc/ValTriggerResults.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -97,7 +96,6 @@ class Validation : public art::EDAnalyzer {
   std::vector<std::shared_ptr<ValStrawHit>> _stwh;
   std::vector<std::shared_ptr<ValBkgCluster>> _bgcl;
   std::vector<std::shared_ptr<ValBkgQual>> _bgql;
-  std::vector<std::shared_ptr<ValTrackSummary>> _trks;
   std::vector<std::shared_ptr<ValHelixSeed>> _hxsd;
   std::vector<std::shared_ptr<ValKalSeed>> _klsd;
   std::vector<std::shared_ptr<ValStrawHitFlag>> _shfl;
@@ -157,7 +155,6 @@ void mu2e::Validation::analyze(art::Event const& event) {
   analyzeProduct<TimeClusterCollection, ValTimeCluster>(_tmcl, event);
   analyzeProduct<HelixSeedCollection, ValHelixSeed>(_hxsd, event);
   analyzeProduct<KalSeedCollection, ValKalSeed>(_klsd, event);
-  analyzeProduct<TrackSummaryCollection, ValTrackSummary>(_trks, event);
   analyzeProduct<STMWaveformDigiCollection, ValSTMWaveformDigi>(_stmw, event);
   analyzeProduct<art::TriggerResults, ValTriggerResults>(_trrs, event);
   analyzeProduct<TriggerInfo, ValTriggerInfo>(_tris, event);

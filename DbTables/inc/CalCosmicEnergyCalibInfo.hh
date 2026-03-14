@@ -13,7 +13,9 @@ class CalCosmicEnergyCalibInfo : public DbTable {
  public:
   class Row {
    public:
-    Row(int cID, int FirstCalibRun, int LastCalibRun, std::string EnergyMethod, std::string FitMethod, std::string Comment) :
+    Row(int cID, int FirstCalibRun, int LastCalibRun,
+        const std::string& EnergyMethod, const std::string& FitMethod,
+        const std::string& Comment) :
         _cID(cID),
         _FirstCalibRun(FirstCalibRun),
         _LastCalibRun(LastCalibRun),

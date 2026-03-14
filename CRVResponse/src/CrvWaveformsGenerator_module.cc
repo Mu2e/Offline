@@ -55,12 +55,8 @@ namespace mu2e
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Atom<double> minVoltage{Name("minVoltage")};                       //0.022V (corresponds to 3.5PE)
       fhicl::Atom<double> noise{Name("noise")};                                 //4.0e-4V
-      fhicl::Atom<double> timeOffsetScale{Name("timeOffsetScale")};             // 1.0ns (scale factor applied to the database values)
-      fhicl::Atom<double> timeOffsetCutoffLow{Name("timeOffsetCutoffLow")};     //-3.0ns
-      fhicl::Atom<double> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh")};   // 3.0ns
-                                                                                //note: if measured time offsets are used,
-                                                                                //the cutoffs should be set to the maximum values
-      fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB")};  //false, will be applied at reco
+      fhicl::Atom<bool>   useTimeOffsetDB{Name("useTimeOffsetDB")};             //false, will be applied at reco
+      fhicl::Atom<double> timeOffsetScale{Name("timeOffsetScale")};             //1.0ns (scale factor applied to the database values)
       fhicl::Atom<double> singlePEWaveformMaxTime{Name("singlePEWaveformMaxTime")};        //100ns
       fhicl::Atom<double> singlePEWaveformPrecision{Name("singlePEWaveformPrecision")};    //1.0 ns
       fhicl::Atom<double> singlePEWaveformStretchFactor{Name("singlePEWaveformStretchFactor")};    //1.047
@@ -88,10 +84,8 @@ namespace mu2e
     double                              _digitizationEnd;
     double                              _minVoltage;
     double                              _noise;
-    double                              _timeOffsetScale;
-    double                              _timeOffsetCutoffLow;
-    double                              _timeOffsetCutoffHigh;
     bool                                _useTimeOffsetDB;
+    double                              _timeOffsetScale;
     double                              _singlePEWaveformMaxTime;
 
     int                                 _numberSamplesZS;
@@ -129,10 +123,8 @@ namespace mu2e
     _digitizationEnd(conf().digitizationEnd()),
     _minVoltage(conf().minVoltage()),
     _noise(conf().noise()),
-    _timeOffsetScale(conf().timeOffsetScale()),
-    _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
-    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
+    _timeOffsetScale(conf().timeOffsetScale()),
     _singlePEWaveformMaxTime(conf().singlePEWaveformMaxTime()),
     _numberSamplesZS(conf().numberSamplesZS()),
     _numberSamplesNZS(conf().numberSamplesNZS()),
@@ -221,8 +213,6 @@ namespace mu2e
         //get the numbers from the database (either measured values of random values)
         timeOffset = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
         timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
-        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
-        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
       }
 
       //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after POT) is located with respect to the global time

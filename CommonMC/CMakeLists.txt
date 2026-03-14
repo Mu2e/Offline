@@ -1,6 +1,18 @@
+cet_make_library(
+    SOURCE
+      src/TrkMCTools.cc
+    LIBRARIES PUBLIC
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+)
+
 cet_build_plugin(CosmicTimeOffset art::module
     REG_SOURCE src/CosmicTimeOffset_module.cc
-    LIBRARIES REG      
+    LIBRARIES REG
       Offline::MCDataProducts
       Offline::SeedService
 )
@@ -76,6 +88,7 @@ cet_build_plugin(ProtonBunchTimeMCFromProtonBunchTime art::module
 cet_build_plugin(SelectRecoMC art::module
     REG_SOURCE src/SelectRecoMC_module.cc
     LIBRARIES REG
+      Offline::CommonMC
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -83,7 +96,7 @@ cet_build_plugin(SelectRecoMC art::module
       Offline::RecoDataProducts
       Offline::TrackerConditions
       Offline::TrackerGeom
-      Offline::TrkDiag
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(SimParticleDaughterSelector art::module

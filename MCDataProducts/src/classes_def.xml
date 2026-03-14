@@ -235,23 +235,7 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="mu2e::DigiProvenanceDetail"/>
 <class name="mu2e::DigiProvenance"/>
 
-<!--  ********* tracking   ********* -->
-<class name="mu2e::TrackSummaryMatchInfo" />
-<class name="std::vector<mu2e::TrackSummaryMatchInfo>" />
-<class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::TrackSummary> >" />
-<class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::SimParticle> >" />
-
-<class name="art::Assns<mu2e::SimParticle,mu2e::TrackSummary,void>" />
-<class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,void>" />
-
-<class name="art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo>" />
-<class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo> >" />
-
-<class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>" />
-<class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >" />
-
 <!-- track MC info and matching -->
-
 <class name="mu2e::SimPartStub"/>
 <class name="mu2e::TrkStrawHitMC"/>
 <class name="mu2e::VDStep"/>

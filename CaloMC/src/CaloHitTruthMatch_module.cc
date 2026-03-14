@@ -150,9 +150,9 @@ namespace mu2e {
 
       makeTruthMatch(event, *caloHitMCs, *caloHitMCTruth, *caloShowerMCTruth, primaryParticles);
 
-      event.put(std::move(caloHitMCTruth));
       event.put(std::move(caloHitMCs));
-      if (fillDetailedMC_) event.put(std::move(caloHitMCTruth));
+      event.put(std::move(caloHitMCTruth));
+      if (fillDetailedMC_) event.put(std::move(caloShowerMCTruth));
   }
 
 
@@ -242,7 +242,7 @@ namespace mu2e {
 
           //sort CaloEDepMC by decreasing energy, create caloHit and keep track of hit -> MChit association
           std::sort(edeps.begin(),edeps.end(),[](const auto& a, const auto& b){return a.energyDep() > b.energyDep();});
-          caloHitMCs.emplace_back(CaloHitMC(std::move(edeps)));
+          caloHitMCs.emplace_back(CaloHitMC(std::move(edeps),hit.crystalID()));
 
           art::Ptr<CaloHitMC> hitMCPtr = art::Ptr<CaloHitMC>(hitMCProductID, caloHitMCs.size()-1, hitMCProductGetter);
           CaloHitTruthMatch.addSingle(hitPtr,hitMCPtr);

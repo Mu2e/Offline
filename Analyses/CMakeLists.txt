@@ -60,7 +60,6 @@ cet_build_plugin(CaloHitFinderInspect art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::GlobalConstantsService
       Offline::MCDataProducts
@@ -599,32 +598,6 @@ cet_build_plugin(StoppedParticlesPrinter art::module
       Offline::MCDataProducts
 )
 
-cet_build_plugin(TrackSummaryDataAnalyzer art::module
-    REG_SOURCE src/TrackSummaryDataAnalyzer_module.cc
-    LIBRARIES REG
-
-
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
-)
-
-cet_build_plugin(TrackSummaryMCAnalyzer art::module
-    REG_SOURCE src/TrackSummaryMCAnalyzer_module.cc
-    LIBRARIES REG
-
-
-      Offline::MCDataProducts
-      Offline::Mu2eUtilities
-      Offline::RecoDataProducts
-)
-
-cet_build_plugin(TrackSummaryTruthRFSelector art::module
-    REG_SOURCE src/TrackSummaryTruthRFSelector_module.cc
-    LIBRARIES REG
-      art_root_io::TFileService_service
-      Offline::MCDataProducts
-      Offline::RecoDataProducts
-)
 
 cet_build_plugin(TSTrackAna art::module
     REG_SOURCE src/TSTrackAna_module.cc

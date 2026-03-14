@@ -48,6 +48,14 @@ services.ProditionsService.strawResponse.useDb          : false
 services.ProditionsService.trackerStatus.Settings.useDb : false
 services.ProditionsService.trackerPanelMap.useDb        : true
 
+#------------------------------------------------------------------------------
+# make makeSD print everything
+#------------------------------------------------------------------------------
+services.message.destinations.log.categories.MAKE_SD: {
+    reportEvery : 1
+    limit       : -1
+}
+
 outputs:  {
     defaultOutput :  {
         module_type   :   RootOutput

@@ -44,7 +44,9 @@ namespace mu2e {
       fhicl::Atom<float>           min_calo_cluster_energy{Name("MinCaloClusterEnergy"),       Comment("Min Calo Cluster Energy") };
       fhicl::Atom<float>           hit_time_sigma_thresh  {Name("HitTimeSigmaThresh"),         Comment("Time consistency threshold for hits to be added to the cluster (in sigma)") };
       fhicl::Atom<float>           hit_xy_sigma_thresh    {Name("HitXYSigmaThresh"),           Comment("Spatial consistency threshold for hits to be added to the cluster (in sigma)")};
+      fhicl::Atom<float>           min_hit_radius         {Name("MinHitRadius"),               Comment("Minimum radius in the tracker of expected hits to still search for hits")};
       fhicl::Atom<float>           stopping_target_radius {Name("StoppingTargetRadius"),       Comment("Radius of the stopping target in cone-making (in mm)")};
+      fhicl::Atom<float>           cluster_radius         {Name("ClusterRadius"),              Comment("Radius around cluster position in mm for seeding")};
       fhicl::Atom<float>           particle_beta          {Name("ParticleBeta"),               Comment("Particle beta for distance to time (0-1)"), 1.};
       fhicl::Atom<std::string>     fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
     };
@@ -58,7 +60,9 @@ namespace mu2e {
     float                                 min_calo_cluster_energy_; // min energy of the associated calo cluster
     float                                 hit_time_sigma_thresh_;   // time consistency threshold for hits to be added to the cluster
     float                                 hit_xy_sigma_thresh_;     // spatial consistency threshold for hits to be added to the cluster
+    float                                 min_hit_radius_;          // minimum radius in the tracker of expected hits to still search for hits
     float                                 stopping_target_radius_;  // radius of the stopping target in cone-making (in mm)
+    float                                 cluster_radius_;          // radius around cluster position in mm for seeding
     float                                 particle_beta_;           // particle beta (v/c)
     TrkFitDirection                       fit_dir_;                 // fit direction in search
     int                                   diag_level_;              // diagnostic output
@@ -103,7 +107,9 @@ namespace mu2e {
     , min_calo_cluster_energy_(config().min_calo_cluster_energy())
     , hit_time_sigma_thresh_(config().hit_time_sigma_thresh())
     , hit_xy_sigma_thresh_(config().hit_xy_sigma_thresh())
+    , min_hit_radius_(config().min_hit_radius())
     , stopping_target_radius_(config().stopping_target_radius())
+    , cluster_radius_(config().cluster_radius())
     , particle_beta_(config().particle_beta())
     , fit_dir_(config().fit_direction())
     , diag_level_(config().diag_level())
@@ -189,6 +195,7 @@ namespace mu2e {
 
     // Look for hits consistent this seed position and direction, and add them to the seed
     const size_t n_hits = combo_hit_col_->size();
+    tc._strawHitIdxs.clear();
     for(size_t i_hit = 0; i_hit < n_hits; ++i_hit) {
       const auto& hit = combo_hit_col_->at(i_hit);
       if(!isGoodHit(hit)) continue; // skip hits that don't pass selection
@@ -201,15 +208,16 @@ namespace mu2e {
       const double time_unc = std::sqrt(hit.timeRes()*hit.timeRes() + cl.timeErr()*cl.timeErr()); // uncertainty on the time difference between the hit and the expected time based on the seed
       const double time_sigma = std::abs((hit_time - time_at_hit) / time_unc); // number of sigma the hit time is from the expected time based on the seed
       if(diag_level_ > 2) {
-        printf(" Hit %zu: time = %.2f, expected time = %.2f, time sigma = %.2f\n",
+        printf("  Hit %zu: time = %.2f, expected time = %.2f, time sigma = %.2f\n",
                i_hit, hit_time, time_at_hit, time_sigma);
       }
       if(time_sigma > hit_time_sigma_thresh_) continue; // hit is not consistent with the seed, so skip it
 
       // next check if the hit is consistent in space
       const CLHEP::Hep3Vector pos_at_hit = cl_pos + dr * seed_dir; // position along the seed direction at the same z as the hit
+      const double cone = cluster_radius_ + std::abs(dz/dz_target) * (stopping_target_radius_ - cluster_radius_); // radius of the cone in the x-y plane at the hit z based on the seed direction and cluster position
+      if((pos_at_hit.perp() + cone) < min_hit_radius_) continue; // expected hit position is too low radius to still reach the tracker
       const double x_y_dist = (hit_pos - pos_at_hit).perp(); // distance in the x-y plane between the hit and the expected position based on the seed
-      const double cone = std::abs(dz/dz_target) * stopping_target_radius_; // radius of the cone in the x-y plane at the hit z based on the seed direction and cluster position
       const double xy_unc = std::sqrt(hit.transVar() + hit.wireVar()); // uncertainty in the hit position in the x-y plane
       const double xy_sigma = (x_y_dist - cone) / xy_unc; // number of sigma the hit is from the cone from the cluster to the target, negative means contained within the cone
       if(diag_level_ > 2) {
@@ -217,6 +225,16 @@ namespace mu2e {
                pos_at_hit.x(), pos_at_hit.y(), pos_at_hit.z(), hit_pos.x(), hit_pos.y(), hit_pos.z(), x_y_dist, cone, xy_sigma);
       }
       if(xy_sigma > hit_xy_sigma_thresh_) continue; // hit is not consistent with the seed
+      if(diag_level_ > 1) {
+        if(diag_level_ <= 2) { // print full info if not already printed
+          printf("  Hit %zu: time = %.2f, expected time = %.2f, time sigma = %.2f\n",
+                 i_hit, hit_time, time_at_hit, time_sigma);
+          printf("  Expected position at hit z: (%.1f, %.1f, %.1f), hit position: (%.1f, %.1f, %.1f), x-y distance = %.2f, target cone = %.2f, sigma = %.2f\n",
+                 pos_at_hit.x(), pos_at_hit.y(), pos_at_hit.z(), hit_pos.x(), hit_pos.y(), hit_pos.z(), x_y_dist, cone, xy_sigma);
+
+        }
+        printf("  Hit %zu is added to the time cluster: Time sigma = %.2f, x-y sigma = %.2f\n", i_hit, time_sigma, xy_sigma);
+      }
       tc._strawHitIdxs.push_back(i_hit);
     }
   }
@@ -252,6 +270,16 @@ namespace mu2e {
         findTimePeakInCluster(tc, cl);
         if(!isGoodTimeCluster(tc)) continue; // skip time clusters that don't pass selection criteria
         finalizeTimeCluster(tc, i_cl);
+        if(diag_level_ > 0) {
+          printf("[CalLineTimePeakFinder::%s] Found time cluster with %zu hits and t0 = %.2f\n", __func__, tc.nhits(), tc.t0().t0());
+          if(diag_level_ > 1) {
+            for(size_t i = 0; i < tc.nhits(); ++i) {
+              const size_t hit_index = tc.hits().at(i);
+              const auto& hit = combo_hit_col_->at(hit_index);
+              printf(" Hit %zu: index = %zu, time = %.2f, position = (%.1f, %.1f, %.1f)\n", i, hit_index, hit.correctedTime(), hit.pos().x(), hit.pos().y(), hit.pos().z());
+            }
+          }
+        }
         out_tcs->push_back(std::move(tc));
       }
     }

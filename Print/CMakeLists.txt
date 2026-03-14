@@ -42,12 +42,10 @@ cet_make_library(
       src/StrawHitPrinter.cc
       src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
-      src/TrackSummaryPrinter.cc
       src/TriggerInfoPrinter.cc
       src/TriggerResultsPrinter.cc
     LIBRARIES PUBLIC
       KinKal::General
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
