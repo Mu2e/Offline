@@ -240,8 +240,6 @@ namespace mu2e
         flag.merge(StrawHitFlag(StrawHitFlag::bkg));
         cluster._flag.merge(BkgClusterFlag::bkg);
       }
-      //if(cluster.hits().size() < 3 and cluster.getKerasQ() > kerasQ_)
-      //  std::cout<<"Keras Quality = "<<cluster.getKerasQ()<<std::endl;
       for (const auto& chit : cluster.hits()){
         chfcol[chit].merge(flag);
         hitToClusterMap[chit] = icl;
