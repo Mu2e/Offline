@@ -96,7 +96,8 @@ namespace mu2e {
              fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationBuffer       { Name("digitizationBuffer"),       Comment("Digi time buffer for photon propagation inside crystal") };
              fhicl::Atom<float>              crystalNonUniformity     { Name("crystalNonUniformity"),     Comment("LRU parameter 0") };
-             fhicl::Atom<float>              pePerMeV                 { Name("readoutPEPerMeV"),          Comment("Number of pe / MeV for Readout") };
+             fhicl::Atom<float>              pePerMeVCsI              { Name("readoutPEPerMeVCsI"),       Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<float>              pePerMeVLyso             { Name("readoutPEPerMeVLyso"),      Comment("Number of pe / MeV for Readout for LYSO") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -112,7 +113,8 @@ namespace mu2e {
             digitizationEnd_     (config().digitizationEnd()),
             digitizationBuffer_  (config().digitizationBuffer()),
             crystalNonUniformity_(config().crystalNonUniformity()),
-            pePerMeV_            (config().pePerMeV()),
+            pePerMeVCsI_         (config().pePerMeVCsI()),
+            pePerMeVLyso_        (config().pePerMeVLyso()),
             LRUCorrection_       (config().LRUCorrection()),
             BirksCorrection_     (config().BirksCorrection()),
             PEStatCorrection_    (config().PEStatCorrection()),
@@ -151,7 +153,8 @@ namespace mu2e {
          float                   digitizationEnd_;
          float                   digitizationBuffer_;
          float                   crystalNonUniformity_;
-         float                   pePerMeV_;
+         float                   pePerMeVCsI_;
+         float                   pePerMeVLyso_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
          bool                    PEStatCorrection_;
@@ -274,11 +277,14 @@ namespace mu2e {
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
               if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr);
 
+              bool isCaphri = CrystalId(crystalID).isCaphri();
+              float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
+
               // Generate individual PEs and their arrival times
               for (int i=0; i<nROs; ++i)
               {
                   int SiPMID = SiPMIDBase + i;
-                  int NPE     = randPoisson_.fire(edep_corr*pePerMeV_);
+                  int NPE    = randPoisson_.fire(edep_corr*pePerMeV);
                   if (NPE==0) continue;
 
                   std::vector<float> PETime(NPE,hitTime);
@@ -293,7 +299,7 @@ namespace mu2e {
                   if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
 
                   diagSum.totNPE     += NPE;
-                  diagSum.totEdepNPE += double(NPE)/pePerMeV_/2.0; //average between the two RO
+                  diagSum.totEdepNPE += double(NPE)/pePerMeV/2.0; //average between the two RO
               }
               diagSum.totEdep     += step.energyDepG4();
               diagSum.totEdepCorr += edep_corr;
