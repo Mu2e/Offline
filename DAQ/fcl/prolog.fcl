@@ -37,6 +37,7 @@ DAQ : {
             minEDep             : 0.0006 ## in MeV
             debugMode           : false
             debugBits           : [ "bit0:0" ]
+            panelsToSkip        : [ ]    ## by default all panels are good
             fillHistograms      : false
         }
     }
