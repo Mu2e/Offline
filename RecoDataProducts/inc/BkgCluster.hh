@@ -29,6 +29,7 @@ namespace mu2e
        auto &                       points()  {return _cpoints;  }
        auto const&                  points() const  {return _cpoints;  }
        auto const&                  time() const {return _time; }
+       auto const&                  edep() const {return _edep; }
        auto const&                  hits() const {return _hits; }
        auto const&                  hitposition() const {return _hitpositions; }
        auto &                       hitposition() {return _hitpositions; }
@@ -36,6 +37,7 @@ namespace mu2e
 
        void pos(XYZVectorF const& pos)                                      {_pos = pos;}
        void time(float time)                                                {_time = time;}
+       void edep(float edep)                                                {_edep = edep;}
        void clearHits()                                                     {_hits.clear();}
        void setKerasQ(float kerasQ)                                         {_kerasQ = kerasQ;}
        void addHit(unsigned val)                                            {_hits.emplace_back(val);}
@@ -52,6 +54,7 @@ namespace mu2e
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
        float                    _time = 0.0;//cluster time
+       float                    _edep = 0.0;//cluster time
        std::vector<unsigned>    _hits;
        std::vector<XYZVectorF>    _hitpositions;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);

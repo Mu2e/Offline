@@ -10,6 +10,15 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
+#include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
+
+#include <string>
+
+
+//Inference class
+namespace TMVA_SOFIE_TrainBkgDiag {
+  class Session;
+}
 
 
 namespace mu2e {
@@ -22,7 +31,7 @@ namespace mu2e {
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<unsigned>         DBSminN{          Name("DBSminExpand"),     Comment("Min number neighbors for DBScan algo") };
+        fhicl::Atom<int>              DBSminN{          Name("DBSminExpand"),     Comment("Min number neighbors for DBScan algo") };
         fhicl::Atom<float>            hitDeltaTime{     Name("DeltaTime"),        Comment("Max time difference between hits") };
         fhicl::Atom<float>            hitDeltaZ{        Name("DeltaZ"),           Comment("Max Z difference between hits") };
         fhicl::Atom<float>            hitDeltaXY{       Name("DeltaXY"),          Comment("Max XY difference between hits") };
@@ -45,11 +54,12 @@ namespace mu2e {
 
 
     private:
-      unsigned findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
+      int      findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
       void     calculateCluster (BkgCluster& cluster, const ComboHitCollection& chcol);
+      void     mergeClusters    (std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol);
       void     dump             (const std::vector<BkgCluster>& clusters);
 
-      unsigned                DBSminExpand_;
+      int                     DBSminExpand_;
       float                   deltaTime_;
       float                   deltaZ_;
       float                   deltaXY2_;
@@ -61,7 +71,7 @@ namespace mu2e {
       int                     diag_;
 
       //Need the correct Sophie description
-      //std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
+      std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
   };
 }
 
