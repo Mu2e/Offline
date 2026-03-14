@@ -61,6 +61,8 @@ namespace mu2e {
         fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum")};
         fhicl::Atom<double> czmin{Name("czmin"), Comment("Restrict cos(theta_z) minimum"), -1.};
         fhicl::Atom<double> czmax{Name("czmax"), Comment("Restrict cos(theta_z) maximum"),  1.};
+        fhicl::Atom<double> phimin{Name("phimin"), Comment("Restrict phi angle minimum (radians)"), 0.};
+        fhicl::Atom<double> phimax{Name("phimax"), Comment("Restrict phi angle maximum (radians)"), CLHEP::twopi};
         fhicl::Atom<bool> pionDecayOff{Name("pionDecayOff"),Comment("Assume pion decay was turned off, produce event weights"), true};
         fhicl::Atom<bool> doHistograms{Name("doHistograms"),Comment("Produce debug histograms"), false};
     };
@@ -83,6 +85,8 @@ namespace mu2e {
     BinnedSpectrum    spectrum_;
     const double czmin_;
     const double czmax_;
+    const double phimin_;
+    const double phimax_;
     bool pionDecayOff_;
     bool doHistograms_;
     RandomUnitSphere   randomUnitSphere_;
@@ -125,9 +129,11 @@ namespace mu2e {
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
     , czmin_(conf().czmin())
     , czmax_(conf().czmax())
+    , phimin_(conf().phimin())
+    , phimax_(conf().phimax())
     , pionDecayOff_{conf().pionDecayOff()}
     , doHistograms_{conf().doHistograms()}
-    , randomUnitSphere_ {eng_, czmin_, czmax_}
+    , randomUnitSphere_ {eng_, czmin_, czmax_, phimin_, phimax_}
     , randSpectrum_       {eng_, spectrum_.getPDF(),static_cast<int>(spectrum_.getNbins())}
     , pionCaptureSpectrum_{&randomFlat_,&randomUnitSphere_}
   {
@@ -142,6 +148,7 @@ namespace mu2e {
 
     // Validate the input cz values
     if(czmin_ > czmax_ || czmin_ < -1. || czmax_ > 1.) throw cet::exception("BADINPUT") << "RPCGun cos(theta_z) range is not defined\n";
+    if(phimin_ > phimax_ || phimin_ < 0. || phimax_ > CLHEP::twopi) throw cet::exception("BADINPUT") << "RPCGun phi range invalid: phimin must be <= phimax and both must be in [0, 2pi]\n";
     if(process_ == ProcessCode::mu2eInternalRPC && (std::abs(czmin_ + 1.) > 1.e-3 || std::abs(czmax_ - 1.) > 1.e-3))
       throw cet::exception("BADINPUT") << "RPCGun cos(theta_z) restriction can't be used with internal conversion\n";
 
