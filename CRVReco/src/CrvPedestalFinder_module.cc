@@ -40,11 +40,11 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
       fhicl::Atom<bool>        useNZS{Name("useNZS"), Comment("use NZS data"), false};
-      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit")};
-      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 201};
-      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), -50.5};
-      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 150.5};
-      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal")};
+      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit"), true};
+      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 401};
+      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), 1799.5};
+      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 2200.5};
+      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal"), 5}; //if not firstSampleOnly
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
