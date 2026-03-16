@@ -116,7 +116,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
     // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
-    // reflect inside the tracker volumei
+    // reflect inside the tracker volume
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;

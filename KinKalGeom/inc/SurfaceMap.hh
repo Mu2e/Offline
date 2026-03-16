@@ -20,7 +20,7 @@ namespace mu2e {
       using SurfacePair =std::pair<const SurfaceId, SurfacePtr >;
       using SurfacePairCollection = std::vector<SurfacePair>;
       using SurfacePairIter = std::multimap<SurfaceId,SurfacePtr>::const_iterator;
-     // default constructor with nominal geometry.  Eventually serve this from GeometryService.  TODO
+      // default constructor, now using GeometryService
       SurfaceMap();
       auto const& map() const { return map_; }
       // find a surface by its Id.  Return value is an iterator, which may be null.  Note that if
