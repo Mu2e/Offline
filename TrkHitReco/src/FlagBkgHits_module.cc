@@ -7,7 +7,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalTable.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
+//#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
@@ -69,9 +69,8 @@ namespace mu2e
       float                                       kerasQ_;
       int                                         iev_;
 
-      void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int> hitToClusterMap) const;
+      void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const;
       void countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
-    //int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
   };
 
 
@@ -155,20 +154,14 @@ namespace mu2e
     bkgccol.reserve(nch/2);
     if (savebkg_) bkghitcol.reserve(nch);
 
-    // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
     clusterer_->findClusters(bkgccol, chcol);
 
-    // classify clusters
     StrawHitFlagCollection chfcol(nch);
     std::vector<int> hitToClusterMap(nch, -1);
     classifyCluster(bkgccol, chfcol, chcol, hitToClusterMap);
 
-    if(countprotons_){
-      //Call the appropriate function to check if a cluster has enough hits with high edep such that it can be classified as background if its not done already
+    if(countprotons_)
       countProton(bkgccol, chfcol, chcol);
-    }
-
-    // produce output ComboHit collection, either filtered or not
 
     auto chcol_out = std::make_unique<ComboHitCollection>();
     if(chfcol.size()>0){
@@ -213,9 +206,13 @@ namespace mu2e
     //produce BkgClusterHit info collection
     if (savebkg_) {
       for (size_t ich=0;ich < nch; ++ich) {
-        int icl = hitToClusterMap[ich]; //findClusterIdx(bkgccol,ich);
-        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],chcol_out->at(ich)),chcol_out->at(ich).flag()));
-        else          bkghitcol.emplace_back(BkgClusterHit(999.0,chcol_out->at(ich).flag()));
+        int icl = hitToClusterMap[ich];
+        if (icl > -1) {
+          float dist = clusterer_->distance(bkgccol[icl], chcol[ich]);
+          bkghitcol.emplace_back(BkgClusterHit(dist, chcol[ich].flag()));
+        }
+        else
+          bkghitcol.emplace_back(BkgClusterHit(999.0,chcol[ich].flag()));
       }
     }
     event.put(std::move(chcol_out));
@@ -231,7 +228,7 @@ namespace mu2e
 
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int> hitToClusterMap) const
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const
   { for (size_t icl =0; icl < bkgccol.size(); ++icl) {
       auto& cluster = bkgccol[icl];
       clusterer_->classifyCluster(cluster,chcol);
@@ -251,11 +248,9 @@ namespace mu2e
   void FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   { for (size_t icl=0; icl < bkgccol.size(); ++icl) {
       auto& cluster = bkgccol[icl];
-      // Check if this cluster is already flagged as background (e.g., by Keras)
       bool isAlreadyBkg = cluster._flag.hasAllProperties(BkgClusterFlag::bkg);
-      // We only care about clusters not already marked as background
       if (!isAlreadyBkg) {
-        StrawHitFlag bkgFlag(StrawHitFlag::bkg);
+        StrawHitFlag bkgFlag(StrawHitFlag::energysel);
         for (const auto& hitIdx : cluster.hits()) {
            if (chcol[hitIdx].energyDep() > minedep_)
              chfcol[hitIdx].merge(bkgFlag);
@@ -263,14 +258,6 @@ namespace mu2e
       }
     }
   }
-
-
-  //----------------------------------------------------------------------------------
-  /*int FlagBkgHits::findClusterIdx(BkgClusterCollection& bkgccol, unsigned ich) const
-  { for (size_t icl=0;icl < bkgccol.size(); ++icl)
-      if (std::find(bkgccol[icl].hits().begin(),bkgccol[icl].hits().end(),ich) != bkgccol[icl].hits().end()) return icl;
-    return -1;
-    }*/
 
 }
 

@@ -54,7 +54,7 @@ namespace mu2e
        TwoDPoint                _point;//initial point
        CombineTwoDPoints        _cpoints;//combined points
        float                    _time = 0.0;//cluster time
-       float                    _edep = 0.0;//cluster time
+       float                    _edep = 0.0;//cluster edep
        std::vector<unsigned>    _hits;
        std::vector<XYZVectorF>    _hitpositions;
        BkgClusterFlag           _flag = BkgClusterFlag(BkgClusterFlag::update);

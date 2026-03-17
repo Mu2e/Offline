@@ -1,7 +1,6 @@
 #include "Offline/TrkHitReco/inc/DBSClusterer.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "TMath.h"
 #include <algorithm>
 #include <vector>
 #include <queue>
@@ -61,7 +60,6 @@ namespace mu2e
      clusters.reserve(std::max(16UL, idx.size()/10));
      for (size_t i=0;i<idx.size();++i) {
        // if a point has already been assigned to a cluster, continue
-       //int nNeighbors = 0;
        if ( hitToCluster[i] != unprocessedID) continue;
 
        // If the neighborhood is too sparse, assign it to noise
@@ -109,8 +107,6 @@ namespace mu2e
      if (diag_>1) dump(clusters);
   }
 
-
-
   //---------------------------------------------------------------------------------------
   // Find the neighbors of given a point - can use any suitable distance function
   int DBSClusterer::findNeighbors(unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors)
@@ -141,19 +137,6 @@ namespace mu2e
         nNeighbors += hitj.nStrawHits();
       }
     }
-    /*unsigned istart(ihit);
-    while (istart>0 && time0 - chcol[idx[istart]].correctedTime() < deltaTime_) --istart;
-    if    (time0 - chcol[idx[istart]].correctedTime()             > deltaTime_) ++istart;
-    for (size_t j=istart; j<idx.size(); ++j){
-      if (j==ihit) continue;
-      if (chcol[idx[j]].correctedTime() - time0 > deltaTime_) break;     // deltaTime = 15
-      if (std::abs(chcol[idx[j]].pos().z()- z0) > deltaZ_)    continue; //deltaZ = 800
-      float dist = (chcol[idx[j]].pos().x()-x0)*(chcol[idx[j]].pos().x()-x0) +
-                   (chcol[idx[j]].pos().y()-y0)*(chcol[idx[j]].pos().y()-y0);
-      if (dist > deltaXY2_) continue;
-      neighbors.emplace_back(j);
-      nNeighbors += chcol[idx[j]].nStrawHits();
-      }*/
     return nNeighbors;
   }
 
@@ -166,7 +149,6 @@ namespace mu2e
     float psep_y = hit.pos().y()-cluster.pos().y();
     return sqrt(psep_x*psep_x+psep_y*psep_y);
   }
-
 
 
   //---------------------------------------------------------------------------------------
@@ -209,39 +191,15 @@ namespace mu2e
     cluster.edep(cedep);
   }
 
+
   //---------------------------------------------------------------------------------------
   void DBSClusterer::classifyCluster(BkgCluster& cluster, const ComboHitCollection& chcol){
 
     //code logic to classify cluster with MVA
-    // count hits and planes
-    std::array<int,StrawId::_nplanes> hitplanes{0};
-    for (const auto& chit : cluster.hits()) {
-    const ComboHit& ch = chcol[chit];
-    hitplanes[ch.strawId().plane()] += ch.nStrawHits();
-    }
-
-    unsigned npexp(0),np(0),nhits(0);
-    //std::vector<float> hz;
-    //std::vector<float> hphi;
-    //float phidiff(0.0);
-    int ipmin(0),ipmax(StrawId::_nplanes-1);
-    while (hitplanes[ipmin]==0 && ipmin<StrawId::_nplanes) ++ipmin;
-    while (hitplanes[ipmax]==0 and ipmax>0)                --ipmax;
-    int fp(ipmin),lp(ipmin-1),pgap(0);
-    for (int ip = ipmin; ip <= ipmax; ++ip) {
-    npexp++; // should use TTracker to see if plane is physically present FIXME!
-    if (hitplanes[ip]> 0){
-      ++np;
-      if(lp > 0 && ip - lp -1 > pgap)pgap = ip - lp -1;
-      if(ip > lp)lp = ip;
-      if(ip < fp)fp = ip;
-      lp = ip;
-    }
-    nhits += hitplanes[ip];
-    }
-    if(nhits < 1 || np < 2) return;
+    if(cluster.hits().size() < 3) return;
     // find averages
     double sqrSumDeltaTime(0.),sqrSumDeltaX(0.), sqrSumDeltaY(0.), sqrSumDeltaPhi(0.);
+    unsigned nhits(0);
     float zmin = std::numeric_limits<float>::max();
     float zmax = -std::numeric_limits<float>::max();
     float phimin = std::numeric_limits<float>::max();
@@ -252,6 +210,7 @@ namespace mu2e
     unsigned nchits = cluster.hits().size();
     for (const auto& chit : cluster.hits()) {
       const auto& hit = chcol[chit];
+      nhits += hit.nStrawHits();
       float hZ = hit.pos().Z();
       if (hZ < zmin) zmin = hZ;
       if (hZ > zmax) zmax = hZ;
@@ -272,21 +231,15 @@ namespace mu2e
     // fill mva input variables
     std::array<float,7> kerasvars;
     kerasvars[0]  = cluster.pos().Rho(); // cluster rho, cyl coor
-    kerasvars[1]  = zmax - zmin; //zdiff; //fp;// first plane hit
-    kerasvars[2]  = phimax - phimin; //phidiff;
+    kerasvars[1]  = zmax - zmin; // zdiff
+    kerasvars[2]  = phimax - phimin; // phidiff;
     kerasvars[3]  = nhits;
     kerasvars[4]  = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/nchits); // RMS of cluster rho
-    kerasvars[5] = std::sqrt(sqrSumDeltaTime/nchits);// RMS of cluster time
-    kerasvars[6] = std::sqrt(sqrSumDeltaPhi/nchits);// RMS of cluster phi
+    kerasvars[5] = std::sqrt(sqrSumDeltaTime/nchits); // RMS of cluster time
+    kerasvars[6] = std::sqrt(sqrSumDeltaPhi/nchits); // RMS of cluster phi
     std::vector<float> kerasout = sofiePtr_->infer(kerasvars.data());
     cluster.setKerasQ(kerasout[0]);
-    if (diag_>0)std::cout << "kerasout = " << kerasout[0] << std::endl;
-    //cluster.setKerasQ(-1.0);
   }
-
-
-
-
 
   //-------------------------------------------------------------------------------------------
   void DBSClusterer::dump(const std::vector<BkgCluster>& clusters)

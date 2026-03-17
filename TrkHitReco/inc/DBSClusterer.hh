@@ -56,7 +56,6 @@ namespace mu2e {
     private:
       int      findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
       void     calculateCluster (BkgCluster& cluster, const ComboHitCollection& chcol);
-      void     mergeClusters    (std::vector<BkgCluster>& clusters, const ComboHitCollection& chcol);
       void     dump             (const std::vector<BkgCluster>& clusters);
 
       int                     DBSminExpand_;
@@ -69,8 +68,6 @@ namespace mu2e {
       bool                    testflag_;
       std::string             kerasW_;
       int                     diag_;
-
-      //Need the correct Sophie description
       std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
   };
 }
