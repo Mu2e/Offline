@@ -113,7 +113,7 @@ namespace mu2e
     const auto& hit0 = chcol[idx[ihit]];
     float time0 = hit0.correctedTime();
     float x0    = hit0.pos().x();
-    float y0    =  hit0.pos().y();
+    float y0    = hit0.pos().y();
     float z0    = hit0.pos().z();
     int   nNeighbors = 0;
     if (hit0.nStrawhits > 0) nNeighbors = hit0.nStrawHits() - 1;
