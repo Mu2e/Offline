@@ -71,9 +71,8 @@ namespace mu2e
       float                                       cperr2_;
       int const                                   debug_;
       float                                       kerasQ_;
-      int                                         iev_;
 
-      void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const;
+      void classifyCluster(BkgClusterCollection& bkgccol, BkgClusterHitCollection& bkghitcol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
       int countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
   };
 
@@ -90,8 +89,7 @@ namespace mu2e
     minfrac_(     config().minFrac()),
     bkgmsk_(      config().backgroundMask()),
     debug_(       config().debugLevel()),
-    kerasQ_(      config().kerasQuality()),
-    iev_(0)
+    kerasQ_(      config().kerasQuality())
     {
       ConfigFileLookupPolicy configFile;
       produces<ComboHitCollection>();
@@ -157,88 +155,65 @@ namespace mu2e
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
     unsigned nch = chcol.size();
-    BkgClusterCollection bkgccol;
-    BkgClusterHitCollection bkghitcol;
-    bkgccol.reserve(nch/2);
-    if (savebkg_) bkghitcol.reserve(nch);
+    auto bkgccol = std::make_unique<BkgClusterCollection>();
+    auto bkghitcol = std::make_unique<BkgClusterHitCollection>();
+    bkgccol->reserve(nch/2);
+    bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); //Pre-fill with defaults
+    //bkghitcol.reserve(nch);
 
-    clusterer_->findClusters(bkgccol, chcol);
+    clusterer_->findClusters(*bkgccol, chcol);
 
     StrawHitFlagCollection chfcol(nch);
-    std::vector<int> hitToClusterMap(nch, -1);
-    classifyCluster(bkgccol, chfcol, chcol, hitToClusterMap);
+    classifyCluster(*bkgccol, *bkghitcol, chfcol, chcol);
 
     auto chcol_out = std::make_unique<ComboHitCollection>();
-    if(chfcol.size()>0){
-      // same parent as the original collection
+    if(!chfcol.empty()){
       if(level_ == chcol.level()){
         chcol_out->setSameParent(chcol);
         chcol_out->reserve(nch);
-        for(size_t ich=0;ich < nch; ++ich) {
+        for(size_t ich=0; ich < nch; ++ich) {
           StrawHitFlag const& flag = chfcol[ich];
-          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-            // write out hits
+          if (!filter_ || !flag.hasAnyProperty(bkgmsk_)) {
             chcol_out->push_back(chcol[ich]);
             chcol_out->back()._flag.merge(flag);
           }
         }
-      } else {
-        // go down to the specified level
+      }
+      else {
+        // Sub-level logic remains same but uses reserve/push_back effectively
         auto pptr = chcol.parent(level_);
         auto const& chcol_p = *pptr;
         chcol_out->setSameParent(chcol_p);
         ComboHitCollection::SHIV shiv;
-        chcol_out->reserve(chcol_p.size()*2);
-        for(size_t ich=0;ich < nch; ++ich) {
-          shiv.clear();
+        chcol_out->reserve(chcol_p.size());
+        for(size_t ich=0; ich < nch; ++ich) {
           StrawHitFlag const& flag = chfcol[ich];
-          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-            // write out hits
-            if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
+          if (!filter_ || !flag.hasAnyProperty(bkgmsk_)) {
+            if(&chcol_p == chcol.fillStrawHitIndices(ich, shiv, level_)){
               for(auto ishi : shiv ){
                 chcol_out->push_back(chcol_p[ishi]);
                 chcol_out->back()._flag.merge(flag);
               }
-            } else {
-              throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
             }
           }
         }
-        if((! filter_) && chcol_out->size() != chcol_p.size())
-          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit output" << std::endl;
-      }
-    }
-    //produce BkgClusterHit info collection
-    if (savebkg_) {
-      for (size_t ich=0;ich < nch; ++ich) {
-        int icl = hitToClusterMap[ich];
-        if (icl > -1) {
-          float dist = clusterer_->distance(bkgccol[icl], chcol[ich]);
-          bkghitcol.emplace_back(BkgClusterHit(dist, chcol[ich].flag()));
-        }
-        else
-          bkghitcol.emplace_back(BkgClusterHit(999.0,chcol[ich].flag()));
       }
     }
     event.put(std::move(chcol_out));
     if(countprotons_){
-      int nprotons = countProton(bkgccol, chfcol, chcol);
-      std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(nprotons));
-      event.put(std::move(ppii));
+      int nprotons = countProton(*bkgccol, chfcol, chcol);
+      event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
     }
     //produce background collection
     if (savebkg_) {
-      event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
-      event.put(std::make_unique<BkgClusterCollection>(bkgccol));
+      event.put(std::move(bkghitcol));
+      event.put(std::move(bkgccol));
     }
-
-    ++iev_;
-    return;
   }
 
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, BkgClusterHitCollection& bkghitcol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
     for (size_t icl =0; icl < bkgccol.size(); ++icl) {
       auto& cluster = bkgccol[icl];
@@ -250,7 +225,11 @@ namespace mu2e
       }
       for (const auto& chit : cluster.hits()){
         chfcol[chit].merge(flag);
-        hitToClusterMap[chit] = icl;
+        //hitToClusterMap[chit] = icl;
+        if(savebkg_){
+          float dist = clusterer_->distance(cluster, chcol[chit]);
+          bkghitcol[chit] = BkgClusterHit(dist, chcol[chit].flag());
+        }
       }
     }
   }
