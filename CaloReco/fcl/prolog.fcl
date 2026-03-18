@@ -34,7 +34,8 @@ CaloReco : {
    }
 }
 
-CaloReco : { @table::CaloReco
+CaloReco : {
+   @table::CaloReco
 
    CaloRecoDigiMaker :
    {
@@ -58,15 +59,35 @@ CaloReco : { @table::CaloReco
       time4Merge             : 6.0   #ns
       diagLevel              : 0
    }
+
+   CaloHitFastMaker : {
+     module_type         : "CaloHitMakerFast"
+     ProtonBunchTimeTag  : "EWMProducer"
+     caloDigiCollection  : "CaloDigiMaker"
+     caphriEDepMax       : 100
+     caphriEDepMin       : 1
+     deltaTPulses        : 11
+     digiSampling        : 5
+     nPEperMeV           : 30
+     shiftTime           : 0
+     nSigmaNoise         : 4
+     noiseLevelMeV       : 5.5e-1
+     diagLevel           : 0
+   }
 }
 
 
-CaloReco : { @table::CaloReco
+CaloReco : {
+   @table::CaloReco
+
    producers : {
       CaloRecoDigiMaker  : { @table::CaloReco.CaloRecoDigiMaker}
       CaloHitMaker       : { @table::CaloReco.CaloHitMaker}
+      CaloHitFastMaker   : { @table::CaloReco.CaloHitFastMaker}
    }
-   Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
+   Reco : [ CaloRecoDigiMaker, CaloHitMaker, CaloHitFastMaker ]
 }
+
+
 
 END_PROLOG

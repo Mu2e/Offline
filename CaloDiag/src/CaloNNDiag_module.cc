@@ -337,7 +337,7 @@ namespace mu2e {
                crySimId_[nSimHit_]      = eDepMC.sim()->id().asInt();
                crySimPdgId_[nSimHit_]   = eDepMC.sim()->pdgId();
                crySimCrCode_[nSimHit_]  = eDepMC.sim()->creationCode();
-                      crySimTime_[nSimHit_]    = eDepMC.time();
+               crySimTime_[nSimHit_]    = eDepMC.time();
                crySimEdep_[nSimHit_]    = eDepMC.energyDep();
                crySimMom_[nSimHit_]     = eDepMC.momentumIn();
                crySimStartX_[nSimHit_]  = parent->startPosition().x();
@@ -356,6 +356,7 @@ namespace mu2e {
 
 
        //find the most energetic CE cluster
+       /*
        unsigned icMCIdx(-1); double convEnergy(0);
        for (unsigned  ic=0; ic<caloClusters.size();++ic)
        {
@@ -367,9 +368,10 @@ namespace mu2e {
            {
                for (auto& edep : itMC->second->energyDeposits())
                {
-                   auto parent(edep.sim());
-                   while (parent->hasParent()) parent = parent->parent();
-                   if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() && cluster.energyDep() > convEnergy)
+                   bool isConv = edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint ||
+                                 edep.sim()->creationCode() == ProcessCode::mu2eCeMinusLeadingLog;
+
+                   if (isConv && cluster.energyDep() > convEnergy)
                    {
                       convEnergy = cluster.energyDep();
                       icMCIdx = ic;
@@ -377,6 +379,7 @@ namespace mu2e {
                }
            }
        }
+       */
 
 
 
@@ -392,6 +395,17 @@ namespace mu2e {
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
           const auto eDepMCs = (itMC != caloClusterTruth.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
+
+          bool isConv(false);
+          if (itMC != caloClusterTruth.end()){
+             for (auto& edep : itMC->second->energyDeposits()){
+                if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint ||
+                      edep.sim()->creationCode() == ProcessCode::mu2eCeMinusLeadingLog){
+                  isConv = true;
+                  break;
+                }
+             }
+          }
 
           const CaloHit& seedHit    = CaloHits.at(cryList[0]);
           CLHEP::Hep3Vector seedPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
@@ -424,7 +438,7 @@ namespace mu2e {
           cluDR_[nCluster_]        = dr;
           cluSecMom_[nCluster_]    = cluUtil.secondMoment();
           cluSplit_[nCluster_]     = cluster.isSplit();
-          cluConv_[nCluster_]      = ic == icMCIdx;
+          cluConv_[nCluster_]      = isConv;//ic == icMCIdx;
           cluList_.push_back(cryList);
 
           cluSimIdx_[nCluster_] = nCluSim_;
