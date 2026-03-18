@@ -116,7 +116,8 @@ namespace mu2e
     float y0    = hit0.pos().y();
     float z0    = hit0.pos().z();
     int   nNeighbors = 0;
-    if (hit0.nStrawhits > 0) nNeighbors = hit0.nStrawHits() - 1;
+    if (hit0.nStrawHits() > 0) nNeighbors = hit0.nStrawHits() - 1;
+    // Requirement: idx MUST be sorted by chcol[i].correctedTime() for this binary search to work
     float minTime = time0 - deltaTime_;
     auto it_start = std::lower_bound(idx.begin(), idx.end(), minTime, [&chcol](unsigned i, float val){
       return chcol[i].correctedTime() < val;
@@ -127,6 +128,8 @@ namespace mu2e
       const auto& hitj = chcol[idx[j]];
       float dt = hitj.correctedTime() - time0;
       if (dt > deltaTime_) break;
+      // Time is already constrained by the lower_bound (backward) and the break (forward)
+      // Now check Spatial constraints
       if (std::abs(hitj.pos().z() - z0) > deltaZ_) continue;
       float dx = hitj.pos().x() - x0;
       float dy = hitj.pos().y() - y0;
