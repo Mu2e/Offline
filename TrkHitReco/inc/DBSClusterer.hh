@@ -56,7 +56,6 @@ namespace mu2e {
     private:
       int      findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
       void     calculateCluster (BkgCluster& cluster, const ComboHitCollection& chcol);
-      void     dump             (const std::vector<BkgCluster>& clusters);
 
       int                     DBSminExpand_;
       float                   deltaTime_;

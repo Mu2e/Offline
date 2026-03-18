@@ -164,6 +164,8 @@ TrkHitReco : {
       SaveBkgClusters      : true
       CountProtons         : true
       MinEdep              : 0.003
+      MinHits              : 5
+      MinFrac              : 0.5
       KerasQuality         : 0.8
       DebugLevel           : 0
    }

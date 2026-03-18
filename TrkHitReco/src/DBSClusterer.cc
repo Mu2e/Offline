@@ -51,7 +51,6 @@ namespace mu2e
      const unsigned        noiseID(chcol.size()+1u);
      const unsigned        unprocessedID(chcol.size()+2u);
      unsigned              currentClusterID(0);
-     //std::queue<unsigned>  inspect;
      std::vector<unsigned> inspect;
      inspect.reserve(idx.size());
      std::vector<unsigned> hitToCluster(idx.size(),unprocessedID); //number of combohits used for clustering, cluster ID
@@ -104,7 +103,6 @@ namespace mu2e
      }
      //Calculate the cluster properties
      for (auto& cluster : clusters) calculateCluster(cluster, chcol);
-     if (diag_>1) dump(clusters);
   }
 
   //---------------------------------------------------------------------------------------
@@ -117,7 +115,8 @@ namespace mu2e
     float x0    = hit0.pos().x();
     float y0    =  hit0.pos().y();
     float z0    = hit0.pos().z();
-    unsigned nNeighbors = hit0.nStrawHits()-1;
+    int   nNeighbors = 0;
+    if (hit0.nStrawhits > 0) nNeighbors = hit0.nStrawHits() - 1;
     float minTime = time0 - deltaTime_;
     auto it_start = std::lower_bound(idx.begin(), idx.end(), minTime, [&chcol](unsigned i, float val){
       return chcol[i].correctedTime() < val;
@@ -239,17 +238,6 @@ namespace mu2e
     kerasvars[6] = std::sqrt(sqrSumDeltaPhi/nchits); // RMS of cluster phi
     std::vector<float> kerasout = sofiePtr_->infer(kerasvars.data());
     cluster.setKerasQ(kerasout[0]);
-  }
-
-  //-------------------------------------------------------------------------------------------
-  void DBSClusterer::dump(const std::vector<BkgCluster>& clusters)
-  {
-    int iclu(0);
-    for (auto& cluster: clusters) {
-      for (auto& hit : cluster.hits()) std::cout<<hit<<" ";
-      std::cout<<std::endl;
-      ++iclu;
-    }
   }
 
 }

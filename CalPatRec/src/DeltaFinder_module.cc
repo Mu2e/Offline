@@ -422,6 +422,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 'ppii' - proton counting-based proxy to the stopped muon rate
 //-----------------------------------------------------------------------------
+    if(np15 > 0) std::cout<<"Number of proton candidates = "<<np15<<std::endl;
     std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(np15));
 //-----------------------------------------------------------------------------
 // in the end of event processing fill diagnostic histograms

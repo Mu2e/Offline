@@ -13,6 +13,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
 #include "Offline/TrkHitReco/inc/Chi2Clusterer.hh"
 #include "Offline/TrkHitReco/inc/DBSClusterer.hh"
@@ -41,6 +42,8 @@ namespace mu2e
         fhicl::Atom<bool>                             saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
         fhicl::Atom<bool>                             countProtons{         Name("CountProtons"),         Comment("Count protons") };
         fhicl::Atom<float>                            minEdep{              Name("MinEdep"),              Comment("Min Edep") };
+        fhicl::Atom<int>                              minHits{              Name("MinHits"),              Comment("Min hits in a proton candidate cluster") };
+        fhicl::Atom<float>                            minFrac{              Name("MinFrac"),              Comment("Min Frac") };
         fhicl::Atom<std::string>                      outputLevel{          Name("OutputLevel"),          Comment("Level of the output ComboHitCollection") };
         fhicl::OptionalTable<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
         fhicl::OptionalTable<Chi2Clusterer::Config>   Chi2Clustering{       Name("Chi2Clustering"),       Comment("Chi2 Clusterer config") };
@@ -60,6 +63,8 @@ namespace mu2e
       bool                                        savebkg_;
       bool                                        countprotons_;
       float                                       minedep_;
+      int                                         minhits_;
+      float                                       minfrac_;
       StrawHitFlag                                bkgmsk_;
       StrawIdMask::Level                          level_;
       std::unique_ptr<BkgClusterer>               clusterer_;
@@ -69,7 +74,7 @@ namespace mu2e
       int                                         iev_;
 
       void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const;
-      void countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
+      int countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
   };
 
 
@@ -81,6 +86,8 @@ namespace mu2e
     savebkg_(     config().saveBkgClusters()),
     countprotons_(config().countProtons()),
     minedep_(     config().minEdep()),
+    minhits_(     config().minHits()),
+    minfrac_(     config().minFrac()),
     bkgmsk_(      config().backgroundMask()),
     debug_(       config().debugLevel()),
     kerasQ_(      config().kerasQuality()),
@@ -88,6 +95,8 @@ namespace mu2e
     {
       ConfigFileLookupPolicy configFile;
       produces<ComboHitCollection>();
+      if(countprotons_)
+        produces<IntensityInfoTimeCluster>();
 
       if (savebkg_)
         {
@@ -159,9 +168,6 @@ namespace mu2e
     std::vector<int> hitToClusterMap(nch, -1);
     classifyCluster(bkgccol, chfcol, chcol, hitToClusterMap);
 
-    if(countprotons_)
-      countProton(bkgccol, chfcol, chcol);
-
     auto chcol_out = std::make_unique<ComboHitCollection>();
     if(chfcol.size()>0){
       // same parent as the original collection
@@ -215,6 +221,11 @@ namespace mu2e
       }
     }
     event.put(std::move(chcol_out));
+    if(countprotons_){
+      int nprotons = countProton(bkgccol, chfcol, chcol);
+      std::unique_ptr<IntensityInfoTimeCluster> ppii(new IntensityInfoTimeCluster(nprotons));
+      event.put(std::move(ppii));
+    }
     //produce background collection
     if (savebkg_) {
       event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
@@ -228,7 +239,8 @@ namespace mu2e
 
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol, std::vector<int>& hitToClusterMap) const
-  { for (size_t icl =0; icl < bkgccol.size(); ++icl) {
+  {
+    for (size_t icl =0; icl < bkgccol.size(); ++icl) {
       auto& cluster = bkgccol[icl];
       clusterer_->classifyCluster(cluster,chcol);
       StrawHitFlag flag(StrawHitFlag::bkgclust);
@@ -244,18 +256,28 @@ namespace mu2e
   }
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
-  { for (size_t icl=0; icl < bkgccol.size(); ++icl) {
+  int FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
+  {
+    int npc(0);
+    for (size_t icl=0; icl < bkgccol.size(); ++icl) {
       auto& cluster = bkgccol[icl];
       bool isAlreadyBkg = cluster._flag.hasAllProperties(BkgClusterFlag::bkg);
       if (!isAlreadyBkg) {
+        int nhighedep(0);
+        int nhits = cluster.hits().size();
         StrawHitFlag bkgFlag(StrawHitFlag::energysel);
         for (const auto& hitIdx : cluster.hits()) {
-           if (chcol[hitIdx].energyDep() > minedep_)
+          if (chcol[hitIdx].energyDep() > minedep_){
              chfcol[hitIdx].merge(bkgFlag);
+             nhighedep++;
+          }
         }
+        //Placeholder logic, may change in the future
+        if(nhits > minhits_ and (float)nhighedep/nhits > minfrac_)
+          npc++;
       }
     }
+    return npc;
   }
 
 }
