@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <vector>
-#include <queue>
 #include <limits>
 
 
@@ -53,20 +52,24 @@ namespace mu2e
      const unsigned        noiseID(chcol.size()+1u);
      const unsigned        unprocessedID(chcol.size()+2u);
      unsigned              currentClusterID(0);
-     // Using a vector as a stack (DFS) instead of a queue (BFS) for
-     // better cache locality and to avoid frequent heap allocations
+     // Using DFS(stack) instead of BFS(queue)
+     // For DBSCAN, cluster membership of core points is invariant,
+     // but traversal order may affect assignment of border points
+     // in rare ambiguous cases. This change was validated to not
+     // impact physics performance while improving cache locality.
      std::vector<unsigned> inspect;
      inspect.reserve(idx.size());
      std::vector<unsigned> hitToCluster(idx.size(),unprocessedID); // number of combohits used for clustering, cluster ID
      std::vector<unsigned> neighbors;
      neighbors.reserve(256);
      clusters.reserve(std::max(16UL, idx.size()/10));
+     unsigned nNeighbors = 0;
      for (size_t i=0;i<idx.size();++i) {
        // If a point has already been assigned to a cluster, continue
        if ( hitToCluster[i] != unprocessedID) continue;
 
        // If the neighborhood is too sparse, assign it to noise
-       unsigned nNeighbors = findNeighbors(i, idx, chcol, neighbors);
+       nNeighbors = findNeighbors(i, idx, chcol, neighbors);
        if (nNeighbors < DBSminExpand_) {
          hitToCluster[i] = noiseID;
          continue;
@@ -123,10 +126,9 @@ namespace mu2e
     if (hit0.nStrawHits() > 0) nNeighbors = hit0.nStrawHits() - 1;
     float minTime = time0 - deltaTime_;
     // Use binary search for O(log N) entry into the time-sorted index vector.
-    // idx[i] contains the hit inde; chcol[idx[i]] is sorted by correctedTime.
-    // The comparator matches this sort order (element-to-value comparison).
-    auto it_start = std::lower_bound(idx.begin(), idx.end(), minTime, [&chcol](unsigned i, float val){
-      return chcol[i].correctedTime() < val;
+    // idx[i] contains the hit index; chcol[idx[i]] is sorted by correctedTime.
+    auto it_start = std::partition_point(idx.begin(), idx.end(), [&chcol, minTime](unsigned i){
+      return chcol[i].correctedTime() < minTime;
     });
     size_t istart = std::distance(idx.begin(),it_start);
     for (size_t j = istart; j < idx.size(); ++j){
@@ -134,7 +136,7 @@ namespace mu2e
       const auto& hitj = chcol[idx[j]];
       float dt = hitj.correctedTime() - time0;
       if (dt > deltaTime_) break;
-      // Time is already constrained by the lower_bound (backward) and the break (forward)
+      // Time is constrained by partition_point (backward) and the break (forward)
       // Now check Spatial constraints
       if (std::abs(hitj.pos().z() - z0) > deltaZ_) continue;
       float dx = hitj.pos().x() - x0;
@@ -174,14 +176,14 @@ namespace mu2e
     }
     float sumWeight(0),crho(0),ctime(0), cz(0), cedep(0), cphi(0);
     float phi_ref = chcol[cluster.hits().at(0)].phi();
-    for (auto& idx : cluster.hits()) {
-      float weight = chcol[idx].nStrawHits();
-      float dt     = chcol[idx].correctedTime();
-      float dr     = sqrtf(chcol[idx].pos().perp2());
-      float dz     = chcol[idx].pos().z();
-      float edep   = chcol[idx].energyDep();
+    for (auto& hitIdx : cluster.hits()) {
+      float weight = chcol[hitIdx].nStrawHits();
+      float dt     = chcol[hitIdx].correctedTime();
+      float dr     = sqrtf(chcol[hitIdx].pos().perp2());
+      float dz     = chcol[hitIdx].pos().z();
+      float edep   = chcol[hitIdx].energyDep();
 
-      XYZVectorF hitpos = chcol[idx].pos();
+      XYZVectorF hitpos = chcol[hitIdx].pos();
       cluster.addHitPosition(hitpos);
 
       float dp   = hitpos.phi();
@@ -201,7 +203,7 @@ namespace mu2e
     crho  /= sumWeight;
     ctime /= sumWeight;
     cz    /= sumWeight;
-    cedep /= sumWeight;
+    cedep /= sumWeight; //Weighted average energy deposition of a cluster
 
     if (cphi > M_PI)  cphi -= 2*M_PI;
     if (cphi < -M_PI) cphi += 2*M_PI;
@@ -232,6 +234,7 @@ namespace mu2e
     float phiclust = cluster.pos().phi();
     if(phiclust > M_PI) phiclust -=2*M_PI;
     if(phiclust < -M_PI) phiclust +=2*M_PI;
+    // Safe: Clusters with < 3 hits are returned earlier
     unsigned nchits = cluster.hits().size();
     for (const auto& chit : cluster.hits()) {
       const auto& hit = chcol[chit];

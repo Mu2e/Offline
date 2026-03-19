@@ -35,7 +35,7 @@ namespace mu2e
         using Comment = fhicl::Comment;
 
         fhicl::Atom<art::InputTag>                    comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<float>                            clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
+        fhicl::Atom<float>                            clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster position error") };
         fhicl::Atom<int>                              clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
         fhicl::Atom<bool>                             filterHits{           Name("FilterHits"),           Comment("Produce filtered ComboHit collection")  };
         fhicl::Sequence<std::string>                  backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
@@ -165,6 +165,13 @@ namespace mu2e
     StrawHitFlagCollection chfcol(nch);
     classifyCluster(*bkgccol, *bkghitcol, chfcol, chcol);
 
+    int nprotons = 0;
+    if(countprotons_){
+      nprotons = countProton(*bkgccol, chfcol, chcol);
+    }
+    // When counprotons_ is false, nprotons = 0 indicates counting disabled
+    event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
+
     auto chcol_out = std::make_unique<ComboHitCollection>();
     if(!chfcol.empty()){
       if(level_ == chcol.level()){
@@ -204,11 +211,6 @@ namespace mu2e
       }
     }
     event.put(std::move(chcol_out));
-    int nprotons = 0;
-    if(countprotons_){
-      nprotons = countProton(*bkgccol, chfcol, chcol);
-    }
-    event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
     // Produce background collection
     if (savebkg_) {
       event.put(std::move(bkghitcol));
