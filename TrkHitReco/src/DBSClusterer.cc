@@ -1,5 +1,6 @@
 #include "Offline/TrkHitReco/inc/DBSClusterer.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <algorithm>
 #include <vector>
@@ -25,7 +26,7 @@ namespace mu2e
 
   //---------------------------------------------------------------------------------------
   void DBSClusterer::init() {
-    //Add Classifier init here (see TNTClsuterer for example)
+    // Add Classifier init here (see TNTClsuterer for example)
      ConfigFileLookupPolicy configFile;
      auto kerasWgtsFile = configFile(kerasW_);
      sofiePtr_          = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);
@@ -37,13 +38,13 @@ namespace mu2e
   {
      if (chcol.empty()) return;
 
-     std::vector<unsigned> idx; //list of combo hit IDs
+     std::vector<unsigned> idx; // list of combo hit IDs
      idx.reserve(chcol.size());
      for (size_t ich=0;ich<chcol.size();++ich) {
        if (testflag_ && (!chcol[ich].flag().hasAllProperties(sigmask_) || chcol[ich].flag().hasAnyProperty(bkgmask_))) continue;
        idx.emplace_back(ich);
      }
-     //Sort combo hits which are not flagged as background according to their corrected Time
+     // Sort combo hits which are not flagged as background according to their corrected Time
      std::sort(idx.begin(),idx.end(),[&chcol](auto i, auto j){
        return chcol[i].correctedTime() < chcol[j].correctedTime();
      });
@@ -53,12 +54,12 @@ namespace mu2e
      unsigned              currentClusterID(0);
      std::vector<unsigned> inspect;
      inspect.reserve(idx.size());
-     std::vector<unsigned> hitToCluster(idx.size(),unprocessedID); //number of combohits used for clustering, cluster ID
+     std::vector<unsigned> hitToCluster(idx.size(),unprocessedID); // number of combohits used for clustering, cluster ID
      std::vector<unsigned> neighbors;
      neighbors.reserve(256);
      clusters.reserve(std::max(16UL, idx.size()/10));
      for (size_t i=0;i<idx.size();++i) {
-       // if a point has already been assigned to a cluster, continue
+       // If a point has already been assigned to a cluster, continue
        if ( hitToCluster[i] != unprocessedID) continue;
 
        // If the neighborhood is too sparse, assign it to noise
@@ -71,7 +72,7 @@ namespace mu2e
        hitToCluster[i] = currentClusterID;
        BkgCluster thisCluster;
        thisCluster.addHit(idx[i]);
-       // Extend the cluster by adding / expanding around neighbors
+       // Extend the cluster by adding/expanding around neighbors
        inspect.clear();
        for (const auto& j : neighbors) inspect.push_back(j);
 
@@ -101,7 +102,7 @@ namespace mu2e
          ++currentClusterID;
        }
      }
-     //Calculate the cluster properties
+     // Calculate the cluster properties
      for (auto& cluster : clusters) calculateCluster(cluster, chcol);
   }
 
@@ -117,8 +118,9 @@ namespace mu2e
     float z0    = hit0.pos().z();
     int   nNeighbors = 0;
     if (hit0.nStrawHits() > 0) nNeighbors = hit0.nStrawHits() - 1;
-    // Requirement: idx MUST be sorted by chcol[i].correctedTime() for this binary search to work
     float minTime = time0 - deltaTime_;
+    // Use binary search to find the first hit index where correctedTime >= minTime
+    // Note: idx MUST be sorted by chcol[i].correctedTime() for this binary search to work
     auto it_start = std::lower_bound(idx.begin(), idx.end(), minTime, [&chcol](unsigned i, float val){
       return chcol[i].correctedTime() < val;
     });
@@ -144,7 +146,7 @@ namespace mu2e
 
 
   //---------------------------------------------------------------------------------------
-  // this is only used for diagnosis at this point
+  // This is only used for diagnosis at this point
   float DBSClusterer::distance(const BkgCluster& cluster, const ComboHit& hit) const
   {
     float psep_x = hit.pos().x()-cluster.pos().x();
@@ -167,18 +169,26 @@ namespace mu2e
       return;
     }
     float sumWeight(0),crho(0),ctime(0), cz(0), cedep(0), cphi(0);
+    float phi_ref = chcol[cluster.hits().at(0)].phi();
     for (auto& idx : cluster.hits()) {
       float weight = chcol[idx].nStrawHits();
       float dt     = chcol[idx].correctedTime();
       float dr     = sqrtf(chcol[idx].pos().perp2());
       float dz     = chcol[idx].pos().z();
       float edep   = chcol[idx].energyDep();
-      XYZVectorF hitpos(chcol[idx].pos().x(), chcol[idx].pos().y(), chcol[idx].pos().z());
+
+      XYZVectorF hitpos = chcol[idx].pos();
       cluster.addHitPosition(hitpos);
-      float dp     = chcol[idx].phi();
+
+      float dp   = hitpos.phi();
+      float dphi = dp - phi_ref;
+      if (dphi > M_PI) dphi -= 2*M_PI;
+      if (dphi < M_PI) dphi += 2*M_PI;
+      float correctedPhi = phi_ref + dphi;
+
       ctime    += dt*weight;
       crho     += dr*weight;
-      cphi     += dp*weight;
+      cphi     += correctedPhi*weight;
       cz       += dz*weight;
       cedep    += edep*weight;
       sumWeight += weight;
@@ -188,6 +198,10 @@ namespace mu2e
     ctime /= sumWeight;
     cz    /= sumWeight;
     cedep /= sumWeight;
+
+    if (cphi > M_PI) cphi -= 2*M_PI;
+    if (cphi < M_PI) cphi += 2*M_PI;
+
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),cz));
     cluster.edep(cedep);
@@ -197,7 +211,9 @@ namespace mu2e
   //---------------------------------------------------------------------------------------
   void DBSClusterer::classifyCluster(BkgCluster& cluster, const ComboHitCollection& chcol){
 
-    //code logic to classify cluster with MVA
+    // Code logic to classify cluster with MVA
+    // Clusters with less than 3 combo hits have a default keras quality of 0.0
+    // and they are not flagged as background clusters
     if(cluster.hits().size() < 3) return;
     // find averages
     double sqrSumDeltaTime(0.),sqrSumDeltaX(0.), sqrSumDeltaY(0.), sqrSumDeltaPhi(0.);
@@ -218,7 +234,7 @@ namespace mu2e
       if (hZ > zmax) zmax = hZ;
       float dx = hit.pos().x() - cluster.pos().x();
       float dy = hit.pos().y() - cluster.pos().y();
-      float dt = hit.time() - cluster.time();
+      float dt = hit.correctedTime() - cluster.time();
       sqrSumDeltaX    += dx*dx;
       sqrSumDeltaY    += dy*dy;
       sqrSumDeltaTime += dt*dt;
@@ -230,13 +246,13 @@ namespace mu2e
       if(dphi_rel > phimax) phimax = dphi_rel;
       sqrSumDeltaPhi  += dphi_rel*dphi_rel;
     }
-    // fill mva input variables
+    // Fill mva input variables
     std::array<float,7> kerasvars;
-    kerasvars[0]  = cluster.pos().Rho(); // cluster rho, cyl coor
-    kerasvars[1]  = zmax - zmin; // zdiff
-    kerasvars[2]  = phimax - phimin; // phidiff;
-    kerasvars[3]  = nhits;
-    kerasvars[4]  = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/nchits); // RMS of cluster rho
+    kerasvars[0] = cluster.pos().Rho(); // cluster rho, cyl coor
+    kerasvars[1] = zmax - zmin; // zdiff
+    kerasvars[2] = phimax - phimin; // phidiff;
+    kerasvars[3] = nhits;
+    kerasvars[4] = std::sqrt((sqrSumDeltaX+sqrSumDeltaY)/nchits); // RMS of cluster rho
     kerasvars[5] = std::sqrt(sqrSumDeltaTime/nchits); // RMS of cluster time
     kerasvars[6] = std::sqrt(sqrSumDeltaPhi/nchits); // RMS of cluster phi
     std::vector<float> kerasout = sofiePtr_->infer(kerasvars.data());

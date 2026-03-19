@@ -10,7 +10,6 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
-#include "Offline/TrkHitReco/inc/TrainBkgDiag.hxx"
 
 #include <string>
 

@@ -158,8 +158,7 @@ namespace mu2e
     auto bkgccol = std::make_unique<BkgClusterCollection>();
     auto bkghitcol = std::make_unique<BkgClusterHitCollection>();
     bkgccol->reserve(nch/2);
-    bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); //Pre-fill with defaults
-    //bkghitcol.reserve(nch);
+    bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); // Pre-fill with defaults
 
     clusterer_->findClusters(*bkgccol, chcol);
 
@@ -187,6 +186,7 @@ namespace mu2e
         ComboHitCollection::SHIV shiv;
         chcol_out->reserve(chcol_p.size());
         for(size_t ich=0; ich < nch; ++ich) {
+          shiv.clear();
           StrawHitFlag const& flag = chfcol[ich];
           if (!filter_ || !flag.hasAnyProperty(bkgmsk_)) {
             if(&chcol_p == chcol.fillStrawHitIndices(ich, shiv, level_)){
@@ -204,7 +204,7 @@ namespace mu2e
       int nprotons = countProton(*bkgccol, chfcol, chcol);
       event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
     }
-    //produce background collection
+    // Produce background collection
     if (savebkg_) {
       event.put(std::move(bkghitcol));
       event.put(std::move(bkgccol));
@@ -225,7 +225,6 @@ namespace mu2e
       }
       for (const auto& chit : cluster.hits()){
         chfcol[chit].merge(flag);
-        //hitToClusterMap[chit] = icl;
         if(savebkg_){
           float dist = clusterer_->distance(cluster, chcol[chit]);
           bkghitcol[chit] = BkgClusterHit(dist, chcol[chit].flag());
@@ -235,6 +234,9 @@ namespace mu2e
   }
 
   //------------------------------------------------------------------------------------------
+  // If a hit is not flagged as background and the hit edep > 3 keV it is flagged with energysel
+  // as this could be a potential proton hit. The proton clusters are counted so as to have an
+  // alternative method for normalization. Same logic followed by DeltaFinder as well.
   int FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
     int npc(0);
@@ -251,8 +253,8 @@ namespace mu2e
              nhighedep++;
           }
         }
-        //Placeholder logic, may change in the future
-        if(nhits > minhits_ and (float)nhighedep/nhits > minfrac_)
+        // Placeholder logic, may change in the future
+        if(nhits > minhits_ && (float)nhighedep/nhits > minfrac_)
           npc++;
       }
     }
