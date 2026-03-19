@@ -169,7 +169,7 @@ namespace mu2e
     if(countprotons_){
       nprotons = countProton(*bkgccol, chfcol, chcol);
     }
-    // When counprotons_ is false, nprotons = 0 indicates counting disabled
+    // When countprotons_ is false, nprotons = 0 indicates counting disabled
     event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
 
     auto chcol_out = std::make_unique<ComboHitCollection>();
