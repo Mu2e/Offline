@@ -39,8 +39,6 @@ namespace mu2e
       fhicl::Atom<int> PEthreshold{Name("PEthreshold"), Comment("PE threshold required for a coincidence")};
       fhicl::Atom<double> maxTimeDifferenceAdjacentPulses{Name("maxTimeDifferenceAdjacentPulses"), Comment("maximum time difference of pulses of adjacent channels considered for coincidences")};
       fhicl::Atom<double> maxTimeDifference{Name("maxTimeDifference"), Comment("maximum time difference of a coincidence hit combination")};
-      fhicl::Atom<double> minOverlapTimeAdjacentPulses{Name("minOverlapTimeAdjacentPulses"), Comment("minimum overlap time between pulses of adjacent channels to be considered for coincidences")};
-      fhicl::Atom<double> minOverlapTime{Name("minOverlapTime"), Comment("minimum overlap time between pulses of a coincidence hit combination")};
       fhicl::Atom<double> minSlope{Name("minSlope"), Comment("minimum slope allowed for a coincidence")};
       fhicl::Atom<double> maxSlope{Name("maxSlope"), Comment("maximum slope allowed for a coincidence")};
       fhicl::Atom<double> maxSlopeDifference{Name("maxSlopeDifference"), Comment("maximum slope difference between layers allowed for a coincidence")};
@@ -54,16 +52,9 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<int> verboseLevel{Name("verboseLevel"), Comment("verbose level")};
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
-      //cluster settings
-      fhicl::Atom<double> clusterMaxTimeDifference{Name("clusterMaxTimeDifference"), Comment("maximum time difference between hits to be considered for a hit cluster (when overlap option is not used)")};
-      fhicl::Atom<double> clusterMinOverlapTime{Name("clusterMinOverlapTime"), Comment("minimum overlap time between hits to be considered for a hit cluster (when overlap option is used)")};
       //sector-specific coincidence settings
       fhicl::Sequence<fhicl::Table<SectorConfig> > sectorConfig{Name("sectorConfig"), Comment("sector-specific settings")};
-      //coincidence settings for overlap option
-      fhicl::Atom<bool> usePulseOverlaps{Name("usePulseOverlaps"), Comment("use pulse overlaps instead of peak times to determine coincidences")};
       //other settings
-      fhicl::Atom<bool> useNoFitReco{Name("useNoFitReco"), Comment("use pulse reco results not based on a Gumbel fit")};
-      fhicl::Atom<bool> usePEsPulseHeight{Name("usePEsPulseHeight"), Comment("use PEs determined by pulse height instead of pulse area")};
       fhicl::Atom<int> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
       fhicl::Atom<double> fiberSignalSpeed{Name("fiberSignalSpeed"), Comment("effective speed of signals inside the CRV fibers in mm/ns")};
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
@@ -82,16 +73,8 @@ namespace mu2e
     int                      _verboseLevel;
     std::string              _crvRecoPulsesModuleLabel;
 
-    double                   _initialClusterMaxTimeDifference;
-    double                   _initialClusterMinOverlapTime;
-    double                   _clusterMaxTimeDifference;
-    double                   _clusterMinOverlapTime;
-
     std::vector<SectorConfig> _sectorConfig;
 
-    bool        _usePulseOverlaps;
-    bool        _useNoFitReco;
-    bool        _usePEsPulseHeight;
     size_t      _bigClusterThreshold;
     double      _fiberSignalSpeed;
     double      _timeOffset;
@@ -114,8 +97,6 @@ namespace mu2e
       int         PEthreshold;
       double      maxTimeDifferenceAdjacentPulses;
       double      maxTimeDifference;
-      double      minOverlapTimeAdjacentPulses;
-      double      minOverlapTime;
       double      minSlope, maxSlope, maxSlopeDifference;
       int         coincidenceLayers;
       double      minClusterPEs;
@@ -128,7 +109,7 @@ namespace mu2e
       art::Ptr<CrvRecoPulse> _crvRecoPulse;
       CLHEP::Hep3Vector      _pos;
       double _x, _y;
-      double _time, _timePulseStart, _timePulseEnd;
+      double _time;
       double _PEs;
       int    _crvSector;
       int    _layer;
@@ -137,8 +118,6 @@ namespace mu2e
       int    _PEthreshold;
       double _maxTimeDifferenceAdjacentPulses;
       double _maxTimeDifference;
-      double _minOverlapTimeAdjacentPulses;
-      double _minOverlapTime;
       double _minSlope, _maxSlope, _maxSlopeDifference;
       int    _coincidenceLayers;
       double _minClusterPEs;
@@ -149,16 +128,12 @@ namespace mu2e
                                    //(used for the final clustering process)
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos,
-             double x, double y, double time, double timePulseStart, double timePulseEnd,
-             double PEs, int crvSector, int layer, int counter, int SiPM, int PEthreshold,
+             double x, double y, double time, double PEs, int crvSector, int layer, int counter, int SiPM, int PEthreshold,
              double maxTimeDifferenceAdjacentPulses, double maxTimeDifference,
-             double minOverlapTimeAdjacentPulses, double minOverlapTime,
              double minSlope, double maxSlope, double maxSlopeDifference, int coincidenceLayers, double minClusterPEs, double maxDistance) :
                _crvRecoPulse(crvRecoPulse), _pos(pos),
-               _x(x), _y(y), _time(time), _timePulseStart(timePulseStart), _timePulseEnd(timePulseEnd),
-               _PEs(PEs), _crvSector(crvSector), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold),
+               _x(x), _y(y), _time(time), _PEs(PEs), _crvSector(crvSector), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold),
                _maxTimeDifferenceAdjacentPulses(maxTimeDifferenceAdjacentPulses), _maxTimeDifference(maxTimeDifference),
-               _minOverlapTimeAdjacentPulses(minOverlapTimeAdjacentPulses), _minOverlapTime(minOverlapTime),
                _minSlope(minSlope), _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers),
                _minClusterPEs(minClusterPEs), _maxDistance(maxDistance) {}
     };
@@ -167,8 +142,7 @@ namespace mu2e
                            std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
                            const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection);
     void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered);
-    void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
-                      double clusterMaxTimeDifference, double clusterMinOverlapTime);
+    void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters, double clusterMaxTimeDifference);
     void checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits);
     bool checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n);
 
@@ -178,12 +152,7 @@ namespace mu2e
     art::EDProducer(conf),
     _verboseLevel(conf().verboseLevel()),
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
-    _clusterMaxTimeDifference(conf().clusterMaxTimeDifference()),
-    _clusterMinOverlapTime(conf().clusterMinOverlapTime()),
     _sectorConfig(conf().sectorConfig()),
-    _usePulseOverlaps(conf().usePulseOverlaps()),
-    _useNoFitReco(conf().useNoFitReco()),
-    _usePEsPulseHeight(conf().usePEsPulseHeight()),
     _bigClusterThreshold(conf().bigClusterThreshold()),
     _fiberSignalSpeed(conf().fiberSignalSpeed()),
     _timeOffset(conf().timeOffset()),
@@ -192,14 +161,6 @@ namespace mu2e
     _totalEventsCoincidence(0)
   {
     produces<CrvCoincidenceClusterCollection>();
-    //get initial cluster time parameters from coincidence parameters
-    //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
-    _initialClusterMaxTimeDifference=std::max_element(_sectorConfig.begin(), _sectorConfig.end(),
-                              [](const SectorConfig &a, const SectorConfig &b)
-                              {return a.maxTimeDifference() < b.maxTimeDifference();})->maxTimeDifference();
-    _initialClusterMinOverlapTime=std::min_element(_sectorConfig.begin(), _sectorConfig.end(),
-                              [](const SectorConfig &a, const SectorConfig &b)
-                              {return a.minOverlapTime() < b.minOverlapTime();})->minOverlapTime();
   }
 
   void CrvCoincidenceFinder::beginJob()
@@ -255,8 +216,6 @@ namespace mu2e
       s.PEthreshold                     = sectorConfigIter->PEthreshold();
       s.maxTimeDifferenceAdjacentPulses = sectorConfigIter->maxTimeDifferenceAdjacentPulses();
       s.maxTimeDifference               = sectorConfigIter->maxTimeDifference();
-      s.minOverlapTimeAdjacentPulses    = sectorConfigIter->minOverlapTimeAdjacentPulses();
-      s.minOverlapTime                  = sectorConfigIter->minOverlapTime();
       s.minSlope                        = sectorConfigIter->minSlope();
       s.maxSlope                        = sectorConfigIter->maxSlope();
       s.maxSlopeDifference              = sectorConfigIter->maxSlopeDifference();
@@ -288,8 +247,6 @@ namespace mu2e
     {
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
 
-      if(_usePulseOverlaps && crvRecoPulse->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::duplicateNoFitPulse)) continue;
-
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
       int sectorNumber, moduleNumber, layerNumber, barNumber;
@@ -311,16 +268,9 @@ namespace mu2e
       double y=crvCounterPos[sector.thicknessDirection];
 
       //get the reco pulses information
-      int SiPM = crvRecoPulse->GetSiPMNumber();
-
+      int    SiPM=crvRecoPulse->GetSiPMNumber();
       double time=crvRecoPulse->GetPulseTime();
-      double timePulseStart=crvRecoPulse->GetPulseStart();
-      double timePulseEnd=crvRecoPulse->GetPulseEnd();
       float  PEs =crvRecoPulse->GetPEs();
-      if(_usePEsPulseHeight) PEs=crvRecoPulse->GetPEsPulseHeight();
-      if(_useNoFitReco) PEs=crvRecoPulse->GetPEsNoFit();
-      if(_useNoFitReco) time=crvRecoPulse->GetPulseTimeNoFit();
-      if(_usePulseOverlaps) PEs=crvRecoPulse->GetPEsNoFit();
 
       //compensate for dead or ignored channels
       size_t currentChannel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
@@ -335,10 +285,9 @@ namespace mu2e
 
       //don't split counter sides for the purpose of finding clusters
       sectorTypeMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
-                                                    x, y, time, timePulseStart, timePulseEnd, PEs, sectorNumber,
+                                                    x, y, time, PEs, sectorNumber,
                                                     layerNumber, counterNumber, SiPM, sector.PEthreshold,
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
-                                                    sector.minOverlapTimeAdjacentPulses, sector.minOverlapTime,
                                                     sector.minSlope, sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
                                                     sector.minClusterPEs,sector.initialClusterMaxDistance);
     }
@@ -354,10 +303,19 @@ namespace mu2e
       std::list<CrvHit> hitsFiltered;
       filterHits(hitsUnfiltered, hitsFiltered);
 
+      //find maximum coincidence time difference between hits for this sector type
+      //used to keep hits together in a cluster that could potentially form coincidences
+      float initialClusterMaxTimeDifference=0;
+      for(auto const &sectorMapEntry : _sectorMap)
+      {
+        if(sectorMapEntry.second.sectorType==crvSectorType && sectorMapEntry.second.maxTimeDifference>initialClusterMaxTimeDifference)
+           initialClusterMaxTimeDifference=sectorMapEntry.second.maxTimeDifference;
+      }
+
       //distribute the hits into clusters
       //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
       std::vector<std::vector<CrvHit> > clusters;
-      findClusters(hitsFiltered, clusters, _initialClusterMaxTimeDifference, _initialClusterMinOverlapTime);
+      findClusters(hitsFiltered, clusters, initialClusterMaxTimeDifference);
 
       //all hits belonging to a coincidence group are collected in a new list
       std::list<CrvHit> coincidenceHits;
@@ -379,9 +337,28 @@ namespace mu2e
         checkCoincidence(cluster1,coincidenceHits);
       }//loop over all cluster in sector type
 
+      //find maximum counter halflength of this sector
+      float maxHalfLength=0;
+      bool  readoutSide0=false;
+      bool  readoutSide1=false;
+      for(auto const &sectorMapEntry : _sectorMap)
+      {
+        if(sectorMapEntry.second.sectorType==crvSectorType)
+        {
+          if(sectorMapEntry.second.counterHalfLength>maxHalfLength) maxHalfLength=sectorMapEntry.second.counterHalfLength;
+          if(sectorMapEntry.second.sipmsAtSide0) readoutSide0=true;
+          if(sectorMapEntry.second.sipmsAtSide1) readoutSide1=true;
+        }
+      }
+      //maximum time difference between hit of opposite ends for this sector type
+      //based on the max coincidence time difference for this sector (already used above) and the signal travel time through the max counter length
+      //used to keep hits at opposite ends in one cluster (but only, if there are two readout sides)
+      float finalClusterMaxTimeDifference=initialClusterMaxTimeDifference;
+      if(readoutSide0 && readoutSide1) finalClusterMaxTimeDifference+=2.0*maxHalfLength/_fiberSignalSpeed;
+
       //create new clusters based only on coincidence hits
       std::vector<std::vector<CrvHit> > coincidenceClusters;
-      findClusters(coincidenceHits, coincidenceClusters, _clusterMaxTimeDifference, _clusterMinOverlapTime);
+      findClusters(coincidenceHits, coincidenceClusters, finalClusterMaxTimeDifference);
 
       clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection, crvRecoPulseCollection);
     }//loop over all sector types
@@ -411,11 +388,6 @@ namespace mu2e
       std::vector<art::Ptr<CrvRecoPulse> > crvRecoPulses;
       double startTime=cluster.front()._time;
       double endTime=cluster.front()._time;
-      if(_usePulseOverlaps)
-      {
-        startTime=cluster.front()._timePulseStart;
-        endTime=cluster.front()._timePulseEnd;
-      }
       double PEs=0;
       CLHEP::Hep3Vector avgCounterPos;  //PE-weighted average position
       std::set<int> layerSet;
@@ -428,16 +400,6 @@ namespace mu2e
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
-        if(_usePulseOverlaps)
-        {
-          //duplicate nofit pulses are removed in the usePulseOverlap option, but should be included in the list of reco pulses
-          for(size_t recoPulseIndex=hit->_crvRecoPulse.key()+1; recoPulseIndex<crvRecoPulseCollection->size(); ++recoPulseIndex)
-          {
-            const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
-            if(!crvRecoPulse->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::duplicateNoFitPulse)) break;
-            crvRecoPulses.push_back(crvRecoPulse);
-          }
-        }
 
         PEs+=hit->_PEs;
         avgCounterPos+=hit->_pos*hit->_PEs;
@@ -446,17 +408,9 @@ namespace mu2e
         sumY +=hit->_PEs*hit->_y;
         sumYY+=hit->_PEs*hit->_y*hit->_y;
         sumXY+=hit->_PEs*hit->_x*hit->_y;
-        if(_usePulseOverlaps)
-        {
-          if(startTime>hit->_timePulseStart) startTime=hit->_timePulseStart;
-          if(endTime<hit->_timePulseEnd) endTime=hit->_timePulseEnd;
-        }
-        else
-        {
-          if(startTime>hit->_time) startTime=hit->_time;
-          if(endTime<hit->_time) endTime=hit->_time;
-        }
 
+        if(startTime>hit->_time) startTime=hit->_time;
+        if(endTime<hit->_time) endTime=hit->_time;
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
 
         //collect hits of individual counters
@@ -478,105 +432,113 @@ namespace mu2e
       std::array<size_t, CRVId::nSidesPerBar> sideHits{0,0};
       std::array<float, CRVId::nSidesPerBar>  sidePEs{0,0};
       std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};  //this value becomes meaningless, if a coincidence cluster spans more than one sector
-                                                               //with different counter lengths. (not a problem for extrated position)
-      double                                  avgHalfLength{0};  //needed, if only one readout side is available, and the center of the counter is used
-      double                                  avgHitTime{0};
-      CLHEP::Hep3Vector                       avgHitPos;
+                                                               //with different counter lengths. (not a problem for extracted position)
+      double                                  avgHalfLength{0};//needed, if only one readout side is available, and the center of the counter is used
+      double                                  avgHitTime{0};   //if no counters with hits at both sides are found, the time is calculated from the side times
+                                                               //assuming the hit occured at the center of the counters. in this case, this value becomes meaningless,
+                                                               //if a coincidence cluster spans more than one sector with different counter lengths.
+      CLHEP::Hep3Vector                       avgHitPos;       //if no counters with hits at both sides are found, the longitudinal coordinate is taken
+                                                               //from the PE-weighted average counter center
       double                                  PEbothSides{0};  //number of PEs for counters with readouts on both sides (needed to PE-weight the counter hits)
 
       //calculate average times and positions for each counter separately
+      //and use the loop to fill the "side" variables
       for(auto recoTimeIter=recoTimes.begin(); recoTimeIter!=recoTimes.end(); ++recoTimeIter)
       {
         int crvSector=recoTimeIter->second.at(0)->_crvSector;
+        double halfLength=_sectorMap.at(crvSector).counterHalfLength;
         CLHEP::Hep3Vector counterPos=recoTimeIter->second.at(0)->_pos;
 
-        //separate hits for each SiPM
-        std::map<int,std::vector<CrvHit>::const_iterator> sipmHits;
+        //separate hits into both sides
+        //and fill the "side" variables for the entire coincidence cluster and for this counter
+        std::array<float, CRVId::nSidesPerBar>  sidePEsCounter{0,0};
+        std::array<double, CRVId::nSidesPerBar> sideTimesCounter{0,0};
+        std::array<int, CRVId::nChanPerBar>     hitsPerSiPM{0,0,0,0};
+        bool                                    moreThanOneHitPerSiPM{false};
         const std::vector<std::vector<CrvHit>::const_iterator> &counterHits=recoTimeIter->second;
         for(auto counterHit=counterHits.begin(); counterHit!=counterHits.end(); ++counterHit)
         {
-          auto sipmHit = sipmHits.find((*counterHit)->_SiPM);
-          if(sipmHit==sipmHits.end()) sipmHits.emplace((*counterHit)->_SiPM,*counterHit);
-          else
-          {
-            //if more than one hit per SiPM, use the hit with the highest PE
-            if(sipmHit->second->_PEs<(*counterHit)->_PEs) sipmHit->second=*counterHit;
-          }
+          int SiPM=(*counterHit)->_SiPM;
+          int side=SiPM%CRVId::nSidesPerBar;
+          sideHits[side]++;
+          sidePEs[side]+=(*counterHit)->_PEs;
+          sideTimes[side]+=(*counterHit)->_time * (*counterHit)->_PEs;  //will be used for PE-weighted pulse time average
+          avgHalfLength+=halfLength * (*counterHit)->_PEs; //will be used for PE-weighted half length
+
+          sidePEsCounter[side]+=(*counterHit)->_PEs;
+          sideTimesCounter[side]+=(*counterHit)->_time * (*counterHit)->_PEs;  //will be used for PE-weighted pulse time average
+          hitsPerSiPM[SiPM]++;
+          if(hitsPerSiPM[SiPM]>1) moreThanOneHitPerSiPM=true;
         }
 
         //calculate average side times for this counter
-        std::array<size_t, CRVId::nSidesPerBar> sideHitsCounter{0,0};
-        std::array<float, CRVId::nSidesPerBar>  sidePEsCounter{0,0};
-        std::array<double, CRVId::nSidesPerBar> sideTimesCounter{0,0};
-        for(auto sipmHit=sipmHits.begin(); sipmHit!=sipmHits.end(); ++sipmHit)
-        {
-          int side=sipmHit->first%CRVId::nSidesPerBar;
-          //use fit values and not the no-fit option
-          sideHitsCounter[side]++;
-          sidePEsCounter[side]+=sipmHit->second->_crvRecoPulse->GetPEs();
-          sideTimesCounter[side]+=sipmHit->second->_crvRecoPulse->GetPulseTime()*sipmHit->second->_crvRecoPulse->GetPEs();  //PE-weighted pulse time average
-        }
         int validSides=0;
         for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
         {
-          if(sidePEsCounter[side]>0) {sideTimesCounter[side]/=sidePEsCounter[side]; ++validSides;} else sideTimesCounter[side]=0.0;
+          if(sidePEsCounter[side]>0) {sideTimesCounter[side]/=sidePEsCounter[side]; ++validSides;}
+          else sideTimesCounter[side]=0.0;
         }
-
-        //calculate some global numbers
-        for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
-        {
-          sideHits[side]+=sideHitsCounter[side];
-          sidePEs[side]+=sidePEsCounter[side];
-          sideTimes[side]+=sideTimesCounter[side]*sidePEsCounter[side];
-        }
-        double halfLength=_sectorMap.at(crvSector).counterHalfLength;
-        avgHalfLength+=halfLength*(sidePEsCounter[0]+sidePEsCounter[1]);
 
         //calculate hit times and hit positions for this counter
-        if(validSides==CRVId::nSidesPerBar)  //can calculate the longitudinal position only, if there are hits on both readout sides
+        //can calculate the longitudinal position only,
+        //if there are hits on both readout sides, and if no SiPM was hit more than once
+        if(validSides==CRVId::nSidesPerBar && !moreThanOneHitPerSiPM)
         {
           double timeDifference=sideTimesCounter[0]-sideTimesCounter[1];
           double distanceFromCounterCenter=0.5*timeDifference*_fiberSignalSpeed;
-          CLHEP::Hep3Vector offsetFromCounterCenter;
-          offsetFromCounterCenter[_sectorMap.at(crvSector).lengthDirection]=distanceFromCounterCenter;
-          CLHEP::Hep3Vector avgHitPosCounter=counterPos+offsetFromCounterCenter;
+          if(distanceFromCounterCenter<halfLength) //make sure the resulting position is still inside the counter
+          {
+            CLHEP::Hep3Vector offsetFromCounterCenter;
+            offsetFromCounterCenter[_sectorMap.at(crvSector).lengthDirection]=distanceFromCounterCenter;
+            CLHEP::Hep3Vector hitPosCounter=counterPos+offsetFromCounterCenter;
 
-          double hitTime0=sideTimesCounter[0] - (halfLength+distanceFromCounterCenter)/_fiberSignalSpeed;
-          double hitTime1=sideTimesCounter[1] - (halfLength-distanceFromCounterCenter)/_fiberSignalSpeed;
-          double avgHitTimeCounter=0.5*(hitTime0+hitTime1);  //both hit times and the avg hit should be identical
+            double hitTimeCounter = sideTimesCounter[0] - (halfLength+distanceFromCounterCenter)/_fiberSignalSpeed;
+            //can also be calculated from the other side in the following way:
+            //double avgHitTimeCounter = sideTimesCounter[1] - (halfLength-distanceFromCounterCenter)/_fiberSignalSpeed
+            //both results are identical.
 
-          PEbothSides+=sidePEsCounter[0]+sidePEsCounter[1];
-          avgHitPos+=avgHitPosCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
-          avgHitTime+=avgHitTimeCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
+            PEbothSides+=sidePEsCounter[0]+sidePEsCounter[1];
+            avgHitPos+=hitPosCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
+            avgHitTime+=hitTimeCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
+          }
         }
       }//hit time/pos for one counter
 
+      //calculate average side times for the entire coincidence cluster
       for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
       {
         if(sidePEs[side]>0) sideTimes[side]/=sidePEs[side]; else sideTimes[side]=0.0;
       }
+      //calculate average hit times and hit position
+      //based on all counters that have hits on both ends
+      //(if possible)
       bool twoReadoutSides=false;
       if(PEbothSides>0)
       {
+        //there were counters with hits on both sides.
+        //only these hits are used to calculate the longitudinal position of the coincidence cluster.
         twoReadoutSides=true;
         avgHitPos/=PEbothSides;
         avgHitTime/=PEbothSides;
       }
       else
       {
-        //hits only at one readout side.
-        //longitudinal position of hit cannot be calculated.
-        //use the average counter position instead, i.e. use the center of the counter as longitudinal position (avgCounterPos)
-        //and adjust the hit time
+        //there were no counters with hits at both sides.
+        //longitudinal position of the coincidence cluster cannot be calculated.
+        //use the center of the counter as longitudinal position (avgCounterPos)
+        //there can still be hits on both sides, but they didn't occur at the same counter
         avgHitPos=avgCounterPos;
-        if(sidePEs[0]>0)
+        avgHalfLength/=(sidePEs[0]+sidePEs[1]);
+        if(sidePEs[0]>0 && sidePEs[1]>0)
         {
-          avgHalfLength/=sidePEs[0];
+          avgHitTime=0.5*(sideTimes[0]+sideTimes[1])-avgHalfLength/_fiberSignalSpeed;
+        }
+        else if(sidePEs[0]>0)
+        {
           avgHitTime=sideTimes[0]-avgHalfLength/_fiberSignalSpeed;
         }
         else if(sidePEs[1]>0)
         {
-          avgHalfLength/=sidePEs[1];
           avgHitTime=sideTimes[1]-avgHalfLength/_fiberSignalSpeed;
         }
       }
@@ -598,12 +560,9 @@ namespace mu2e
       int    layer=iterHit->_layer;
       int    counter=iterHit->_counter;  //counter number in one layer counted from the beginning of the counter type
       double time=iterHit->_time;
-      double timePulseStart=iterHit->_timePulseStart;
-      double timePulseEnd=iterHit->_timePulseEnd;
 
       int    PEthreshold=iterHit->_PEthreshold;
       double maxTimeDifferenceAdjacentPulses=iterHit->_maxTimeDifferenceAdjacentPulses;
-      double minOverlapTimeAdjacentPulses=iterHit->_minOverlapTimeAdjacentPulses;
 
       //check other SiPM and the SiPMs at the adjacent counters
       double PEs_thisCounter=0;
@@ -616,15 +575,7 @@ namespace mu2e
         if(iterHitAdjacent->_layer!=layer) continue;
 
         //use hits within a certain time window only
-        if(!_usePulseOverlaps)
-        {
-          if(fabs(iterHitAdjacent->_time-time)>maxTimeDifferenceAdjacentPulses) continue;
-        }
-        else
-        {
-          double overlapTime=std::min(iterHitAdjacent->_timePulseEnd,timePulseEnd)-std::max(iterHitAdjacent->_timePulseStart,timePulseStart);
-          if(overlapTime<minOverlapTimeAdjacentPulses) continue; //no overlap or overlap time too short
-        }
+        if(fabs(iterHitAdjacent->_time-time)>maxTimeDifferenceAdjacentPulses) continue;
 
         //collect all PEs of this and the adjacent counters
         int counterDiff=iterHitAdjacent->_counter-counter;
@@ -646,7 +597,7 @@ namespace mu2e
 
 
   void CrvCoincidenceFinder::findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
-                                          double clusterMaxTimeDifference, double clusterMinOverlapTime)
+                                          double clusterMaxTimeDifference)
   {
     while(!hits.empty()) //run through clustering processes until all hits are distributed into clusters
     {
@@ -675,32 +626,15 @@ namespace mu2e
             for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
             {
               double maxDistance = std::max(hitsIter->_maxDistance,clusterIter->_maxDistance);
-              if(_usePulseOverlaps)
+              if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
+                 (std::fabs(hitsIter->_time-clusterIter->_time)<clusterMaxTimeDifference))
               {
-                if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
-                   (hitsIter->_timePulseEnd-clusterIter->_timePulseStart>clusterMinOverlapTime) &&
-                   (clusterIter->_timePulseEnd-hitsIter->_timePulseStart>clusterMinOverlapTime))
-                {
-                  //this hit satisfied the conditions
-                  //move it from list of hits to the current cluster
-                  cluster.push_back(*hitsIter);
-                  hitsIter=hits.erase(hitsIter);
-                  erasedHit=true;
-                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in list of hits
-                }
-              }
-              else
-              {
-                if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
-                   (std::fabs(hitsIter->_time-clusterIter->_time)<clusterMaxTimeDifference))
-                {
-                  //this hit satisfied the conditions
-                  //move it from list of hits to the current cluster
-                  cluster.push_back(*hitsIter);
-                  hitsIter=hits.erase(hitsIter);
-                  erasedHit=true;
-                  break;  //no need for more comparisons with other hits in current cluster, go to the next hit in list of hits
-                }
+                //this hit satisfied the conditions
+                //move it from list of hits to the current cluster
+                cluster.push_back(*hitsIter);
+                hitsIter=hits.erase(hitsIter);
+                erasedHit=true;
+                break;  //no need for more comparisons with other hits in current cluster, go to the next hit in list of hits
               }
             } //loop over all hits in the cluster (for comparison with current hit)
 
@@ -871,26 +805,13 @@ namespace mu2e
   {
     typedef const std::vector<CrvHit>::const_iterator L;
 
-    if(!_usePulseOverlaps)
-    {
-      double maxTimeDifference = (*std::max_element(layerIterators,layerIterators+n,
-                                 [](L &a, L &b){return a->_maxTimeDifference < b->_maxTimeDifference;}))->_maxTimeDifference;
-      double timeMax = (*std::max_element(layerIterators,layerIterators+n,
-                       [](L &a, L &b){return a->_time < b->_time;}))->_time;
-      double timeMin = (*std::min_element(layerIterators,layerIterators+n,
-                       [](L &a, L &b){return a->_time < b->_time;}))->_time;
-      if(timeMax-timeMin>maxTimeDifference) return false;  //hits don't fall within the time window
-    }
-    else
-    {
-      double minOverlapTime = (*std::min_element(layerIterators,layerIterators+n,
-                                 [](L &a, L &b){return a->_minOverlapTime < b->_minOverlapTime;}))->_minOverlapTime;
-      double timeMaxPulseStart = (*std::max_element(layerIterators,layerIterators+n,
-                                 [](L &a, L &b){return a->_timePulseStart < b->_timePulseStart;}))->_timePulseStart;
-      double timeMinPulseEnd   = (*std::min_element(layerIterators,layerIterators+n,
-                                 [](L &a, L &b){return a->_timePulseEnd < b->_timePulseEnd;}))->_timePulseEnd;
-      if(timeMinPulseEnd-timeMaxPulseStart<minOverlapTime) return false;  //pulses don't overlap, or overlap time too short
-    }
+    double maxTimeDifference = (*std::max_element(layerIterators,layerIterators+n,
+                               [](L &a, L &b){return a->_maxTimeDifference < b->_maxTimeDifference;}))->_maxTimeDifference;
+    double timeMax = (*std::max_element(layerIterators,layerIterators+n,
+                     [](L &a, L &b){return a->_time < b->_time;}))->_time;
+    double timeMin = (*std::min_element(layerIterators,layerIterators+n,
+                     [](L &a, L &b){return a->_time < b->_time;}))->_time;
+    if(timeMax-timeMin>maxTimeDifference) return false;  //hits don't fall within the time window
 
     double minSlope = (*std::min_element(layerIterators,layerIterators+n,
                       [](L &a, L &b){return a->_minSlope < b->_minSlope;}))->_minSlope;

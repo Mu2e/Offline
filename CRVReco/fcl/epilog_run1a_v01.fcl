@@ -5,8 +5,6 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -19,8 +17,6 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
