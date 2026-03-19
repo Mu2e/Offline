@@ -141,8 +141,9 @@ namespace mu2e
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
                            std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
                            const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection);
-    void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered);
-    void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters, double clusterMaxTimeDifference);
+    void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered, unsigned int readoutSide);
+    void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters, double clusterMaxTimeDifference,
+                      bool combineOppositeSides=false, double timeDifferenceOppositeSides=0);
     void checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits);
     bool checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n);
 
@@ -300,44 +301,38 @@ namespace mu2e
       const std::vector<CrvHit> &hitsUnfiltered = sectorTypeMapIter->second;
 
       //filter hits, i.e. remove all hits below PE threshold
-      std::list<CrvHit> hitsFiltered;
-      filterHits(hitsUnfiltered, hitsFiltered);
+      //separate into both readout sides
+      std::list<CrvHit> hitsFiltered0;
+      std::list<CrvHit> hitsFiltered1;
+      filterHits(hitsUnfiltered, hitsFiltered0, 0);
+      filterHits(hitsUnfiltered, hitsFiltered1, 1);
 
       //find maximum coincidence time difference between hits for this sector type
       //used to keep hits together in a cluster that could potentially form coincidences
-      float initialClusterMaxTimeDifference=0;
+      float clusterMaxTimeDifference=0;
       for(auto const &sectorMapEntry : _sectorMap)
       {
-        if(sectorMapEntry.second.sectorType==crvSectorType && sectorMapEntry.second.maxTimeDifference>initialClusterMaxTimeDifference)
-           initialClusterMaxTimeDifference=sectorMapEntry.second.maxTimeDifference;
+        if(sectorMapEntry.second.sectorType==crvSectorType && sectorMapEntry.second.maxTimeDifference>clusterMaxTimeDifference)
+          clusterMaxTimeDifference=sectorMapEntry.second.maxTimeDifference;
       }
 
       //distribute the hits into clusters
       //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
-      std::vector<std::vector<CrvHit> > clusters;
-      findClusters(hitsFiltered, clusters, initialClusterMaxTimeDifference);
+      std::vector<std::vector<CrvHit> > clusters0;
+      std::vector<std::vector<CrvHit> > clusters1;
+      findClusters(hitsFiltered0, clusters0, clusterMaxTimeDifference);
+      findClusters(hitsFiltered1, clusters1, clusterMaxTimeDifference);
 
       //all hits belonging to a coincidence group are collected in a new list
       std::list<CrvHit> coincidenceHits;
 
-      //loop through all clusters
-      for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)
-      {
-        const std::vector<CrvHit> &cluster=clusters[iCluster];
-        std::vector<CrvHit> cluster0;  //cluster for SiPMs at negative end
-        std::vector<CrvHit> cluster1;  //cluster for SiPMs at positive end
-        for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
-        {
-          if(hit->_SiPM%CRVId::nSidesPerBar==0) cluster0.push_back(*hit); else cluster1.push_back(*hit);
-        }
-
-        //check whether this hit cluster has coincidences
-        //(separately for both readout sides)
-        checkCoincidence(cluster0,coincidenceHits);
-        checkCoincidence(cluster1,coincidenceHits);
-      }//loop over all cluster in sector type
+      //loop through all clusters and check whether they have coincidence groups
+      //add each hit of all coincidence groups to a list of coincidence hits
+      for(size_t iCluster=0; iCluster<clusters0.size(); ++iCluster) checkCoincidence(clusters0.at(iCluster),coincidenceHits);
+      for(size_t iCluster=0; iCluster<clusters1.size(); ++iCluster) checkCoincidence(clusters1.at(iCluster),coincidenceHits);
 
       //find maximum counter halflength of this sector
+      //and check, if they have readouts
       float maxHalfLength=0;
       bool  readoutSide0=false;
       bool  readoutSide1=false;
@@ -350,15 +345,16 @@ namespace mu2e
           if(sectorMapEntry.second.sipmsAtSide1) readoutSide1=true;
         }
       }
-      //maximum time difference between hit of opposite ends for this sector type
-      //based on the max coincidence time difference for this sector (already used above) and the signal travel time through the max counter length
+      //maximum time difference between hits of opposite ends for this sector type
+      //based on the signal travel time through the max counter length
       //used to keep hits at opposite ends in one cluster (but only, if there are two readout sides)
-      float finalClusterMaxTimeDifference=initialClusterMaxTimeDifference;
-      if(readoutSide0 && readoutSide1) finalClusterMaxTimeDifference+=2.0*maxHalfLength/_fiberSignalSpeed;
+      bool combineOppositeSides=false;
+      if(readoutSide0 && readoutSide1) combineOppositeSides=true;
+      float timeDifferenceOppositeSides = 2.0*maxHalfLength/_fiberSignalSpeed;
 
       //create new clusters based only on coincidence hits
       std::vector<std::vector<CrvHit> > coincidenceClusters;
-      findClusters(coincidenceHits, coincidenceClusters, finalClusterMaxTimeDifference);
+      findClusters(coincidenceHits, coincidenceClusters, clusterMaxTimeDifference, combineOppositeSides, timeDifferenceOppositeSides);
 
       clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection, crvRecoPulseCollection);
     }//loop over all sector types
@@ -552,11 +548,14 @@ namespace mu2e
 
 
   //remove hits below the threshold
-  void CrvCoincidenceFinder::filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered)
+  void CrvCoincidenceFinder::filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered, unsigned int readoutSide)
   {
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
     {
+      int    SiPM=iterHit->_SiPM;
+      if(SiPM%CRVId::nSidesPerBar!=readoutSide) continue;  //not the readout side we are looking for
+
       int    layer=iterHit->_layer;
       int    counter=iterHit->_counter;  //counter number in one layer counted from the beginning of the counter type
       double time=iterHit->_time;
@@ -597,7 +596,7 @@ namespace mu2e
 
 
   void CrvCoincidenceFinder::findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters,
-                                          double clusterMaxTimeDifference)
+                                          double clusterMaxTimeDifference, bool combineOppositeSides, double timeDifferenceOppositeSides)
   {
     while(!hits.empty()) //run through clustering processes until all hits are distributed into clusters
     {
@@ -626,8 +625,14 @@ namespace mu2e
             for(auto clusterIter=cluster.begin(); clusterIter!=cluster.end(); ++clusterIter)
             {
               double maxDistance = std::max(hitsIter->_maxDistance,clusterIter->_maxDistance);
+              double maxTimeDifference = clusterMaxTimeDifference;
+              if(combineOppositeSides)
+              {
+                if((hitsIter->_SiPM%CRVId::nSidesPerBar)!=(clusterIter->_SiPM%CRVId::nSidesPerBar)) //both hits are at opposite sides --> use additional time difference
+                  maxTimeDifference+=timeDifferenceOppositeSides;
+              }
               if((std::fabs(hitsIter->_x-clusterIter->_x)<=maxDistance) &&
-                 (std::fabs(hitsIter->_time-clusterIter->_time)<clusterMaxTimeDifference))
+                 (std::fabs(hitsIter->_time-clusterIter->_time)<maxTimeDifference))
               {
                 //this hit satisfied the conditions
                 //move it from list of hits to the current cluster
