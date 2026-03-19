@@ -222,8 +222,7 @@ namespace mu2e
   //------------------------------------------------------------------------------------------
   void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, BkgClusterHitCollection& bkghitcol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
-    for (size_t icl =0; icl < bkgccol.size(); ++icl) {
-      auto& cluster = bkgccol[icl];
+    for (auto& cluster : bkgccol) {
       clusterer_->classifyCluster(cluster,chcol);
       StrawHitFlag flag(StrawHitFlag::bkgclust);
       if (cluster.getKerasQ()> kerasQ_) {
@@ -247,8 +246,7 @@ namespace mu2e
   int FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
     int npc(0);
-    for (size_t icl=0; icl < bkgccol.size(); ++icl) {
-      auto& cluster = bkgccol[icl];
+    for (auto& cluster : bkgccol) {
       bool isAlreadyBkg = cluster._flag.hasAllProperties(BkgClusterFlag::bkg);
       if (!isAlreadyBkg) {
         int nhighedep(0);
