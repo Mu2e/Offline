@@ -93,8 +93,7 @@ namespace mu2e
     {
       ConfigFileLookupPolicy configFile;
       produces<ComboHitCollection>();
-      if(countprotons_)
-        produces<IntensityInfoTimeCluster>();
+      produces<IntensityInfoTimeCluster>();
 
       if (savebkg_)
         {
@@ -158,7 +157,8 @@ namespace mu2e
     auto bkgccol = std::make_unique<BkgClusterCollection>();
     auto bkghitcol = std::make_unique<BkgClusterHitCollection>();
     bkgccol->reserve(nch/2);
-    bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); // Pre-fill with defaults
+    if (savebkg_)
+      bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); // Pre-fill with defaults
 
     clusterer_->findClusters(*bkgccol, chcol);
 
@@ -195,15 +195,20 @@ namespace mu2e
                 chcol_out->back()._flag.merge(flag);
               }
             }
+            else
+              throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
           }
         }
+        if((! filter_) && chcol_out->size() != chcol_p.size())
+          throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHit output" << std::endl;
       }
     }
     event.put(std::move(chcol_out));
+    int nprotons = 0;
     if(countprotons_){
-      int nprotons = countProton(*bkgccol, chfcol, chcol);
-      event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
+      nprotons = countProton(*bkgccol, chfcol, chcol);
     }
+    event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
     // Produce background collection
     if (savebkg_) {
       event.put(std::move(bkghitcol));

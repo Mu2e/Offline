@@ -30,7 +30,7 @@ namespace mu2e {
       {
         using Name    = fhicl::Name;
         using Comment = fhicl::Comment;
-        fhicl::Atom<int>              DBSminN{          Name("DBSminExpand"),     Comment("Min number neighbors for DBScan algo") };
+        fhicl::Atom<unsigned>         DBSminN{          Name("DBSminExpand"),     Comment("Min number neighbors for DBScan algo") };
         fhicl::Atom<float>            hitDeltaTime{     Name("DeltaTime"),        Comment("Max time difference between hits") };
         fhicl::Atom<float>            hitDeltaZ{        Name("DeltaZ"),           Comment("Max Z difference between hits") };
         fhicl::Atom<float>            hitDeltaXY{       Name("DeltaXY"),          Comment("Max XY difference between hits") };
@@ -53,10 +53,10 @@ namespace mu2e {
 
 
     private:
-      int      findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
+      unsigned findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
       void     calculateCluster (BkgCluster& cluster, const ComboHitCollection& chcol);
 
-      int                     DBSminExpand_;
+      unsigned                DBSminExpand_;
       float                   deltaTime_;
       float                   deltaZ_;
       float                   deltaXY2_;

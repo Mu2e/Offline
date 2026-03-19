@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <queue>
+#include <limits>
 
 
 namespace mu2e
@@ -26,7 +27,7 @@ namespace mu2e
 
   //---------------------------------------------------------------------------------------
   void DBSClusterer::init() {
-    // Add Classifier init here (see TNTClsuterer for example)
+    // Add Classifier init here (see TNTClusterer for example)
      ConfigFileLookupPolicy configFile;
      auto kerasWgtsFile = configFile(kerasW_);
      sofiePtr_          = std::make_shared<TMVA_SOFIE_TrainBkgDiag::Session>(kerasWgtsFile);
@@ -52,6 +53,8 @@ namespace mu2e
      const unsigned        noiseID(chcol.size()+1u);
      const unsigned        unprocessedID(chcol.size()+2u);
      unsigned              currentClusterID(0);
+     // Using a vector as a stack (DFS) instead of a queue (BFS) for
+     // better cache locality and to avoid frequent heap allocations
      std::vector<unsigned> inspect;
      inspect.reserve(idx.size());
      std::vector<unsigned> hitToCluster(idx.size(),unprocessedID); // number of combohits used for clustering, cluster ID
@@ -63,7 +66,7 @@ namespace mu2e
        if ( hitToCluster[i] != unprocessedID) continue;
 
        // If the neighborhood is too sparse, assign it to noise
-       int nNeighbors = findNeighbors(i, idx, chcol, neighbors);
+       unsigned nNeighbors = findNeighbors(i, idx, chcol, neighbors);
        if (nNeighbors < DBSminExpand_) {
          hitToCluster[i] = noiseID;
          continue;
@@ -108,7 +111,7 @@ namespace mu2e
 
   //---------------------------------------------------------------------------------------
   // Find the neighbors of given a point - can use any suitable distance function
-  int DBSClusterer::findNeighbors(unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors)
+  unsigned DBSClusterer::findNeighbors(unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors)
   {
     neighbors.clear();
     const auto& hit0 = chcol[idx[ihit]];
@@ -116,11 +119,12 @@ namespace mu2e
     float x0    = hit0.pos().x();
     float y0    = hit0.pos().y();
     float z0    = hit0.pos().z();
-    int   nNeighbors = 0;
+    unsigned   nNeighbors = 0;
     if (hit0.nStrawHits() > 0) nNeighbors = hit0.nStrawHits() - 1;
     float minTime = time0 - deltaTime_;
-    // Use binary search to find the first hit index where correctedTime >= minTime
-    // Note: idx MUST be sorted by chcol[i].correctedTime() for this binary search to work
+    // Use binary search for O(log N) entry into the time-sorted index vector.
+    // idx[i] contains the hit inde; chcol[idx[i]] is sorted by correctedTime.
+    // The comparator matches this sort order (element-to-value comparison).
     auto it_start = std::lower_bound(idx.begin(), idx.end(), minTime, [&chcol](unsigned i, float val){
       return chcol[i].correctedTime() < val;
     });
@@ -182,8 +186,8 @@ namespace mu2e
 
       float dp   = hitpos.phi();
       float dphi = dp - phi_ref;
-      if (dphi > M_PI) dphi -= 2*M_PI;
-      if (dphi < M_PI) dphi += 2*M_PI;
+      if (dphi > M_PI)  dphi -= 2*M_PI;
+      if (dphi < -M_PI) dphi += 2*M_PI;
       float correctedPhi = phi_ref + dphi;
 
       ctime    += dt*weight;
@@ -199,8 +203,8 @@ namespace mu2e
     cz    /= sumWeight;
     cedep /= sumWeight;
 
-    if (cphi > M_PI) cphi -= 2*M_PI;
-    if (cphi < M_PI) cphi += 2*M_PI;
+    if (cphi > M_PI)  cphi -= 2*M_PI;
+    if (cphi < -M_PI) cphi += 2*M_PI;
 
     cluster.time(ctime);
     cluster.pos(XYZVectorF(crho*cos(cphi),crho*sin(cphi),cz));
@@ -214,7 +218,10 @@ namespace mu2e
     // Code logic to classify cluster with MVA
     // Clusters with less than 3 combo hits have a default keras quality of 0.0
     // and they are not flagged as background clusters
-    if(cluster.hits().size() < 3) return;
+    if(cluster.hits().size() < 3) {
+      cluster.setKerasQ(0.0);
+      return;
+    }
     // find averages
     double sqrSumDeltaTime(0.),sqrSumDeltaX(0.), sqrSumDeltaY(0.), sqrSumDeltaPhi(0.);
     unsigned nhits(0);
