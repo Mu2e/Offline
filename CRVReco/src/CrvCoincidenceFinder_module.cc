@@ -543,6 +543,9 @@ namespace mu2e
       std::vector<CrvHit>::const_iterator iterHitAdjacent;
       for(iterHitAdjacent=hits.begin(); iterHitAdjacent!=hits.end(); ++iterHitAdjacent)
       {
+        //use hits of the same readout side only
+        if(iterHitAdjacent->_SiPM%CRVId::nSidesPerBar!=readoutSide) continue;
+
         //use hits of the same layer only
         if(iterHitAdjacent->_layer!=layer) continue;
 
