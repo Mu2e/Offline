@@ -104,6 +104,15 @@ namespace mu2e
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
 
+    struct sectorTypeProperties
+    {
+      double maxTimeDifference{0};
+      double maxHalfLength{0};
+      bool   sipmsAtSide0{false};
+      bool   sipmsAtSide1{false};
+    };
+    std::map<int,sectorTypeProperties> _sectorTypeMap;
+
     struct CrvHit
     {
       art::Ptr<CrvRecoPulse> _crvRecoPulse;
@@ -225,6 +234,11 @@ namespace mu2e
       s.initialClusterMaxDistance       = sectorConfigIter->initialClusterMaxDistance();
 
       _sectorMap[i]=s;
+
+      if(_sectorTypeMap[s.sectorType].maxTimeDifference<s.maxTimeDifference) _sectorTypeMap[s.sectorType].maxTimeDifference=s.maxTimeDifference;
+      if(_sectorTypeMap[s.sectorType].maxHalfLength<s.counterHalfLength) _sectorTypeMap[s.sectorType].maxHalfLength=s.counterHalfLength;
+      if(s.sipmsAtSide0) _sectorTypeMap[s.sectorType].sipmsAtSide0=true;
+      if(s.sipmsAtSide1) _sectorTypeMap[s.sectorType].sipmsAtSide1=true;
     }
   }
 
@@ -307,19 +321,15 @@ namespace mu2e
       filterHits(hitsUnfiltered, hitsFiltered0, 0);
       filterHits(hitsUnfiltered, hitsFiltered1, 1);
 
-      //find maximum coincidence time difference between hits for this sector type
+      //maximum coincidence time difference between hits for this sector type
       //used to keep hits together in a cluster that could potentially form coincidences
-      float clusterMaxTimeDifference=0;
-      for(auto const &sectorMapEntry : _sectorMap)
-      {
-        if(sectorMapEntry.second.sectorType==crvSectorType && sectorMapEntry.second.maxTimeDifference>clusterMaxTimeDifference)
-          clusterMaxTimeDifference=sectorMapEntry.second.maxTimeDifference;
-      }
+      float clusterMaxTimeDifference=_sectorTypeMap.at(crvSectorType).maxTimeDifference;
 
       //distribute the hits into clusters
       //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
       std::vector<std::vector<CrvHit> > clusters0;
       std::vector<std::vector<CrvHit> > clusters1;
+
       findClusters(hitsFiltered0, clusters0, clusterMaxTimeDifference);
       findClusters(hitsFiltered1, clusters1, clusterMaxTimeDifference);
 
@@ -331,20 +341,11 @@ namespace mu2e
       for(size_t iCluster=0; iCluster<clusters0.size(); ++iCluster) checkCoincidence(clusters0.at(iCluster),coincidenceHits);
       for(size_t iCluster=0; iCluster<clusters1.size(); ++iCluster) checkCoincidence(clusters1.at(iCluster),coincidenceHits);
 
-      //find maximum counter halflength of this sector
-      //and check, if they have readouts
-      float maxHalfLength=0;
-      bool  readoutSide0=false;
-      bool  readoutSide1=false;
-      for(auto const &sectorMapEntry : _sectorMap)
-      {
-        if(sectorMapEntry.second.sectorType==crvSectorType)
-        {
-          if(sectorMapEntry.second.counterHalfLength>maxHalfLength) maxHalfLength=sectorMapEntry.second.counterHalfLength;
-          if(sectorMapEntry.second.sipmsAtSide0) readoutSide0=true;
-          if(sectorMapEntry.second.sipmsAtSide1) readoutSide1=true;
-        }
-      }
+      //maximum counter halflength and readout sides of this sector type
+      float maxHalfLength=_sectorTypeMap.at(crvSectorType).maxHalfLength;
+      bool  readoutSide0=_sectorTypeMap.at(crvSectorType).sipmsAtSide0;
+      bool  readoutSide1=_sectorTypeMap.at(crvSectorType).sipmsAtSide1;
+
       //maximum time difference between hits of opposite ends for this sector type
       //based on the signal travel time through the max counter length
       //used to keep hits at opposite ends in one cluster (but only, if there are two readout sides)
@@ -427,17 +428,19 @@ namespace mu2e
                                                                //with different counter lengths. (not a problem for extracted position)
       //separate hits by their readout side and longitudinal coordinate
       //(due to the possibility of having sector types with different counter half lengths)
-      std::array<std::map<float,double>, CRVId::nSidesPerBar> hitPEs;
-      std::array<std::map<float,double>, CRVId::nSidesPerBar> hitTimes;
+      //coordinates are in um to be able to use int instead of float
+      //(which may cause problems when used as a key in a map)
+      std::array<std::map<int,double>, CRVId::nSidesPerBar> hitPEs;
+      std::array<std::map<int,double>, CRVId::nSidesPerBar> hitTimes;
       int lengthDirection=_sectorMap.at(cluster.begin()->_crvSector).lengthDirection;   //same for all counters of this cluster
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         if(hit->_PEs<=0.0) continue;  //avoid dealing with hits that have no PEs
 
         int crvSector=hit->_crvSector;
-        double halfLength=_sectorMap.at(crvSector).counterHalfLength;
+        int halfLength=static_cast<int>(std::round(_sectorMap.at(crvSector).counterHalfLength*1000.0)); //convert to um
         CLHEP::Hep3Vector counterPos=hit->_pos;
-        double longitudinalPos=counterPos[lengthDirection];
+        int longitudinalPos=static_cast<int>(std::round(counterPos[lengthDirection]*1000.0)); //convert to um
 
         int side=hit->_SiPM%CRVId::nSidesPerBar;
         if(side==0) longitudinalPos-=halfLength;
@@ -457,14 +460,15 @@ namespace mu2e
       double avgHitTime=0.0;
       if(!hitTimes[0].empty() && !hitTimes[1].empty())  //both readout sides have hits
       {
-        //find the longitudinal positions farthest away from each other
+        //find the longitudinal positions farthest away from each other,
         //because we don't know where the track hit the counter (hit origin)
-        //if we have more than one position at a readout side, the situation is actually overconstraint
-        //(we ignore the other positions - perhaps set a flag in these cases)
-        double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by diving by total PEs
+        //if we have more than one position at a readout side, the situation is overconstrained.
+        //in the current solution, we ignore the other positions.
+        //perhaps we could set a flag in these cases and/or use the other positions as a consistency check
+        double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by dividing by total PEs
         double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second;
-        double hitPos0=hitTimes[0].begin()->first;
-        double hitPos1=hitTimes[1].rbegin()->first;
+        double hitPos0=hitTimes[0].begin()->first/1000.0;  //convert back to mm
+        double hitPos1=hitTimes[1].rbegin()->first/1000.0; //convert back to mm
 
         double hitPosOrigin=0.5*(_fiberSignalSpeed*(hitTime0-hitTime1)+(hitPos0+hitPos1));
         if(hitPosOrigin>hitPos0 && hitPosOrigin<hitPos1) //hit origin is within the counter length
@@ -480,7 +484,7 @@ namespace mu2e
         {
           //assume the hit origin is at the center (since no other information is available)
           hitPosOrigin=avgHitPos[lengthDirection];
-          //calculate the time of the hit orign from both sides
+          //calculate the time of the hit origin from both sides
           double avgHitTime0=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
           double avgHitTime1=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
           //and take the average. that's the best we can do
@@ -494,14 +498,14 @@ namespace mu2e
         double hitPosOrigin=avgHitPos[lengthDirection];
         if(!hitTimes[0].empty())
         {
-          double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by diving by total PEs
-          double hitPos0=hitTimes[0].begin()->first;
+          double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by dividing by total PEs
+          double hitPos0=hitTimes[0].begin()->first/1000.0;  //convert back to mm
           avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
         }
         if(!hitTimes[1].empty())
         {
-          double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second; //find avg PE-weighted time by diving by total PEs
-          double hitPos1=hitTimes[1].rbegin()->first;
+          double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second; //find avg PE-weighted time by dividing by total PEs
+          double hitPos1=hitTimes[1].rbegin()->first/1000.0;  //convert back to mm
           avgHitTime=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
         }
       }
