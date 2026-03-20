@@ -385,20 +385,19 @@ namespace mu2e
       double startTime=cluster.front()._time;
       double endTime=cluster.front()._time;
       double PEs=0;
-      CLHEP::Hep3Vector avgCounterPos;  //PE-weighted average position
+      CLHEP::Hep3Vector avgHitPos;  //PE-weighted average position
       std::set<int> layerSet;
       double sumX =0;
       double sumY =0;
       double sumYY=0;
       double sumXY=0;
       double minClusterPEs=cluster.front()._minClusterPEs;  //find the minimum of all minClusterPEs of the cluster hits
-      std::map<int,std::vector<std::vector<CrvHit>::const_iterator> > recoTimes;  //collect hits of each counter
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         crvRecoPulses.push_back(hit->_crvRecoPulse);
 
         PEs+=hit->_PEs;
-        avgCounterPos+=hit->_pos*hit->_PEs;
+        avgHitPos+=hit->_pos*hit->_PEs;
         layerSet.insert(hit->_layer);
         sumX +=hit->_PEs*hit->_x;
         sumY +=hit->_PEs*hit->_y;
@@ -408,137 +407,107 @@ namespace mu2e
         if(startTime>hit->_time) startTime=hit->_time;
         if(endTime<hit->_time) endTime=hit->_time;
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
-
-        //collect hits of individual counters
-        recoTimes[hit->_crvRecoPulse->GetScintillatorBarIndex().asInt()].push_back(hit);
       } //loop over hits of the cluster
 
       assert(PEs>0);
       assert(layerSet.size()>1);
 
       //average counter position (PE weighted), slope, layers
-      avgCounterPos/=PEs;
+      avgHitPos/=PEs;
       double slope=(PEs*sumXY-sumX*sumY)/(PEs*sumYY-sumY*sumY);
       std::vector<int> layers(layerSet.begin(), layerSet.end());
 
       //don't store clusters that are below the minimum number of PEs for this sector (or sectors, if the cluster involves multiple sectors)
       if(PEs<minClusterPEs) continue;
 
-      //find average hit times and positions
+      //some values we want to store for the cluster
       std::array<size_t, CRVId::nSidesPerBar> sideHits{0,0};
       std::array<float, CRVId::nSidesPerBar>  sidePEs{0,0};
       std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};  //this value becomes meaningless, if a coincidence cluster spans more than one sector
                                                                //with different counter lengths. (not a problem for extracted position)
-      double                                  avgHalfLength{0};//needed, if only one readout side is available, and the center of the counter is used
-      double                                  avgHitTime{0};   //if no counters with hits at both sides are found, the time is calculated from the side times
-                                                               //assuming the hit occured at the center of the counters. in this case, this value becomes meaningless,
-                                                               //if a coincidence cluster spans more than one sector with different counter lengths.
-      CLHEP::Hep3Vector                       avgHitPos;       //if no counters with hits at both sides are found, the longitudinal coordinate is taken
-                                                               //from the PE-weighted average counter center
-      double                                  PEbothSides{0};  //number of PEs for counters with readouts on both sides (needed to PE-weight the counter hits)
-
-      //calculate average times and positions for each counter separately
-      //and use the loop to fill the "side" variables
-      for(auto recoTimeIter=recoTimes.begin(); recoTimeIter!=recoTimes.end(); ++recoTimeIter)
+      //separate hits by their readout side and longitudinal coordinate
+      //(due to the possibility of having sector types with different counter half lengths)
+      std::array<std::map<float,double>, CRVId::nSidesPerBar> hitPEs;
+      std::array<std::map<float,double>, CRVId::nSidesPerBar> hitTimes;
+      int lengthDirection=_sectorMap.at(cluster.begin()->_crvSector).lengthDirection;   //same for all counters of this cluster
+      for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
-        int crvSector=recoTimeIter->second.at(0)->_crvSector;
+        if(hit->_PEs<=0.0) continue;  //avoid dealing with hits that have no PEs
+
+        int crvSector=hit->_crvSector;
         double halfLength=_sectorMap.at(crvSector).counterHalfLength;
-        CLHEP::Hep3Vector counterPos=recoTimeIter->second.at(0)->_pos;
+        CLHEP::Hep3Vector counterPos=hit->_pos;
+        double longitudinalPos=counterPos[lengthDirection];
 
-        //separate hits into both sides
-        //and fill the "side" variables for the entire coincidence cluster and for this counter
-        std::array<float, CRVId::nSidesPerBar>  sidePEsCounter{0,0};
-        std::array<double, CRVId::nSidesPerBar> sideTimesCounter{0,0};
-        std::array<int, CRVId::nChanPerBar>     hitsPerSiPM{0,0,0,0};
-        bool                                    moreThanOneHitPerSiPM{false};
-        const std::vector<std::vector<CrvHit>::const_iterator> &counterHits=recoTimeIter->second;
-        for(auto counterHit=counterHits.begin(); counterHit!=counterHits.end(); ++counterHit)
-        {
-          int SiPM=(*counterHit)->_SiPM;
-          int side=SiPM%CRVId::nSidesPerBar;
-          sideHits[side]++;
-          sidePEs[side]+=(*counterHit)->_PEs;
-          sideTimes[side]+=(*counterHit)->_time * (*counterHit)->_PEs;  //will be used for PE-weighted pulse time average
-          avgHalfLength+=halfLength * (*counterHit)->_PEs; //will be used for PE-weighted half length
+        int side=hit->_SiPM%CRVId::nSidesPerBar;
+        if(side==0) longitudinalPos-=halfLength;
+        else longitudinalPos+=halfLength;
 
-          sidePEsCounter[side]+=(*counterHit)->_PEs;
-          sideTimesCounter[side]+=(*counterHit)->_time * (*counterHit)->_PEs;  //will be used for PE-weighted pulse time average
-          hitsPerSiPM[SiPM]++;
-          if(hitsPerSiPM[SiPM]>1) moreThanOneHitPerSiPM=true;
-        }
+        hitPEs[side][longitudinalPos]+=hit->_PEs;
+        hitTimes[side][longitudinalPos]+=hit->_time*hit->_PEs;  //PE-weighted times
 
-        //calculate average side times for this counter
-        int validSides=0;
-        for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
-        {
-          if(sidePEsCounter[side]>0) {sideTimesCounter[side]/=sidePEsCounter[side]; ++validSides;}
-          else sideTimesCounter[side]=0.0;
-        }
-
-        //calculate hit times and hit positions for this counter
-        //can calculate the longitudinal position only,
-        //if there are hits on both readout sides, and if no SiPM was hit more than once
-        if(validSides==CRVId::nSidesPerBar && !moreThanOneHitPerSiPM)
-        {
-          double timeDifference=sideTimesCounter[0]-sideTimesCounter[1];
-          double distanceFromCounterCenter=0.5*timeDifference*_fiberSignalSpeed;
-          if(distanceFromCounterCenter<halfLength) //make sure the resulting position is still inside the counter
-          {
-            CLHEP::Hep3Vector offsetFromCounterCenter;
-            offsetFromCounterCenter[_sectorMap.at(crvSector).lengthDirection]=distanceFromCounterCenter;
-            CLHEP::Hep3Vector hitPosCounter=counterPos+offsetFromCounterCenter;
-
-            double hitTimeCounter = sideTimesCounter[0] - (halfLength+distanceFromCounterCenter)/_fiberSignalSpeed;
-            //can also be calculated from the other side in the following way:
-            //double avgHitTimeCounter = sideTimesCounter[1] - (halfLength-distanceFromCounterCenter)/_fiberSignalSpeed
-            //both results are identical.
-
-            PEbothSides+=sidePEsCounter[0]+sidePEsCounter[1];
-            avgHitPos+=hitPosCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
-            avgHitTime+=hitTimeCounter*(sidePEsCounter[0]+sidePEsCounter[1]);
-          }
-        }
-      }//hit time/pos for one counter
-
-      //calculate average side times for the entire coincidence cluster
-      for(size_t side=0; side<CRVId::nSidesPerBar; ++side)
-      {
-        if(sidePEs[side]>0) sideTimes[side]/=sidePEs[side]; else sideTimes[side]=0.0;
+        sideHits[side]++;
+        sidePEs[side]+=hit->_PEs;
+        sideTimes[side]+=hit->_time*hit->_PEs; //PE-weighted times
       }
-      //calculate average hit times and hit position
-      //based on all counters that have hits on both ends
-      //(if possible)
+      if(sidePEs[0]>0) sideTimes[0]/=sidePEs[0]; //find avg PE-weighted time by dividing by total PEs
+      if(sidePEs[1]>0) sideTimes[1]/=sidePEs[1];
+
       bool twoReadoutSides=false;
-      if(PEbothSides>0)
+      double avgHitTime=0.0;
+      if(!hitTimes[0].empty() && !hitTimes[1].empty())  //both readout sides have hits
       {
-        //there were counters with hits on both sides.
-        //only these hits are used to calculate the longitudinal position of the coincidence cluster.
-        twoReadoutSides=true;
-        avgHitPos/=PEbothSides;
-        avgHitTime/=PEbothSides;
+        //find the longitudinal positions farthest away from each other
+        //because we don't know where the track hit the counter (hit origin)
+        //if we have more than one position at a readout side, the situation is actually overconstraint
+        //(we ignore the other positions - perhaps set a flag in these cases)
+        double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by diving by total PEs
+        double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second;
+        double hitPos0=hitTimes[0].begin()->first;
+        double hitPos1=hitTimes[1].rbegin()->first;
+
+        double hitPosOrigin=0.5*(_fiberSignalSpeed*(hitTime0-hitTime1)+(hitPos0+hitPos1));
+        if(hitPosOrigin>hitPos0 && hitPosOrigin<hitPos1) //hit origin is within the counter length
+        {
+          twoReadoutSides=true;
+          avgHitPos[lengthDirection]=hitPosOrigin; //correct the longitudinal coordinate of the avgHitPos
+          avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed; //time of hit origin
+          //can also be calculated from the other side in the following way:
+          //avgHitTime = hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed
+          //both results are identical.
+        }
+        else //hits at both readout don't seem to be correlated (and would result in a hit origin outside the counter)
+        {
+          //assume the hit origin is at the center (since no other information is available)
+          hitPosOrigin=avgHitPos[lengthDirection];
+          //calculate the time of the hit orign from both sides
+          double avgHitTime0=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
+          double avgHitTime1=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
+          //and take the average. that's the best we can do
+          //(other than breaking this cluster apart. we may do this later.)
+          avgHitTime=0.5*(avgHitTime0+avgHitTime1);
+        }
       }
-      else
+      else //only one readout side has hits
       {
-        //there were no counters with hits at both sides.
-        //longitudinal position of the coincidence cluster cannot be calculated.
-        //use the center of the counter as longitudinal position (avgCounterPos)
-        //there can still be hits on both sides, but they didn't occur at the same counter
-        avgHitPos=avgCounterPos;
-        avgHalfLength/=(sidePEs[0]+sidePEs[1]);
-        if(sidePEs[0]>0 && sidePEs[1]>0)
+        //assume the hit origin is at the center (since no other information is available)
+        double hitPosOrigin=avgHitPos[lengthDirection];
+        if(!hitTimes[0].empty())
         {
-          avgHitTime=0.5*(sideTimes[0]+sideTimes[1])-avgHalfLength/_fiberSignalSpeed;
+          double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by diving by total PEs
+          double hitPos0=hitTimes[0].begin()->first;
+          avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
         }
-        else if(sidePEs[0]>0)
+        if(!hitTimes[1].empty())
         {
-          avgHitTime=sideTimes[0]-avgHalfLength/_fiberSignalSpeed;
-        }
-        else if(sidePEs[1]>0)
-        {
-          avgHitTime=sideTimes[1]-avgHalfLength/_fiberSignalSpeed;
+          double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second; //find avg PE-weighted time by diving by total PEs
+          double hitPos1=hitTimes[1].rbegin()->first;
+          avgHitTime=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
         }
       }
-      avgHitTime-=_timeOffset;  //remove additional time due to electronics response and processes such as scintillation/WLS decay times
+
+      //remove additional time due to electronics response and processes such as scintillation/WLS decay times
+      avgHitTime-=_timeOffset;   //we could use a non-const parameter by taking the pulse widths of this cluster into consideration
 
       //insert the cluster information into the vector of the crv coincidence clusters
       crvCoincidenceClusterCollection->emplace_back(crvSectorType, startTime, endTime, PEs, crvRecoPulses, slope, layers,

@@ -63,17 +63,18 @@ namespace mu2e
     std::array<double, CRVId::nSidesPerBar>  _sideTimes{0}; //average pulse times on both readout sides //entries are only valid, if the corresponding entries in sidePEs > 0;
                                                             //this value becomes meaningless, if a coincidence cluster spans more than one sector
                                                             //with different counter lengths. (not a problem for extracted position)
-    bool                                     _twoReadoutSides{false};  //indicates, if avgHitTime and avgHitPos are based on counters with hits on both readout sides
-                                                                       //if not, the PE-weighted average counter center is used for the longitudinal coordinate
-    double                                   _avgHitTime{0};//average hit time based on counters with hits on both readout sides, if available.
-                                                            //the average hit time/pos is found by using the time difference between both sides and the fiber signal speed.
-                                                            //if no counters with hits at both sides are found, the time is calculated from the side times
-                                                            //assuming the hit occured at the center of the counters. in this case, this value becomes meaningless,
-                                                            //if a coincidence cluster spans more than one sector with different counter lengths.
-    CLHEP::Hep3Vector                        _avgHitPos;    //average hit position based on counters with hits on both readout sides, if available.
-                                                            //the average hit time/pos is found by using the time difference between both sides and the fiber signal speed.
-                                                            //if no counters with hits at both sides are found, the longitudinal coordinate is taken
-                                                            //from the PE-weighted average counter center
+    bool                                     _twoReadoutSides{false};  //indicates, if avgHitTime and avgHitPos are based on hits at both readout sides
+                                                                       //if not, the PE-weighted average counter center is used for
+                                                                       //the longitudinal coordinate of avgHitPos and the avgHitTime
+    double                                   _avgHitTime{0};//time when the sector was hit based on hits at both readout sides, if available.
+                                                            //it is found by using the time difference between both sides and the fiber signal speed.
+                                                            //if there aren't hits at both sides, the time is calculated from the hits of only one side
+                                                            //under the assumption that the sector was hit at the PE-weighted average center of the counters.
+                                                            //an additional average time due to electronics response and
+                                                            //processes such as scintillation/WLS decay times is subtracted.
+    CLHEP::Hep3Vector                        _avgHitPos;    //position where the center was hit based on hits at both readout sides, if available.
+                                                            //it is found by using the time difference between both sides and the fiber signal speed.
+                                                            //if there aren't hits at both sides, the PE-weighted average center of the counters is used.
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }
