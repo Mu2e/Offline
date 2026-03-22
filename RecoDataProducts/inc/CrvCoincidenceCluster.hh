@@ -24,11 +24,13 @@ namespace mu2e
     CrvCoincidenceCluster(int crvSectorType, double startTime, double endTime, float PEs,
               const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers,
               const std::array<size_t,CRVId::nSidesPerBar> &sideHits, const std::array<float, CRVId::nSidesPerBar> &sidePEs,
-              const std::array<double,CRVId::nSidesPerBar> &sideTimes, bool twoReadoutSides, double avgHitTime, const CLHEP::Hep3Vector &avgHitPos) :
+              const std::array<double,CRVId::nSidesPerBar> &sideTimes, double avgHitTime, const CLHEP::Hep3Vector &avgHitPos,
+               bool correlatedReadoutSides, bool multipleReadoutPositionsPerSide) :
               _crvSectorType(crvSectorType), _startTime(startTime), _endTime(endTime), _PEs(PEs),
               _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers),
               _sideHits(sideHits), _sidePEs(sidePEs), _sideTimes(sideTimes),
-              _twoReadoutSides(twoReadoutSides), _avgHitTime(avgHitTime), _avgHitPos(avgHitPos) {}
+              _avgHitTime(avgHitTime), _avgHitPos(avgHitPos),
+              _correlatedReadoutSides(correlatedReadoutSides), _multipleReadoutPositionsPerSide(multipleReadoutPositionsPerSide) {}
 
     int                                         GetCrvSectorType() const {return _crvSectorType;}
     double                                      GetStartTime() const     {return _startTime;}
@@ -41,9 +43,11 @@ namespace mu2e
     const std::array<size_t, CRVId::nSidesPerBar>   &GetSideHits() const        {return _sideHits;}
     const std::array<float, CRVId::nSidesPerBar>    &GetSidePEs() const         {return _sidePEs;}
     const std::array<double, CRVId::nSidesPerBar>   &GetSideTimes() const       {return _sideTimes;}
-    bool                                             HasTwoReadoutSides() const {return _twoReadoutSides;}
     double                                           GetAvgHitTime() const      {return _avgHitTime;}
     const CLHEP::Hep3Vector                         &GetAvgHitPos() const       {return _avgHitPos;}
+
+    bool HasCorrelatedReadoutSides() const          {return _correlatedReadoutSides;}
+    bool HasMultipleReadoutPositionsPerSide() const {return _multipleReadoutPositionsPerSide;}
 
     // allow setting the Ptrs for reco compression
     void SetCrvRecoPulses(std::vector<art::Ptr<CrvRecoPulse> > const& pulses) { _crvRecoPulses = pulses; }
@@ -60,21 +64,34 @@ namespace mu2e
 
     std::array<size_t, CRVId::nSidesPerBar>  _sideHits{0};  //number of hits on both readout sides of the modules of this cluster
     std::array<float, CRVId::nSidesPerBar>   _sidePEs{0};   //number of PEs on both readout sides
-    std::array<double, CRVId::nSidesPerBar>  _sideTimes{0}; //average pulse times on both readout sides //entries are only valid, if the corresponding entries in sidePEs > 0;
+    std::array<double, CRVId::nSidesPerBar>  _sideTimes{0}; //average pulse times on both readout sides
+                                                            //entries are only valid, if the corresponding entries in sidePEs > 0;
                                                             //this value becomes meaningless, if a coincidence cluster spans more than one sector
                                                             //with different counter lengths. (not a problem for extracted position)
-    bool                                     _twoReadoutSides{false};  //indicates, if avgHitTime and avgHitPos are based on hits at both readout sides
-                                                                       //if not, the PE-weighted average counter center is used for
-                                                                       //the longitudinal coordinate of avgHitPos and the avgHitTime
-    double                                   _avgHitTime{0};//time when the sector was hit based on hits at both readout sides, if available.
-                                                            //it is found by using the time difference between both sides and the fiber signal speed.
-                                                            //if there aren't hits at both sides, the time is calculated from the hits of only one side
-                                                            //under the assumption that the sector was hit at the PE-weighted average center of the counters.
-                                                            //an additional average time due to electronics response and
+    double                                   _avgHitTime{0};//-for correlated hits at both readout sides:
+                                                            //likely time when the particle hit the counter at the avgHitPos
+                                                            //based on time difference between both sides and the fiber signal speed.
+                                                            //-otherwise:
+                                                            //likely time when the particle hit the counter under the assumption that the
+                                                            //particle hit the counter at the avgHitPos (PE-weighted average center of all
+                                                            //involved counters) and based on the signal travel time to the avgHitPos. if
+                                                            //hits on both sides: use the average
+                                                            //-an additional average time due to electronics response and
                                                             //processes such as scintillation/WLS decay times is subtracted.
-    CLHEP::Hep3Vector                        _avgHitPos;    //position where the center was hit based on hits at both readout sides, if available.
-                                                            //it is found by using the time difference between both sides and the fiber signal speed.
-                                                            //if there aren't hits at both sides, the PE-weighted average center of the counters is used.
+    CLHEP::Hep3Vector                        _avgHitPos;    //-for correlated hits at both readout sides (see below):
+                                                            //likely position where the particle hit the counter
+                                                            //based on time difference between both sides and the fiber signal speed.
+                                                            //-otherwise:
+                                                            //PE-weighted average center of all involved counters.
+    bool _correlatedReadoutSides{false};          //indicates that the hits at both readout sides seem to be correlated, i.e. they could have been
+                                                  //caused by the same particle (based on the time difference, signal speed, and distance)
+                                                  //avgHitTime and avgHitPos are calculated under this assumption
+    bool _multipleReadoutPositionsPerSide{false}; //the readout sides of the hits were not all at the same position, e.g. if multiple sectors with
+                                                  //different counter lengths were involved. the hits at the longitudinal positions farthest away
+                                                  //from each other are used to calculate avgHitPos and avgHitTime, because we don't know where the
+                                                  //track hit the counter (hit origin). if there is more than one position at a readout side,
+                                                  //the situation is overconstrained. in the current solution, the other hits are ignored for the
+                                                  //calculation of the avgHitPos and avgHitTime.
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }

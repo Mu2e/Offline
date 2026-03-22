@@ -323,7 +323,7 @@ namespace mu2e
 
       //maximum coincidence time difference between hits for this sector type
       //used to keep hits together in a cluster that could potentially form coincidences
-      float clusterMaxTimeDifference=_sectorTypeMap.at(crvSectorType).maxTimeDifference;
+      double clusterMaxTimeDifference=_sectorTypeMap.at(crvSectorType).maxTimeDifference;
 
       //distribute the hits into clusters
       //initial clustering is done to keep the number of hit combinations down that need to be checked for coincidences
@@ -351,7 +351,7 @@ namespace mu2e
       //used to keep hits at opposite ends in one cluster (but only, if there are two readout sides)
       bool combineOppositeSides=false;
       if(readoutSide0 && readoutSide1) combineOppositeSides=true;
-      float timeDifferenceOppositeSides = 2.0*maxHalfLength/_fiberSignalSpeed;
+      double timeDifferenceOppositeSides = 2.0*maxHalfLength/_fiberSignalSpeed;
 
       //create new clusters based only on coincidence hits
       std::vector<std::vector<CrvHit> > coincidenceClusters;
@@ -430,7 +430,7 @@ namespace mu2e
       //(due to the possibility of having sector types with different counter half lengths)
       //coordinates are in um to be able to use int instead of float
       //(which may cause problems when used as a key in a map)
-      std::array<std::map<int,double>, CRVId::nSidesPerBar> hitPEs;
+      std::array<std::map<int,float>, CRVId::nSidesPerBar> hitPEs;
       std::array<std::map<int,double>, CRVId::nSidesPerBar> hitTimes;
       int lengthDirection=_sectorMap.at(cluster.begin()->_crvSector).lengthDirection;   //same for all counters of this cluster
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
@@ -456,7 +456,8 @@ namespace mu2e
       if(sidePEs[0]>0) sideTimes[0]/=sidePEs[0]; //find avg PE-weighted time by dividing by total PEs
       if(sidePEs[1]>0) sideTimes[1]/=sidePEs[1];
 
-      bool twoReadoutSides=false;
+      bool correlatedReadoutSides=false;
+      bool multipleReadoutPositionsPerSide=(hitTimes[0].size()>1 || hitTimes[1].size()>1);
       double avgHitTime=0.0;
       if(!hitTimes[0].empty() && !hitTimes[1].empty())  //both readout sides have hits
       {
@@ -464,16 +465,15 @@ namespace mu2e
         //because we don't know where the track hit the counter (hit origin)
         //if we have more than one position at a readout side, the situation is overconstrained.
         //in the current solution, we ignore the other positions.
-        //perhaps we could set a flag in these cases and/or use the other positions as a consistency check
         double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by dividing by total PEs
         double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second;
         double hitPos0=hitTimes[0].begin()->first/1000.0;  //convert back to mm
         double hitPos1=hitTimes[1].rbegin()->first/1000.0; //convert back to mm
 
         double hitPosOrigin=0.5*(_fiberSignalSpeed*(hitTime0-hitTime1)+(hitPos0+hitPos1));
-        if(hitPosOrigin>hitPos0 && hitPosOrigin<hitPos1) //hit origin is within the counter length
-        {
-          twoReadoutSides=true;
+        if(hitPosOrigin>hitPos0 && hitPosOrigin<hitPos1 && hitPos0<hitPos1) //hit origin is within the counter length and positions of
+        {                                                                   //readout sides are not inverted (should not happen in our geometry)
+          correlatedReadoutSides=true;
           avgHitPos[lengthDirection]=hitPosOrigin; //correct the longitudinal coordinate of the avgHitPos
           avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed; //time of hit origin
           //can also be calculated from the other side in the following way:
@@ -515,12 +515,13 @@ namespace mu2e
 
       //insert the cluster information into the vector of the crv coincidence clusters
       crvCoincidenceClusterCollection->emplace_back(crvSectorType, startTime, endTime, PEs, crvRecoPulses, slope, layers,
-                                                    sideHits, sidePEs, sideTimes, twoReadoutSides, avgHitTime, avgHitPos);
+                                                    sideHits, sidePEs, sideTimes, avgHitTime, avgHitPos,
+                                                    correlatedReadoutSides, multipleReadoutPositionsPerSide);
     } //loop through all clusters
   } //end cluster properies
 
 
-  //remove hits below the threshold
+  //remove hits below the threshold and separate into both readout sides
   void CrvCoincidenceFinder::filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered, unsigned int readoutSide)
   {
     std::vector<CrvHit>::const_iterator iterHit;
