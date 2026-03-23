@@ -1,7 +1,16 @@
 #include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
-  SurfaceMap::SurfaceMap() {
+
+  void SurfaceMap::check_init() const {
+    if(!initialized_){
+      // cast off const
+      (const_cast<SurfaceMap*>(this))->initialize();
+      initialized_ = true;
+    }
+  }
+
+  void SurfaceMap::initialize() {
     using KinKal::Surface;
     // create the entries for the map; first tracker
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Front),std::static_pointer_cast<Surface>(tracker_.frontPtr())));

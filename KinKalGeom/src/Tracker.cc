@@ -14,12 +14,21 @@ namespace mu2e {
       // cylinders are defined by TT_outer (_inner) virtual detectors
       // Disks are defined to match TT_front (mid, back) virtual detectors
       outer_ { std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),850.11,1635.11)},
-      inner_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),376.9,1635.11)},
-      // expand the disk radii to meet the DS
-      front_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-1631.12),950.)},
-      mid_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,10.09),950.)},
-      back_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1639.10),950.)}
-    {
+             inner_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),376.9,1635.11)},
+             // expand the disk radii to meet the DS
+             front_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-1631.12),950.)},
+             mid_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,10.09),950.)},
+             back_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1639.10),950.)}
+    {}
+
+    void Tracker::check_init() const {
+      if(!initialized_){
+        // cast off const
+        (const_cast<Tracker*>(this))->initialize();
+        initialized_ = true;
+      }
+    }
+    void Tracker::initialize() {
       // surfaces need to match with virtual detectors. The following is extracted from VirtualDetectorMaker and needs to be updated if that changes.
       double vdHL(0.01); // from geom.txt
       auto tracker = *(GeomHandle<mu2e::Tracker>());
@@ -37,7 +46,7 @@ namespace mu2e {
       std::cout << solenoidOffset<< zFrontLocal<< zBackLocal << ttorigin << std::endl;
 
       // Tracker mother volume is offset (!):
-//      outer_ = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),850.11,1635.11)},
+      //      outer_ = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),850.11,1635.11)},
 
 
   }
