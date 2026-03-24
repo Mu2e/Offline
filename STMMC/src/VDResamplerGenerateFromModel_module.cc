@@ -19,10 +19,13 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // CLHEP includes
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGaussQ.h"
 
 // exception handling
 #include "cetlib_except/exception.h"
@@ -134,6 +137,8 @@ namespace mu2e {
 
     private:
       art::RandomNumberGenerator::base_engine_t& engine_;
+      CLHEP::RandFlat randFlat_;
+      CLHEP::RandGaussQ randGaussQ_;
       bool useTwoStageModel_;
       std::string stage1ModelFile_;
       std::string stage2ModelFile_;
@@ -174,6 +179,8 @@ namespace mu2e {
   VDResamplerGenerateFromModel::VDResamplerGenerateFromModel(const Parameters& conf)
     : art::EDProducer{conf},
       engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+      randFlat_(engine_),
+      randGaussQ_(engine_),
       useTwoStageModel_(conf().useTwoStageModel()),
       stage1ModelFile_(conf().stage1ModelFile()),
       stage2ModelFile_(conf().stage2ModelFile()),
@@ -193,10 +200,10 @@ namespace mu2e {
       }
 
       stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
-        ScoreBasedDiffusionModel::loadModel(engine_, stage1ModelFile_)
+        ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
       );
       stage2Model_ = std::make_unique<ScoreBasedDiffusionModel>(
-        ScoreBasedDiffusionModel::loadModel(engine_, stage2ModelFile_)
+        ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile_)
       );
       pdgId_ = loadPDGIdFromFileName(stage1ModelFile_);
     } else {
@@ -206,7 +213,7 @@ namespace mu2e {
       }
 
       allAtOnceModel_ = std::make_unique<ScoreBasedDiffusionModel>(
-        ScoreBasedDiffusionModel::loadModel(engine_, allAtOnceModelFile_)
+        ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, allAtOnceModelFile_)
       );
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
     }

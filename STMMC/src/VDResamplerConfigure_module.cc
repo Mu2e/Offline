@@ -72,7 +72,7 @@ namespace mu2e {
       std::string VDResamplerDir;
       std::string fclDir;
       std::string dataSourceTag;
-      int trainingThreshold = 0;
+      int trainingThreshold;
       bool doROOTDump;
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
@@ -89,8 +89,8 @@ namespace mu2e {
     VirtualDetectorID(conf().VirtualDetectorID()),
     VDResamplerDir(conf().VDResamplerDir()),
     fclDir(conf().fclDir()),
-    trainingThreshold(conf().trainingThreshold()),
     dataSourceTag(conf().dataSourceTag()),
+    trainingThreshold(conf().trainingThreshold()),
     doROOTDump(conf().doROOTDump()) {
     if (doROOTDump) {
         art::ServiceHandle<art::TFileService> tfs;

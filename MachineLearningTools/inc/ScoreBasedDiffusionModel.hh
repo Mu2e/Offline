@@ -13,12 +13,11 @@
 #include <sstream>
 #include <iostream>
 #include <cctype>
+#include <cassert>
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
-
-#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -43,10 +42,11 @@ namespace mu2e{
             COSINE   // Cosine noise schedule
         };
 
-        // Constructor: Initialize diffusion model with random engine.
+        // Constructor: Initialize diffusion model with CLHEP random distributions.
         //
         // Parameters:
-        //   engine                - Reference to CLHEP random engine (externally managed)
+        //   randFlat              - Reference to CLHEP RandFlat for uniform sampling (externally managed)
+        //   randGaussQ            - Reference to CLHEP RandGaussQ for Gaussian noise (externally managed)
         //   dim                   - Dimensionality of the state space
         //   conditionDim          - Dimensionality of the optional conditioning vector (default: 0 for unconditional model)
         //   hidden                - Size of hidden layers in the neural network
@@ -65,7 +65,8 @@ namespace mu2e{
         //   diffusionSteps        - Number of steps in the diffusion process (default: 200)
         ScoreBasedDiffusionModel(
             // Network architecture parameters
-            art::RandomNumberGenerator::base_engine_t& engine,
+            CLHEP::RandFlat& randFlat,
+            CLHEP::RandGaussQ& randGaussQ,
             int dim,
             int conditionDim,
             int hidden,
@@ -129,9 +130,13 @@ namespace mu2e{
         // model and pick up the training process where it left off. The loaded model can only be used for sampling.
         //
         // Parameters:
-        //   engine   - Reference to CLHEP random engine (externally managed, must be valid for lifetime of model)
-        //   filename - Path to the file from which model parameters will be loaded
-        static ScoreBasedDiffusionModel loadModel(CLHEP::HepRandomEngine& engine, const std::string& filename);
+        //   randFlat / RandGaussQ - CLHEP random number generator wrappers being passed
+        //   filename              - Path to the file from which model parameters will be loaded
+        static ScoreBasedDiffusionModel loadModel(
+            CLHEP::RandFlat& randFlat,
+            CLHEP::RandGaussQ& randGaussQ,
+            const std::string& filename
+        );
 
     private:
 
@@ -263,10 +268,7 @@ namespace mu2e{
         // ----- internal vars -----
         
         // The random engine is NOT owned by this class. It is injected externally
-        // by the framework. Engine reference must remain valid for the lifetime
-        // of this object.
-        art::RandomNumberGenerator::base_engine_t& engine_;
-        // CLHEP distribution wrappers for actual random number generation.
+        // by the framework. Below are CLHEP distribution wrappers for actual random number generation.
         // These wrap the engine_ and provide specific probability distributions.
         // - RandFlat:   Uniform distribution on [0,1)
         // - RandGaussQ: Gaussian (normal) distribution with mean=0, sigma=1 (or custom)

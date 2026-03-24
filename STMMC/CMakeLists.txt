@@ -98,6 +98,7 @@ cet_build_plugin(VDResamplerTrain art::module
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
+      Offline::SeedService
 )
 
 cet_build_plugin(VDResamplerGenerateFromModel art::module
@@ -108,6 +109,7 @@ cet_build_plugin(VDResamplerGenerateFromModel art::module
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
+      Offline::SeedService
 )
 
 cet_build_plugin(VDResamplerGenerateMix art::module
@@ -118,6 +120,7 @@ cet_build_plugin(VDResamplerGenerateMix art::module
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
+      Offline::SeedService
 )
 
 install_source(SUBDIRS src)

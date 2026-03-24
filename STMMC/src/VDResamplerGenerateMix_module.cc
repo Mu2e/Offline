@@ -23,9 +23,11 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -156,6 +158,7 @@ namespace mu2e {
 
       art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randFlat_;
+      CLHEP::RandGaussQ randGaussQ_;
       std::string modelFileDir_;
       int virtualDetectorID_ = 0;
       bool useHeun_ = true;
@@ -204,6 +207,7 @@ namespace mu2e {
     : art::EDProducer{conf},
       engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
       randFlat_(engine_),
+      randGaussQ_(engine_),
       modelFileDir_(conf().ModelFileDir()),
       virtualDetectorID_(conf().VirtualDetectorID()),
       useHeun_(conf().useHeun()),
@@ -322,16 +326,16 @@ namespace mu2e {
           modelFileDir_ + "/SBDMmodel_stage2_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
 
         particle.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
-          ScoreBasedDiffusionModel::loadModel(engine_, stage1ModelFile)
+          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile)
         );
         particle.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
-          ScoreBasedDiffusionModel::loadModel(engine_, stage2ModelFile)
+          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile)
         );
       } else {
         const std::string modelFile =
           modelFileDir_ + "/SBDMmodel_allAtOnce_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
         particle.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
-          ScoreBasedDiffusionModel::loadModel(engine_, modelFile)
+          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, modelFile)
         );
       }
 

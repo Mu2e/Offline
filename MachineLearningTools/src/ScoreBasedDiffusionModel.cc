@@ -39,7 +39,8 @@ namespace mu2e {
 
     
     ScoreBasedDiffusionModel::ScoreBasedDiffusionModel(
-        art::RandomNumberGenerator::base_engine_t& engine,
+        CLHEP::RandFlat& randFlat,
+        CLHEP::RandGaussQ& randGaussQ,
         int dim,
         int conditionDim,
         int hidden,
@@ -56,7 +57,7 @@ namespace mu2e {
         double gradientClipThreshold,
         double learningRate,
         int diffusionSteps
-    ) : engine_(engine), randFlat_(engine_), randGaussQ_(engine_),
+    ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
         dim_(dim), conditionDim_(conditionDim), hidden_(hidden), layers_(layers),
         optimizerType_(optimizerType),
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
@@ -64,7 +65,7 @@ namespace mu2e {
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
         batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         diffusionSteps_(diffusionSteps),
-        runningLoss_(0.0), adamStep_(0), epochLosses_(), trainingSampleSize_(0) {
+        runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_() {
 
         // Validate model dimensions and parameters
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
@@ -239,7 +240,7 @@ namespace mu2e {
         std::vector<double> grad = gradOutput;
 
         // Back-propagate through layers in reverse order
-        for (int l = network_.size() - 1; l >= 0; l--) 
+        for (int l = static_cast<int>(network_.size()) - 1; l >= 0; l--)
         {
             auto& layer = network_[l];
 
@@ -249,7 +250,7 @@ namespace mu2e {
             std::vector<double> gradZ(grad.size());
 
             // For the output layer, the gradient is directly from the loss w.r.t. output (no activation function).
-            if(l == network_.size()-1)
+            if(l == static_cast<int>(network_.size())-1)
             {
                 gradZ = grad;
             }
@@ -673,7 +674,8 @@ namespace mu2e {
     }
 
     ScoreBasedDiffusionModel ScoreBasedDiffusionModel::loadModel(
-        CLHEP::HepRandomEngine& engine, // We need the random engine to initialize the model architecture
+        CLHEP::RandFlat& randFlat,
+        CLHEP::RandGaussQ& randGaussQ,
         const std::string& filename
     )
     {
@@ -885,7 +887,8 @@ namespace mu2e {
 
         // Reconstruct model
         ScoreBasedDiffusionModel model(
-            engine,
+            randFlat,
+            randGaussQ,
             dim,
             conditionDim,
             hidden,

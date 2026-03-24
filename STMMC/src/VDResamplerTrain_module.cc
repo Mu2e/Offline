@@ -16,12 +16,16 @@
 
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
 
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGaussQ.h"
+
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // exception handling
 #include "cetlib_except/exception.h"
@@ -86,9 +90,11 @@ namespace mu2e {
       void analyze(const art::Event& e);
       void endJob();
     private:
+      art::RandomNumberGenerator::base_engine_t& engine;
+      CLHEP::RandFlat randFlat_;
+      CLHEP::RandGaussQ randGaussQ_;
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
-      art::RandomNumberGenerator::base_engine_t& engine;
       
       // SBDM model + data
       bool useTwoStageTraining = true;
@@ -125,6 +131,8 @@ namespace mu2e {
   VDResamplerTrain::VDResamplerTrain(const Parameters& conf) :
     art::EDAnalyzer(conf),
     engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
+    randFlat_(engine),
+    randGaussQ_(engine),
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
     SimParticlemvToken(consumes<SimParticleCollection>(conf().SimParticlemvTag())),
     useTwoStageTraining(conf().SBDMuseTwoStageTraining()),
@@ -153,7 +161,8 @@ namespace mu2e {
     if (useTwoStageTraining) {
       // create stage-1 model for (t', x', y')
       stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
-          engine,
+          randFlat_,
+          randGaussQ_,
           3, // dim
           0, // conditionDim
           conf().SBDMhidden(),
@@ -174,7 +183,8 @@ namespace mu2e {
 
       // create stage-2 model for (p_r', p_phi', p_z' | t', x', y')
       stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
-          engine,
+          randFlat_,
+          randGaussQ_,
           3, // dim
           3, // conditionDim
           conf().SBDMhidden(),
@@ -197,7 +207,8 @@ namespace mu2e {
       stage2TrainingData.reserve(1000000);
     } else {
       allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
-          engine,
+          randFlat_,
+          randGaussQ_,
           6, // dim
           0, // conditionDim
           conf().SBDMhidden(),
