@@ -44,7 +44,7 @@ namespace mu2e {
       cosmicCRY,  pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, cosmicCORSIKA, //44
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, CeLeadingLogGenTool, MuplusMichelGenTool,// 52
-      gammaPairProduction, antiproton, Mu2eXGenTool,//55
+      gammaPairProduction, antiproton, Mu2eXGenTool, STMDownStreamGenTool,//56
       lastEnum //56
     };
 
@@ -64,7 +64,7 @@ namespace mu2e {
       "CosmicCRY", "pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog", "CosmicCORSIKA", \
     "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
       "MuCapPhotonGenTool", "MuCapGammaRayGenTool","CeLeadingLogGenTool","MuplusMichelGenTool", \
-      "gammaPairProduction", "antiproton", "Mu2eXGenTool"
+      "gammaPairProduction", "antiproton", "Mu2eXGenTool", "STMDownStreamGenTool"
 #endif
 
   public:

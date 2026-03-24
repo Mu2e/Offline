@@ -83,6 +83,42 @@ cet_build_plugin(VirtualDetectorTree art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(VDResamplerConfigure art::module
+    REG_SOURCE src/VDResamplerConfigure_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VDResamplerTrain art::module
+    REG_SOURCE src/VDResamplerTrain_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VDResamplerGenerateFromModel art::module
+    REG_SOURCE src/VDResamplerGenerateFromModel_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VDResamplerGenerateMix art::module
+    REG_SOURCE src/VDResamplerGenerateMix_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+)
 
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMMC/fcl)
