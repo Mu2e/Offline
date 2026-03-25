@@ -174,7 +174,7 @@ namespace mu2e
       if(_doNtuples)
       {
           _ntuple->Fill(event.run(),event.subRun(),event.event(),
-                        iter->HasCorrelatedReadoutSides(),iter->GetCrvSectorType(),iter->GetAvgHitPos().x(),iter->GetAvgHitPos().y(),iter->GetAvgHitPos().z(),
+                        iter->HitPosAndTimeCalculated(),iter->GetCrvSectorType(),iter->GetAvgHitPos().x(),iter->GetAvgHitPos().y(),iter->GetAvgHitPos().z(),
                         avgHitPos.x(),avgHitPos.y(),avgHitPos.z(),
                         iter->GetAvgHitTime()-avgHitTime,(iter->GetAvgHitPos()-avgHitPos).mag(),
                         visibleEnergyDeposited,iter->GetSidePEs()[0]+iter->GetSidePEs()[1]);

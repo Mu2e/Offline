@@ -57,6 +57,7 @@ namespace mu2e
       //other settings
       fhicl::Atom<int> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
       fhicl::Atom<double> fiberSignalSpeed{Name("fiberSignalSpeed"), Comment("effective speed of signals inside the CRV fibers in mm/ns")};
+      fhicl::Atom<double> maxTimeInterval{Name("maxTimeInterval"), Comment("maximum time interval of hits on one readout side considered for hit position calculation")};
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
       fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missinge pulses for channels with the following channel statuses")};
     };
@@ -77,6 +78,7 @@ namespace mu2e
 
     size_t      _bigClusterThreshold;
     double      _fiberSignalSpeed;
+    double      _maxTimeInterval;
     double      _timeOffset;
 
     mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
@@ -94,6 +96,7 @@ namespace mu2e
       bool sipmsAtSide1;
       int  widthDirection, thicknessDirection, lengthDirection;
       double      counterHalfLength;
+      double      posSide0, posSide1;
       int         PEthreshold;
       double      maxTimeDifferenceAdjacentPulses;
       double      maxTimeDifference;
@@ -106,10 +109,12 @@ namespace mu2e
 
     struct sectorTypeProperties
     {
-      double maxTimeDifference{0};
-      double maxHalfLength{0};
-      bool   sipmsAtSide0{false};
-      bool   sipmsAtSide1{false};
+      double maxTimeDifference;
+      double maxHalfLength;
+      double posSide0;
+      double posSide1;
+      bool   sipmsAtSide0;
+      bool   sipmsAtSide1;
     };
     std::map<int,sectorTypeProperties> _sectorTypeMap;
 
@@ -165,6 +170,7 @@ namespace mu2e
     _sectorConfig(conf().sectorConfig()),
     _bigClusterThreshold(conf().bigClusterThreshold()),
     _fiberSignalSpeed(conf().fiberSignalSpeed()),
+    _maxTimeInterval(conf().maxTimeInterval()),
     _timeOffset(conf().timeOffset()),
     _compensateChannelStatus(conf().compensateChannelStatus()),
     _totalEvents(0),
@@ -192,6 +198,7 @@ namespace mu2e
     //-from the fcl parameters
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<CRSScintillatorShield> &sectors = CRS->getCRSScintillatorShields();
+    std::map<int,std::vector<sectorCoincidenceProperties> > sectorTypes;
     for(size_t i=0; i<sectors.size(); ++i)
     {
       sectorCoincidenceProperties s;
@@ -217,6 +224,9 @@ namespace mu2e
       s.lengthDirection=sectors[i].getCRSScintillatorBarDetail().getLengthDirection();
       s.counterHalfLength=sectors[i].getCRSScintillatorBarDetail().getHalfLength();
 
+      s.posSide0=sectors[i].getFirstBar().getPosition()[s.lengthDirection] - s.counterHalfLength;
+      s.posSide1=sectors[i].getFirstBar().getPosition()[s.lengthDirection] + s.counterHalfLength;
+
       std::string sectorName = sectors[i].getName().substr(4); //removes the "CRV_" part
       std::vector<SectorConfig>::iterator sectorConfigIter=std::find_if(_sectorConfig.begin(), _sectorConfig.end(),
                                                                         [sectorName](const SectorConfig &s){return s.CRVSector()==sectorName;});
@@ -234,11 +244,28 @@ namespace mu2e
       s.initialClusterMaxDistance       = sectorConfigIter->initialClusterMaxDistance();
 
       _sectorMap[i]=s;
+      sectorTypes[s.sectorType].push_back(s);
+    }
 
-      if(_sectorTypeMap[s.sectorType].maxTimeDifference<s.maxTimeDifference) _sectorTypeMap[s.sectorType].maxTimeDifference=s.maxTimeDifference;
-      if(_sectorTypeMap[s.sectorType].maxHalfLength<s.counterHalfLength) _sectorTypeMap[s.sectorType].maxHalfLength=s.counterHalfLength;
-      if(s.sipmsAtSide0) _sectorTypeMap[s.sectorType].sipmsAtSide0=true;
-      if(s.sipmsAtSide1) _sectorTypeMap[s.sectorType].sipmsAtSide1=true;
+    for(const auto& [sectorType,sectorVector] : sectorTypes)
+    {
+      _sectorTypeMap[sectorType].posSide0=std::min_element(sectorVector.begin(),sectorVector.end(),
+                                                           [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
+                                                           {return a.posSide0<b.posSide0;})->posSide0;
+      _sectorTypeMap[sectorType].posSide1=std::max_element(sectorVector.begin(),sectorVector.end(),
+                                                           [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
+                                                           {return a.posSide1<b.posSide1;})->posSide1;
+
+      _sectorTypeMap[sectorType].maxHalfLength=(_sectorTypeMap[sectorType].posSide1-_sectorTypeMap[sectorType].posSide0)/2.0;
+
+      _sectorTypeMap[sectorType].maxTimeDifference=std::max_element(sectorVector.begin(),sectorVector.end(),
+                                                                    [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
+                                                                    {return a.maxTimeDifference<b.maxTimeDifference;})->maxTimeDifference;
+
+      _sectorTypeMap[sectorType].sipmsAtSide0=std::any_of(sectorVector.begin(),sectorVector.end(),
+                                                          [](const sectorCoincidenceProperties &a){return a.sipmsAtSide0;});
+      _sectorTypeMap[sectorType].sipmsAtSide1=std::any_of(sectorVector.begin(),sectorVector.end(),
+                                                          [](const sectorCoincidenceProperties &a){return a.sipmsAtSide1;});
     }
   }
 
@@ -286,6 +313,20 @@ namespace mu2e
       int    SiPM=crvRecoPulse->GetSiPMNumber();
       double time=crvRecoPulse->GetPulseTime();
       float  PEs =crvRecoPulse->GetPEs();
+
+      //adjust pulse time to move it to longitudinal position that is farthest outside (at the same SiPM side)
+      //this is done to be able to compare hits that happen at two adjacent sectors with different counter lengths
+      int    side=SiPM%CRVId::nSidesPerBar;
+      if(side==0)
+      {
+        double posDiff=sector.posSide0-_sectorTypeMap[sector.sectorType].posSide0;  //will always be >=0
+        time+=posDiff/_fiberSignalSpeed;
+      }
+      else if(side==1)
+      {
+        double posDiff=_sectorTypeMap[sector.sectorType].posSide1-sector.posSide1;  //will always be >=0
+        time+=posDiff/_fiberSignalSpeed;
+      }
 
       //compensate for dead or ignored channels
       size_t currentChannel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
@@ -424,69 +465,56 @@ namespace mu2e
       //some values we want to store for the cluster
       std::array<size_t, CRVId::nSidesPerBar> sideHits{0,0};
       std::array<float, CRVId::nSidesPerBar>  sidePEs{0,0};
-      std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};  //this value becomes meaningless, if a coincidence cluster spans more than one sector
-                                                               //with different counter lengths. (not a problem for extracted position)
-      //separate hits by their readout side and longitudinal coordinate
-      //(due to the possibility of having sector types with different counter half lengths)
-      //coordinates are in um to be able to use int instead of float
-      //(which may cause problems when used as a key in a map)
-      std::array<std::map<int,float>, CRVId::nSidesPerBar> hitPEs;
-      std::array<std::map<int,double>, CRVId::nSidesPerBar> hitTimes;
+      std::array<double, CRVId::nSidesPerBar> sideTimes{0,0};
+      std::array<double, CRVId::nSidesPerBar> sideTimesMin{0,0};
+      std::array<double, CRVId::nSidesPerBar> sideTimesMax{0,0};
       int lengthDirection=_sectorMap.at(cluster.begin()->_crvSector).lengthDirection;   //same for all counters of this cluster
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         if(hit->_PEs<=0.0) continue;  //avoid dealing with hits that have no PEs
 
-        int crvSector=hit->_crvSector;
-        int halfLength=static_cast<int>(std::round(_sectorMap.at(crvSector).counterHalfLength*1000.0)); //convert to um
-        CLHEP::Hep3Vector counterPos=hit->_pos;
-        int longitudinalPos=static_cast<int>(std::round(counterPos[lengthDirection]*1000.0)); //convert to um
-
         int side=hit->_SiPM%CRVId::nSidesPerBar;
-        if(side==0) longitudinalPos-=halfLength;
-        else longitudinalPos+=halfLength;
-
-        hitPEs[side][longitudinalPos]+=hit->_PEs;
-        hitTimes[side][longitudinalPos]+=hit->_time*hit->_PEs;  //PE-weighted times
 
         sideHits[side]++;
         sidePEs[side]+=hit->_PEs;
         sideTimes[side]+=hit->_time*hit->_PEs; //PE-weighted times
+        if(sideHits[side]==1) {sideTimesMin[side]=hit->_time; sideTimesMax[side]=hit->_time;}
+        if(sideTimesMin[side]>hit->_time) sideTimesMin[side]=hit->_time;
+        if(sideTimesMax[side]<hit->_time) sideTimesMax[side]=hit->_time;
       }
       if(sidePEs[0]>0) sideTimes[0]/=sidePEs[0]; //find avg PE-weighted time by dividing by total PEs
       if(sidePEs[1]>0) sideTimes[1]/=sidePEs[1];
 
-      bool correlatedReadoutSides=false;
-      bool multipleReadoutPositionsPerSide=(hitTimes[0].size()>1 || hitTimes[1].size()>1);
+      bool hitPosAndTimeCalculated=false;
       double avgHitTime=0.0;
-      if(!hitTimes[0].empty() && !hitTimes[1].empty())  //both readout sides have hits
+      if(sideHits[0]>0 && sideHits[1]>0)  //both readout sides have hits
       {
-        //find the longitudinal positions farthest away from each other,
-        //because we don't know where the track hit the counter (hit origin)
-        //if we have more than one position at a readout side, the situation is overconstrained.
-        //in the current solution, we ignore the other positions.
-        double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by dividing by total PEs
-        double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second;
-        double hitPos0=hitTimes[0].begin()->first/1000.0;  //convert back to mm
-        double hitPos1=hitTimes[1].rbegin()->first/1000.0; //convert back to mm
+        double posSide0=_sectorTypeMap[crvSectorType].posSide0;
+        double posSide1=_sectorTypeMap[crvSectorType].posSide1;
 
-        double hitPosOrigin=0.5*(_fiberSignalSpeed*(hitTime0-hitTime1)+(hitPos0+hitPos1));
-        if(hitPosOrigin>hitPos0 && hitPosOrigin<hitPos1 && hitPos0<hitPos1) //hit origin is within the counter length and positions of
-        {                                                                   //readout sides are not inverted (should not happen in our geometry)
-          correlatedReadoutSides=true;
-          avgHitPos[lengthDirection]=hitPosOrigin; //correct the longitudinal coordinate of the avgHitPos
-          avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed; //time of hit origin
+        double posOrigin=0.5*(_fiberSignalSpeed*(sideTimes[0]-sideTimes[1])+(posSide0+posSide1));
+
+        double timeInterval0=sideTimesMax[0]-sideTimesMin[0];
+        double timeInterval1=sideTimesMax[1]-sideTimesMin[1];
+
+        if(posOrigin>posSide0 && posOrigin<posSide1 && posSide0<posSide1 &&    //hit origin is within the counter length and positions of
+           timeInterval0<_maxTimeInterval && timeInterval1<_maxTimeInterval)   //readout sides are not inverted (should not happen in our geometry)
+                                                                               //and hit time intervals at both sides are within a limit
+        {
+          hitPosAndTimeCalculated=true;
+          avgHitPos[lengthDirection]=posOrigin; //correct the longitudinal coordinate of the avgHitPos
+          avgHitTime=sideTimes[0]-(posOrigin-posSide0)/_fiberSignalSpeed; //time of hit origin
           //can also be calculated from the other side in the following way:
-          //avgHitTime = hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed
+          //avgHitTime = sideTimes[1]-(posSide1-posOrigin)/_fiberSignalSpeed
           //both results are identical.
         }
         else //hits at both readout don't seem to be correlated (and would result in a hit origin outside the counter)
         {
           //assume the hit origin is at the center (since no other information is available)
-          hitPosOrigin=avgHitPos[lengthDirection];
+          posOrigin=avgHitPos[lengthDirection];
           //calculate the time of the hit origin from both sides
-          double avgHitTime0=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
-          double avgHitTime1=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
+          double avgHitTime0=sideTimes[0]-(posOrigin-posSide0)/_fiberSignalSpeed;
+          double avgHitTime1=sideTimes[1]-(posSide1-posOrigin)/_fiberSignalSpeed;
           //and take the average. that's the best we can do
           //(other than breaking this cluster apart. we may do this later.)
           avgHitTime=0.5*(avgHitTime0+avgHitTime1);
@@ -495,18 +523,16 @@ namespace mu2e
       else //only one readout side has hits
       {
         //assume the hit origin is at the center (since no other information is available)
-        double hitPosOrigin=avgHitPos[lengthDirection];
-        if(!hitTimes[0].empty())
+        double posOrigin=avgHitPos[lengthDirection];
+        if(sideHits[0]>0)
         {
-          double hitTime0=hitTimes[0].begin()->second/hitPEs[0].begin()->second; //find avg PE-weighted time by dividing by total PEs
-          double hitPos0=hitTimes[0].begin()->first/1000.0;  //convert back to mm
-          avgHitTime=hitTime0-(hitPosOrigin-hitPos0)/_fiberSignalSpeed;
+          double posSide0=_sectorTypeMap[crvSectorType].posSide0;
+          avgHitTime=sideTimes[0]-(posOrigin-posSide0)/_fiberSignalSpeed;
         }
-        if(!hitTimes[1].empty())
+        else if(sideHits[1]>0)
         {
-          double hitTime1=hitTimes[1].rbegin()->second/hitPEs[1].rbegin()->second; //find avg PE-weighted time by dividing by total PEs
-          double hitPos1=hitTimes[1].rbegin()->first/1000.0;  //convert back to mm
-          avgHitTime=hitTime1-(hitPos1-hitPosOrigin)/_fiberSignalSpeed;
+          double posSide1=_sectorTypeMap[crvSectorType].posSide1;
+          avgHitTime=sideTimes[1]-(posSide1-posOrigin)/_fiberSignalSpeed;
         }
       }
 
@@ -516,7 +542,7 @@ namespace mu2e
       //insert the cluster information into the vector of the crv coincidence clusters
       crvCoincidenceClusterCollection->emplace_back(crvSectorType, startTime, endTime, PEs, crvRecoPulses, slope, layers,
                                                     sideHits, sidePEs, sideTimes, avgHitTime, avgHitPos,
-                                                    correlatedReadoutSides, multipleReadoutPositionsPerSide);
+                                                    hitPosAndTimeCalculated);
     } //loop through all clusters
   } //end cluster properies
 

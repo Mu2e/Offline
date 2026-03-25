@@ -385,6 +385,7 @@ BEGIN_PROLOG
       #other settings
       bigClusterThreshold              : 50000  //disables it
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
+      maxTimeInterval                  :  20    //20 ns   maximum time interval of hits on one side to be considered for calculation of hit time/pos
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
