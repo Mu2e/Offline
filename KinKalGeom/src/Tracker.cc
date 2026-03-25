@@ -10,16 +10,7 @@ namespace mu2e {
     using KinKal::Disk;
     // currently use hard-coded geometry.  Note: these are only comparable to the MC virtual detector positions
     // at the ~10 um level, as the G4 virtual detectors are that thick, and the steps are semi-random (step tolerance)
-    Tracker::Tracker() :
-      // cylinders are defined by TT_outer (_inner) virtual detectors
-      // Disks are defined to match TT_front (mid, back) virtual detectors
-      outer_ { std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),850.11,1635.11)},
-             inner_{ std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),376.9,1635.11)},
-             // expand the disk radii to meet the DS
-             front_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-1631.12),950.)},
-             mid_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,10.09),950.)},
-             back_{ std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,1639.10),950.)}
-    {}
+    Tracker::Tracker() {}
 
     void Tracker::check_init() const {
       if(!initialized_){
@@ -40,15 +31,21 @@ namespace mu2e {
       double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
       double zFrontLocal  = zFrontGlobal - tracker.g4Tracker()->z0();
       double zBackLocal   = zBackGlobal  - tracker.g4Tracker()->z0();
+      double zMidLocal = 0.5*(zFrontLocal + zBackLocal);
+      double halfLen = 0.5*(zBackLocal-zFrontLocal);
       CLHEP::Hep3Vector ttOffset_det = det->toDetector(ttOffset);
 
-      auto ttorigin = det->getOrigin();
-      std::cout << solenoidOffset<< zFrontLocal<< zBackLocal << ttorigin << std::endl;
+//      auto ttorigin = det->getOrigin();
+      std::cout << "solff " << solenoidOffset <<" zfronloc " << zFrontLocal << " zbackloc " << zBackLocal << " ttoff " << ttOffset_det << std::endl;
 
-      // Tracker mother volume is offset (!):
-      //      outer_ = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,4.0),850.11,1635.11)},
-
-
+      // cylinders are defined by TT_outer (_inner) virtual detectors
+      // Disks are defined to match TT_front (mid, back) virtual detectors
+      outer_  = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),850.11,halfLen);
+      inner_ = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),376.9,halfLen);
+      // expand the disk radii to meet the DS
+      front_ = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zFrontLocal),950.);
+      mid_ = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,10.09),950.);
+      back_ = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zBackLocal),950.);
+    }
   }
-}
 }
