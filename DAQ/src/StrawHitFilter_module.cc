@@ -22,6 +22,7 @@
 #include "TRACE/tracemf.h"
 
 // c++
+#include <format>
 #include <iostream>
 #include <memory>
 #include <map>

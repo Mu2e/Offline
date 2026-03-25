@@ -34,9 +34,8 @@ namespace mu2e
       struct Config
       {
         fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-        //for currently wrongly encoded subevent headers
-        fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce NZS digi collection"), true};
-        fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), true};
+        fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
+        fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
       };
 
       explicit CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config);
