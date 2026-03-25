@@ -111,8 +111,8 @@ namespace mu2e
     {
       double maxTimeDifference;
       double maxHalfLength;
-      double posSide0;
-      double posSide1;
+      double maxPosSide0;
+      double maxPosSide1;
       bool   sipmsAtSide0;
       bool   sipmsAtSide1;
     };
@@ -249,14 +249,14 @@ namespace mu2e
 
     for(const auto& [sectorType,sectorVector] : sectorTypes)
     {
-      _sectorTypeMap[sectorType].posSide0=std::min_element(sectorVector.begin(),sectorVector.end(),
-                                                           [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
-                                                           {return a.posSide0<b.posSide0;})->posSide0;
-      _sectorTypeMap[sectorType].posSide1=std::max_element(sectorVector.begin(),sectorVector.end(),
-                                                           [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
-                                                           {return a.posSide1<b.posSide1;})->posSide1;
+      _sectorTypeMap[sectorType].maxPosSide0=std::min_element(sectorVector.begin(),sectorVector.end(),
+                                                              [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
+                                                              {return a.posSide0<b.posSide0;})->posSide0;
+      _sectorTypeMap[sectorType].maxPosSide1=std::max_element(sectorVector.begin(),sectorVector.end(),
+                                                              [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
+                                                              {return a.posSide1<b.posSide1;})->posSide1;
 
-      _sectorTypeMap[sectorType].maxHalfLength=(_sectorTypeMap[sectorType].posSide1-_sectorTypeMap[sectorType].posSide0)/2.0;
+      _sectorTypeMap[sectorType].maxHalfLength=(_sectorTypeMap[sectorType].maxPosSide1-_sectorTypeMap[sectorType].maxPosSide0)/2.0;
 
       _sectorTypeMap[sectorType].maxTimeDifference=std::max_element(sectorVector.begin(),sectorVector.end(),
                                                                     [](const sectorCoincidenceProperties &a, const sectorCoincidenceProperties &b)
@@ -319,12 +319,12 @@ namespace mu2e
       int    side=SiPM%CRVId::nSidesPerBar;
       if(side==0)
       {
-        double posDiff=sector.posSide0-_sectorTypeMap[sector.sectorType].posSide0;  //will always be >=0
+        double posDiff=sector.posSide0-_sectorTypeMap[sector.sectorType].maxPosSide0;  //will always be >=0
         time+=posDiff/_fiberSignalSpeed;
       }
       else if(side==1)
       {
-        double posDiff=_sectorTypeMap[sector.sectorType].posSide1-sector.posSide1;  //will always be >=0
+        double posDiff=_sectorTypeMap[sector.sectorType].maxPosSide1-sector.posSide1;  //will always be >=0
         time+=posDiff/_fiberSignalSpeed;
       }
 
@@ -489,8 +489,8 @@ namespace mu2e
       double avgHitTime=0.0;
       if(sideHits[0]>0 && sideHits[1]>0)  //both readout sides have hits
       {
-        double posSide0=_sectorTypeMap[crvSectorType].posSide0;
-        double posSide1=_sectorTypeMap[crvSectorType].posSide1;
+        double posSide0=_sectorTypeMap[crvSectorType].maxPosSide0;
+        double posSide1=_sectorTypeMap[crvSectorType].maxPosSide1;
 
         double posOrigin=0.5*(_fiberSignalSpeed*(sideTimes[0]-sideTimes[1])+(posSide0+posSide1));
 
@@ -526,12 +526,12 @@ namespace mu2e
         double posOrigin=avgHitPos[lengthDirection];
         if(sideHits[0]>0)
         {
-          double posSide0=_sectorTypeMap[crvSectorType].posSide0;
+          double posSide0=_sectorTypeMap[crvSectorType].maxPosSide0;
           avgHitTime=sideTimes[0]-(posOrigin-posSide0)/_fiberSignalSpeed;
         }
         else if(sideHits[1]>0)
         {
-          double posSide1=_sectorTypeMap[crvSectorType].posSide1;
+          double posSide1=_sectorTypeMap[crvSectorType].maxPosSide1;
           avgHitTime=sideTimes[1]-(posSide1-posOrigin)/_fiberSignalSpeed;
         }
       }
