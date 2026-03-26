@@ -55,11 +55,11 @@ namespace mu2e
       //sector-specific coincidence settings
       fhicl::Sequence<fhicl::Table<SectorConfig> > sectorConfig{Name("sectorConfig"), Comment("sector-specific settings")};
       //other settings
-      fhicl::Atom<int> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
+      fhicl::Atom<size_t> bigClusterThreshold{Name("bigClusterThreshold"), Comment("no coincidence check for clusters with a number of hits above this threshold")};
       fhicl::Atom<double> fiberSignalSpeed{Name("fiberSignalSpeed"), Comment("effective speed of signals inside the CRV fibers in mm/ns")};
       fhicl::Atom<double> maxTimeInterval{Name("maxTimeInterval"), Comment("maximum time interval of hits on one readout side considered for hit position calculation")};
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
-      fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missinge pulses for channels with the following channel statuses")};
+      fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missing pulses for channels with the following channel statuses")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -137,7 +137,7 @@ namespace mu2e
       double _minClusterPEs;
       mutable double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate
                                    //used for the initial clustering process (to keep the number of
-                                   //hit combinations down that need to be checked for coincidendes).
+                                   //hit combinations down that need to be checked for coincidences).
                                    //_maxDistance is updated when the coindidences are checked
                                    //(used for the final clustering process)
 
@@ -284,7 +284,7 @@ namespace mu2e
 
     //loop through all reco pulses
     //distribute them into the crv sector types
-    std::map<int, std::vector<CrvHit> > sectorTypeMap;
+    std::map<int, std::vector<CrvHit> > hitMap;
     for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); ++recoPulseIndex)
     {
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
@@ -330,7 +330,7 @@ namespace mu2e
 
       //compensate for dead or ignored channels
       size_t currentChannel = crvBarIndex.asUint()*CRVId::nChanPerBar + SiPM;
-      size_t testChannel = currentChannel + (SiPM-2<0 ? 2 : -2);  //the other channel at the same side of the counter
+      size_t testChannel = currentChannel + (SiPM<2 ? 2 : -2);  //the other channel at the same side of the counter
       std::bitset<16> status(sipmStatus.status(testChannel));
       bool compensate=false;
       for(size_t iChannelStatus=0; iChannelStatus<_compensateChannelStatus.size(); ++iChannelStatus)
@@ -339,8 +339,8 @@ namespace mu2e
       }
       if(compensate) PEs *= 2.0; //double the PE value of this channel to compensate for the dead or ignored neighbor channel
 
-      //don't split counter sides for the purpose of finding clusters
-      sectorTypeMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
+      //separate hits by sector types
+      hitMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
                                                     x, y, time, PEs, sectorNumber,
                                                     layerNumber, counterNumber, SiPM, sector.PEthreshold,
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
@@ -349,11 +349,11 @@ namespace mu2e
     }
 
     //loop through all crv sectors types
-    std::map<int, std::vector<CrvHit> >::const_iterator sectorTypeMapIter;
-    for(sectorTypeMapIter=sectorTypeMap.begin(); sectorTypeMapIter!=sectorTypeMap.end(); ++sectorTypeMapIter)
+    std::map<int, std::vector<CrvHit> >::const_iterator hitMapIter;
+    for(hitMapIter=hitMap.begin(); hitMapIter!=hitMap.end(); ++hitMapIter)
     {
-      int crvSectorType = sectorTypeMapIter->first;
-      const std::vector<CrvHit> &hitsUnfiltered = sectorTypeMapIter->second;
+      int crvSectorType = hitMapIter->first;
+      const std::vector<CrvHit> &hitsUnfiltered = hitMapIter->second;
 
       //filter hits, i.e. remove all hits below PE threshold
       //separate into both readout sides
@@ -451,8 +451,8 @@ namespace mu2e
         if(minClusterPEs>hit->_minClusterPEs) minClusterPEs=hit->_minClusterPEs;
       } //loop over hits of the cluster
 
-      assert(PEs>0);
-      assert(layerSet.size()>1);
+      if(PEs<=0) throw cet::exception("CRVCoincidenceClusterFinder") << "Found a cluster with zero or less PEs." << std::endl;
+      if(layerSet.size()<=1) throw cet::exception("CRVCoincidenceClusterFinder") << "Found a cluster with zero or one layers." << std::endl;
 
       //average counter position (PE weighted), slope, layers
       avgHitPos/=PEs;
