@@ -133,6 +133,10 @@ public:
     fhicl::Atom<bool> useOfflineID{fhicl::Name("useOfflineID"),
                                    fhicl::Comment("Input CaloDigis use offline SiPM IDs"),
                                    true};
+    fhicl::Atom<bool> skipFragmentOnSizeMismatch{
+      fhicl::Name("skipFragmentOnSizeMismatch"),
+      fhicl::Comment("Skip emitting fragment when packed bytes and event header size differ"),
+      false};
     fhicl::Atom<art::InputTag> caloDigiTag{fhicl::Name("caloDigiTag"),
                                            fhicl::Comment("Input CaloDigiCollection"),
                                            art::InputTag("CaloDigisFromDTCEvents")};
@@ -149,6 +153,7 @@ private:
 
   int diagLevel_;
   bool useOfflineID_;
+  bool skipFragmentOnSizeMismatch_;
   art::InputTag caloDigiTag_;
 
   long int total_events_;
@@ -167,6 +172,7 @@ art::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Con
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
     , useOfflineID_(config().useOfflineID())
+    , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
     , caloDigiTag_(config().caloDigiTag()) {
   produces<artdaq::Fragments>();
   total_events_ = 0;
@@ -352,13 +358,25 @@ void art::CaloDigisToFragments::produce(Event& event) {
       }
     }
 
-    if (packed.size() != eventBytes) {
+    bool sizeMismatch = packed.size() != eventBytes;
+    if (sizeMismatch) {
+      if (skipFragmentOnSizeMismatch_) {
+        if (diagLevel_ > 0) {
+          std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
+                    << " differs from header event size " << eventBytes
+                    << " - skipping fragment" << std::endl;
+        }
+        event.put(std::move(fragments));
+        return;
+      }
       if (diagLevel_ > 0) {
         std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
                   << " differs from header event size " << eventBytes
-                  << " - skipping fragment" << std::endl;
+                  << " - emitting fragment" << std::endl;
       }
-    } else {
+    }
+
+    {
       auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
       fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
       fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
