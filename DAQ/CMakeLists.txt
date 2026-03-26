@@ -53,9 +53,9 @@ cet_build_plugin(CaloDigisFromDTCEvents art::module
       artdaq-core-mu2e::Data_dict
 )
 
-    cet_build_plugin(CaloDigisToFragments art::module
-        REG_SOURCE src/CaloDigisToFragments_module.cc
-        LIBRARIES REG
+cet_build_plugin(CaloDigisToFragments art::module
+    REG_SOURCE src/CaloDigisToFragments_module.cc
+    LIBRARIES REG
       Offline::DAQ
       Offline::CaloConditions
       Offline::DataProducts
@@ -63,13 +63,13 @@ cet_build_plugin(CaloDigisFromDTCEvents art::module
       Offline::RecoDataProducts
       artdaq-core-mu2e::Data
       artdaq-core-mu2e::Data_dict
-    )
+)
 
-    cet_build_plugin(CaloDigiCollectionsComparator art::module
-        REG_SOURCE src/CaloDigiCollectionsComparator_module.cc
-        LIBRARIES REG
+cet_build_plugin(CaloDigiCollectionsComparator art::module
+    REG_SOURCE src/CaloDigiCollectionsComparator_module.cc
+    LIBRARIES REG
       Offline::RecoDataProducts
-    )
+)
 
 cet_build_plugin(DummyLumiInfoProducer art::module
     REG_SOURCE src/DummyLumiInfoProducer_module.cc

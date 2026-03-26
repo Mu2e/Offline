@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -49,6 +50,10 @@ constexpr uint8_t kFormatVersion = 1;
 constexpr uint8_t kCaloRocsPerDtc = 6;
 constexpr size_t kDtcEventHeaderBytes = 24;
 constexpr size_t kDtcSubEventHeaderBytes = 48;
+static_assert(sizeof(DTCLib::DTC_EventHeader) == kDtcEventHeaderBytes,
+              "Unexpected DTC_EventHeader size");
+static_assert(sizeof(DTCLib::DTC_SubEventHeader) == kDtcSubEventHeaderBytes,
+              "Unexpected DTC_SubEventHeader size");
 
 void writeBits(std::array<uint16_t, 6>& words, size_t startBit, size_t bitLength, uint32_t value) {
   // The decoder reads bits in a swapped-word layout, so we write into that same mapping.
@@ -129,7 +134,8 @@ public:
                                    fhicl::Comment("Input CaloDigis use offline SiPM IDs"),
                                    true};
     fhicl::Atom<art::InputTag> caloDigiTag{fhicl::Name("caloDigiTag"),
-                                           fhicl::Comment("Input CaloDigiCollection")};
+                                           fhicl::Comment("Input CaloDigiCollection"),
+                                           art::InputTag("CaloDigisFromDTCEvents")};
   };
 
   explicit CaloDigisToFragments(const art::EDProducer::Table<Config>& config);
@@ -346,40 +352,43 @@ void art::CaloDigisToFragments::produce(Event& event) {
       }
     }
 
-    if (packed.size() != eventBytes && diagLevel_ > 0) {
-      std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
-                << " differs from header event size " << eventBytes << std::endl;
-    }
+    if (packed.size() != eventBytes) {
+      if (diagLevel_ > 0) {
+        std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
+                  << " differs from header event size " << eventBytes
+                  << " - skipping fragment" << std::endl;
+      }
+    } else {
+      auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
+      fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
+      fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
+      fragPtr->setFragmentID(0);
+      fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
+      if (!packed.empty()) {
+        std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
+      }
 
-    auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
-    fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
-    fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
-    fragPtr->setFragmentID(0);
-    fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
-    if (!packed.empty()) {
-      std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
-    }
-
-    if (diagLevel_ > 0) {
-      mu2e::DTCEventFragment testFragment(*fragPtr);
-      auto testSubevents =
-          testFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
-      size_t decodedHits = 0;
-      for (auto const& se : testSubevents) {
-        mu2e::CalorimeterDataDecoder decoder(se);
-        for (size_t i = 0; i < decoder.block_count(); ++i) {
-          auto hitVec = decoder.GetCalorimeterHitData(i);
-          if (hitVec != nullptr) {
-            decodedHits += hitVec->size();
+      if (diagLevel_ > 0) {
+        mu2e::DTCEventFragment testFragment(*fragPtr);
+        auto testSubevents =
+            testFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
+        size_t decodedHits = 0;
+        for (auto const& se : testSubevents) {
+          mu2e::CalorimeterDataDecoder decoder(se);
+          for (size_t i = 0; i < decoder.block_count(); ++i) {
+            auto hitVec = decoder.GetCalorimeterHitData(i);
+            if (hitVec != nullptr) {
+              decodedHits += hitVec->size();
+            }
           }
         }
+        std::cout << "[CaloDigisToFragments::produce] Validation: " << testSubevents.size()
+                  << " CALO subevent(s), " << decodedHits << " decodable hit(s) in output"
+                  << std::endl;
       }
-      std::cout << "[CaloDigisToFragments::produce] Validation: " << testSubevents.size()
-                << " CALO subevent(s), " << decodedHits << " decodable hit(s) in output"
-                << std::endl;
-    }
 
-    fragments->emplace_back(std::move(*fragPtr));
+      fragments->emplace_back(std::move(*fragPtr));
+    }
   }
 
   if (diagLevel_ > 0) {

@@ -37,6 +37,10 @@ public:
     fhicl::Atom<size_t> maxMismatchesToPrint{fhicl::Name("maxMismatchesToPrint"),
                                              fhicl::Comment("Maximum mismatch entries to print"),
                                              10};
+    fhicl::Atom<size_t> maxWaveformSamplesToPrint{
+      fhicl::Name("maxWaveformSamplesToPrint"),
+      fhicl::Comment("Maximum waveform samples to print in mismatch diagnostics"),
+      64};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
@@ -65,13 +69,14 @@ private:
   };
 
   static std::vector<FlatDigi> normalize(mu2e::CaloDigiCollection const& digis);
-  static std::string describe(FlatDigi const& digi);
+  static std::string describe(FlatDigi const& digi, size_t maxWaveformSamplesToPrint);
 
   art::InputTag referenceTag_;
   art::InputTag candidateTag_;
   bool failOnMismatch_;
   int diagLevel_;
   size_t maxMismatchesToPrint_;
+  size_t maxWaveformSamplesToPrint_;
 
   size_t totalEvents_{0};
   size_t matchingEvents_{0};
@@ -84,7 +89,8 @@ CaloDigiCollectionsComparator::CaloDigiCollectionsComparator(Parameters const& c
     , candidateTag_(config().candidateTag())
     , failOnMismatch_(config().failOnMismatch())
     , diagLevel_(config().diagLevel())
-    , maxMismatchesToPrint_(config().maxMismatchesToPrint()) {}
+    , maxMismatchesToPrint_(config().maxMismatchesToPrint())
+    , maxWaveformSamplesToPrint_(config().maxWaveformSamplesToPrint()) {}
 
 std::vector<CaloDigiCollectionsComparator::FlatDigi>
 CaloDigiCollectionsComparator::normalize(mu2e::CaloDigiCollection const& digis) {
@@ -98,17 +104,37 @@ CaloDigiCollectionsComparator::normalize(mu2e::CaloDigiCollection const& digis) 
   return out;
 }
 
-std::string CaloDigiCollectionsComparator::describe(FlatDigi const& digi) {
+std::string CaloDigiCollectionsComparator::describe(FlatDigi const& digi,
+                                                    size_t maxWaveformSamplesToPrint) {
   std::ostringstream os;
   os << "SiPMID=" << digi.sipmID << ", t0=" << digi.t0 << ", peakpos=" << digi.peakpos
      << ", waveformSize=" << digi.waveform.size();
   if (!digi.waveform.empty()) {
     os << ", waveform={";
-    for (size_t i = 0; i < digi.waveform.size(); ++i) {
-      if (i != 0) {
-        os << ",";
+    size_t const n = digi.waveform.size();
+    if (n <= maxWaveformSamplesToPrint) {
+      for (size_t i = 0; i < n; ++i) {
+        if (i != 0) {
+          os << ",";
+        }
+        os << digi.waveform[i];
       }
-      os << digi.waveform[i];
+    } else {
+      size_t const head = maxWaveformSamplesToPrint / 2;
+      size_t const tail = maxWaveformSamplesToPrint - head;
+      for (size_t i = 0; i < head; ++i) {
+        if (i != 0) {
+          os << ",";
+        }
+        os << digi.waveform[i];
+      }
+      os << ",...,";
+      for (size_t i = n - tail; i < n; ++i) {
+        if (i != n - tail) {
+          os << ",";
+        }
+        os << digi.waveform[i];
+      }
     }
     os << "}";
   }
@@ -137,8 +163,8 @@ void CaloDigiCollectionsComparator::analyze(art::Event const& event) {
     if (!(reference[i] == candidate[i])) {
       std::ostringstream os;
       os << "Digi mismatch at sorted index " << i << "\n"
-         << "  reference: " << describe(reference[i]) << "\n"
-         << "  candidate: " << describe(candidate[i]);
+        << "  reference: " << describe(reference[i], maxWaveformSamplesToPrint_) << "\n"
+        << "  candidate: " << describe(candidate[i], maxWaveformSamplesToPrint_);
       mismatches.push_back(os.str());
     }
   }
