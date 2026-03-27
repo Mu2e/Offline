@@ -126,7 +126,11 @@ namespace mu2e {
       virtualdetectorId = step.virtualDetectorId();
       pz = step.momentum().z();
       if (virtualdetectorId != VirtualDetectorID || pz <= 0)
+      {
+        mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
+                                               << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
         continue; // Filter hits based on the virtual detector ID and pz
+      }
       
       if (doROOTDump) {
           x = step.position().x();
@@ -174,7 +178,8 @@ namespace mu2e {
         throw cet::exception("VDResamplerConfigure::endJob") << "Cannot open file " << fclFile;
     }
 
-    std::string trainingModuleNames = "";
+    std::string trainingPathNames = "";
+    std::vector<std::pair<std::string, std::string>> trainingPaths; // pairs of (moduleName, pathName)
 
     sumOutFile << "PDGID,HitCount,NotTrained\n";
 
@@ -206,10 +211,8 @@ namespace mu2e {
         // if pdgID is negative, we will use "m" instead of "-" in the filename to avoid issues with file naming
         std::string pdgIdstr = (part.first < 0) ? "m" + std::to_string(-part.first) : std::to_string(part.first);
         std::string moduleName = "VDResamplerTrainVD"+ std::to_string(VirtualDetectorID) + dataSourceTag + "pdg" + pdgIdstr;
-        if (!trainingModuleNames.empty()) {
-            trainingModuleNames += ", ";
-        }            
-        trainingModuleNames += moduleName;
+        std::string pathName = "trainPathVD" + std::to_string(VirtualDetectorID) + "pdg" + pdgIdstr;
+        trainingPaths.push_back({moduleName, pathName});
         fclOutFile << "    " << moduleName << " : {\n"
                     << "      module_type : VDResamplerTrain\n"
                     << "      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag\n"
@@ -245,7 +248,15 @@ namespace mu2e {
       }
     }
     fclOutFile << "  }\n";
-    fclOutFile << "  end_paths: [" + trainingModuleNames + "]\n";
+
+    // Create trigger paths for each training module
+    for (size_t i = 0; i < trainingPaths.size(); ++i) {
+      fclOutFile << "  " << trainingPaths[i].second << " : [" << trainingPaths[i].first << "]\n";
+      if (i > 0) trainingPathNames += ", ";
+      trainingPathNames += trainingPaths[i].second;
+    }
+
+    fclOutFile << "  end_paths: [" + trainingPathNames + "]\n";
     fclOutFile << "}\n\n";
     if (doROOTDump) fclOutFile << "services.TFileService.fileName : @nil\n";
 
