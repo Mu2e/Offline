@@ -8,6 +8,7 @@ using namespace std;
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/EventDisplay/src/Cube.h"
@@ -33,6 +34,7 @@ using namespace std;
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -971,6 +973,35 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
           crystal->second->getComponentInfo()->expandLine(4,Form("%i",trackid));
+        }
+      }
+    }
+  }
+
+  const mu2e::CaloDigiCollection *calodigis=contentSelector->getSelectedCaloHitCollection<mu2e::CaloDigiCollection>();
+  if(calodigis!=nullptr)
+  {
+    _numberCrystalHits=calodigis->size();
+    std::vector<mu2e::CaloDigi>::const_iterator iter;
+    for(iter=calodigis->begin(); iter!=calodigis->end(); iter++)
+    {
+      const mu2e::CaloDigi& calodigi = *iter;
+      size_t crystalid = mu2e::CaloSiPMId(calodigi.SiPMID()).crystal().id();
+      double time = calodigi.t0();
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !std::isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(std::isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
         }
       }
     }
