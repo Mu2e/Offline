@@ -77,10 +77,7 @@ BEGIN_PROLOG
       module_type                      : CrvCoincidenceFinder
       verboseLevel                     : 0
       crvRecoPulsesModuleLabel         : "CrvRecoPulses"
-      #cluster settings
-      clusterMaxTimeDifference         : 60  //ns                               //use looser cut for cluster time values
-      clusterMinOverlapTime            : 10  //ns //when pulse overlap is used  //to allow hits from SiPMs of opposite
-                                                                                //counter ends to be included
+
       #sector-specific coincidence settings
       sectorConfig :
       [
@@ -89,8 +86,6 @@ BEGIN_PROLOG
           PEthreshold : 12  //PEs
           maxTimeDifferenceAdjacentPulses : 10  //ns
           maxTimeDifference : 10  //ns
-          minOverlapTimeAdjacentPulses     : 40  //40ns (=at least 4 ADC samples)  //higher threshold for this sector
-          minOverlapTime                   : 30  //30ns (=at least 3 ADC samples)
           minSlope :-2
           maxSlope : 5  //width direction over thickness direction
           maxSlopeDifference : 3
@@ -103,8 +98,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -117,8 +110,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -131,8 +122,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -145,8 +134,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -159,8 +146,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -173,8 +158,6 @@ BEGIN_PROLOG
           PEthreshold : 12  //higher threshold
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 40   //higher threshold
-          minOverlapTime : 30
           minSlope :-5
           maxSlope : 3
           maxSlopeDifference : 3
@@ -187,8 +170,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -201,8 +182,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -215,8 +194,6 @@ BEGIN_PROLOG
           PEthreshold : 15
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-5
           maxSlope : 2
           maxSlopeDifference : 3
@@ -229,8 +206,6 @@ BEGIN_PROLOG
           PEthreshold : 15
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-5
           maxSlope : 2
           maxSlopeDifference : 3
@@ -243,8 +218,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
           maxTimeDifference : 20  //to increase veto efficiency
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-4
           maxSlope : 3
           maxSlopeDifference : 3
@@ -257,8 +230,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
           maxTimeDifference : 20  //to increase veto efficiency
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -271,8 +242,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 20  //to increase veto efficiency
           maxTimeDifference : 20  //to increase veto efficiency
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -285,8 +254,6 @@ BEGIN_PROLOG
           PEthreshold : 20
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
-          minOverlapTimeAdjacentPulses : 40   //higher threshold
-          minOverlapTime : 30
           minSlope : 0
           maxSlope : 3
           maxSlopeDifference : 3
@@ -299,8 +266,6 @@ BEGIN_PROLOG
           PEthreshold : 20
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20  //because of single-ended readout
-          minOverlapTimeAdjacentPulses : 40   //higher threshold
-          minOverlapTime : 30
           minSlope : 0
           maxSlope : 3
           maxSlopeDifference : 3
@@ -313,8 +278,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 30  //because of single-ended readout
-          minOverlapTimeAdjacentPulses : 40   //higher threshold
-          minOverlapTime : 30
           minSlope : -2
           maxSlope :  0.01    //so that all slopes of 0 are included even if they appear as e.g. 1.0e-15
           maxSlopeDifference : 3
@@ -327,8 +290,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -341,8 +302,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -355,8 +314,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -369,8 +326,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 20
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -383,8 +338,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -397,8 +350,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -411,8 +362,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -425,8 +374,6 @@ BEGIN_PROLOG
           PEthreshold : 8
           maxTimeDifferenceAdjacentPulses : 10
           maxTimeDifference : 10
-          minOverlapTimeAdjacentPulses : 30
-          minOverlapTime : 30
           minSlope :-6
           maxSlope : 6
           maxSlopeDifference : 3
@@ -436,11 +383,9 @@ BEGIN_PROLOG
         }
       ]
       #other settings
-      usePulseOverlaps                 : false  //automatically uses noFitReco option
-      useNoFitReco                     : false
-      usePEsPulseHeight                : false  //using the PEs that were calculated using the pulse height instead of pulse area
       bigClusterThreshold              : 50000  //disables it
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
+      maxTimeInterval                  :  20    //20 ns   maximum time interval of hits on one side to be considered for calculation of hit time/pos
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
