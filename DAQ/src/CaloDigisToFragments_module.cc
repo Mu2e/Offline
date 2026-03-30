@@ -130,9 +130,6 @@ class art::CaloDigisToFragments : public EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
-    fhicl::Atom<bool> useOfflineID{fhicl::Name("useOfflineID"),
-                                   fhicl::Comment("Input CaloDigis use offline SiPM IDs"),
-                                   true};
     fhicl::Atom<bool> skipFragmentOnSizeMismatch{
       fhicl::Name("skipFragmentOnSizeMismatch"),
       fhicl::Comment("Skip emitting fragment when packed bytes and event header size differ"),
@@ -152,7 +149,6 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> calodaqconds_h_;
 
   int diagLevel_;
-  bool useOfflineID_;
   bool skipFragmentOnSizeMismatch_;
   art::InputTag caloDigiTag_;
 
@@ -171,7 +167,6 @@ private:
 art::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
-    , useOfflineID_(config().useOfflineID())
     , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
     , caloDigiTag_(config().caloDigiTag()) {
   produces<artdaq::Fragments>();
@@ -207,16 +202,9 @@ void art::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
 
   std::map<uint8_t, std::map<uint8_t, CaloBlockData>> byDtcAndLink;
   for (auto const& digi : caloDigis) {
-    mu2e::CaloRawSiPMId rawId;
-    uint16_t detectorID = 0;
-
-    if (useOfflineID_) {
-      mu2e::CaloSiPMId offId(static_cast<uint16_t>(digi.SiPMID()));
-      rawId = calodaqconds.rawId(offId);
-      detectorID = offId.detType();
-    } else {
-      rawId = mu2e::CaloRawSiPMId(static_cast<uint16_t>(digi.SiPMID()));
-    }
+    mu2e::CaloSiPMId offId(static_cast<uint16_t>(digi.SiPMID()));
+    const mu2e::CaloRawSiPMId rawId = calodaqconds.rawId(offId);
+    const uint16_t detectorID = offId.detType();
 
     if (!rawId.isValid()) {
       continue;
