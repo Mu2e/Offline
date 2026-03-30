@@ -62,6 +62,27 @@ static_assert(sizeof(DTCLib::DTC_SubEventHeader) == kDtcSubEventHeaderBytes,
 static_assert(sizeof(TrackerDataPacket) == 16, "Unexpected TrackerDataPacket size");
 static_assert(sizeof(TrackerADCPacket) == 16, "Unexpected TrackerADCPacket size");
 
+void printTrackerPanelMap(mu2e::TrackerPanelMap const& panelMap) {
+  size_t nrows = 0;
+  std::cout << "[StrawDigisToFragments] TrackerPanelMap entries (online->offline):" << std::endl;
+  for (uint32_t dtc = 0; dtc < mu2e::TrackerPanelMap::kMaxPlanes; ++dtc) {
+    for (uint32_t link = 0; link < mu2e::StrawId::_npanels; ++link) {
+      auto const* row = panelMap.panel_map_by_online_ind(dtc, link);
+      if (row == nullptr) {
+        continue;
+      }
+      ++nrows;
+      std::cout << "  DTC=" << row->dtc() << " link=" << row->link()
+                << " -> plane=" << row->uniquePlane()
+                << " panel=" << row->panel()
+                << " mnid=" << row->mnid()
+                << " ppid=" << row->ppid()
+                << " zface=" << row->zface() << std::endl;
+    }
+  }
+  std::cout << "[StrawDigisToFragments] TrackerPanelMap rows printed: " << nrows << std::endl;
+}
+
 size_t waveformPacketCount(mu2e::StrawDigiADCWaveform const& waveform) {
   auto const& samples = waveform.samples();
   if (samples.size() < 3) {
@@ -150,6 +171,7 @@ private:
   bool forceOfflineAddressing_;
   art::InputTag strawDigiTag_;
   art::InputTag strawDigiADCTag_;
+  bool printedTrackerPanelMap_;
 
   mu2e::ProditionsHandle<mu2e::TrackerPanelMap> trackerPanelMap_h_;
 
@@ -172,7 +194,8 @@ art::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<C
   , fallbackToOfflineWhenMapMissing_(config().fallbackToOfflineWhenMapMissing())
     , forceOfflineAddressing_(config().forceOfflineAddressing())
     , strawDigiTag_(config().strawDigiTag())
-    , strawDigiADCTag_(config().strawDigiADCTag()) {
+  , strawDigiADCTag_(config().strawDigiADCTag())
+  , printedTrackerPanelMap_(false) {
   produces<artdaq::Fragments>();
   total_events_ = 0;
   total_digis_ = 0;
@@ -196,6 +219,10 @@ void art::StrawDigisToFragments::buildDtcEventFromDigis(
     art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
     mu2e::StrawDigiADCWaveformCollection const& strawADCs, DTCLib::DTC_Event& dtcEvent) {
   auto const& trackerPanelMap = trackerPanelMap_h_.get(event.id());
+  if (diagLevel_ > 1 && !printedTrackerPanelMap_) {
+    printTrackerPanelMap(trackerPanelMap);
+    printedTrackerPanelMap_ = true;
+  }
   std::map<uint8_t, std::map<uint8_t, TrackerBlockData>> byDtcAndLink;
 
   size_t const nHits = std::min(strawDigis.size(), strawADCs.size());
@@ -277,26 +304,24 @@ void art::StrawDigisToFragments::buildDtcEventFromDigis(
   }
 
   for (auto& [dtcID, linkMap] : byDtcAndLink) {
-    // Emit a block for each link that has data
-    for (auto& [linkID, block] : linkMap) {
+    // Emit all tracker ROC links in order so decoders expecting contiguous
+    // ROC indices (0..5) can parse mixed-subdetector streams robustly.
+    for (uint8_t linkID = 0; linkID < kTrackerRocsPerDtc; ++linkID) {
+      auto& block = linkMap[linkID];
       block.dtcID = dtcID;
       block.linkID = linkID;
 
       // Calculate packet and byte counts based on actual hits
-      // Empty blocks should not be emitted; only emit if we have data
-      if (block.hits.empty()) {
-        continue;
-      }
-
-      // Calculate total packets: 1 header + hits + ADCs
-      uint16_t numPackets = 1;  // header packet
+      // packetCount in DTC_DataHeaderPacket excludes the 16-byte data header
+      // packet itself; it counts only hit payload packets.
+      uint16_t numPackets = 0;
       for (auto const& hit : block.hits) {
         numPackets += 1;  // main packet per hit
         numPackets += static_cast<uint16_t>(hit.adcPackets.size());  // ADC packets per hit
       }
 
       block.packetCount = numPackets;
-      block.transferByteCount = static_cast<uint16_t>(numPackets * 16);
+      block.transferByteCount = static_cast<uint16_t>((numPackets + 1) * 16);
 
       if (diagLevel_ > 1) {
         std::cout << "[buildDtcEventFromDigis] DTC " << static_cast<int>(dtcID)
@@ -416,6 +441,12 @@ void art::StrawDigisToFragments::produce(Event& event) {
         auto const* blk = reinterpret_cast<uint8_t const*>(block.GetRawBufferPointer());
         packed.insert(packed.end(), blk, blk + block.byteSize);
       }
+
+      // Each output fragment carries exactly one subevent payload. Patch the
+      // copied event header so generic DTC decoders see consistent metadata.
+      auto* packedEventHdr = reinterpret_cast<DTCLib::DTC_EventHeader*>(packed.data());
+      packedEventHdr->inclusive_event_byte_count = static_cast<uint32_t>(calcEventBytes);
+      packedEventHdr->num_dtcs = 1;
 
       if (diagLevel_ > 1 && packed.size() != calcEventBytes) {
         std::cout << "[StrawDigisToFragments::produce] WARNING: subevent " << seIdx
