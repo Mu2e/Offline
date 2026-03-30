@@ -9,6 +9,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "cetlib_except/exception.h"
 
 #include "artdaq-core-mu2e/Overlays/Decoders/CalorimeterDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_Event.h"
@@ -207,7 +208,7 @@ void art::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
     const uint16_t detectorID = offId.detType();
 
     if (!rawId.isValid()) {
-      continue;
+      throw cet::exception("RECO") << "Raw ID for SIPM " << offId << " detector " << detectorID << " invalid";
     }
 
     auto const diracID = rawId.dirac();
