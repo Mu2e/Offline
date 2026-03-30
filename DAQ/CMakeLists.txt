@@ -126,6 +126,23 @@ cet_build_plugin(StrawDigisFromArtdaqFragments art::module
   ROOT::Gui
 )
 
+cet_build_plugin(StrawDigisToFragments art::module
+    REG_SOURCE src/StrawDigisToFragments_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::TrackerConditions
+      Offline::DataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
+)
+
+cet_build_plugin(StrawDigiCollectionsComparator art::module
+    REG_SOURCE src/StrawDigiCollectionsComparator_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+)
 cet_build_plugin(StrawHitFilter art::module
   REG_SOURCE src/StrawHitFilter_module.cc
   LIBRARIES REG
