@@ -92,6 +92,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 200  //200 PEs   //higher threshold for this sector
           initialClusterMaxDistance : 250 //mm
+          finalClusterMaxDistance : 0 //mm
         },
         {
           CRVSector : "R2"
@@ -104,6 +105,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0  //0 PEs (=no cut on total PEs of a coincidence cluster)
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "R3"
@@ -116,6 +118,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "R4"
@@ -128,6 +131,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "R5"
@@ -140,6 +144,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "R6"
@@ -152,6 +157,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "L1"
@@ -164,6 +170,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 100   //higher threshold
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "L2"
@@ -176,6 +183,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "L3"
@@ -188,6 +196,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T1"
@@ -200,6 +209,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 60
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T2"
@@ -212,6 +222,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 60
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T3"
@@ -224,6 +235,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T4"
@@ -236,6 +248,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T5"
@@ -248,6 +261,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "E1"
@@ -260,6 +274,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 200  //higher threshold
           initialClusterMaxDistance : 100
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "E2"
@@ -272,6 +287,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 200  //higher threshold
           initialClusterMaxDistance : 100
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "U"
@@ -284,6 +300,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 60  //higher threshold
           initialClusterMaxDistance : 100
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "D1"
@@ -296,6 +313,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "D2"
@@ -308,6 +326,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "D3"
@@ -320,6 +339,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "D4"
@@ -332,6 +352,7 @@ BEGIN_PROLOG
           coincidenceLayers : 4   //to suppress high rate
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "C1"
@@ -344,6 +365,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "C2"
@@ -356,6 +378,7 @@ BEGIN_PROLOG
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 150
+          finalClusterMaxDistance : 0
         }
       ]
       #other settings

@@ -11,6 +11,7 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         },
         {
           CRVSector : "T2"
@@ -23,5 +24,6 @@ physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
           coincidenceLayers : 3
           minClusterPEs : 0
           initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
         }
       ]

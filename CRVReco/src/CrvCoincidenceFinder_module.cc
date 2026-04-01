@@ -45,6 +45,7 @@ namespace mu2e
       fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
       fhicl::Atom<double> minClusterPEs{Name("minClusterPEs"), Comment("minimum number of PEs in a cluster required for storage")};
       fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
+      fhicl::Atom<double> finalClusterMaxDistance{Name("finalClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at final clustering process. will be adjusted to larger values depending on the actual distances between coincidence hits.")};
     };
     struct Config
     {
@@ -104,6 +105,7 @@ namespace mu2e
       int         coincidenceLayers;
       double      minClusterPEs;
       double      initialClusterMaxDistance;
+      double      finalClusterMaxDistance;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
 
@@ -242,6 +244,7 @@ namespace mu2e
       s.coincidenceLayers               = sectorConfigIter->coincidenceLayers();
       s.minClusterPEs                   = sectorConfigIter->minClusterPEs();
       s.initialClusterMaxDistance       = sectorConfigIter->initialClusterMaxDistance();
+      s.finalClusterMaxDistance         = sectorConfigIter->finalClusterMaxDistance();
 
       _sectorMap[i]=s;
       sectorTypes[s.sectorType].push_back(s);
@@ -665,7 +668,8 @@ namespace mu2e
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
     {
-      iterHit->_maxDistance=0;  //reset max distance. will be re-calculated here based on actual distances.
+      iterHit->_maxDistance=_sectorMap.at(iterHit->_crvSector).finalClusterMaxDistance;  //set new max distance for final cluster. can be 0.
+                                                                                         //will be adjusted to larger values depending on the actual distances between coincidence hits.
       int    layer=iterHit->_layer;
       hitsLayers[layer].push_back(*iterHit);
     }
@@ -850,7 +854,7 @@ namespace mu2e
     std::sort(layerIterators,layerIterators+n,[](L &a, L &b){return a->_x < b->_x;});
     for(int i=0; i<n; ++i)
     {
-      //find the max distances between hits belonging to a coincidence group.
+      //find the max distances between hits belonging to a coincidence group (has to be at least finalClusterMaxDistance, which can be 0).
       //these max distances are used later when new clusters based on coincidence hits are created.
       //this is done to avoid breaking coincidence groups apart during the next clustering process.
       if(i>0)
