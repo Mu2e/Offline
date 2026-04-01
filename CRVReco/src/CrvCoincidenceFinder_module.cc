@@ -45,7 +45,7 @@ namespace mu2e
       fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
       fhicl::Atom<double> minClusterPEs{Name("minClusterPEs"), Comment("minimum number of PEs in a cluster required for storage")};
       fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
-      fhicl::Atom<double> finalClusterMaxDistance{Name("finalClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at final clustering process. will be adjusted to larger values depending on the actual distances between coincidence hits.")};
+      fhicl::Atom<double> finalClusterMaxDistance{Name("finalClusterMaxDistance"), Comment("floor value of the maximum distances between hits to be considered for a hit cluster at final clustering process. maximum distance will be adjusted to larger values depending on the actual distances between coincidence hits.")};  //can be 0.
     };
     struct Config
     {
@@ -137,11 +137,10 @@ namespace mu2e
       double _minSlope, _maxSlope, _maxSlopeDifference;
       int    _coincidenceLayers;
       double _minClusterPEs;
-      mutable double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate
-                                   //used for the initial clustering process (to keep the number of
-                                   //hit combinations down that need to be checked for coincidences).
-                                   //_maxDistance is updated when the coindidences are checked
-                                   //(used for the final clustering process)
+      double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate used for the initial clustering process
+                           //(to reduce the number of hit combinations that need to be checked for coincidences).
+                           //_maxDistance is updated when the coincidences are checked based on the actual distances between coincidence hits
+                           //with a floor value of finalClusterMaxDistance. These updated _maxDistance values are used for the final clustering process.
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos,
              double x, double y, double time, double PEs, int crvSector, int layer, int counter, int SiPM, int PEthreshold,
@@ -161,7 +160,7 @@ namespace mu2e
     void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters, double clusterMaxTimeDifference,
                       bool combineOppositeSides=false, double timeDifferenceOppositeSides=0);
     void checkCoincidence(const std::vector<CrvHit> &hits, std::list<CrvHit> &coincidenceHits);
-    bool checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n);
+    bool checkCombination(std::vector<CrvHit>::iterator layerIterators[], int n);
 
   };
 
@@ -668,10 +667,13 @@ namespace mu2e
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
     {
-      iterHit->_maxDistance=_sectorMap.at(iterHit->_crvSector).finalClusterMaxDistance;  //set new max distance for final cluster. can be 0.
-                                                                                         //will be adjusted to larger values depending on the actual distances between coincidence hits.
       int    layer=iterHit->_layer;
+      int    sector=iterHit->_crvSector;
+      double finalClusterMaxDistance=_sectorMap.at(sector).finalClusterMaxDistance;
+
       hitsLayers[layer].push_back(*iterHit);
+      hitsLayers[layer].back()._maxDistance=finalClusterMaxDistance;  //set new max distance for final cluster. this is the floor value and can be 0.
+                                                                      //will be adjusted to larger values depending on the actual distances between coincidence hits.
     }
 
     //we want to collect all hits belonging to coincidence groups,
@@ -705,15 +707,15 @@ namespace mu2e
     //find coincidences using 2/4 coincidence requirement
     if(minCoincidenceLayers==2)
     {
-      std::vector<CrvHit>::const_iterator layerIterators[2];
+      std::vector<CrvHit>::iterator layerIterators[2];
 
       for(int layer1=0; layer1<4; ++layer1)
       for(int layer2=layer1+1; layer2<4; ++layer2)
       {
-        const std::vector<CrvHit> &layer1Hits=hitsLayers[layer1];
-        const std::vector<CrvHit> &layer2Hits=hitsLayers[layer2];
-        std::vector<CrvHit>::const_iterator layer1Iter;
-        std::vector<CrvHit>::const_iterator layer2Iter;
+        std::vector<CrvHit> &layer1Hits=hitsLayers[layer1];
+        std::vector<CrvHit> &layer2Hits=hitsLayers[layer2];
+        std::vector<CrvHit>::iterator layer1Iter;
+        std::vector<CrvHit>::iterator layer2Iter;
 
         //it will loop only, if both layers have hits
         //loops will exit, if all three hits require a 3/4 or 4/4 coincidence
@@ -738,18 +740,18 @@ namespace mu2e
     //find coincidences using 3/4 coincidence requirement
     if(minCoincidenceLayers<=3 && maxCoincidenceLayers>=3)
     {
-      std::vector<CrvHit>::const_iterator layerIterators[3];
+      std::vector<CrvHit>::iterator layerIterators[3];
 
       for(int layer1=0; layer1<4; ++layer1)
       for(int layer2=layer1+1; layer2<4; ++layer2)
       for(int layer3=layer2+1; layer3<4; ++layer3)
       {
-        const std::vector<CrvHit> &layer1Hits=hitsLayers[layer1];
-        const std::vector<CrvHit> &layer2Hits=hitsLayers[layer2];
-        const std::vector<CrvHit> &layer3Hits=hitsLayers[layer3];
-        std::vector<CrvHit>::const_iterator layer1Iter;
-        std::vector<CrvHit>::const_iterator layer2Iter;
-        std::vector<CrvHit>::const_iterator layer3Iter;
+        std::vector<CrvHit> &layer1Hits=hitsLayers[layer1];
+        std::vector<CrvHit> &layer2Hits=hitsLayers[layer2];
+        std::vector<CrvHit> &layer3Hits=hitsLayers[layer3];
+        std::vector<CrvHit>::iterator layer1Iter;
+        std::vector<CrvHit>::iterator layer2Iter;
+        std::vector<CrvHit>::iterator layer3Iter;
 
         //it will loop only, if all 3 layers have hits
         //loops will exit, if all three hits require a 4/4 coincidence
@@ -777,16 +779,16 @@ namespace mu2e
     //find coincidences using 4/4 coincidence requirement
     if(maxCoincidenceLayers==4)
     {
-      std::vector<CrvHit>::const_iterator layerIterators[4];
+      std::vector<CrvHit>::iterator layerIterators[4];
 
-      const std::vector<CrvHit> &layer0Hits=hitsLayers[0];
-      const std::vector<CrvHit> &layer1Hits=hitsLayers[1];
-      const std::vector<CrvHit> &layer2Hits=hitsLayers[2];
-      const std::vector<CrvHit> &layer3Hits=hitsLayers[3];
-      std::vector<CrvHit>::const_iterator layer0Iter;
-      std::vector<CrvHit>::const_iterator layer1Iter;
-      std::vector<CrvHit>::const_iterator layer2Iter;
-      std::vector<CrvHit>::const_iterator layer3Iter;
+      std::vector<CrvHit> &layer0Hits=hitsLayers[0];
+      std::vector<CrvHit> &layer1Hits=hitsLayers[1];
+      std::vector<CrvHit> &layer2Hits=hitsLayers[2];
+      std::vector<CrvHit> &layer3Hits=hitsLayers[3];
+      std::vector<CrvHit>::iterator layer0Iter;
+      std::vector<CrvHit>::iterator layer1Iter;
+      std::vector<CrvHit>::iterator layer2Iter;
+      std::vector<CrvHit>::iterator layer3Iter;
 
       //it will loop only, if all 4 layers have hits
       for(layer0Iter=layer0Hits.begin(); layer0Iter!=layer0Hits.end(); ++layer0Iter)
@@ -814,9 +816,9 @@ namespace mu2e
 
   } //end check coincidence
 
-  bool CrvCoincidenceFinder::checkCombination(std::vector<CrvHit>::const_iterator layerIterators[], int n)
+  bool CrvCoincidenceFinder::checkCombination(std::vector<CrvHit>::iterator layerIterators[], int n)
   {
-    typedef const std::vector<CrvHit>::const_iterator L;
+    typedef const std::vector<CrvHit>::iterator L;
 
     double maxTimeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                [](L &a, L &b){return a->_maxTimeDifference < b->_maxTimeDifference;}))->_maxTimeDifference;
