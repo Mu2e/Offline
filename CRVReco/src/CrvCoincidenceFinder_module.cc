@@ -45,7 +45,7 @@ namespace mu2e
       fhicl::Atom<int> coincidenceLayers{Name("coincidenceLayers"), Comment("number of layers required for a coincidence")};
       fhicl::Atom<double> minClusterPEs{Name("minClusterPEs"), Comment("minimum number of PEs in a cluster required for storage")};
       fhicl::Atom<double> initialClusterMaxDistance{Name("initialClusterMaxDistance"), Comment("maximum distances between hits to be considered for a hit cluster at initial clustering process")};
-      fhicl::Atom<double> finalClusterMaxDistance{Name("finalClusterMaxDistance"), Comment("floor value of the maximum distances between hits to be considered for a hit cluster at final clustering process. maximum distance will be adjusted to larger values depending on the actual distances between coincidence hits.")};  //can be 0.
+      fhicl::Atom<double> finalClusterMaxDistance{Name("finalClusterMaxDistance"), Comment("min value of the maximum distances between hits to be considered for a hit cluster at final clustering process. maximum distance will be adjusted to larger values depending on the actual distances between coincidence hits.")};  //can be 0.
     };
     struct Config
     {
@@ -140,7 +140,7 @@ namespace mu2e
       double _maxDistance; //initially set to initialClusterMaxDistance, which is just an estimate used for the initial clustering process
                            //(to reduce the number of hit combinations that need to be checked for coincidences).
                            //_maxDistance is updated when the coincidences are checked based on the actual distances between coincidence hits
-                           //with a floor value of finalClusterMaxDistance. These updated _maxDistance values are used for the final clustering process.
+                           //with a min value of finalClusterMaxDistance. These updated _maxDistance values are used for the final clustering process.
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos,
              double x, double y, double time, double PEs, int crvSector, int layer, int counter, int SiPM, int PEthreshold,
@@ -672,7 +672,7 @@ namespace mu2e
       double finalClusterMaxDistance=_sectorMap.at(sector).finalClusterMaxDistance;
 
       hitsLayers[layer].push_back(*iterHit);
-      hitsLayers[layer].back()._maxDistance=finalClusterMaxDistance;  //set new max distance for final cluster. this is the floor value and can be 0.
+      hitsLayers[layer].back()._maxDistance=finalClusterMaxDistance;  //set new max distance for final cluster. this is the min value and can be 0.
                                                                       //will be adjusted to larger values depending on the actual distances between coincidence hits.
     }
 
