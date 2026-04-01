@@ -130,38 +130,40 @@ TrackerHitPayload encodeTrackerHit(mu2e::StrawDigi const& digi,
 
 } // namespace
 
-namespace art {
+namespace mu2e {
 class StrawDigisToFragments;
 }
 
-class art::StrawDigisToFragments : public EDProducer {
+class mu2e::StrawDigisToFragments : public art::EDProducer {
 public:
   struct Config {
-    fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
+    using Name = fhicl::Name;
+    using Comment = fhicl::Comment;
+    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
     fhicl::Atom<bool> skipFragmentOnSizeMismatch{
-      fhicl::Name("skipFragmentOnSizeMismatch"),
-      fhicl::Comment("Skip emitting fragment when packed bytes and event header size differ"),
+      Name("skipFragmentOnSizeMismatch"),
+      Comment("Skip emitting fragment when packed bytes and event header size differ"),
       false};
     fhicl::Atom<bool> fallbackToOfflineWhenMapMissing{
-      fhicl::Name("fallbackToOfflineWhenMapMissing"),
-      fhicl::Comment("When TrackerPanelMap lookup fails, use offline plane/panel as DTC/link"),
+      Name("fallbackToOfflineWhenMapMissing"),
+      Comment("When TrackerPanelMap lookup fails, use offline plane/panel as DTC/link"),
       true};
     fhicl::Atom<bool> forceOfflineAddressing{
-      fhicl::Name("forceOfflineAddressing"),
-      fhicl::Comment("Ignore TrackerPanelMap and encode dtc/link/strawindex directly from offline StrawId"),
+      Name("forceOfflineAddressing"),
+      Comment("Ignore TrackerPanelMap and encode dtc/link/strawindex directly from offline StrawId"),
       false};
-    fhicl::Atom<art::InputTag> strawDigiTag{fhicl::Name("strawDigiTag"),
-                                            fhicl::Comment("Input StrawDigiCollection"),
+    fhicl::Atom<art::InputTag> strawDigiTag{Name("strawDigiTag"),
+                                            Comment("Input StrawDigiCollection"),
                                             art::InputTag("makeSD")};
-    fhicl::Atom<art::InputTag> strawDigiADCTag{fhicl::Name("strawDigiADCTag"),
-                                               fhicl::Comment("Input StrawDigiADCWaveformCollection"),
+    fhicl::Atom<art::InputTag> strawDigiADCTag{Name("strawDigiADCTag"),
+                                               Comment("Input StrawDigiADCWaveformCollection"),
                                                art::InputTag("makeSD")};
   };
 
   explicit StrawDigisToFragments(const art::EDProducer::Table<Config>& config);
   virtual ~StrawDigisToFragments() {}
 
-  virtual void produce(Event&);
+  virtual void produce(art::Event&);
   virtual void endJob();
 
 private:
@@ -187,7 +189,7 @@ private:
                               DTCLib::DTC_Event& dtcEvent);
 };
 
-art::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<Config>& config)
+mu2e::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
     , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
@@ -201,7 +203,7 @@ art::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<C
   total_digis_ = 0;
 }
 
-void art::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
                                                  DTCLib::DTC_DataBlock const& thisBlock) {
   auto subEvt = currentEvent.GetSubEventByDTCID(dtcID, DTCLib::DTC_Subsystem_Tracker);
   if (subEvt == nullptr) {
@@ -215,7 +217,7 @@ void art::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent
   }
 }
 
-void art::StrawDigisToFragments::buildDtcEventFromDigis(
+void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
     art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
     mu2e::StrawDigiADCWaveformCollection const& strawADCs, DTCLib::DTC_Event& dtcEvent) {
   auto const& trackerPanelMap = trackerPanelMap_h_.get(event.id());
@@ -376,7 +378,7 @@ void art::StrawDigisToFragments::buildDtcEventFromDigis(
   }
 }
 
-void art::StrawDigisToFragments::produce(Event& event) {
+void mu2e::StrawDigisToFragments::produce(art::Event& event) {
   total_events_++;
 
   std::unique_ptr<artdaq::Fragments> fragments(new artdaq::Fragments());
@@ -490,7 +492,7 @@ void art::StrawDigisToFragments::produce(Event& event) {
   event.put(std::move(fragments));
 }
 
-void art::StrawDigisToFragments::endJob() {
+void mu2e::StrawDigisToFragments::endJob() {
   if (diagLevel_ > 0) {
     std::cout << "\n ----- [StrawDigisToFragments] Summary ----- " << std::endl;
     std::cout << "Total events: " << total_events_ << std::endl;
@@ -498,4 +500,4 @@ void art::StrawDigisToFragments::endJob() {
   }
 }
 
-DEFINE_ART_MODULE(art::StrawDigisToFragments)
+DEFINE_ART_MODULE(mu2e::StrawDigisToFragments)
