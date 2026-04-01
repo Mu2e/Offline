@@ -41,6 +41,24 @@ using TrackerADCPacket = mu2e::TrackerDataDecoder::TrackerADCPacket;
 struct TrackerHitPayload {
   TrackerDataPacket mainPacket;
   std::vector<TrackerADCPacket> adcPackets;
+  TrackerHitPayload() {
+    mainPacket.StrawIndex = 0;
+    mainPacket.TDC0A = 0;
+    mainPacket.TDC0B = 0;
+    mainPacket.TOT0 = 0;
+    mainPacket.EWMCounter = 0;
+    mainPacket.TDC1A = 0;
+    mainPacket.TDC1B = 0;
+    mainPacket.TOT1 = 0;
+    mainPacket.ErrorFlags = 0;
+    mainPacket.NumADCPackets = 0;
+    mainPacket.PMP = 0;
+    mainPacket.ADC00 = 0;
+    mainPacket.ADC01A = 0;
+    mainPacket.ADC01B = 0;
+    mainPacket.ADC02 = 0;
+    mainPacket.unused1 = 0;
+  }
 };
 
 struct TrackerBlockData {
