@@ -393,7 +393,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
 void mu2e::StrawDigisToFragments::produce(art::Event& event) {
   total_events_++;
 
-  std::unique_ptr<artdaq::Fragments> fragments(new artdaq::Fragments());
+  std::unique_ptr<artdaq::Fragments> fragments = std::make_unique<artdaq::Fragments>();
   auto strawDigiHandle = event.getHandle<mu2e::StrawDigiCollection>(strawDigiTag_);
   auto strawADCsHandle = event.getHandle<mu2e::StrawDigiADCWaveformCollection>(strawDigiADCTag_);
 
