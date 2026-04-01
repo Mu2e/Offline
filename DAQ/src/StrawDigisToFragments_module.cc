@@ -158,10 +158,6 @@ public:
     using Name = fhicl::Name;
     using Comment = fhicl::Comment;
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
-    fhicl::Atom<bool> skipFragmentOnSizeMismatch{
-      Name("skipFragmentOnSizeMismatch"),
-      Comment("Skip emitting fragment when packed bytes and event header size differ"),
-      false};
     fhicl::Atom<bool> fallbackToOfflineWhenMapMissing{
       Name("fallbackToOfflineWhenMapMissing"),
       Comment("When TrackerPanelMap lookup fails, use offline plane/panel as DTC/link"),
@@ -186,7 +182,6 @@ public:
 
 private:
   int diagLevel_;
-  bool skipFragmentOnSizeMismatch_;
   bool fallbackToOfflineWhenMapMissing_;
   bool forceOfflineAddressing_;
   art::InputTag strawDigiTag_;
@@ -210,12 +205,11 @@ private:
 mu2e::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
-    , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
-  , fallbackToOfflineWhenMapMissing_(config().fallbackToOfflineWhenMapMissing())
+    , fallbackToOfflineWhenMapMissing_(config().fallbackToOfflineWhenMapMissing())
     , forceOfflineAddressing_(config().forceOfflineAddressing())
     , strawDigiTag_(config().strawDigiTag())
-  , strawDigiADCTag_(config().strawDigiADCTag())
-  , printedTrackerPanelMap_(false) {
+    , strawDigiADCTag_(config().strawDigiADCTag())
+    , printedTrackerPanelMap_(false) {
   produces<artdaq::Fragments>();
   total_events_ = 0;
   total_digis_ = 0;

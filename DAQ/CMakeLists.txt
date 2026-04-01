@@ -142,6 +142,7 @@ cet_build_plugin(StrawDigiCollectionsComparator art::module
     REG_SOURCE src/StrawDigiCollectionsComparator_module.cc
     LIBRARIES REG
       Offline::RecoDataProducts
+      Offline::DataProducts
 )
 cet_build_plugin(StrawHitFilter art::module
   REG_SOURCE src/StrawHitFilter_module.cc
