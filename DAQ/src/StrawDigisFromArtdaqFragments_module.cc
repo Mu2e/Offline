@@ -501,9 +501,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-                  mu2e::StrawId sid = (forceOfflineAddressing_ || tpm == nullptr)
-                    ? mu2e::StrawId(dtc_id, link_id, chid)
-                    : mu2e::StrawId(tpm->uniquePlane(), tpm->panel(), chid);
+              mu2e::StrawId sid = (forceOfflineAddressing_ || tpm == nullptr)
+                ? mu2e::StrawId(dtc_id, link_id, chid)
+                : mu2e::StrawId(tpm->uniquePlane(), tpm->panel(), chid);
 
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0  , hit_data->TOT1  };
