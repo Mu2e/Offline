@@ -58,6 +58,10 @@ public:
       fhicl::Name("normalizeWaveformsTo10Bit"),
       fhicl::Comment("Apply 10-bit normalization (sample & 0x3FF) to both reference and candidate waveforms"),
       false};
+    fhicl::Atom<bool> normalizePmpTo10Bit{
+      fhicl::Name("normalizePmpTo10Bit"),
+      fhicl::Comment("Apply 10-bit normalization (PMP & 0x3FF) to both reference and candidate digis"),
+      false};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
@@ -93,7 +97,8 @@ private:
   static std::vector<FlatDigi> normalize(mu2e::StrawDigiCollection const& digis,
                                          mu2e::StrawDigiADCWaveformCollection const* waveforms,
                                          bool compareWaveforms,
-                                         bool normalizeWaveformsTo10Bit);
+                                         bool normalizeWaveformsTo10Bit,
+                                         bool normalizePmpTo10Bit);
   static std::string describe(FlatDigi const& digi, size_t maxWaveformSamplesToPrint);
 
   art::InputTag referenceDigiTag_;
@@ -106,6 +111,7 @@ private:
   size_t maxMismatchesToPrint_;
   size_t maxWaveformSamplesToPrint_;
   bool normalizeWaveformsTo10Bit_;
+  bool normalizePmpTo10Bit_;
 
   size_t totalEvents_{0};
   size_t matchingEvents_{0};
@@ -123,11 +129,12 @@ StrawDigiCollectionsComparator::StrawDigiCollectionsComparator(Parameters const&
     , diagLevel_(config().diagLevel())
     , maxMismatchesToPrint_(config().maxMismatchesToPrint())
     , maxWaveformSamplesToPrint_(config().maxWaveformSamplesToPrint())
-    , normalizeWaveformsTo10Bit_(config().normalizeWaveformsTo10Bit()) {}
+    , normalizeWaveformsTo10Bit_(config().normalizeWaveformsTo10Bit())
+    , normalizePmpTo10Bit_(config().normalizePmpTo10Bit()) {}
 
 std::vector<StrawDigiCollectionsComparator::FlatDigi> StrawDigiCollectionsComparator::normalize(
     mu2e::StrawDigiCollection const& digis, mu2e::StrawDigiADCWaveformCollection const* waveforms,
-  bool compareWaveforms, bool normalizeWaveformsTo10Bit) {
+  bool compareWaveforms, bool normalizeWaveformsTo10Bit, bool normalizePmpTo10Bit) {
   if (compareWaveforms && waveforms != nullptr && waveforms->size() != digis.size()) {
     throw cet::exception("STRAWDIGI_COMPARE")
         << "StrawDigi and StrawDigiADCWaveform collection sizes differ: digis=" << digis.size()
@@ -153,13 +160,17 @@ std::vector<StrawDigiCollectionsComparator::FlatDigi> StrawDigiCollectionsCompar
       }
     }
 
+    auto const normalizedPmp = normalizePmpTo10Bit
+                   ? static_cast<uint32_t>(digi.PMP() & 0x3FF)
+                   : static_cast<uint32_t>(digi.PMP());
+
     out.push_back(FlatDigi{static_cast<uint16_t>(digi.strawId().asUint16()),
-                           static_cast<uint32_t>(digi.TDC(mu2e::StrawEnd::cal)),
-                           static_cast<uint32_t>(digi.TDC(mu2e::StrawEnd::hv)),
-                           static_cast<uint32_t>(digi.TOT(mu2e::StrawEnd::cal)),
-                           static_cast<uint32_t>(digi.TOT(mu2e::StrawEnd::hv)),
-                           static_cast<uint32_t>(digi.PMP()),
-                           std::move(waveform)});
+                 static_cast<uint32_t>(digi.TDC(mu2e::StrawEnd::cal)),
+                 static_cast<uint32_t>(digi.TDC(mu2e::StrawEnd::hv)),
+                 static_cast<uint32_t>(digi.TOT(mu2e::StrawEnd::cal)),
+                 static_cast<uint32_t>(digi.TOT(mu2e::StrawEnd::hv)),
+                 normalizedPmp,
+                 std::move(waveform)});
   }
 
   // Sort so comparison is robust against ordering differences between producers.
@@ -225,11 +236,13 @@ void StrawDigiCollectionsComparator::analyze(art::Event const& event) {
   auto reference = normalize(*referenceDigis,
                              referenceWaveforms,
                              compareWaveforms_,
-                             normalizeWaveformsTo10Bit_);
+                             normalizeWaveformsTo10Bit_,
+                             normalizePmpTo10Bit_);
   auto candidate = normalize(*candidateDigis,
                              candidateWaveforms,
                              compareWaveforms_,
-                             normalizeWaveformsTo10Bit_);
+                             normalizeWaveformsTo10Bit_,
+                             normalizePmpTo10Bit_);
 
   std::vector<std::string> mismatches;
   if (reference.size() != candidate.size()) {
