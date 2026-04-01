@@ -665,6 +665,7 @@ namespace mu2e
     std::vector<CrvHit>::const_iterator iterHit;
     for(iterHit=hits.begin(); iterHit!=hits.end(); ++iterHit)
     {
+      iterHit->_maxDistance=0;  //reset max distance. will be re-calculated here based on actual distances.
       int    layer=iterHit->_layer;
       hitsLayers[layer].push_back(*iterHit);
     }
@@ -850,10 +851,8 @@ namespace mu2e
     for(int i=0; i<n; ++i)
     {
       //find the max distances between hits belonging to a coincidence group.
-      //these max distances are used later when new clusters based on coincidence hits are created,
-      //because the distance between hits belonging to a coincidence group
-      //may be greater than the original clusterMaxDistance (if it was chosen very small).
-      //this is done to avoid breaking coincidence groups apart during the next clustering process
+      //these max distances are used later when new clusters based on coincidence hits are created.
+      //this is done to avoid breaking coincidence groups apart during the next clustering process.
       if(i>0)
       {
         double distance=layerIterators[i]->_x-layerIterators[i-1]->_x;
