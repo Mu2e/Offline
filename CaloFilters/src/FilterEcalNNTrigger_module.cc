@@ -6,14 +6,9 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
-#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
+#include "Offline/RecoDataProducts/inc/MVAResult.hh"
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
-
-#include <vector>
-#include <string>
-
 
 
 namespace mu2e {
@@ -26,9 +21,13 @@ namespace mu2e {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag>     caloClusterCollection { Name("caloClusterCollection"), Comment("Calo cluster collection name") };
-            fhicl::Table<MVATools::Config> caloBkgMVA            { Name("caloBkgMVA"),            Comment("MVA configuration") };
-            fhicl::Atom<float>             minEtoTest            { Name("minEtoTest"),            Comment("Minimum energy to run the MVA") };
-            fhicl::Atom<float>             minRtoTest            { Name("minRtoTest"),            Comment("Minimum radius to run the MVA") };
+            fhicl::Atom<art::InputTag>     caloMVACollection     { Name("caloMVACollection"),     Comment("Calo MVA cluster collection name") };
+            fhicl::Atom<float>             minEtoTest            { Name("minEtoTest"),            Comment("Minimum cluster energy to run the MVA") };
+            fhicl::Atom<float>             minRtoTest            { Name("minRtoTest"),            Comment("Minimum cluster radius to run the MVA") };
+            fhicl::Atom<float>             minTtoTest            { Name("minTtoTest"),            Comment("Minimum cluster time to run the MVA") };
+            fhicl::Atom<float>             maxEtoTest            { Name("maxEtoTest"),            Comment("Maximum cluster energy to run the MVA") };
+            fhicl::Atom<float>             maxRtoTest            { Name("maxRtoTest"),            Comment("Maximum cluster radius to run the MVA") };
+            fhicl::Atom<float>             maxTtoTest            { Name("maxTtoTest"),            Comment("Maximum cluster time to run the MVA") };
             fhicl::Atom<float>             minMVAScore           { Name("minMVAScore"),           Comment("MVA cut for signal") };
             fhicl::Atom<int>               diagLevel             { Name("diagLevel"),             Comment("Diag Level"),0 };
         };
@@ -36,8 +35,13 @@ namespace mu2e {
         explicit FilterEcalNNTrigger(const art::EDFilter::Table<Config>& config) :
           EDFilter{config},
           caloClusterToken_{consumes<CaloClusterCollection>(config().caloClusterCollection())},
-          caloBkgMVA_      (config().caloBkgMVA()),
+          caloMVAToken_    {consumes<MVAResultCollection>(config().caloMVACollection())},
           minEtoTest_      (config().minEtoTest()),
+          minRtoTest_      (config().minRtoTest()),
+          minTtoTest_      (config().minTtoTest()),
+          maxEtoTest_      (config().maxEtoTest()),
+          maxRtoTest_      (config().maxRtoTest()),
+          maxTtoTest_      (config().maxTtoTest()),
           minMVAScore_     (config().minMVAScore()),
           diagLevel_       (config().diagLevel())
         {
@@ -45,35 +49,33 @@ namespace mu2e {
         }
 
         bool filter(art::Event& event) override;
-        void beginJob() override;
 
 
      private:
         art::ProductToken<CaloClusterCollection> caloClusterToken_;
-        MVATools caloBkgMVA_;
+        art::ProductToken<MVAResultCollection>   caloMVAToken_;
         float    minEtoTest_;
         float    minRtoTest_;
+        float    minTtoTest_;
+        float    maxEtoTest_;
+        float    maxRtoTest_;
+        float    maxTtoTest_;
         float    minMVAScore_;
         int      diagLevel_;
 
-        bool     filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, TriggerInfo& trigInfo);
-        float    secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const;
+        bool     filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle,
+                                const art::Handle<MVAResultCollection>& caloMVAHandle,
+                                TriggerInfo& trigInfo);
   };
-
-
-  void FilterEcalNNTrigger::beginJob()
-  {
-     caloBkgMVA_.initMVA();
-  }
-
 
 
   bool FilterEcalNNTrigger::filter(art::Event& event)
   {
      art::Handle<CaloClusterCollection> caloClustersHandle = event.getHandle<CaloClusterCollection>(caloClusterToken_);
+     art::Handle<MVAResultCollection>   caloMVAHandle      = event.getHandle<MVAResultCollection>(caloMVAToken_);
 
      auto trigInfo = std::make_unique<TriggerInfo>();
-     bool retval   = filterClusters(caloClustersHandle, *trigInfo);
+     bool retval   = filterClusters(caloClustersHandle, caloMVAHandle, *trigInfo);
      event.put(std::move(trigInfo));
 
      return retval;
@@ -81,72 +83,30 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  bool FilterEcalNNTrigger::filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, TriggerInfo& trigInfo)
+  bool FilterEcalNNTrigger::filterClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle,
+                                           const art::Handle<MVAResultCollection>& caloMVAHandle,
+                                           TriggerInfo& trigInfo)
   {
-     const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-     const CaloClusterCollection& caloClusters(*caloClustersHandle);
+     const auto& caloClusters(*caloClustersHandle);
+     const auto& caloMVAs(*caloMVAHandle);
 
      bool select(false);
-     for (auto clusterIt=caloClusters.begin(); clusterIt != caloClusters.end();++clusterIt){
-        if (clusterIt->energyDep() < minEtoTest_)         continue;
-        if (clusterIt->cog3Vector().perp() < minRtoTest_) continue;
+     for (size_t index=0;index<caloClusters.size();++index){
+        const auto& cluster = caloClusters[index];
+        const auto& mvaout  = caloMVAs[index];
 
-        const auto& hits         = clusterIt->caloHitsPtrVector();
-        const auto& neighborsId  = cal.crystal(hits[0]->crystalID()).neighbors();
-        const auto& nneighborsId = cal.crystal(hits[0]->crystalID()).nextNeighbors();
-
-        float e1(hits[0]->energyDep());
-        float e2(hits[0]->energyDep());
-        if (hits.size()>1) e2 += hits[1]->energyDep();
-
-        float e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
-        for (auto hit : hits){
-            if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
-            if (std::find(nneighborsId.begin(), nneighborsId.end(), hit->crystalID()) != nneighborsId.end()) {e25 += hit->energyDep();}
-        }
-
-        float secondMom = secondMoment(cal,hits);
-
-        std::vector<float> mvavars(8,0.0);
-        //mvavars[0] = clusterIt->energyDep();
-        mvavars[0] = clusterIt->cog3Vector().perp();
-        mvavars[1] = clusterIt->time();
-        mvavars[2] = clusterIt->size();
-        mvavars[3] = e1/clusterIt->energyDep();
-        mvavars[4] = e2/clusterIt->energyDep();
-        mvavars[5] = e9/clusterIt->energyDep();
-        mvavars[6] = e25/clusterIt->energyDep();
-        mvavars[7] = secondMom;
-
-        float mvaout = caloBkgMVA_.evalMVA(mvavars);
-        if (mvaout < minMVAScore_) continue;
+        float cluE = cluster.energyDep();
+        float cluR = cluster.cog3Vector().perp();
+        float cluT = cluster.time();
+        if (cluE < minEtoTest_ || cluE > maxEtoTest_) continue;
+        if (cluR < minRtoTest_ || cluR > maxRtoTest_) continue;
+        if (cluT < minTtoTest_ || cluT > maxTtoTest_) continue;
+        if (mvaout._value < minMVAScore_)             continue;
 
         select = true;
-        size_t index = std::distance(caloClusters.begin(),clusterIt);
         trigInfo._caloClusters.push_back(art::Ptr<CaloCluster>(caloClustersHandle,index));
      }
      return select;
-  }
-
-  //-----------------------------------------------------------------------------------------------------------------------
-  float FilterEcalNNTrigger::secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const
-  {
-     double sx(0),sy(0),sx2(0),sy2(0),sw(0);
-     for (const auto& hit : hits){
-        auto crId(hit->crystalID());
-        auto energy(hit->energyDep());
-
-        auto xCrystal = cal.crystal(crId).position().x();
-        auto yCrystal = cal.crystal(crId).position().y();
-        auto weight   = energy; //maybe try log(energy);
-
-        sw  += weight;
-        sx  += xCrystal*weight;
-        sy  += yCrystal*weight;
-        sx2 += xCrystal*xCrystal*weight;
-        sy2 += yCrystal*yCrystal*weight;
-     }
-     return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
   }
 
 }

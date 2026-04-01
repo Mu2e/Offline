@@ -69,7 +69,6 @@ CaloReco : {
      deltaTPulses        : 11
      digiSampling        : 5
      nPEperMeV           : 30
-     shiftTime           : 0
      nSigmaNoise         : 4
      noiseLevelMeV       : 5.5e-1
      diagLevel           : 0
