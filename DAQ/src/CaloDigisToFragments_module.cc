@@ -123,11 +123,11 @@ std::vector<uint8_t> encodeWaveform(std::vector<uint16_t> const& waveform) {
 }
 } // namespace
 
-namespace art {
+namespace mu2e {
 class CaloDigisToFragments;
 }
 
-class art::CaloDigisToFragments : public EDProducer {
+class mu2e::CaloDigisToFragments : public art::EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
@@ -143,7 +143,7 @@ public:
   explicit CaloDigisToFragments(const art::EDProducer::Table<Config>& config);
   virtual ~CaloDigisToFragments() {}
 
-  virtual void produce(Event&);
+  virtual void produce(art::Event& e);
   virtual void endJob();
 
 private:
@@ -165,7 +165,7 @@ private:
                               DTCLib::DTC_Event& dtcEvent);
 };
 
-art::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Config>& config)
+mu2e::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
     , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
@@ -175,14 +175,14 @@ art::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Con
   total_digis_ = 0;
 }
 
-size_t art::CaloDigisToFragments::waveformMaximumIndex(const std::vector<uint16_t>& waveform) {
+size_t mu2e::CaloDigisToFragments::waveformMaximumIndex(const std::vector<uint16_t>& waveform) {
   if (waveform.empty()) {
     return 0;
   }
   return std::distance(waveform.begin(), std::max_element(waveform.begin(), waveform.end()));
 }
 
-void art::CaloDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+void mu2e::CaloDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
                                                 DTCLib::DTC_DataBlock const& thisBlock) {
   auto subEvt = currentEvent.GetSubEventByDTCID(dtcID, DTCLib::DTC_Subsystem_Calorimeter);
   if (subEvt == nullptr) {
@@ -196,7 +196,7 @@ void art::CaloDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent,
   }
 }
 
-void art::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
+void mu2e::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
                                                        mu2e::CaloDigiCollection const& caloDigis,
                                                        DTCLib::DTC_Event& dtcEvent) {
   auto const& calodaqconds = calodaqconds_h_.get(event.id());
@@ -305,7 +305,7 @@ void art::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
   }
 }
 
-void art::CaloDigisToFragments::produce(Event& event) {
+void mu2e::CaloDigisToFragments::produce(art::Event& event) {
   total_events_++;
 
   std::unique_ptr<artdaq::Fragments> fragments(new artdaq::Fragments());
@@ -407,7 +407,7 @@ void art::CaloDigisToFragments::produce(Event& event) {
   event.put(std::move(fragments));
 }
 
-void art::CaloDigisToFragments::endJob() {
+void mu2e::CaloDigisToFragments::endJob() {
   if (diagLevel_ > 0) {
     std::cout << "\n ----- [CaloDigisToFragments] Summary ----- " << std::endl;
     std::cout << "Total events: " << total_events_ << std::endl;
@@ -415,4 +415,4 @@ void art::CaloDigisToFragments::endJob() {
   }
 }
 
-DEFINE_ART_MODULE(art::CaloDigisToFragments)
+DEFINE_ART_MODULE(mu2e::CaloDigisToFragments)
