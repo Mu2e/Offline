@@ -1,8 +1,9 @@
 // Run1B v06: 2 cm thick target + 10 cm polyethylene absorber
 //
-// Target:   single foil, halfThickness = 10 mm (2 cm total)
-//           z0 = 4195 mm → spans [4185, 4205] mm
-//           StoppingTargetMother spans [4184, 4206] (inside DS2Vacuum which starts at 4179)
+// Target:   2 foils × 10 mm (halfThickness 5 mm) at deltaZ=10 mm
+//           z0 = 4195 mm → foil centers at 4190, 4200
+//           foils span [4185, 4205] mm (20 mm total Al)
+//           StoppingTargetMother margin ±5 mm from outer foil centers → [4185, 4205]
 //
 // Absorber: halfLength = 50 mm (10 cm total), solid polyethylene
 //           10 mm gap from target downstream edge (4205 mm)
@@ -23,12 +24,13 @@ bool hasTSdA            = false;
 // Virtual detector option (set to false to disable)
 bool hasVirtualDetector = true;
 
-// Stopping target configuration: 2 cm thick Al target (single foil)
+// Stopping target configuration: 2 cm thick Al target (2 foils × 10 mm)
 bool stoppingTarget.foilTarget_supportStructure = false;
-vector<double> stoppingTarget.halfThicknesses = { 10.0 };
-vector<double> stoppingTarget.radii  =  {600.00};
+vector<double> stoppingTarget.halfThicknesses = { 5.0 };
+vector<double> stoppingTarget.radii  =  {600.00, 600.00};
 double stoppingTarget.holeRadius = 0.001;
 double stoppingTarget.z0InMu2e = 4195;
+double stoppingTarget.deltaZ = 10.0;
 
 // Coll5 material override - set to vacuum
 string ts.coll5.material1Name = "DSVacuum";
