@@ -43,8 +43,7 @@ namespace mu2e {
     }
 
 
-
-
+    //-------------------------------------------------------------------------------------------------
     CLHEP::Hep3Vector ClusterUtils::cog3Vector() const
     {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
@@ -55,6 +54,7 @@ namespace mu2e {
         return cal_.geomUtil().mu2eToDiskFF(iSection,cogMu2eFrame);
     }
 
+    //-------------------------------------------------------------------------------------------------
     double ClusterUtils::secondMoment() const
     {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
@@ -62,6 +62,7 @@ namespace mu2e {
         return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
     }
 
+    //-------------------------------------------------------------------------------------------------
     void ClusterUtils::fill(double& sx, double& sy, double& sz, double& sx2, double& sy2, double& sw) const
     {
         int iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();

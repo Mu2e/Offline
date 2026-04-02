@@ -363,13 +363,12 @@ namespace mu2e {
        for (unsigned  ic=0; ic<caloClusters.size();++ic)
        {
           const CaloCluster& cluster = caloClusters.at(ic);
+          if (cluster.energyDep() < minCluEnergy_) continue;
+
           std::vector<int> cryList;
           for (auto cryPtr : cluster.caloHitsPtrVector()) cryList.push_back(std::distance(&CaloHits.at(0),cryPtr.get()));
 
-          if (cluster.energyDep() < minCluEnergy_) continue;
-
           ClusterUtils cluUtil(cal, cluster);
-          auto cog = cluUtil.cog3Vector();
 
           auto itMC = caloClusterTruth.begin();
           while (itMC != caloClusterTruth.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
@@ -379,7 +378,9 @@ namespace mu2e {
           if (itMC != caloClusterTruth.end()){
              for (auto& edep : itMC->second->energyDeposits()){
                 if (edep.sim()->creationCode() == ProcessCode::mu2eCeMinusEndpoint ||
-                      edep.sim()->creationCode() == ProcessCode::mu2eCeMinusLeadingLog){
+                    edep.sim()->creationCode() == ProcessCode::mu2eCePlusEndpoint ||
+                    edep.sim()->creationCode() == ProcessCode::mu2eCeMinusLeadingLog ||
+                    edep.sim()->creationCode() == ProcessCode::mu2eCePlusLeadingLog){
                   isConv = true;
                   break;
                 }

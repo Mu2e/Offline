@@ -4,6 +4,7 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CaloCluster/inc/ClusterUtils.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
@@ -90,6 +91,8 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------
   void CaloNNEval::evalClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, MVAResultCollection& MVAresults)
   {
+     if (!caloClustersHandle.isValid()) return;
+
      const Calorimeter& cal = *(GeomHandle<Calorimeter>());
      const CaloClusterCollection& caloClusters(*caloClustersHandle);
 
@@ -107,21 +110,7 @@ namespace mu2e {
           continue;
         }
 
-        const auto& hits         = clusterIt->caloHitsPtrVector();
-        const auto& neighborsId  = cal.crystal(hits[0]->crystalID()).neighbors();
-        const auto& nneighborsId = cal.crystal(hits[0]->crystalID()).nextNeighbors();
-
-        float e1(hits[0]->energyDep());
-        float e2(hits[0]->energyDep());
-        if (hits.size()>1) e2 += hits[1]->energyDep();
-
-        float e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
-        for (auto hit : hits){
-            if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
-            if (std::find(nneighborsId.begin(), nneighborsId.end(), hit->crystalID()) != nneighborsId.end()) {e25 += hit->energyDep();}
-        }
-
-        float secondMom = secondMoment(cal,hits);
+        ClusterUtils cluUtil(cal,*clusterIt);
 
         //This would be the version with energy and time included
         //std::vector<float> mvavars(9,0.0);
@@ -129,20 +118,20 @@ namespace mu2e {
         //mvavars[0] = clusterIt->cog3Vector().perp();
         //mvavars[1] = clusterIt->time();
         //mvavars[2] = clusterIt->size();
-        //mvavars[3] = e1/clusterIt->energyDep();
-        //mvavars[4] = e2/clusterIt->energyDep();
-        //mvavars[5] = e9/clusterIt->energyDep();
-        //mvavars[6] = e25/clusterIt->energyDep();
-        //mvavars[7] = secondMom;
+        //mvavars[3] = cluUtil.e1()/clusterIt->energyDep();
+        //mvavars[4] = cluUtil.e2()/clusterIt->energyDep();
+        //mvavars[5] = cluUtil.e9()/clusterIt->energyDep();
+        //mvavars[6] = cluUtil.e25()/clusterIt->energyDep();
+        //mvavars[7] = cluUtil.secondMoment();
 
         std::vector<float> mvavars(7,0.0);
         mvavars[0] = clusterIt->cog3Vector().perp();
         mvavars[1] = clusterIt->size();
-        mvavars[2] = e1/clusterIt->energyDep();
-        mvavars[3] = e2/clusterIt->energyDep();
-        mvavars[4] = e9/clusterIt->energyDep();
-        mvavars[5] = e25/clusterIt->energyDep();
-        mvavars[6] = secondMom;
+        mvavars[2] = cluUtil.e1()/clusterIt->energyDep();
+        mvavars[3] = cluUtil.e2()/clusterIt->energyDep();
+        mvavars[4] = cluUtil.e9()/clusterIt->energyDep();
+        mvavars[5] = cluUtil.e25()/clusterIt->energyDep();
+        mvavars[6] = cluUtil.secondMoment();
 
         float mvaout = caloBkgMVA_.evalMVA(mvavars);
         MVAresults.push_back(MVAResult(mvaout));
@@ -150,27 +139,6 @@ namespace mu2e {
                                      <<" and r="<< clusterIt->cog3Vector().perp()
                                      <<"has mvaout="<<mvaout<<"\n";
      }
-  }
-
-  //-----------------------------------------------------------------------------------------------------------------------
-  float CaloNNEval::secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const
-  {
-     double sx(0),sy(0),sx2(0),sy2(0),sw(0);
-     for (const auto& hit : hits){
-        auto crId(hit->crystalID());
-        auto energy(hit->energyDep());
-
-        auto xCrystal = cal.crystal(crId).position().x();
-        auto yCrystal = cal.crystal(crId).position().y();
-        auto weight   = energy; //maybe try log(energy);
-
-        sw  += weight;
-        sx  += xCrystal*weight;
-        sy  += yCrystal*weight;
-        sx2 += xCrystal*xCrystal*weight;
-        sy2 += yCrystal*yCrystal*weight;
-     }
-     return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
   }
 
 }

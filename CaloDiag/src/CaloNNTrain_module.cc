@@ -5,18 +5,16 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CaloCluster/inc/ClusterUtils.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/Mu2eUtilities/inc/MVATools.hh"
+#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
-
-#include "Offline/GeometryService/inc/VirtualDetector.hh"
-#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
-
-
 
 #include "TDirectory.h"
 #include "TNtuple.h"
@@ -57,8 +55,6 @@ namespace mu2e {
 
 
      private:
-       float secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const;
-
        art::ProductToken<CaloClusterCollection>  caloClusterToken_;
        art::ProductToken<CaloClusterMCTruthAssn> caloClusterMCToken_;
        float   minEtoTest_;
@@ -97,9 +93,14 @@ namespace mu2e {
 
   void CaloNNTrain::analyze(const art::Event& event)
   {
+
+
      evt_ = event.id().event();
      art::Handle<CaloClusterCollection>  caloClustersHandle   = event.getHandle<CaloClusterCollection>(caloClusterToken_);
      art::Handle<CaloClusterMCTruthAssn> caloClustersMCHandle = event.getHandle<CaloClusterMCTruthAssn>(caloClusterMCToken_);
+
+     if (!caloClustersHandle.isValid()) return;
+     if (!caloClustersMCHandle.isValid()) return;
 
      const Calorimeter& cal = *(GeomHandle<Calorimeter>());
      const CaloClusterCollection&  caloClusters(*caloClustersHandle);
@@ -109,79 +110,42 @@ namespace mu2e {
      {
         if (cluster.energyDep() < minEtoTest_) continue;
 
-        const auto& hits          = cluster.caloHitsPtrVector();
-        const auto& neighborsId   = cal.crystal(hits[0]->crystalID()).neighbors();
-        const auto& nneighborsId  = cal.crystal(hits[0]->crystalID()).nextNeighbors();
+       //MC analyis
+       float MCEdepTot(0);
+       cluMCEdep_.clear();cluMCEPdg_.clear();cluMCCr_.clear();
+
+       auto itMC = caloClustersMC.begin();
+       while (itMC != caloClustersMC.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
+       const auto eDepMCs = (itMC != caloClustersMC.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
+
+       if (itMC != caloClustersMC.end()){
+         MCEdepTot= itMC->second->totalEnergyDep();
+         for (auto& edep : itMC->second->energyDeposits()) {
+            if (edep.energyDep() < MCEdepCut_) continue;
+            cluMCEdep_.push_back(edep.energyDep());
+            cluMCEPdg_.push_back(edep.sim()->pdgId());
+            cluMCCr_.push_back(edep.sim()->creationCode());
+         }
+       }
 
 
-        float e1(hits[0]->energyDep()),e2(hits[0]->energyDep());
-        if (hits.size()>1) e2 += hits[1]->energyDep();
-
-        float e9(hits[0]->energyDep()),e25(hits[0]->energyDep());
-        for (auto hit : hits)
-        {
-            if (std::find(neighborsId.begin(),  neighborsId.end(),  hit->crystalID()) != neighborsId.end())  {e9 += hit->energyDep();e25 += hit->energyDep();}
-            if (std::find(nneighborsId.begin(), nneighborsId.end(), hit->crystalID()) != nneighborsId.end()) {e25 += hit->energyDep();}
-        }
-
-        float secondMom = secondMoment(cal,hits);
-
-        //MC analyis
-        float MCEdepTot(0);
-        cluMCEdep_.clear();cluMCEPdg_.clear();cluMCCr_.clear();
-
-        auto itMC = caloClustersMC.begin();
-        while (itMC != caloClustersMC.end()) {if (itMC->first.get() == &cluster) break; ++itMC;}
-        const auto eDepMCs = (itMC != caloClustersMC.end()) ? itMC->second->energyDeposits() : std::vector<CaloEDepMC>{};
-
-        if (itMC != caloClustersMC.end()){
-          MCEdepTot= itMC->second->totalEnergyDep();
-          for (auto& edep : itMC->second->energyDeposits()) {
-             if (edep.energyDep() < MCEdepCut_) continue;
-             cluMCEdep_.push_back(edep.energyDep());
-             cluMCEPdg_.push_back(edep.sim()->pdgId());
-             cluMCCr_.push_back(edep.sim()->creationCode());
-          }
-        }
+       ClusterUtils cluUtil(cal, cluster);
 
        cluNcrys_  = cluster.size();
        cluDisk_   = cluster.diskID();
        cluEnergy_ = cluster.energyDep();
        cluTime_   = cluster.time();
        cluCogR_   = cluster.cog3Vector().perp();
-       cluE1_     = e1/cluster.energyDep();
-       cluE2_     = e2/cluster.energyDep();
-       cluE9_     = e9/cluster.energyDep();
-       cluE25_    = e25/cluster.energyDep();
-       cluSec_    = secondMom;
+       cluE1_     = cluUtil.e1()/cluster.energyDep();
+       cluE2_     = cluUtil.e2()/cluster.energyDep();
+       cluE9_     = cluUtil.e9()/cluster.energyDep();
+       cluE25_    = cluUtil.e25()/cluster.energyDep();
+       cluSec_    = cluUtil.secondMoment();
        cluMCEtot_ = MCEdepTot;
 
        Ntup_->Fill();
     }
   }
-
-
-  //-----------------------------------------------------------------------------------------------------------------------
-  float CaloNNTrain::secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const
-  {
-     double sx(0),sy(0),sx2(0),sy2(0),sw(0);
-     for (const auto& hit : hits){
-        auto crId(hit->crystalID());
-        auto energy(hit->energyDep());
-
-        auto xCrystal = cal.crystal(crId).position().x();
-        auto yCrystal = cal.crystal(crId).position().y();
-        auto weight   = energy; //maybe try log(energy);
-
-        sw  += weight;
-        sx  += xCrystal*weight;
-        sy  += yCrystal*weight;
-        sx2 += xCrystal*xCrystal*weight;
-        sy2 += yCrystal*yCrystal*weight;
-     }
-     return (sx2-sx*sx/sw + sy2-sy*sy/sw)/sw;
-  }
-
 }
 
 DEFINE_ART_MODULE(mu2e::CaloNNTrain)
