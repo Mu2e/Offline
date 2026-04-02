@@ -71,6 +71,7 @@ CaloReco : {
      nPEperMeV           : 30
      nSigmaNoise         : 4
      noiseLevelMeV       : 5.5e-1
+     ADCToMeV            : @local::ADCToMeV
      diagLevel           : 0
    }
 }
