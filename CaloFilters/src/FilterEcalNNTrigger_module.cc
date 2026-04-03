@@ -84,6 +84,8 @@ namespace mu2e {
                                            const art::Handle<MVAResultCollection>& caloMVAHandle,
                                            TriggerInfo& trigInfo)
   {
+     if (!caloClustersHandle.isValid() || !caloMVAHandle.isValid()) return false;
+
      const auto& caloClusters(*caloClustersHandle);
      const auto& caloMVAs(*caloMVAHandle);
 

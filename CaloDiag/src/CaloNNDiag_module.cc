@@ -357,8 +357,8 @@ namespace mu2e {
        nCluster_ = 0;
        cluList_.clear();
        cluSimId_.clear();cluSimPdgId_.clear();cluSimCrCode_.clear();cluSimTime_.clear();cluSimEdep_.clear();
-       cluSimMom_.clear();cluSimMom2_.clear();cluSimStartX_.clear();cluSimPosY_.clear();cluSimPosZ_.clear();
-       cluSimStartY_.clear();cluSimStartZ_.clear();
+       cluSimMom_.clear();cluSimMom2_.clear();cluSimPosX_.clear();cluSimPosY_.clear();cluSimPosZ_.clear();
+       cluSimStartX_.clear();cluSimStartY_.clear();cluSimStartZ_.clear();
 
        for (unsigned  ic=0; ic<caloClusters.size();++ic)
        {
@@ -426,7 +426,7 @@ namespace mu2e {
               if (vdMapEntry != vdMap.end())
               {
                  simMom = vdMapEntry->second->momentum().mag();
-                 CLHEP::Hep3Vector simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
+                 simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
               }
 
               sId.push_back(sim->id().asInt());

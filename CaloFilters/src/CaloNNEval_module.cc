@@ -115,14 +115,14 @@ namespace mu2e {
         //This would be the version with energy and time included
         //std::vector<float> mvavars(9,0.0);
         //mvavars[0] = clusterIt->energyDep();
-        //mvavars[0] = clusterIt->cog3Vector().perp();
-        //mvavars[1] = clusterIt->time();
-        //mvavars[2] = clusterIt->size();
-        //mvavars[3] = cluUtil.e1()/clusterIt->energyDep();
-        //mvavars[4] = cluUtil.e2()/clusterIt->energyDep();
-        //mvavars[5] = cluUtil.e9()/clusterIt->energyDep();
-        //mvavars[6] = cluUtil.e25()/clusterIt->energyDep();
-        //mvavars[7] = cluUtil.secondMoment();
+        //mvavars[1] = clusterIt->cog3Vector().perp();
+        //mvavars[2] = clusterIt->time();
+        //mvavars[3] = clusterIt->size();
+        //mvavars[4] = cluUtil.e1()/clusterIt->energyDep();
+        //mvavars[5] = cluUtil.e2()/clusterIt->energyDep();
+        //mvavars[6] = cluUtil.e9()/clusterIt->energyDep();
+        //mvavars[7] = cluUtil.e25()/clusterIt->energyDep();
+        //mvavars[8] = cluUtil.secondMoment();
 
         std::vector<float> mvavars(7,0.0);
         mvavars[0] = clusterIt->cog3Vector().perp();

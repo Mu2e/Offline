@@ -8,9 +8,6 @@
 #include "Offline/CaloCluster/inc/ClusterUtils.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
-#include "Offline/GeometryService/inc/VirtualDetector.hh"
-#include "Offline/Mu2eUtilities/inc/MVATools.hh"
-#include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/MCDataProducts/inc/CaloMCTruthAssns.hh"
@@ -93,8 +90,6 @@ namespace mu2e {
 
   void CaloNNTrain::analyze(const art::Event& event)
   {
-
-
      evt_ = event.id().event();
      art::Handle<CaloClusterCollection>  caloClustersHandle   = event.getHandle<CaloClusterCollection>(caloClusterToken_);
      art::Handle<CaloClusterMCTruthAssn> caloClustersMCHandle = event.getHandle<CaloClusterMCTruthAssn>(caloClusterMCToken_);
@@ -108,7 +103,7 @@ namespace mu2e {
 
      for (const auto& cluster : caloClusters)
      {
-        if (cluster.energyDep() < minEtoTest_) continue;
+       if (cluster.energyDep() < minEtoTest_) continue;
 
        //MC analyis
        float MCEdepTot(0);
@@ -121,13 +116,12 @@ namespace mu2e {
        if (itMC != caloClustersMC.end()){
          MCEdepTot= itMC->second->totalEnergyDep();
          for (auto& edep : itMC->second->energyDeposits()) {
-            if (edep.energyDep() < MCEdepCut_) continue;
-            cluMCEdep_.push_back(edep.energyDep());
-            cluMCEPdg_.push_back(edep.sim()->pdgId());
-            cluMCCr_.push_back(edep.sim()->creationCode());
+           if (edep.energyDep() < MCEdepCut_) continue;
+           cluMCEdep_.push_back(edep.energyDep());
+           cluMCEPdg_.push_back(edep.sim()->pdgId());
+           cluMCCr_.push_back(edep.sim()->creationCode());
          }
        }
-
 
        ClusterUtils cluUtil(cal, cluster);
 
