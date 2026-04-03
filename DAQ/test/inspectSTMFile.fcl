@@ -38,14 +38,18 @@ physics : {
    }
 
   t1 : [ makeSTMDigis ]
-   # e1 : [ stmOutput ]
-   e1 : [ ]
+   e1 : [ stmOutput ]
+   #e1 : [ ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
 
 }
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
 
 outputs : {
    stmOutput : {

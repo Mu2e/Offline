@@ -95,7 +95,7 @@ void STMPrintFragments::analyze(const Event& event)
     //New lines
     artdaq::ContainerFragment contf(frag); // interpret the fragment as a ContainerFragemnt (Will look inside here)
     std::cout<<"N Blocks in the container = " << std::endl; //Should be 3 for the 3 STM Fragments
-    //    auto stm_frag = static_cast<mu2e::STMFragment>(frag);
+    // auto stm_frag = static_cast<mu2e::STMFragment>(frag);
 
     for (size_t ii = 0; ii< contf.block_count(); ++ii){
       const auto dataBegin = frag.dataBegin();
@@ -107,7 +107,7 @@ void STMPrintFragments::analyze(const Event& event)
       std::cout<< "container block_count = "<<contf.block_count()<<std::endl;
       
       for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
-	//std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
+	std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
       }
 
     // //    std::cout << "Trigger Header Address: " << stm_frag.GetTHdr() << std::endl;
@@ -125,7 +125,7 @@ void STMPrintFragments::analyze(const Event& event)
     //    std::cout << "Trigger Header EvNum: " << *(stm_frag.GetTHdr()+8) << std::endl;
     }
   }
-} // produce()
+}// produce()
 
 // ======================================================================
 

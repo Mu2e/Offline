@@ -65,7 +65,8 @@ namespace mu2e {
         fhicl::OptionalAtom<bool> makeTTreeEnergies{ Name("makeTTreeEnergies"), Comment("Controls whether to make the TTree with branches time, E")};
         fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
-        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"") };
+        fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"")
+	};
 
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -210,6 +211,7 @@ namespace mu2e {
     // create output
     std::unique_ptr<STMMWDDigiCollection> outputMWDDigis(new STMMWDDigiCollection);
     auto waveformDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
+
     // get prodition
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id());
     pedestal = stmEnergyCalib.pedestal(channel);
@@ -220,6 +222,11 @@ namespace mu2e {
     eventId = event.id().event();
     waveformID = 0;
     for (STMWaveformDigi waveform : *waveformDigisHandle) {
+
+      //Check prints --------------------------------------
+      std::cout << "event id = "<< event.id().event()<<std::endl;
+      std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
+      std::cout << "waveform id =" << waveformID << std::endl;
       // clear out data from previous waveform
       ADCs.clear();
       deconvolved_data.clear();
@@ -236,7 +243,7 @@ namespace mu2e {
         M = nADCs;
       if (L > nADCs)
         L = nADCs;
-
+      //if(0 == nADCs)//Maybe should skip when its empty, nADs = ADCs.size, if 0 then its empty 
       deconvolve();
       differentiate();
       average();
@@ -293,6 +300,7 @@ namespace mu2e {
       for (int16_t data : ADCs)
         std::cout << data << ", ";
       std::cout << "\n" << std::endl;
+      //      std::cout << "waveformhandle = " << waveformsDigisHandle<<std::endl; //PRINT OUT TO DIAGNOSE
     };
     deconvolved_data.push_back(ADCs[0] - pedestal);
     for(i = 1; i < nADCs; i++)
@@ -414,6 +422,31 @@ namespace mu2e {
     TH1D* h_baseline_mean_minus_stddev = tfs->make<TH1D>(("h_baseline_mean_minus_stddev"+histsuffix.str()).c_str(), "Baseline Mean - StdDev", binning.nbins(),binning.low(),binning.high());
     TH1D* h_peak_threshold = tfs->make<TH1D>(("h_peak_threshold"+histsuffix.str()).c_str(), "Threshold", binning.nbins(),binning.low(),binning.high());
 
+    // now label them
+    h_waveform->GetXaxis()->SetTitle("Sample Number");
+    h_waveform->GetYaxis()->SetTitle("ADCs");
+
+    h_deconvolved->GetXaxis()->SetTitle("Sample Number");
+    h_deconvolved->GetYaxis()->SetTitle("ADCs");
+
+    h_differentiated->GetXaxis()->SetTitle("Sample Number");
+    h_differentiated->GetYaxis()->SetTitle("ADCs");
+
+    h_averaged->GetXaxis()->SetTitle("Sample Number");
+    h_averaged->GetYaxis()->SetTitle("ADCs");
+
+    h_baseline_mean->GetXaxis()->SetTitle("Sample Number");
+    h_baseline_mean->GetYaxis()->SetTitle("ADCs");
+
+    h_baseline_mean_plus_stddev->GetXaxis()->SetTitle("Sample Number");
+    h_baseline_mean_plus_stddev->GetYaxis()->SetTitle("ADCs");
+
+    h_baseline_mean_minus_stddev->GetXaxis()->SetTitle("Sample Number");
+    h_baseline_mean_minus_stddev->GetYaxis()->SetTitle("ADCs");
+
+    h_peak_threshold->GetXaxis()->SetTitle("Sample Number");
+    h_peak_threshold->GetYaxis()->SetTitle("ADCs");
+    
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
       h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
@@ -424,7 +457,12 @@ namespace mu2e {
       h_baseline_mean_minus_stddev->SetBinContent(i+1, baseline_mean - baseline_stddev);
       h_peak_threshold->SetBinContent(i+1, baseline_mean - nsigma_cut * baseline_stddev);
     }
+    
     TH1D* h_peaks = tfs->make<TH1D>(("h_peaks"+histsuffix.str()).c_str(), "Peaks", binning.nbins(),binning.low(),binning.high());
+
+    h_peaks->GetXaxis()->SetTitle("Sample Number");
+    h_peaks->GetYaxis()->SetTitle("ADC peak");
+
     for (size_t i_peak = 0; i_peak < peak_heights.size(); ++i_peak) {
       //      std::cout << "t = " << peak_times[i_peak] << ", E = " << peak_heights[i_peak] << std::endl;
       h_peaks->SetBinContent(peak_times[i_peak]+1, peak_heights[i_peak]);

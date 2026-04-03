@@ -28,6 +28,7 @@ physics: {
       thresholdgrad : @local::STM.HPGe.thresholdgrad
       defaultBaselineMean: @local::STM.HPGe.defaultBaselineMean
       defaultBaselineSD: @local::STM.HPGe.defaultBaselineSD
+      xAxis: "sample_number"
     }
 
     mwdLaBr : {
@@ -48,9 +49,9 @@ physics: {
   analyzers : {  }
 
   # setup paths
- # HPGePath : [ mwdHPGe ]
-  LaBrPath : [ mwdLaBr ]
-  trigger_paths: [ LaBrPath ]
+  HPGePath : [ mwdHPGe ]
+ # LaBrPath : [ mwdLaBr ]
+  trigger_paths: [ HPGePath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }
