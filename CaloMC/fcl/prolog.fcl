@@ -54,7 +54,7 @@ CaloMC : { @table::CaloMC
       digitizationStart        : @local::HitMakerDigitizationStart
       digitizationEnd          : @local::HitMakerDigitizationEnd
       digitizationBuffer       : 10
-      crystalNonUniformity     : 1.05
+      crystalNonUniformity     : 0.05
       readoutPEPerMeVCsI       : @local::readoutPEPerMeVCsI
       readoutPEPerMeVLyso      : @local::readoutPEPerMeVLyso
       LRUCorrection            : true
