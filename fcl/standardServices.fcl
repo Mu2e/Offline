@@ -58,6 +58,7 @@ Services : {
       TimeoutWatchdog : {
           eventTimeoutMs  : 0.
           moduleTimeoutMs : 0.
+          registerPreEventCallback : true
           debugLevel      : 0
       }
   }

@@ -1,31 +1,31 @@
 #include "Offline/TimeoutService/inc/TimeoutWatchdog.hh"
 
+#include "art/Framework/Services/Registry/ActivityRegistry.h"
+
 #include <cstdio>
 #include <sstream>
 
 namespace mu2e {
 
-// Thread-local state keeps timeout bookkeeping independent per worker thread.
-thread_local TimeoutWatchdogService::State TimeoutWatchdogService::tls_{};
-
 TimeoutWatchdogService::TimeoutWatchdogService(Parameters const& config,
-                                               art::ActivityRegistry&)
+                                               art::ActivityRegistry& registry)
   : eventTimeoutMs_(config().eventTimeoutMs())
   , moduleTimeoutMs_(config().moduleTimeoutMs())
   , debugLevel_(config().debugLevel())
-{}
-
-static std::string eventIdString_(art::Event const& e) {
-  std::ostringstream os;
-  os << e.id().run() << ":" << e.id().subRun() << ":" << e.id().event();
-  return os.str();
+{
+  if(config().registerPreEventCallback()) {
+    registry.sPreProcessEvent.watch([this](art::Event const& e, art::ScheduleContext) {
+      this->startEvent(e);
+    });
+  }
 }
 
 void TimeoutWatchdogService::startEvent(art::Event const& e) {
-  std::string const id = eventIdString_(e);
-  if (tls_.eventId != id) {
+  if (tls_.event != e.event() || tls_.subRun != e.subRun() || tls_.run != e.run()) {
     // New event: reset cancellation state and apply event-level deadline.
-    tls_.eventId = id;
+    tls_.run = e.run();
+    tls_.subRun = e.subRun();
+    tls_.event = e.event();
     tls_.moduleLabel.clear();
     tls_.stopSource = std::stop_source{};
     tls_.stopToken = tls_.stopSource.get_token();
@@ -41,9 +41,11 @@ void TimeoutWatchdogService::startEvent(art::Event const& e) {
     tls_.moduleDeadline.reset();
 
     if (debugLevel_ > 1) {
-      std::printf("[TimeoutWatchdogService::%s] event=%s eventTimeoutMs=%.3f\n",
+      std::printf("[TimeoutWatchdogService::%s] Event %u:%u:%u eventTimeoutMs=%.3f\n",
                   __func__,
-                  tls_.eventId.c_str(),
+                  tls_.run,
+                  tls_.subRun,
+                  tls_.event,
                   eventTimeoutMs_);
     }
   }
@@ -59,8 +61,17 @@ void TimeoutWatchdogService::startModule(std::string const& moduleLabel,
                                          std::optional<double> allowedTimeMs) {
   // Module scope starts a fresh stop token so checks are local to this invocation.
   tls_.moduleLabel = moduleLabel;
-  tls_.stopSource = std::stop_source{};
-  tls_.stopToken = tls_.stopSource.get_token();
+  if (tls_.stopToken.stop_requested()) { //FIXME: Need to decide if a previous module was timed out but the event wasn't, do we allow next modules to continue anyway
+    if (debugLevel_ > 0) {
+      std::printf("[TimeoutWatchdogService::%s] Event %u:%u:%u stop already requested when starting module=%s\n",
+                  __func__,
+                  tls_.run,
+                  tls_.subRun,
+                  tls_.event,
+                  tls_.moduleLabel.c_str());
+    }
+    // add source reset here if we want to ignore previous module's stop
+  }
 
   double const budget = moduleBudgetFor_(allowedTimeMs);
   if (budget > 0.0) {
@@ -80,7 +91,7 @@ void TimeoutWatchdogService::startModule(std::string const& moduleLabel,
 }
 
 void TimeoutWatchdogService::endModule() {
-  if (debugLevel_ > 2 && !tls_.moduleLabel.empty()) {
+  if (debugLevel_ > 1 && !tls_.moduleLabel.empty()) {
     std::printf("[TimeoutWatchdogService::%s] module=%s\n",
                 __func__,
                 tls_.moduleLabel.c_str());
@@ -97,13 +108,15 @@ TimeoutWatchdogService::eventDeadline() const { return tls_.eventDeadline; }
 std::optional<TimeoutWatchdogService::Clock::time_point>
 TimeoutWatchdogService::moduleDeadline() const { return tls_.moduleDeadline; }
 
-bool TimeoutWatchdogService::check() const {
+bool TimeoutWatchdogService::check() {
   // Once cancellation is requested, preserve sticky behavior for callers.
   if (tls_.stopToken.stop_requested()) {
     if (debugLevel_ > 0) {
-      std::printf("[TimeoutWatchdogService::%s] stop already requested event=%s module=%s\n",
+      std::printf("[TimeoutWatchdogService::%s] Event %u:%u:%u stop already requested module=%s\n",
                   __func__,
-                  tls_.eventId.c_str(),
+                  tls_.run,
+                  tls_.subRun,
+                  tls_.event,
                   tls_.moduleLabel.c_str());
     }
     return true;
@@ -122,9 +135,11 @@ bool TimeoutWatchdogService::check() const {
   tls_.stopSource.request_stop();
 
   if (debugLevel_ > 0) {
-    std::printf("[TimeoutWatchdogService::%s] timeout event=%s module=%s eventExceeded=%d moduleExceeded=%d\n",
+    std::printf("[TimeoutWatchdogService::%s] Event %u:%u:%u timeout module=%s eventExceeded=%d moduleExceeded=%d\n",
                 __func__,
-                tls_.eventId.c_str(),
+                tls_.run,
+                tls_.subRun,
+                tls_.event,
                 tls_.moduleLabel.c_str(),
                 timedOutEvent ? 1 : 0,
                 timedOutModule ? 1 : 0);

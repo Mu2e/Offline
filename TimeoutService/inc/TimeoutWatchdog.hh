@@ -14,7 +14,6 @@
 #include <optional>
 #include <stop_token>
 #include <string>
-#include <unordered_map>
 
 namespace art {
   class ActivityRegistry;
@@ -37,6 +36,10 @@ public:
       Name("moduleTimeoutMs"),
       Comment("Default module timeout budget in milliseconds; <= 0 disables module-level timeout"),
       0.0};
+    fhicl::Atom<bool> registerPreEventCallback{
+      Name("registerPreEventCallback"),
+      Comment("Whether to register the pre-event callback to start the event timer. If false, the service user must call startEvent() directly."),
+      true};
     fhicl::Atom<int> debugLevel{
       Name("debugLevel"),
       Comment("Service debug verbosity: 0=off, 1=timeouts, 2=module/event boundaries"),
@@ -59,7 +62,7 @@ public:
   void endModule();
 
   // Returns true once the current event/module has exceeded a configured budget.
-  bool check() const;
+  bool check();
 
   // Stop token that can be used in downstream cooperative cancellation points.
   std::stop_token stopToken() const;
@@ -76,7 +79,9 @@ private:
 
   struct State {
     // Identifiers for diagnostics
-    std::string eventId;     // e.g. "run:subrun:event"
+    art::RunNumber_t run; // event ID
+    art::SubRunNumber_t subRun;
+    art::EventNumber_t event;
     std::string moduleLabel; // current module
 
     // Deadlines (if enabled)
@@ -88,7 +93,7 @@ private:
     std::stop_token stopToken;
 
     State()
-      : eventId()
+      : run(0), subRun(0), event(0)
       , moduleLabel()
       , eventDeadline()
       , moduleDeadline()
@@ -98,9 +103,7 @@ private:
 
   double moduleBudgetFor_(std::optional<double> allowedTimeMs) const;
 
-  // Per-thread state is the safest fallback if schedule ID isn’t easily available.
-  // If you can reliably key by ScheduleID, replace this with a map keyed by that.
-  static thread_local State tls_;
+  State tls_;
 
   double eventTimeoutMs_;
   double moduleTimeoutMs_;
@@ -115,7 +118,7 @@ public:
               std::optional<double> allowedTimeMs = std::nullopt)
     : svc_{svc}
   {
-    svc_.startEvent(e);       // idempotent per-event if you call it for every module
+    svc_.startEvent(e); // Only necessary if the service is configured with registerPreEventCallback=false
     svc_.startModule(moduleLabel, allowedTimeMs);
   }
 
@@ -134,6 +137,6 @@ private:
 
 } // namespace mu2e
 
-DECLARE_ART_SERVICE(mu2e::TimeoutWatchdogService, SHARED)
+DECLARE_ART_SERVICE(mu2e::TimeoutWatchdogService, LEGACY)
 
 #endif /* TimeoutService_TimeoutWatchdog_hh */
