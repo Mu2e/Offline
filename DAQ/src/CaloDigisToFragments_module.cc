@@ -131,10 +131,6 @@ class mu2e::CaloDigisToFragments : public art::EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
-    fhicl::Atom<bool> skipFragmentOnSizeMismatch{
-      fhicl::Name("skipFragmentOnSizeMismatch"),
-      fhicl::Comment("Skip emitting fragment when packed bytes and event header size differ"),
-      false};
     fhicl::Atom<art::InputTag> caloDigiTag{fhicl::Name("caloDigiTag"),
                                            fhicl::Comment("Input CaloDigiCollection"),
                                            art::InputTag("CaloDigisFromDTCEvents")};
@@ -150,11 +146,12 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> calodaqconds_h_;
 
   int diagLevel_;
-  bool skipFragmentOnSizeMismatch_;
   art::InputTag caloDigiTag_;
 
   long int total_events_;
   long int total_digis_;
+
+  const int fragment_id_offset_ = 100; // IDs start from here
 
   static size_t waveformMaximumIndex(const std::vector<uint16_t>& waveform);
 
@@ -169,7 +166,6 @@ private:
 mu2e::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
-    , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
     , caloDigiTag_(config().caloDigiTag()) {
   produces<artdaq::Fragments>();
   total_events_ = 0;
@@ -354,27 +350,16 @@ void mu2e::CaloDigisToFragments::produce(art::Event& event) {
       }
     }
 
-    bool sizeMismatch = packed.size() != eventBytes;
-    if (sizeMismatch) {
-      if (skipFragmentOnSizeMismatch_) {
-        if (diagLevel_ > 0) {
-          std::cout << "[CaloDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
-                    << " packed size " << packed.size() << " differs from header event size "
-                    << eventBytes << " - skipping fragment" << std::endl;
-        }
-        continue;
-      }
-      if (diagLevel_ > 0) {
-        std::cout << "[CaloDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
-                  << " packed size " << packed.size() << " differs from header event size "
-                  << eventBytes << " - emitting fragment" << std::endl;
-      }
+    if (diagLevel_ > 0 && packed.size() != eventBytes) {
+      std::cout << "[CaloDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
+                << " packed size " << packed.size() << " differs from header event size "
+                << eventBytes << " - emitting fragment" << std::endl;
     }
 
     auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
     fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
     fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
-    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID));
+    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID + fragment_id_offset_));
     fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
     if (!packed.empty()) {
       std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());

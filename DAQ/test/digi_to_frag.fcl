@@ -19,7 +19,6 @@ physics : {
       module_type : CaloDigisToFragments
       diagLevel : 0
       caloDigiTag : "CaloDigiMaker"
-      skipFragmentOnSizeMismatch : false
     }
     CaloFragmentsToDigis : {
       module_type   : "CaloDigisFromDTCEvents"

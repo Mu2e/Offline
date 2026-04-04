@@ -193,6 +193,8 @@ private:
   long int total_events_;
   long int total_digis_;
 
+  const int fragment_id_offset_ = 0; // IDs start from here
+
   static void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
                               DTCLib::DTC_DataBlock const& thisBlock);
 
@@ -216,7 +218,7 @@ mu2e::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<
 }
 
 void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
-                                                 DTCLib::DTC_DataBlock const& thisBlock) {
+                                                  DTCLib::DTC_DataBlock const& thisBlock) {
   auto subEvt = currentEvent.GetSubEventByDTCID(dtcID, DTCLib::DTC_Subsystem_Tracker);
   if (subEvt == nullptr) {
     DTCLib::DTC_SubEvent newSubEvt;
@@ -229,10 +231,9 @@ void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEven
   }
 }
 
-void mu2e::StrawDigisToFragments::buildDtcEventsFromDigis(
-    art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
-  mu2e::StrawDigiADCWaveformCollection const& strawADCs,
-  std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents) {
+void mu2e::StrawDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
+                                                          mu2e::StrawDigiADCWaveformCollection const& strawADCs,
+                                                          std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents) {
   auto const& trackerPanelMap = trackerPanelMap_h_.get(event.id());
   if (diagLevel_ > 1 && !printedTrackerPanelMap_) {
     printTrackerPanelMap(trackerPanelMap);
@@ -458,7 +459,7 @@ void mu2e::StrawDigisToFragments::produce(art::Event& event) {
       }
     }
 
-    if (diagLevel_ > 1 && packed.size() != eventBytes) {
+    if (diagLevel_ > 0 && packed.size() != eventBytes) {
       std::cout << "[StrawDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
                 << " packed size " << packed.size()
                 << " differs from event header size " << eventBytes << std::endl;
@@ -467,7 +468,7 @@ void mu2e::StrawDigisToFragments::produce(art::Event& event) {
     auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
     fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
     fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
-    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID));
+    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID + fragment_id_offset_));
     fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
     if (!packed.empty()) {
       std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
