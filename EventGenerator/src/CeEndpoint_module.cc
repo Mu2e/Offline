@@ -83,9 +83,9 @@ namespace mu2e {
     , endPointEnergy_()
     , endPointMomentum_ ()
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
-    , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , czMin_(conf().czMin())
     , czMax_(conf().czMax())
+    , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
