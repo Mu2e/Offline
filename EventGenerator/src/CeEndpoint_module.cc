@@ -29,6 +29,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 
@@ -53,6 +54,7 @@ namespace mu2e {
     explicit CeEndpoint(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -93,6 +95,7 @@ namespace mu2e {
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     pid = static_cast<PDGCode::type>(pdgId_);
     if(czMax_ < czMin_ || czMin_ < -1. || czMax_ > 1.) throw cet::exception("BADCONFIG") << "CeEndpoint generator cos(theta_z) range is not defined\n";
 
@@ -148,6 +151,19 @@ namespace mu2e {
 
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void CeEndpoint::endSubRun(art::SubRun& sr) {
+    // Make a summary of how this generator was configured
+    auto config = std::make_unique<SpectrumConfig>();
+    config->emin_  = endPointEnergy_;
+    config->emax_  = endPointEnergy_;
+    config->czmin_ = czMin_;
+    config->czmax_ = czMax_;
+    config->fraction_sampled_ = (czMax_ - czMin_)/2.; // range that was sampled overall
+    config->type_  = SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================
