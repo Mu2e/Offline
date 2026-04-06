@@ -37,6 +37,7 @@ cet_build_plugin(AgnosticHelixFinder art::module
       Offline::GeometryService
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+      Offline::TimeoutService
       Offline::TrackerGeom
 )
 
