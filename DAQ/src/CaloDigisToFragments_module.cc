@@ -131,10 +131,6 @@ class mu2e::CaloDigisToFragments : public art::EDProducer {
 public:
   struct Config {
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level"), 0};
-    fhicl::Atom<bool> skipFragmentOnSizeMismatch{
-      fhicl::Name("skipFragmentOnSizeMismatch"),
-      fhicl::Comment("Skip emitting fragment when packed bytes and event header size differ"),
-      false};
     fhicl::Atom<art::InputTag> caloDigiTag{fhicl::Name("caloDigiTag"),
                                            fhicl::Comment("Input CaloDigiCollection"),
                                            art::InputTag("CaloDigisFromDTCEvents")};
@@ -150,25 +146,26 @@ private:
   mu2e::ProditionsHandle<mu2e::CaloDAQMap> calodaqconds_h_;
 
   int diagLevel_;
-  bool skipFragmentOnSizeMismatch_;
   art::InputTag caloDigiTag_;
 
   long int total_events_;
   long int total_digis_;
+
+  const int fragment_id_offset_ = 100; // IDs start from here
 
   static size_t waveformMaximumIndex(const std::vector<uint16_t>& waveform);
 
   static void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
                               DTCLib::DTC_DataBlock const& thisBlock);
 
-  void buildDtcEventFromDigis(art::Event const& event, mu2e::CaloDigiCollection const& caloDigis,
-                              DTCLib::DTC_Event& dtcEvent);
+  void buildDtcEventsFromDigis(art::Event const& event,
+                               mu2e::CaloDigiCollection const& caloDigis,
+                               std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents);
 };
 
 mu2e::CaloDigisToFragments::CaloDigisToFragments(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , diagLevel_(config().diagLevel())
-    , skipFragmentOnSizeMismatch_(config().skipFragmentOnSizeMismatch())
     , caloDigiTag_(config().caloDigiTag()) {
   produces<artdaq::Fragments>();
   total_events_ = 0;
@@ -196,9 +193,9 @@ void mu2e::CaloDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent
   }
 }
 
-void mu2e::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
-                                                       mu2e::CaloDigiCollection const& caloDigis,
-                                                       DTCLib::DTC_Event& dtcEvent) {
+void mu2e::CaloDigisToFragments::buildDtcEventsFromDigis(
+  art::Event const& event, mu2e::CaloDigiCollection const& caloDigis,
+  std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents) {
   auto const& calodaqconds = calodaqconds_h_.get(event.id());
 
   std::map<uint8_t, std::map<uint8_t, CaloBlockData>> byDtcAndLink;
@@ -242,6 +239,9 @@ void mu2e::CaloDigisToFragments::buildDtcEventFromDigis(art::Event const& event,
   }
 
   for (auto& [dtcID, linkMap] : byDtcAndLink) {
+    auto& dtcEvent = dtcEvents[dtcID];
+    dtcEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(static_cast<uint64_t>(event.event())));
+
     for (uint8_t linkID = 0; linkID < kCaloRocsPerDtc; ++linkID) {
       auto& block = linkMap[linkID];
       block.dtcID = dtcID;
@@ -322,24 +322,27 @@ void mu2e::CaloDigisToFragments::produce(art::Event& event) {
   auto const& caloDigis = *caloDigiHandle;
   total_digis_ += caloDigis.size();
 
-  DTCLib::DTC_Event dtcEvent;
-  dtcEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(static_cast<uint64_t>(event.event())));
-  buildDtcEventFromDigis(event, caloDigis, dtcEvent);
+  std::map<uint8_t, DTCLib::DTC_Event> dtcEvents;
+  buildDtcEventsFromDigis(event, caloDigis, dtcEvents);
 
-  auto const eventBytes = dtcEvent.GetEventByteCount();
-  if (eventBytes > 0 && dtcEvent.GetSubEventCount() > 0) {
+  for (auto& [dtcID, dtcEvent] : dtcEvents) {
+    auto const eventBytes = dtcEvent.GetEventByteCount();
+    if (eventBytes == 0 || dtcEvent.GetSubEventCount() == 0) {
+      continue;
+    }
+
     // Build the exact in-memory layout consumed by DTCEventFragment::SetupEvent.
     std::vector<uint8_t> packed;
     packed.reserve(eventBytes);
 
     auto const* evHdr = dtcEvent.GetHeader();
     packed.insert(packed.end(), reinterpret_cast<uint8_t const*>(evHdr),
-            reinterpret_cast<uint8_t const*>(evHdr) + kDtcEventHeaderBytes);
+                  reinterpret_cast<uint8_t const*>(evHdr) + kDtcEventHeaderBytes);
 
     for (auto const& subEvt : dtcEvent.GetSubEvents()) {
       auto const* subHdr = subEvt.GetHeader();
       packed.insert(packed.end(), reinterpret_cast<uint8_t const*>(subHdr),
-            reinterpret_cast<uint8_t const*>(subHdr) + kDtcSubEventHeaderBytes);
+                    reinterpret_cast<uint8_t const*>(subHdr) + kDtcSubEventHeaderBytes);
 
       for (auto const& block : subEvt.GetDataBlocks()) {
         auto const* blk = reinterpret_cast<uint8_t const*>(block.GetRawBufferPointer());
@@ -347,55 +350,42 @@ void mu2e::CaloDigisToFragments::produce(art::Event& event) {
       }
     }
 
-    bool sizeMismatch = packed.size() != eventBytes;
-    if (sizeMismatch) {
-      if (skipFragmentOnSizeMismatch_) {
-        if (diagLevel_ > 0) {
-          std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
-                    << " differs from header event size " << eventBytes
-                    << " - skipping fragment" << std::endl;
-        }
-        event.put(std::move(fragments));
-        return;
-      }
-      if (diagLevel_ > 0) {
-        std::cout << "[CaloDigisToFragments::produce] WARNING: packed size " << packed.size()
-                  << " differs from header event size " << eventBytes
-                  << " - emitting fragment" << std::endl;
-      }
+    if (diagLevel_ > 0 && packed.size() != eventBytes) {
+      std::cout << "[CaloDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
+                << " packed size " << packed.size() << " differs from header event size "
+                << eventBytes << " - emitting fragment" << std::endl;
     }
 
-    {
-      auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
-      fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
-      fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
-      fragPtr->setFragmentID(0);
-      fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
-      if (!packed.empty()) {
-        std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
-      }
+    auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
+    fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
+    fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
+    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID + fragment_id_offset_));
+    fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
+    if (!packed.empty()) {
+      std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
+    }
 
-      if (diagLevel_ > 0) {
-        mu2e::DTCEventFragment testFragment(*fragPtr);
-        auto testSubevents =
-            testFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
-        size_t decodedHits = 0;
-        for (auto const& se : testSubevents) {
-          mu2e::CalorimeterDataDecoder decoder(se);
-          for (size_t i = 0; i < decoder.block_count(); ++i) {
-            auto hitVec = decoder.GetCalorimeterHitData(i);
-            if (hitVec != nullptr) {
-              decodedHits += hitVec->size();
-            }
+    if (diagLevel_ > 0) {
+      mu2e::DTCEventFragment testFragment(*fragPtr);
+      auto testSubevents =
+          testFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Calorimeter);
+      size_t decodedHits = 0;
+      for (auto const& se : testSubevents) {
+        mu2e::CalorimeterDataDecoder decoder(se);
+        for (size_t i = 0; i < decoder.block_count(); ++i) {
+          auto hitVec = decoder.GetCalorimeterHitData(i);
+          if (hitVec != nullptr) {
+            decodedHits += hitVec->size();
           }
         }
-        std::cout << "[CaloDigisToFragments::produce] Validation: " << testSubevents.size()
-                  << " CALO subevent(s), " << decodedHits << " decodable hit(s) in output"
-                  << std::endl;
       }
-
-      fragments->emplace_back(std::move(*fragPtr));
+      std::cout << "[CaloDigisToFragments::produce] Validation: DTC "
+                << static_cast<int>(dtcID) << ", " << testSubevents.size()
+                << " CALO subevent(s), " << decodedHits << " decodable hit(s) in output"
+                << std::endl;
     }
+
+    fragments->emplace_back(std::move(*fragPtr));
   }
 
   if (diagLevel_ > 0) {

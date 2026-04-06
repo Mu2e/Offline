@@ -193,13 +193,15 @@ private:
   long int total_events_;
   long int total_digis_;
 
+  const int fragment_id_offset_ = 0; // IDs start from here
+
   static void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
                               DTCLib::DTC_DataBlock const& thisBlock);
 
-  void buildDtcEventFromDigis(art::Event const& event,
-                              mu2e::StrawDigiCollection const& strawDigis,
-                              mu2e::StrawDigiADCWaveformCollection const& strawADCs,
-                              DTCLib::DTC_Event& dtcEvent);
+  void buildDtcEventsFromDigis(art::Event const& event,
+                               mu2e::StrawDigiCollection const& strawDigis,
+                               mu2e::StrawDigiADCWaveformCollection const& strawADCs,
+                               std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents);
 };
 
 mu2e::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<Config>& config)
@@ -216,7 +218,7 @@ mu2e::StrawDigisToFragments::StrawDigisToFragments(const art::EDProducer::Table<
 }
 
 void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
-                                                 DTCLib::DTC_DataBlock const& thisBlock) {
+                                                  DTCLib::DTC_DataBlock const& thisBlock) {
   auto subEvt = currentEvent.GetSubEventByDTCID(dtcID, DTCLib::DTC_Subsystem_Tracker);
   if (subEvt == nullptr) {
     DTCLib::DTC_SubEvent newSubEvt;
@@ -229,9 +231,9 @@ void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEven
   }
 }
 
-void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
-    art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
-    mu2e::StrawDigiADCWaveformCollection const& strawADCs, DTCLib::DTC_Event& dtcEvent) {
+void mu2e::StrawDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e::StrawDigiCollection const& strawDigis,
+                                                          mu2e::StrawDigiADCWaveformCollection const& strawADCs,
+                                                          std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents) {
   auto const& trackerPanelMap = trackerPanelMap_h_.get(event.id());
   if (diagLevel_ > 1 && !printedTrackerPanelMap_) {
     printTrackerPanelMap(trackerPanelMap);
@@ -241,7 +243,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
 
   size_t const nHits = std::min(strawDigis.size(), strawADCs.size());
   if (strawDigis.size() != strawADCs.size() && diagLevel_ > 0) {
-    std::cout << "[StrawDigisToFragments::buildDtcEventFromDigis] WARNING: StrawDigi count "
+    std::cout << "[StrawDigisToFragments::buildDtcEventsFromDigis] WARNING: StrawDigi count "
               << strawDigis.size() << " differs from StrawDigiADCWaveform count "
               << strawADCs.size() << "; using first " << nHits << " entries" << std::endl;
   }
@@ -255,7 +257,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
 
     if (panel >= kTrackerRocsPerDtc) {
       if (diagLevel_ > 0) {
-        std::cout << "[StrawDigisToFragments::buildDtcEventFromDigis] WARNING: panel " << panel
+        std::cout << "[StrawDigisToFragments::buildDtcEventsFromDigis] WARNING: panel " << panel
                   << " outside expected ROC link range [0," << static_cast<int>(kTrackerRocsPerDtc)
                   << ") - skipping digi" << std::endl;
       }
@@ -281,7 +283,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
     } else {
       if (!fallbackToOfflineWhenMapMissing_) {
         if (diagLevel_ > 0) {
-          std::cout << "[StrawDigisToFragments::buildDtcEventFromDigis] WARNING: no TrackerPanelMap"
+          std::cout << "[StrawDigisToFragments::buildDtcEventsFromDigis] WARNING: no TrackerPanelMap"
                     << " entry for offline plane=" << plane << " panel=" << panel
                     << " - skipping digi" << std::endl;
         }
@@ -291,7 +293,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
       linkID = static_cast<uint8_t>(panel);
       strawIndexWord = digi.strawId().asUint16();
       if (diagLevel_ > 1) {
-        std::cout << "[StrawDigisToFragments::buildDtcEventFromDigis] INFO: no TrackerPanelMap"
+        std::cout << "[StrawDigisToFragments::buildDtcEventsFromDigis] INFO: no TrackerPanelMap"
                   << " entry for offline plane=" << plane << " panel=" << panel
                   << " - using offline fallback DTC/link" << std::endl;
       }
@@ -299,7 +301,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
 
     if (linkID >= kTrackerRocsPerDtc) {
       if (diagLevel_ > 0) {
-        std::cout << "[StrawDigisToFragments::buildDtcEventFromDigis] WARNING: mapped link "
+        std::cout << "[StrawDigisToFragments::buildDtcEventsFromDigis] WARNING: mapped link "
                   << static_cast<int>(linkID) << " outside expected ROC link range [0,"
                   << static_cast<int>(kTrackerRocsPerDtc) << ") for plane=" << plane
                   << " panel=" << panel << " dtc=" << static_cast<int>(dtcID)
@@ -318,6 +320,9 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
   }
 
   for (auto& [dtcID, linkMap] : byDtcAndLink) {
+    auto& dtcEvent = dtcEvents[dtcID];
+    dtcEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(static_cast<uint64_t>(event.event())));
+
     // Emit all tracker ROC links in order so decoders expecting contiguous
     // ROC indices (0..5) can parse mixed-subdetector streams robustly.
     for (uint8_t linkID = 0; linkID < kTrackerRocsPerDtc; ++linkID) {
@@ -338,7 +343,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
       block.transferByteCount = static_cast<uint16_t>((numPackets + 1) * 16);
 
       if (diagLevel_ > 1) {
-        std::cout << "[buildDtcEventFromDigis] DTC " << static_cast<int>(dtcID)
+        std::cout << "[buildDtcEventsFromDigis] DTC " << static_cast<int>(dtcID)
                   << " Link " << static_cast<int>(linkID)
                   << " hits: " << block.hits.size()
                   << " numPackets: " << numPackets
@@ -348,7 +353,7 @@ void mu2e::StrawDigisToFragments::buildDtcEventFromDigis(
       DTCLib::DTC_DataBlock thisBlock(block.transferByteCount);
       if (thisBlock.blockPointer == nullptr) {
         if (diagLevel_ > 0) {
-          std::cout << "[buildDtcEventFromDigis] Failed to allocate DTC_DataBlock with size "
+          std::cout << "[buildDtcEventsFromDigis] Failed to allocate DTC_DataBlock with size "
                     << block.transferByteCount << std::endl;
         }
         continue;
@@ -411,42 +416,39 @@ void mu2e::StrawDigisToFragments::produce(art::Event& event) {
   auto const& strawADCs = *strawADCsHandle;
   total_digis_ += strawDigis.size();
 
-  DTCLib::DTC_Event dtcEvent;
-  dtcEvent.SetEventWindowTag(DTCLib::DTC_EventWindowTag(static_cast<uint64_t>(event.event())));
-  buildDtcEventFromDigis(event, strawDigis, strawADCs, dtcEvent);
+  std::map<uint8_t, DTCLib::DTC_Event> dtcEvents;
+  buildDtcEventsFromDigis(event, strawDigis, strawADCs, dtcEvents);
 
-  auto const eventBytes = dtcEvent.GetEventByteCount();
-  if (diagLevel_ > 1) {
-    std::cout << "[StrawDigisToFragments::produce] eventBytes from DTC_Event: " << eventBytes
-              << ", subEventCount: " << dtcEvent.GetSubEventCount() << std::endl;
-    for (size_t i = 0; i < dtcEvent.GetSubEvents().size(); ++i) {
-      auto const& subEvt = dtcEvent.GetSubEvents()[i];
-      std::cout << "  SubEvent " << i << " blockCount: " << subEvt.GetDataBlocks().size() << std::endl;
-      for (size_t j = 0; j < subEvt.GetDataBlocks().size(); ++j) {
-        auto const& block = subEvt.GetDataBlocks()[j];
-        std::cout << "    Block " << j << " byteSize: " << block.byteSize << std::endl;
+  for (auto& [dtcID, dtcEvent] : dtcEvents) {
+    auto const eventBytes = dtcEvent.GetEventByteCount();
+
+    if (diagLevel_ > 1) {
+      std::cout << "[StrawDigisToFragments::produce] DTC " << static_cast<int>(dtcID)
+                << " eventBytes: " << eventBytes
+                << ", subEventCount: " << dtcEvent.GetSubEventCount() << std::endl;
+      for (size_t i = 0; i < dtcEvent.GetSubEvents().size(); ++i) {
+        auto const& subEvt = dtcEvent.GetSubEvents()[i];
+        std::cout << "  SubEvent " << i << " blockCount: " << subEvt.GetDataBlocks().size()
+                  << std::endl;
+        for (size_t j = 0; j < subEvt.GetDataBlocks().size(); ++j) {
+          auto const& block = subEvt.GetDataBlocks()[j];
+          std::cout << "    Block " << j << " byteSize: " << block.byteSize << std::endl;
+        }
       }
     }
-  }
 
-  if (dtcEvent.GetSubEventCount() > 0) {
-    // Emit one fragment per tracker subevent (per DTC). The downstream decoder
-    // processes a single subevent per artdaq fragment payload.
-    for (size_t seIdx = 0; seIdx < dtcEvent.GetSubEvents().size(); ++seIdx) {
-      auto const& subEvt = dtcEvent.GetSubEvents()[seIdx];
+    if (eventBytes == 0 || dtcEvent.GetSubEventCount() == 0) {
+      continue;
+    }
 
-      size_t calcEventBytes = kDtcEventHeaderBytes + kDtcSubEventHeaderBytes;
-      for (auto const& block : subEvt.GetDataBlocks()) {
-        calcEventBytes += block.byteSize;
-      }
+    std::vector<uint8_t> packed;
+    packed.reserve(eventBytes);
 
-      std::vector<uint8_t> packed;
-      packed.reserve(calcEventBytes);
+    auto const* evHdr = dtcEvent.GetHeader();
+    packed.insert(packed.end(), reinterpret_cast<uint8_t const*>(evHdr),
+                  reinterpret_cast<uint8_t const*>(evHdr) + kDtcEventHeaderBytes);
 
-      auto const* evHdr = dtcEvent.GetHeader();
-      packed.insert(packed.end(), reinterpret_cast<uint8_t const*>(evHdr),
-                    reinterpret_cast<uint8_t const*>(evHdr) + kDtcEventHeaderBytes);
-
+    for (auto const& subEvt : dtcEvent.GetSubEvents()) {
       auto const* subHdr = subEvt.GetHeader();
       packed.insert(packed.end(), reinterpret_cast<uint8_t const*>(subHdr),
                     reinterpret_cast<uint8_t const*>(subHdr) + kDtcSubEventHeaderBytes);
@@ -455,43 +457,24 @@ void mu2e::StrawDigisToFragments::produce(art::Event& event) {
         auto const* blk = reinterpret_cast<uint8_t const*>(block.GetRawBufferPointer());
         packed.insert(packed.end(), blk, blk + block.byteSize);
       }
-
-      // Each output fragment carries exactly one subevent payload. Patch the
-      // copied event header so generic DTC decoders see consistent metadata.
-      auto* packedEventHdr = reinterpret_cast<DTCLib::DTC_EventHeader*>(packed.data());
-      packedEventHdr->inclusive_event_byte_count = static_cast<uint32_t>(calcEventBytes);
-      packedEventHdr->num_dtcs = 1;
-
-      if (diagLevel_ > 1 && packed.size() != calcEventBytes) {
-        std::cout << "[StrawDigisToFragments::produce] WARNING: subevent " << seIdx
-                  << " packed size " << packed.size()
-                  << " differs from recalculated " << calcEventBytes << std::endl;
-      }
-
-      auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
-      fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
-      fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
-      fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(seIdx));
-      fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
-      if (!packed.empty()) {
-        std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
-      }
-
-      fragments->emplace_back(std::move(*fragPtr));
     }
 
-    if (diagLevel_ > 0 && eventBytes != 0) {
-      size_t aggregatePacked = 0;
-      for (auto const& subEvt : dtcEvent.GetSubEvents()) {
-        aggregatePacked += kDtcEventHeaderBytes + kDtcSubEventHeaderBytes;
-        for (auto const& block : subEvt.GetDataBlocks()) aggregatePacked += block.byteSize;
-      }
-      if (aggregatePacked != eventBytes * dtcEvent.GetSubEventCount()) {
-        std::cout << "[StrawDigisToFragments::produce] INFO: GetEventByteCount()=" << eventBytes
-                  << " is unreliable for multi-subevent packing; emitted "
-                  << fragments->size() << " per-subevent fragment(s)" << std::endl;
-      }
+    if (diagLevel_ > 0 && packed.size() != eventBytes) {
+      std::cout << "[StrawDigisToFragments::produce] WARNING: DTC " << static_cast<int>(dtcID)
+                << " packed size " << packed.size()
+                << " differs from event header size " << eventBytes << std::endl;
     }
+
+    auto fragPtr = artdaq::Fragment::FragmentBytes(packed.size());
+    fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
+    fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
+    fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID + fragment_id_offset_));
+    fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
+    if (!packed.empty()) {
+      std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
+    }
+
+    fragments->emplace_back(std::move(*fragPtr));
   }
 
   if (diagLevel_ > 0) {
