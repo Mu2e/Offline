@@ -137,6 +137,6 @@ private:
 
 } // namespace mu2e
 
-DECLARE_ART_SERVICE(mu2e::TimeoutWatchdogService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::TimeoutWatchdogService, SHARED)
 
 #endif /* TimeoutService_TimeoutWatchdog_hh */
