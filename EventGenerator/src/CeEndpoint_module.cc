@@ -61,6 +61,8 @@ namespace mu2e {
     double endPointEnergy_;
     double endPointMomentum_;
     double muonLifeTime_;
+    double czMin_;
+    double czMax_;
 
     art::ProductToken<SimParticleCollection> const simsToken_;
 
@@ -82,14 +84,17 @@ namespace mu2e {
     , endPointMomentum_ ()
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
+    , czMin_(conf().czMin())
+    , czMax_(conf().czMax())
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , randomUnitSphere_{eng_, conf().czMin(), conf().czMax()}
+    , randomUnitSphere_{eng_, czMin_, czMax_}
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
+    if(czMax_ < czMin_ || czMin_ < -1. || czMax_ > 1.) throw cet::exception("BADCONFIG") << "CeEndpoint generator cos(theta_z) range is not defined\n";
 
     if (pid == PDGCode::e_minus) {
       process = ProcessCode::mu2eCeMinusEndpoint;
@@ -109,6 +114,7 @@ namespace mu2e {
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
          <<", endpoint energy = "<<endPointEnergy_
          <<", muon lifetime = "<<muonLifeTime_
+         <<", cos(theta_z) range = [" << czMin_ << ", " << czMax_ << "]"
          <<std::endl;
     }
   }
