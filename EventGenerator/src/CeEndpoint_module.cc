@@ -43,6 +43,8 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
+        fhicl::Atom<double> czMin{Name("czMin"), Comment("Minimum cos(theta_z) to generate in"), -1.};
+        fhicl::Atom<double> czMax{Name("czMax"), Comment("Maximum cos(theta_z) to generate in"),  1.};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
@@ -83,7 +85,7 @@ namespace mu2e {
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , randomUnitSphere_{eng_}
+    , randomUnitSphere_{eng_, conf().czMin(), conf().czMax()}
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
