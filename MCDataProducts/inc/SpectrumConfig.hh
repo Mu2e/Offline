@@ -4,6 +4,8 @@
 #ifndef MCDataProducts_inc_SpectrumConfig_hh
 #define MCDataProducts_inc_SpectrumConfig_hh
 
+#include <limits>
+
 namespace mu2e {
 
   class SpectrumConfig {
@@ -19,8 +21,8 @@ namespace mu2e {
   public: // allow direct access/manipulation of the fields
     double emin_             = -1.;
     double emax_             = -1.;
-    double tmin_             =  0.;
-    double tmax_             =  0.;
+    double tmin_             = std::numeric_limits<double>::lowest();
+    double tmax_             = std::numeric_limits<double>::max();
     double czmin_            = -1.;
     double czmax_            =  1.;
     double fraction_sampled_ = 1.;

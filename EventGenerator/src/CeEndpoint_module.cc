@@ -161,7 +161,7 @@ namespace mu2e {
     config->emax_  = endPointEnergy_;
     config->czmin_ = czMin_;
     config->czmax_ = czMax_;
-    config->fraction_sampled_ = (czMax_ - czMin_)/2.; // range that was sampled overall
+    config->fraction_sampled_ = (czMax_ - czMin_)/2.; // fraction of full spectrum that was sampled (only cz can be constrained)
     config->type_  = SpectrumConfig::Type::kPhysical;
     sr.put(std::move(config), art::fullSubRun());
   }
