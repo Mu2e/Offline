@@ -1,4 +1,5 @@
 #include "art/Utilities/ToolMacros.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
@@ -25,6 +26,9 @@ namespace mu2e {
 
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
       fhicl::Atom<std::string> spectrumVariable{Name("spectrumVariable"), Comment("Variable that spectrum is defined in (\"totalEnergy\", \"kineticEnergy\", or \"momentum\")")};
+      fhicl::Atom<double> czMin{Name("czmin"), Comment("Restrict cos(theta_z) minimum"), -1.};
+      fhicl::Atom<double> czMax{Name("czmax"), Comment("Restrict cos(theta_z) maximum"),  1.};
+
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
 
@@ -32,16 +36,21 @@ namespace mu2e {
       _pdgId(PDGCode::deuteron),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
-      _spectrumVariable(parseSpectrumVar(conf().spectrumVariable()))
-    {}
+      _spectrumVariable(parseSpectrumVar(conf().spectrumVariable())),
+      _czMin(conf().czMin()),
+      _czMax(conf().czMax())
+    {
+      if(_czMin < -1. || _czMax > 1. || _czMin > _czMax) throw cet::exception("BADCONFIG") << "Cos(theta_z) range unphysical: " << _czMin << " - " << _czMax;
+    }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
       _rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureDeuteronRate(material);
-      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
-      _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, _rate);
+      const double rate = _rate * (_czMax - _czMin)/2.; // accouunt for potential cz selection in the produced rates
+      _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czMin, _czMax);
+      _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, rate);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }
 
@@ -52,6 +61,8 @@ namespace mu2e {
 
     BinnedSpectrum    _spectrum;
     SpectrumVar       _spectrumVariable;
+    double _czMin;
+    double _czMax;
 
     std::unique_ptr<CLHEP::RandPoissonQ> _randomPoissonQ;
     std::unique_ptr<RandomUnitSphere>    _randomUnitSphere;
