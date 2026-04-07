@@ -31,7 +31,7 @@ namespace mu2e {
   KKStrawMaterial::PathCalc KKStrawMaterial::averagePathLengths(double& wallpath, double& gaspath, double& wirepath) const {
     gaspath = avggaspath_;
     wallpath = avgwallpath_;
-    wallpath = 0.0;
+    wirepath = 0.0;
     return KKStrawMaterial::average;
   }
 

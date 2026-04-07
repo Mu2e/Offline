@@ -143,7 +143,7 @@ namespace mu2e {
     // return time just before the first hit's time.  This insures hit clusters are updated before individual hits
     // This insures the weights subtracted correspond to the reference fit, and that any changes made to the
     // hits in the cluster get propagated to the residuals and weights before the next fit
-    double mintime(std::numeric_limits<float>::max());
+    double mintime(std::numeric_limits<double>::max());
     for(auto const& hit : hits_){
       mintime = std::min(hit->time(),mintime);
     }
