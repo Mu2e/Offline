@@ -140,11 +140,11 @@ namespace mu2e {
                   for(auto const& hit: priks.hits()){
                     if(hit._ambig > WireHitState::inactive)prihits.insert(hit._index);
                   }
+                  if(prihits.empty()) continue;
                   unsigned nover(0);
                   for(auto const& hit: secks.hits()){
                     if(hit._ambig > WireHitState::inactive && prihits.find(hit._index) != prihits.end())++nover;
                   }
-                  if(prihits.empty()) continue;
                   double hfrac = float(nover)/float(prihits.size());
                   if(debug_ > 2) std::cout << "Hit overlap " << hfrac << std::endl;
                   if(hfrac > minhf_){
