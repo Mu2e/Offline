@@ -101,7 +101,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ,class SURF> double KKShellXing<KTRAJ,SURF>::transitTime() const {
-    double dotprod = std::max(1e-6,inter_.norm_.Dot(inter_.pdir_));
+    double dotprod = std::max(1e-6,fabs(inter_.norm_.Dot(inter_.pdir_)));
     double pathlen = thick_/dotprod;
     return pathlen/reftrajptr_->speed();
   }
