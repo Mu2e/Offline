@@ -113,7 +113,7 @@ namespace mu2e {
             }
           }
           // if no intersections found, skip testing for a match with this track
-          if(pritrkiinter == priks.intersections().end())break;
+          if(pritrkiinter == priks.intersections().end())continue;
           // otherwise, search for a matching secondary track
           for(size_t isec = 0; isec <secksc.size(); ++isec){
             auto const& secks = secksc[isec];
@@ -144,6 +144,7 @@ namespace mu2e {
                   for(auto const& hit: secks.hits()){
                     if(hit._ambig > WireHitState::inactive && prihits.find(hit._index) != prihits.end())++nover;
                   }
+                  if(prihits.empty()) continue;
                   double hfrac = float(nover)/float(prihits.size());
                   if(debug_ > 2) std::cout << "Hit overlap " << hfrac << std::endl;
                   if(hfrac > minhf_){
@@ -162,7 +163,7 @@ namespace mu2e {
         ibest = 0;
         if(matches.size()>1){
           if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
-          double value = std::numeric_limits<float>::max();
+          double value = std::numeric_limits<double>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
             if(selbest_ == mom && -match.primom_ < value){
