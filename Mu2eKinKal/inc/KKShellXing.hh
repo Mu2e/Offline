@@ -101,8 +101,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ,class SURF> double KKShellXing<KTRAJ,SURF>::transitTime() const {
-    double dotprod = inter_.norm_.Dot(inter_.pdir_);
-    if(std::abs(dotprod) < 1e-10) return 0.0; // particle parallel to surface
+    double dotprod = std::max(1e-6,inter_.norm_.Dot(inter_.pdir_));
     double pathlen = thick_/dotprod;
     return pathlen/reftrajptr_->speed();
   }
