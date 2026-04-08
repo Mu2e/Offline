@@ -140,16 +140,8 @@ namespace mu2e {
       fMaxHitTime         = fMinHitTime;
 
       fSumEDep            = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
-      fSumT               = Hd->fCorrTime;
+      fSumT               = Hd->fCorrTime*Hd->fHit->nStrawHits();
       fSumT2              = Hd->fCorrTime*Hd->fCorrTime;
-//-----------------------------------------------------------------------------
-// also update the coordinate-sum accumulators
-//-----------------------------------------------------------------------------
-      fSnx2               = Hd->fNx2;
-      fSnxy               = Hd->fNxy;
-      fSny2               = Hd->fNy2;
-      fSnxr               = Hd->fNxr;
-      fSnyr               = Hd->fNyr;
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's
