@@ -209,7 +209,7 @@ MakeCrvSiPMCharges::MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoi
   _photonMapFile = new TFile(photonMapFileName.c_str());
   if(!_photonMapFile || _photonMapFile->IsZombie()) throw std::logic_error("Could not open photon map file.");
   _photonMap = (TH2F*)_photonMapFile->FindObjectAny("photonMap");
-  if(_photonMap==nullptr) throw std::logic_error("Could not find photon map.");
+  if(!_photonMap) throw std::logic_error("Could not find photon map.");
 }
 
 }
