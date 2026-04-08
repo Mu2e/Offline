@@ -79,8 +79,8 @@ namespace mu2e {
 
   std::ostream& operator <<(std::ostream& os, ClusterState const& cstate ) {
     os << "ClusterState " << cstate.chi2_ << " states: ";
-    for(auto whstate : cstate.hitstates_) std::cout << "  " << whstate.state_;
-    std::cout << std::endl;
+    for(auto whstate : cstate.hitstates_) os << "  " << whstate.state_;
+    os << std::endl;
     return os;
   }
 

@@ -34,7 +34,7 @@ namespace mu2e {
       double dtmvacut_ =0; // cut value for using dt constraint
       KKSHFlag flag_ = KKSHFlag(KKSHFlag::tot); // constrain time with TOT by default
       WHSMask freeze_; // states to freeze
-      int diag_; // diag print level
+      int diag_ = 0; // diag print level
   };
 }
 #endif

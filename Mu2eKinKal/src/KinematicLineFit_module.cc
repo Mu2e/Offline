@@ -337,7 +337,6 @@ namespace mu2e {
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
-            auto hptr = art::Ptr<CosmicTrackSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
             kkseedassns->addSingle(kseedptr,hptr);
             // save (unpersistable) KKTrk in the event
