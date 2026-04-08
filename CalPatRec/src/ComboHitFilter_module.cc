@@ -154,6 +154,7 @@ namespace mu2e {
 
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit* ch  = &(*_chColl)[i];
+      if (ch->indexArray().empty()) continue;
       int ind = ch->indexArray().at(0);
 
       const mu2e::StrawDigiMC*  sdmc = &_sdmcColl->at(ind);

@@ -47,11 +47,11 @@ namespace mu2e {
 // update the first and the last station numbers
 //-----------------------------------------------------------------------------
     if (Station == fFirstStation) {
-      while (fSeed[++fFirstStation] == nullptr) {}
+      while (++fFirstStation < kNStations && fSeed[fFirstStation] == nullptr) {}
     }
 
     if (Station == fLastStation) {
-      while (fSeed[--fLastStation] == nullptr) {}
+      while (--fLastStation >= 0 && fSeed[fLastStation] == nullptr) {}
     }
 //-----------------------------------------------------------------------------
 // update coordinates
@@ -65,18 +65,19 @@ namespace mu2e {
     fSnyr       -= seed->fSnyr;
 
     double d     = fSnx2*fSny2-fSnxy*fSnxy;
-    double xc    = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
-    double yc    = (fSnyr*fSnxy-fSnxr*fSny2)/d;
+    if (d != 0.) {
+      double xc    = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc    = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
-    CofM.SetX(xc);
-    CofM.SetY(yc);
+      CofM.SetX(xc);
+      CofM.SetY(yc);
 
-    double rho = sqrt(xc*xc+yc*yc);
-    fNx        = xc/rho;
-    fNy        = yc/rho;
-//-----------------------------------------------------------------------------
-// update time
-//-----------------------------------------------------------------------------
+      double rho = sqrt(xc*xc+yc*yc);
+      if (rho > 0.) {
+        fNx        = xc/rho;
+        fNy        = yc/rho;
+      }
+    }
     double t = seed->TMean();
     double z = DeltaFinderTypes::stationZ[Station];
     fSt     -= t;
@@ -135,15 +136,19 @@ namespace mu2e {
     fSnyr       += Seed->fSnyr;
 
     double d     = fSnx2*fSny2-fSnxy*fSnxy;
-    double xc    = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
-    double yc    = (fSnyr*fSnxy-fSnxr*fSny2)/d;
+    if (d != 0.) {
+      double xc    = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc    = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
-    CofM.SetX(xc);
-    CofM.SetY(yc);
+      CofM.SetX(xc);
+      CofM.SetY(yc);
 
-    double rho = sqrt(xc*xc+yc*yc);
-    fNx        = xc/rho;
-    fNy        = yc/rho;
+      double rho = sqrt(xc*xc+yc*yc);
+      if (rho > 0.) {
+        fNx        = xc/rho;
+        fNy        = yc/rho;
+      }
+    }
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------
@@ -213,15 +218,19 @@ namespace mu2e {
 // and recalculate the center-of-mass XY position
 //-----------------------------------------------------------------------------
     double d        = fSnx2*fSny2-fSnxy*fSnxy;
-    double xc       = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
-    double yc       = (fSnyr*fSnxy-fSnxr*fSny2)/d;
+    if (d != 0.) {
+      double xc       = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
+      double yc       = (fSnyr*fSnxy-fSnxr*fSny2)/d;
 
-    CofM.SetX(xc);
-    CofM.SetY(yc);
+      CofM.SetX(xc);
+      CofM.SetY(yc);
 
-    double rho      = sqrt(xc*xc+yc*yc);
-    fNx             = xc/rho;
-    fNy             = yc/rho;
+      double rho      = sqrt(xc*xc+yc*yc);
+      if (rho > 0.) {
+        fNx             = xc/rho;
+        fNy             = yc/rho;
+      }
+    }
 //-----------------------------------------------------------------------------
 // time
 //-----------------------------------------------------------------------------
@@ -239,9 +248,17 @@ namespace mu2e {
     t2m = fSt2/fNSeeds;
     z2m = fSz2/fNSeeds;
                                         // 'combo-hit'-based way, FIXME
-    fDtDz  = (tzm-tm*zm)/(z2m-zm*zm);
-    fT0    = tm-fDtDz*zm;
-    fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
+    double denom = z2m-zm*zm;
+    if (fNSeeds > 1 && denom != 0.) {
+      fDtDz  = (tzm-tm*zm)/denom;
+      fT0    = tm-fDtDz*zm;
+      fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
+    }
+    else {
+      fDtDz  = 0;
+      fT0    = tm;
+      fSigT0 = 0;
+    }
   }
 
 //-----------------------------------------------------------------------------

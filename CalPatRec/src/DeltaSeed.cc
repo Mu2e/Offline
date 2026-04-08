@@ -38,7 +38,7 @@ namespace mu2e {
 
     for (int face=0; face<kNFaces; face++) {
       fFaceProcessed[face] = 0;
-      fHitData      [face] = NULL;
+      fHitData      [face] = nullptr;
     }
 
     fHitData[face0]         = Hd0;
@@ -140,8 +140,16 @@ namespace mu2e {
       fMaxHitTime         = fMinHitTime;
 
       fSumEDep            = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
-      fSumT               = Hd->fCorrTime*Hd->fHit->nStrawHits();
+      fSumT               = Hd->fCorrTime;
       fSumT2              = Hd->fCorrTime*Hd->fCorrTime;
+//-----------------------------------------------------------------------------
+// also update the coordinate-sum accumulators
+//-----------------------------------------------------------------------------
+      fSnx2               = Hd->fNx2;
+      fSnxy               = Hd->fNxy;
+      fSny2               = Hd->fNy2;
+      fSnxr               = Hd->fNxr;
+      fSnyr               = Hd->fNyr;
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's
@@ -163,6 +171,7 @@ namespace mu2e {
       assert(fNHits > 2);
 
       double d  = fSnx2*fSny2-fSnxy*fSnxy;
+      if (d == 0.) return;
 
       double xc = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
       double yc = (fSnyr*fSnxy-fSnxr*fSny2)/d;
