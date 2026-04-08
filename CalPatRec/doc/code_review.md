@@ -33,7 +33,7 @@ crash or memory corruption.
 **File:** `src/CalHelixFinderAlg.cc:2485`
 
 After the loop at lines 2378-2479 (`for (int f=SeedIndex.face; f>=0; --f)`),
-`facez` points to the last face the loop touched — typically face 0 — **not**
+`facez` points to the last face the loop touched -- typically face 0 -- **not**
 `ibest.face`:
 
 ```cpp
@@ -279,7 +279,7 @@ allocated with `new` in `plotTZ()` are never deleted.
 
 ```cpp
 for (int i=(int)_f.cHits.size()-1; i>=0; i--)
-size_t start = (size_t)_f.startIndex;          // int(-1) → SIZE_MAX
+size_t start = (size_t)_f.startIndex;          // int(-1) -> SIZE_MAX
 ```
 
 Casting `size_t` to `int` can overflow; casting `-1` to `size_t` creates
