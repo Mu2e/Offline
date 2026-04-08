@@ -188,7 +188,7 @@ bool LookupBinDefinitions::findScintillatorCerenkovBinReverse(unsigned int bin, 
   int nZBins=zBins.size()-1;
   int nBetaBins=betaBins.size()-1;
   xbin = (bin / (nBetaBins*nZBins*nYBins)) % nXBins;
-  ybin = (bin / nBetaBins*nZBins) % nYBins;
+  ybin = (bin / (nBetaBins*nZBins)) % nYBins;
   zbin = (bin / nBetaBins) % nZBins;
   betabin = bin % nBetaBins;
   return true;
@@ -321,9 +321,6 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   stepEnd[3].setZ(-stepEnd[3].z());
   stepEnd[3].setY(-stepEnd[3].y());
 
-static int nPScintillation=0;
-static int nPCerenkov=0;
-
   for(int SiPM=0; SiPM<_nSiPMs; SiPM++)
   {
     //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
@@ -387,9 +384,6 @@ static int nPCerenkov=0;
         }
       }
 
-nPScintillation+=nPhotonsScintillation;
-nPCerenkov+=nPhotonsCerenkov;
-
       //loop over all photons created at this point
       int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
       for(int i=0; i<nPhotons; i++)
@@ -418,11 +412,9 @@ nPCerenkov+=nPhotonsCerenkov;
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 
         }// if a photon was created
-      }//loop over all SiPMs
-    }//loop over all photons at this point
-  }//loop over all points along the track
-
-//std::cout<<"Lookup tables:  total scintillation: "<<nPScintillation<<"  total Cerenkov: "<<nPCerenkov<<std::endl;
+      }//loop over all photons at this point
+    }//loop over all steps along the track
+  }//loop over all SiPMs
 
 }
 
@@ -559,12 +551,9 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
       numberPhotons*=fabs(charge/eplus);
       return numberPhotons;
     }
-    if(first)
-    {
-      prevBeta=i->first;
-      prevNumberPhotons=i->second;
-      first=false;
-    }
+    prevBeta=i->first;
+    prevNumberPhotons=i->second;
+    first=false;
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
 }

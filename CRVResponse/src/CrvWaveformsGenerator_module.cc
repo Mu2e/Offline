@@ -266,7 +266,7 @@ namespace mu2e
             }
 
             //collect CrvSteps and SimParticles responsible for this single waveform
-            std::set<art::Ptr<CrvStep> > steps;  //use a set to remove dublicate steppoints
+            std::set<art::Ptr<CrvStep> > steps;  //use a set to remove duplicate steppoints
             std::map<art::Ptr<SimParticle>, int> simparticles;
             for(size_t j=0; j<timesAndCharges.size(); ++j)
             {
