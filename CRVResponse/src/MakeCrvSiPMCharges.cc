@@ -71,14 +71,14 @@ double MakeCrvSiPMCharges::GenerateAvalanche(Pixel &pixel, const std::pair<int,i
     if(_randFlat.fire() < _probabilities._trapType0Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type0 trap (fast)
-      double traptime = -_probabilities._trapType0Lifetime * log10(_randFlat.fire());
+      double traptime = -_probabilities._trapType0Lifetime * log(_randFlat.fire());
       _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise);
     }
 
     if(_randFlat.fire() < _probabilities._trapType1Prob/_avalancheProbFullyChargedPixel)
     {
       //create new Type1 trap (slow)
-      double traptime = -_probabilities._trapType1Lifetime * log10(_randFlat.fire());
+      double traptime = -_probabilities._trapType1Lifetime * log(_randFlat.fire());
       _scheduledCharges.emplace(pixelId,time + traptime,photonIndex,darkNoise);
     }
 
@@ -207,9 +207,9 @@ MakeCrvSiPMCharges::MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoi
                                        _randFlat(randFlat), _randPoissonQ(randPoissonQ), _avalancheProbFullyChargedPixel(0)
 {
   _photonMapFile = new TFile(photonMapFileName.c_str());
-  if(_photonMapFile==NULL) throw std::logic_error("Could not open photon map file.");
+  if(!_photonMapFile || _photonMapFile->IsZombie()) throw std::logic_error("Could not open photon map file.");
   _photonMap = (TH2F*)_photonMapFile->FindObjectAny("photonMap");
-  if(_photonMap==NULL) throw std::logic_error("Could not find photon map.");
+  if(!_photonMap) throw std::logic_error("Could not find photon map.");
 }
 
 }
