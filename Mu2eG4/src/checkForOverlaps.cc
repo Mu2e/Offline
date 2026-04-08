@@ -37,6 +37,7 @@ namespace mu2e{
 
     G4double vsa = pv->GetLogicalVolume()->GetSolid()->GetSurfaceArea();
 
+    // Compute check points from surface area, clamped to [min, max] range
     G4int nSurfaceCheckPoints = static_cast<G4int>(
       std::max(std::min(vsa/mmsqPerPoint, static_cast<G4double>(maxSurfaceCheckPoints)),
                static_cast<G4double>(minSurfaceCheckPoints)));
