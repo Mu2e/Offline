@@ -364,9 +364,10 @@ namespace mu2e {
     if (_mtDebugOutput > 0){
       G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
              << "and are running " << num_threads << " threads.\n" ;
-      if (num_threads < static_cast <int> (myworkerRunManagerMap.size())){
-        G4cout << "Warning: more worker run managers in the map than running threads.\n" ;
-      }
+    }
+    else if (num_threads < static_cast <int> (myworkerRunManagerMap.size()) && _mtDebugOutput > 0){
+      G4cout << "At endRun pt1, we have " << myworkerRunManagerMap.size() << " members in the map "
+             << "and are running " << num_threads << " threads.\n" ;
     }
 
 
@@ -411,7 +412,7 @@ namespace mu2e {
       if (_mtDebugOutput > 0){
         G4cout << "releasing RM for thread ID" << it->first << std::endl;
       }
-      it->second.reset();
+      it->second.release();
       ++it;
     }
 
