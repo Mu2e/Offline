@@ -28,17 +28,18 @@ namespace mu2e{
 
     // verbose = true; // tmp override
 
-    static G4double const minSurfaceCheckPoints =      config.getInt("g4.minSurfaceCheckPoints",     100);
-    static G4double const maxSurfaceCheckPoints =      config.getInt("g4.maxSurfaceCheckPoints",10000000);
-    static G4double const nSurfaceCheckPointsPercmsq = config.getInt("g4.nSurfaceCheckPointsPercmsq",  1);
+    static G4int const minSurfaceCheckPoints =      config.getInt("g4.minSurfaceCheckPoints",     100);
+    static G4int const maxSurfaceCheckPoints =      config.getInt("g4.maxSurfaceCheckPoints",10000000);
+    static G4int const nSurfaceCheckPointsPercmsq = config.getInt("g4.nSurfaceCheckPointsPercmsq",  1);
     // make sure it is > 0
-    static G4int const iSurfaceCheckPointsPercmsq  = std::max(1.,nSurfaceCheckPointsPercmsq);
+    static G4int const iSurfaceCheckPointsPercmsq  = std::max(1,nSurfaceCheckPointsPercmsq);
     static G4double const mmsqPerPoint = 100./iSurfaceCheckPointsPercmsq;
 
     G4double vsa = pv->GetLogicalVolume()->GetSolid()->GetSurfaceArea();
 
-    G4int nSurfaceCheckPoints = std::max(std::min(vsa/mmsqPerPoint, maxSurfaceCheckPoints),
-                                         minSurfaceCheckPoints);
+    G4int nSurfaceCheckPoints = static_cast<G4int>(
+      std::max(std::min(vsa/mmsqPerPoint, static_cast<G4double>(maxSurfaceCheckPoints)),
+               static_cast<G4double>(minSurfaceCheckPoints)));
 
     cet::cpu_timer ocTimer;
 

@@ -189,7 +189,7 @@ namespace mu2e{
        << _allProcesses.size() << " "
        << endl;
 
-    int tcsum(0);
+    size_t tcsum(0);
     for ( map_type::const_iterator i=_allProcesses.begin();
           i != _allProcesses.end(); ++i ){
       ProcInfo const& oi        = i->second;
@@ -218,7 +218,7 @@ namespace mu2e{
        << _allProcesses.size() << " "
        << endl;
 
-    int tcsum(0);
+    size_t tcsum(0);
     for ( map_type::const_iterator i=_allProcesses.begin();
           i != _allProcesses.end(); ++i ){
       ProcInfo const& oi        = i->second;

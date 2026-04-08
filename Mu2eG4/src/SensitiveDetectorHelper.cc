@@ -345,14 +345,8 @@ namespace mu2e {
     }//for stepInstances
 
     for (auto& i: lvsd_) {
-
-      for (std::vector<std::string>::iterator j=stepInstancesForMomentumCut_.begin();
-           j != stepInstancesForMomentumCut_.end(); j++) {
-
-        if (i.second.stepName == "tracker" && i.second.p.size() >= minTrackerStepPoints_) {
-          passed = true;
-        }
-
+      if (i.second.stepName == "tracker" && i.second.p.size() >= minTrackerStepPoints_) {
+        passed = true;
       }
     }
     return passed;
