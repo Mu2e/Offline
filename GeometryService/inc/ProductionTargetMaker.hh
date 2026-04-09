@@ -19,10 +19,12 @@ namespace mu2e {
     static const int tier1{1};
     // version 2 is the low density hayman
     static const int hayman_v_2_0{3};
+    static const int stickman_v_1_0{4};
 
 
     static std::unique_ptr<ProductionTarget> makeTier1(const SimpleConfig& config, double solenoidOffset);
     static std::unique_ptr<ProductionTarget> makeHayman_v_2_0(const SimpleConfig& config, double solenoidOffset);
+    static std::unique_ptr<ProductionTarget> makeStickman_v_1_0(const SimpleConfig& config, double solenoidOffset);
 
 
 

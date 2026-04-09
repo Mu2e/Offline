@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include <map>
 
 // art includes
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
@@ -48,6 +49,7 @@
 #include "Geant4/G4Tubs.hh"
 #include "Geant4/G4VPhysicalVolume.hh"
 #include "Geant4/G4PVPlacement.hh"
+#include "Geant4/G4ExtrudedSolid.hh"
 
 #include "Geant4/G4UnionSolid.hh"
 #include "Geant4/G4IntersectionSolid.hh"
@@ -1248,6 +1250,1005 @@ namespace mu2e {
 
       } //end adding support structures
     } //end ProductionTargetMaker::hayman_v_2_0
+    else if (_config.getInt("targetPS_version") == ProductionTargetMaker::stickman_v_1_0) {
+      int verbosityLevel                  = _config.getInt("PSStickman.verbosityLevel");
+      verbosityLevel >0 &&
+        cout << __func__ << " verbosityLevel on Stickman1.0              : " << verbosityLevel  << endl;
+      G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+      // Create variable to avoid multiple look-up
+
+      G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+
+      bool prodTargetVisible   = geomOptions->isVisible( "ProductionTarget" );
+      bool prodTargetSolid     = geomOptions->isSolid  ( "ProductionTarget" );
+      bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible( "ProductionTarget" );
+      bool placePV             = geomOptions->placePV( "ProductionTarget" );
+      bool doSurfaceCheck      = geomOptions->doSurfaceCheck( "ProductionTarget" );
+
+      // begin all names with ProductionTarget so when we build sensitive detectors we can make them all
+      // sensitive at once with LVname.find("ProductionTarget") !=std::string::npos
+      //
+      // Build the production target.
+
+      GeomHandle<ProductionTarget> tgt;
+      // allows a vector of plate materials so each plate can be different. Initialize to have same number of 
+      // entries as the number of plates. Fin and core materials are the same for each plate.
+      vector<G4Material*> prodTargetPlateMaterials(tgt->numberOfPlates(), nullptr);
+      for (int i = 0; i < tgt->numberOfPlates(); ++i) {
+        prodTargetPlateMaterials.at(i) = findMaterialOrThrow(tgt->plateMaterial(i));
+      }
+      G4Material* prodTargetRodMaterial = findMaterialOrThrow(tgt->rodMaterial());
+      G4Material* prodTargetSpacerMaterial = findMaterialOrThrow(tgt->spacerMaterial());
+      G4Material* prodTargetSupportRingMaterial = findMaterialOrThrow(tgt->stickmanSupportRingMaterial());
+
+      TubsParams prodTargetMotherParams( 0.
+                                         ,tgt->productionTargetMotherOuterRadius()
+                                         ,tgt->productionTargetMotherHalfLength());
+
+      G4ThreeVector _localCenter(0.0,0.0,0.0);
+      G4ThreeVector zeroTranslation(0.,0.,0.);
+      G4RotationMatrix* targetRotation = reg.add(G4RotationMatrix(tgt->productionTargetRotation().inverse()));
+      if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << "target rotation  = " << *targetRotation << G4endl;}
+      VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
+                                                    prodTargetMotherParams,
+                                                    parent.logical->GetMaterial(),
+                                                    0,
+                                                    tgt->stickmanProdTargetPosition() - parent.centerInMu2e(),
+                                                    parent,
+                                                    0,
+                                                    G4Colour::Blue(),
+                                                    "PS"
+                                                    );
+
+      if (verbosityLevel > 0){
+        G4cout << "target position and hall origin = "
+                  << tgt->stickmanProdTargetPosition() << "\n" <<
+          _hallOriginInMu2e << " " << parent.centerInMu2e() << G4endl;
+      }
+      if (verbosityLevel > 2){
+        G4cout << __PRETTY_FUNCTION__ << "created prodTargetMotherInfo "
+                  << tgt->productionTargetMotherOuterRadius()
+                  << " " <<tgt->productionTargetMotherHalfLength() << G4endl;
+      }
+
+      // tiny offset to avoid precision issues
+      constexpr double stickmanMagicOffset = 0.0001;
+
+      // store the fin rotations for later use
+      // since used for G4UnionSolid construction, a passive rotation is needed, hence the negative sign on the angle. 
+      // These are the rotations to go from the plate frame to the fin frame
+      std::vector<CLHEP::HepRotation*> stickmanFinRotations;
+      for (int ithFin = 0; ithFin < tgt->nStickmanFins(); ++ithFin) {
+        CLHEP::HepRotation* finRotation = reg.add(CLHEP::HepRotation::IDENTITY);
+        finRotation->rotateZ(-tgt->plateFinAngle(ithFin)); 
+        stickmanFinRotations.emplace_back(finRotation);
+      }
+
+      // cache the plate solids
+      std::map<std::string, G4VSolid*> stickmanPlateSolidCache;
+      // lambda to get the plate solid for a given plate. The solid is cached based on the plate parameters that affect the shape. 
+      // The cache key encodes these parameters; if a solid is not found in the cache, it is created and added to the cache before 
+      //being returned.
+      // Here chose to construct plates as a single union solid with different materials for each plate, 
+      // rather than separate fins, cores, and lugs, because the fins is much wider than the Hayman design.
+      // If separated, missing material between fins and cores would be large.
+      // Note that the geometry center of a G4UnionSolid is the same as the first solid in the union, 
+      // and I start with the plate core and then union on the fins and lugs. This means that when placing the 
+      // plates the position will be based on the center of the core.
+      auto getStickmanPlateSolid = [&](int ithPlate) -> G4VSolid* {
+        const double plateFilletRadius =
+          (tgt->addFilletToPlateCore() || tgt->addFilletToPlateLug()) ? tgt->plateFilletRadius() : 0.;
+        const std::string cacheKey = std::string("StickmanPlate_")
+          + std::to_string(tgt->plateROut(ithPlate)) + "_" // Core radius
+          + std::to_string(tgt->plateThickness(ithPlate)) + "_" // plate thickness
+          + std::to_string(tgt->plateLugThickness(ithPlate)) + "_" // lug thickness
+          + std::to_string(static_cast<int>(tgt->addFilletToPlateCore())) + "_" // whether to add fillet to plate core
+          + std::to_string(static_cast<int>(tgt->addFilletToPlateLug())) + "_" // whether to add fillet to plate lug
+          + std::to_string(plateFilletRadius); // fillet radius (if applicable)
+
+        // check if the solid is already in the cache
+        auto cached = stickmanPlateSolidCache.find(cacheKey);
+        if (cached != stickmanPlateSolidCache.end()) {
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << " reusing cached plate solid for plate "
+                   << ithPlate << G4endl;
+          }
+          return cached->second;
+        }
+
+        // if not in cache, create the solid and add to cache
+        const double plateHalfThickness = tgt->plateThickness(ithPlate)/2.;
+        const double lugHalfThickness = tgt->plateLugThickness(ithPlate)/2.;
+        const double finHalfWidth = tgt->plateFinWidth()/2.;
+        const double finHalfLength = tgt->plateFinOuterRadius()/2.;
+        const double lugZShift = lugHalfThickness - plateHalfThickness;
+        if (verbosityLevel > 3) {
+          G4cout << __PRETTY_FUNCTION__ << " creating new plate solid for plate "
+                 << ithPlate << " with cache key " << cacheKey << G4endl;
+        }
+
+        // solid for the plate core
+        G4VSolid* plateSolid = reg.add(new G4Tubs(cacheKey + "_Core",        //
+                                                  0.,                        // inner radius
+                                                  tgt->plateROut(ithPlate),  // outer radius
+                                                  plateHalfThickness,        // z half length
+                                                  0.,                        // starting angle
+                                                  CLHEP::twopi));            // segment angle is full circle
+        if (verbosityLevel > 3) {
+          G4cout << __PRETTY_FUNCTION__ << "  core solid parameters (rOut, halfLength) = ("
+                 << tgt->plateROut(ithPlate) << ", " << plateHalfThickness << ")" << G4endl;
+        }
+
+        // solid for the fin
+        G4Box* finBox = reg.add(new G4Box(cacheKey + "_FinBox",              //
+                                          finHalfLength,                     // x half length
+                                          finHalfWidth,                      // y half length
+                                          plateHalfThickness));              // z half length
+        if (verbosityLevel > 3) {
+          G4cout << __PRETTY_FUNCTION__ << "  fin solid parameters (halfLength, halfWidth, halfThickness) = ("
+                 << finHalfLength << ", " << finHalfWidth << ", " << plateHalfThickness << ")" << G4endl;
+        }
+
+        // solid for the lug
+        G4Tubs* lugSolid = reg.add(new G4Tubs(cacheKey + "_Lug",             //
+                                              tgt->plateLugInnerRadius(),    // inner radius
+                                              tgt->plateLugOuterRadius(),    // outer radius
+                                              lugHalfThickness,              // z half length
+                                              0.,                            // starting angle
+                                              CLHEP::twopi));                // segment angle is full circle
+        if (verbosityLevel > 3) {
+          G4cout << __PRETTY_FUNCTION__ << "  lug solid parameters (rIn, rOut, halfThickness) = ("
+                 << tgt->plateLugInnerRadius() << ", " << tgt->plateLugOuterRadius() << ", " << lugHalfThickness << ")" << G4endl;
+        }
+
+        // add fillets to the plate core 
+        // for a fin at 0 degree start with unioning a G4ExtrudedSolid with a triangular cross section that has vertices in
+        // the x-y plane at (0,0), 
+        //                  (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
+        //                  (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
+        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and 
+        // a scale of 1.0 at both ends.
+        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance) 
+        // and height plateThickness(ithPlate) that is centered at 
+        // (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius), 
+        // and the other fillet is completed by subtracting a similar cylinder at
+        // (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
+        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the 
+        // cylinders for subtraction are also rotated by the fin angle.
+        G4VSolid* plateCoreFillet = nullptr;
+        if (tgt->addFilletToPlateCore()) {
+          // get the coordinates of the fillet union vertices for the fin at 0 degree
+          const double coreFilletX = std::sqrt(std::pow(tgt->plateROut(ithPlate) + plateFilletRadius, 2)
+                                               - std::pow(finHalfWidth + plateFilletRadius, 2));
+          std::vector<G4TwoVector> coreFilletVertices = {
+            G4TwoVector(0., 0.),
+            G4TwoVector(coreFilletX, finHalfWidth + plateFilletRadius),
+            G4TwoVector(coreFilletX, -finHalfWidth - plateFilletRadius)
+          };
+          // create the extrusion solid for the fillet
+          G4ExtrudedSolid* coreFilletExtrusion = reg.add(new G4ExtrudedSolid(
+            cacheKey + "_CoreFilletExtrusion",          //
+            coreFilletVertices,                         // vertices
+            plateHalfThickness,                         // half length in z
+            G4TwoVector(0.,0.),                         // shift of polygon center at -half length
+            1.0,                                        // scale of polygon at -half length
+            G4TwoVector(0.,0.),                         // shift of polygon center at +half length
+            1.0));                                      // scale of polygon at +half length
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  core fillet extrusion vertices = ("
+                   << coreFilletVertices.at(0) << ", "
+                   << coreFilletVertices.at(1) << ", "
+                   << coreFilletVertices.at(2) << ")" << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  core fillet extrusion half length = " << plateHalfThickness << G4endl;
+          }
+          
+          // create the cutout cylinder for the fillet
+          G4Tubs* coreFilletCutout = reg.add(new G4Tubs(
+            cacheKey + "_CoreFilletCutout",             //
+            0.,                                         // inner radius
+            plateFilletRadius + stickmanMagicOffset,    // outer radius (add small offset to avoid precision issues)
+            plateHalfThickness + stickmanMagicOffset,   // half length in z
+            0.,                                         // starting angle
+            CLHEP::twopi));                             // segment angle is full circle
+          // make 2 cutouts for the fillet, one at the upper edge of the fin and one at the lower edge of the fin
+          G4VSolid* coreFilletUpper = reg.add(new G4SubtractionSolid(
+            cacheKey + "_CoreFilletUpper",              //
+            coreFilletExtrusion,                        // base solid
+            coreFilletCutout,                           // cutout solid
+            nullptr,                                    // rotation
+            CLHEP::Hep3Vector(coreFilletX,              
+                              finHalfWidth + plateFilletRadius,
+                              0.)));                    // translation of cutout solid
+          plateCoreFillet = reg.add(new G4SubtractionSolid( 
+            cacheKey + "_CoreFilletLower",              //
+            coreFilletUpper,                            // base solid
+            coreFilletCutout,                           // cutout solid
+            nullptr,                                    // rotation
+            CLHEP::Hep3Vector(coreFilletX,
+                              -finHalfWidth - plateFilletRadius,
+                              0.)));                    // translation of cutout solid
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  core fillet cutout radius = " << plateFilletRadius + stickmanMagicOffset << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  core fillet upper cutout center = (" << coreFilletX << ", " << finHalfWidth + plateFilletRadius << ", 0)" << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  core fillet lower cutout center = (" << coreFilletX << ", " << -finHalfWidth - plateFilletRadius << ", 0)" << G4endl;
+          }
+        } // end of plate core fillet construction
+
+        // add fillets to the plate lugs
+        // for a fin at 0 degree, start with unioning a G4ExtrudedSolid with a triangular cross section that has vertices in
+        // the x-y plane at (plateCenterToLugCenter, 0),
+        //                  (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
+        //                  (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius), 
+        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and 
+        // a scale of 1.0 at both ends.
+
+        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance) 
+        // and height plateThickness(ithPlate) that is centered at 
+        // (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
+        // and the other fillet is completed by subtracting a similar cylinder at
+        // (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius), 
+        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the 
+        // cylinders for subtraction are also rotated by the fin angle.
+        G4VSolid* plateLugFillet = nullptr;
+        if (tgt->addFilletToPlateLug()) {
+          // get the coordinates of the fillet union vertices for the fin at 0 degree
+          const double lugFilletX = tgt->plateCenterToLugCenter()
+            - std::sqrt(std::pow(tgt->plateLugOuterRadius() + plateFilletRadius, 2)
+                        - std::pow(finHalfWidth + plateFilletRadius, 2));
+          std::vector<G4TwoVector> lugFilletVertices = {
+            G4TwoVector(tgt->plateCenterToLugCenter(), 0.),
+            G4TwoVector(lugFilletX, finHalfWidth + plateFilletRadius),
+            G4TwoVector(lugFilletX, -finHalfWidth - plateFilletRadius)
+          };
+          // create the extrusion solid for the fillet
+          G4ExtrudedSolid* lugFilletExtrusion = reg.add(new G4ExtrudedSolid(
+            cacheKey + "_LugFilletExtrusion",     //
+            lugFilletVertices,                    // vertices
+            plateHalfThickness,                   // half length in z
+            G4TwoVector(0.,0.),                   // shift of polygon center at -half length
+            1.0,                                  // scale of polygon at -half length
+            G4TwoVector(0.,0.),                   // shift of polygon center at +half length
+            1.0));                                // scale of polygon at +half length
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  lug fillet extrusion vertices = ("
+                   << lugFilletVertices.at(0) << ", "
+                   << lugFilletVertices.at(1) << ", "
+                   << lugFilletVertices.at(2) << ")" << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  lug fillet extrusion half length = " << plateHalfThickness << G4endl;
+          }
+
+          // create the cutout cylinder for the fillet
+          G4Tubs* lugFilletCutout = reg.add(new G4Tubs(
+            cacheKey + "_LugFilletCutout",            //
+            0.,                                       // inner radius
+            plateFilletRadius + stickmanMagicOffset,  // outer radius (add small offset to avoid precision issues)
+            plateHalfThickness + stickmanMagicOffset, // half length in z
+            0.,                                       // starting angle
+            CLHEP::twopi));                           // segment angle is full circle
+          // lug center needs to be cut out too. Create a second cutout cylinder for the lug center with radius of 
+          // plateLugInnerRadius and height of plateThickness(ithPlate) centered at (plateCenterToLugCenter, 0)
+          G4Tubs* lugCenterCutout = reg.add(new G4Tubs(
+            cacheKey + "_LugCenterCutout",                    //
+            0.,                                               // inner radius
+            tgt->plateLugInnerRadius() + stickmanMagicOffset, // outer radius (add small offset to avoid precision issues)
+            plateHalfThickness + stickmanMagicOffset,         // half length in z
+            0.,                                               // starting angle
+            CLHEP::twopi));                                   // segment angle is full circle
+          // cut out the lug center from the extrusion first
+          G4VSolid* lugFilletWithCenterCutout = reg.add(new G4SubtractionSolid(
+            cacheKey + "_LugFilletWithCenterCutout",                    //
+            lugFilletExtrusion,                                         // base solid
+            lugCenterCutout,                                            // cutout solid
+            nullptr,                                                    // rotation
+            CLHEP::Hep3Vector(tgt->plateCenterToLugCenter(), 0., 0.))); // translation of cutout solid
+          // make 2 cutouts for the fillet, one at the upper edge of the fin and one at the lower edge of the fin
+          G4VSolid* lugFilletUpper = reg.add(new G4SubtractionSolid(
+            cacheKey + "_LugFilletUpper",                     //
+            lugFilletWithCenterCutout,                        // base solid
+            lugFilletCutout,                                  // cutout solid
+            nullptr,                                          // rotation
+            CLHEP::Hep3Vector(lugFilletX,
+                              finHalfWidth + plateFilletRadius,
+                              0.)));                          // translation of cutout solid
+          plateLugFillet = reg.add(new G4SubtractionSolid(
+            cacheKey + "_LugFilletLower",                     //
+            lugFilletUpper,                                   // base solid
+            lugFilletCutout,                                  // cutout solid
+            nullptr,                                          // rotation
+            CLHEP::Hep3Vector(lugFilletX,
+                              -finHalfWidth - plateFilletRadius,
+                              0.)));                          // translation of cutout solid
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  lug fillet cutout radius = " << plateFilletRadius + stickmanMagicOffset << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  lug center cutout radius = " << tgt->plateLugInnerRadius() + stickmanMagicOffset << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  lug fillet upper cutout center = (" << lugFilletX << ", " << finHalfWidth + plateFilletRadius << ", 0)" << G4endl;
+            G4cout << __PRETTY_FUNCTION__ << "  lug fillet lower cutout center = (" << lugFilletX << ", " << -finHalfWidth - plateFilletRadius << ", 0)" << G4endl;
+          }
+        } // end of plate lug fillet construction
+
+        //
+        // assemble the plate by unioning the core, fins, and lugs (with fillets if applicable)
+        for (int ithFin = 0; ithFin < tgt->nStickmanFins(); ++ithFin) {
+          const double currentFinAngle = tgt->plateFinAngle(ithFin);
+          // fin and lug shifts of the current fin
+          const CLHEP::Hep3Vector finShift(finHalfLength * std::cos(currentFinAngle),
+                                           finHalfLength * std::sin(currentFinAngle),
+                                           0.);
+          const CLHEP::Hep3Vector lugShift(tgt->plateCenterToLugCenter() * std::cos(currentFinAngle),
+                                           tgt->plateCenterToLugCenter() * std::sin(currentFinAngle),
+                                           lugZShift); 
+          // note the lug is shifted in z to be flush with the edge of the plate core
+          
+          // add fin
+          plateSolid = reg.add(new G4UnionSolid(cacheKey + "_FinUnion_" + std::to_string(ithFin),
+                                                plateSolid,                         // base solid
+                                                finBox,                             // union solid
+                                                stickmanFinRotations.at(ithFin),    // rotation of union solid
+                                                finShift));                         // translation of union solid
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  fin " << ithFin << " added with angle of " << tgt->plateFinAngle(ithFin)/CLHEP::degree << " deg" << G4endl;
+          }
+
+          // add core fillets if applicable
+          if (plateCoreFillet != nullptr) {
+            plateSolid = reg.add(new G4UnionSolid(cacheKey + "_CoreFilletUnion_" + std::to_string(ithFin),
+                                                  plateSolid,                       // base solid
+                                                  plateCoreFillet,                  // union solid
+                                                  stickmanFinRotations.at(ithFin),  // rotation of union solid
+                                                  CLHEP::Hep3Vector(0.,0.,0.)));    // translation of union solid
+          }
+          
+          // add lug
+          plateSolid = reg.add(new G4UnionSolid(cacheKey + "_LugUnion_" + std::to_string(ithFin),
+                                                plateSolid,                       // base solid
+                                                lugSolid,                         // union solid
+                                                nullptr,                          // rotation of union solid
+                                                lugShift));                       // translation of union solid
+          if (verbosityLevel > 3) {
+            G4cout << __PRETTY_FUNCTION__ << "  lug " << ithFin << " added with shift (" << lugShift.x() << ", " << lugShift.y() << ", " << lugShift.z() << ")" << G4endl;
+          }
+
+          // add lug fillets if applicable
+          if (plateLugFillet != nullptr) {
+            plateSolid = reg.add(new G4UnionSolid(cacheKey + "_LugFilletUnion_" + std::to_string(ithFin),
+                                                  plateSolid,                       // base solid
+                                                  plateLugFillet,                   // union solid
+                                                  stickmanFinRotations.at(ithFin),  // rotation of union solid
+                                                  CLHEP::Hep3Vector(0.,0.,0.)));    // translation of union solid
+          }
+        } // end of loop over fins to assemble the plate solid
+
+        stickmanPlateSolidCache.emplace(cacheKey, plateSolid);
+        if (verbosityLevel > 2) {
+          G4cout << __PRETTY_FUNCTION__ << " created cached plate solid " << cacheKey << G4endl;
+        }
+        return plateSolid;
+      }; // end of lambda to get plate solid with caching
+      
+      //
+      // The plates are constructed starting from the most negative z end and moving towards the positive z end.
+      int numberOfPlates = tgt->numberOfPlates();
+      // running z position for plate construction. Start at most negative end and move towards +z
+      double _currentZ = _localCenter.z() - tgt->halfStickmanLength() // end of most negative end
+                         + tgt->stickmanSupportRingLength() // move past support ring at end 
+                         + 2 * tgt->spacerHalfLength() ; // move past spacer. 
+                         // plate fin, core, and lug is flush on this side
+      if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << " plate Z starts at " << _currentZ << G4endl;}
+      
+      // loop over plates to construct and add them to the target mother.
+      for (int ithPlate = 0; ithPlate < numberOfPlates; ++ithPlate) {
+        std::string plateName = "ProductionTargetPlate_" + std::to_string(ithPlate);
+        const double plateHalfThickness = tgt->plateThickness(ithPlate)/2.;
+        const double plateCenterZ = _currentZ + plateHalfThickness; // this is the z position of the core
+        const CLHEP::Hep3Vector localPlateCenter(0.,0.,plateCenterZ); // this is in the target frame
+        const CLHEP::Hep3Vector currentPlateCenter = tgt->productionTargetRotation().inverse()*localPlateCenter;
+        // productionTargetRotation() rotates to the target frame, so to get the position in the world frame we 
+        // apply the inverse rotation to the local plate center.
+
+        if (verbosityLevel > 0) {
+          G4cout << __PRETTY_FUNCTION__ << " plate " << ithPlate
+                 << " startZ=" << _currentZ
+                 << " centerZ=" << plateCenterZ
+                 << " endZ=" << (_currentZ + tgt->plateLugThickness(ithPlate))
+                 << " material=" << tgt->plateMaterial(ithPlate)
+                 << G4endl;
+        }
+        if (verbosityLevel > 2) {
+          G4cout << " rOut=" << tgt->plateROut(ithPlate)
+                 << " thickness=" << tgt->plateThickness(ithPlate)
+                 << " finWidth=" << tgt->plateFinWidth()
+                 << " finReach=" << tgt->plateFinOuterRadius()
+                 << " lugThickness=" << tgt->plateLugThickness(ithPlate)
+                 << " lug(inner,outer)=("
+                 << tgt->plateLugInnerRadius() << ","
+                 << tgt->plateLugOuterRadius() << ")" 
+                 << " addFilletToPlateCore=" << tgt->addFilletToPlateCore()
+                 << " addFilletToPlateLug=" << tgt->addFilletToPlateLug()
+                 << G4endl;
+        }
+        
+        // get the solid for the plate, using the lambda defined above
+        G4VSolid* plateSolid = getStickmanPlateSolid(ithPlate);
+
+        // add the plate to the target mother
+        VolumeInfo plateInfo(plateName, currentPlateCenter, prodTargetMotherInfo.centerInWorld);
+        plateInfo.solid = plateSolid;
+        finishNesting(plateInfo                                   // volume info as defined above
+                      ,prodTargetPlateMaterials.at(ithPlate)      // material for the plate, can be different for each plate
+                      ,&tgt->productionTargetRotation()           // PASSIVE rotation
+                      ,currentPlateCenter                         // translation to place the plate at the correct z position within the target mother
+                      ,prodTargetMotherInfo.logical               // parent volume logical to place the plate in
+                      ,ithPlate                                   // copy number
+                      ,G4Colour::Yellow()                         // color for visualization
+                      ,"ProductionTarget"                         // lookup token
+                      ,verbosityLevel>1);                         // pass the verbosity level for printing info in finishNesting
+
+        // update _currentZ to the END of the next plate, which is the start of the current plate + plateLugThickness(ithPlate)
+        _currentZ += tgt->plateLugThickness(ithPlate);
+      } // end of loop over plates
+
+      // add the rods and spacers
+      G4VSolid* spacerSolid = reg.add(new G4Tubs(
+        "ProductionTargetSpacerSolid", //
+        tgt->spacerInnerRadius(),      // inner radius
+        tgt->spacerOuterRadius(),      // outer radius
+        tgt->spacerHalfLength(),       // half length
+        0.,                            // start angle
+        CLHEP::twopi));                // sweep angle
+      const double rodHalfLength = tgt->rodHalfLength() - stickmanMagicOffset; // make it slightly shorter to avoid precesion issues
+      const double spacerCenterZOffset = tgt->rodHalfLength() - tgt->spacerHalfLength();
+
+      for (int ithRod = 0; ithRod < tgt->nStickmanFins(); ++ithRod) {
+        const double rodAngle = tgt->plateFinAngle(ithRod);
+        const CLHEP::Hep3Vector rodCenterInTargetFrame(
+          tgt->plateCenterToLugCenter() * std::cos(rodAngle),
+          tgt->plateCenterToLugCenter() * std::sin(rodAngle),
+          0.);
+        const CLHEP::Hep3Vector rodCenter = tgt->productionTargetRotation().inverse() * rodCenterInTargetFrame;
+
+        TubsParams rodParams(0.,                 // rIn
+                             tgt->rodRadius(),   // rOut
+                             rodHalfLength);     // half length
+        VolumeInfo rodInfo = nestTubs("ProductionTargetRod_" + std::to_string(ithRod),
+                 rodParams,
+                 prodTargetRodMaterial,
+                 &tgt->productionTargetRotation(), // passive rotation
+                 rodCenter,                        // translation
+                 prodTargetMotherInfo,             // parent volume info for the target mother
+                 ithRod,                           // copy number
+                 G4Colour::Green(),                // color for visualization
+                 "ProductionTarget");              // lookup token
+        if (verbosityLevel > 0) {
+          G4cout << __PRETTY_FUNCTION__ << " rod " << ithRod
+                 << " center=" << rodCenter
+                 << " material=" << tgt->rodMaterial()
+                 << G4endl;
+        }
+
+        // place the spacers one spacerHalfLength inward from each rod end
+        const CLHEP::Hep3Vector spacerCenterNegZInTargetFrame(
+          rodCenterInTargetFrame.x(),
+          rodCenterInTargetFrame.y(),
+          -spacerCenterZOffset);
+        const CLHEP::Hep3Vector spacerCenterPosZInTargetFrame(
+          rodCenterInTargetFrame.x(),
+          rodCenterInTargetFrame.y(),
+          spacerCenterZOffset);
+        // transform the spacer centers to the parent frame
+        const CLHEP::Hep3Vector spacerShiftNegZ =
+          tgt->productionTargetRotation().inverse() * spacerCenterNegZInTargetFrame;
+        const CLHEP::Hep3Vector spacerShiftPosZ =
+          tgt->productionTargetRotation().inverse() * spacerCenterPosZInTargetFrame;
+        if (verbosityLevel > 2) {
+          G4cout << __PRETTY_FUNCTION__ << " spacer " << ithRod
+                 << " target-frame centers neg/pos="
+                 << spacerCenterNegZInTargetFrame << " / "
+                 << spacerCenterPosZInTargetFrame
+                 << " mother-frame centers neg/pos="
+                 << spacerShiftNegZ << " / "
+                 << spacerShiftPosZ
+                 << G4endl;
+        }
+
+        // add the spacers
+        std::string spacerNameNegZ = "ProductionTargetSpacerNegZ_" + std::to_string(ithRod);
+        VolumeInfo spacerInfoNegZ(spacerNameNegZ, spacerShiftNegZ, prodTargetMotherInfo.centerInWorld);
+        spacerInfoNegZ.solid = spacerSolid;
+        finishNesting(spacerInfoNegZ,                   // volume info as defined above
+                      prodTargetSpacerMaterial,         // material for the spacer
+                      &tgt->productionTargetRotation(), // rotation
+                      spacerShiftNegZ,                  // translation
+                      prodTargetMotherInfo.logical,     // parent logical volume
+                      2*ithRod,                         // copy number
+                      G4Colour::Cyan(),                 // color for visualization
+                      "ProductionTarget",               // lookup token
+                      verbosityLevel>1);                // pass the verbosity level for printing info in finishNesting
+        std::string spacerNamePosZ = "ProductionTargetSpacerPosZ_" + std::to_string(ithRod);
+        VolumeInfo spacerInfoPosZ(spacerNamePosZ, spacerShiftPosZ, prodTargetMotherInfo.centerInWorld);
+        spacerInfoPosZ.solid = spacerSolid;
+        finishNesting(spacerInfoPosZ,                   // volume info as defined above
+                      prodTargetSpacerMaterial,         // material for the spacer
+                      &tgt->productionTargetRotation(), // rotation
+                      spacerShiftPosZ,                  // translation
+                      prodTargetMotherInfo.logical,     // parent logical volume
+                      2*ithRod + 1,                     // copy number
+                      G4Colour::Cyan(),                 // color for visualization
+                      "ProductionTarget",               // lookup token
+                      verbosityLevel>1);                // pass the verbosity level for printing info in finishNesting
+        if (verbosityLevel > 0) {
+          G4cout << __PRETTY_FUNCTION__ << " spacer for rod " << ithRod
+                 << " negZ center=" << spacerShiftNegZ
+                 << " posZ center=" << spacerShiftPosZ
+                 << " material=" << tgt->spacerMaterial()
+                 << G4endl;
+        }
+      } // end of loop over rods and spacers
+      
+      // now add the two end rings
+
+      // then two cutouts are made by subtracting cylinders with radius of the fillet radius (plus a small tolerance) and height of stickmanSupportRingLength (plus a small tolerance) 
+      // centered at (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), supportRingLugOuterRadius+filletRadius), and
+      //             (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), -supportRingLugOuterRadius-filletRadius)
+      // an additional cutout is made for the inner part of the ring by subtracting a tube with inner radius of 0, outer radius of supportRingInnerRadius, and height of stickmanSupportRingLength (plus a small tolerance) centered at (0,0).
+      // if addCutoutToSupportRing is true, then additional circular cutouts (through holes) are made. 
+      // The number of cutouts is given by nSupportRingCutouts at angles defined by supportRingCutoutAngles, and the cutouts are made by subtracting cylinders with radius of 
+      // supportRingCutoutInnerRadius. The centers of the cutouts are at supportRingCutoutOffset from the interface between the spacers and the end ring, and at the angles defined 
+      // by supportRingCutoutAngles. The angle is between the through hole and the local radius, the through hole points outward and towards the middle.  
+
+      // lambda to build the end support ring solid with lugs and fillets if applicable
+      // Note the end plate has a flat face on the inside that is flush with the end of the rods / spacers, details like chamfers at 
+      // the rod sockets and those at the cutouts (through holes) are ignored for simplicity.
+      auto buildStickmanSupportRingSolid = [&](const std::string& tag, bool positiveEnd) -> G4VSolid* {
+        const double ringHalfLength = tgt->stickmanSupportRingLength()/2.;
+        // dimensions for the lug stem
+        const double lugStemHalfLength = 0.5*(tgt->plateCenterToLugCenter() - tgt->stickmanSupportRingInnerRadius());
+        const double lugStemCenterRadius = tgt->stickmanSupportRingInnerRadius() + lugStemHalfLength;
+        if (verbosityLevel > 2) {
+          G4cout << __PRETTY_FUNCTION__ << " building support ring " << tag
+                 << " positiveEnd=" << positiveEnd
+                 << " ringHalfLength=" << ringHalfLength
+                 << " inner/outer=" << tgt->stickmanSupportRingInnerRadius()
+                 << "/" << tgt->stickmanSupportRingOuterRadius()
+                 << " lugStemHalfLength=" << lugStemHalfLength
+                 << " lugStemCenterRadius=" << lugStemCenterRadius
+                 << G4endl;
+        }
+
+        // ring body without lugs or center hole cutout
+        G4VSolid* supportRingSolid = reg.add(new G4Tubs(
+          "ProductionTargetSupportRingBase_" + tag, //
+          0.,                                       // inner radius
+          tgt->stickmanSupportRingOuterRadius(),    // outer radius
+          ringHalfLength,                           // half length
+          0.,                                       // start angle
+          CLHEP::twopi));                           // delta angle
+
+        // cutout for the center of the ring
+        // such construction avoids potential issue that the lug solid extends within the 
+        // inner radius of the ring, which can cause misrepresentation of the geometry
+        G4Tubs* ringCenterCutout = reg.add(new G4Tubs(
+          "ProductionTargetSupportRingCenterCutout_" + tag, //
+          0.,                                               // inner radius
+          tgt->stickmanSupportRingInnerRadius(),            // outer radius (avoid overlap with lug stem)
+          ringHalfLength + stickmanMagicOffset,             // half length (add small offset to avoid precision issues)
+          0.,                                               // start angle
+          CLHEP::twopi));                                   // delta angle 
+
+        // lugs at three fin angles.
+        G4Tubs* lugSolid = reg.add(new G4Tubs(
+          "ProductionTargetSupportRingLug_" + tag, //
+          0.,                                      // inner radius 
+          tgt->supportRingLugOuterRadius(),        // outer radius
+          ringHalfLength,                          // half length
+          0.,                                      // start angle
+          CLHEP::twopi));                          // delta angle
+        
+        // lug stem
+        G4Box* lugStemSolid = reg.add(new G4Box(
+          "ProductionTargetSupportRingLugStem_" + tag, // 
+          lugStemHalfLength,                           // half length in x
+          tgt->supportRingLugOuterRadius(),            // half length in y
+          ringHalfLength));                            // half length in z
+
+        for (int ithFin = 0; ithFin < tgt->nStickmanFins(); ++ithFin) {
+          // the lugs are aligned with the fins, so get the fin angle for the current fin to calculate the position of the lugs
+          const double finAngle = tgt->plateFinAngle(ithFin);
+          const CLHEP::Hep3Vector lugStemShift( // rotate the lug stem shift by the fin angle to get the correct position in x and y
+            lugStemCenterRadius * std::cos(finAngle),
+            lugStemCenterRadius * std::sin(finAngle),
+            0.);
+          const CLHEP::Hep3Vector lugShift( // rotate the lug shift by the fin angle
+            tgt->plateCenterToLugCenter() * std::cos(finAngle),
+            tgt->plateCenterToLugCenter() * std::sin(finAngle),
+            0.);
+          if (verbosityLevel > 2) {
+            G4cout << __PRETTY_FUNCTION__ << " support ring " << tag
+                   << " fin=" << ithFin
+                   << " angle(deg)=" << finAngle/CLHEP::degree
+                   << " lugStemShift=" << lugStemShift
+                   << " lugShift=" << lugShift
+                   << G4endl;
+          }
+          // first union the lug stem to the ring
+          supportRingSolid = reg.add(new G4UnionSolid(
+            "ProductionTargetSupportRingLugStemUnion_" + tag + "_" + std::to_string(ithFin),
+            supportRingSolid,                // base solid
+            lugStemSolid,                    // union solid
+            stickmanFinRotations.at(ithFin), // passive rotation
+            lugStemShift));                  // translation
+          // then union the lug to the ring+stem
+          supportRingSolid = reg.add(new G4UnionSolid(
+            "ProductionTargetSupportRingLugUnion_" + tag + "_" + std::to_string(ithFin),
+            supportRingSolid,                // base solid
+            lugSolid,                        // union solid
+            nullptr,                         // passive rotation
+            lugShift));                      // translation
+          
+          // add fillet to the lug if applicable
+          // The fillet is added by unioning with an extrusion 
+          // of a triangle with vertices at (0,0), 
+          //                                (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), supportRingLugOuterRadius+filletRadius),
+          //                                (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), -supportRingLugOuterRadius-filletRadius),
+          // extruded along z by stickmanSupportRingLength starting at the end of the target, with no twist and scale of 1.0 at both ends.
+          if (tgt->addFilletToSupportRingLug()) {
+            const double filletRadius = tgt->supportRingLugFilletRadius();
+            const double filletX = std::sqrt(
+              std::pow(tgt->stickmanSupportRingOuterRadius() + filletRadius, 2)
+              - std::pow(tgt->supportRingLugOuterRadius() + filletRadius, 2));
+            if (verbosityLevel > 2) {
+              G4cout << __PRETTY_FUNCTION__ << " support ring " << tag
+                     << " fin=" << ithFin
+                     << " filletRadius=" << filletRadius
+                     << " filletX=" << filletX
+                     << G4endl;
+            }
+            // get the vertices for the extrusion
+            std::vector<G4TwoVector> filletVertices = {
+              G4TwoVector(0., 0.),
+              G4TwoVector(filletX, tgt->supportRingLugOuterRadius() + filletRadius),
+              G4TwoVector(filletX, -tgt->supportRingLugOuterRadius() - filletRadius)
+            };
+
+            // create the extrusion solid for the fillet
+            G4ExtrudedSolid* filletExtrusion = reg.add(new G4ExtrudedSolid(
+              "ProductionTargetSupportRingLugFilletExtrusion_" + tag + "_" + std::to_string(ithFin),
+              filletVertices,      // vertices
+              ringHalfLength,      // half length in z
+              G4TwoVector(0., 0.), // shift of polygon center at -half length
+              1.0,                 // scale of polygon at -half length
+              G4TwoVector(0., 0.), // shift of polygon center at +half length
+              1.0));               // scale of polygon at +half length
+            // create the cutout cylinder for the fillet
+            G4Tubs* filletCutout = reg.add(new G4Tubs(
+              "ProductionTargetSupportRingLugFilletCutout_" + tag + "_" + std::to_string(ithFin),
+              0.,                                   // inner radius
+              filletRadius + stickmanMagicOffset,   // outer radius (add small offset)
+              ringHalfLength + stickmanMagicOffset, // half length in z (add small offset)
+              0.,                                   // start angle
+              CLHEP::twopi));                       // segment angle is full circle
+            // subtract the cutouts from the extrusion
+            G4VSolid* filletUpper = reg.add(new G4SubtractionSolid(
+              "ProductionTargetSupportRingLugFilletUpper_" + tag + "_" + std::to_string(ithFin),
+              filletExtrusion,                  // base solid
+              filletCutout,                     // cutout solid
+              nullptr,                          // rotation
+              CLHEP::Hep3Vector(filletX,
+                                tgt->supportRingLugOuterRadius() + filletRadius,
+                                0.)));          // translation of cutout solid
+            G4VSolid* filletSolid = reg.add(new G4SubtractionSolid(
+              "ProductionTargetSupportRingLugFilletLower_" + tag + "_" + std::to_string(ithFin),
+              filletUpper,                      // base solid
+              filletCutout,                     // cutout solid
+              nullptr,                          // rotation
+              CLHEP::Hep3Vector(filletX,
+                                -tgt->supportRingLugOuterRadius() - filletRadius,
+                                0.)));          // translation of cutout solid
+            
+            // add filletSolid to the union with the support ring
+            supportRingSolid = reg.add(new G4UnionSolid(
+              "ProductionTargetSupportRingFilletUnion_" + tag + "_" + std::to_string(ithFin),
+              supportRingSolid,                  // base solid
+              filletSolid,                       // union solid
+              stickmanFinRotations.at(ithFin),   // passive rotation
+              CLHEP::Hep3Vector(0., 0., 0.)));   // no translation
+          } // end of fillet construction for the lug
+        } // end of loop over fins to add lugs and fillets to the support ring
+
+        // add cutout for the center hole
+        supportRingSolid = reg.add(new G4SubtractionSolid(
+          "ProductionTargetSupportRingLugFilletRingCutout_" + tag,
+          supportRingSolid,                 // base solid
+          ringCenterCutout,                 // cutout solid
+          nullptr,                          // rotation
+          CLHEP::Hep3Vector(0., 0., 0.)));  // translation
+        
+        // add cutouts for the through holes if applicable
+        if (tgt->addCutoutToSupportRing()) {
+          const double cutoutTiltAngle = tgt->supportRingCutoutTilt();
+          const double supportRingWallThickness = tgt->stickmanSupportRingOuterRadius() - tgt->stickmanSupportRingInnerRadius();
+          // cutout center is placed at halfway between the inner and outer radius
+          const double cutoutCenterRadius = 0.5*(tgt->stickmanSupportRingInnerRadius() + tgt->stickmanSupportRingOuterRadius());
+          // this is z position in the local ring frame
+          const double localCutoutZ = (positiveEnd ? 1. : -1.) * 
+                                      (tgt->supportRingCutoutOffset() - ringHalfLength + supportRingWallThickness * 0.5 * std::tan(cutoutTiltAngle) );
+          // cutout needs to go through the whole wall thickness
+          const double cutoutHalfLength = 0.5 * supportRingWallThickness / std::cos(cutoutTiltAngle) + stickmanMagicOffset; // add small offset to avoid precision issues
+          if (verbosityLevel > 2) {
+            G4cout << __PRETTY_FUNCTION__ << " support ring " << tag
+                   << " cutoutTilt(deg)=" << cutoutTiltAngle/CLHEP::degree
+                   << " wallThickness=" << supportRingWallThickness
+                   << " cutoutCenterRadius=" << cutoutCenterRadius
+                   << " localCutoutZ=" << localCutoutZ
+                   << " cutoutHalfLength=" << cutoutHalfLength
+                   << G4endl;
+          }
+          // create the cutout solid for the through hole
+          G4Tubs* supportRingCutout = reg.add(new G4Tubs(
+            "ProductionTargetSupportRingCutout_" + tag,
+            0.,                                   // inner radius
+            tgt->supportRingCutoutInnerRadius(),  // outer radius
+            cutoutHalfLength,                     // half length in z
+            0.,                                   // start angle
+            CLHEP::twopi));                       // delta angle
+          const CLHEP::Hep3Vector localZAxis(0., 0., 1.);
+
+          // loop over the holes and subtract the cutout solid
+          for (int ithCutout = 0; ithCutout < tgt->nSupportRingCutouts(); ++ithCutout) {
+            const double cutoutPhi = tgt->supportRingCutoutAngle(ithCutout);
+            const CLHEP::Hep3Vector radialAxis(std::cos(cutoutPhi), std::sin(cutoutPhi), 0.); // pointing from ring center radially outward
+            const CLHEP::Hep3Vector cutoutAxis = std::cos(cutoutTiltAngle) * radialAxis // vector pointing outward along the cutout axis
+                                                 + (positiveEnd ? -1. : 1.) * std::sin(cutoutTiltAngle) * localZAxis;
+            G4RotationMatrix* cutoutRotation = reg.add(G4RotationMatrix(
+              CLHEP::HepRotation(cutoutAxis.cross(localZAxis), cutoutAxis.angle(localZAxis)))); // this rotates the cutout from the local z axis to the cutout axis passively
+            const CLHEP::Hep3Vector cutoutCenter(
+              cutoutCenterRadius * std::cos(cutoutPhi),
+              cutoutCenterRadius * std::sin(cutoutPhi),
+              localCutoutZ);
+            if (verbosityLevel > 2) {
+              G4cout << __PRETTY_FUNCTION__ << " support ring " << tag
+                     << " cutout=" << ithCutout
+                     << " phi(deg)=" << cutoutPhi/CLHEP::degree
+                     << " center=" << cutoutCenter
+                     << " axis=" << cutoutAxis
+                     << G4endl;
+            }
+            // make this cutout solid
+            supportRingSolid = reg.add(new G4SubtractionSolid(
+              "ProductionTargetSupportRingCutoutSubtraction_" + tag + "_" + std::to_string(ithCutout),
+              supportRingSolid,   // base solid
+              supportRingCutout,  // cutout solid
+              cutoutRotation,     // rotation to align the cutout with the cutout axis
+              cutoutCenter));     // translation
+          } // end of loop over cutouts for through holes
+        } // end of cutout construction for through holes
+
+        return supportRingSolid;
+      }; // end of lambda to build the end support ring solid
+
+      // now add the two end rings
+      const double supportRingCenterZ = tgt->halfStickmanLength() - tgt->stickmanSupportRingLength()/2.;
+      const CLHEP::Hep3Vector supportRingCenterNegZInTargetFrame(0., 0., -supportRingCenterZ);
+      const CLHEP::Hep3Vector supportRingCenterPosZInTargetFrame(0., 0., supportRingCenterZ);
+      const CLHEP::Hep3Vector supportRingCenterNegZ =
+        tgt->productionTargetRotation().inverse() * supportRingCenterNegZInTargetFrame;
+      const CLHEP::Hep3Vector supportRingCenterPosZ =
+        tgt->productionTargetRotation().inverse() * supportRingCenterPosZInTargetFrame;
+      if (verbosityLevel > 2) {
+        G4cout << __PRETTY_FUNCTION__ << " support ring centers target-frame neg/pos="
+               << supportRingCenterNegZInTargetFrame << " / "
+               << supportRingCenterPosZInTargetFrame
+               << " mother-frame neg/pos="
+               << supportRingCenterNegZ << " / "
+               << supportRingCenterPosZ
+               << G4endl;
+      }
+      // add the negative z end ring first
+      VolumeInfo supportRingNegZInfo("ProductionTargetSupportRing_Upstream",
+                                     supportRingCenterNegZ,
+                                     prodTargetMotherInfo.centerInWorld);
+      supportRingNegZInfo.solid = buildStickmanSupportRingSolid("Upstream", false);
+      finishNesting(supportRingNegZInfo,              // volume info as defined above
+                    prodTargetSupportRingMaterial,    // material for the support ring
+                    &tgt->productionTargetRotation(), // rotation
+                    supportRingCenterNegZ,            // translation
+                    prodTargetMotherInfo.logical,     // parent logical volume
+                    0,                                // copy number
+                    G4Colour::Green(),
+                    "ProductionTarget",
+                    verbosityLevel>1);
+      // add the positive z end ring
+      VolumeInfo supportRingPosZInfo("ProductionTargetSupportRing_Downstream",
+                                     supportRingCenterPosZ,
+                                     prodTargetMotherInfo.centerInWorld);
+      supportRingPosZInfo.solid = buildStickmanSupportRingSolid("Downstream", true);
+      finishNesting(supportRingPosZInfo,              // volume info as defined above
+                    prodTargetSupportRingMaterial,    // material for the support ring
+                    &tgt->productionTargetRotation(), // rotation
+                    supportRingCenterPosZ,            // translation
+                    prodTargetMotherInfo.logical,     // parent logical volume
+                    1,                                // copy number
+                    G4Colour::Green(),
+                    "ProductionTarget",
+                    verbosityLevel>1);
+      if (verbosityLevel > 0) {
+        G4cout << __PRETTY_FUNCTION__ << " end rings"
+               << " negZ center=" << supportRingCenterNegZ
+               << " posZ center=" << supportRingCenterPosZ
+               << " material=" << tgt->stickmanSupportRingMaterial()
+               << G4endl;
+      }
+
+      //Copied code from hayman_v_2_0 to add support structures. Stickman and Hayman supports are the same. Avoiding issue with variables like 
+      //prodTargetMotherInfo crossing scopes this way. They share names but are initialized differently. 
+      //In addition, this allows changing the support structure for one target without affecting the other.
+
+      //Add support structures for the production target
+      if(tgt->supportsBuild()) {
+        G4Material* suppWheelMaterial = findMaterialOrThrow(tgt->supportWheelMaterial());
+        G4ThreeVector localWheelCenter(0.0,0.0,0.0); //no offset
+        double suppWheelParams[] = {tgt->supportWheelRIn(), tgt->supportWheelROut(), tgt->supportWheelHL()};
+        //create the volume info for the support wheel+rods
+        VolumeInfo suppWheelInfo( "ProductionTargetSupportWheel", localWheelCenter, prodTargetMotherInfo.centerInMu2e());
+        suppWheelInfo.solid = new G4Tubs("ProductionTargetSupportWheel_wheel", suppWheelParams[0], suppWheelParams[1],
+                                         suppWheelParams[2], 0., CLHEP::twopi);
+                                               // suppWheelParams,
+                                               // suppWheelMaterial,
+                                               // 0,
+                                               // localWheelCenter,
+                                               // prodTargetMotherInfo,
+                                               // 0,
+                                               // G4Colour::Gray(),
+                                               // "PS"
+                                               // );
+
+        // add spokes //
+
+        //spoke info
+        const int nspokesperside = tgt->nSpokesPerSide();
+        G4Material* spokeMaterial = findMaterialOrThrow(tgt->spokeMaterial());
+        //target info
+        double rTarget = tgt->stickmanSupportRingOuterRadius(); //radius of the support ring to attach to
+        double zTarget = tgt->halfStickmanLength()
+                         - tgt->stickmanSupportRingLength()
+                         + tgt->supportRingCutoutOffset();
+                         //where along the target to attach, note the asymmetry
+        double smallGap = 0.001; //for adding small offsets to avoid overlaps due to precision
+        //initialize parameter vectors
+        //features on wheel
+        const vector<double> supportWheelFeatureAngles = tgt->supportWheelFeatureAngles();
+        const vector<double> supportWheelFeatureArcs   = tgt->supportWheelFeatureArcs  ();
+        const vector<double> supportWheelFeatureRIns   = tgt->supportWheelFeatureRIns  ();
+        //support rods in wheel
+        const vector<double> supportWheelRodHL           = tgt->supportWheelRodHL          ();
+        const vector<double> supportWheelRodOffset       = tgt->supportWheelRodOffset      ();
+        const vector<double> supportWheelRodRadius       = tgt->supportWheelRodRadius      ();
+        const vector<double> supportWheelRodRadialOffset = tgt->supportWheelRodRadialOffset();
+        const vector<double> supportWheelRodWireOffsetD  = tgt->supportWheelRodWireOffsetD ();
+        const vector<double> supportWheelRodWireOffsetU  = tgt->supportWheelRodWireOffsetU ();
+        const vector<double> supportWheelRodAngles       = tgt->supportWheelRodAngles      ();
+        //spoke (support wire) angles
+        const vector<double> spokeTargetAnglesD = tgt->spokeTargetAnglesD();
+        const vector<double> spokeTargetAnglesU = tgt->spokeTargetAnglesU();
+        if(verbosityLevel > 0)
+          std::cout << "Printing information about production target supports:\n";
+
+        const double targetAngle = tgt->rotStickmanY(); //assume target angle is only in the x-z plane for supports
+        CLHEP::HepRotation* rodRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+        rodRot->rotateY(-1.*targetAngle);
+
+        for(int istream = 0; istream < 2; ++istream) {
+          for(int ispoke = 0; ispoke < nspokesperside; ++ispoke) {
+            const double wheelAngle =  supportWheelRodAngles[ispoke]*CLHEP::degree;
+            //get angle of the support rod on the wheel and the angle on the target the wire connects to
+            const double targetWireAngle = (istream == 0) ? spokeTargetAnglesD[ispoke]*CLHEP::degree
+              : spokeTargetAnglesU[ispoke]*CLHEP::degree;
+            double rWheel = supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
+            CLHEP::Hep3Vector rodCenter(rWheel*cos(wheelAngle), rWheel*sin(wheelAngle), 0.);
+            const double rodOffset = supportWheelRodOffset[ispoke];
+            rodCenter += CLHEP::Hep3Vector(sin(targetAngle)*rodOffset, 0., cos(targetAngle)*rodOffset);
+            if(istream == 0) { //only do once
+              //add the features near the support rods in the bicycle wheel
+              const double featureAngle = supportWheelFeatureAngles[ispoke]*CLHEP::degree; //angle of feature center
+              const double featureArc   = supportWheelFeatureArcs[ispoke]*CLHEP::degree; //width in angle
+              const double featureRIn   = supportWheelFeatureRIns[ispoke]; //inner radius of feature
+              const double featureROut = tgt->supportWheelRIn() + smallGap; //ensure they overlap for union
+              // double featureR = (featureRIn + featureROut)/2.; //radius of feature center
+              // CLHEP::Hep3Vector featureCenter(featureR*cos(featureAngle), featureR*sin(featureAngle), 0.);
+              CLHEP::Hep3Vector featureCenter(localWheelCenter); //center is wheel center
+              double featureParams[] = {featureRIn, featureROut, tgt->supportWheelHL(), featureAngle - featureArc/2. /*phi0*/, featureArc /*dphi*/};
+              G4Tubs* featureTubs = new G4Tubs("ProductionTargetSupportFeature_" +std::to_string(ispoke),
+                                               featureParams[0], featureParams[1], featureParams[2], featureParams[3], featureParams[4]);
+              suppWheelInfo.solid = new G4UnionSolid("ProductionTargetSupportWheelFeature_union_"+std::to_string(ispoke),
+                                                     suppWheelInfo.solid, featureTubs, 0, featureCenter);
+              //add the support rod to the wheel
+              G4Tubs* rodTubs = new G4Tubs("ProductionTargetSupportRod_" +std::to_string(ispoke),
+                                           0., supportWheelRodRadius[ispoke], supportWheelRodHL[ispoke], 0., CLHEP::twopi);
+              suppWheelInfo.solid = new G4UnionSolid("ProductionTargetSupportWheelRod_union_"+std::to_string(ispoke),
+                                                     suppWheelInfo.solid, rodTubs, rodRot, rodCenter);
+            }
+            const int side = (1-2*istream); //+1 or -1
+            //info about wire connection
+            //get end of the rod on this side
+            CLHEP::Hep3Vector rodAxis(sin(targetAngle), 0., cos(targetAngle));
+            CLHEP::Hep3Vector wheelPos(rodCenter);
+            wheelPos += side*supportWheelRodHL[ispoke]*rodAxis;
+            //translate from rod center to edge
+            CLHEP::Hep3Vector rodCenterToWire(cos(wheelAngle)*cos(targetAngle),
+                                              sin(wheelAngle)*cos(targetAngle),
+                                              -cos(wheelAngle)*sin(targetAngle));
+            wheelPos -= supportWheelRodRadius[ispoke]*rodCenterToWire;
+            double zWireRodOffset = (istream == 0) ? supportWheelRodWireOffsetD[ispoke] : supportWheelRodWireOffsetU[ispoke];
+            wheelPos -= side*zWireRodOffset*rodAxis;
+
+            //get wire position on target
+            CLHEP::Hep3Vector targetPos(rTarget*cos(targetWireAngle), rTarget*sin(targetWireAngle), side*zTarget);
+            targetPos = tgt->productionTargetRotation().inverse()*targetPos; //rotate from target frame to mother frame
+            CLHEP::Hep3Vector spokeAxis((wheelPos-targetPos).unit());
+            CLHEP::Hep3Vector targetAxis(0.,0.,side);
+            targetAxis = tgt->productionTargetRotation().inverse()*targetAxis;
+            CLHEP::Hep3Vector zax(0.,0.,1.);
+            if(verbosityLevel > 0)
+              std::cout << "istream " << istream << " ispoke " << ispoke << std::endl
+                        << "target pos " << targetPos << "\nwheel pos " << wheelPos << std::endl
+                        << "Target axis " << targetAxis << "\nSpoke axis " << spokeAxis << std::endl
+                        << "Rod axis " << rodAxis << "\nRod center to wire axis " << rodCenterToWire << std::endl;
+            //to remove overlaps where the wire connects, need angle of wire and surface connecting to
+            //remove overlap at target
+            double wireTargetAngle = targetAxis.angle(-1.*spokeAxis);
+            double deltaLength = (abs(tan(wireTargetAngle)) > 1.e-6) ? abs(tgt->spokeRadius()/tan(wireTargetAngle)) : 0.; //give up if ~paralle
+            targetPos += (deltaLength+0.1)*spokeAxis; //subtract off the length
+            if(verbosityLevel > 0)
+              std::cout << "wire target angle " << wireTargetAngle << " delta L " << deltaLength
+                        << " target pos " << targetPos <<std::endl;
+
+            //next remove overlap at rod
+            //
+            double wireRodAngle = abs((rodCenterToWire).angle(spokeAxis));
+            // deltaLength = abs(tan(wireRodAngle)/tgt->spokeRadius());
+            // wheelPos -= (deltaLength+1.)*spokeAxis;
+            deltaLength = abs(tgt->spokeRadius()/tan(wireRodAngle)); // seems to be a typo in the hayman
+            wheelPos -= (deltaLength+0.1)*spokeAxis;
+            if(verbosityLevel > 0)
+              std::cout << "wire rod angle " << wireRodAngle << " delta L " << deltaLength
+                        << " wheel pos " << wheelPos <<std::endl;
+
+            CLHEP::Hep3Vector spokeCenter((wheelPos+targetPos)/2.);
+            double spokeLength = abs((wheelPos-targetPos).mag());
+            TubsParams spokeParams(0., tgt->spokeRadius(), 0.5*spokeLength);
+            CLHEP::HepRotation* spokeRot = reg.add(CLHEP::HepRotation(spokeAxis.cross(zax), spokeAxis.angle(zax)));
+            std::stringstream spokeName;
+            spokeName << "ProductionTargetSpokeWire_" ;
+            if(istream == 0)
+              spokeName << "Downstream_";
+            else
+              spokeName << "Upstream_";
+            spokeName << ispoke;
+
+            VolumeInfo spokeInfo   = nestTubs( spokeName.str(),
+                                               spokeParams,
+                                               spokeMaterial,
+                                               spokeRot,
+                                               spokeCenter,
+                                               prodTargetMotherInfo,
+                                               0,
+                                               G4Colour::Gray(),
+                                               "PS"
+                                               );
+
+          } //end spokes loop
+        } //end stream loop
+        finishNesting(suppWheelInfo,
+                      suppWheelMaterial,
+                      0,
+                      localWheelCenter,
+                      prodTargetMotherInfo.logical,
+                      0,
+                      G4Colour::Gray(),
+                      "PS"
+                      );
+
+      } //end adding support structures
+    } //end ProductionTargetMaker::stickman_v_1_0
   } //end constructTargetPS
 } //end namespace mu2e
 

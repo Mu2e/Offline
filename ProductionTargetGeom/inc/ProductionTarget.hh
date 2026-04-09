@@ -7,6 +7,7 @@
 #define PRODUCTIONTARGET_HH
 
 #include <map>
+#include <numeric>
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
@@ -137,14 +138,66 @@ namespace mu2e {
     double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
     double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
 
+    //accessors for Stickman_v_1_0
+    std::string stickmanTargetType()              const {return _stickmanTargetType;}
+    double      halfStickmanLength()              const {return _halfStickmanLength;}
+    int         numberOfPlates()                  const {return _numberOfPlates;}
+    std::string plateMaterial(int i)              const {return _plateMaterial[i];}
+    const std::vector<std::string>& plateMaterial() const {return _plateMaterial;}
+    double      plateROut(int i)                  const {return _plateROut[i];}
+    const std::vector<double>& plateROut()        const {return _plateROut;}
+    int         nStickmanFins()                   const {return _nStickmanFins;}
+    double      plateFinAngle(int i)              const {return _plateFinAngles[i];}
+    const std::vector<double>&      plateFinAngles()       const {return _plateFinAngles;}
+    double      plateFinOuterRadius()             const {return _plateFinOuterRadius;}
+    double      plateFinWidth()                   const {return _plateFinWidth;}
+    double      plateCenterToLugCenter()          const {return _plateCenterToLugCenter;}
+    double      plateLugInnerRadius()             const {return _plateLugInnerRadius;}
+    double      plateLugOuterRadius()             const {return _plateLugOuterRadius;}
+    double      plateThickness(int i)             const {return _plateThickness[i];}
+    const std::vector<double>&      plateThickness()       const {return _plateThickness;}
+    double      plateLugThickness(int i)          const {return _plateLugThickness[i];}
+    const std::vector<double>&      plateLugThickness()    const {return _plateLugThickness;}
+    bool        addFilletToPlateCore()            const {return _addFilletToPlateCore;}
+    bool        addFilletToPlateLug()             const {return _addFilletToPlateLug;}
+    double      plateFilletRadius()               const {return _plateFilletRadius;}
+    std::string rodMaterial()                 const {return _rodMaterial;}
+    double      rodRadius()                       const {return _rodRadius;}
+    double      rodHalfLength()                   const {return _rodHalfLength;}
+    std::string spacerMaterial()              const {return _spacerMaterial;}
+    double      spacerHalfLength()                const {return _spacerHalfLength;}
+    double      spacerOuterRadius()               const {return _spacerOuterRadius;}
+    double      spacerInnerRadius()               const {return _spacerInnerRadius;}
+    std::string stickmanSupportRingMaterial()     const {return _stickmanSupportRingMaterial;}
+    double      stickmanSupportRingLength()       const {return _stickmanSupportRingLength;}
+    double      stickmanSupportRingInnerRadius()  const {return _stickmanSupportRingInnerRadius;}
+    double      stickmanSupportRingOuterRadius()  const {return _stickmanSupportRingOuterRadius;}
+    double      supportRingLugOuterRadius()       const {return _supportRingLugOuterRadius;}
+    bool        addFilletToSupportRingLug()       const {return _addFilletToSupportRingLug;}
+    double      supportRingLugFilletRadius()      const {return _supportRingLugFilletRadius;}
+    bool        addCutoutToSupportRing()          const {return _addCutoutToSupportRing;}
+    int         nSupportRingCutouts()             const {return _nSupportRingCutouts;}
+    double      supportRingCutoutAngle(int i)     const {return _supportRingCutoutAngles[i];}
+    const std::vector<double>&      supportRingCutoutAngles()    const {return _supportRingCutoutAngles;}
+    double      supportRingCutoutInnerRadius()    const {return _supportRingCutoutInnerRadius;}
+    double      supportRingCutoutTilt()           const {return _supportRingCutoutTilt;}
+    double      supportRingCutoutOffset()         const {return _supportRingCutoutOffset;}
+    double      rotStickmanX()                    const {return _rotStickmanX;}
+    double      rotStickmanY()                    const {return _rotStickmanY;}
+    double      rotStickmanZ()                    const {return _rotStickmanZ;}
+    CLHEP::Hep3Vector stickmanProdTargetPosition() const {return _stickmanProdTargetPosition;}
+
     std::string hayman_v_2_0 = "Hayman_v_2_0";
     std::string tier1 = "MDC2018";
+    std::string stickman_v_1_0 = "Stickman_v_1_0";
 
     CLHEP::Hep3Vector targetPositionByVersion() const {
       if (_haymanTargetType == hayman_v_2_0){
         return _haymanProdTargetPosition;}
       else if  (_tier1TargetType == "MDC2018"){
         return _prodTargetPosition;}
+      else if (_stickmanTargetType == stickman_v_1_0){
+        return _stickmanProdTargetPosition;}
       else throw cet::exception("BADCONFIG")
              << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
@@ -153,6 +206,8 @@ namespace mu2e {
         return _halfHaymanLength;}
      else if  (_tier1TargetType == "MDC2018"){
        return _halfLength;}
+     else if (_stickmanTargetType == stickman_v_1_0){
+       return _halfStickmanLength;}
      else throw cet::exception("BADCONFIG")
             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
@@ -203,6 +258,42 @@ namespace mu2e {
                      ,double supportRingOuterRadius
                      ,double supportRingCutoutThickness
                      ,double supportRingCutoutLength
+                     );
+
+    ProductionTarget(
+                     std::string stickmanTargetType, int version
+                     ,double productionTargetMotherOuterRadius
+                     ,double productionTargetMotherHalfLength
+                     ,double rotStickmanX
+                     ,double rotStickmanY
+                     ,double rotStickmanZ
+                     ,double halfStickmanLength
+                     ,const CLHEP::Hep3Vector& stickmanProdTargetPosition
+                     ,std::string targetVacuumMaterial
+                     ,int numberOfPlates
+                     ,std::vector<std::string> plateMaterial
+                     ,std::vector<double> plateROut
+                     ,int nStickmanFins
+                     ,std::vector<double> plateFinAngles
+                     ,double plateFinOuterRadius
+                     ,double plateFinWidth
+                     ,double plateCenterToLugCenter
+                     ,double plateLugInnerRadius
+                     ,double plateLugOuterRadius
+                     ,std::vector<double> plateThickness
+                     ,std::vector<double> plateLugThickness
+                     ,std::string rodMaterial
+                     ,double rodRadius
+                     ,std::string spacerMaterial
+                     ,double spacerHalfLength
+                     ,double spacerOuterRadius
+                     ,double spacerInnerRadius
+                     ,std::string stickmanSupportRingMaterial
+                     ,double stickmanSupportRingLength
+                     ,double stickmanSupportRingInnerRadius
+                     ,double stickmanSupportRingOuterRadius
+                     ,double supportRingLugOuterRadius
+                     ,double supportRingCutoutOffset
                      );
 
     CLHEP::HepRotation _protonBeamRotation;
@@ -301,6 +392,49 @@ namespace mu2e {
     std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
     std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
     double              _spokeRadius       ; //radius of the wire
+
+    // Stickman_v_1_0 parameters
+    std::string _stickmanTargetType;
+    double      _halfStickmanLength;
+    double      _rotStickmanX;
+    double      _rotStickmanY;
+    double      _rotStickmanZ;
+    CLHEP::Hep3Vector _stickmanProdTargetPosition;
+    int         _numberOfPlates;
+    std::vector<std::string> _plateMaterial;
+    std::vector<double>      _plateROut;
+    int         _nStickmanFins;
+    std::vector<double>      _plateFinAngles;
+    double      _plateFinOuterRadius;
+    double      _plateFinWidth;
+    double      _plateCenterToLugCenter;
+    double      _plateLugInnerRadius;
+    double      _plateLugOuterRadius;
+    std::vector<double>      _plateThickness;
+    std::vector<double>      _plateLugThickness;
+    bool        _addFilletToPlateCore;
+    bool        _addFilletToPlateLug;
+    double      _plateFilletRadius;
+    std::string _rodMaterial;
+    double      _rodRadius;
+    double      _rodHalfLength;
+    std::string _spacerMaterial;
+    double      _spacerHalfLength;
+    double      _spacerOuterRadius;
+    double      _spacerInnerRadius;
+    std::string _stickmanSupportRingMaterial;
+    double      _stickmanSupportRingLength;
+    double      _stickmanSupportRingInnerRadius;
+    double      _stickmanSupportRingOuterRadius;
+    double      _supportRingLugOuterRadius;
+    bool        _addFilletToSupportRingLug;
+    double      _supportRingLugFilletRadius;
+    bool        _addCutoutToSupportRing;
+    int         _nSupportRingCutouts;
+    std::vector<double> _supportRingCutoutAngles;
+    double      _supportRingCutoutInnerRadius;
+    double      _supportRingCutoutTilt;
+    double      _supportRingCutoutOffset;
 
     // Needed for persistency
     template<class T> friend class art::Wrapper;
