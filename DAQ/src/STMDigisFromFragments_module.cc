@@ -11,7 +11,7 @@
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
 #include <artdaq-core/Data/ContainerFragment.hh>
@@ -102,7 +102,7 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
   produces<mu2e::STMWaveformDigiCollection>("raw");//Waveforms
   produces<mu2e::STMWaveformDigiCollection>("zs");
   produces<mu2e::STMWaveformDigiCollection>("rawWithHeader");
-  produces<mu2e::STMMWDDigiCollection>("ph"); // digi series
+  produces<mu2e::STMPHDigiCollection>("ph"); // digi series
 
   //turns file into binary
   _rawOut.open(config().rawFile(), std::ios::binary);
@@ -140,7 +140,7 @@ void STMDigisFromFragments::produce(Event& event)
   
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  std::unique_ptr<mu2e::STMMWDDigiCollection> ph_digis(new mu2e::STMMWDDigiCollection);
+  std::unique_ptr<mu2e::STMPHDigiCollection> ph_digis(new mu2e::STMPHDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
   //std::unique_ptr<mu2e::STMWaveformDigiCollection> ph_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original
 
@@ -332,7 +332,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  
         }//End of isZS
 	
-        else if (stm_frag.isMWD()){
+        else if (stm_frag.isPH()){
 	  ++_totalPH;
 	  ++localPH_frags;
 	  //Check if zero filled
@@ -370,11 +370,11 @@ void STMDigisFromFragments::produce(Event& event)
 	  
 	  for (size_t i_PH = 0; i_PH < digiWords ; ++i_PH){
 	    int16_t PH = digiPtr[i_PH];
-	    mu2e::STMMWDDigi PH_digi(0, PH);
+	    mu2e::STMPHDigi PH_digi(0, PH);
 	    ph_digis->emplace_back(PH_digi);
 	  }
 
-      }//End of isMWD and is checks
+      }//End of isPH and is checks
 
         //---Combined stream write w. order preserved ----
         {
@@ -389,7 +389,7 @@ void STMDigisFromFragments::produce(Event& event)
             cptr = stm_frag.payloadBegin();
             cwords = stm_frag.payloadWords();
           }
-          else if (stm_frag.isMWD()){
+          else if (stm_frag.isPH()){
             cptr = stm_frag.payloadBegin();
             cwords = stm_frag.payloadWords();
           }
