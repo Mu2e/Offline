@@ -26,13 +26,13 @@ void plotDummyDigis(std::string filename = "stmWaveformDigis.root") {
   hZSWaveform->Draw("HIST");
 
   c1->cd(3);
-  TH1F* hMWDWaveform = (TH1F*) file->Get("plotMWDWaveformDigis/evt0_waveform0");
-  title = hMWDWaveform->GetTitle();
-  title += " MWD";
-  hMWDWaveform->SetTitle(title);
-  hMWDWaveform->SetLineWidth(3);
-  hMWDWaveform->SetLineColor(kRed);
-  hMWDWaveform->Draw("HIST");
+  TH1F* hPHWaveform = (TH1F*) file->Get("plotPHWaveformDigis/evt0_waveform0");
+  title = hPHWaveform->GetTitle();
+  title += " PH ";
+  hPHWaveform->SetTitle(title);
+  hPHWaveform->SetLineWidth(3);
+  hPHWaveform->SetLineColor(kRed);
+  hPHWaveform->Draw("HIST");
 
 //New Canvas with all the histograms in the same axis
 //No need to redefine the histograms from before
@@ -45,26 +45,26 @@ void plotDummyDigis(std::string filename = "stmWaveformDigis.root") {
   hZSWaveform->SetLineColor(kBlue);
   hZSWaveform->SetLineWidth(3);
 
-  hMWDWaveform->SetLineColor(kRed);
-  hMWDWaveform->SetLineWidth(3);
+  hPHWaveform->SetLineColor(kRed);
+  hPHWaveform->SetLineWidth(3);
 
   hRawWaveform->GetYaxis()->SetRangeUser(-1800,1800);
   hRawWaveform->Draw();
   hZSWaveform->Draw("SAME");
-  hMWDWaveform->Draw("SAME");
+  hPHWaveform->Draw("SAME");
 
   auto legend = new TLegend();
   legend->AddEntry(hRawWaveform, "Raw","1");
   legend->AddEntry(hZSWaveform,"ZS","1");
-  legend->AddEntry(hMWDWaveform,"MWD","1");
+  legend->AddEntry(hPHWaveform,"PH","1");
   //legend->Draw();
 
 //New Canvas where the histogram plots the number of bins from the other two
   TCanvas* c3 = new TCanvas();
-  c3->SetTitle("Number of bins from MWDWaveform and hZSWaveform");
+  c3->SetTitle("Number of bins from hPHWaveform and hZSWaveform");
   
   TH1F* hDigiSize = new TH1F("hDigiSize","Number of bins in histograms",1000,0,1000);
-  hDigiSize->Fill(hMWDWaveform->GetNbinsX());
+  hDigiSize->Fill(hPHWaveform->GetNbinsX());
   hDigiSize->Fill(hZSWaveform->GetNbinsX());
   hDigiSize->Draw();
 

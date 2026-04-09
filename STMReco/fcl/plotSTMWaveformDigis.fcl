@@ -36,9 +36,9 @@ physics: {
       xAxis : "sample_number"
     }
 
-    plotMWDWaveformDigis : {
+    plotPHWaveformDigis : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:mwd"
+      stmWaveformDigisTag : "makeSTMDigis:ph"
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"

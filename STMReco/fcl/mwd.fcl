@@ -5,7 +5,7 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
 
-process_name: STMMWD
+process_name: STMPH
 
 source : {
   module_type : RootInput
@@ -17,7 +17,7 @@ services : {
 
 physics: {
   producers : {
-    mwdHPGe : {
+    phHPGe : {
       module_type : STMMovingWindowDeconvolution
       stmWaveformDigisTag : "makeSTMDigis:zs"
       verbosityLevel : 6
@@ -31,7 +31,7 @@ physics: {
       xAxis: "sample_number"
     }
 
-    mwdLaBr : {
+    phLaBr : {
       module_type : STMMovingWindowDeconvolution
       stmWaveformDigisTag : "makeSTMDigis:zs"
       verbosityLevel : 6
@@ -49,8 +49,8 @@ physics: {
   analyzers : {  }
 
   # setup paths
-  HPGePath : [ mwdHPGe ]
- # LaBrPath : [ mwdLaBr ]
+  HPGePath : [ phHPGe ]
+ # LaBrPath : [ phLaBr ]
   trigger_paths: [ HPGePath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
@@ -62,6 +62,6 @@ outputs: {
     module_type: RootOutput
     outputCommands:   [ "keep *_*_*_*" ]
     SelectEvents: [ ]
-    fileName : "dig.owner.MWDWaveformDigis.version.sequencer.art"
+    fileName : "dig.owner.PHWaveformDigis.version.sequencer.art"
   }
 }
