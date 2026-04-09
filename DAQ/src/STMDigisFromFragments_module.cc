@@ -226,7 +226,8 @@ void STMDigisFromFragments::produce(Event& event)
           for (size_t kk = 0; kk < std::min<size_t>(payloadWords,20); ++kk){
             std::cout << payloadPtr[kk] << " ,";
           }
-          std::cout << "\nRaw header : ZS Length = " << stm_frag.zsLength()
+          std::cout << "\nRaw header : Raw Length = " << stm_frag.rawLength()
+		    <<" , ZS Length = " << stm_frag.zsLength()
 		    << " , ZS Regions  = " << stm_frag.zsRegions()
 		    << " , i = " << i << " @Raw\n";
 
@@ -312,7 +313,7 @@ void STMDigisFromFragments::produce(Event& event)
 	    zs_waveform_digis->emplace_back(stm_waveform); //emplace
 	    
 	    //A print check per segment
-	    std::cout << "Region = " << seg << " , zs_location = " << current_zs_location << " , current_ZS_size = " << current_zs_size
+	    std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
 		      << " , trigTimeOffset = " << trigTimeOffset << "\n" ;
 	    
 	    lastZSindex = current_zs_location;
@@ -460,7 +461,7 @@ void STMDigisFromFragments::endJob() {
   std::cout << "ZS                : " << _totalZS << "\n";
   std::cout << "PH                : " << _totalPH << "\n";
 
-  std::cout << "\n-- -Data types filtered ---\n";
+  std::cout << "\n--- Data types filtered ---\n";
   std::cout << "Zero RAW frags    : " << _totalZeroRaw << "\n";
   std::cout << "Zero ZS frags     : " << _totalZeroZS << "\n";
   std::cout << "Zero PH frags     : " << _totalZeroPH << "\n";
