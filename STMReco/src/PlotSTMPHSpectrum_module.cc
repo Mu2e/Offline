@@ -1,5 +1,5 @@
 //
-// Analyzer module to create a histogram of the STMMWDDigi uncalibrated energies
+// Analyzer module to create a histogram of the STMPHDigi uncalibrated energies
 //
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -24,21 +24,21 @@
 #include "TSpectrum.h"
 #include "TGraph.h"
 
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
 namespace mu2e {
 
-  class PlotSTMMWDSpectrum : public art::EDAnalyzer {
+  class PlotSTMPHSpectrum : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> stmMWDDigisTag{ Name("stmMWDDigisTag"), Comment("InputTag for STMMWDDigiCollection")};
+        fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollection")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit PlotSTMMWDSpectrum(const Parameters& conf);
+      explicit PlotSTMPHSpectrum(const Parameters& conf);
 
     private:
     void beginJob() override;
@@ -47,36 +47,36 @@ namespace mu2e {
     TH2F* _twoDhist; //Histograms of Energy vs binned event
     int eventCount = 0;
     
-    TH1D* _mwdSpectrum;
-    art::ProductToken<STMMWDDigiCollection> _stmMWDDigisToken;
+    TH1D* _phSpectrum;
+    art::ProductToken<STMPHDigiCollection> _stmPHDigisToken;
   };
 
-  PlotSTMMWDSpectrum::PlotSTMMWDSpectrum(const Parameters& config )  :
+  PlotSTMPHSpectrum::PlotSTMPHSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmMWDDigisToken(consumes<STMMWDDigiCollection>(config().stmMWDDigisTag()))
+    _stmPHDigisToken(consumes<STMPHDigiCollection>(config().stmPHDigisTag()))
   { }
 
-  void PlotSTMMWDSpectrum::beginJob() {
+  void PlotSTMPHSpectrum::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     // create histograms
-    _mwdSpectrum=tfs->make<TH1D>("mwdSpectrum", "MWD Spectrum", 1000, 0, 1e4);
+    _phSpectrum=tfs->make<TH1D>("phSpectrum", "PH Spectrum", 1000, 0, 1e4);
     _twoDhist=tfs->make<TH2F>("twoDhist","Pulse Height vs events;Event Bins; Pulse Height",
 			    1000,0,1000,     // X-axis scale
 			    1000,0,1e5);   // Y-axis scale
   }
 
-  void PlotSTMMWDSpectrum::analyze(const art::Event& event) {
+  void PlotSTMPHSpectrum::analyze(const art::Event& event) {
 
-    auto mwdDigisHandle = event.getValidHandle(_stmMWDDigisToken);
+    auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
     int binBlock = eventCount/100;
     
-    for (const auto& mwdDigi : *mwdDigisHandle) {
-      auto energy = mwdDigi.energy();
-      _mwdSpectrum->Fill(energy);
+    for (const auto& phDigi : *phDigisHandle) {
+      auto energy = phDigi.energy();
+      _phSpectrum->Fill(energy);
       _twoDhist->Fill(binBlock, energy);
     }
     ++eventCount;
   }
 }
 
-DEFINE_ART_MODULE(mu2e::PlotSTMMWDSpectrum)
+DEFINE_ART_MODULE(mu2e::PlotSTMPHSpectrum)
