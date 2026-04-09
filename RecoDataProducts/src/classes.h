@@ -95,7 +95,7 @@
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
 // MTP
