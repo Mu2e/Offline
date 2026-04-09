@@ -35,7 +35,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalib.hh"
@@ -61,7 +61,7 @@ namespace mu2e {
         fhicl::Atom<double> thresholdgrad{Name("thresholdgrad"), Comment("Threshold on gradient to cut out peaks when calculating baseline")};
         fhicl::Atom<double> defaultBaselineMean{Name("defaultBaselineMean"), Comment("Default mean to use for baseline when ZS removes all baseline data, in ADC values")};
         fhicl::Atom<double> defaultBaselineSD{Name("defaultBaselineSD"), Comment("Default standard deviation to use for baseline when ZS removes all baseline data, in ADC values")};
-        fhicl::OptionalAtom<bool> makeTTreeMWD{ Name("makeTTreeMWD"), Comment("Controls whether to make the TTree with branches ADC, deconvoluted, differentiated, averaged")};
+        fhicl::OptionalAtom<bool> makeTTreePH{ Name("makeTTreePH"), Comment("Controls whether to make the TTree with branches ADC, deconvoluted, differentiated, averaged")};
         fhicl::OptionalAtom<bool> makeTTreeEnergies{ Name("makeTTreeEnergies"), Comment("Controls whether to make the TTree with branches time, E")};
         fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
@@ -95,7 +95,7 @@ namespace mu2e {
     double thresholdgrad = 0.0;                                           // threshold on gradient
     double defaultBaselineMean = 0.0;
     double defaultBaselineSD = 0.0;
-    bool makeTTreeMWD = false;                                            // controls whether to make MWD process TTree
+    bool makeTTreePH = false;                                            // controls whether to make PH process TTree
     bool makeTTreeEnergies = false;                                       // controls whether to make results TTree
     int verbosityLevel = 0;                                               // std cout verbosity level
     std::string _xAxis = "";                                              // optional parameter for x-axis unit if plotting histograms
@@ -103,7 +103,7 @@ namespace mu2e {
     // Proditions service
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
-    // MWD analysis variables
+    // PH analysis variables
     std::vector<int16_t> ADCs;                // input waveform ADCs
     unsigned long int nADCs = 0;              // size of input data
     unsigned long int i = 0;                  // iterator
@@ -115,7 +115,7 @@ namespace mu2e {
     std::vector<double> averaged_data;
     double sum = 0.0;                         // variable part of avarege()
     int count = 0;                            // counter variable
-    int16_t mwd_energy = 0;
+    int16_t ph_energy = 0;
 
     // Peak finding variables
     double baseline_mean = 0.0;
@@ -154,7 +154,7 @@ namespace mu2e {
     thresholdgrad(conf().thresholdgrad()),
     defaultBaselineMean(conf().defaultBaselineMean()),
     defaultBaselineSD(conf().defaultBaselineSD()) {
-      produces<STMMWDDigiCollection>();
+      produces<STMPHDigiCollection>();
       if (M < L)
         throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
@@ -162,10 +162,10 @@ namespace mu2e {
         verbosityLevel = 10;
       _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
       std::cout<<"BG"<<_xAxis<<std::endl;
-      makeTTreeMWD = conf().makeTTreeMWD() ? *(conf().makeTTreeMWD()) : false;
+      makeTTreePH = conf().makeTTreePH() ? *(conf().makeTTreePH()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
       TTreeEnergyCalib = conf().TTreeEnergyCalib() ? *(conf().TTreeEnergyCalib()) : 1.0;
-      if (makeTTreeMWD) {
+      if (makeTTreePH) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "STMMovingWindowDeconvolution pulse finding ttree");
         ttree->Branch("ADC", &ADC, "ADC/S");
@@ -209,7 +209,7 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
-    std::unique_ptr<STMMWDDigiCollection> outputMWDDigis(new STMMWDDigiCollection);
+    std::unique_ptr<STMPHDigiCollection> outputPHDigis(new STMPHDigiCollection);
     auto waveformDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
 
     // get prodition
@@ -255,23 +255,23 @@ namespace mu2e {
       if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
         std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
-        mwd_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
-        STMMWDDigi mwd_digi(peak_times[i], -1 * mwd_energy); // peak_heights are negative, make them positive here
-        if (mwd_digi.energy() < -100)
+        ph_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
+        STMPHDigi ph_digi(peak_times[i], -1 * ph_energy); // peak_heights are negative, make them positive here
+        if (ph_digi.energy() < -100)
           throw cet::exception("logicError", "The peak height must be positive!");
 
-        outputMWDDigis->push_back(mwd_digi);
+        outputPHDigis->push_back(ph_digi);
         if (makeTTreeEnergies) {
-          time = mwd_digi.time();
-          E = mwd_digi.energy() * TTreeEnergyCalib;
+          time = ph_digi.time();
+          E = ph_digi.energy() * TTreeEnergyCalib;
           ttree->Fill();
         };
         if (verbosityLevel > 3)
-          std::cout << "energy: " << mwd_digi.energy() << std::endl;
+          std::cout << "energy: " << ph_digi.energy() << std::endl;
       };
 
       // Save data to TTree
-      if (makeTTreeMWD) {
+      if (makeTTreePH) {
         time = waveform.trigTimeOffset();
         for (i = 0; i < nADCs; i++) {
           ADC = ADCs[i];
@@ -289,8 +289,8 @@ namespace mu2e {
     };
 
     if (verbosityLevel)
-      std::cout << "MWD: " << channel.name() << ": " << outputMWDDigis->size() << " MWD digis found" << std::endl;
-    event.put(std::move(outputMWDDigis));
+      std::cout << "MWD: " << channel.name() << ": " << outputPHDigis->size() << " PH digis found" << std::endl;
+    event.put(std::move(outputPHDigis));
   };
 
 
