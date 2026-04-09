@@ -1716,8 +1716,13 @@ namespace mu2e {
                  rodCenter,                        // translation
                  prodTargetMotherInfo,             // parent volume info for the target mother
                  ithRod,                           // copy number
+                 prodTargetVisible,                // visibility
                  G4Colour::Green(),                // color for visualization
-                 "ProductionTarget");              // lookup token
+                 prodTargetSolid,
+                 forceAuxEdgeVisible,
+                 placePV,
+                 doSurfaceCheck
+                 );
         if (verbosityLevel > 0) {
           G4cout << __PRETTY_FUNCTION__ << " rod " << ithRod
                  << " center=" << rodCenter
