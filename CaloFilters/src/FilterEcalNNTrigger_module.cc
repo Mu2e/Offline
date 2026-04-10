@@ -89,6 +89,10 @@ namespace mu2e {
      const auto& caloClusters(*caloClustersHandle);
      const auto& caloMVAs(*caloMVAHandle);
 
+     if (caloClusters.size() != caloMVAs.size()){
+       throw cet::exception("FILTER")<< "FilterEcalNNTrigger: Clusters and MVA collection sizes incpmpatible\n";
+     }
+
      bool select(false);
      for (size_t index=0;index<caloClusters.size();++index){
         const auto& cluster = caloClusters[index];

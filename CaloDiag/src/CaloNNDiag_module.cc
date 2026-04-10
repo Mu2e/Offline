@@ -217,11 +217,13 @@ namespace mu2e {
       //Calorimeter crystal hits (average from readouts)
       art::Handle<CaloHitCollection> CaloHitsHandle;
       event.getByLabel(caloHitTag_, CaloHitsHandle);
+      if (!CaloHitsHandle.isValid()) return;
       const CaloHitCollection& CaloHits(*CaloHitsHandle);
 
       //Calorimeter clusters
       art::Handle<CaloClusterCollection> caloClustersHandle;
       event.getByLabel(caloClusterTag_, caloClustersHandle);
+      if (!caloClustersHandle.isValid()) return;
       const CaloClusterCollection& caloClusters(*caloClustersHandle);
 
       //Virtual detector hits
@@ -231,11 +233,13 @@ namespace mu2e {
       //Calo digi truth assignment
       art::Handle<CaloHitMCTruthAssn> caloDigiTruthHandle;
       event.getByLabel(caloHitTruthTag_, caloDigiTruthHandle);
+      if (!caloDigiTruthHandle.isValid()) return;
       const CaloHitMCTruthAssn& caloDigiTruth(*caloDigiTruthHandle);
 
       //Calo cluster truth assignment
       art::Handle<CaloClusterMCTruthAssn> caloClusterTruthHandle;
       event.getByLabel(caloClusterTruthTag_, caloClusterTruthHandle);
+      if (!caloClusterTruthHandle.isValid()) return;
       const CaloClusterMCTruthAssn& caloClusterTruth(*caloClusterTruthHandle);
 
 

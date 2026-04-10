@@ -41,7 +41,7 @@ namespace mu2e {
           EDProducer{config},
           caloClusterToken_{consumes<CaloClusterCollection>(config().caloClusterCollection())},
           caloBkgMVA_      (config().caloBkgMVA()),
-          minEtoTest_      (config().minEtoTest()),
+          minEtoTest_      (std::max(config().minEtoTest(),0.001f)),
           minRtoTest_      (config().minRtoTest()),
           minTtoTest_      (config().minTtoTest()),
           maxEtoTest_      (config().maxEtoTest()),
@@ -68,7 +68,6 @@ namespace mu2e {
        int      diagLevel_;
 
        void     evalClusters(const art::Handle<CaloClusterCollection>& caloClustersHandle, MVAResultCollection& MVAresults);
-       float    secondMoment(const Calorimeter& cal, const CaloHitPtrVector& hits) const;
   };
 
 
@@ -111,18 +110,6 @@ namespace mu2e {
         }
 
         ClusterUtils cluUtil(cal,*clusterIt);
-
-        //This would be the version with energy and time included
-        //std::vector<float> mvavars(9,0.0);
-        //mvavars[0] = clusterIt->energyDep();
-        //mvavars[1] = clusterIt->cog3Vector().perp();
-        //mvavars[2] = clusterIt->time();
-        //mvavars[3] = clusterIt->size();
-        //mvavars[4] = cluUtil.e1()/clusterIt->energyDep();
-        //mvavars[5] = cluUtil.e2()/clusterIt->energyDep();
-        //mvavars[6] = cluUtil.e9()/clusterIt->energyDep();
-        //mvavars[7] = cluUtil.e25()/clusterIt->energyDep();
-        //mvavars[8] = cluUtil.secondMoment();
 
         std::vector<float> mvavars(7,0.0);
         mvavars[0] = clusterIt->cog3Vector().perp();
