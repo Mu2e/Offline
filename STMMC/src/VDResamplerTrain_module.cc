@@ -7,7 +7,7 @@
 //      (t', x', y', p_r', p_phi', p_z')
 // and store the trained model parameters in CSV files.
 // note that p_z are filtered and only hits with positive p_z are kept
-// Yongyi Wu, Mar. 2026 
+// Yongyi Wu, Mar. 2026
 
 // stdlib includes
 #include <cmath>
@@ -91,7 +91,7 @@ namespace mu2e {
       CLHEP::RandGaussQ randGaussQ_;
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
-      
+
       // SBDM model + data
       bool useTwoStageTraining = true;
       std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel;
@@ -113,7 +113,7 @@ namespace mu2e {
       // variables to read from the art event
       int stepPdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, time = 0.0;
-      double px = 0.0, py = 0.0, pz = 0.0; 
+      double px = 0.0, py = 0.0, pz = 0.0;
       VolumeId_type virtualdetectorId = 0;
 
       // transform variables for training data preparation
@@ -263,8 +263,8 @@ namespace mu2e {
 
       if (virtualdetectorId != VirtualDetectorID || (stepPdgId != pdgID && pdgID != 0) || pz <= 0)
         continue; // Filter hits based on the virtual detector ID, particle type, and pz
-      
-      // as z maybe slightly different from the nominal VDz0 due to the step size, we will extrapolate the (x, y) coordinates 
+
+      // as z maybe slightly different from the nominal VDz0 due to the step size, we will extrapolate the (x, y) coordinates
       // to the nominal VDz0 for all hits to compute the training parameters to be fed into the SBDM.
       double extrapolationFactor = (VDz0 - z) / pz; // Assuming linear motion, this is the factor to extrapolate from current z to z0
       double x_extrapolated = x + extrapolationFactor * px;
@@ -335,7 +335,7 @@ namespace mu2e {
   };
 
   void VDResamplerTrain::endJob() {
-    
+
       if (useTwoStageTraining && (stage1TrainingData.empty() || stage2TrainingData.empty())) {
         mf::LogWarning("VDResamplerTrain") << "No training data collected.";
         return;
@@ -345,8 +345,8 @@ namespace mu2e {
         return;
       }
 
-      // if SBDMtrainingSize is set and smaller than the collected training data, 
-      // truncate the training data to the specified size. 
+      // if SBDMtrainingSize is set and smaller than the collected training data,
+      // truncate the training data to the specified size.
       if (useTwoStageTraining) {
         if(trainingSize > 0 && (int)stage1TrainingData.size() > trainingSize)
           stage1TrainingData.resize(trainingSize);

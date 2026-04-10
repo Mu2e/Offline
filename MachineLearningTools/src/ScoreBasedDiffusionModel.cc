@@ -15,7 +15,7 @@ namespace mu2e {
         return s * (1.0 + x * (1.0 - s));
     }
 
-    // Linear interpolation of beta(t) between betaMin_ and betaMax_. 
+    // Linear interpolation of beta(t) between betaMin_ and betaMax_.
     // This is only used in the linear noise schedule.
     double ScoreBasedDiffusionModel::beta(double t) const {
         return betaMin_ + t * (betaMax_ - betaMin_);
@@ -37,7 +37,7 @@ namespace mu2e {
         }
     }
 
-    
+
     ScoreBasedDiffusionModel::ScoreBasedDiffusionModel(
         CLHEP::RandFlat& randFlat,
         CLHEP::RandGaussQ& randGaussQ,
@@ -121,7 +121,7 @@ namespace mu2e {
 
             for (int i = 0; i < out; ++i) {
                 for (int j = 0; j < in; ++j) {
-                    layer.W[i][j] = weightInitScale * randGaussQ_.fire(); 
+                    layer.W[i][j] = weightInitScale * randGaussQ_.fire();
                     // this generates a Gaussian random number with mean=0 and sigma=weightInitScale
                 }
                 layer.b[i] = 0.0;
@@ -136,7 +136,7 @@ namespace mu2e {
             // Output becomes next layer input
             in = out;
         }
-            
+
         // Print layer and model configuration
         std::ostringstream oss;
         oss << "ScoreBasedDiffusionModel initialized\n"
@@ -194,15 +194,15 @@ namespace mu2e {
         activations_.push_back(x);
 
         // Forward pass through the network layers
-        for (size_t l = 0; l < network_.size(); ++l) 
+        for (size_t l = 0; l < network_.size(); ++l)
         {
             // Compute pre-activation z = W*x + b for the current layer
             auto& layer = network_[l];
             std::vector<double> z(layer.W.size());
-            for (size_t i = 0; i < layer.W.size(); ++i) 
+            for (size_t i = 0; i < layer.W.size(); ++i)
             {
                 double v = layer.b[i];
-                for (size_t j = 0; j < layer.W[i].size(); ++j) 
+                for (size_t j = 0; j < layer.W[i].size(); ++j)
                 {
                     v += layer.W[i][j]*x[j];
                 }
@@ -262,7 +262,7 @@ namespace mu2e {
             }
 
             // Compute gradients w.r.t. weights and biases for the current layer
-            for (size_t i = 0; i < layer.W.size(); i++) 
+            for (size_t i = 0; i < layer.W.size(); i++)
             {
                 for (size_t j=0;j<layer.W[i].size();++j)
                 {
@@ -271,7 +271,7 @@ namespace mu2e {
                 }
 
                 // Gradient of loss w.r.t. bias b[i]
-                // Note: We accumulate gradients in gradW and gradb because we will apply the optimizer step 
+                // Note: We accumulate gradients in gradW and gradb because we will apply the optimizer step
                 // after processing a batch of samples.
                 layer.gradb[i] += gradZ[i];
             }
@@ -330,13 +330,13 @@ namespace mu2e {
     // v_t = b2 * v_{t-1} + (1 - b2) * g^2
     // mhat = m_t / (1 - b1^t)  (bias-corrected first moment estimate)
     // vhat = v_t / (1 - b2^t)  (bias-corrected second moment estimate)
-    // theta = theta - lr * mhat / (sqrt(vhat) + eps) 
+    // theta = theta - lr * mhat / (sqrt(vhat) + eps)
     void ScoreBasedDiffusionModel::adamUpdate(
         double lr
     )
     {
-        adamStep_++; // initialize to 0 in constructor, 
-                     // increment first to avoid division by zero in the first step when computing bias-corrected estimates 
+        adamStep_++; // initialize to 0 in constructor,
+                     // increment first to avoid division by zero in the first step when computing bias-corrected estimates
                      // (1 - b1^t) and (1 - b2^t). Do not modify this to increment after the update.
 
         for (auto& layer : network_)
@@ -382,7 +382,7 @@ namespace mu2e {
     std::vector<double> ScoreBasedDiffusionModel::addNoise(
         const std::vector<double>& x,
         double t, // Diffusion time parameter in [0,1]
-        std::vector<double>& eps 
+        std::vector<double>& eps
     ){
         assert(x.size() == (size_t)dim_);
 
@@ -417,7 +417,7 @@ namespace mu2e {
         return loss/dim_;
     }
 
-    // Clip gradients to prevent exploding gradients during training. This is done by scaling down 
+    // Clip gradients to prevent exploding gradients during training. This is done by scaling down
     // the gradients if their L2 norm exceeds a specified threshold.
     void ScoreBasedDiffusionModel::clipGradients(
         double maxNorm
@@ -452,10 +452,10 @@ namespace mu2e {
     }
 
     // Train the diffusion model using the provided training data. The training loop iterates over epochs and batches,
-    // applying noise to the input samples, computing the score predictions, calculating the loss, and performing 
+    // applying noise to the input samples, computing the score predictions, calculating the loss, and performing
     // back-propagation to update the model parameters.
-    // For a data sample of 5M 6-dimensional vectors of double precision (8 Byte), total memory for the data is 5M*6*8 = 240 MB, 
-    // which is manageable for in-memory training. 
+    // For a data sample of 5M 6-dimensional vectors of double precision (8 Byte), total memory for the data is 5M*6*8 = 240 MB,
+    // which is manageable for in-memory training.
     // Much larger datasets may require streaming from disk or using mini-batches that do not fit entirely in memory.
     void ScoreBasedDiffusionModel::train(
         const std::vector<DiffusionTrainingSample>& data,
@@ -496,7 +496,7 @@ namespace mu2e {
         for (size_t i = 0; i < N; ++i)
             indices[i] = i;
 
-        // Data shuffling and batching is performed at the epoch level to ensure that each epoch sees the data 
+        // Data shuffling and batching is performed at the epoch level to ensure that each epoch sees the data
         // in a different order, which can improve training convergence.
         for (int e = 0; e < epochs; ++e)
         {
@@ -507,9 +507,9 @@ namespace mu2e {
                 std::swap(indices[i], indices[j]);
             }
 
-            // Counter for number of samples processed in the epoch (used for averaging loss). Avoid using N directly to 
+            // Counter for number of samples processed in the epoch (used for averaging loss). Avoid using N directly to
             // allow for early stopping or partial epoch processing if needed.
-            int n = 0; 
+            int n = 0;
 
             int batchCounter = 0;
             double epochLoss = 0.0;
@@ -557,7 +557,7 @@ namespace mu2e {
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
                 backward(grad);
 
-                // Increment batch counter and apply optimizer step if batch size is reached. This allows for vectorized updates after processing a batch of 
+                // Increment batch counter and apply optimizer step if batch size is reached. This allows for vectorized updates after processing a batch of
                 // samples, which can improve training efficiency and convergence.
                 batchCounter++;
                 if(batchCounter == batchSize_)
@@ -594,7 +594,7 @@ namespace mu2e {
             epochLosses_.push_back(epochLoss);
         }
     }
-    
+
     void ScoreBasedDiffusionModel::saveModel(
         const std::string& filename
     )
@@ -635,7 +635,7 @@ namespace mu2e {
         out << "\n[NETWORK_PARAMETERS]\n";
         out << "numLayers," << network_.size() << "\n";
         out << std::fixed << std::setprecision(17); // Use fixed-point notation with high precision for weights and biases
-       
+
         for (size_t layerIdx = 0; layerIdx < network_.size(); ++layerIdx) {
             // Write layer dimensions
             auto& layer = network_[layerIdx];
@@ -789,8 +789,8 @@ namespace mu2e {
                     int inSize = std::stoi(tokens[1]);
                     int layerIdx = getLayerIdx(tokens[0]);
                     if (layerIdx == 0 && inSize != dim + conditionDim + 1) {
-                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") 
-                            << "Input layer input size mismatch (expected " 
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                            << "Input layer input size mismatch (expected "
                             << (dim + conditionDim + 1) << ", got " << inSize << ")";
                     }
                     if (loadedNetwork[layerIdx].W.empty()) {
@@ -814,7 +814,7 @@ namespace mu2e {
                         }
                         auto vals = split(line);
                         if (vals.size() != row.size()) {
-                            throw cet::exception("ScoreBasedDiffusionModel::loadModel") 
+                            throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                                 << "Weight row size mismatch for layer " << layerIdx;
                         }
                         for (size_t j = 0; j < vals.size(); ++j)
@@ -832,7 +832,7 @@ namespace mu2e {
                     }
                     auto vals = split(line);
                     if (vals.size() != loadedNetwork[layerIdx].b.size()) {
-                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") 
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                             << "Bias size mismatch for layer " << layerIdx;
                     }
                     for (size_t j = 0; j < vals.size(); ++j)
@@ -952,7 +952,7 @@ namespace mu2e {
                 input.push_back(t);
 
                 auto score = forward(input);
- 
+
                 for (int i=0;i<dim_;++i){
                     x[i] += -s*s*score[i]*dt;
                 }

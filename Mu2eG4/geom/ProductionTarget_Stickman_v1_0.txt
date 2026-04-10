@@ -3,7 +3,7 @@
 // Support wheel and wire geometry is inherited from the existing Hayman production target geometry,
 // others are overhauled to use the new Stickman geometry.
 
-// The Hayman dependence is intentionally removed. 
+// The Hayman dependence is intentionally removed.
 
 int PSStickman.verbosityLevel = 0; //5;
 
@@ -30,7 +30,7 @@ bool   targetPS.visible              = true;
 bool   targetPS.solid                = false;
 string targetPS_targetVacuumMaterial = "PSVacuum";
 
-// Start with target plates. Chose to specify certain parameters for each plate, so can easily play with plate-by-plate dimensions later on 
+// Start with target plates. Chose to specify certain parameters for each plate, so can easily play with plate-by-plate dimensions later on
 int targetPS_numberOfPlates = 35;
 vector<string> targetPS_plateMaterial = { // counting along mu2e +z direction, i.e. from the proton downstream side to the upstream side
     "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", //  5
@@ -76,7 +76,7 @@ vector<double> targetPS_plateLugThickness = {
     6.0, 6.0, 6.0, 6.0, 6.0  // 35
 }; // in mm, one value for each plate, note lugs are flush with the fins on the proton downstream side
 bool targetPS_addFilletToPlateCore = true; // whether to add fillet to the intersection between plate core and fins
-bool targetPS_addFilletToPlateLug  = true; // whether to add fillet to the intersection between fins and lugs 
+bool targetPS_addFilletToPlateLug  = true; // whether to add fillet to the intersection between fins and lugs
 // Fillets between fins and lugs are less important than the fillets between the core and fins, since the lugs are not in the direct path of the beam.
 // Fillets due to lug thickness larger than the plate thickness is not added, due to the complexity of the geometry and the small effect on the physics.
 double targetPS_plateFilletRadius = 1.0; // mm
@@ -93,7 +93,7 @@ double targetPS_spacerHalfLength  = 1.5;  // mm, full length 3.0 mm
 double targetPS_spacerOuterRadius = 3.0;  // mm
 double targetPS_spacerInnerRadius = 1.55; // mm
 
-// End ring / support ring 
+// End ring / support ring
 string targetPS_supportRingMaterial        = "Inconel718";
 double targetPS_supportRingLength          = 8.1;  // full length in mm
 double targetPS_supportRingInnerRadius     = 15.0; // mm
@@ -105,7 +105,7 @@ double targetPS_supportRingLugOuterRadius  = 3.0;  // mm
 bool   targetPS_addFilletToSupportRingLug  = true;
 double targetPS_supportRingLugFilletRadius = 1.0;
 bool   targetPS_addCutoutToSupportRing     = true; // the six cylindrical cutouts at an angle
-double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center. 
+double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center.
                                                    // This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
 int    targetPS_nSupportRingCutouts        = 3;
 vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.}; // degrees

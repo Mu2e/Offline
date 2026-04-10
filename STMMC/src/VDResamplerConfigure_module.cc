@@ -1,14 +1,14 @@
 // VDResamplerConfigure_module.cc
-// Makes one pass of the data set and determines which particles will need training for the 
-// resampler, and generates a fcl file for training. "dataSourceTag" specifies the tag of the 
-// data source, and will be appended to the generated fcl file and then csv files to 
-// distinguish between different data sources. The generated fcl files will be stored and 
+// Makes one pass of the data set and determines which particles will need training for the
+// resampler, and generates a fcl file for training. "dataSourceTag" specifies the tag of the
+// data source, and will be appended to the generated fcl file and then csv files to
+// distinguish between different data sources. The generated fcl files will be stored and
 // named "VDResamplerTrain_[dataSourceTag].fcl".
-// On the other hand, a breakdown of the number of hits for each particle type will be stored 
+// On the other hand, a breakdown of the number of hits for each particle type will be stored
 // in "VDResamplerConfigure_[dataSourceTag]_HitSummary.csv" for reference.
-// Later when generating new samples using the resampler, the program will look for the 
-// generated fcl files to determine which particle source to use, which particle types to 
-// generate and which model parameters to load for each particle type. 
+// Later when generating new samples using the resampler, the program will look for the
+// generated fcl files to determine which particle source to use, which particle types to
+// generate and which model parameters to load for each particle type.
 // Yongyi Wu, Mar. 2026
 
 // stdlib includes
@@ -54,7 +54,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> StepPointMCsTag{Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs")};
         fhicl::Atom<art::InputTag> SimParticlemvTag{Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv")};
-        fhicl::Atom<int> VirtualDetectorID{Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"), 116}; 
+        fhicl::Atom<int> VirtualDetectorID{Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"), 116};
         fhicl::Atom<std::string> VDResamplerDir{Name("VDResamplerDir"), Comment("Directory to store the generated csv files")};
         fhicl::Atom<std::string> fclDir{Name("fclDir"), Comment("Directory to store the generated fhicl files"), ""};
         fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files")};
@@ -133,7 +133,7 @@ namespace mu2e {
         nThrownEvents += 1;
         continue; // Filter hits based on the virtual detector ID and pz
       }
-      
+
       if (doROOTDump) {
           x = step.position().x();
           y = step.position().y();
@@ -145,7 +145,7 @@ namespace mu2e {
           E = std::sqrt(step.momentum().mag2()+mass*mass)-mass; // Subtract the rest mass
           if (E < 0)
             throw cet::exception("LogicError", "Energy is negative");
-          
+
           ttree->Fill();
       }
 
@@ -166,8 +166,8 @@ namespace mu2e {
     log << "====================================\n";
     log << "Number of thrown events: " << nThrownEvents << "\n";
 
-    // store a summary of the number of hits for each particle type in a csv file for reference, 
-    // all particles are included, but the particle types with hits below the training threshold are 
+    // store a summary of the number of hits for each particle type in a csv file for reference,
+    // all particles are included, but the particle types with hits below the training threshold are
     // marked with an asterisk to indicate that they will not be included in the training.
     std::string summaryFile = VDResamplerDir + "/VDResamplerConfigure_" + dataSourceTag + "_HitSummary.csv";
     std::string fclFilePath = fclDir.empty() ? VDResamplerDir : fclDir;
@@ -197,15 +197,15 @@ namespace mu2e {
 
     for (const auto& part : pdgIds) {
       sumOutFile << part.first << "," << part.second;
-      bool useTwoStageTraining = false; 
-      if (part.second < 100000) { 
+      bool useTwoStageTraining = false;
+      if (part.second < 100000) {
         // if data is limited, use two-stage training to improve performance and reduce the required training data size for each model.
         useTwoStageTraining = true;
       }
       if (part.second < trainingThreshold) {
         sumOutFile << ",*\n";
-        mf::LogWarning("VDResamplerConfigure::endJob") << "Particle type with PDGID " << part.first 
-            << " has only " << part.second << " hits, which is below the training threshold of " 
+        mf::LogWarning("VDResamplerConfigure::endJob") << "Particle type with PDGID " << part.first
+            << " has only " << part.second << " hits, which is below the training threshold of "
             << trainingThreshold << ". This particle type will NOT be included in the training.";
       } else {
         // mark how many models will be trained for this particle type (1 for all-at-once, 2 for two-stage)

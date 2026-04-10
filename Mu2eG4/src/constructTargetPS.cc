@@ -1271,7 +1271,7 @@ namespace mu2e {
       // Build the production target.
 
       GeomHandle<ProductionTarget> tgt;
-      // allows a vector of plate materials so each plate can be different. Initialize to have same number of 
+      // allows a vector of plate materials so each plate can be different. Initialize to have same number of
       // entries as the number of plates. Fin and core materials are the same for each plate.
       vector<G4Material*> prodTargetPlateMaterials(tgt->numberOfPlates(), nullptr);
       for (int i = 0; i < tgt->numberOfPlates(); ++i) {
@@ -1315,25 +1315,25 @@ namespace mu2e {
       constexpr double stickmanMagicOffset = 0.0001;
 
       // store the fin rotations for later use
-      // since used for G4UnionSolid construction, a passive rotation is needed, hence the negative sign on the angle. 
+      // since used for G4UnionSolid construction, a passive rotation is needed, hence the negative sign on the angle.
       // These are the rotations to go from the plate frame to the fin frame
       std::vector<CLHEP::HepRotation*> stickmanFinRotations;
       for (int ithFin = 0; ithFin < tgt->nStickmanFins(); ++ithFin) {
         CLHEP::HepRotation* finRotation = reg.add(CLHEP::HepRotation::IDENTITY);
-        finRotation->rotateZ(-tgt->plateFinAngle(ithFin)); 
+        finRotation->rotateZ(-tgt->plateFinAngle(ithFin));
         stickmanFinRotations.emplace_back(finRotation);
       }
 
       // cache the plate solids
       std::map<std::string, G4VSolid*> stickmanPlateSolidCache;
-      // lambda to get the plate solid for a given plate. The solid is cached based on the plate parameters that affect the shape. 
-      // The cache key encodes these parameters; if a solid is not found in the cache, it is created and added to the cache before 
+      // lambda to get the plate solid for a given plate. The solid is cached based on the plate parameters that affect the shape.
+      // The cache key encodes these parameters; if a solid is not found in the cache, it is created and added to the cache before
       //being returned.
-      // Here chose to construct plates as a single union solid with different materials for each plate, 
+      // Here chose to construct plates as a single union solid with different materials for each plate,
       // rather than separate fins, cores, and lugs, because the fins is much wider than the Hayman design.
       // If separated, missing material between fins and cores would be large.
-      // Note that the geometry center of a G4UnionSolid is the same as the first solid in the union, 
-      // and I start with the plate core and then union on the fins and lugs. This means that when placing the 
+      // Note that the geometry center of a G4UnionSolid is the same as the first solid in the union,
+      // and I start with the plate core and then union on the fins and lugs. This means that when placing the
       // plates the position will be based on the center of the core.
       auto getStickmanPlateSolid = [&](int ithPlate) -> G4VSolid* {
         const double plateFilletRadius =
@@ -1401,19 +1401,19 @@ namespace mu2e {
                  << tgt->plateLugInnerRadius() << ", " << tgt->plateLugOuterRadius() << ", " << lugHalfThickness << ")" << G4endl;
         }
 
-        // add fillets to the plate core 
+        // add fillets to the plate core
         // for a fin at 0 degree start with unioning a G4ExtrudedSolid with a triangular cross section that has vertices in
-        // the x-y plane at (0,0), 
+        // the x-y plane at (0,0),
         //                  (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
         //                  (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
-        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and 
+        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and
         // a scale of 1.0 at both ends.
-        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance) 
-        // and height plateThickness(ithPlate) that is centered at 
-        // (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius), 
+        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance)
+        // and height plateThickness(ithPlate) that is centered at
+        // (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
         // and the other fillet is completed by subtracting a similar cylinder at
         // (sqrt((rOut+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
-        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the 
+        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the
         // cylinders for subtraction are also rotated by the fin angle.
         G4VSolid* plateCoreFillet = nullptr;
         if (tgt->addFilletToPlateCore()) {
@@ -1441,7 +1441,7 @@ namespace mu2e {
                    << coreFilletVertices.at(2) << ")" << G4endl;
             G4cout << __PRETTY_FUNCTION__ << "  core fillet extrusion half length = " << plateHalfThickness << G4endl;
           }
-          
+
           // create the cutout cylinder for the fillet
           G4Tubs* coreFilletCutout = reg.add(new G4Tubs(
             cacheKey + "_CoreFilletCutout",             //
@@ -1456,10 +1456,10 @@ namespace mu2e {
             coreFilletExtrusion,                        // base solid
             coreFilletCutout,                           // cutout solid
             nullptr,                                    // rotation
-            CLHEP::Hep3Vector(coreFilletX,              
+            CLHEP::Hep3Vector(coreFilletX,
                               finHalfWidth + plateFilletRadius,
                               0.)));                    // translation of cutout solid
-          plateCoreFillet = reg.add(new G4SubtractionSolid( 
+          plateCoreFillet = reg.add(new G4SubtractionSolid(
             cacheKey + "_CoreFilletLower",              //
             coreFilletUpper,                            // base solid
             coreFilletCutout,                           // cutout solid
@@ -1478,16 +1478,16 @@ namespace mu2e {
         // for a fin at 0 degree, start with unioning a G4ExtrudedSolid with a triangular cross section that has vertices in
         // the x-y plane at (plateCenterToLugCenter, 0),
         //                  (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
-        //                  (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius), 
-        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and 
+        //                  (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
+        // and then extrude along z by plateThickness(ithPlate) starting at z = _currentZ. The extrusion has no twist and
         // a scale of 1.0 at both ends.
 
-        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance) 
-        // and height plateThickness(ithPlate) that is centered at 
+        // The fillet is then completed by subtracting a cylinder with radius of the fillet radius (plus a small tolerance)
+        // and height plateThickness(ithPlate) that is centered at
         // (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), plateFinWidth/2+FilletRadius),
         // and the other fillet is completed by subtracting a similar cylinder at
-        // (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius), 
-        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the 
+        // (plateCenterToLugCenter-sqrt((plateLugOuterRadius+FilletRadius)^2-(plateFinWidth/2+FilletRadius)^2), -plateFinWidth/2-FilletRadius),
+        // For fins at other angles, the same is done but the vertices are rotated by the fin angle and the centers of the
         // cylinders for subtraction are also rotated by the fin angle.
         G4VSolid* plateLugFillet = nullptr;
         if (tgt->addFilletToPlateLug()) {
@@ -1525,7 +1525,7 @@ namespace mu2e {
             plateHalfThickness + stickmanMagicOffset, // half length in z
             0.,                                       // starting angle
             CLHEP::twopi));                           // segment angle is full circle
-          // lug center needs to be cut out too. Create a second cutout cylinder for the lug center with radius of 
+          // lug center needs to be cut out too. Create a second cutout cylinder for the lug center with radius of
           // plateLugInnerRadius and height of plateThickness(ithPlate) centered at (plateCenterToLugCenter, 0)
           G4Tubs* lugCenterCutout = reg.add(new G4Tubs(
             cacheKey + "_LugCenterCutout",                    //
@@ -1576,9 +1576,9 @@ namespace mu2e {
                                            0.);
           const CLHEP::Hep3Vector lugShift(tgt->plateCenterToLugCenter() * std::cos(currentFinAngle),
                                            tgt->plateCenterToLugCenter() * std::sin(currentFinAngle),
-                                           lugZShift); 
+                                           lugZShift);
           // note the lug is shifted in z to be flush with the edge of the plate core
-          
+
           // add fin
           plateSolid = reg.add(new G4UnionSolid(cacheKey + "_FinUnion_" + std::to_string(ithFin),
                                                 plateSolid,                         // base solid
@@ -1597,7 +1597,7 @@ namespace mu2e {
                                                   stickmanFinRotations.at(ithFin),  // rotation of union solid
                                                   CLHEP::Hep3Vector(0.,0.,0.)));    // translation of union solid
           }
-          
+
           // add lug
           plateSolid = reg.add(new G4UnionSolid(cacheKey + "_LugUnion_" + std::to_string(ithFin),
                                                 plateSolid,                       // base solid
@@ -1624,17 +1624,17 @@ namespace mu2e {
         }
         return plateSolid;
       }; // end of lambda to get plate solid with caching
-      
+
       //
       // The plates are constructed starting from the most negative z end and moving towards the positive z end.
       int numberOfPlates = tgt->numberOfPlates();
       // running z position for plate construction. Start at most negative end and move towards +z
       double _currentZ = _localCenter.z() - tgt->halfStickmanLength() // end of most negative end
-                         + tgt->stickmanSupportRingLength() // move past support ring at end 
-                         + 2 * tgt->spacerHalfLength() ; // move past spacer. 
+                         + tgt->stickmanSupportRingLength() // move past support ring at end
+                         + 2 * tgt->spacerHalfLength() ; // move past spacer.
                          // plate fin, core, and lug is flush on this side
       if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << " plate Z starts at " << _currentZ << G4endl;}
-      
+
       // loop over plates to construct and add them to the target mother.
       for (int ithPlate = 0; ithPlate < numberOfPlates; ++ithPlate) {
         std::string plateName = "ProductionTargetPlate_" + std::to_string(ithPlate);
@@ -1642,7 +1642,7 @@ namespace mu2e {
         const double plateCenterZ = _currentZ + plateHalfThickness; // this is the z position of the core
         const CLHEP::Hep3Vector localPlateCenter(0.,0.,plateCenterZ); // this is in the target frame
         const CLHEP::Hep3Vector currentPlateCenter = tgt->productionTargetRotation().inverse()*localPlateCenter;
-        // productionTargetRotation() rotates to the target frame, so to get the position in the world frame we 
+        // productionTargetRotation() rotates to the target frame, so to get the position in the world frame we
         // apply the inverse rotation to the local plate center.
 
         if (verbosityLevel > 0) {
@@ -1663,12 +1663,12 @@ namespace mu2e {
                  << " lugThickness=" << tgt->plateLugThickness(ithPlate)
                  << " lug(inner,outer)=("
                  << tgt->plateLugInnerRadius() << ","
-                 << tgt->plateLugOuterRadius() << ")" 
+                 << tgt->plateLugOuterRadius() << ")"
                  << " addFilletToPlateCore=" << tgt->addFilletToPlateCore()
                  << " addFilletToPlateLug=" << tgt->addFilletToPlateLug()
                  << G4endl;
         }
-        
+
         // get the solid for the plate, using the lambda defined above
         G4VSolid* plateSolid = getStickmanPlateSolid(ithPlate);
 
@@ -1790,20 +1790,20 @@ namespace mu2e {
                  << G4endl;
         }
       } // end of loop over rods and spacers
-      
+
       // now add the two end rings
 
-      // then two cutouts are made by subtracting cylinders with radius of the fillet radius (plus a small tolerance) and height of stickmanSupportRingLength (plus a small tolerance) 
+      // then two cutouts are made by subtracting cylinders with radius of the fillet radius (plus a small tolerance) and height of stickmanSupportRingLength (plus a small tolerance)
       // centered at (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), supportRingLugOuterRadius+filletRadius), and
       //             (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), -supportRingLugOuterRadius-filletRadius)
       // an additional cutout is made for the inner part of the ring by subtracting a tube with inner radius of 0, outer radius of supportRingInnerRadius, and height of stickmanSupportRingLength (plus a small tolerance) centered at (0,0).
-      // if addCutoutToSupportRing is true, then additional circular cutouts (through holes) are made. 
-      // The number of cutouts is given by nSupportRingCutouts at angles defined by supportRingCutoutAngles, and the cutouts are made by subtracting cylinders with radius of 
-      // supportRingCutoutInnerRadius. The centers of the cutouts are at supportRingCutoutOffset from the interface between the spacers and the end ring, and at the angles defined 
-      // by supportRingCutoutAngles. The angle is between the through hole and the local radius, the through hole points outward and towards the middle.  
+      // if addCutoutToSupportRing is true, then additional circular cutouts (through holes) are made.
+      // The number of cutouts is given by nSupportRingCutouts at angles defined by supportRingCutoutAngles, and the cutouts are made by subtracting cylinders with radius of
+      // supportRingCutoutInnerRadius. The centers of the cutouts are at supportRingCutoutOffset from the interface between the spacers and the end ring, and at the angles defined
+      // by supportRingCutoutAngles. The angle is between the through hole and the local radius, the through hole points outward and towards the middle.
 
       // lambda to build the end support ring solid with lugs and fillets if applicable
-      // Note the end plate has a flat face on the inside that is flush with the end of the rods / spacers, details like chamfers at 
+      // Note the end plate has a flat face on the inside that is flush with the end of the rods / spacers, details like chamfers at
       // the rod sockets and those at the cutouts (through holes) are ignored for simplicity.
       auto buildStickmanSupportRingSolid = [&](const std::string& tag, bool positiveEnd) -> G4VSolid* {
         const double ringHalfLength = tgt->stickmanSupportRingLength()/2.;
@@ -1831,7 +1831,7 @@ namespace mu2e {
           CLHEP::twopi));                           // delta angle
 
         // cutout for the center of the ring
-        // such construction avoids potential issue that the lug solid extends within the 
+        // such construction avoids potential issue that the lug solid extends within the
         // inner radius of the ring, which can cause misrepresentation of the geometry
         G4Tubs* ringCenterCutout = reg.add(new G4Tubs(
           "ProductionTargetSupportRingCenterCutout_" + tag, //
@@ -1839,20 +1839,20 @@ namespace mu2e {
           tgt->stickmanSupportRingInnerRadius(),            // outer radius (avoid overlap with lug stem)
           ringHalfLength + stickmanMagicOffset,             // half length (add small offset to avoid precision issues)
           0.,                                               // start angle
-          CLHEP::twopi));                                   // delta angle 
+          CLHEP::twopi));                                   // delta angle
 
         // lugs at three fin angles.
         G4Tubs* lugSolid = reg.add(new G4Tubs(
           "ProductionTargetSupportRingLug_" + tag, //
-          0.,                                      // inner radius 
+          0.,                                      // inner radius
           tgt->supportRingLugOuterRadius(),        // outer radius
           ringHalfLength,                          // half length
           0.,                                      // start angle
           CLHEP::twopi));                          // delta angle
-        
+
         // lug stem
         G4Box* lugStemSolid = reg.add(new G4Box(
-          "ProductionTargetSupportRingLugStem_" + tag, // 
+          "ProductionTargetSupportRingLugStem_" + tag, //
           lugStemHalfLength,                           // half length in x
           tgt->supportRingLugOuterRadius(),            // half length in y
           ringHalfLength));                            // half length in z
@@ -1890,10 +1890,10 @@ namespace mu2e {
             lugSolid,                        // union solid
             nullptr,                         // passive rotation
             lugShift));                      // translation
-          
+
           // add fillet to the lug if applicable
-          // The fillet is added by unioning with an extrusion 
-          // of a triangle with vertices at (0,0), 
+          // The fillet is added by unioning with an extrusion
+          // of a triangle with vertices at (0,0),
           //                                (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), supportRingLugOuterRadius+filletRadius),
           //                                (sqrt((supportRingOuterRadius+filletRadius)^2-(supportRingLugOuterRadius+filletRadius)^2), -supportRingLugOuterRadius-filletRadius),
           // extruded along z by stickmanSupportRingLength starting at the end of the target, with no twist and scale of 1.0 at both ends.
@@ -1950,7 +1950,7 @@ namespace mu2e {
               CLHEP::Hep3Vector(filletX,
                                 -tgt->supportRingLugOuterRadius() - filletRadius,
                                 0.)));          // translation of cutout solid
-            
+
             // add filletSolid to the union with the support ring
             supportRingSolid = reg.add(new G4UnionSolid(
               "ProductionTargetSupportRingFilletUnion_" + tag + "_" + std::to_string(ithFin),
@@ -1968,7 +1968,7 @@ namespace mu2e {
           ringCenterCutout,                 // cutout solid
           nullptr,                          // rotation
           CLHEP::Hep3Vector(0., 0., 0.)));  // translation
-        
+
         // add cutouts for the through holes if applicable
         if (tgt->addCutoutToSupportRing()) {
           const double cutoutTiltAngle = tgt->supportRingCutoutTilt();
@@ -1976,7 +1976,7 @@ namespace mu2e {
           // cutout center is placed at halfway between the inner and outer radius
           const double cutoutCenterRadius = 0.5*(tgt->stickmanSupportRingInnerRadius() + tgt->stickmanSupportRingOuterRadius());
           // this is z position in the local ring frame
-          const double localCutoutZ = (positiveEnd ? 1. : -1.) * 
+          const double localCutoutZ = (positiveEnd ? 1. : -1.) *
                                       (tgt->supportRingCutoutOffset() - ringHalfLength + supportRingWallThickness * 0.5 * std::tan(cutoutTiltAngle) );
           // cutout needs to go through the whole wall thickness
           const double cutoutHalfLength = 0.5 * supportRingWallThickness / std::cos(cutoutTiltAngle)
@@ -2087,8 +2087,8 @@ namespace mu2e {
                << G4endl;
       }
 
-      //Copied code from hayman_v_2_0 to add support structures. Stickman and Hayman supports are the same. Avoiding issue with variables like 
-      //prodTargetMotherInfo crossing scopes this way. They share names but are initialized differently. 
+      //Copied code from hayman_v_2_0 to add support structures. Stickman and Hayman supports are the same. Avoiding issue with variables like
+      //prodTargetMotherInfo crossing scopes this way. They share names but are initialized differently.
       //In addition, this allows changing the support structure for one target without affecting the other.
 
       //Add support structures for the production target

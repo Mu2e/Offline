@@ -92,8 +92,8 @@ namespace mu2e{
         // Train the score network on a batch of samples.
         // Uses random sampling and noise injection via the external engine.
         // Note that training needs to occur on all data samples. Training on multiple small subsets
-        // of data and then averaging or aggregating the model parameters is not supported and may lead to 
-        // issues as neural networks are not linear. 
+        // of data and then averaging or aggregating the model parameters is not supported and may lead to
+        // issues as neural networks are not linear.
         //
         // Parameters:
         //   data         - Training samples (transformed state vectors)
@@ -121,12 +121,12 @@ namespace mu2e{
         // Save the model parameters to a CSV file with annotations for later use.
         // Uses a default filename of "DiffusionModel.csv" if not specified.
         //
-        // Parameters: 
+        // Parameters:
         //   filename - Path to the CSV file where model parameters will be saved (default: "DiffusionModel.csv")
         void saveModel(const std::string& filename = "DiffusionModel.csv");
 
         // Load model parameters from a file to restore a previously trained model.
-        // Note that as the adam optimizer state is not saved, it is not possible to resume training from a loaded 
+        // Note that as the adam optimizer state is not saved, it is not possible to resume training from a loaded
         // model and pick up the training process where it left off. The loaded model can only be used for sampling.
         //
         // Parameters:
@@ -146,7 +146,7 @@ namespace mu2e{
         struct Layer {
             std::vector<std::vector<double>> W; // Weight matrix [output_size][input_size]
             std::vector<double> b;              // Bias vector [output_size]
-            
+
             // storage for gradients during back-propagation
             std::vector<std::vector<double>> gradW; // gradient of loss w.r.t. weights
             std::vector<double> gradb;              // gradient of loss w.r.t. biases
@@ -162,7 +162,7 @@ namespace mu2e{
         std::vector<Layer> network_; // Network layers in forward order
 
         // Storage for activations and pre-activations during forward pass (used in back-propagation)
-        // During forward pass, preactivations_[l] = W[l] * activations_[l-1] + b[l], 
+        // During forward pass, preactivations_[l] = W[l] * activations_[l-1] + b[l],
         //                     and activations_[l] = activationFunction(preactivations_[l])
         // These are needed to compute gradients during the backward pass.
         std::vector<std::vector<double>> activations_;
@@ -193,7 +193,7 @@ namespace mu2e{
         );
 
         // Update network weights using computed gradients (Stochastic Gradient Descent SGD).
-        // Applied after backward pass. Alternately, an Adam optimizer step can be implemented 
+        // Applied after backward pass. Alternately, an Adam optimizer step can be implemented
         // in adamUpdate() for better convergence.
         //
         // Parameters:
@@ -261,12 +261,12 @@ namespace mu2e{
         // Clip gradients to prevent exploding gradients during training.
         //
         // Parameters:
-        //   maxNorm - Maximum allowed norm for the gradients. If the total norm exceeds this threshold, 
+        //   maxNorm - Maximum allowed norm for the gradients. If the total norm exceeds this threshold,
         //             gradients are scaled down to have norm equal to maxNorm.
         void clipGradients(double maxNorm);
 
         // ----- internal vars -----
-        
+
         // The random engine is NOT owned by this class. It is injected externally
         // by the framework. Below are CLHEP distribution wrappers for actual random number generation.
         // These wrap the engine_ and provide specific probability distributions.
@@ -304,7 +304,7 @@ namespace mu2e{
         // Training configuration
         int batchSize_;  // Batch size for vectorized training (default: 32)
         double gradientClipThreshold_;  // Gradient clipping threshold (default: 1.0)
-        double learningRate_; // Learning rate for training (default: 1e-3) 
+        double learningRate_; // Learning rate for training (default: 1e-3)
 
         // Diffusion process discretization
         int diffusionSteps_;  // Number of time steps to generate a sample (default: 200)
@@ -312,10 +312,10 @@ namespace mu2e{
         // Training state
         double runningLoss_;  // Accumulated loss for monitoring during training
         int adamStep_; // Step counter for Adam optimizer (used to compute bias-corrected moment estimates)
-        int trainingSampleSize_; // Total number of training samples 
+        int trainingSampleSize_; // Total number of training samples
 
         // Container for tracking training loss over epochs
         std::vector<double> epochLosses_;
-        
+
     };
 }
