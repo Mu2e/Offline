@@ -21,7 +21,7 @@ namespace art {
 
 namespace mu2e {
 
-class TimeoutWatchdogService {
+class TimeoutWatchdog {
 public:
   struct Config {
     using Name = fhicl::Name;
@@ -49,11 +49,11 @@ public:
 
   using Parameters = art::ServiceTable<Config>;
 
-  TimeoutWatchdogService(Parameters const& config, art::ActivityRegistry&);
-  TimeoutWatchdogService(TimeoutWatchdogService const&) = delete;
-  TimeoutWatchdogService& operator=(TimeoutWatchdogService const&) = delete;
-  TimeoutWatchdogService(TimeoutWatchdogService&&) = delete;
-  TimeoutWatchdogService& operator=(TimeoutWatchdogService&&) = delete;
+  TimeoutWatchdog(Parameters const& config, art::ActivityRegistry&);
+  TimeoutWatchdog(TimeoutWatchdog const&) = delete;
+  TimeoutWatchdog& operator=(TimeoutWatchdog const&) = delete;
+  TimeoutWatchdog(TimeoutWatchdog&&) = delete;
+  TimeoutWatchdog& operator=(TimeoutWatchdog&&) = delete;
 
   // --- called by modules (cooperative) ---
   void startEvent(art::Event const& e);
@@ -110,9 +110,9 @@ private:
   int debugLevel_;
 };
 
-class TimeoutWatchdogService::ModuleGuard {
+class TimeoutWatchdog::ModuleGuard {
 public:
-  ModuleGuard(TimeoutWatchdogService& svc,
+  ModuleGuard(TimeoutWatchdog& svc,
               art::Event const& e,
               std::string const& moduleLabel,
               std::optional<double> allowedTimeMs = std::nullopt)
@@ -132,11 +132,11 @@ public:
   std::stop_token stopToken() const { return svc_.stopToken(); }
 
 private:
-  TimeoutWatchdogService& svc_;
+  TimeoutWatchdog& svc_;
 };
 
 } // namespace mu2e
 
-DECLARE_ART_SERVICE(mu2e::TimeoutWatchdogService, SHARED)
+DECLARE_ART_SERVICE(mu2e::TimeoutWatchdog, SHARED)
 
 #endif /* TimeoutService_TimeoutWatchdog_hh */

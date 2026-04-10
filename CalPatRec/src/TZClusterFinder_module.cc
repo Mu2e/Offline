@@ -85,8 +85,8 @@ namespace mu2e {
     int              _runDisplay;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
-    std::optional<art::ServiceHandle<TimeoutWatchdogService>> _timeoutService;
-    std::optional<TimeoutWatchdogService::ModuleGuard> _timeoutGuard;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
