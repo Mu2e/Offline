@@ -51,7 +51,7 @@ vector<double> targetPS_rOut = {
     3.15, 3.15, 3.15, 3.15, 3.15  // 35
 }; // in mm, core part radius, one value for each
 int targetPS_nStickmanFins             = 3;                   // since the plates are installed on rods, the number of fins is always the same
-vector<double> targetPS_plateFinAngles = {330.,210.,90.};  // degrees
+vector<double> targetPS_plateFinAngles = {285.,165.,45.};     // degrees
 double targetPS_plateFinOuterRadius    = 18.075;              // mm, (39.20-3.05)/2, extends to lug-to-center radius - lug inner radius
 double targetPS_plateFinWidth          = 2.0;                 // mm, all fin has same width
 double targetPS_plateCenterToLugCenter = 19.6;                // mm, center of plate to center of lug
@@ -107,8 +107,9 @@ double targetPS_supportRingLugFilletRadius = 1.0;
 bool   targetPS_addCutoutToSupportRing     = true; // the six cylindrical cutouts at an angle
 double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center. 
                                                    // This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
-int    targetPS_nSupportRingCutouts        = 6;
-vector<double> targetPS_supportRingCutoutAngles = {0., 60., 120., 180., 240., 300.}; // degrees
+int    targetPS_nSupportRingCutouts        = 3;
+vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.} // degrees
+                                                  //{-45., 75., 195.}; these have spokes inside so not cutting out
 // FIXME: double check rotation around the z axis
 double targetPS_supportRingCutoutInnerRadius = 2.06; // mm
 double targetPS_supportRingCutoutTilt        = 20.0; //degrees, angle of the cutout w.r.t the radial direction
@@ -120,21 +121,22 @@ double targetPS.supports.wheel.rOut       = 196.85;
 double targetPS.supports.wheel.rIn        = 177.8;
 string targetPS.supports.wheel.material   =  "G4_Al";
 int    targetPS.supports.nSpokes          = 3;
-// Features on the wheel
-vector<double> targetPS.supports.features.angles = {-46.62,  79.38, 194.38}; //degrees
+// Features on the wheel, changed according to docdb-30814
+vector<double> targetPS.supports.features.angles = {-37.,  83., 203.}; //degrees, center of the features
 vector<double> targetPS.supports.features.arcs   = { 28.,  28.,  28.}; //degrees
 vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //mm
 //support rods in the wheel that the wires connect to
-vector<double> targetPS.supports.rods.angles       = {-54., 71.5, 186.0}; //degrees
+vector<double> targetPS.supports.rods.angles       = {-45., 75., 195.0}; //degrees
 vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
-vector<double> targetPS.supports.rods.offset       = {-40., -10., 40.}; //mm
+vector<double> targetPS.supports.rods.offset       = {-35., -14.80, 38.62}; //mm, changed according to F10122537_A_DWG1
+                                                                            //rod center to the channel centers
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
 vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
-vector<double> targetPS.supports.rods.wireOffset.downstream = {10., 10., 10.}; //mm
-vector<double> targetPS.supports.rods.wireOffset.upstream   = {10., 10., 10.}; //mm
+vector<double> targetPS.supports.rods.wireOffset.downstream = {13., 13., 13.}; //mm, on the surface
+vector<double> targetPS.supports.rods.wireOffset.upstream   = {13., 13., 13.}; //mm, calculated according to F10122537_A_DWG1
 //spokes connecting the target to the wheel rods
-vector<double> targetPS.supports.spokes.targetAngles.downstream = {-54., 71.5, 186.0}; //degrees
-vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-54., 71.5, 186.0}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.downstream = {-45., 75., 195.0}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-45., 75., 195.0}; //degrees
 double targetPS.supports.spokes.diameter = 2.;
 string targetPS.supports.spokes.material = "Inconel718";
 

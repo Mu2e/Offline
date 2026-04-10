@@ -1302,13 +1302,13 @@ namespace mu2e {
 
       if (verbosityLevel > 0){
         G4cout << "target position and hall origin = "
-                  << tgt->stickmanProdTargetPosition() << "\n" <<
-          _hallOriginInMu2e << " " << parent.centerInMu2e() << G4endl;
+               << tgt->stickmanProdTargetPosition() << "\n"
+               << _hallOriginInMu2e << " " << parent.centerInMu2e() << G4endl;
       }
       if (verbosityLevel > 2){
         G4cout << __PRETTY_FUNCTION__ << "created prodTargetMotherInfo "
-                  << tgt->productionTargetMotherOuterRadius()
-                  << " " <<tgt->productionTargetMotherHalfLength() << G4endl;
+               << tgt->productionTargetMotherOuterRadius()
+               << " " <<tgt->productionTargetMotherHalfLength() << G4endl;
       }
 
       // tiny offset to avoid precision issues
@@ -1646,7 +1646,8 @@ namespace mu2e {
         // apply the inverse rotation to the local plate center.
 
         if (verbosityLevel > 0) {
-          G4cout << __PRETTY_FUNCTION__ << " plate " << ithPlate
+          G4cout << __PRETTY_FUNCTION__
+                 << " plate " << ithPlate
                  << " startZ=" << _currentZ
                  << " centerZ=" << plateCenterZ
                  << " endZ=" << (_currentZ + tgt->plateLugThickness(ithPlate))
@@ -1654,7 +1655,8 @@ namespace mu2e {
                  << G4endl;
         }
         if (verbosityLevel > 2) {
-          G4cout << " rOut=" << tgt->plateROut(ithPlate)
+          G4cout << __PRETTY_FUNCTION__
+                 << " rOut=" << tgt->plateROut(ithPlate)
                  << " thickness=" << tgt->plateThickness(ithPlate)
                  << " finWidth=" << tgt->plateFinWidth()
                  << " finReach=" << tgt->plateFinOuterRadius()
@@ -1977,7 +1979,9 @@ namespace mu2e {
           const double localCutoutZ = (positiveEnd ? 1. : -1.) * 
                                       (tgt->supportRingCutoutOffset() - ringHalfLength + supportRingWallThickness * 0.5 * std::tan(cutoutTiltAngle) );
           // cutout needs to go through the whole wall thickness
-          const double cutoutHalfLength = 0.5 * supportRingWallThickness / std::cos(cutoutTiltAngle) + stickmanMagicOffset; // add small offset to avoid precision issues
+          const double cutoutHalfLength = 0.5 * supportRingWallThickness / std::cos(cutoutTiltAngle)
+                                          + tgt->supportRingCutoutInnerRadius() * std::tan(cutoutTiltAngle)
+                                          + stickmanMagicOffset; // add small offset to avoid precision issues
           if (verbosityLevel > 2) {
             G4cout << __PRETTY_FUNCTION__ << " support ring " << tag
                    << " cutoutTilt(deg)=" << cutoutTiltAngle/CLHEP::degree
@@ -2148,9 +2152,11 @@ namespace mu2e {
             const double targetWireAngle = (istream == 0) ? spokeTargetAnglesD[ispoke]*CLHEP::degree
               : spokeTargetAnglesU[ispoke]*CLHEP::degree;
             double rWheel = supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
-            CLHEP::Hep3Vector rodCenter(rWheel*cos(wheelAngle), rWheel*sin(wheelAngle), 0.);
+            CLHEP::Hep3Vector rodCenter(rWheel*std::cos(wheelAngle)*std::cos(targetAngle),
+                                        rWheel*std::sin(wheelAngle),
+                                        0.); // rod plane projected to the wheel plane
             const double rodOffset = supportWheelRodOffset[ispoke];
-            rodCenter += CLHEP::Hep3Vector(sin(targetAngle)*rodOffset, 0., cos(targetAngle)*rodOffset);
+            rodCenter += CLHEP::Hep3Vector(std::sin(targetAngle)*rodOffset, 0., std::cos(targetAngle)*rodOffset);
             if(istream == 0) { //only do once
               //add the features near the support rods in the bicycle wheel
               const double featureAngle = supportWheelFeatureAngles[ispoke]*CLHEP::degree; //angle of feature center
@@ -2174,37 +2180,44 @@ namespace mu2e {
             const int side = (1-2*istream); //+1 or -1
             //info about wire connection
             //get end of the rod on this side
-            CLHEP::Hep3Vector rodAxis(sin(targetAngle), 0., cos(targetAngle));
+            CLHEP::Hep3Vector rodAxis(std::sin(targetAngle), 0., std::cos(targetAngle));
             CLHEP::Hep3Vector wheelPos(rodCenter);
             wheelPos += side*supportWheelRodHL[ispoke]*rodAxis;
-            //translate from rod center to edge
-            CLHEP::Hep3Vector rodCenterToWire(cos(wheelAngle)*cos(targetAngle),
-                                              sin(wheelAngle)*cos(targetAngle),
-                                              -cos(wheelAngle)*sin(targetAngle));
+            //translate from rod center to edge, this is vector from center to rod center rotated by target angle
+            CLHEP::Hep3Vector rodCenterToWire(std::cos(wheelAngle)*std::cos(targetAngle),
+                                              std::sin(wheelAngle), // rorated by target angle around y so y should be unchanged
+                                              -std::cos(wheelAngle)*std::sin(targetAngle));
             wheelPos -= supportWheelRodRadius[ispoke]*rodCenterToWire;
             double zWireRodOffset = (istream == 0) ? supportWheelRodWireOffsetD[ispoke] : supportWheelRodWireOffsetU[ispoke];
             wheelPos -= side*zWireRodOffset*rodAxis;
 
             //get wire position on target
-            CLHEP::Hep3Vector targetPos(rTarget*cos(targetWireAngle), rTarget*sin(targetWireAngle), side*zTarget);
+            CLHEP::Hep3Vector targetPos(rTarget*std::cos(targetWireAngle), rTarget*std::sin(targetWireAngle), side*zTarget);
             targetPos = tgt->productionTargetRotation().inverse()*targetPos; //rotate from target frame to mother frame
+            if (verbosityLevel > 1)
+              G4cout << __PRETTY_FUNCTION__
+                     << "Sanity check for spoke " << ispoke << " on stream " << istream << ":\n"
+                     << "wheel pos " << wheelPos << "\ntarget pos " << targetPos << "\n"
+                     << "spoke length" << (wheelPos-targetPos).mag() << G4endl;
             CLHEP::Hep3Vector spokeAxis((wheelPos-targetPos).unit());
             CLHEP::Hep3Vector targetAxis(0.,0.,side);
             targetAxis = tgt->productionTargetRotation().inverse()*targetAxis;
             CLHEP::Hep3Vector zax(0.,0.,1.);
             if(verbosityLevel > 0)
-              std::cout << "istream " << istream << " ispoke " << ispoke << std::endl
-                        << "target pos " << targetPos << "\nwheel pos " << wheelPos << std::endl
-                        << "Target axis " << targetAxis << "\nSpoke axis " << spokeAxis << std::endl
-                        << "Rod axis " << rodAxis << "\nRod center to wire axis " << rodCenterToWire << std::endl;
+              G4cout << __PRETTY_FUNCTION__
+                     << "istream " << istream << " ispoke " << ispoke << G4endl
+                     << "target pos " << targetPos << "\nwheel pos " << wheelPos << G4endl
+                     << "Target axis " << targetAxis << "\nSpoke axis " << spokeAxis << G4endl
+                     << "Rod axis " << rodAxis << "\nRod center to wire axis " << rodCenterToWire << G4endl;
             //to remove overlaps where the wire connects, need angle of wire and surface connecting to
             //remove overlap at target
             double wireTargetAngle = targetAxis.angle(-1.*spokeAxis);
             double deltaLength = (abs(tan(wireTargetAngle)) > 1.e-6) ? abs(tgt->spokeRadius()/tan(wireTargetAngle)) : 0.; //give up if ~paralle
             targetPos += (deltaLength+0.1)*spokeAxis; //subtract off the length
             if(verbosityLevel > 0)
-              std::cout << "wire target angle " << wireTargetAngle << " delta L " << deltaLength
-                        << " target pos " << targetPos <<std::endl;
+              G4cout << __PRETTY_FUNCTION__
+                     << "wire target angle " << wireTargetAngle << " delta L " << deltaLength
+                     << " target pos " << targetPos << G4endl;
 
             //next remove overlap at rod
             //
@@ -2214,8 +2227,9 @@ namespace mu2e {
             deltaLength = abs(tgt->spokeRadius()/tan(wireRodAngle)); // seems to be a typo in the hayman
             wheelPos -= (deltaLength+0.1)*spokeAxis;
             if(verbosityLevel > 0)
-              std::cout << "wire rod angle " << wireRodAngle << " delta L " << deltaLength
-                        << " wheel pos " << wheelPos <<std::endl;
+              G4cout << __PRETTY_FUNCTION__
+                     << "wire rod angle " << wireRodAngle << " delta L " << deltaLength
+                     << " wheel pos " << wheelPos << G4endl;
 
             CLHEP::Hep3Vector spokeCenter((wheelPos+targetPos)/2.);
             double spokeLength = abs((wheelPos-targetPos).mag());
