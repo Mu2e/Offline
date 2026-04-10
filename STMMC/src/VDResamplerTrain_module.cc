@@ -45,10 +45,6 @@
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
-// ROOT includes
-#include "art_root_io/TFileService.h"
-#include "TTree.h"
-
 typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
 
@@ -202,9 +198,14 @@ namespace mu2e {
           conf().SBDMlearningRate(),
           conf().SBDMdiffusionSteps()
       );
-
-      stage1TrainingData.reserve(1000000);
-      stage2TrainingData.reserve(1000000);
+      // allocate memory according to the training size (if specified, otherwise will grow dynamically)
+      if (trainingSize > 0) {
+        stage1TrainingData.reserve(trainingSize);
+        stage2TrainingData.reserve(trainingSize);
+      } else {
+        stage1TrainingData.reserve(1000);
+        stage2TrainingData.reserve(1000);
+      }
     } else {
       allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
           randFlat_,
@@ -226,8 +227,12 @@ namespace mu2e {
           conf().SBDMlearningRate(),
           conf().SBDMdiffusionSteps()
       );
-
-      allAtOnceTrainingData.reserve(1000000);
+      // allocate memory according to the training size (if specified, otherwise will grow dynamically)
+      if (trainingSize > 0) {
+        allAtOnceTrainingData.reserve(trainingSize);
+      } else {
+        allAtOnceTrainingData.reserve(1000);
+      }
     }
   };
 
@@ -249,7 +254,7 @@ namespace mu2e {
       stepPdgId = particle.pdgId();
       virtualdetectorId = step.virtualDetectorId();
       time = step.time();
-      x = step.position().x(); // Shift the x coordinate to be relative to the centre of beamline
+      x = step.position().x(); // This coordinate is in Mu2e frame, will be shifted to relative x w.r.t. the beamline
       y = step.position().y();
       z = step.position().z();
       px = step.momentum().x();

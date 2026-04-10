@@ -78,6 +78,7 @@ namespace mu2e {
       int pdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, px = 0.0, py = 0.0, pz = 0.0, mass = 0.0, E = 0.0, time = 0.0;
       VolumeId_type virtualdetectorId = 0;
+      int nThrownEvents = 0;
       TTree* ttree;
       std::map<int, int> pdgIds; // <id, count>
   };
@@ -127,8 +128,9 @@ namespace mu2e {
       pz = step.momentum().z();
       if (virtualdetectorId != VirtualDetectorID || pz <= 0)
       {
-        mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
-                                               << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
+        // mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
+        //                                        << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
+        nThrownEvents += 1;
         continue; // Filter hits based on the virtual detector ID and pz
       }
       
@@ -157,11 +159,12 @@ namespace mu2e {
   };
 
   void VDResamplerConfigure::endJob() {
-    mf::LogInfo log("Virtual detector tree summary");
-    log << "========= Data summary =========\n";
+    mf::LogInfo log("Virtual Detector Resampler Training Configuration Summary");
+    log << "========= Particle Summary =========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";
-    log << "================================\n";
+    log << "====================================\n";
+    log << "Number of thrown events: " << nThrownEvents << "\n";
 
     // store a summary of the number of hits for each particle type in a csv file for reference, 
     // all particles are included, but the particle types with hits below the training threshold are 
@@ -243,7 +246,7 @@ namespace mu2e {
                     // << "      SBDMgradientClip : 1.0\n"
                     // << "      SBDMlearningRate : 1e-3\n"
                     // << "      SBDMdiffusionSteps : 200\n"
-                    // << "      SBDMtrainingSize : -1\n"
+                    << "      SBDMtrainingSize : " << part.second << "\n"
                     // << "      SBDMtrainingEpochs : 10\n"
                     << "    }\n";
       }
