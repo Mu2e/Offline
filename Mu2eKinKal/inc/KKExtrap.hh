@@ -12,6 +12,7 @@
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateCalo.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -34,6 +35,8 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> void toCaloD0(KKTrack<KTRAJ>& ktrk) const;
+      template <class KTRAJ> void toCaloD1(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void toOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
 
@@ -44,11 +47,14 @@ namespace mu2e {
       KKMaterial const& kkmat_;
       AnnPtr tsdaptr_;
       DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
+      DiskPtr calod0frontptr_, calod0backptr_;
+      DiskPtr calod1frontptr_, calod1backptr_;
       FruPtr opaptr_;
-      bool backToTracker_, toOPA_, toTrackerEnds_, upstream_;
-      ExtrapolateToZ TSDA_, trackerFront_, trackerBack_; // extrapolation predicate based on Z values
+      bool backToTracker_, toOPA_, toTrackerEnds_, upstream_, toCaloD0_, toCaloD1_;
+      ExtrapolateToZ TSDA_, trackerFront_, trackerBack_, calod0Front_, calod0Back_, calod1Front_, calod1Back_; // extrapolation predicate based on Z values
       ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
       ExtrapolateST extrapST_; // extrapolation to intersections with the ST
+      //ExtrapolateCalo ; // extrapolation to intersections with the Calo
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
   };
@@ -63,14 +69,25 @@ namespace mu2e {
     trkfrontptr_(smap_.tracker().frontPtr()),
     trkmidptr_(smap_.tracker().middlePtr()),
     trkbackptr_(smap_.tracker().backPtr()),
+    calod0frontptr_(smap_.calo().EMC_Disk_0_FrontPtr()),
+    calod0backptr_(smap_.calo().EMC_Disk_0_BackPtr()),
+    calod1frontptr_(smap_.calo().EMC_Disk_1_FrontPtr()),
+    calod1backptr_(smap_.calo().EMC_Disk_1_BackPtr()),
     opaptr_(smap_.DS().outerProtonAbsorberPtr()),
     backToTracker_(extrapconfig.BackToTracker()),
     toOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
     upstream_(extrapconfig.Upstream()),
+    toCaloD0_(extrapconfig.ToCaloD0()),
+    toCaloD1_(extrapconfig.ToCaloD1()),
     TSDA_(maxdt_,btol_,smap_.DS().upstreamAbsorber().center().Z(),debug_),
     trackerFront_(maxdt_,btol_,smap_.tracker().front().center().Z(),debug_),
     trackerBack_(maxdt_,btol_,smap_.tracker().back().center().Z(),debug_),
+    calod0Front_(maxdt_,btol_,smap_.calo().EMC_Disk_0_Front().center().Z(),debug_),
+    calod0Back_(maxdt_,btol_,smap_.calo().EMC_Disk_0_Back().center().Z(),debug_),
+    calod1Front_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Front().center().Z(),debug_),
+    calod1Back_(maxdt_,btol_,smap_.calo().EMC_Disk_1_Back().center().Z(),debug_),
+
     extrapIPA_(maxdt_,btol_,intertol_,smap_.DS().innerProtonAbsorberPtr(),debug_),
     extrapST_(maxdt_,btol_,intertol_,smap_.ST(),debug_)
   {
@@ -82,12 +99,15 @@ namespace mu2e {
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
     if(toTrackerEnds_)toTrackerEnds(ktrk);
+    if(toCaloD0_)toCaloD0(ktrk);
+    if(toCaloD1_)toCaloD1(ktrk);
     if(upstream_){
       auto dir0 = ftraj.direction(ftraj.t0());
       TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
       bool exitsIPA = extrapolateIPA(ktrk,tdir);
+
       if(exitsIPA){ // if it exits out the back, extrapolate through the target
         bool exitsST = extrapolateST(ktrk,tdir);
         if(exitsST) { // if it exits out the back, extrapolate to the TSDA (DS rear absorber)
@@ -150,6 +170,66 @@ namespace mu2e {
       if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
       auto backinter = KinKal::intersect(ftraj,*trkbackptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(tt_back,backinter);
+    }
+  }
+
+    template <class KTRAJ> void KKExtrap::toCaloD0(KKTrack<KTRAJ>& ktrk) const {
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
+    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
+    std::cout<<"calod0Front_ "<<smap_.calo().EMC_Disk_0_Front().center().Z()<<std::endl;
+    std::cout<<"calod0Back_ "<<smap_.calo().EMC_Disk_0_Back().center().Z()<<std::endl;
+    auto tocalofront = ktrk.extrapolate(fronttdir,calod0Front_);
+    auto tocaloback = ktrk.extrapolate(backtdir,calod0Back_);
+    // record the standard tracker intersections
+    static const SurfaceId d0_front("EMC_Disk_0_Front");
+    static const SurfaceId d0_back("EMC_Disk_0_Back");
+    std::cout<<"extrapolating to calo d0"<<std::endl;
+    if(tocalofront){
+      // check the front piece first; that is usually correct
+      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
+      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      auto frontinter = KinKal::intersect(fhel,*calod0frontptr_,fhel.range(),intertol_,fronttdir);
+      if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
+      std::cout<<"to front "<<std::endl;
+    }
+    if(tocaloback){
+      // start from the middle
+      TimeRange brange = ftraj.range();
+      auto backinter = KinKal::intersect(ftraj,*calod0backptr_,brange,intertol_,backtdir);
+      if(backinter.good())ktrk.addIntersection(d0_back,backinter);
+      std::cout<<"to back "<<std::endl;
+    }
+  }
+
+   template <class KTRAJ> void KKExtrap::toCaloD1(KKTrack<KTRAJ>& ktrk) const {
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
+    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
+    auto tocalofront = ktrk.extrapolate(fronttdir,calod1Front_);
+    auto tocaloback = ktrk.extrapolate(backtdir,calod1Back_);
+    std::cout<<"calod1Front_ "<<smap_.calo().EMC_Disk_1_Front().center().Z()<<std::endl;
+    std::cout<<"calod1Back_ "<<smap_.calo().EMC_Disk_1_Back().center().Z()<<std::endl;
+    // record the standard tracker intersections
+    static const SurfaceId d1_front("EMC_Disk_1_Front");
+    static const SurfaceId d1_back("EMC_Disk_1_Back");
+    std::cout<<"extrapolating to calo d1"<<std::endl;
+    if(tocalofront){
+      // check the front piece first; that is usually correct
+      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
+      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      auto frontinter = KinKal::intersect(fhel,*calod1frontptr_,fhel.range(),intertol_,fronttdir);
+      if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
+      std::cout<<"to front "<<std::endl;
+    }
+    if(tocaloback){
+      // start from the middle
+      TimeRange brange = ftraj.range();
+      auto backinter = KinKal::intersect(ftraj,*calod1backptr_,brange,intertol_,backtdir);
+      if(backinter.good())ktrk.addIntersection(d1_back,backinter);
+      std::cout<<"to back "<<std::endl;
     }
   }
 

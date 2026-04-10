@@ -8,6 +8,14 @@ BEGIN_PROLOG
 #
 # may use a more careful optimization, but this is it for now
 #------------------------------------------------------------------------------
+InterdetectorTimeBootstrap : {
+      kalseedModuleLabel : "KKLine"
+      caloClusterModuleLabel : "CaloClusterMaker"
+      crvClusterModuleLabel : "SelectReco"
+      maxDeltaR : 1000.
+      maxDeltaT : 1000.
+}
+
 TrkReco: {
   McUtils : { tool_type : "TrkRecoMcUtils"
     comboHitCollTag    : "makeSH"

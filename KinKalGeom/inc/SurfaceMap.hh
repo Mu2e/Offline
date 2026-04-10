@@ -6,6 +6,7 @@
 #define KinKalGeom_SurfaceMap_hh
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
+#include "Offline/KinKalGeom/inc/Calo.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/TestCRV.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
@@ -31,6 +32,7 @@ namespace mu2e {
       auto const& DS() const {return ds_; }
       auto const& ST() const {return st_; }
       auto const& tracker() const {return tracker_; }
+      auto const& calo() const {return calo_; }
       auto const& TCRV() const {return tcrv_; }
     private:
       // local copy of detector objects; these hold the actual (typed) surface objects
@@ -38,6 +40,7 @@ namespace mu2e {
       KinKalGeom::StoppingTarget st_;
       KinKalGeom::DetectorSolenoid ds_;
       KinKalGeom::TestCRV tcrv_;
+      KinKalGeom::Calo calo_;
       // the actual map
       std::multimap<SurfaceId,SurfacePtr> map_;
   };
