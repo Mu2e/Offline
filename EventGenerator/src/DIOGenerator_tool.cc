@@ -45,6 +45,8 @@ namespace mu2e {
       }
 
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
+      _emin = fullconfig.get<double>("elow");
+      _emax = fullconfig.get<double>("ehi");
       fullconfig.erase(std::string("elow"));
       fullconfig.erase(std::string("ehi"));
       fullconfig.put(std::string("elow"),double(0.0));
@@ -59,6 +61,7 @@ namespace mu2e {
       double pdfmin = _spectrum.getPDF(0);
       double binsize = _spectrum.getBinWidth();
       fullintegral += 0.5*pdfmin*pmin/binsize;
+      _energy_fraction = (fullintegral > 0.) ? integral / fullintegral : 0.;
       std::cout << "Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
       std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
       std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
@@ -72,6 +75,7 @@ namespace mu2e {
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&, const bool isPrimary) override {
       _isPrimary = isPrimary;
@@ -87,6 +91,9 @@ namespace mu2e {
     const double _czmin;
     const double _czmax;
     BinnedSpectrum    _spectrum;
+    double _emin;
+    double _emax;
+    double _energy_fraction;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
@@ -122,6 +129,17 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> DIOGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->emin_  = _emin;
+    config->emax_  = _emax;
+    config->czmin_ = _czmin;
+    config->czmax_ = _czmax;
+    config->fraction_sampled_ = _energy_fraction * (_czmax - _czmin)/2.;
+    config->type_  = SpectrumConfig::Type::kPhysical;
+    return config;
   }
 
 }
