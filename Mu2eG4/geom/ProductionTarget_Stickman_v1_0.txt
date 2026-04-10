@@ -5,7 +5,7 @@
 
 // The Hayman dependence is intentionally removed. 
 
-int PSStickman.verbosityLevel = 0; //5;
+int PSStickman.verbosityLevel = 5;
 
 int targetPS_version  = 4;
 string targetPS_model = "Stickman_v_1_0";
@@ -108,7 +108,7 @@ bool   targetPS_addCutoutToSupportRing     = true; // the six cylindrical cutout
 double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center. 
                                                    // This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
 int    targetPS_nSupportRingCutouts        = 3;
-vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.} // degrees
+vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.}; // degrees
                                                   //{-45., 75., 195.}; these have spokes inside so not cutting out
 // FIXME: double check rotation around the z axis
 double targetPS_supportRingCutoutInnerRadius = 2.06; // mm
