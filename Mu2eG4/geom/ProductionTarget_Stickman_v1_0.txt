@@ -5,7 +5,7 @@
 
 // The Hayman dependence is intentionally removed. 
 
-int PSStickman.verbosityLevel = 5;
+int PSStickman.verbosityLevel = 0; //5;
 
 int targetPS_version  = 4;
 string targetPS_model = "Stickman_v_1_0";
