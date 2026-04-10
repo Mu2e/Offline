@@ -108,7 +108,7 @@ namespace mu2e{
         //
         // Parameters:
         //   condition       - Optional conditioning vector (must match conditionDim_ when enabled)
-        //   useHeun         - If true, uses Heun's method (2nd order). If false, uses Euler method (2nd order, default)
+        //   useHeun         - If true, uses Heun's method (2nd order, default). If false, uses Euler's method (1st order)
         //   diffusionSteps  - Number of diffusion steps for sampling (default: -1 uses the model's configured diffusionSteps_)
         //
         // Returns: A generated sample vector of dimension dim_
