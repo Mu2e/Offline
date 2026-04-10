@@ -51,4 +51,16 @@ cet_build_plugin(CaloNNDiag art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(CaloNNTrain art::module
+    REG_SOURCE src/CaloNNTrain_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::CaloCluster
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+)
+
 install_source(SUBDIRS src)
