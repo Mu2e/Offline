@@ -1,4 +1,5 @@
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include <numeric>
 
 namespace mu2e {
   ProductionTarget::ProductionTarget(std::string tier1TargetType, int version, double rOut,
@@ -97,6 +98,88 @@ namespace mu2e {
     _protonBeamInverseRotation = _protonBeamRotation.inverse();
     _halfLength = _productionTargetMotherHalfLength;
     _prodTargetPosition = _haymanProdTargetPosition;
+  }
+
+  ProductionTarget::ProductionTarget(
+                                     std::string stickmanTargetType
+                                     ,int version
+                                     ,double productionTargetMotherOuterRadius
+                                     ,double productionTargetMotherHalfLength
+                                     ,double rotStickmanX
+                                     ,double rotStickmanY
+                                     ,double rotStickmanZ
+                                     ,double halfStickmanLength
+                                     ,const CLHEP::Hep3Vector& stickmanProdTargetPosition
+                                     ,std::string targetVacuumMaterial
+                                     ,int numberOfPlates
+                                     ,std::vector<std::string> plateMaterial
+                                     ,std::vector<double> plateROut
+                                     ,int nStickmanFins
+                                     ,std::vector<double> plateFinAngles
+                                     ,double plateFinOuterRadius
+                                     ,double plateFinWidth
+                                     ,double plateCenterToLugCenter
+                                     ,double plateLugInnerRadius
+                                     ,double plateLugOuterRadius
+                                     ,std::vector<double> plateThickness
+                                     ,std::vector<double> plateLugThickness
+                                     ,std::string rodMaterial
+                                     ,double rodRadius
+                                     ,std::string spacerMaterial
+                                     ,double spacerHalfLength
+                                     ,double spacerOuterRadius
+                                     ,double spacerInnerRadius
+                                     ,std::string stickmanSupportRingMaterial
+                                     ,double stickmanSupportRingLength
+                                     ,double stickmanSupportRingInnerRadius
+                                     ,double stickmanSupportRingOuterRadius
+                                     ,double supportRingLugOuterRadius
+                                     ,double supportRingCutoutOffset
+                                     )
+  : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
+    ,_version(version)
+    ,_productionTargetMotherOuterRadius(productionTargetMotherOuterRadius)
+    ,_productionTargetMotherHalfLength(productionTargetMotherHalfLength)
+    ,_targetVacuumMaterial(targetVacuumMaterial)
+    ,_stickmanTargetType(stickmanTargetType)
+    ,_halfStickmanLength(halfStickmanLength)
+    ,_rotStickmanX(rotStickmanX)
+    ,_rotStickmanY(rotStickmanY)
+    ,_rotStickmanZ(rotStickmanZ)
+    ,_stickmanProdTargetPosition(stickmanProdTargetPosition)
+    ,_numberOfPlates(numberOfPlates)
+    ,_plateMaterial(plateMaterial)
+    ,_plateROut(plateROut)
+    ,_nStickmanFins(nStickmanFins)
+    ,_plateFinAngles(plateFinAngles)
+    ,_plateFinOuterRadius(plateFinOuterRadius)
+    ,_plateFinWidth(plateFinWidth)
+    ,_plateCenterToLugCenter(plateCenterToLugCenter)
+    ,_plateLugInnerRadius(plateLugInnerRadius)
+    ,_plateLugOuterRadius(plateLugOuterRadius)
+    ,_plateThickness(plateThickness)
+    ,_plateLugThickness(plateLugThickness)
+    ,_rodMaterial(rodMaterial)
+    ,_rodRadius(rodRadius)
+    ,_spacerMaterial(spacerMaterial)
+    ,_spacerHalfLength(spacerHalfLength)
+    ,_spacerOuterRadius(spacerOuterRadius)
+    ,_spacerInnerRadius(spacerInnerRadius)
+    ,_stickmanSupportRingMaterial(stickmanSupportRingMaterial)
+    ,_stickmanSupportRingLength(stickmanSupportRingLength)
+    ,_stickmanSupportRingInnerRadius(stickmanSupportRingInnerRadius)
+    ,_stickmanSupportRingOuterRadius(stickmanSupportRingOuterRadius)
+    ,_supportRingLugOuterRadius(supportRingLugOuterRadius)
+    ,_supportRingCutoutOffset(supportRingCutoutOffset)
+  {
+    // rod half length, actual rod is longer than this since it inserts into the end rings, but for the geometry reconstruction, that part will be treated as part of the end ring.
+    _rodHalfLength = std::accumulate(_plateLugThickness.begin(), _plateLugThickness.end(), 0.0) / 2.0 + 2 * _spacerHalfLength;
+
+    // rotations
+    _protonBeamRotation.rotateX(rotStickmanX).rotateY(rotStickmanY).rotateZ(rotStickmanZ);
+    _protonBeamInverseRotation = _protonBeamRotation.inverse(); // passive rotation matrix
+    _halfLength = _productionTargetMotherHalfLength;
+    _prodTargetPosition = _stickmanProdTargetPosition;
   }
 
 

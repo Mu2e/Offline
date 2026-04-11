@@ -1,0 +1,147 @@
+// A geometry file for using the version 1 Stickman Production Target.
+
+// Support wheel and wire geometry is inherited from the existing Hayman production target geometry,
+// others are overhauled to use the new Stickman geometry.
+
+// The Hayman dependence is intentionally removed.
+
+int PSStickman.verbosityLevel = 0; //5;
+
+int targetPS_version  = 4;
+string targetPS_model = "Stickman_v_1_0";
+
+// Nominal target position in the Mu2e coordinate system: at PS center in XY, at the given Z:
+double productionTarget.zNominal = -6164.5;
+// Optional shift of production target from the nominal
+vector<double> productionTarget.offset = { 0., 0., 0.};
+
+// Mother volume
+double targetPS_productionTargetMotherOuterRadius = 200.; //mm
+double targetPS_productionTargetMotherHalfLength = 120.; //mm  full length 232.2 mm
+
+// Overall rotation
+double targetPS_rotX = 0.0;
+double targetPS_rotY = 14.0;
+double targetPS_rotZ = 0.0;
+// Dimension
+double targetPS_halfStickmanLength = 116.1; // mm. 35 * 6 mm / 2 + 8.1 mm + 3 mm. We do not need this except for debugging.
+// Configurations
+bool   targetPS.visible              = true;
+bool   targetPS.solid                = false;
+string targetPS_targetVacuumMaterial = "PSVacuum";
+
+// Start with target plates. Chose to specify certain parameters for each plate, so can easily play with plate-by-plate dimensions later on
+int targetPS_numberOfPlates = 35;
+vector<string> targetPS_plateMaterial = { // counting along mu2e +z direction, i.e. from the proton downstream side to the upstream side
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", //  5
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 10
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 15
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 20
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 25
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 30
+    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718"  // 35
+}; // does not separate fin & core material here
+vector<double> targetPS_rOut = {
+    3.15, 3.15, 3.15, 3.15, 3.15, //  5
+    3.15, 3.15, 3.15, 3.15, 3.15, // 10
+    3.15, 3.15, 3.15, 3.15, 3.15, // 15
+    3.15, 3.15, 3.15, 3.15, 3.15, // 20
+    3.15, 3.15, 3.15, 3.15, 3.15, // 25
+    3.15, 3.15, 3.15, 3.15, 3.15, // 30
+    3.15, 3.15, 3.15, 3.15, 3.15  // 35
+}; // in mm, core part radius, one value for each
+int targetPS_nStickmanFins             = 3;                   // since the plates are installed on rods, the number of fins is always the same
+vector<double> targetPS_plateFinAngles = {285.,165.,45.};     // degrees
+double targetPS_plateFinOuterRadius    = 18.075;              // mm, (39.20-3.05)/2, extends to lug-to-center radius - lug inner radius
+double targetPS_plateFinWidth          = 2.0;                 // mm, all fin has same width
+double targetPS_plateCenterToLugCenter = 19.6;                // mm, center of plate to center of lug
+double targetPS_plateLugInnerRadius    = 1.525;               // mm, inner radius of the lug
+double targetPS_plateLugOuterRadius    = 3.0;                 // mm, outer radius of the lug
+vector<double> targetPS_plateThickness = {
+    5.0, 5.0, 5.0, 5.0, 5.0, //  5
+    5.0, 5.0, 5.0, 5.0, 5.0, // 10
+    5.0, 5.0, 5.0, 5.0, 5.0, // 15
+    5.0, 5.0, 5.0, 5.0, 5.0, // 20
+    5.0, 5.0, 5.0, 5.0, 5.0, // 25
+    5.0, 5.0, 5.0, 5.0, 5.0, // 30
+    5.0, 5.0, 5.0, 5.0, 5.0  // 35
+}; // in mm, one value for each plate, core and fin thickness
+vector<double> targetPS_plateLugThickness = {
+    6.0, 6.0, 6.0, 6.0, 6.0, //  5
+    6.0, 6.0, 6.0, 6.0, 6.0, // 10
+    6.0, 6.0, 6.0, 6.0, 6.0, // 15
+    6.0, 6.0, 6.0, 6.0, 6.0, // 20
+    6.0, 6.0, 6.0, 6.0, 6.0, // 25
+    6.0, 6.0, 6.0, 6.0, 6.0, // 30
+    6.0, 6.0, 6.0, 6.0, 6.0  // 35
+}; // in mm, one value for each plate, note lugs are flush with the fins on the proton downstream side
+bool targetPS_addFilletToPlateCore = true; // whether to add fillet to the intersection between plate core and fins
+bool targetPS_addFilletToPlateLug  = true; // whether to add fillet to the intersection between fins and lugs
+// Fillets between fins and lugs are less important than the fillets between the core and fins, since the lugs are not in the direct path of the beam.
+// Fillets due to lug thickness larger than the plate thickness is not added, due to the complexity of the geometry and the small effect on the physics.
+double targetPS_plateFilletRadius = 1.0; // mm
+
+// Rods holding plates, which are attached to the end rings.
+string targetPS_rodMaterial = "Inconel718";
+double targetPS_rodRadius = 1.5; // mm
+// Rod length will be the sum of lug thicknesses and the spacer thicknesses, to be determined in the code.
+// Actual rod is longer than this since it inserts into the end rings, but for the geometry reconstruction, that part will be treated as part of the end ring.
+
+// Spacer geometry, which is the same for all spacers. Added to both upstream and downstream end of the rods.
+string targetPS_spacerMaterial = "Inconel718";
+double targetPS_spacerHalfLength  = 1.5;  // mm, full length 3.0 mm
+double targetPS_spacerOuterRadius = 3.0;  // mm
+double targetPS_spacerInnerRadius = 1.55; // mm
+
+// End ring / support ring
+string targetPS_supportRingMaterial        = "Inconel718";
+double targetPS_supportRingLength          = 8.1;  // full length in mm
+double targetPS_supportRingInnerRadius     = 15.0; // mm
+double targetPS_supportRingOuterRadius     = 17.0; // mm
+double targetPS_supportRingLugOuterRadius  = 3.0;  // mm
+// Lug distance to center is the same as the plate lug distance to center, not defined as a separate parameter.
+// Lug angles are constrained by the plate fin angles.
+// End rings have chamfers at the sockets where the rods inserts (aligned with the lugs). The sockets, chamfers, and fillets at the bottom of the sockets are not modeled.
+bool   targetPS_addFilletToSupportRingLug  = true;
+double targetPS_supportRingLugFilletRadius = 1.0;
+bool   targetPS_addCutoutToSupportRing     = true; // the six cylindrical cutouts at an angle
+double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center.
+                                                   // This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
+int    targetPS_nSupportRingCutouts        = 3;
+vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.}; // degrees
+                                                  //{-45., 75., 195.}; these have spokes inside so not cutting out
+// FIXME: double check rotation around the z axis
+double targetPS_supportRingCutoutInnerRadius = 2.06; // mm
+double targetPS_supportRingCutoutTilt        = 20.0; //degrees, angle of the cutout w.r.t the radial direction
+
+// Bicycle wheel parameters -- copied from the Hayman target
+bool   targetPS.supports.build            = true;
+double targetPS.supports.wheel.halfLength = 9.525;
+double targetPS.supports.wheel.rOut       = 196.85;
+double targetPS.supports.wheel.rIn        = 177.8;
+string targetPS.supports.wheel.material   =  "G4_Al";
+int    targetPS.supports.nSpokes          = 3;
+// Features on the wheel, changed according to docdb-30814
+vector<double> targetPS.supports.features.angles = {-37.,  83., 203.}; //degrees, center of the features
+vector<double> targetPS.supports.features.arcs   = { 28.,  28.,  28.}; //degrees
+vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //mm
+//support rods in the wheel that the wires connect to
+vector<double> targetPS.supports.rods.angles       = {-45., 75., 195.0}; //degrees
+vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
+vector<double> targetPS.supports.rods.offset       = {-35., -14.80, 38.62}; //mm, changed according to F10122537_A_DWG1
+                                                                            //rod center to the channel centers
+vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
+vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
+vector<double> targetPS.supports.rods.wireOffset.downstream = {13., 13., 13.}; //mm, on the surface
+vector<double> targetPS.supports.rods.wireOffset.upstream   = {13., 13., 13.}; //mm, calculated according to F10122537_A_DWG1
+//spokes connecting the target to the wheel rods
+vector<double> targetPS.supports.spokes.targetAngles.downstream = {-45., 75., 195.0}; //degrees
+vector<double> targetPS.supports.spokes.targetAngles.upstream   = {-45., 75., 195.0}; //degrees
+double targetPS.supports.spokes.diameter = 2.;
+string targetPS.supports.spokes.material = "Inconel718";
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -9,19 +9,17 @@
 namespace mu2e {
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
-
-
     if (c.getString("targetPS_model") == "MDC2018"){
-      //     std::cout << "making Tier1 in maker" << std::endl;
+      //     std::cout << " making Tier1 in maker" << std::endl;
       return makeTier1(c, solenoidOffset);
-        } else
-      if (c.getString("targetPS_model") == "Hayman_v_2_0"){
-        //        std::cout << " making Hayman in Maker" << std::endl;
-        return makeHayman_v_2_0(c, solenoidOffset);
-          } else
-        {throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
-    return 0;
-
+    } else if (c.getString("targetPS_model") == "Hayman_v_2_0"){
+      //     std::cout << " making Hayman in Maker" << std::endl;
+      return makeHayman_v_2_0(c, solenoidOffset);
+    } else if (c.getString("targetPS_model") == "Stickman_v_1_0"){
+      return makeStickman_v_1_0(c, solenoidOffset);
+    } else{
+      throw cet::exception("GEOM") << " illegal production target model specified = " << c.getString("targetPS_model")  << std::endl;
+    }
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){
@@ -386,6 +384,118 @@ namespace mu2e {
       tgtPS->_spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
       //override old format of the material if new syntax is found
       tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material", tgtPS->_spokeMaterial);
+    }
+    return tgtPS;
+  }
+
+  std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeStickman_v_1_0(const SimpleConfig& c, double solenoidOffset){
+
+    // Read the plate and fin parameters
+    std::vector<std::string> plateMaterial;
+    std::vector<double> plateROut;
+    std::vector<double> plateFinAngles;
+    std::vector<double> plateThickness;
+    std::vector<double> plateLugThickness;
+
+    c.getVectorString("targetPS_plateMaterial", plateMaterial);
+    c.getVectorDouble("targetPS_rOut", plateROut);
+    c.getVectorDouble("targetPS_plateFinAngles", plateFinAngles);
+    for_each(plateFinAngles.begin(), plateFinAngles.end(), [](double& elem){elem *= CLHEP::degree;});
+    c.getVectorDouble("targetPS_plateThickness", plateThickness);
+    c.getVectorDouble("targetPS_plateLugThickness", plateLugThickness);
+
+    std::unique_ptr<ProductionTarget> tgtPS
+      (new ProductionTarget(
+                            c.getString("targetPS_model","NULL"),
+                            c.getInt("targetPS_version"),
+                            c.getDouble("targetPS_productionTargetMotherOuterRadius"),
+                            c.getDouble("targetPS_productionTargetMotherHalfLength"),
+                            c.getDouble("targetPS_rotX") * CLHEP::degree,
+                            c.getDouble("targetPS_rotY") * CLHEP::degree,
+                            c.getDouble("targetPS_rotZ") * CLHEP::degree,
+                            c.getDouble("targetPS_halfStickmanLength"),
+                            CLHEP::Hep3Vector(solenoidOffset,
+                                              0,
+                                              c.getDouble("productionTarget.zNominal")
+                                              )
+                            + c.getHep3Vector("productionTarget.offset"),
+                            c.getString("targetPS_targetVacuumMaterial"),
+                            c.getInt("targetPS_numberOfPlates"),
+                            plateMaterial,
+                            plateROut,
+                            c.getInt("targetPS_nStickmanFins"),
+                            plateFinAngles,
+                            c.getDouble("targetPS_plateFinOuterRadius"),
+                            c.getDouble("targetPS_plateFinWidth"),
+                            c.getDouble("targetPS_plateCenterToLugCenter"),
+                            c.getDouble("targetPS_plateLugInnerRadius"),
+                            c.getDouble("targetPS_plateLugOuterRadius"),
+                            plateThickness,
+                            plateLugThickness,
+                            c.getString("targetPS_rodMaterial"),
+                            c.getDouble("targetPS_rodRadius"),
+                            c.getString("targetPS_spacerMaterial"),
+                            c.getDouble("targetPS_spacerHalfLength"),
+                            c.getDouble("targetPS_spacerOuterRadius"),
+                            c.getDouble("targetPS_spacerInnerRadius"),
+                            c.getString("targetPS_supportRingMaterial"),
+                            c.getDouble("targetPS_supportRingLength"),
+                            c.getDouble("targetPS_supportRingInnerRadius"),
+                            c.getDouble("targetPS_supportRingOuterRadius"),
+                            c.getDouble("targetPS_supportRingLugOuterRadius"),
+                            c.getDouble("targetPS_supportRingCutoutOffset")
+                            ));
+
+    // Configure plate fillet parameters (only if fillets will be used)
+    tgtPS->_addFilletToPlateCore = c.getBool("targetPS_addFilletToPlateCore");
+    tgtPS->_addFilletToPlateLug = c.getBool("targetPS_addFilletToPlateLug");
+    if(tgtPS->_addFilletToPlateCore || tgtPS->_addFilletToPlateLug) {
+      tgtPS->_plateFilletRadius = c.getDouble("targetPS_plateFilletRadius");
+    }
+
+    // Configure support ring lug fillet parameters (only if fillets will be used)
+    tgtPS->_addFilletToSupportRingLug = c.getBool("targetPS_addFilletToSupportRingLug");
+    if(tgtPS->_addFilletToSupportRingLug) {
+      tgtPS->_supportRingLugFilletRadius = c.getDouble("targetPS_supportRingLugFilletRadius");
+    }
+
+    // Configure support ring cutout parameters (only if cutouts will be used)
+    tgtPS->_addCutoutToSupportRing = c.getBool("targetPS_addCutoutToSupportRing");
+    if(tgtPS->_addCutoutToSupportRing) {
+      tgtPS->_nSupportRingCutouts = c.getInt("targetPS_nSupportRingCutouts");
+      c.getVectorDouble("targetPS_supportRingCutoutAngles", tgtPS->_supportRingCutoutAngles);
+      for_each(tgtPS->_supportRingCutoutAngles.begin(), tgtPS->_supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
+      tgtPS->_supportRingCutoutInnerRadius = c.getDouble("targetPS_supportRingCutoutInnerRadius");
+      tgtPS->_supportRingCutoutTilt = c.getDouble("targetPS_supportRingCutoutTilt") * CLHEP::degree;
+    }
+
+    // Configure support wheel/bicycle wheel parameters (reused from Hayman)
+    tgtPS->_supportsBuild = c.getBool("targetPS.supports.build", false);
+    if(tgtPS->_supportsBuild) {
+      //support wheel parameters
+      tgtPS->_supportWheelRIn      = c.getDouble("targetPS.supports.wheel.rIn");
+      tgtPS->_supportWheelROut     = c.getDouble("targetPS.supports.wheel.rOut");
+      tgtPS->_supportWheelHL       = c.getDouble("targetPS.supports.wheel.halfLength");
+      tgtPS->_supportWheelMaterial = c.getString("targetPS.supports.wheel.material");
+      //number of support rods and wires
+      tgtPS->_nSpokesPerSide = c.getInt("targetPS.supports.nSpokes");
+      //features on the wheel near each support rod
+      c.getVectorDouble("targetPS.supports.features.angles", tgtPS->_supportWheelFeatureAngles, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.arcs"  , tgtPS->_supportWheelFeatureArcs  , tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.rIns"  , tgtPS->_supportWheelFeatureRIns  , tgtPS->_nSpokesPerSide);
+      //support wheel rods parameters
+      c.getVectorDouble("targetPS.supports.rods.halfLength", tgtPS->_supportWheelRodHL, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.offset", tgtPS->_supportWheelRodOffset, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radius", tgtPS->_supportWheelRodRadius, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radialOffset", tgtPS->_supportWheelRodRadialOffset, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.downstream", tgtPS->_supportWheelRodWireOffsetD, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.upstream", tgtPS->_supportWheelRodWireOffsetU, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.angles", tgtPS->_supportWheelRodAngles, tgtPS->_nSpokesPerSide);
+      //support wire (spokes) parameters
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.downstream", tgtPS->_spokeTargetAnglesD, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.upstream", tgtPS->_spokeTargetAnglesU, tgtPS->_nSpokesPerSide);
+      tgtPS->_spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
+      tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material");
     }
     return tgtPS;
   }

@@ -367,6 +367,9 @@ namespace mu2e {
     } else if (targetPS_model == "Hayman_v_2_0"){
       verbosityLevel> 0 && std::cout << __func__ << "Hayman 2.0 target" << std::endl;
       constructTargetPS(psVacuumInfo, _config );
+    } else if (targetPS_model == "Stickman_v_1_0"){
+      verbosityLevel> 0 && std::cout << __func__ << "Stickman 1.0 target" << std::endl;
+      constructTargetPS(psVacuumInfo, _config );
     } else{
       throw cet::exception("CONFIG")
         << "In constructPS.cc unrecognized production target model name: "
