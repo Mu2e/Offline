@@ -1,5 +1,5 @@
 //
-// TimeoutWatchdogService plugin
+// TimeoutWatchdog service plugin
 //
 
 #include "art/Framework/Services/Registry/ServiceDefinitionMacros.h"
