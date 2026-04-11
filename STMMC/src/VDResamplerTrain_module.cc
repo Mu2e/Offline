@@ -44,6 +44,7 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/STMMC/inc/VDResamplerTransformDefaults.hh"
 
 typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
@@ -117,11 +118,11 @@ namespace mu2e {
       VolumeId_type virtualdetectorId = 0;
 
       // transform variables for training data preparation
-      double x0 = -3904.0;
-      double y0 = 0.0;
+      double x0 = vdresampler::kX0;
+      double y0 = vdresampler::kY0;
       // time scaling
-      double t0 = 1700.0;   // ns
-      double tScale = 1.0;
+      double t0 = vdresampler::kT0;
+      double tScale = vdresampler::kTScale;
   };
 
   VDResamplerTrain::VDResamplerTrain(const Parameters& conf) :
@@ -307,7 +308,7 @@ namespace mu2e {
         pphi = py;
       }
       // momentum scaling
-      double p0 = 1.0; // tunable scale where I want best resolution
+      double p0 = vdresampler::kP0; // tunable scale where I want best resolution
       double pr_t   = std::asinh(pr   / p0);
       double pphi_t = std::asinh(pphi / p0);
       double pz_t   = std::asinh(pz   / p0);

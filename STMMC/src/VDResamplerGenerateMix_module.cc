@@ -48,6 +48,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
+#include "Offline/STMMC/inc/VDResamplerTransformDefaults.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -171,11 +172,11 @@ namespace mu2e {
       std::vector<SourceSummary> sources_;
       double totalSourceWeight_ = 0.0;
 
-      double x0_ = -3904.0;
-      double y0_ = 0.0;
-      double t0_ = 1700.0;
-      double tScale_ = 1.0;
-      double p0_ = 1.0;
+      double x0_ = vdresampler::kX0;
+      double y0_ = vdresampler::kY0;
+      double t0_ = vdresampler::kT0;
+      double tScale_ = vdresampler::kTScale;
+      double p0_ = vdresampler::kP0;
 
       TTree* outTree_ = nullptr;
       int summaryIndex_ = -1;

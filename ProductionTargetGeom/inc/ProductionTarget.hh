@@ -7,7 +7,6 @@
 #define PRODUCTIONTARGET_HH
 
 #include <map>
-#include <numeric>
 
 #include "canvas/Persistency/Common/Wrapper.h"
 

@@ -972,7 +972,7 @@ namespace mu2e {
             //
             // ok here I have a little confusing fix.  The fin is built along the y-axis.  But the rotation is given wrt the x axis.  Hence I need to
             // subtract off that 90^o
-            double rotAdj = -M_PI/2 + currentFinAngle;
+            double rotAdj = -M_PI/2. + currentFinAngle;
             rotFin->rotateZ(rotAdj);
             //
             // g4 version.

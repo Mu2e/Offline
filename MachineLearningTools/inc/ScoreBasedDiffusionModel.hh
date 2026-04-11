@@ -272,9 +272,9 @@ namespace mu2e{
         // These wrap the engine_ and provide specific probability distributions.
         // - RandFlat:   Uniform distribution on [0,1)
         // - RandGaussQ: Gaussian (normal) distribution with mean=0, sigma=1 (or custom)
-        // Both are initialized in the constructor with the injected engine_.
-        CLHEP::RandFlat   randFlat_;      // Used for uniform sampling (e.g., batch selection)
-        CLHEP::RandGaussQ randGaussQ_;    // Used for Gaussian noise in diffusion process
+        // Both are bound in the constructor to externally managed wrappers.
+        CLHEP::RandFlat& randFlat_;       // Used for uniform sampling (e.g., batch selection)
+        CLHEP::RandGaussQ& randGaussQ_;   // Used for Gaussian noise in diffusion process
 
         // Model hyperparameters
         int dim_;           // Dimensionality of state space

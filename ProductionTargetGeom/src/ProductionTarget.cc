@@ -1,4 +1,5 @@
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include <numeric>
 
 namespace mu2e {
   ProductionTarget::ProductionTarget(std::string tier1TargetType, int version, double rOut,

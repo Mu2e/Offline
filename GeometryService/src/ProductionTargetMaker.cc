@@ -9,22 +9,17 @@
 namespace mu2e {
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
-
-
     if (c.getString("targetPS_model") == "MDC2018"){
-      //     std::cout << "making Tier1 in maker" << std::endl;
+      //     std::cout << " making Tier1 in maker" << std::endl;
       return makeTier1(c, solenoidOffset);
-        } else
-      if (c.getString("targetPS_model") == "Hayman_v_2_0"){
-        //        std::cout << " making Hayman in Maker" << std::endl;
-        return makeHayman_v_2_0(c, solenoidOffset);
-          } else
-      if (c.getString("targetPS_model") == "Stickman_v_1_0"){
-        return makeStickman_v_1_0(c, solenoidOffset);
-          } else
-        {throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
-    return 0;
-
+    } else if (c.getString("targetPS_model") == "Hayman_v_2_0"){
+      //     std::cout << " making Hayman in Maker" << std::endl;
+      return makeHayman_v_2_0(c, solenoidOffset);
+    } else if (c.getString("targetPS_model") == "Stickman_v_1_0"){
+      return makeStickman_v_1_0(c, solenoidOffset);
+    } else{
+      throw cet::exception("GEOM") << " illegal production target model specified = " << c.getString("targetPS_model")  << std::endl;
+    }
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){

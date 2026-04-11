@@ -71,6 +71,9 @@ namespace mu2e {
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid model dimensions";
         }
+        if (batchSize <= 0) {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid batchSize";
+        }
         if (diffusionSteps <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid diffusionSteps";
         }
@@ -86,8 +89,10 @@ namespace mu2e {
         int in = inputSize;
 
         // Weight initialization scale (local constant so it can be tuned easily)
-        const double weightInitScale = 0.02;
-        // const double weightInitScale = std::sqrt(2.0 / in); // He initialization for ReLU activations
+        // const double weightInitScale = 0.02; // not scalable with size, can lead to instability for larger models and too slow training for smaller models
+        // const double weightInitScale = std::sqrt(2.0 / in); // He initialization for ReLU activations, SiLU is similar to ReLU in terms of variance preservation
+        double reducedHe = 0.5 * std::sqrt(2.0 / in); // Scaled He initialization found to improve stability
+        const double weightInitScale = std::min(reducedHe, 0.3); // Cap the weight initialization scale to prevent instability for very small input sizes
 
         for (int l = 0; l < layers_; ++l) {
 
@@ -127,9 +132,12 @@ namespace mu2e {
                 layer.b[i] = 0.0;
             }
 
-            assert (layer.W[0].size() == (size_t)in); // Check that weight matrix has correct input dimension
-            assert (layer.W.size() == (size_t)out);   // Check that weight matrix has correct output dimension
-            assert (layer.b.size() == (size_t)out);  // Check that bias vector has correct dimension
+            if (layer.W.empty() || layer.W[0].size() != static_cast<size_t>(in) || //Check that weight matrix has correct input dimension
+                layer.W.size() != static_cast<size_t>(out) ||                      //Check that weight matrix has correct output dimension
+                layer.b.size() != static_cast<size_t>(out)) {                      //Check that bias vector has correct dimension
+                throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                    << "Layer shape initialization mismatch";
+            }
 
             network_.push_back(layer);
 
@@ -179,10 +187,15 @@ namespace mu2e {
         const std::vector<double>& input
     )
     {
-        assert(!network_.empty());
-        assert(!network_[0].W.empty());
-        assert(!network_[0].W[0].empty());
-        assert(input.size() == network_[0].W[0].size());
+        if (network_.empty() || network_[0].W.empty() || network_[0].W[0].empty()) {
+            throw cet::exception("ScoreBasedDiffusionModel::forward")
+                << "Network is not properly initialized";
+        }
+        if (input.size() != network_[0].W[0].size()) {
+            throw cet::exception("ScoreBasedDiffusionModel::forward")
+                << "Input dimension mismatch: got " << input.size()
+                << ", expected " << network_[0].W[0].size();
+        }
 
         activations_.clear();
         preactivations_.clear();
@@ -276,7 +289,10 @@ namespace mu2e {
                 layer.gradb[i] += gradZ[i];
             }
 
-            assert(!layer.W.empty() && !layer.W[0].empty());
+            if (layer.W.empty() || layer.W[0].empty()) {
+                throw cet::exception("ScoreBasedDiffusionModel::backward")
+                    << "Encountered empty layer weights during backward pass";
+            }
             // Compute gradient w.r.t. input of the current layer to propagate to the previous layer
             std::vector<double> gradPrev(layer.W[0].size(),0.0);
 
@@ -295,8 +311,10 @@ namespace mu2e {
     {
         for (auto& layer : network_)
         {
-            assert(!layer.W.empty() && !layer.W[0].empty());
-            assert(!layer.b.empty());
+            if (layer.W.empty() || layer.W[0].empty() || layer.b.empty()) {
+                throw cet::exception("ScoreBasedDiffusionModel::updateWeights")
+                    << "Encountered malformed layer during SGD update";
+            }
 
             size_t outSize = layer.W.size();
             size_t inSize  = layer.W[0].size();
@@ -341,8 +359,10 @@ namespace mu2e {
 
         for (auto& layer : network_)
         {
-            assert(!layer.W.empty() && !layer.W[0].empty());
-            assert(!layer.b.empty());
+            if (layer.W.empty() || layer.W[0].empty() || layer.b.empty()) {
+                throw cet::exception("ScoreBasedDiffusionModel::adamUpdate")
+                    << "Encountered malformed layer during Adam update";
+            }
 
             for (size_t i=0;i<layer.W.size();++i)
             {
@@ -384,7 +404,11 @@ namespace mu2e {
         double t, // Diffusion time parameter in [0,1]
         std::vector<double>& eps
     ){
-        assert(x.size() == (size_t)dim_);
+        if (x.size() != static_cast<size_t>(dim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::addNoise")
+                << "Input x dimension mismatch: got " << x.size()
+                << ", expected " << dim_;
+        }
 
         double s = sigma(t);
 
@@ -463,9 +487,10 @@ namespace mu2e {
     )
     {
         // Check that the network is properly initialized before training.
-        assert(!network_.empty());
-        assert(!network_[0].W.empty());
-        assert(!network_[0].W[0].empty());
+        if (network_.empty() || network_[0].W.empty() || network_[0].W[0].empty()) {
+            throw cet::exception("ScoreBasedDiffusionModel::train")
+                << "Network is not properly initialized";
+        }
 
         const double eps_safe = 1e-12;
         const size_t N = data.size();
@@ -538,7 +563,11 @@ namespace mu2e {
                 input.push_back(t);
 
                 // Check that input dimension matches expected dimension (dim_ + conditionDim_ + 1)
-                assert(input.size() == network_[0].W[0].size());
+                if (input.size() != network_[0].W[0].size()) {
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Training input dimension mismatch: got " << input.size()
+                        << ", expected " << network_[0].W[0].size();
+                }
 
                 // Forward pass to compute the predicted score from the network given the input (noisy sample + time).
                 auto score = forward(input);
@@ -562,6 +591,16 @@ namespace mu2e {
                 batchCounter++;
                 if(batchCounter == batchSize_)
                 {
+                    // Average accumulated gradients so optimizer step size is independent of batch size.
+                    const double invBatch = 1.0 / static_cast<double>(batchCounter);
+                    for (auto& layer : network_) {
+                        for (auto& row : layer.gradW)
+                            for (auto& g : row)
+                                g *= invBatch;
+                        for (auto& g : layer.gradb)
+                            g *= invBatch;
+                    }
+
                     clipGradients(gradientClipThreshold_); // Clip gradients to prevent exploding gradients
 
                     // Apply optimizer based on configuration
@@ -580,6 +619,16 @@ namespace mu2e {
             // Final flush: apply optimizer to remaining gradients
             if(batchCounter > 0)
             {
+                // Average by the true final mini-batch size (which may be < batchSize_).
+                const double invBatch = 1.0 / static_cast<double>(batchCounter);
+                for (auto& layer : network_) {
+                    for (auto& row : layer.gradW)
+                        for (auto& g : row)
+                            g *= invBatch;
+                    for (auto& g : layer.gradb)
+                        g *= invBatch;
+                }
+
                 clipGradients(gradientClipThreshold_); // Clip gradients before final update
 
                 if (optimizerType_ == OptimizerType::ADAM) {
