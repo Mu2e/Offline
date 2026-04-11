@@ -1286,7 +1286,6 @@ namespace mu2e {
                                          ,tgt->productionTargetMotherHalfLength());
 
       G4ThreeVector _localCenter(0.0,0.0,0.0);
-      G4ThreeVector zeroTranslation(0.,0.,0.);
       G4RotationMatrix* targetRotation = reg.add(G4RotationMatrix(tgt->productionTargetRotation().inverse()));
       if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << "target rotation  = " << *targetRotation << G4endl;}
       VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
