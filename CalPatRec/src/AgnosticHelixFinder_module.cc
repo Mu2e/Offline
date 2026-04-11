@@ -500,6 +500,8 @@ namespace mu2e {
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
         while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if not configured for multi-helix reco
+        if(_diagLevel > 1)
+          printf("  Time cluster %zu has %i helices\n", i, _diagInfo.nHelices - nHelicesInitial);
 
         if (_diagLevel > 0) {
           tcInfo timeClusterInfo;
@@ -515,6 +517,8 @@ namespace mu2e {
       printf("[AgnosticHelixFinder::%s] %i:%i:%i Event data not found!\n", __func__, event.run(), event.subRun(), event.event());
     }
     if(_doTiming) _watch->StopTime("per-time cluster");
+    if(_diagLevel > 1)
+      printf("  Found %i helices total (%zu in collection)\n", _diagInfo.nHelices, hsColl->size());
 
     // fill necessary data members for diagnostic tool
     if (_diagLevel > 0) {
