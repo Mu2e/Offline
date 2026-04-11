@@ -52,6 +52,7 @@ cet_build_plugin(FilterEcalMVATrigger art::module
 cet_build_plugin(CaloNNEval art::module
     REG_SOURCE src/CaloNNEval_module.cc
     LIBRARIES REG
+      Offline::CaloCluster
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::Mu2eUtilities
