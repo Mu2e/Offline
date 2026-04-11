@@ -141,21 +141,21 @@ namespace mu2e {
     std::string stickmanTargetType()              const {return _stickmanTargetType;}
     double      halfStickmanLength()              const {return _halfStickmanLength;}
     int         numberOfPlates()                  const {return _numberOfPlates;}
-    std::string plateMaterial(int i)              const {return _plateMaterial[i];}
+    std::string plateMaterial(int i)              const {return _plateMaterial.at(i);}
     const std::vector<std::string>& plateMaterial() const {return _plateMaterial;}
-    double      plateROut(int i)                  const {return _plateROut[i];}
+    double      plateROut(int i)                  const {return _plateROut.at(i);}
     const std::vector<double>& plateROut()        const {return _plateROut;}
     int         nStickmanFins()                   const {return _nStickmanFins;}
-    double      plateFinAngle(int i)              const {return _plateFinAngles[i];}
+    double      plateFinAngle(int i)              const {return _plateFinAngles.at(i);}
     const std::vector<double>&      plateFinAngles()       const {return _plateFinAngles;}
     double      plateFinOuterRadius()             const {return _plateFinOuterRadius;}
     double      plateFinWidth()                   const {return _plateFinWidth;}
     double      plateCenterToLugCenter()          const {return _plateCenterToLugCenter;}
     double      plateLugInnerRadius()             const {return _plateLugInnerRadius;}
     double      plateLugOuterRadius()             const {return _plateLugOuterRadius;}
-    double      plateThickness(int i)             const {return _plateThickness[i];}
+    double      plateThickness(int i)             const {return _plateThickness.at(i);}
     const std::vector<double>&      plateThickness()       const {return _plateThickness;}
-    double      plateLugThickness(int i)          const {return _plateLugThickness[i];}
+    double      plateLugThickness(int i)          const {return _plateLugThickness.at(i);}
     const std::vector<double>&      plateLugThickness()    const {return _plateLugThickness;}
     bool        addFilletToPlateCore()            const {return _addFilletToPlateCore;}
     bool        addFilletToPlateLug()             const {return _addFilletToPlateLug;}
