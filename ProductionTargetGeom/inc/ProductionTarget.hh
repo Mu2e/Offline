@@ -176,7 +176,7 @@ namespace mu2e {
     double      supportRingLugFilletRadius()      const {return _supportRingLugFilletRadius;}
     bool        addCutoutToSupportRing()          const {return _addCutoutToSupportRing;}
     int         nSupportRingCutouts()             const {return _nSupportRingCutouts;}
-    double      supportRingCutoutAngle(int i)     const {return _supportRingCutoutAngles[i];}
+    double      supportRingCutoutAngle(int i)     const {return _supportRingCutoutAngles.at(i);}
     const std::vector<double>&      supportRingCutoutAngles()    const {return _supportRingCutoutAngles;}
     double      supportRingCutoutInnerRadius()    const {return _supportRingCutoutInnerRadius;}
     double      supportRingCutoutTilt()           const {return _supportRingCutoutTilt;}
