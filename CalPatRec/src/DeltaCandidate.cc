@@ -252,7 +252,7 @@ namespace mu2e {
     z2m = fSz2/fNSeeds;
                                         // 'combo-hit'-based way, FIXME
     double denom = z2m-zm*zm;
-    if (denom != 0.) {
+    if (fNSeeds > 1 && denom != 0.) {
       fDtDz  = (tzm-tm*zm)/denom;
       fT0    = tm-fDtDz*zm;
       fSigT0 = sqrt((t2m-tm*tm)/(fNSeeds-0.9999));
