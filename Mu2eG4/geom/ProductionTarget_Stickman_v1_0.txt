@@ -111,7 +111,6 @@ double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the cent
 int    targetPS_nSupportRingCutouts        = 3;
 vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.}; // degrees
                                                   //{-45., 75., 195.}; these have spokes inside so not cutting out
-// FIXME: double check rotation around the z axis
 double targetPS_supportRingCutoutInnerRadius = 2.06; // mm
 double targetPS_supportRingCutoutTilt        = 20.0; //degrees, angle of the cutout w.r.t the radial direction
 
