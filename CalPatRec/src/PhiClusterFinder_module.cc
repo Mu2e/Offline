@@ -444,11 +444,13 @@ namespace mu2e {
       zacc   += ch->pos().z()*hwt;
       tc._nsh += ch->nStrawHits();
     }
-    tacc/=weight;
-    tacc2/=weight;
-    xacc/=weight;
-    yacc/=weight;
-    zacc/=weight;
+    if (weight > 0.) {
+      tacc/=weight;
+      tacc2/=weight;
+      xacc/=weight;
+      yacc/=weight;
+      zacc/=weight;
+    }
 
     tc._t0._t0    = tacc;
     tc._t0._t0err = sqrtf(tacc2-tacc*tacc);
