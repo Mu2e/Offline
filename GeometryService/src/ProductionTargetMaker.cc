@@ -520,6 +520,7 @@ namespace mu2e {
       //support wheel rods parameters
       c.getVectorDouble("targetPS.supports.rods.halfLength", tgtPS->_supportWheelRodHL, tgtPS->_nSpokesPerSide);
       c.getVectorDouble("targetPS.supports.rods.offset", tgtPS->_supportWheelRodOffset, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.pinOffset", tgtPS->_supportWheelRodPinOffset, tgtPS->_nSpokesPerSide);
       c.getVectorDouble("targetPS.supports.rods.radius", tgtPS->_supportWheelRodRadius, tgtPS->_nSpokesPerSide);
       c.getVectorDouble("targetPS.supports.rods.radialOffset", tgtPS->_supportWheelRodRadialOffset, tgtPS->_nSpokesPerSide);
       c.getVectorDouble("targetPS.supports.rods.wireOffset.downstream", tgtPS->_supportWheelRodWireOffsetD, tgtPS->_nSpokesPerSide);
@@ -536,6 +537,7 @@ namespace mu2e {
           tgtPS->_supportWheelFeatureRIns.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
           tgtPS->_supportWheelRodHL.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
           tgtPS->_supportWheelRodOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodPinOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
           tgtPS->_supportWheelRodRadius.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
           tgtPS->_supportWheelRodRadialOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
           tgtPS->_supportWheelRodWireOffsetD.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||

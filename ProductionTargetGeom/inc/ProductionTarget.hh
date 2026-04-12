@@ -123,6 +123,7 @@ namespace mu2e {
     //rods in the support wheel
     const std::vector<double>& supportWheelRodHL          () const {return _supportWheelRodHL          ;}
     const std::vector<double>& supportWheelRodOffset      () const {return _supportWheelRodOffset      ;}
+    const std::vector<double>& supportWheelRodPinOffset   () const {return _supportWheelRodPinOffset   ;} //only used for Stickman_v_1_0
     const std::vector<double>& supportWheelRodRadius      () const {return _supportWheelRodRadius      ;}
     const std::vector<double>& supportWheelRodRadialOffset() const {return _supportWheelRodRadialOffset;}
     const std::vector<double>& supportWheelRodWireOffsetD () const {return _supportWheelRodWireOffsetD ;}
@@ -379,6 +380,7 @@ namespace mu2e {
     //parameters for rods in the support wheel
     std::vector<double> _supportWheelRodHL          ; //includes length through the wheel
     std::vector<double> _supportWheelRodOffset      ; //z offset with respect to the wheel
+    std::vector<double> _supportWheelRodPinOffset   ; //pinhole offset from support wheel center plane, used for Stickman only
     std::vector<double> _supportWheelRodRadius      ; //radius of the rod
     std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
     std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)

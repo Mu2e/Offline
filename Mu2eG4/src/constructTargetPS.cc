@@ -2128,6 +2128,7 @@ namespace mu2e {
         //support rods in wheel
         const vector<double> supportWheelRodHL           = tgt->supportWheelRodHL          ();
         const vector<double> supportWheelRodOffset       = tgt->supportWheelRodOffset      ();
+        const vector<double> supportWheelRodPinOffset    = tgt->supportWheelRodPinOffset   ();
         const vector<double> supportWheelRodRadius       = tgt->supportWheelRodRadius      ();
         const vector<double> supportWheelRodRadialOffset = tgt->supportWheelRodRadialOffset();
         const vector<double> supportWheelRodWireOffsetD  = tgt->supportWheelRodWireOffsetD ();
@@ -2154,7 +2155,8 @@ namespace mu2e {
                                         rWheel*std::sin(wheelAngle),
                                         0.); // rod plane projected to the wheel plane, non-orthogonal cut of a cylinder is an ellipse, 
                                              // so need to divide by cos(targetAngle) to get the correct position on the wheel plane
-            const double rodOffset = supportWheelRodOffset[ispoke];
+            const double rodOffset = supportWheelRodOffset[ispoke]
+                                     + supportWheelRodPinOffset[ispoke]/std::cos(targetAngle);
             rodCenter += CLHEP::Hep3Vector(std::sin(targetAngle)*rodOffset, 0., std::cos(targetAngle)*rodOffset);
             if(istream == 0) { //only do once
               //add the features near the support rods in the bicycle wheel

@@ -131,6 +131,8 @@ vector<double> targetPS.supports.rods.angles       = {-45., 75., 195.0}; //degre
 vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
 vector<double> targetPS.supports.rods.offset       = {-35., -14.80, 38.62}; //mm, changed according to F10122537_A_DWG1
                                                                             //rod center to the channel centers
+vector<double> targetPS.supports.rods.pinOffset    = {3.81, 3.81, 3.81};    //mm, according to F10121763_A_DWG1, pinholes used to fix
+                                                                            //the rods are off-center, need to add pinOffset/cos(rotY) to offset above
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
 vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
 vector<double> targetPS.supports.rods.wireOffset.downstream = {13., 13., 13.}; //mm, on the surface
