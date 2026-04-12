@@ -250,7 +250,7 @@ namespace mu2e {
       // std::cout << "adding Stickman in GeometryService" << std::endl;
       addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.stickmanProdTargetPosition()));
     } else {
-      throw cet::exception("GEOM") << " " << static_cast<char const*>(__func__) << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
+      throw cet::exception("GEOM") << " " << static_cast<char const*>(__func__) << " illegal production target model specified in GeometryService_service targetPS_model = " << _config->getString("targetPS_model")  << std::endl;}
 
 
 
