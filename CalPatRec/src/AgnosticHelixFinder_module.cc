@@ -114,8 +114,8 @@ namespace mu2e {
     int _diagLevel;
     int _doTiming;
     std::unique_ptr<StopWatch> _watch;
-    std::optional<art::ServiceHandle<TimeoutWatchdogService>> _timeoutService;
-    std::optional<TimeoutWatchdogService::ModuleGuard> _timeoutGuard;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
