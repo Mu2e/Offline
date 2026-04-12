@@ -214,7 +214,14 @@ namespace mu2e {
         // Generate the fcl file for training for this particle type
         // if pdgID is negative, we will use "m" instead of "-" in the filename to avoid issues with file naming
         std::string pdgIdstr = (part.first < 0) ? "m" + std::to_string(-part.first) : std::to_string(part.first);
-        std::string moduleName = "VDResamplerTrainVD"+ std::to_string(VirtualDetectorID) + dataSourceTag + "pdg" + pdgIdstr;
+        std::string sanitizedDataSourceTag = dataSourceTag;
+        for (char& c : sanitizedDataSourceTag) {
+          const bool isAlphaNum = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
+          if (!isAlphaNum && c != '_') {
+            c = '_';
+          }
+        }
+        std::string moduleName = "VDResamplerTrainVD"+ std::to_string(VirtualDetectorID) + sanitizedDataSourceTag + "pdg" + pdgIdstr;
         std::string pathName = "trainPathVD" + std::to_string(VirtualDetectorID) + "pdg" + pdgIdstr;
         trainingPaths.push_back({moduleName, pathName});
         fclOutFile << "    " << moduleName << " : {\n"
