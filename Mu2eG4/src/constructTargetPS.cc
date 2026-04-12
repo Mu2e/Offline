@@ -2199,7 +2199,7 @@ namespace mu2e {
               G4cout << __PRETTY_FUNCTION__
                      << "Sanity check for spoke " << ispoke << " on stream " << istream << ":\n"
                      << "wheel pos " << wheelPos << "\ntarget pos " << targetPos << "\n"
-                     << "spoke length" << (wheelPos-targetPos).mag() << G4endl;
+                     << "spoke length " << (wheelPos-targetPos).mag() << G4endl;
             CLHEP::Hep3Vector spokeAxis((wheelPos-targetPos).unit());
             CLHEP::Hep3Vector targetAxis(0.,0.,side);
             targetAxis = tgt->productionTargetRotation().inverse()*targetAxis;
