@@ -404,6 +404,35 @@ namespace mu2e {
     c.getVectorDouble("targetPS_plateThickness", plateThickness);
     c.getVectorDouble("targetPS_plateLugThickness", plateLugThickness);
 
+    const int nPlates = c.getInt("targetPS_numberOfPlates");
+    const int nFins = c.getInt("targetPS_nStickmanFins");
+
+    if (plateMaterial.size() != static_cast<size_t>(nPlates)) {
+      throw cet::exception("GEOM")
+        << "targetPS_plateMaterial size mismatch: expected " << nPlates
+        << ", got " << plateMaterial.size();
+    }
+    if (plateROut.size() != static_cast<size_t>(nPlates)) {
+      throw cet::exception("GEOM")
+        << "targetPS_rOut size mismatch: expected " << nPlates
+        << ", got " << plateROut.size();
+    }
+    if (plateThickness.size() != static_cast<size_t>(nPlates)) {
+      throw cet::exception("GEOM")
+        << "targetPS_plateThickness size mismatch: expected " << nPlates
+        << ", got " << plateThickness.size();
+    }
+    if (plateLugThickness.size() != static_cast<size_t>(nPlates)) {
+      throw cet::exception("GEOM")
+        << "targetPS_plateLugThickness size mismatch: expected " << nPlates
+        << ", got " << plateLugThickness.size();
+    }
+    if (plateFinAngles.size() != static_cast<size_t>(nFins)) {
+      throw cet::exception("GEOM")
+        << "targetPS_plateFinAngles size mismatch: expected " << nFins
+        << ", got " << plateFinAngles.size();
+    }
+
     std::unique_ptr<ProductionTarget> tgtPS
       (new ProductionTarget(
                             c.getString("targetPS_model","NULL"),
@@ -420,10 +449,10 @@ namespace mu2e {
                                               )
                             + c.getHep3Vector("productionTarget.offset"),
                             c.getString("targetPS_targetVacuumMaterial"),
-                            c.getInt("targetPS_numberOfPlates"),
+                            nPlates,
                             plateMaterial,
                             plateROut,
-                            c.getInt("targetPS_nStickmanFins"),
+                            nFins,
                             plateFinAngles,
                             c.getDouble("targetPS_plateFinOuterRadius"),
                             c.getDouble("targetPS_plateFinWidth"),
@@ -464,6 +493,11 @@ namespace mu2e {
     if(tgtPS->_addCutoutToSupportRing) {
       tgtPS->_nSupportRingCutouts = c.getInt("targetPS_nSupportRingCutouts");
       c.getVectorDouble("targetPS_supportRingCutoutAngles", tgtPS->_supportRingCutoutAngles);
+      if (tgtPS->_supportRingCutoutAngles.size() != static_cast<size_t>(tgtPS->_nSupportRingCutouts)) {
+        throw cet::exception("GEOM")
+          << "targetPS_supportRingCutoutAngles size mismatch: expected "
+          << tgtPS->_nSupportRingCutouts << ", got " << tgtPS->_supportRingCutoutAngles.size();
+      }
       for_each(tgtPS->_supportRingCutoutAngles.begin(), tgtPS->_supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
       tgtPS->_supportRingCutoutInnerRadius = c.getDouble("targetPS_supportRingCutoutInnerRadius");
       tgtPS->_supportRingCutoutTilt = c.getDouble("targetPS_supportRingCutoutTilt") * CLHEP::degree;
@@ -496,6 +530,23 @@ namespace mu2e {
       c.getVectorDouble("targetPS.supports.spokes.targetAngles.upstream", tgtPS->_spokeTargetAnglesU, tgtPS->_nSpokesPerSide);
       tgtPS->_spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
       tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material");
+      //check that all support wheel vectors are the correct size
+      if (tgtPS->_supportWheelFeatureAngles.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelFeatureArcs.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelFeatureRIns.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodHL.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodRadius.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodRadialOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodWireOffsetD.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodWireOffsetU.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_supportWheelRodAngles.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_spokeTargetAnglesD.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
+          tgtPS->_spokeTargetAnglesU.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide)) {
+        throw cet::exception("GEOM")
+          << "Support configuration vector size mismatch for targetPS.supports.nSpokes="
+          << tgtPS->_nSpokesPerSide;
+      }
     }
     return tgtPS;
   }

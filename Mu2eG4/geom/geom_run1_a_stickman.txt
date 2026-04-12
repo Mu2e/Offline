@@ -1,5 +1,5 @@
-// Based off Mu2eG4/geom/geom_2021_PhaseI_v02.txt
-// Updates made to include the detector stand geometry for the PTM
+// Based off Mu2eG4/geom/geom_run1_a.txt
+// Updates made to include the new Stickman muon production target
 
 string detector.name  = "g4geom_v00";
 

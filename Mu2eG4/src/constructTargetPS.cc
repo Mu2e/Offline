@@ -449,7 +449,6 @@ namespace mu2e {
                                          ,tgt->productionTargetMotherHalfLength());
 
       G4ThreeVector _loclCenter(0.0,0.0,0.0);
-      G4ThreeVector zeroTranslation(0.,0.,0.);
       G4RotationMatrix* targetRotation = reg.add(G4RotationMatrix(tgt->productionTargetRotation().inverse()));
       if (verbosityLevel > 2){G4cout << __PRETTY_FUNCTION__ << "target rotation  = " << *targetRotation << G4endl;}
       VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
@@ -2151,9 +2150,10 @@ namespace mu2e {
             const double targetWireAngle = (istream == 0) ? spokeTargetAnglesD[ispoke]*CLHEP::degree
               : spokeTargetAnglesU[ispoke]*CLHEP::degree;
             double rWheel = supportWheelRodRadialOffset[ispoke]; // radius of the wheel to attach to
-            CLHEP::Hep3Vector rodCenter(rWheel*std::cos(wheelAngle)*std::cos(targetAngle),
+            CLHEP::Hep3Vector rodCenter(rWheel*std::cos(wheelAngle)/std::cos(targetAngle),
                                         rWheel*std::sin(wheelAngle),
-                                        0.); // rod plane projected to the wheel plane
+                                        0.); // rod plane projected to the wheel plane, non-orthogonal cut of a cylinder is an ellipse, 
+                                             // so need to divide by cos(targetAngle) to get the correct position on the wheel plane
             const double rodOffset = supportWheelRodOffset[ispoke];
             rodCenter += CLHEP::Hep3Vector(std::sin(targetAngle)*rodOffset, 0., std::cos(targetAngle)*rodOffset);
             if(istream == 0) { //only do once

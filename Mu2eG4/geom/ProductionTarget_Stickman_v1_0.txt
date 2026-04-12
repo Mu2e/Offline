@@ -17,14 +17,15 @@ vector<double> productionTarget.offset = { 0., 0., 0.};
 
 // Mother volume
 double targetPS_productionTargetMotherOuterRadius = 200.; //mm
-double targetPS_productionTargetMotherHalfLength = 120.; //mm  full length 232.2 mm
+double targetPS_productionTargetMotherHalfLength = 120.; //mm  full target length 232.2 mm, 
+                                                         //    allow the mother volume to be slightly larger
 
 // Overall rotation
 double targetPS_rotX = 0.0;
 double targetPS_rotY = 14.0;
 double targetPS_rotZ = 0.0;
 // Dimension
-double targetPS_halfStickmanLength = 116.1; // mm. 35 * 6 mm / 2 + 8.1 mm + 3 mm. We do not need this except for debugging.
+double targetPS_halfStickmanLength = 116.1; // mm. 35 * 6 mm / 2 + 8.1 mm + 3 mm. Actual half length.
 // Configurations
 bool   targetPS.visible              = true;
 bool   targetPS.solid                = false;
