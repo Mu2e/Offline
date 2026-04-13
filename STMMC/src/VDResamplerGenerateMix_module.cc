@@ -48,7 +48,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/STMMC/inc/VDResamplerTransformDefaults.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -172,11 +172,11 @@ namespace mu2e {
       std::vector<SourceSummary> sources_;
       double totalSourceWeight_ = 0.0;
 
-      double x0_ = vdresampler::kX0;
-      double y0_ = vdresampler::kY0;
-      double t0_ = vdresampler::kT0;
-      double tScale_ = vdresampler::kTScale;
-      double p0_ = vdresampler::kP0;
+      double x0_ = VDResampler::kX0;
+      double y0_ = VDResampler::kY0;
+      double t0_ = VDResampler::kT0;
+      double tScale_ = VDResampler::kTScale;
+      double p0_ = VDResampler::kP0;
 
       TTree* outTree_ = nullptr;
       int summaryIndex_ = -1;
@@ -218,6 +218,16 @@ namespace mu2e {
       doROOTDump_(conf().doROOTDump()) {
 
     produces<GenParticleCollection>();
+
+    if (VDr_ <= 0.0) {
+      throw cet::exception("VDResamplerGenerateMix")
+        << "VDr must be positive (got " << VDr_ << "); "
+        << "rho = r/VDr would produce inf/NaN in generated samples.";
+    }
+    if (!std::isfinite(VDz0_)) {
+      throw cet::exception("VDResamplerGenerateMix")
+        << "VDz0 must be finite (got " << VDz0_ << ").";
+    }
 
     const auto& hitSummaryFiles = conf().hitSummaryFiles();
     const auto& potsPerFile = conf().potsPerFile();
@@ -441,33 +451,28 @@ namespace mu2e {
     double pzTrans = 0.0;
     generateFromModels(modelSet, xTrans, yTrans, tTrans, prTrans, pphiTrans, pzTrans);
 
-    const double u = std::sqrt(xTrans * xTrans + yTrans * yTrans);
-    const double theta = std::atan2(yTrans, xTrans);
-    const double rho = std::tanh(u);
-    const double r = rho * VDr_;
-    const double dx = r * std::cos(theta);
-    const double dy = r * std::sin(theta);
-    x_gen_ = dx + x0_;
-    y_gen_ = dy + y0_;
-    z_gen_ = VDz0_;
-
-    t_gen_ = t0_ * std::exp(tTrans * tScale_);
-
-    const double pr = p0_ * std::sinh(prTrans);
-    const double pphi = p0_ * std::sinh(pphiTrans);
-    pz_gen_ = p0_ * std::sinh(pzTrans);
-
-    if (r > 1e-6) {
-      const double rx = dx / r;
-      const double ry = dy / r;
-      const double phix = -ry;
-      const double phiy = rx;
-      px_gen_ = pr * rx + pphi * phix;
-      py_gen_ = pr * ry + pphi * phiy;
-    } else {
-      px_gen_ = pr;
-      py_gen_ = pphi;
-    }
+    VDResampler::invertGeneratedSample(
+      xTrans,
+      yTrans,
+      tTrans,
+      prTrans,
+      pphiTrans,
+      pzTrans,
+      x0_,
+      y0_,
+      t0_,
+      tScale_,
+      p0_,
+      VDr_,
+      VDz0_,
+      x_gen_,
+      y_gen_,
+      z_gen_,
+      t_gen_,
+      px_gen_,
+      py_gen_,
+      pz_gen_
+    );
 
     pdgId_ = modelSet.pdgId;
     generationMode_ = modelSet.useTwoStageModel ? 2 : 1;
@@ -478,7 +483,7 @@ namespace mu2e {
     const CLHEP::Hep3Vector posParticle(x_gen_, y_gen_, z_gen_);
     const double eTotal = std::sqrt(momParticle.mag2() + mass_gen_ * mass_gen_);
     E_gen_ = eTotal - mass_gen_;
-    const CLHEP::HepLorentzVector fourMomParticle(eTotal, momParticle);
+    const CLHEP::HepLorentzVector fourMomParticle(momParticle, eTotal);
 
     output->emplace_back(
       PDGCode::type(pdgId_),

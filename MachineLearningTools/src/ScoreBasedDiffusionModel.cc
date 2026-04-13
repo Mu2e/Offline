@@ -56,7 +56,8 @@ namespace mu2e {
         int batchSize,
         double gradientClipThreshold,
         double learningRate,
-        int diffusionSteps
+        int diffusionSteps,
+        bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
         dim_(dim), conditionDim_(conditionDim), hidden_(hidden), layers_(layers),
         optimizerType_(optimizerType),
@@ -102,10 +103,10 @@ namespace mu2e {
             Layer layer;
 
             // Allocate weights
-            layer.W.resize(out, std::vector<double>(in));
+            layer.W.resize(out, std::vector<double>(in, 0.0));
 
             // Allocate biases
-            layer.b.resize(out);
+            layer.b.resize(out, 0.0);
 
             // Allocate gradient buffers
             layer.gradW.resize(out, std::vector<double>(in, 0.0));
@@ -118,18 +119,19 @@ namespace mu2e {
             layer.mb.resize(out, 0.0);
             layer.vb.resize(out, 0.0);
 
-            // --------------------------------------------------------
-            // Weight initialization
-            //
-            // Small Gaussian initialization improves training stability
-            // --------------------------------------------------------
-
-            for (int i = 0; i < out; ++i) {
-                for (int j = 0; j < in; ++j) {
-                    layer.W[i][j] = weightInitScale * randGaussQ_.fire();
-                    // this generates a Gaussian random number with mean=0 and sigma=weightInitScale
+            if (initializeRandomWeights) {
+                // --------------------------------------------------------
+                // Weight initialization
+                //
+                // Small Gaussian initialization improves training stability
+                // --------------------------------------------------------
+                for (int i = 0; i < out; ++i) {
+                    for (int j = 0; j < in; ++j) {
+                        layer.W[i][j] = weightInitScale * randGaussQ_.fire();
+                        // this generates a Gaussian random number with mean=0 and sigma=weightInitScale
+                    }
+                    layer.b[i] = 0.0;
                 }
-                layer.b[i] = 0.0;
             }
 
             if (layer.W.empty() || layer.W[0].size() != static_cast<size_t>(in) || //Check that weight matrix has correct input dimension
@@ -227,10 +229,10 @@ namespace mu2e {
 
             // Apply activation function (SiLU) to get the output of the current layer.
             std::vector<double> y(z.size());
-            if(l != network_.size()-1) // No activation on the last layer (output layer), as it predicts the score directly.
-            {
-                for (size_t i=0;i<z.size();++i)
+            if (l != network_.size() - 1) { // No activation on the last layer (output layer), as it predicts the score directly.
+                for (size_t i = 0; i < z.size(); ++i) {
                     y[i] = silu(z[i]);
+                }
             }
             else
                 y = z;
@@ -263,24 +265,19 @@ namespace mu2e {
             std::vector<double> gradZ(grad.size());
 
             // For the output layer, the gradient is directly from the loss w.r.t. output (no activation function).
-            if(l == static_cast<int>(network_.size())-1)
-            {
+            if (l == static_cast<int>(network_.size()) - 1) {
                 gradZ = grad;
-            }
-            // For hidden layers, apply the derivative of the activation function (SiLU) to the gradient.
-            else
-            {
-                for (size_t i=0;i<grad.size();++i)
-                    gradZ[i] = grad[i]*siluDeriv(z[i]);
+            } else { // For hidden layers, apply the derivative of the activation function (SiLU) to the gradient.
+                for (size_t i = 0; i < grad.size(); ++i) {
+                    gradZ[i] = grad[i] * siluDeriv(z[i]);
+                }
             }
 
             // Compute gradients w.r.t. weights and biases for the current layer
-            for (size_t i = 0; i < layer.W.size(); i++)
-            {
-                for (size_t j=0;j<layer.W[i].size();++j)
-                {
+            for (size_t i = 0; i < layer.W.size(); i++) {
+                for (size_t j = 0; j < layer.W[i].size(); ++j) {
                     // Gradient of loss w.r.t. weight W[i][j]
-                    layer.gradW[i][j] += gradZ[i]*aPrev[j];
+                    layer.gradW[i][j] += gradZ[i] * aPrev[j];
                 }
 
                 // Gradient of loss w.r.t. bias b[i]
@@ -294,11 +291,13 @@ namespace mu2e {
                     << "Encountered empty layer weights during backward pass";
             }
             // Compute gradient w.r.t. input of the current layer to propagate to the previous layer
-            std::vector<double> gradPrev(layer.W[0].size(),0.0);
+            std::vector<double> gradPrev(layer.W[0].size(), 0.0);
 
-            for (size_t j=0;j<gradPrev.size();++j)
-                for (size_t i=0;i<layer.W.size();++i)
-                    gradPrev[j] += layer.W[i][j]*gradZ[i];
+            for (size_t j = 0; j < gradPrev.size(); ++j) {
+                for (size_t i = 0; i < layer.W.size(); ++i) {
+                    gradPrev[j] += layer.W[i][j] * gradZ[i];
+                }
+            }
 
             grad = gradPrev;
         }
@@ -364,20 +363,18 @@ namespace mu2e {
                     << "Encountered malformed layer during Adam update";
             }
 
-            for (size_t i=0;i<layer.W.size();++i)
-            {
+            for (size_t i = 0; i < layer.W.size(); ++i) {
                 // Update weights using Adam update rule
-                for (size_t j=0;j<layer.W[i].size();++j)
-                {
+                for (size_t j = 0; j < layer.W[i].size(); ++j) {
                     double g = layer.gradW[i][j];
 
-                    layer.mW[i][j] = adamBeta1_*layer.mW[i][j] + (1-adamBeta1_)*g;
-                    layer.vW[i][j] = adamBeta2_*layer.vW[i][j] + (1-adamBeta2_)*g*g;
+                    layer.mW[i][j] = adamBeta1_ * layer.mW[i][j] + (1 - adamBeta1_) * g;
+                    layer.vW[i][j] = adamBeta2_ * layer.vW[i][j] + (1 - adamBeta2_) * g * g;
 
-                    double mhat = layer.mW[i][j]/(1-std::pow(adamBeta1_,adamStep_));
-                    double vhat = layer.vW[i][j]/(1-std::pow(adamBeta2_,adamStep_));
+                    double mhat = layer.mW[i][j] / (1 - std::pow(adamBeta1_, adamStep_));
+                    double vhat = layer.vW[i][j] / (1 - std::pow(adamBeta2_, adamStep_));
 
-                    layer.W[i][j] -= lr*mhat/(std::sqrt(vhat)+adamEps_);
+                    layer.W[i][j] -= lr * mhat / (std::sqrt(vhat) + adamEps_);
 
                     layer.gradW[i][j] = 0.0;
                 }
@@ -385,13 +382,13 @@ namespace mu2e {
                 // Update bias using Adam update rule
                 double g = layer.gradb[i];
 
-                layer.mb[i] = adamBeta1_*layer.mb[i] + (1-adamBeta1_)*g;
-                layer.vb[i] = adamBeta2_*layer.vb[i] + (1-adamBeta2_)*g*g;
+                layer.mb[i] = adamBeta1_ * layer.mb[i] + (1 - adamBeta1_) * g;
+                layer.vb[i] = adamBeta2_ * layer.vb[i] + (1 - adamBeta2_) * g * g;
 
-                double mhat = layer.mb[i]/(1-std::pow(adamBeta1_,adamStep_));
-                double vhat = layer.vb[i]/(1-std::pow(adamBeta2_,adamStep_));
+                double mhat = layer.mb[i] / (1 - std::pow(adamBeta1_, adamStep_));
+                double vhat = layer.vb[i] / (1 - std::pow(adamBeta2_, adamStep_));
 
-                layer.b[i] -= lr*mhat/(std::sqrt(vhat)+adamEps_);
+                layer.b[i] -= lr * mhat / (std::sqrt(vhat) + adamEps_);
 
                 layer.gradb[i] = 0.0;
             }
@@ -418,8 +415,8 @@ namespace mu2e {
         std::vector<double> xt(dim_);
 
         for (int i = 0; i < dim_; ++i) {
-            eps[i] = randGaussQ_.fire();   // Gaussian N(0,1)
-            xt[i]  = x[i] + s * eps[i];
+            eps[i] = randGaussQ_.fire(); // Gaussian N(0,1)
+            xt[i] = x[i] + s * eps[i];
         }
 
         return xt;
@@ -429,16 +426,27 @@ namespace mu2e {
     double ScoreBasedDiffusionModel::computeLoss(
         const std::vector<double>& score,
         const std::vector<double>& target
-    ) const{
+    ) const {
+
+        if (score.size() != static_cast<size_t>(dim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::computeLoss")
+                << "Score dimension mismatch: got " << score.size()
+                << ", expected " << dim_;
+        }
+        if (target.size() != static_cast<size_t>(dim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::computeLoss")
+                << "Target dimension mismatch: got " << target.size()
+                << ", expected " << dim_;
+        }
 
         double loss = 0.0;
 
-        for (int i=0;i<dim_;++i){
-            double d = score[i]-target[i];
-            loss += d*d;
+        for (int i = 0; i < dim_; ++i) {
+            double d = score[i] - target[i];
+            loss += d * d;
         }
 
-        return loss/dim_;
+        return loss / dim_;
     }
 
     // Clip gradients to prevent exploding gradients during training. This is done by scaling down
@@ -460,8 +468,9 @@ namespace mu2e {
         norm = std::sqrt(norm);
 
         // If the norm is below the threshold, no clipping is needed.
-        if(norm <= maxNorm)
+        if (norm <= maxNorm) {
             return;
+        }
 
         // Scale down the gradients to have the specified maximum norm.
         double scale = maxNorm / norm;
@@ -554,8 +563,9 @@ namespace mu2e {
 
                 // The target score is the negative of the noise scaled by the noise standard deviation, i.e., -eps/sigma(t).
                 std::vector<double> target(dim_);
-                for (int i=0;i<dim_;++i)
-                    target[i] = -eps[i]/std::max(s, eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
+                for (int i = 0; i < dim_; ++i) {
+                    target[i] = -eps[i] / std::max(s, eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
+                }
 
                 // Prepare input vector for the network by concatenating the noisy sample xt with the diffusion time t.
                 std::vector<double> input = xt;
@@ -572,15 +582,14 @@ namespace mu2e {
                 // Forward pass to compute the predicted score from the network given the input (noisy sample + time).
                 auto score = forward(input);
 
-                // Compute the loss (Mean Squared Error) between the predicted score and the target score.
+                // Compute the loss (Mean Squared Error) per dimension between the predicted score and the target score.
+                double loss = computeLoss(score, target);
+
+                // Compute the gradient of the loss w.r.t. the predicted score
+                // Gradient of the loss w.r.t. the predicted score is 2*(score-target)/dim_ (the division by dim_ is for averaging the loss per dimension).
                 std::vector<double> grad(dim_);
-                double loss=0.0;
-                for (int i=0;i<dim_;++i)
-                {
-                    double d = score[i]-target[i];
-                    loss += d*d;
-                    // Gradient of the loss w.r.t. the predicted score is 2*(score-target)/dim_ (the division by dim_ is for averaging the loss per dimension).
-                    grad[i] = 2*d/dim_;
+                for (int i = 0; i < dim_; ++i) {
+                    grad[i] = 2.0 * (score[i] - target[i]) / dim_;
                 }
 
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
@@ -589,8 +598,7 @@ namespace mu2e {
                 // Increment batch counter and apply optimizer step if batch size is reached. This allows for vectorized updates after processing a batch of
                 // samples, which can improve training efficiency and convergence.
                 batchCounter++;
-                if(batchCounter == batchSize_)
-                {
+                if (batchCounter == batchSize_) {
                     // Average accumulated gradients so optimizer step size is independent of batch size.
                     const double invBatch = 1.0 / static_cast<double>(batchCounter);
                     for (auto& layer : network_) {
@@ -617,8 +625,7 @@ namespace mu2e {
             }
 
             // Final flush: apply optimizer to remaining gradients
-            if(batchCounter > 0)
-            {
+            if (batchCounter > 0) {
                 // Average by the true final mini-batch size (which may be < batchSize_).
                 const double invBatch = 1.0 / static_cast<double>(batchCounter);
                 for (auto& layer : network_) {
@@ -900,7 +907,9 @@ namespace mu2e {
                         epochLosses.reserve(numEpochs);
                     } else if (tokens[0] == "trainingSampleSize")
                     {
-                        // We can store this if needed for analysis, but it is not used in model reconstruction, so we will ignore it for now.
+                        // We can store this if needed for analysis, but it is not used in model reconstruction.
+                        // If needed later, parse as size_t to avoid truncation, e.g. size_t trainingSampleSize = std::stoull(tokens[1]);
+                        // and apply checked conversion only when assigning to narrower types.
                     }else {
                         epochLosses.push_back(std::stod(tokens[1]));
                     }
@@ -934,7 +943,7 @@ namespace mu2e {
                << "but does NOT resume training from the original state.";
         mf::LogInfo("ScoreBasedDiffusionModel::loadModel") << logMsg.str();
 
-        // Reconstruct model
+        // Reconstruct model without random weight initialization
         ScoreBasedDiffusionModel model(
             randFlat,
             randGaussQ,
@@ -953,10 +962,42 @@ namespace mu2e {
             batchSize,
             gradientClipThreshold,
             learningRate,
-            diffusionSteps
+            diffusionSteps,
+            false
         );
 
-        // Overwrite initialized weights with loaded values
+        // Validate loaded network shape and dimensions match the initialized model before overwriting.
+        if (loadedNetwork.size() != model.network_.size()) {
+            throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                << "Layer count mismatch: loaded " << loadedNetwork.size()
+                << " layers, expected " << model.network_.size()
+                << ". The model file may be missing or malformed in [NETWORK_PARAMETERS] (e.g. numLayers).";
+        }
+        for (size_t l = 0; l < loadedNetwork.size(); ++l) {
+            if (loadedNetwork[l].W.empty() || loadedNetwork[l].W[0].empty() || loadedNetwork[l].b.empty()) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Loaded layer " << l
+                    << " is not fully sized before overwrite (empty weights/biases).";
+            }
+            // Check that loaded layer dimensions match the model's initialized dimensions
+            if (loadedNetwork[l].W.size() != model.network_[l].W.size() ||
+                loadedNetwork[l].W[0].size() != model.network_[l].W[0].size()) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Layer " << l << " weight dimension mismatch: loaded W["
+                    << loadedNetwork[l].W.size() << "]["
+                    << loadedNetwork[l].W[0].size() << "], expected W["
+                    << model.network_[l].W.size() << "]["
+                    << model.network_[l].W[0].size() << "].";
+            }
+            if (loadedNetwork[l].b.size() != model.network_[l].b.size()) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Layer " << l << " bias dimension mismatch: loaded b["
+                    << loadedNetwork[l].b.size() << "], expected b["
+                    << model.network_[l].b.size() << "].";
+            }
+        }
+
+        // Allocate weights with loaded values
         for (size_t l = 0; l < model.network_.size(); ++l) {
             model.network_[l].W = loadedNetwork[l].W;
             model.network_[l].b = loadedNetwork[l].b;
@@ -984,8 +1025,9 @@ namespace mu2e {
         // Start from pure noise
         std::vector<double> x(dim_);
 
-        for (int i=0;i<dim_;++i)
+        for (int i = 0; i < dim_; ++i) {
             x[i] = randGaussQ_.fire();
+        }
 
         // Reverse diffusion process
         for (int step = steps - 1; step >= 0; --step) {
@@ -1002,8 +1044,8 @@ namespace mu2e {
 
                 auto score = forward(input);
 
-                for (int i=0;i<dim_;++i){
-                    x[i] += -s*s*score[i]*dt;
+                for (int i = 0; i < dim_; ++i) {
+                    x[i] += -s * s * score[i] * dt;
                 }
             } else {
                 // Heun's method (2nd order)
@@ -1014,13 +1056,15 @@ namespace mu2e {
                 auto score_k1 = forward(input);
 
                 std::vector<double> k1(dim_);
-                for (int i=0;i<dim_;++i)
-                    k1[i] = -s*s*score_k1[i];
+                for (int i = 0; i < dim_; ++i) {
+                    k1[i] = -s * s * score_k1[i];
+                }
 
                 // predictor
                 std::vector<double> x_pred(dim_);
-                for (int i=0;i<dim_;++i)
-                    x_pred[i] = x[i] + k1[i]*dt;
+                for (int i = 0; i < dim_; ++i) {
+                    x_pred[i] = x[i] + k1[i] * dt;
+                }
 
                 // next time
                 double t_next = std::max(0.0, t - dt);
@@ -1033,12 +1077,14 @@ namespace mu2e {
                 auto score_k2 = forward(input_next);
 
                 std::vector<double> k2(dim_);
-                for (int i=0;i<dim_;++i)
-                    k2[i] = -s_next*s_next*score_k2[i];
+                for (int i = 0; i < dim_; ++i) {
+                    k2[i] = -s_next * s_next * score_k2[i];
+                }
 
                 // trapezoidal update
-                for (int i=0;i<dim_;++i)
-                    x[i] += 0.5*(k1[i]+k2[i])*dt;
+                for (int i = 0; i < dim_; ++i) {
+                    x[i] += 0.5 * (k1[i] + k2[i]) * dt;
+                }
             }
         }
 

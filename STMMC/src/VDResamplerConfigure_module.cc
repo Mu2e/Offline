@@ -43,10 +43,13 @@
 #include "art_root_io/TFileService.h"
 #include "TTree.h"
 
-typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
 
 namespace mu2e {
+  namespace {
+    constexpr int kTwoStageTrainingHitThreshold = 100000;
+  }
+
   class VDResamplerConfigure : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
@@ -79,7 +82,7 @@ namespace mu2e {
       double x = 0.0, y = 0.0, z = 0.0, px = 0.0, py = 0.0, pz = 0.0, mass = 0.0, E = 0.0, time = 0.0;
       VolumeId_type virtualdetectorId = 0;
       int nThrownEvents = 0;
-      TTree* ttree;
+      TTree* ttree = nullptr;
       std::map<int, int> pdgIds; // <id, count>
   };
 
@@ -198,7 +201,7 @@ namespace mu2e {
     for (const auto& part : pdgIds) {
       sumOutFile << part.first << "," << part.second;
       bool useTwoStageTraining = false;
-      if (part.second < 100000) {
+      if (part.second < kTwoStageTrainingHitThreshold) {
         // if data is limited, use two-stage training to improve performance and reduce the required training data size for each model.
         useTwoStageTraining = true;
       }

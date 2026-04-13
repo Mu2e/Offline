@@ -45,24 +45,26 @@ namespace mu2e{
         // Constructor: Initialize diffusion model with CLHEP random distributions.
         //
         // Parameters:
-        //   randFlat              - Reference to CLHEP RandFlat for uniform sampling (externally managed)
-        //   randGaussQ            - Reference to CLHEP RandGaussQ for Gaussian noise (externally managed)
-        //   dim                   - Dimensionality of the state space
-        //   conditionDim          - Dimensionality of the optional conditioning vector (default: 0 for unconditional model)
-        //   hidden                - Size of hidden layers in the neural network
-        //   layers                - Number of layers in the network
-        //   optimizerType         - Type of optimizer to use (SGD or ADAM, default: ADAM)
-        //   adamBeta1             - Adam optimizer beta1 parameter (default: 0.9)
-        //   adamBeta2             - Adam optimizer beta2 parameter (default: 0.999)
-        //   adamEps               - Adam optimizer epsilon parameter (default: 1e-8)
-        //   scheduleType          - Type of noise schedule (LINEAR or COSINE, default: COSINE)
-        //   betaMin               - Minimum noise schedule parameter (for LINEAR schedule, default: 1e-4)
-        //   betaMax               - Maximum noise schedule parameter (for LINEAR schedule, default: 0.02)
-        //   cosineOffset          - Offset parameter (for cosine schedule, default: 0.008)
-        //   batchSize             - Batch size for training (default: 32)
-        //   gradientClipThreshold - Threshold for gradient clipping (default: 1.0)
-        //   learningRate          - Learning rate for training (default: 1e-3)
-        //   diffusionSteps        - Number of steps in the diffusion process (default: 200)
+        //   randFlat                - Reference to CLHEP RandFlat for uniform sampling (externally managed)
+        //   randGaussQ              - Reference to CLHEP RandGaussQ for Gaussian noise (externally managed)
+        //   dim                     - Dimensionality of the state space
+        //   conditionDim            - Dimensionality of the optional conditioning vector (default: 0 for unconditional model)
+        //   hidden                  - Size of hidden layers in the neural network
+        //   layers                  - Number of layers in the network
+        //   optimizerType           - Type of optimizer to use (SGD or ADAM, default: ADAM)
+        //   adamBeta1               - Adam optimizer beta1 parameter (default: 0.9)
+        //   adamBeta2               - Adam optimizer beta2 parameter (default: 0.999)
+        //   adamEps                 - Adam optimizer epsilon parameter (default: 1e-8)
+        //   scheduleType            - Type of noise schedule (LINEAR or COSINE, default: COSINE)
+        //   betaMin                 - Minimum noise schedule parameter (for LINEAR schedule, default: 1e-4)
+        //   betaMax                 - Maximum noise schedule parameter (for LINEAR schedule, default: 0.02)
+        //   cosineOffset            - Offset parameter (for cosine schedule, default: 0.008)
+        //   batchSize               - Batch size for training (default: 32)
+        //   gradientClipThreshold   - Threshold for gradient clipping (default: 1.0)
+        //   learningRate            - Learning rate for training (default: 1e-3)
+        //   diffusionSteps          - Number of steps in the diffusion process (default: 200)
+        //   initializeRandomWeights - If true, initialize network weights from random Gaussian draws.
+        //                             Set false when constructing (loading) from a saved model.
         ScoreBasedDiffusionModel(
             // Network architecture parameters
             CLHEP::RandFlat& randFlat,
@@ -86,7 +88,8 @@ namespace mu2e{
             double gradientClipThreshold = 1.0,
             double learningRate = 1e-3,
             // Diffusion process configuration
-            int diffusionSteps = 200
+            int diffusionSteps = 200,
+            bool initializeRandomWeights = true
         );
 
         // Train the score network on a batch of samples.
@@ -312,7 +315,7 @@ namespace mu2e{
         // Training state
         double runningLoss_;  // Accumulated loss for monitoring during training
         int adamStep_; // Step counter for Adam optimizer (used to compute bias-corrected moment estimates)
-        int trainingSampleSize_; // Total number of training samples
+        size_t trainingSampleSize_; // Total number of training samples
 
         // Container for tracking training loss over epochs
         std::vector<double> epochLosses_;

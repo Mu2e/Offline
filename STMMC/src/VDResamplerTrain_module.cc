@@ -13,6 +13,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
 
@@ -44,9 +45,8 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/STMMC/inc/VDResamplerTransformDefaults.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 
-typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
 
 namespace mu2e {
@@ -118,11 +118,13 @@ namespace mu2e {
       VolumeId_type virtualdetectorId = 0;
 
       // transform variables for training data preparation
-      double x0 = vdresampler::kX0;
-      double y0 = vdresampler::kY0;
+      double x0 = VDResampler::kX0;
+      double y0 = VDResampler::kY0;
       // time scaling
-      double t0 = vdresampler::kT0;
-      double tScale = vdresampler::kTScale;
+      double t0 = VDResampler::kT0;
+      double tScale = VDResampler::kTScale;
+      // momentum scaling
+      double p0 = VDResampler::kP0;
   };
 
   VDResamplerTrain::VDResamplerTrain(const Parameters& conf) :
@@ -143,17 +145,42 @@ namespace mu2e {
     trainingEpochs(conf().SBDMtrainingEpochs()),
     trainingSize(conf().SBDMtrainingSize())
   {
+    // Validate geometry configuration
+    if (VDr <= 0.0) {
+        throw cet::exception("VDResamplerTrain")
+            << "VDr must be positive (got " << VDr << "); "
+            << "rho = r/VDr would produce inf/NaN in training data.";
+    }
+    if (!std::isfinite(VDz0)) {
+        throw cet::exception("VDResamplerTrain")
+            << "VDz0 must be finite (got " << VDz0 << ").";
+    }
+
     // optimizer selection
-    ScoreBasedDiffusionModel::OptimizerType opt =
-        (conf().SBDMoptimizer() == "SGD") ?
-        ScoreBasedDiffusionModel::OptimizerType::SGD :
-        ScoreBasedDiffusionModel::OptimizerType::ADAM;
+    ScoreBasedDiffusionModel::OptimizerType opt;
+    if (conf().SBDMoptimizer() == "SGD") {
+        opt = ScoreBasedDiffusionModel::OptimizerType::SGD;
+    } else {
+        if (conf().SBDMoptimizer() != "ADAM") {
+            mf::LogWarning("VDResamplerTrain")
+                << "Unrecognized SBDMoptimizer value \"" << conf().SBDMoptimizer()
+                << "\"; falling back to ADAM.";
+        }
+        opt = ScoreBasedDiffusionModel::OptimizerType::ADAM;
+    }
 
     // noise schedule
-    ScoreBasedDiffusionModel::NoiseScheduleType sched =
-        (conf().SBDMnoiseSchedule() == "LINEAR") ?
-        ScoreBasedDiffusionModel::NoiseScheduleType::LINEAR :
-        ScoreBasedDiffusionModel::NoiseScheduleType::COSINE;
+    ScoreBasedDiffusionModel::NoiseScheduleType sched;
+    if (conf().SBDMnoiseSchedule() == "LINEAR") {
+        sched = ScoreBasedDiffusionModel::NoiseScheduleType::LINEAR;
+    } else {
+        if (conf().SBDMnoiseSchedule() != "COSINE") {
+            mf::LogWarning("VDResamplerTrain")
+                << "Unrecognized SBDMnoiseSchedule value \"" << conf().SBDMnoiseSchedule()
+                << "\"; falling back to COSINE.";
+        }
+        sched = ScoreBasedDiffusionModel::NoiseScheduleType::COSINE;
+    }
 
     if (useTwoStageTraining) {
       // create stage-1 model for (t', x', y')
@@ -265,57 +292,34 @@ namespace mu2e {
       if (virtualdetectorId != VirtualDetectorID || (stepPdgId != pdgID && pdgID != 0) || pz <= 0)
         continue; // Filter hits based on the virtual detector ID, particle type, and pz
 
-      // as z maybe slightly different from the nominal VDz0 due to the step size, we will extrapolate the (x, y) coordinates
-      // to the nominal VDz0 for all hits to compute the training parameters to be fed into the SBDM.
-      double extrapolationFactor = (VDz0 - z) / pz; // Assuming linear motion, this is the factor to extrapolate from current z to z0
-      double x_extrapolated = x + extrapolationFactor * px;
-      double y_extrapolated = y + extrapolationFactor * py;
-
-      // Now we have the extrapolated (x, y) at the nominal VDz0, we can compute the training parameters for the SBDM.
-      // We convert (t, x_extrapolated, y_extrapolated, px, py, pz) to (t', x_extrapolated, y_extrapolated, p_r', p_phi', p_z')
-
-      // shift to detector-centered coordinates
-      double dx = x_extrapolated - x0;
-      double dy = y_extrapolated - y0;
-      // polar coordinates
-      double r = std::sqrt(dx*dx + dy*dy);
-      double rho = r / VDr;
-      // numerical safety (avoid rho >= 1)
-      const double eps = 1e-6;
-      rho = std::min(rho, 1.0 - eps);
-      // boundary-removing transform
-      // u = atanh(r/R)
-      double u = 0.5 * std::log((1.0 + rho) / (1.0 - rho));
-      // angle
-      double theta = std::atan2(dy, dx);
-      // map back to Cartesian-like coordinates
-      double x_trans = u * std::cos(theta);
-      double y_trans = u * std::sin(theta);
-
-      // compute momentum components in the local polar coordinate system (r, phi, z)
-      double pr = 0.0;
-      double pphi = 0.0;
-      if (r > 1e-6) { // avoid division by zero, if r is very small, we can approximate pr ~ px and pphi ~ py
-        double rx = dx / r; // unit vector in the radial direction
-        double ry = dy / r;
-        double phix = -ry; // unit vector in the angular direction)
-        double phiy =  rx;
-        pr   = px*rx + py*ry; // radial momentum component
-        pphi = px*phix + py*phiy;
-      }
-      else {
-        pr = px;
-        pphi = py;
-      }
-      // momentum scaling
-      double p0 = vdresampler::kP0; // tunable scale where I want best resolution
-      double pr_t   = std::asinh(pr   / p0);
-      double pphi_t = std::asinh(pphi / p0);
-      double pz_t   = std::asinh(pz   / p0);
-
-      // time transform
-      double t_safe = std::max(time, 0.1); // avoid log(0)
-      double t_trans = std::log(t_safe / t0) / tScale;
+      double x_trans = 0.0;
+      double y_trans = 0.0;
+      double t_trans = 0.0;
+      double pr_t = 0.0;
+      double pphi_t = 0.0;
+      double pz_t = 0.0;
+      VDResampler::forwardTransformSample(
+        x,
+        y,
+        z,
+        time,
+        px,
+        py,
+        pz,
+        x0,
+        y0,
+        t0,
+        tScale,
+        p0,
+        VDr,
+        VDz0,
+        x_trans,
+        y_trans,
+        t_trans,
+        pr_t,
+        pphi_t,
+        pz_t
+      );
 
       if (useTwoStageTraining) {
         DiffusionTrainingSample stage1Sample;

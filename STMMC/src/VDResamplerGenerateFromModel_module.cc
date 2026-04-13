@@ -10,6 +10,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -43,7 +44,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/STMMC/inc/VDResamplerTransformDefaults.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -158,11 +159,11 @@ namespace mu2e {
       int pdgId_ = 0;
 
       // Detector-center parameters used in the same transform as training.
-      double x0_ = vdresampler::kX0;
-      double y0_ = vdresampler::kY0;
-      double t0_ = vdresampler::kT0;
-      double tScale_ = vdresampler::kTScale;
-      double p0_ = vdresampler::kP0;
+      double x0_ = VDResampler::kX0;
+      double y0_ = VDResampler::kY0;
+      double t0_ = VDResampler::kT0;
+      double tScale_ = VDResampler::kTScale;
+      double p0_ = VDResampler::kP0;
 
       // Variables for optional ROOT dump.
       TTree* outTree_ = nullptr;
@@ -193,6 +194,16 @@ namespace mu2e {
       doROOTDump_(conf().doROOTDump()) {
 
     produces<GenParticleCollection>();
+
+    if (VDr_ <= 0.0) {
+      throw cet::exception("VDResamplerGenerateFromModel")
+        << "VDr must be positive (got " << VDr_ << "); "
+        << "rho = r/VDr would produce inf/NaN in generated samples.";
+    }
+    if (!std::isfinite(VDz0_)) {
+      throw cet::exception("VDResamplerGenerateFromModel")
+        << "VDz0 must be finite (got " << VDz0_ << ").";
+    }
 
     if (useTwoStageModel_) {
       if (stage1ModelFile_.empty() || stage2ModelFile_.empty()) {
@@ -284,43 +295,35 @@ namespace mu2e {
       pz_t = sample[5];
     }
 
-    // Recover detector coordinates from the transformed (x', y').
-    const double u = std::sqrt(x_trans * x_trans + y_trans * y_trans);
-    const double theta = std::atan2(y_trans, x_trans);
-    const double rho = std::tanh(u);
-    const double r = rho * VDr_;
-    const double dx = r * std::cos(theta);
-    const double dy = r * std::sin(theta);
-    x_gen_ = dx + x0_;
-    y_gen_ = dy + y0_;
-    z_gen_ = VDz0_;
-
-    // Invert the time transform.
-    t_gen_ = t0_ * std::exp(t_trans * tScale_);
-
-    // Invert the momentum transform.
-    const double pr = p0_ * std::sinh(pr_t);
-    const double pphi = p0_ * std::sinh(pphi_t);
-    pz_gen_ = p0_ * std::sinh(pz_t);
-
-    if (r > 1e-6) {
-      const double rx = dx / r;
-      const double ry = dy / r;
-      const double phix = -ry;
-      const double phiy = rx;
-      px_gen_ = pr * rx + pphi * phix;
-      py_gen_ = pr * ry + pphi * phiy;
-    } else {
-      px_gen_ = pr;
-      py_gen_ = pphi;
-    }
+    VDResampler::invertGeneratedSample(
+      x_trans,
+      y_trans,
+      t_trans,
+      pr_t,
+      pphi_t,
+      pz_t,
+      x0_,
+      y0_,
+      t0_,
+      tScale_,
+      p0_,
+      VDr_,
+      VDz0_,
+      x_gen_,
+      y_gen_,
+      z_gen_,
+      t_gen_,
+      px_gen_,
+      py_gen_,
+      pz_gen_
+    );
 
     mass_gen_ = pdt_->particle(pdgId_).mass();
     const CLHEP::Hep3Vector momParticle(px_gen_, py_gen_, pz_gen_);
     const CLHEP::Hep3Vector posParticle(x_gen_, y_gen_, z_gen_);
     const double eTotal = std::sqrt(momParticle.mag2() + mass_gen_ * mass_gen_);
     E_gen_ = eTotal - mass_gen_;
-    const CLHEP::HepLorentzVector fourMomParticle(eTotal, momParticle);
+    const CLHEP::HepLorentzVector fourMomParticle(momParticle, eTotal);
 
     output->emplace_back(
       PDGCode::type(pdgId_),
