@@ -19,6 +19,7 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
+	 verbosityLevel : 6
       }
    }
 
