@@ -72,6 +72,8 @@ namespace mu2e {
     fhicl::Atom<std::string> moduleLabel{Name("reconstitutedModuleLabel"),Comment("Module label for the reconstituted data products"),"PBISequence"};
     fhicl::Atom<std::string> instance{Name("deprecatedInstanceName"),Comment("Instance name for deprecated subrun data product ProtonBunchIntensity"),""};
     fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number")};
+    fhicl::Atom<unsigned int> firstSubRun{Name("firstSubRunNumber"), Comment("First subRun number, incrementing by one for each input file"), 0};
+    fhicl::Atom<unsigned int> firstEvent{Name("firstEventNumber"), Comment("First event number of first subRun (0 in the subsequent subRuns)"), 0};
     fhicl::Atom<bool>  integratedSummary{Name("integratedSummary"), Comment("If true, then PBI summary is summed over all input files; else per input file.")};
     fhicl::Atom<unsigned int> verbosity{Name("verbosity"), Comment("Verbosity level; larger means more printout"), 0};
 
@@ -87,6 +89,8 @@ namespace mu2e {
     std::string deprecatedInstanceName_;
     art::SourceHelper const& pm_;
     unsigned runNumber_;
+    unsigned firstSubRunNumber_;
+    unsigned firstEventNumber_;
     unsigned subRunNumber_;
     unsigned currentEventNumber_;
     unsigned verbosity_;
@@ -135,8 +139,10 @@ namespace mu2e {
       , deprecatedInstanceName_(conf().instance())
       , pm_(pm)
       , runNumber_(conf().runNumber())
-      , subRunNumber_(-1U)
-      , currentEventNumber_(0)
+      , firstSubRunNumber_(conf().firstSubRun())
+      , firstEventNumber_(conf().firstEvent())
+      , subRunNumber_(firstSubRunNumber_ - 1U)
+      , currentEventNumber_(firstEventNumber_)
       , verbosity_(conf().verbosity())
       , integratedSummary_(conf().integratedSummary())
   {
@@ -159,7 +165,7 @@ namespace mu2e {
     currentFile_ = new ifstream(currentFileName_,std::ifstream::in);
     // reset counters
     subRunNumber_++;
-    currentEventNumber_ = 0;
+    if(subRunNumber_ != firstSubRunNumber_) currentEventNumber_ = 0; // only reset after the first sub run
     // compute statistics on protons in this file
     nprotAcc_ = {};
     double protons;
