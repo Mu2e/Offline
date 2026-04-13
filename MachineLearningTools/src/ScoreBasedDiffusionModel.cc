@@ -538,6 +538,7 @@ namespace mu2e {
             for (size_t i = N - 1; i > 0; --i)
             {
                 size_t j = static_cast<size_t>(randFlat_.fire() * (i + 1));
+                j = std::min(j, i); // Ensure j is within bounds
                 std::swap(indices[i], indices[j]);
             }
 
