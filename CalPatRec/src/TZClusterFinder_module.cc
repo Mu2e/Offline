@@ -763,6 +763,7 @@ namespace mu2e {
 
     unsigned short nProtons = 0;
 
+    auto tcs = (_protonTCs) ? _data._protonTCColl : nullptr;
     for (size_t i=0; i<_f.chunks.size(); i++) {
       if (_f.chunks[i].nrgSelection == 1) {continue;}
       if (_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
@@ -770,14 +771,13 @@ namespace mu2e {
 
       // If proton time clusters are requested, add them to the output collection
       if(_protonTCs) {
-        auto tcs = _data._protonTCColl;
         TimeCluster tc;
         for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
           tc._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));
         }
         tc._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
         const int caloIdx = _f.chunks[i].caloIndex;
-        if (caloIdx != -1) tc._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
+        if (_useCaloClusters == 1 && caloIdx != -1) tc._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
         tc._nsh = _f.chunks[i].nStrawHits;
         tcs->push_back(std::move(tc));
       }
