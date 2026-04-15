@@ -337,9 +337,17 @@ namespace mu2e {
     z2m = fSz2/fNHitsTot;
                                         // 'combo-hit'-based way, FIXME ? or just OK ?
     if (fNStationsWithHits > 1) {
-      fDtDz  = (tzm-tm*zm)/(z2m-zm*zm);
-      fT0    = tm-fDtDz*zm;
-      fSigT0 = sqrt((t2m-tm*tm)/(fNHitsTot-1));
+      double denom = z2m-zm*zm;
+      if (denom != 0.) {
+        fDtDz  = (tzm-tm*zm)/denom;
+        fT0    = tm-fDtDz*zm;
+        fSigT0 = sqrt((t2m-tm*tm)/(fNHitsTot-1));
+      }
+      else {
+        fDtDz  = 0;
+        fT0    = tm;
+        fSigT0 = 0;
+      }
     }
     else {
       fDtDz  = 0;

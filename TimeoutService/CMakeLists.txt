@@ -8,7 +8,7 @@ cet_make_library(
       fhiclcpp::types
 )
 
-cet_build_plugin(TimeoutWatchdogService art::service
+cet_build_plugin(TimeoutWatchdog art::service
     REG_SOURCE src/TimeoutWatchdog_service.cc
     LIBRARIES REG
       Offline::TimeoutService

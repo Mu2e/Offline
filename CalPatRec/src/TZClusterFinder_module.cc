@@ -85,8 +85,8 @@ namespace mu2e {
     int              _runDisplay;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
-    std::optional<art::ServiceHandle<TimeoutWatchdogService>> _timeoutService;
-    std::optional<TimeoutWatchdogService::ModuleGuard> _timeoutGuard;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
@@ -124,7 +124,7 @@ namespace mu2e {
     art::Handle<CaloClusterCollection>     _ccHandle;
     facilitateVars                         _f;
     std::unique_ptr<ModuleHistToolBase>    _hmanager;
-    TCanvas*                               _c1;
+    TCanvas*                               _c1 = nullptr;
 
     //-----------------------------------------------------------------------------
     // functions
@@ -221,7 +221,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // destructor
   //-----------------------------------------------------------------------------
-  TZClusterFinder::~TZClusterFinder() {}
+  TZClusterFinder::~TZClusterFinder() {
+    delete _c1;
+  }
 
   //-----------------------------------------------------------------------------
   // beginJob
@@ -350,7 +352,7 @@ namespace mu2e {
       cHit comboHit;
       comboHit.hIndex = i;
       comboHit.hTime = hit->correctedTime();
-      comboHit.hWeight = 1/(hit->timeVar());
+      comboHit.hWeight = (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.;
       comboHit.hZpos = hit->pos().z();
       comboHit.nStrawHits = hit->nStrawHits();
       comboHit.hIsUsed = 0;
@@ -813,7 +815,7 @@ namespace mu2e {
             hit = &_data._chColl->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
-              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->timeVar()));
+              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.);
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }
