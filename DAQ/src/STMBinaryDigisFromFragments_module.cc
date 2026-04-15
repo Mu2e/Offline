@@ -1,6 +1,6 @@
 // =====================================================================
 //
-// STMDigisFromFragments: create all types of STMDigis from STMFragments
+// STMBinaryDigisFromFragments: Binary file writing
 //
 // ======================================================================
 
@@ -41,29 +41,40 @@
 
 namespace art
 {
-  class STMDigisFromFragments;
+  class STMBinaryDigisFromFragments;
 }
 
-using art::STMDigisFromFragments;
+using art::STMBinaryDigisFromFragments;
 
-class art::STMDigisFromFragments : public EDProducer
+class art::STMBinaryDigisFromFragments : public EDProducer
 {
 public:
   struct Config {
     fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("Input module")};
-    fhicl::Atom<bool> saveRawWithHeaderFile {fhicl::Name("saveRawWithHeaderFile"), false};
+    fhicl::Atom<std::string> rawFile {fhicl::Name("rawFile"), "raw.bin"};
+    fhicl::Atom<std::string> zsFile {fhicl::Name("zsFile"), "zs.bin"};
+    fhicl::Atom<std::string> phFile {fhicl::Name("phFile"), "ph.bin"};
+    fhicl::Atom<std::string> rawHeaderFile {fhicl::Name("rawHeaderFile"), "rawWithHeader.bin"}; 
+    fhicl::Atom<std::string> eventFile {fhicl::Name("eventFile"), "event.bin"};
     fhicl::OptionalAtom<int> verbosityLevel{fhicl::Name("verbosityLevel"), fhicl::Comment("Verbosity level")};
   };
   
-  explicit STMDigisFromFragments(const art::EDProducer::Table<Config>& config); // constructor created, config via fcl
+  explicit STMBinaryDigisFromFragments(const art::EDProducer::Table<Config>& config); // constructor created, config via fcl
+  virtual ~STMBinaryDigisFromFragments(); //declares destructor
+
   virtual void produce(Event &) override;
   void endJob() override;//Final prinout summary
 
 private:
   art::InputTag _stmFragmentsTag;
-  
+  std::ofstream _rawOut; //Files which can be acessesed throughout
+  std::ofstream _zsOut;
+  std::ofstream _phOut;
+  std::ofstream _rawHeaderOut;
+  std::ofstream _eventOut;
+
   //Metrics
-  size_t _totalEvents{0};
+  size_t _totalEvents{0}; //Another way to initialize to zero
   size_t _totalFragments{0};
   size_t _totalContainers{0};
   size_t _totalInner{0};
@@ -81,30 +92,47 @@ private:
 
   //fhicl varibales
   int _verbosityLevel = 0;
-  bool _saveRawWithHeaderFile{false};
 }; // STMDigisFromFragments
 
 // ======================================================================
 
 
-STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config>& config)
+STMBinaryDigisFromFragments::STMBinaryDigisFromFragments(const art::EDProducer::Table<Config>& config)
   : art::EDProducer{config}
   ,_stmFragmentsTag(config().stmTag())
-  ,_saveRawWithHeaderFile(config().saveRawWithHeaderFile())
   ,_verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
 
 {
-  // Set the size of the vector
-  produces<mu2e::STMWaveformDigiCollection>("raw");//Waveforms
-  produces<mu2e::STMWaveformDigiCollection>("zs");
-  produces<mu2e::STMPHDigiCollection>("ph"); // digi series
-  if(_saveRawWithHeaderFile){ produces<mu2e::STMWaveformDigiCollection>("rawWithHeader");}
+  //turns files into binary
+  _rawOut.open(config().rawFile(), std::ios::binary);
+  _zsOut.open(config().zsFile(), std::ios::binary);
+  _phOut.open(config().phFile(), std::ios::binary);
+  _rawHeaderOut.open(config().rawHeaderFile(), std::ios::binary);
+  _eventOut.open(config().eventFile(), std::ios::binary);
+
+  //Check to make sure we are reading the file
+  if(!_rawOut || !_zsOut || !_phOut || !_rawHeaderOut || !_eventOut){
+    throw cet::exception("FILEOPEN")<< "Failed to open one or more output files\n";
+  }
   
 }
 
+STMBinaryDigisFromFragments::~STMBinaryDigisFromFragments(){
+  if ( _rawOut.is_open() )
+    _rawOut.close();
+  if ( _zsOut.is_open() )
+    _zsOut.close();
+  if ( _phOut.is_open() )
+    _phOut.close();
+  if( _rawHeaderOut.is_open() )
+    _rawHeaderOut.close();
+  if( _eventOut.is_open() )
+    _eventOut.close();    
+}//Closing files
+
 // ----------------------------------------------------------------------
 
-void STMDigisFromFragments::produce(Event& event)
+void STMBinaryDigisFromFragments::produce(Event& event)
 {
   
   ++_totalEvents; //Increment Total Event Counter
@@ -119,6 +147,13 @@ void STMDigisFromFragments::produce(Event& event)
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
   const auto STMFragments = STMFragmentsH.product();
 
+  auto writePayload = [](std::ofstream& out, // [] is a capture list that only works with these parameters
+                         const int16_t* data,
+                         size_t words){
+    out.write(reinterpret_cast<const char*>(data),//Writing to file stream in binary
+              words * sizeof(int16_t));
+  };
+
   //Event Metrics
   size_t localRaw_frags{0};
   size_t localZS_frags{0};
@@ -129,15 +164,15 @@ void STMDigisFromFragments::produce(Event& event)
   size_t emptyRaw_frags{0};
   size_t emptyZS_frags{0};
   size_t emptyPH_frags{0};
-  uint16_t ZSfromRaw{0}; //Keep track of ZS length from raw header
-  bool readRawZSinfo{false};
+  //uint16_t ZSfromRaw{0}; //Keep track of ZS length from raw header
+  //bool readRawZSinfo{false};
   
   //loop over frags
   for (const auto& frag : *STMFragments) {
     ++_totalFragments; //Increment Total Frag counter
     
-    if (_verbosityLevel >= 3){std::cout << "\nFrag_id : " << frag.fragmentID() << "\n";}
-    
+    if (_verbosityLevel >=3){ std::cout <<"\nFrag_ID : " << frag.fragmentID() << "\n";}
+      
     //Check if this is a container fragment
     if (frag.type() == artdaq::Fragment::ContainerFragmentType){
 
@@ -145,6 +180,7 @@ void STMDigisFromFragments::produce(Event& event)
       ++_totalContainers;
       size_t blocks = cont_frag.block_count();
       _totalInner += blocks;
+
       //loop over container
       // i index corresponds to inner frag 
       for (size_t i = 0; i < cont_frag.block_count(); ++i){
@@ -203,17 +239,16 @@ void STMDigisFromFragments::produce(Event& event)
 			<< " , i = " << i << " @Raw\n";
 	    }
 	  }
-	  ZSfromRaw = stm_frag.zsLength();//Stores ZS length on outside variable
-	  readRawZSinfo = 1;//Shows we were able to read the Raw header information
+	  //ZSfromRaw = stm_frag.zsLength();//Stores ZS length on outside variable
+	  // readRawZSinfo = 1;//Shows we were able to read the Raw header information
 	  
           //Ideally only good frags get up to here
           //------full data (header + payload)
-          if (_saveRawWithHeaderFile){ 
+          { 
             //Waveform with data creation
             auto dataPtr = stm_frag.dataBegin();//Inner variable
             auto dataWords = stm_frag.dataWords();
-            stm_waveform.set_data(dataWords, dataPtr);
-            raw_header_waveform_digis->emplace_back(stm_waveform);
+            writePayload( _rawHeaderOut , dataPtr, dataWords); 
           }
 
           //----- payload-only
@@ -222,6 +257,7 @@ void STMDigisFromFragments::produce(Event& event)
             //auto payloadWords = stm_frag.payloadWords();
             stm_waveform.set_data(payloadWords, payloadPtr);
             raw_waveform_digis->emplace_back(stm_waveform);
+            writePayload(_rawOut, payloadPtr, payloadWords);
           }
 
         }//End of isRaw
@@ -273,8 +309,10 @@ void STMDigisFromFragments::produce(Event& event)
 	  size_t seg = 0;
 	  size_t totalLen = 0;
 	  uint16_t lastZSindex = 0; //keeps track of last recorded index from header -> with respect to what?
-	  uint16_t lastLen = 0; //keeps track of last recoded length from header
+	  uint16_t lastLen = 0; //keeps track of last recorded length from header
 
+	  writePayload(_zsOut, payloadPtr, payloadWords);
+	  
 	  while (dataPtr + 2 <= dataEnd){
 	    uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
 	    uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
@@ -311,14 +349,13 @@ void STMDigisFromFragments::produce(Event& event)
 	  }
 
 	  //Throw out if ZSLengthfromRaw != totalLen
-	  if (readRawZSinfo && ZSfromRaw != totalLen){
-	    throw cet::exception("STM_UNPACKING")
-	      << "\n=== ZS Length mismatch ===\n"
-	      << "ZS length from Raw header " << ZSfromRaw << "\n"
-	      << "ZS length calculated from file : " << totalLen << "\n"
-	      << "Found at inner frag i : " << i <<"\n";
-	      ;
-	  }
+	  //if (readRawZSinfo && ZSfromRaw != totalLen){
+	  //throw cet::exception("Mismatch")
+	  //  << "\n=== ZS Length mismatch ===\n"
+	  //  << "ZS length from Raw header " << ZSfromRaw << "\n"
+	  //  << "ZS length calculated from file : " << totalLen << "\n"
+	  //  << "Found at inner frag i : " << i <<"\n";
+	    	  // }
 	  
         }//End of isZS
 	
@@ -357,27 +394,55 @@ void STMDigisFromFragments::produce(Event& event)
 	  size_t digiWords = stm_frag.payloadWords();	  
           auto const* digiPtr = stm_frag.payloadBegin();
 
+	  writePayload(_phOut,digiPtr, digiWords);
+	  
 	  for (size_t i_PH = 0; i_PH < digiWords ; ++i_PH){
 	    int16_t PH = digiPtr[i_PH];
 	    mu2e::STMPHDigi PH_digi(0, PH);
 	    ph_digis->emplace_back(PH_digi);
 	  }
 
-	}//End of isPH and is checks
-      }
+      }//End of isPH and is checks
+
+        //---Combined stream write w. order preserved ----
+        {
+          const int16_t* cptr = nullptr;
+          size_t cwords = 0;
+
+          if (stm_frag.isRaw()){
+            cptr = stm_frag.dataBegin();
+            cwords = stm_frag.dataWords();
+          }
+          else if (stm_frag.isZS()){
+            cptr = stm_frag.payloadBegin();
+            cwords = stm_frag.payloadWords();
+          }
+          else if (stm_frag.isPH()){
+            cptr = stm_frag.payloadBegin();
+            cwords = stm_frag.payloadWords();
+          }
+
+          if (cptr != nullptr && cwords >0) {
+            _eventOut.write(reinterpret_cast<const char*>(cptr),
+                            cwords * sizeof(int16_t) );
+          }
+        }
+
+      }//End Container loop
     } else {
       //fallback (non-container case)
       mu2e::STMFragment stm_frag(frag);
       auto ptr = stm_frag.payloadBegin();
       auto words = stm_frag.payloadWords();
 
-      //if (stm_frag.isRaw()){}	//        writePayload(_rawOut, ptr, words);
+      if (stm_frag.isRaw()) {
+        writePayload(_rawOut, ptr, words);
+      }
     }
   } //End of frags loop---George suggestions
-
   if (_verbosityLevel >= 2 ){ 
     //Event Summary -> tells us what happens per event
-    std::cout << "\n========== STM EVENT SUMMARY - (Unpacking Module) ==========\n";
+    std::cout << "\n========== STM EVENT SUMMARY - (Binary Module) ==========\n";
     std::cout << "Extracted Raw waveforms     : "<< raw_waveform_digis->size() <<"\n";
     std::cout << "Extracted ZS waveforms      : "<< zs_waveform_digis->size() <<"\n";
     std::cout << "Extracted PH digis          : " << ph_digis->size() <<"\n";
@@ -399,21 +464,14 @@ void STMDigisFromFragments::produce(Event& event)
     std::cout << "=================================\n";
   }
   
-  //Final move
-  event.put(std::move(raw_waveform_digis), "raw");
-  event.put(std::move(zs_waveform_digis), "zs");
-  event.put(std::move(ph_digis), "ph");
-  if (_saveRawWithHeaderFile){ event.put(std::move(raw_header_waveform_digis), "rawWithHeader"); }
-    
 } // produce()
 
 // ======================================================================
 
-
-void STMDigisFromFragments::endJob() {
+void STMBinaryDigisFromFragments::endJob() {
   if (_verbosityLevel >= 1){
     //Tells us what happened at the very end
-    std::cout << "\n========== STM JOB SUMMARY - (Unpacking Module) ==========\n";
+    std::cout << "\n========== STM JOB SUMMARY - (Binary Module) ==========\n";
 
     std::cout << "Total events       : " << _totalEvents << "\n";
     std::cout << "Total fragments    : " << _totalFragments << "\n";
@@ -433,10 +491,9 @@ void STMDigisFromFragments::endJob() {
     std::cout << "Empty ZS frags    : " << _totalEmptyZS << "\n";
     std::cout << "Empty PH frags    : " << _totalEmptyPH << "\n";
 
-
     std::cout << "=================================\n";
 
   }
 }
 
-DEFINE_ART_MODULE(STMDigisFromFragments)
+DEFINE_ART_MODULE(STMBinaryDigisFromFragments)

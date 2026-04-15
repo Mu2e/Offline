@@ -111,6 +111,14 @@ cet_build_plugin(STMDigisFromFragments art::module
   Offline::RecoDataProducts
 )
 
+cet_build_plugin(STMBinaryDigisFromFragments art::module
+  REG_SOURCE src/STMBinaryDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
 
 cet_build_plugin(STMPrintFragments art::module
   REG_SOURCE src/STMPrintFragments_module.cc

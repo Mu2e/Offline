@@ -19,26 +19,40 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-	 verbosityLevel : 6
-      }
+	 verbosityLevel : 1
+	 saveRawWithHeaderFile: false
+	}
+         
+       makeSTMBinary : { 
+      	 module_type : STMBinaryDigisFromFragments
+         stmTag : "daq:ContainerSTM"
+         verbosityLevel : 1
+	 rawFile : "raw.bin"
+	 zsFile : "zs.bin"
+	 phFile : "ph.bin"
+	 rawHeaderFile : "rawWithHeader.bin"
+	 eventFile : "event.bin"
+      }  
    }
+
 
    analyzers  : {
 
    # frag:
-   #    {
+
+#    {
    #    module_type : FragmentWatcher
    #    mode_bitmask : 7
    #    }
-    stmPrint :
-    {
+   
+    stmPrint : {
       module_type : STMPrintFragments
       stmTag : "daq:ContainerSTM"
     }
 
    }
 
-  t1 : [ makeSTMDigis ]
+  t1 : [ makeSTMDigis, makeSTMBinary ]
    e1 : [ stmOutput ]
    #e1 : [ ]
    #e1 : [ frag, stmOutput ]

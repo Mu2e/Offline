@@ -52,13 +52,13 @@ physics : {
     PHHPGe : {
       module_type : STMMovingWindowDeconvolution
       stmWaveformDigisTag : @local::STMMCAnalysis.PH.HPGe.stmWaveformDigisTag.concatenated
-      tau : @local::STMMCAnalysis.PH.HPGe.tau
-      M : @local::STMMCAnalysis.PH.HPGe.M
-      L : @local::STMMCAnalysis.PH.HPGe.L
-      nsigma_cut : @local::STMMCAnalysis.PH.HPGe.nsigma_cut
-      thresholdgrad : @local::STMMCAnalysis.PH.HPGe.thresholdgrad
-      defaultBaselineMean : @local::STMMCAnalysis.PH.HPGe.defaultBaselineMean.suppressed
-      defaultBaselineSD : @local::STMMCAnalysis.PH.HPGe.defaultBaselineSD.suppressed
+      tau : @local::STMMCAnalysis.MWD.HPGe.tau
+      M : @local::STMMCAnalysis.MWD.HPGe.M
+      L : @local::STMMCAnalysis.MWD.HPGe.L
+      nsigma_cut : @local::STMMCAnalysis.MWD.HPGe.nsigma_cut
+      thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
+      defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
+      defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
       makeTTreePH: false
       makeTTreeEnergies: false
       TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
