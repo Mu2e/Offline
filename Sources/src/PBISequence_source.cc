@@ -73,7 +73,7 @@ namespace mu2e {
     fhicl::Atom<std::string> instance{Name("deprecatedInstanceName"),Comment("Instance name for deprecated subrun data product ProtonBunchIntensity"),""};
     fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number")};
     fhicl::Atom<unsigned int> firstSubRun{Name("firstSubRunNumber"), Comment("First subRun number, incrementing by one for each input file"), 0};
-    fhicl::Atom<unsigned int> firstEvent{Name("firstEventNumber"), Comment("First event number of first subRun (0 in the subsequent subRuns)"), 0};
+    fhicl::Atom<unsigned int> firstEvent{Name("firstEventNumber"), Comment("First event number offset of first subRun (0 in the subsequent subRuns)"), 0};
     fhicl::Atom<bool>  integratedSummary{Name("integratedSummary"), Comment("If true, then PBI summary is summed over all input files; else per input file.")};
     fhicl::Atom<unsigned int> verbosity{Name("verbosity"), Comment("Verbosity level; larger means more printout"), 0};
 
