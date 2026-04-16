@@ -62,7 +62,8 @@ namespace mu2e {
   std::vector<ParticleGeneratorTool::Kinematic> MuCap1809keVGammaGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    if (_fireAll || _randFlat->fire() < _intensity) {
+    const double intensity = _intensity * (_czMax - _czMin)/2.; // account for potential cz selection in the intensity
+    if (_fireAll || _randFlat->fire() < intensity) {
       const double momentum = _energy * sqrt(1 - std::pow(_mass/_energy,2));
       CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(momentum);
       CLHEP::HepLorentzVector fourmom(p3, _energy);

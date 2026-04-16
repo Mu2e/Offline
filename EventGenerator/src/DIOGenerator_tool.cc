@@ -1,8 +1,8 @@
 #include "art/Utilities/ToolMacros.h"
 #include "cetlib_except/exception.h"
 
-#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandFlat.h"
 
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
@@ -25,6 +25,7 @@ namespace mu2e {
 
       fhicl::Atom<double>       czmin   {Name("czmin")   , Comment("Restrict cos(theta_z) minimum"), -1.};
       fhicl::Atom<double>       czmax   {Name("czmax")   , Comment("Restrict cos(theta_z) maximum"),  1.};
+      fhicl::Atom<bool>         fireAll {Name("fireAll") , Comment("Always add a particle to the event"), false};
       fhicl::DelegatedParameter spectrum{Name("spectrum"), Comment("Parameters for BinnedSpectrum)")};
     };
     typedef art::ToolConfigTable<PhysConfig> Parameters;
@@ -34,6 +35,7 @@ namespace mu2e {
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _czmin(conf().czmin()),
       _czmax(conf().czmax()),
+      _fireAll(conf().fireAll()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
     {
       if(_czmin > _czmax || _czmin < -1. || _czmax > 1.) throw cet::exception("BADCONFIG") << "DIOGenerator cos(theta_z) range is not defined\n";
@@ -76,6 +78,7 @@ namespace mu2e {
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
     }
 
   private:
@@ -84,24 +87,29 @@ namespace mu2e {
 
     const double _czmin;
     const double _czmax;
+    const bool _fireAll;
     BinnedSpectrum    _spectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
+    std::unique_ptr<CLHEP::RandFlat>    _randFlat;
   };
 
 
   std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
+    const double r = (_czmax - _czmin)/2.;
+    if(_fireAll || _randFlat->fire() < r) {
 
-    double energy = _spectrum.sample(_randSpectrum->fire());
+      double energy = _spectrum.sample(_randSpectrum->fire());
 
-    const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
-    CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
+      const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
+      CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
+      CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
-    res.emplace_back(k);
+      ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
+      res.emplace_back(k);
+    }
 
     return res;
   }
