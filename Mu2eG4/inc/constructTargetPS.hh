@@ -18,6 +18,11 @@ namespace mu2e {
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config);
 
+  // Target-type-specific construction functions
+  void constructTier1Target(VolumeInfo const & parent, SimpleConfig const & _config);
+  void constructHaymanTarget(VolumeInfo const & parent, SimpleConfig const & _config);
+  void constructStickmanTarget(VolumeInfo const & parent, SimpleConfig const & _config);
+
 }
 
 #endif /* Mu2eG4_constructTargetPS_hh */
