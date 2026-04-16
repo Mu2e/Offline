@@ -505,7 +505,7 @@ namespace mu2e {
       ));
 
     // Create configuration parameters struct
-    ProductionTarget::StickmanConfigParams configParams;
+    StickmanConfigParams configParams;
 
     // Configure plate fillet parameters (only if fillets will be used)
     configParams.addFilletToPlateCore = c.getBool("targetPS_addFilletToPlateCore");
@@ -530,7 +530,7 @@ namespace mu2e {
           << "targetPS_supportRingCutoutAngles size mismatch: expected "
           << configParams.nSupportRingCutouts << ", got " << configParams.supportRingCutoutAngles.size();
       }
-      for_each(configParams.supportRingCutoutAngles.begin(), configParams.supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
+      std::for_each(configParams.supportRingCutoutAngles.begin(), configParams.supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
       configParams.supportRingCutoutInnerRadius = c.getDouble("targetPS_supportRingCutoutInnerRadius");
       configParams.supportRingCutoutTilt = c.getDouble("targetPS_supportRingCutoutTilt") * CLHEP::degree;
     }
