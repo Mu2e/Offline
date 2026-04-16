@@ -22,28 +22,28 @@ namespace mu2e {
 
   // Parameter struct for transform and envelope parameters (Stickman)
   struct StickmanEnvelopeParams {
-    double productionTargetMotherOuterRadius;
-    double productionTargetMotherHalfLength;
-    double rotStickmanX;
-    double rotStickmanY;
-    double rotStickmanZ;
-    double halfStickmanLength;
+    double productionTargetMotherOuterRadius = 0.0;
+    double productionTargetMotherHalfLength = 0.0;
+    double rotStickmanX = 0.0;
+    double rotStickmanY = 0.0;
+    double rotStickmanZ = 0.0;
+    double halfStickmanLength = 0.0;
     CLHEP::Hep3Vector stickmanProdTargetPosition;
     std::string targetVacuumMaterial;
   };
 
   // Parameter struct for plate parameters (Stickman)
   struct StickmanPlateParams {
-    int numberOfPlates;
+    int numberOfPlates = 0;
     std::vector<std::string> plateMaterial;
     std::vector<double> plateROut;
-    int nStickmanFins;
+    int nStickmanFins = 0;
     std::vector<double> plateFinAngles;
-    double plateFinOuterRadius;
-    double plateFinWidth;
-    double plateCenterToLugCenter;
-    double plateLugInnerRadius;
-    double plateLugOuterRadius;
+    double plateFinOuterRadius = 0.0;
+    double plateFinWidth = 0.0;
+    double plateCenterToLugCenter = 0.0;
+    double plateLugInnerRadius = 0.0;
+    double plateLugOuterRadius = 0.0;
     std::vector<double> plateThickness;
     std::vector<double> plateLugThickness;
   };
@@ -51,52 +51,52 @@ namespace mu2e {
   // Parameter struct for rod parameters (Stickman)
   struct StickmanRodParams {
     std::string rodMaterial;
-    double rodRadius;
+    double rodRadius = 0.0;
   };
 
   // Parameter struct for spacer parameters (Stickman)
   struct StickmanSpacerParams {
     std::string spacerMaterial;
-    double spacerHalfLength;
-    double spacerOuterRadius;
-    double spacerInnerRadius;
+    double spacerHalfLength = 0.0;
+    double spacerOuterRadius = 0.0;
+    double spacerInnerRadius = 0.0;
   };
 
   // Parameter struct for support ring parameters (Stickman)
   struct StickmanSupportRingParams {
     std::string stickmanSupportRingMaterial;
-    double stickmanSupportRingLength;
-    double stickmanSupportRingInnerRadius;
-    double stickmanSupportRingOuterRadius;
-    double supportRingLugOuterRadius;
-    double supportRingCutoutOffset;
+    double stickmanSupportRingLength = 0.0;
+    double stickmanSupportRingInnerRadius = 0.0;
+    double stickmanSupportRingOuterRadius = 0.0;
+    double supportRingLugOuterRadius = 0.0;
+    double supportRingCutoutOffset = 0.0;
   };
 
   // Parameter struct for Stickman configuration (additional parameters set after construction)
   struct StickmanConfigParams {
     // Plate fillet parameters
-    bool addFilletToPlateCore;
-    bool addFilletToPlateLug;
-    double plateFilletRadius;
+    bool addFilletToPlateCore = false;
+    bool addFilletToPlateLug = false;
+    double plateFilletRadius = 0.0;
     
     // Support ring fillet parameters
-    bool addFilletToSupportRingLug;
-    double supportRingLugFilletRadius;
+    bool addFilletToSupportRingLug = false;
+    double supportRingLugFilletRadius = 0.0;
     
     // Support ring cutout parameters
-    bool addCutoutToSupportRing;
-    int nSupportRingCutouts;
+    bool addCutoutToSupportRing = false;
+    int nSupportRingCutouts = 0;
     std::vector<double> supportRingCutoutAngles;
-    double supportRingCutoutInnerRadius;
-    double supportRingCutoutTilt;
+    double supportRingCutoutInnerRadius = 0.0;
+    double supportRingCutoutTilt = 0.0;
     
     // Support wheel parameters
-    bool supportsBuild;
-    double supportWheelRIn;
-    double supportWheelROut;
-    double supportWheelHL;
+    bool supportsBuild = false;
+    double supportWheelRIn = 0.0;
+    double supportWheelROut = 0.0;
+    double supportWheelHL = 0.0;
     std::string supportWheelMaterial;
-    int nSpokesPerSide;
+    int nSpokesPerSide = 0;
     std::vector<double> supportWheelFeatureAngles;
     std::vector<double> supportWheelFeatureArcs;
     std::vector<double> supportWheelFeatureRIns;
@@ -110,7 +110,7 @@ namespace mu2e {
     std::vector<double> supportWheelRodAngles;
     std::vector<double> spokeTargetAnglesD;
     std::vector<double> spokeTargetAnglesU;
-    double spokeRadius;
+    double spokeRadius = 0.0;
     std::string spokeMaterial;
   };
 

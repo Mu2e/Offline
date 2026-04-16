@@ -1,4 +1,5 @@
 #include "Offline/ProductionTargetGeom/inc/ProductionTarget.hh"
+#include "cetlib_except/exception.h"
 #include <numeric>
 
 namespace mu2e {
@@ -145,6 +146,86 @@ namespace mu2e {
     ,_supportRingLugOuterRadius(supportRingParams.supportRingLugOuterRadius)
     ,_supportRingCutoutOffset(supportRingParams.supportRingCutoutOffset)
   {
+    if (_stickmanTargetType.empty()) {
+      throw cet::exception("GEOM") << "ProductionTarget: missing stickman target type";
+    }
+    if (_productionTargetMotherOuterRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid productionTargetMotherOuterRadius";
+    }
+    if (_productionTargetMotherHalfLength <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid productionTargetMotherHalfLength";
+    }
+    if (_halfStickmanLength <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid halfStickmanLength";
+    }
+    if (_numberOfPlates <= 0) {
+      throw cet::exception("GEOM") << "ProductionTarget: numberOfPlates must be positive";
+    }
+    if (_plateMaterial.size() != static_cast<size_t>(_numberOfPlates)) {
+      throw cet::exception("GEOM")
+        << "ProductionTarget: targetPS_plateMaterial size mismatch: expected "
+        << _numberOfPlates << ", got " << _plateMaterial.size();
+    }
+    if (_plateROut.size() != static_cast<size_t>(_numberOfPlates)) {
+      throw cet::exception("GEOM")
+        << "ProductionTarget: targetPS_rOut size mismatch: expected "
+        << _numberOfPlates << ", got " << _plateROut.size();
+    }
+    if (_plateThickness.size() != static_cast<size_t>(_numberOfPlates)) {
+      throw cet::exception("GEOM")
+        << "ProductionTarget: targetPS_plateThickness size mismatch: expected "
+        << _numberOfPlates << ", got " << _plateThickness.size();
+    }
+    if (_plateLugThickness.size() != static_cast<size_t>(_numberOfPlates)) {
+      throw cet::exception("GEOM")
+        << "ProductionTarget: targetPS_plateLugThickness size mismatch: expected "
+        << _numberOfPlates << ", got " << _plateLugThickness.size();
+    }
+    if (_nStickmanFins <= 0) {
+      throw cet::exception("GEOM") << "ProductionTarget: nStickmanFins must be positive";
+    }
+    if (_plateFinAngles.size() != static_cast<size_t>(_nStickmanFins)) {
+      throw cet::exception("GEOM")
+        << "ProductionTarget: targetPS_plateFinAngles size mismatch: expected "
+        << _nStickmanFins << ", got " << _plateFinAngles.size();
+    }
+    if (_rodMaterial.empty()) {
+      throw cet::exception("GEOM") << "ProductionTarget: missing targetPS_rodMaterial";
+    }
+    if (_rodRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_rodRadius";
+    }
+    if (_spacerMaterial.empty()) {
+      throw cet::exception("GEOM") << "ProductionTarget: missing targetPS_spacerMaterial";
+    }
+    if (_spacerHalfLength <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_spacerHalfLength";
+    }
+    if (_spacerOuterRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_spacerOuterRadius";
+    }
+    if (_spacerInnerRadius < 0.0 || _spacerInnerRadius >= _spacerOuterRadius) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid spacer radii";
+    }
+    if (_stickmanSupportRingMaterial.empty()) {
+      throw cet::exception("GEOM") << "ProductionTarget: missing targetPS_supportRingMaterial";
+    }
+    if (_stickmanSupportRingLength <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_supportRingLength";
+    }
+    if (_stickmanSupportRingInnerRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_supportRingInnerRadius";
+    }
+    if (_stickmanSupportRingOuterRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_supportRingOuterRadius";
+    }
+    if (_supportRingLugOuterRadius <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_supportRingLugOuterRadius";
+    }
+    if (_supportRingCutoutOffset <= 0.0) {
+      throw cet::exception("GEOM") << "ProductionTarget: invalid targetPS_supportRingCutoutOffset";
+    }
+
     // rod half length, actual rod is longer than this since it inserts into the end rings, but for the geometry reconstruction, that part will be treated as part of the end ring.
     _rodHalfLength = std::accumulate(_plateLugThickness.begin(), _plateLugThickness.end(), 0.0) / 2.0 + 2 * _spacerHalfLength;
 
