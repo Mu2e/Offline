@@ -9,6 +9,7 @@
 
 // C++ includes
 #include <iostream>
+#include <map>
 
 // Mu2e includes.
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
@@ -356,25 +357,25 @@ namespace mu2e {
     }
     //    std::cout << "inside " << __func__ << psVacuumParams.originInMu2e() << " " << _hallOriginInMu2e << std::endl;
 
-    // Build the production target.
+    // Build the production target using a dispatch registry to avoid growing if-else chains
+    using ConstructorFunction = void (*)(const VolumeInfo&, const SimpleConfig&);
+    static const std::map<std::string, ConstructorFunction> targetConstructors = {
+      {"MDC2018",           &constructTargetPS},
+      {"HaymanLowerDensity", &constructHaymanRings},
+      {"Hayman_v_2_0",      &constructTargetPS},
+      {"Stickman_v_1_0",    &constructTargetPS}
+    };
 
-    if ( targetPS_model == "MDC2018" ){
-      verbosityLevel> 0 && std::cout << __func__ << "MDC 2018 target" << std::endl;
-      constructTargetPS(psVacuumInfo, _config );
-    } else if ( targetPS_model == "HaymanLowerDensity" ){
-      verbosityLevel> 0 && std::cout << __func__ << "HaymanLowerDensity target" << std::endl;
-      constructHaymanRings(psVacuumInfo, _config);
-    } else if (targetPS_model == "Hayman_v_2_0"){
-      verbosityLevel> 0 && std::cout << __func__ << "Hayman 2.0 target" << std::endl;
-      constructTargetPS(psVacuumInfo, _config );
-    } else if (targetPS_model == "Stickman_v_1_0"){
-      verbosityLevel> 0 && std::cout << __func__ << "Stickman 1.0 target" << std::endl;
-      constructTargetPS(psVacuumInfo, _config );
-    } else{
+    auto it = targetConstructors.find(targetPS_model);
+    if (it != targetConstructors.end()) {
+      if (verbosityLevel > 0) {
+        std::cout << __func__ << " constructing target model: " << targetPS_model << std::endl;
+      }
+      it->second(psVacuumInfo, _config);
+    } else {
       throw cet::exception("CONFIG")
         << "In constructPS.cc unrecognized production target model name: "
-        << targetPS_model
-        << "\n";
+        << targetPS_model << "\n";
     }
 
    // FIXME: make unconditional

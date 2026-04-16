@@ -8,18 +8,27 @@
 
 namespace mu2e {
 
+  // Registry of target model makers
+  const std::map<std::string, ProductionTargetMaker::MakerFunction>& ProductionTargetMaker::getMakerRegistry() {
+    static const std::map<std::string, ProductionTargetMaker::MakerFunction> registry = {
+      {"MDC2018",        [](const SimpleConfig& c, double offset) { return makeTier1(c, offset); }},
+      {"Hayman_v_2_0",   [](const SimpleConfig& c, double offset) { return makeHayman_v_2_0(c, offset); }},
+      {"Stickman_v_1_0", [](const SimpleConfig& c, double offset) { return makeStickman_v_1_0(c, offset); }}
+    };
+    return registry;
+  }
+
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
-    if (c.getString("targetPS_model") == "MDC2018"){
-      //     std::cout << " making Tier1 in maker" << std::endl;
-      return makeTier1(c, solenoidOffset);
-    } else if (c.getString("targetPS_model") == "Hayman_v_2_0"){
-      //     std::cout << " making Hayman in Maker" << std::endl;
-      return makeHayman_v_2_0(c, solenoidOffset);
-    } else if (c.getString("targetPS_model") == "Stickman_v_1_0"){
-      return makeStickman_v_1_0(c, solenoidOffset);
-    } else{
-      throw cet::exception("GEOM") << " illegal production target model specified = " << c.getString("targetPS_model")  << std::endl;
+    const std::string modelName = c.getString("targetPS_model");
+    const auto& registry = getMakerRegistry();
+    
+    auto it = registry.find(modelName);
+    if (it != registry.end()) {
+      return it->second(c, solenoidOffset);
     }
+    
+    throw cet::exception("GEOM") 
+      << "illegal production target model specified = " << modelName << std::endl;
   }
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){
@@ -433,123 +442,150 @@ namespace mu2e {
         << ", got " << plateFinAngles.size();
     }
 
+    // Build parameter structs for Stickman constructor
+    StickmanEnvelopeParams envelopeParams{
+      c.getDouble("targetPS_productionTargetMotherOuterRadius"),
+      c.getDouble("targetPS_productionTargetMotherHalfLength"),
+      c.getDouble("targetPS_rotX") * CLHEP::degree,
+      c.getDouble("targetPS_rotY") * CLHEP::degree,
+      c.getDouble("targetPS_rotZ") * CLHEP::degree,
+      c.getDouble("targetPS_halfStickmanLength"),
+      CLHEP::Hep3Vector(solenoidOffset,
+                        0,
+                        c.getDouble("productionTarget.zNominal"))
+      + c.getHep3Vector("productionTarget.offset"),
+      c.getString("targetPS_targetVacuumMaterial")
+    };
+
+    StickmanPlateParams plateParams{
+      nPlates,
+      plateMaterial,
+      plateROut,
+      nFins,
+      plateFinAngles,
+      c.getDouble("targetPS_plateFinOuterRadius"),
+      c.getDouble("targetPS_plateFinWidth"),
+      c.getDouble("targetPS_plateCenterToLugCenter"),
+      c.getDouble("targetPS_plateLugInnerRadius"),
+      c.getDouble("targetPS_plateLugOuterRadius"),
+      plateThickness,
+      plateLugThickness
+    };
+
+    StickmanRodParams rodParams{
+      c.getString("targetPS_rodMaterial"),
+      c.getDouble("targetPS_rodRadius")
+    };
+
+    StickmanSpacerParams spacerParams{
+      c.getString("targetPS_spacerMaterial"),
+      c.getDouble("targetPS_spacerHalfLength"),
+      c.getDouble("targetPS_spacerOuterRadius"),
+      c.getDouble("targetPS_spacerInnerRadius")
+    };
+
+    StickmanSupportRingParams supportRingParams{
+      c.getString("targetPS_supportRingMaterial"),
+      c.getDouble("targetPS_supportRingLength"),
+      c.getDouble("targetPS_supportRingInnerRadius"),
+      c.getDouble("targetPS_supportRingOuterRadius"),
+      c.getDouble("targetPS_supportRingLugOuterRadius"),
+      c.getDouble("targetPS_supportRingCutoutOffset")
+    };
+
     std::unique_ptr<ProductionTarget> tgtPS
       (new ProductionTarget(
-                            c.getString("targetPS_model","NULL"),
-                            c.getInt("targetPS_version"),
-                            c.getDouble("targetPS_productionTargetMotherOuterRadius"),
-                            c.getDouble("targetPS_productionTargetMotherHalfLength"),
-                            c.getDouble("targetPS_rotX") * CLHEP::degree,
-                            c.getDouble("targetPS_rotY") * CLHEP::degree,
-                            c.getDouble("targetPS_rotZ") * CLHEP::degree,
-                            c.getDouble("targetPS_halfStickmanLength"),
-                            CLHEP::Hep3Vector(solenoidOffset,
-                                              0,
-                                              c.getDouble("productionTarget.zNominal")
-                                              )
-                            + c.getHep3Vector("productionTarget.offset"),
-                            c.getString("targetPS_targetVacuumMaterial"),
-                            nPlates,
-                            plateMaterial,
-                            plateROut,
-                            nFins,
-                            plateFinAngles,
-                            c.getDouble("targetPS_plateFinOuterRadius"),
-                            c.getDouble("targetPS_plateFinWidth"),
-                            c.getDouble("targetPS_plateCenterToLugCenter"),
-                            c.getDouble("targetPS_plateLugInnerRadius"),
-                            c.getDouble("targetPS_plateLugOuterRadius"),
-                            plateThickness,
-                            plateLugThickness,
-                            c.getString("targetPS_rodMaterial"),
-                            c.getDouble("targetPS_rodRadius"),
-                            c.getString("targetPS_spacerMaterial"),
-                            c.getDouble("targetPS_spacerHalfLength"),
-                            c.getDouble("targetPS_spacerOuterRadius"),
-                            c.getDouble("targetPS_spacerInnerRadius"),
-                            c.getString("targetPS_supportRingMaterial"),
-                            c.getDouble("targetPS_supportRingLength"),
-                            c.getDouble("targetPS_supportRingInnerRadius"),
-                            c.getDouble("targetPS_supportRingOuterRadius"),
-                            c.getDouble("targetPS_supportRingLugOuterRadius"),
-                            c.getDouble("targetPS_supportRingCutoutOffset")
-                            ));
+        c.getString("targetPS_model","NULL"),
+        c.getInt("targetPS_version"),
+        envelopeParams,
+        plateParams,
+        rodParams,
+        spacerParams,
+        supportRingParams
+      ));
+
+    // Create configuration parameters struct
+    ProductionTarget::StickmanConfigParams configParams;
 
     // Configure plate fillet parameters (only if fillets will be used)
-    tgtPS->_addFilletToPlateCore = c.getBool("targetPS_addFilletToPlateCore");
-    tgtPS->_addFilletToPlateLug = c.getBool("targetPS_addFilletToPlateLug");
-    if(tgtPS->_addFilletToPlateCore || tgtPS->_addFilletToPlateLug) {
-      tgtPS->_plateFilletRadius = c.getDouble("targetPS_plateFilletRadius");
+    configParams.addFilletToPlateCore = c.getBool("targetPS_addFilletToPlateCore");
+    configParams.addFilletToPlateLug = c.getBool("targetPS_addFilletToPlateLug");
+    if(configParams.addFilletToPlateCore || configParams.addFilletToPlateLug) {
+      configParams.plateFilletRadius = c.getDouble("targetPS_plateFilletRadius");
     }
 
     // Configure support ring lug fillet parameters (only if fillets will be used)
-    tgtPS->_addFilletToSupportRingLug = c.getBool("targetPS_addFilletToSupportRingLug");
-    if(tgtPS->_addFilletToSupportRingLug) {
-      tgtPS->_supportRingLugFilletRadius = c.getDouble("targetPS_supportRingLugFilletRadius");
+    configParams.addFilletToSupportRingLug = c.getBool("targetPS_addFilletToSupportRingLug");
+    if(configParams.addFilletToSupportRingLug) {
+      configParams.supportRingLugFilletRadius = c.getDouble("targetPS_supportRingLugFilletRadius");
     }
 
     // Configure support ring cutout parameters (only if cutouts will be used)
-    tgtPS->_addCutoutToSupportRing = c.getBool("targetPS_addCutoutToSupportRing");
-    if(tgtPS->_addCutoutToSupportRing) {
-      tgtPS->_nSupportRingCutouts = c.getInt("targetPS_nSupportRingCutouts");
-      c.getVectorDouble("targetPS_supportRingCutoutAngles", tgtPS->_supportRingCutoutAngles);
-      if (tgtPS->_supportRingCutoutAngles.size() != static_cast<size_t>(tgtPS->_nSupportRingCutouts)) {
+    configParams.addCutoutToSupportRing = c.getBool("targetPS_addCutoutToSupportRing");
+    if(configParams.addCutoutToSupportRing) {
+      configParams.nSupportRingCutouts = c.getInt("targetPS_nSupportRingCutouts");
+      c.getVectorDouble("targetPS_supportRingCutoutAngles", configParams.supportRingCutoutAngles);
+      if (configParams.supportRingCutoutAngles.size() != static_cast<size_t>(configParams.nSupportRingCutouts)) {
         throw cet::exception("GEOM")
           << "targetPS_supportRingCutoutAngles size mismatch: expected "
-          << tgtPS->_nSupportRingCutouts << ", got " << tgtPS->_supportRingCutoutAngles.size();
+          << configParams.nSupportRingCutouts << ", got " << configParams.supportRingCutoutAngles.size();
       }
-      for_each(tgtPS->_supportRingCutoutAngles.begin(), tgtPS->_supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
-      tgtPS->_supportRingCutoutInnerRadius = c.getDouble("targetPS_supportRingCutoutInnerRadius");
-      tgtPS->_supportRingCutoutTilt = c.getDouble("targetPS_supportRingCutoutTilt") * CLHEP::degree;
+      for_each(configParams.supportRingCutoutAngles.begin(), configParams.supportRingCutoutAngles.end(), [](double& elem){elem *= CLHEP::degree;});
+      configParams.supportRingCutoutInnerRadius = c.getDouble("targetPS_supportRingCutoutInnerRadius");
+      configParams.supportRingCutoutTilt = c.getDouble("targetPS_supportRingCutoutTilt") * CLHEP::degree;
     }
 
     // Configure support wheel/bicycle wheel parameters (reused from Hayman)
-    tgtPS->_supportsBuild = c.getBool("targetPS.supports.build", false);
-    if(tgtPS->_supportsBuild) {
+    configParams.supportsBuild = c.getBool("targetPS.supports.build", false);
+    if(configParams.supportsBuild) {
       //support wheel parameters
-      tgtPS->_supportWheelRIn      = c.getDouble("targetPS.supports.wheel.rIn");
-      tgtPS->_supportWheelROut     = c.getDouble("targetPS.supports.wheel.rOut");
-      tgtPS->_supportWheelHL       = c.getDouble("targetPS.supports.wheel.halfLength");
-      tgtPS->_supportWheelMaterial = c.getString("targetPS.supports.wheel.material");
+      configParams.supportWheelRIn      = c.getDouble("targetPS.supports.wheel.rIn");
+      configParams.supportWheelROut     = c.getDouble("targetPS.supports.wheel.rOut");
+      configParams.supportWheelHL       = c.getDouble("targetPS.supports.wheel.halfLength");
+      configParams.supportWheelMaterial = c.getString("targetPS.supports.wheel.material");
       //number of support rods and wires
-      tgtPS->_nSpokesPerSide = c.getInt("targetPS.supports.nSpokes");
+      configParams.nSpokesPerSide = c.getInt("targetPS.supports.nSpokes");
       //features on the wheel near each support rod
-      c.getVectorDouble("targetPS.supports.features.angles", tgtPS->_supportWheelFeatureAngles, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.features.arcs"  , tgtPS->_supportWheelFeatureArcs  , tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.features.rIns"  , tgtPS->_supportWheelFeatureRIns  , tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.angles", configParams.supportWheelFeatureAngles, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.arcs"  , configParams.supportWheelFeatureArcs  , configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.features.rIns"  , configParams.supportWheelFeatureRIns  , configParams.nSpokesPerSide);
       //support wheel rods parameters
-      c.getVectorDouble("targetPS.supports.rods.halfLength", tgtPS->_supportWheelRodHL, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.offset", tgtPS->_supportWheelRodOffset, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.pinOffset", tgtPS->_supportWheelRodPinOffset, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.radius", tgtPS->_supportWheelRodRadius, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.radialOffset", tgtPS->_supportWheelRodRadialOffset, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.wireOffset.downstream", tgtPS->_supportWheelRodWireOffsetD, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.wireOffset.upstream", tgtPS->_supportWheelRodWireOffsetU, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.rods.angles", tgtPS->_supportWheelRodAngles, tgtPS->_nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.halfLength", configParams.supportWheelRodHL, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.offset", configParams.supportWheelRodOffset, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.pinOffset", configParams.supportWheelRodPinOffset, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radius", configParams.supportWheelRodRadius, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.radialOffset", configParams.supportWheelRodRadialOffset, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.downstream", configParams.supportWheelRodWireOffsetD, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.wireOffset.upstream", configParams.supportWheelRodWireOffsetU, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.rods.angles", configParams.supportWheelRodAngles, configParams.nSpokesPerSide);
       //support wire (spokes) parameters
-      c.getVectorDouble("targetPS.supports.spokes.targetAngles.downstream", tgtPS->_spokeTargetAnglesD, tgtPS->_nSpokesPerSide);
-      c.getVectorDouble("targetPS.supports.spokes.targetAngles.upstream", tgtPS->_spokeTargetAnglesU, tgtPS->_nSpokesPerSide);
-      tgtPS->_spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
-      tgtPS->_spokeMaterial = c.getString("targetPS.supports.spokes.material");
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.downstream", configParams.spokeTargetAnglesD, configParams.nSpokesPerSide);
+      c.getVectorDouble("targetPS.supports.spokes.targetAngles.upstream", configParams.spokeTargetAnglesU, configParams.nSpokesPerSide);
+      configParams.spokeRadius = 0.5*c.getDouble("targetPS.supports.spokes.diameter");
+      configParams.spokeMaterial = c.getString("targetPS.supports.spokes.material");
       //check that all support wheel vectors are the correct size
-      if (tgtPS->_supportWheelFeatureAngles.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelFeatureArcs.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelFeatureRIns.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodHL.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodPinOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodRadius.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodRadialOffset.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodWireOffsetD.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodWireOffsetU.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_supportWheelRodAngles.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_spokeTargetAnglesD.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide) ||
-          tgtPS->_spokeTargetAnglesU.size() != static_cast<size_t>(tgtPS->_nSpokesPerSide)) {
+      if (configParams.supportWheelFeatureAngles.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelFeatureArcs.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelFeatureRIns.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodHL.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodOffset.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodPinOffset.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodRadius.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodRadialOffset.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodWireOffsetD.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodWireOffsetU.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.supportWheelRodAngles.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.spokeTargetAnglesD.size() != static_cast<size_t>(configParams.nSpokesPerSide) ||
+          configParams.spokeTargetAnglesU.size() != static_cast<size_t>(configParams.nSpokesPerSide)) {
         throw cet::exception("GEOM")
           << "Support configuration vector size mismatch for targetPS.supports.nSpokes="
-          << tgtPS->_nSpokesPerSide;
+          << configParams.nSpokesPerSide;
       }
     }
+
+    // Configure the target with the parameters
+    tgtPS->configureStickman(configParams);
+
     return tgtPS;
   }
 

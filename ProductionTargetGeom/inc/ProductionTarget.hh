@@ -20,6 +20,100 @@ namespace mu2e {
 
   class ProductionTargetMaker;
 
+  // Parameter struct for transform and envelope parameters (Stickman)
+  struct StickmanEnvelopeParams {
+    double productionTargetMotherOuterRadius;
+    double productionTargetMotherHalfLength;
+    double rotStickmanX;
+    double rotStickmanY;
+    double rotStickmanZ;
+    double halfStickmanLength;
+    CLHEP::Hep3Vector stickmanProdTargetPosition;
+    std::string targetVacuumMaterial;
+  };
+
+  // Parameter struct for plate parameters (Stickman)
+  struct StickmanPlateParams {
+    int numberOfPlates;
+    std::vector<std::string> plateMaterial;
+    std::vector<double> plateROut;
+    int nStickmanFins;
+    std::vector<double> plateFinAngles;
+    double plateFinOuterRadius;
+    double plateFinWidth;
+    double plateCenterToLugCenter;
+    double plateLugInnerRadius;
+    double plateLugOuterRadius;
+    std::vector<double> plateThickness;
+    std::vector<double> plateLugThickness;
+  };
+
+  // Parameter struct for rod parameters (Stickman)
+  struct StickmanRodParams {
+    std::string rodMaterial;
+    double rodRadius;
+  };
+
+  // Parameter struct for spacer parameters (Stickman)
+  struct StickmanSpacerParams {
+    std::string spacerMaterial;
+    double spacerHalfLength;
+    double spacerOuterRadius;
+    double spacerInnerRadius;
+  };
+
+  // Parameter struct for support ring parameters (Stickman)
+  struct StickmanSupportRingParams {
+    std::string stickmanSupportRingMaterial;
+    double stickmanSupportRingLength;
+    double stickmanSupportRingInnerRadius;
+    double stickmanSupportRingOuterRadius;
+    double supportRingLugOuterRadius;
+    double supportRingCutoutOffset;
+  };
+
+  // Parameter struct for Stickman configuration (additional parameters set after construction)
+  struct StickmanConfigParams {
+    // Plate fillet parameters
+    bool addFilletToPlateCore;
+    bool addFilletToPlateLug;
+    double plateFilletRadius;
+    
+    // Support ring fillet parameters
+    bool addFilletToSupportRingLug;
+    double supportRingLugFilletRadius;
+    
+    // Support ring cutout parameters
+    bool addCutoutToSupportRing;
+    int nSupportRingCutouts;
+    std::vector<double> supportRingCutoutAngles;
+    double supportRingCutoutInnerRadius;
+    double supportRingCutoutTilt;
+    
+    // Support wheel parameters
+    bool supportsBuild;
+    double supportWheelRIn;
+    double supportWheelROut;
+    double supportWheelHL;
+    std::string supportWheelMaterial;
+    int nSpokesPerSide;
+    std::vector<double> supportWheelFeatureAngles;
+    std::vector<double> supportWheelFeatureArcs;
+    std::vector<double> supportWheelFeatureRIns;
+    std::vector<double> supportWheelRodHL;
+    std::vector<double> supportWheelRodOffset;
+    std::vector<double> supportWheelRodPinOffset;
+    std::vector<double> supportWheelRodRadius;
+    std::vector<double> supportWheelRodRadialOffset;
+    std::vector<double> supportWheelRodWireOffsetD;
+    std::vector<double> supportWheelRodWireOffsetU;
+    std::vector<double> supportWheelRodAngles;
+    std::vector<double> spokeTargetAnglesD;
+    std::vector<double> spokeTargetAnglesU;
+    double spokeRadius;
+    std::string spokeMaterial;
+  };
+
   class ProductionTarget : virtual public Detector {
   public:
 
@@ -194,7 +288,7 @@ namespace mu2e {
     CLHEP::Hep3Vector targetPositionByVersion() const {
       if (_haymanTargetType == hayman_v_2_0){
         return _haymanProdTargetPosition;}
-      else if  (_tier1TargetType == "MDC2018"){
+      else if  (_tier1TargetType == tier1){
         return _prodTargetPosition;}
       else if (_stickmanTargetType == stickman_v_1_0){
         return _stickmanProdTargetPosition;}
@@ -204,7 +298,7 @@ namespace mu2e {
     double targetHalfLengthByVersion() const {
      if (_haymanTargetType == hayman_v_2_0){
         return _halfHaymanLength;}
-     else if  (_tier1TargetType == "MDC2018"){
+     else if  (_tier1TargetType == tier1){
        return _halfLength;}
      else if (_stickmanTargetType == stickman_v_1_0){
        return _halfStickmanLength;}
@@ -212,7 +306,8 @@ namespace mu2e {
             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
     }
 
-
+    // Configuration method for additional Stickman parameters
+    void configureStickman(const StickmanConfigParams& configParams);
 
     //----------------------------------------------------------------
 
@@ -261,39 +356,13 @@ namespace mu2e {
                      );
 
     ProductionTarget(
-                     std::string stickmanTargetType, int version
-                     ,double productionTargetMotherOuterRadius
-                     ,double productionTargetMotherHalfLength
-                     ,double rotStickmanX
-                     ,double rotStickmanY
-                     ,double rotStickmanZ
-                     ,double halfStickmanLength
-                     ,const CLHEP::Hep3Vector& stickmanProdTargetPosition
-                     ,std::string targetVacuumMaterial
-                     ,int numberOfPlates
-                     ,std::vector<std::string> plateMaterial
-                     ,std::vector<double> plateROut
-                     ,int nStickmanFins
-                     ,std::vector<double> plateFinAngles
-                     ,double plateFinOuterRadius
-                     ,double plateFinWidth
-                     ,double plateCenterToLugCenter
-                     ,double plateLugInnerRadius
-                     ,double plateLugOuterRadius
-                     ,std::vector<double> plateThickness
-                     ,std::vector<double> plateLugThickness
-                     ,std::string rodMaterial
-                     ,double rodRadius
-                     ,std::string spacerMaterial
-                     ,double spacerHalfLength
-                     ,double spacerOuterRadius
-                     ,double spacerInnerRadius
-                     ,std::string stickmanSupportRingMaterial
-                     ,double stickmanSupportRingLength
-                     ,double stickmanSupportRingInnerRadius
-                     ,double stickmanSupportRingOuterRadius
-                     ,double supportRingLugOuterRadius
-                     ,double supportRingCutoutOffset
+                     std::string stickmanTargetType
+                     ,int version
+                     ,const StickmanEnvelopeParams& envelopeParams
+                     ,const StickmanPlateParams& plateParams
+                     ,const StickmanRodParams& rodParams
+                     ,const StickmanSpacerParams& spacerParams
+                     ,const StickmanSupportRingParams& supportRingParams
                      );
 
     CLHEP::HepRotation _protonBeamRotation;

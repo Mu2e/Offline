@@ -238,19 +238,8 @@ namespace mu2e {
 
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-
-    if (_config->getString("targetPS_model") == "MDC2018"){
-      // std::cout << "adding Tier1 in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-    } else if (_config->getString("targetPS_model") == "Hayman_v_2_0"){
-      // std::cout << " adding Hayman in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
-    } else if (_config->getString("targetPS_model") == "Stickman_v_1_0"){
-      // std::cout << "adding Stickman in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.stickmanProdTargetPosition()));
-    } else {
-      throw cet::exception("GEOM") << " " << static_cast<char const*>(__func__) << " illegal production target model specified in GeometryService_service targetPS_model = " << _config->getString("targetPS_model")  << std::endl;}
+    // Use ProductionTarget's built-in method to get the correct position based on model type
+    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.targetPositionByVersion()));
 
 
 

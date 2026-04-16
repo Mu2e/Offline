@@ -103,83 +103,97 @@ namespace mu2e {
   ProductionTarget::ProductionTarget(
                                      std::string stickmanTargetType
                                      ,int version
-                                     ,double productionTargetMotherOuterRadius
-                                     ,double productionTargetMotherHalfLength
-                                     ,double rotStickmanX
-                                     ,double rotStickmanY
-                                     ,double rotStickmanZ
-                                     ,double halfStickmanLength
-                                     ,const CLHEP::Hep3Vector& stickmanProdTargetPosition
-                                     ,std::string targetVacuumMaterial
-                                     ,int numberOfPlates
-                                     ,std::vector<std::string> plateMaterial
-                                     ,std::vector<double> plateROut
-                                     ,int nStickmanFins
-                                     ,std::vector<double> plateFinAngles
-                                     ,double plateFinOuterRadius
-                                     ,double plateFinWidth
-                                     ,double plateCenterToLugCenter
-                                     ,double plateLugInnerRadius
-                                     ,double plateLugOuterRadius
-                                     ,std::vector<double> plateThickness
-                                     ,std::vector<double> plateLugThickness
-                                     ,std::string rodMaterial
-                                     ,double rodRadius
-                                     ,std::string spacerMaterial
-                                     ,double spacerHalfLength
-                                     ,double spacerOuterRadius
-                                     ,double spacerInnerRadius
-                                     ,std::string stickmanSupportRingMaterial
-                                     ,double stickmanSupportRingLength
-                                     ,double stickmanSupportRingInnerRadius
-                                     ,double stickmanSupportRingOuterRadius
-                                     ,double supportRingLugOuterRadius
-                                     ,double supportRingCutoutOffset
+                                     ,const StickmanEnvelopeParams& envelopeParams
+                                     ,const StickmanPlateParams& plateParams
+                                     ,const StickmanRodParams& rodParams
+                                     ,const StickmanSpacerParams& spacerParams
+                                     ,const StickmanSupportRingParams& supportRingParams
                                      )
   : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
     ,_version(version)
-    ,_productionTargetMotherOuterRadius(productionTargetMotherOuterRadius)
-    ,_productionTargetMotherHalfLength(productionTargetMotherHalfLength)
-    ,_targetVacuumMaterial(targetVacuumMaterial)
+    ,_productionTargetMotherOuterRadius(envelopeParams.productionTargetMotherOuterRadius)
+    ,_productionTargetMotherHalfLength(envelopeParams.productionTargetMotherHalfLength)
+    ,_targetVacuumMaterial(envelopeParams.targetVacuumMaterial)
     ,_stickmanTargetType(stickmanTargetType)
-    ,_halfStickmanLength(halfStickmanLength)
-    ,_rotStickmanX(rotStickmanX)
-    ,_rotStickmanY(rotStickmanY)
-    ,_rotStickmanZ(rotStickmanZ)
-    ,_stickmanProdTargetPosition(stickmanProdTargetPosition)
-    ,_numberOfPlates(numberOfPlates)
-    ,_plateMaterial(plateMaterial)
-    ,_plateROut(plateROut)
-    ,_nStickmanFins(nStickmanFins)
-    ,_plateFinAngles(plateFinAngles)
-    ,_plateFinOuterRadius(plateFinOuterRadius)
-    ,_plateFinWidth(plateFinWidth)
-    ,_plateCenterToLugCenter(plateCenterToLugCenter)
-    ,_plateLugInnerRadius(plateLugInnerRadius)
-    ,_plateLugOuterRadius(plateLugOuterRadius)
-    ,_plateThickness(plateThickness)
-    ,_plateLugThickness(plateLugThickness)
-    ,_rodMaterial(rodMaterial)
-    ,_rodRadius(rodRadius)
-    ,_spacerMaterial(spacerMaterial)
-    ,_spacerHalfLength(spacerHalfLength)
-    ,_spacerOuterRadius(spacerOuterRadius)
-    ,_spacerInnerRadius(spacerInnerRadius)
-    ,_stickmanSupportRingMaterial(stickmanSupportRingMaterial)
-    ,_stickmanSupportRingLength(stickmanSupportRingLength)
-    ,_stickmanSupportRingInnerRadius(stickmanSupportRingInnerRadius)
-    ,_stickmanSupportRingOuterRadius(stickmanSupportRingOuterRadius)
-    ,_supportRingLugOuterRadius(supportRingLugOuterRadius)
-    ,_supportRingCutoutOffset(supportRingCutoutOffset)
+    ,_halfStickmanLength(envelopeParams.halfStickmanLength)
+    ,_rotStickmanX(envelopeParams.rotStickmanX)
+    ,_rotStickmanY(envelopeParams.rotStickmanY)
+    ,_rotStickmanZ(envelopeParams.rotStickmanZ)
+    ,_stickmanProdTargetPosition(envelopeParams.stickmanProdTargetPosition)
+    ,_numberOfPlates(plateParams.numberOfPlates)
+    ,_plateMaterial(plateParams.plateMaterial)
+    ,_plateROut(plateParams.plateROut)
+    ,_nStickmanFins(plateParams.nStickmanFins)
+    ,_plateFinAngles(plateParams.plateFinAngles)
+    ,_plateFinOuterRadius(plateParams.plateFinOuterRadius)
+    ,_plateFinWidth(plateParams.plateFinWidth)
+    ,_plateCenterToLugCenter(plateParams.plateCenterToLugCenter)
+    ,_plateLugInnerRadius(plateParams.plateLugInnerRadius)
+    ,_plateLugOuterRadius(plateParams.plateLugOuterRadius)
+    ,_plateThickness(plateParams.plateThickness)
+    ,_plateLugThickness(plateParams.plateLugThickness)
+    ,_rodMaterial(rodParams.rodMaterial)
+    ,_rodRadius(rodParams.rodRadius)
+    ,_spacerMaterial(spacerParams.spacerMaterial)
+    ,_spacerHalfLength(spacerParams.spacerHalfLength)
+    ,_spacerOuterRadius(spacerParams.spacerOuterRadius)
+    ,_spacerInnerRadius(spacerParams.spacerInnerRadius)
+    ,_stickmanSupportRingMaterial(supportRingParams.stickmanSupportRingMaterial)
+    ,_stickmanSupportRingLength(supportRingParams.stickmanSupportRingLength)
+    ,_stickmanSupportRingInnerRadius(supportRingParams.stickmanSupportRingInnerRadius)
+    ,_stickmanSupportRingOuterRadius(supportRingParams.stickmanSupportRingOuterRadius)
+    ,_supportRingLugOuterRadius(supportRingParams.supportRingLugOuterRadius)
+    ,_supportRingCutoutOffset(supportRingParams.supportRingCutoutOffset)
   {
     // rod half length, actual rod is longer than this since it inserts into the end rings, but for the geometry reconstruction, that part will be treated as part of the end ring.
     _rodHalfLength = std::accumulate(_plateLugThickness.begin(), _plateLugThickness.end(), 0.0) / 2.0 + 2 * _spacerHalfLength;
 
     // rotations
-    _protonBeamRotation.rotateX(rotStickmanX).rotateY(rotStickmanY).rotateZ(rotStickmanZ);
+    _protonBeamRotation.rotateX(envelopeParams.rotStickmanX).rotateY(envelopeParams.rotStickmanY).rotateZ(envelopeParams.rotStickmanZ);
     _protonBeamInverseRotation = _protonBeamRotation.inverse(); // passive rotation matrix
     _halfLength = _productionTargetMotherHalfLength;
     _prodTargetPosition = _stickmanProdTargetPosition;
+  }
+
+  void ProductionTarget::configureStickman(const StickmanConfigParams& configParams) {
+    // Configure plate fillet parameters
+    _addFilletToPlateCore = configParams.addFilletToPlateCore;
+    _addFilletToPlateLug = configParams.addFilletToPlateLug;
+    _plateFilletRadius = configParams.plateFilletRadius;
+
+    // Configure support ring fillet parameters
+    _addFilletToSupportRingLug = configParams.addFilletToSupportRingLug;
+    _supportRingLugFilletRadius = configParams.supportRingLugFilletRadius;
+
+    // Configure support ring cutout parameters
+    _addCutoutToSupportRing = configParams.addCutoutToSupportRing;
+    _nSupportRingCutouts = configParams.nSupportRingCutouts;
+    _supportRingCutoutAngles = configParams.supportRingCutoutAngles;
+    _supportRingCutoutInnerRadius = configParams.supportRingCutoutInnerRadius;
+    _supportRingCutoutTilt = configParams.supportRingCutoutTilt;
+
+    // Configure support wheel parameters
+    _supportsBuild = configParams.supportsBuild;
+    _supportWheelRIn = configParams.supportWheelRIn;
+    _supportWheelROut = configParams.supportWheelROut;
+    _supportWheelHL = configParams.supportWheelHL;
+    _supportWheelMaterial = configParams.supportWheelMaterial;
+    _nSpokesPerSide = configParams.nSpokesPerSide;
+    _supportWheelFeatureAngles = configParams.supportWheelFeatureAngles;
+    _supportWheelFeatureArcs = configParams.supportWheelFeatureArcs;
+    _supportWheelFeatureRIns = configParams.supportWheelFeatureRIns;
+    _supportWheelRodHL = configParams.supportWheelRodHL;
+    _supportWheelRodOffset = configParams.supportWheelRodOffset;
+    _supportWheelRodPinOffset = configParams.supportWheelRodPinOffset;
+    _supportWheelRodRadius = configParams.supportWheelRodRadius;
+    _supportWheelRodRadialOffset = configParams.supportWheelRodRadialOffset;
+    _supportWheelRodWireOffsetD = configParams.supportWheelRodWireOffsetD;
+    _supportWheelRodWireOffsetU = configParams.supportWheelRodWireOffsetU;
+    _supportWheelRodAngles = configParams.supportWheelRodAngles;
+    _spokeTargetAnglesD = configParams.spokeTargetAnglesD;
+    _spokeTargetAnglesU = configParams.spokeTargetAnglesU;
+    _spokeRadius = configParams.spokeRadius;
+    _spokeMaterial = configParams.spokeMaterial;
   }
 
 
