@@ -25,6 +25,8 @@ namespace mu2e {
     TrkTypes::TDCTimes            _time;             // (ns)
     TrkTypes::TOTTimes        _tot;               // (ns)
     float           _energyDep;        // (MeV)
+    float _digital_pmp;                             // adcs
+    float _digital_pedestal;                        // adcs
 
   public:
 
@@ -32,7 +34,9 @@ namespace mu2e {
       _strawId(StrawId(-1)),
       _time{0.0,0.0},
       _tot{0.0,0.0},
-      _energyDep(0.){
+      _energyDep(0.),
+      _digital_pmp(0.0),
+      _digital_pedestal(0.0){
     }
 
 // Constructor for a hit that came from an unpacked digi, either
@@ -40,9 +44,13 @@ namespace mu2e {
     StrawHit( StrawId       strawId,
               TrkTypes::TDCTimes const& time,
               TrkTypes::TOTTimes const& tot,
-              float            energyDep  ):
+              float            energyDep  ,
+              float digital_pmp,
+              float digital_pedestal):
       _strawId(strawId),_time(time),_tot(tot),
-      _energyDep(energyDep) {
+      _energyDep(energyDep),
+      _digital_pmp(digital_pmp),
+      _digital_pedestal(digital_pedestal){
     }
 
     // Accessors
@@ -52,6 +60,9 @@ namespace mu2e {
     float      dt()         const { return _time[StrawEnd::cal] - _time[StrawEnd::hv]; }
     float      TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
     float      energyDep()  const { return _energyDep; }
+
+    float digitalPulseHeight() const { return _digital_pmp; }
+    float digitialPedestal() const { return _digital_pedestal; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
         bool operator==(StrawHit const& other) const {
