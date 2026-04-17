@@ -27,6 +27,9 @@
 #include <memory>
 #include <map>
 
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMap.hh"
+
 namespace mu2e {
   class StrawHitFilter : public art::EDFilter {
   public:
@@ -40,6 +43,7 @@ namespace mu2e {
       fhicl::Atom<float>           maxDt         {Name("maxDt"         ), Comment("max abs(DT)")};
       fhicl::Atom<float>           minEDep       {Name("minEDep"       ), Comment("min EDep")};
       fhicl::Atom<int>             minNGoodHits  {Name("minNGoodHits"  ), Comment("minNStrawDigis")};
+      fhicl::Sequence<int>         mnidToSkip    {Name("mnidToSkip"    ), Comment("a list of panels to skip")};
       fhicl::Atom<bool>            fillHistograms{Name("fillHistograms"), Comment("fill histogrms, default:false")};
     };
 
@@ -75,6 +79,7 @@ namespace mu2e {
     float                    _maxDt;
     float                    _minEDep;
     int                      _minNGoodHits;
+    std::vector<int>         _mnidToSkip;       // panels not to look at when searching for good hits
     int                      _fillHistograms;
 
     int                      _nevt;
@@ -82,7 +87,9 @@ namespace mu2e {
     int                      _nsht;
     int                      _nshg;
 
-    const mu2e::StrawHitCollection* _shc;
+    const mu2e::StrawHitCollection*   _shc;
+    ProditionsHandle<TrackerPanelMap> _tpm_h;
+    const TrackerPanelMap*            _trkPanelMap;
 
     const art::Event* _event;
     int               _rn;
@@ -98,6 +105,7 @@ namespace mu2e {
       _maxDt             (conf().maxDt    ()),
       _minEDep           (conf().minEDep  ()),
       _minNGoodHits      (conf().minNGoodHits()),
+      _mnidToSkip        (conf().mnidToSkip()),
       _fillHistograms    (conf().fillHistograms())
   {
 //-----------------------------------------------------------------------------
@@ -194,6 +202,8 @@ namespace mu2e {
 
     _event         = &ArtEvent;         // should always be the first line
 
+    _trkPanelMap = &_tpm_h.get(_event->id());
+
     if (_debugMode) print_("-- START");
 
     ++_nevt;
@@ -216,6 +226,21 @@ namespace mu2e {
 
     for (int i = 0; i<_nsht; ++i) {
       const mu2e::StrawHit* sh = &_shc->at(i);
+      
+      int pln  = sh->strawId().plane();
+      int pnl  = sh->strawId().panel();
+      const TrkPanelMap::Row* tpm = _trkPanelMap->panel_map_by_offline_ind(pln,pnl);
+      int hit_mnid = tpm->mnid();
+
+      bool skip = false;
+      for (auto mnid: _mnidToSkip) {
+        if (hit_mnid == mnid) {
+          skip = true;
+          break;
+        }
+      }
+      if (skip) continue;
+
       if (fabs(sh->dt())  > _maxDt  ) continue;
       if (sh->energyDep() < _minEDep) continue;
       _nshg++;
