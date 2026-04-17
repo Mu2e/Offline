@@ -62,7 +62,7 @@ namespace mu2e {
     float      energyDep()  const { return _energyDep; }
 
     float digitalPulseHeight() const { return _digital_pmp; }
-    float digitialPedestal() const { return _digital_pedestal; }
+    float digitalPedestal() const { return _digital_pedestal; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
         bool operator==(StrawHit const& other) const {
