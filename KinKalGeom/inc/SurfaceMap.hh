@@ -20,9 +20,9 @@ namespace mu2e {
       using SurfacePair =std::pair<const SurfaceId, SurfacePtr >;
       using SurfacePairCollection = std::vector<SurfacePair>;
       using SurfacePairIter = std::multimap<SurfaceId,SurfacePtr>::const_iterator;
-     // default constructor with nominal geometry.  Eventually serve this from GeometryService.  TODO
-      SurfaceMap();
-      auto const& map() const { return map_; }
+      // default constructor, now using GeometryService
+      SurfaceMap(){}
+      auto const& map() const { check_init(); return map_; }
       // find a surface by its Id.  Return value is an iterator, which may be null.  Note that if
       // a generic index (-1) is given for surfaces with >1 value, this will return a valid but unspecified matching surface
       auto surface(SurfaceId const& sid) const { return map_.find(sid); }
@@ -33,6 +33,9 @@ namespace mu2e {
       auto const& tracker() const {return tracker_; }
       auto const& TCRV() const {return tcrv_; }
     private:
+      mutable bool initialized_ = false; // defer construction to allow services to be established
+      void check_init() const;
+      void initialize();
       // local copy of detector objects; these hold the actual (typed) surface objects
       KinKalGeom::Tracker tracker_;
       KinKalGeom::StoppingTarget st_;

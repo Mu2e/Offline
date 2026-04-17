@@ -9,6 +9,8 @@ cet_make_library(
     LIBRARIES PUBLIC
       KinKal::Geometry
       Offline::GeneralUtilities
+      Offline::GeomPrimitives
+      Offline::Mu2eInterfaces
 )
 
 install_source(SUBDIRS src)

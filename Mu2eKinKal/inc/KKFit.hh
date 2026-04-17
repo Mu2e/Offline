@@ -151,8 +151,6 @@ namespace mu2e {
       mutable double rmin_ = 0, rmax_ = 0; // plane-level info
       mutable double spitch_ = 0;
       mutable bool needstrackerinfo_ = true;
-      // extrapolation and sampling options
-      SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
       double intertol_; // surface intersection tolerance (mm)
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SaveTraj savetraj_; // trajectory saving option
@@ -161,6 +159,8 @@ namespace mu2e {
       double addStrawMinDz_;
       int strawNBuffer_;
       bool saveHitCalib_;
+      SurfaceMap smap_;
+      SurfaceIdCollection ssids_;
   };
 
   template <class KTRAJ> KKFit<KTRAJ>::KKFit(KKFitConfig const& fitconfig) :
@@ -207,15 +207,10 @@ namespace mu2e {
     } else {
       throw cet::exception("RECO")<<"mu2e::KKFit: unknown trajectory option "<< fitconfig.saveTraj() << endl;
     }
-    // Lookup surfaces to sample: these should be replaced by extrapolation TODO
-    SurfaceIdCollection ssids;
+    // Lookup surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
     for(auto const& sidname : fitconfig.sampleSurfaces()){
-      ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+      ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
     }
-    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
-    // geometry service eventually, TODO
-    SurfaceMap smap;
-    smap.surfaces(ssids,sample_);
   }
 
   template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
@@ -869,6 +864,11 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK& kktrk) const {
+    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+    // extrapolation and sampling options
+    SurfaceMap::SurfacePairCollection tosample; // surfaces to sample the fit
+    smap_.surfaces(ssids_,tosample);
+
     auto const& ptraj = kktrk.fitTraj();
     std::vector<TimeRange> ranges;
     // test for reflection, and if present, split the test in 2
@@ -883,7 +883,7 @@ namespace mu2e {
     for(auto range : ranges) {
       double tbeg = range.begin();
       double tend = range.end();
-      for(auto const& surf : sample_){
+      for(auto const& surf : tosample){
         // search for intersections with each surface within the specified time range, going forwards in time
         bool goodinter(true);
         size_t max_inter = 100; // limit the number of intersections
