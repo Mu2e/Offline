@@ -141,7 +141,7 @@ void CrvDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8
   else
   {
     subEvt->AddDataBlock(thisBlock);
-    currentEvent.UpdateHeader();  //NEW
+    currentEvent.UpdateHeader();  //update the byte count
   }
 }
 
@@ -199,6 +199,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
       size_t byteCount = block.crvHits.size()*sizeof(CRVDataDecoder::CRVHitRawFEBII) + sizeof(CRVDataDecoder::CRVROCStatusPacketFEBII);
       size_t packetCount = (byteCount+kBytesPerPacket-1) / kBytesPerPacket;   //integer ceiling division of byteCount/bytesPerPacket
       size_t transferByteCount = (packetCount + 1) * kBytesPerPacket;
+      DTCLib::DTC_Subsystem subsystem = DTCLib::DTC_Subsystem_CRV;
 
       uint16_t ROC = (dtcID-_crvDtcIdStart)*CRVId::nROCPerDTC + linkID + 1;
       if(_ROCs.find(ROC)==_ROCs.end()) //not a used ROC
@@ -206,6 +207,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
         byteCount=0;
         packetCount=0;
         transferByteCount=kBytesPerPacket;
+        subsystem=static_cast<DTCLib::DTC_Subsystem>(0);
       }
 
       if(byteCount%2!=0)
@@ -247,13 +249,13 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
                                        packetCount,
                                        0,
                                        dtcID,
-                                       DTCLib::DTC_Subsystem_CRV,
+                                       subsystem,
                                        kFormatVersion,
                                        ts,
                                        0);
 
-      auto hdrPkt = hdr.ConvertToDataPacket();
-      hdrPkt.SetByte(5, static_cast<uint8_t>(((packetCount & 0x0700) >> 8) | (DTCLib::DTC_Subsystem_CRV << 5)));  //NEW
+      auto hdrPkt = hdr.ConvertToDataPacket();  //this function has a bug. it does not transfer the subsystem ID to the DTC_DataPacket.
+      hdrPkt.SetByte(5, static_cast<uint8_t>(((packetCount & 0x0700) >> 8) | (subsystem << 5)));  //this is a temporary bug fix.
 
       size_t pos = 0;
       std::memcpy(thisBlock.allocBytes->data() + pos, hdrPkt.GetData(), kBytesPerPacket);
