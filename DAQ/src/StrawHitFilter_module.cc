@@ -43,7 +43,7 @@ namespace mu2e {
       fhicl::Atom<float>           maxDt         {Name("maxDt"         ), Comment("max abs(DT)")};
       fhicl::Atom<float>           minEDep       {Name("minEDep"       ), Comment("min EDep")};
       fhicl::Atom<int>             minNGoodHits  {Name("minNGoodHits"  ), Comment("minNStrawDigis")};
-      fhicl::Sequence<int>         mnidToSkip    {Name("mnidToSkip"    ), Comment("a list of panels to skip")};
+      fhicl::Sequence<int>         channelsToSkip{Name("channelsToSkip"), Comment("a list of channels to skip")};
       fhicl::Atom<bool>            fillHistograms{Name("fillHistograms"), Comment("fill histogrms, default:false")};
     };
 
@@ -54,6 +54,11 @@ namespace mu2e {
       TH1F* dt  ;
       TH1F* edep;
     } _hist[2];
+                                        // channels disabled from the trigger
+    struct Channel_t {
+      int mnid;
+      int straw;
+    };
 
     using Parameters = art::EDFilter::Table<Config>;
 
@@ -79,7 +84,7 @@ namespace mu2e {
     float                    _maxDt;
     float                    _minEDep;
     int                      _minNGoodHits;
-    std::vector<int>         _mnidToSkip;       // panels not to look at when searching for good hits
+    std::vector<Channel_t>   _channelsToSkip;       // channels not to look at when searching for good hits
     int                      _fillHistograms;
 
     int                      _nevt;
@@ -105,7 +110,6 @@ namespace mu2e {
       _maxDt             (conf().maxDt    ()),
       _minEDep           (conf().minEDep  ()),
       _minNGoodHits      (conf().minNGoodHits()),
-      _mnidToSkip        (conf().mnidToSkip()),
       _fillHistograms    (conf().fillHistograms())
   {
 //-----------------------------------------------------------------------------
@@ -120,6 +124,23 @@ namespace mu2e {
       sscanf(key,"bit%i:%i",&index,&value);
       _debugBit[index]  = value;
     }
+//-----------------------------------------------------------------------------
+// parse channels to skip
+//-----------------------------------------------------------------------------
+    int ndat = conf().channelsToSkip().size();
+    for (int i=0; i<ndat; i+=2) {
+      Channel_t ch;
+      ch.mnid  = conf().channelsToSkip().at(i);
+      ch.straw = conf().channelsToSkip().at(i+1);
+      _channelsToSkip.push_back(ch);
+    }
+
+    int n_disabled_channels = _channelsToSkip.size();
+    for (int i=0; i<n_disabled_channels; i++) {
+      Channel_t* ch = & _channelsToSkip[i];
+      std::cout << std::format("disabled : mnid:MN{:03d} straw:{:02d}\n",ch->mnid, ch->straw);
+    }
+    
     _run_initialized = false;
   }
 
@@ -233,12 +254,16 @@ namespace mu2e {
       int hit_mnid = tpm->mnid();
 
       bool skip = false;
-      for (auto mnid: _mnidToSkip) {
-        if (hit_mnid == mnid) {
+
+      int n_disabled_channels = _channelsToSkip.size();
+      for (int i=0; i<n_disabled_channels; i++) {
+        Channel_t* ch = & _channelsToSkip[i];
+        if ((hit_mnid == ch->mnid) and (sh->strawId().straw() == ch->straw)) {
           skip = true;
           break;
         }
       }
+
       if (skip) continue;
 
       if (fabs(sh->dt())  > _maxDt  ) continue;
