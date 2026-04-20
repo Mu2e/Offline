@@ -8,13 +8,17 @@
 #include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/Disk.hh"
 #include "KinKal/Geometry/Annulus.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include <memory>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class Tracker {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
+        using SurfacePtr = std::shared_ptr<KinKal::Surface>;
+        using KKGMap = std::multimap<SurfaceId,SurfacePtr>;
+
         // default constructor with nominal geometry
         Tracker();
         // accessors
@@ -29,6 +33,9 @@ namespace mu2e {
         auto const& frontPtr() const { check_init(); return front_; }
         auto const& middlePtr() const { check_init(); return mid_; }
         auto const& backPtr() const { check_init(); return back_; }
+
+        // add all tracker surfaces to a map
+        void addSurfaces(KKGMap& map) const;
 
       private:
         mutable bool initialized_ = false; // defer construction to allow services to be established

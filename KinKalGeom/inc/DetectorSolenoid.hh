@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class DetectorSolenoid {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;

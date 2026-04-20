@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class StoppingTarget {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;

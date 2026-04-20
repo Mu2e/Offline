@@ -6,7 +6,7 @@
 //
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
@@ -40,7 +40,7 @@ namespace mu2e {
     private:
       int debug_;
       double btol_, intertol_, maxdt_;
-      SurfaceMap smap_;
+      KinKalGeom smap_;
       KKMaterial const& kkmat_;
       AnnPtr tsdaptr() const { return smap_.DS().upstreamAbsorberPtr(); }
       DiskPtr trkfrontptr() const {return smap_.tracker().frontPtr(); }

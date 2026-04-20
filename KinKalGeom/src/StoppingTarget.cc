@@ -1,6 +1,6 @@
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     using KinKal::VEC3;
     using KinKal::Cylinder;
     using KinKal::Disk;

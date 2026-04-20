@@ -3,7 +3,7 @@ cet_make_library(
       src/CRV.cc
       src/DetectorSolenoid.cc
       src/StoppingTarget.cc
-      src/SurfaceMap.cc
+      src/KinKalGeom.cc
       src/TestCRV.cc
       src/Tracker.cc
     LIBRARIES PUBLIC

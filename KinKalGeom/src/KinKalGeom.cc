@@ -1,23 +1,19 @@
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
 
-  void SurfaceMap::check_init() const {
+  void KinKalGeom::check_init() const {
     if(!initialized_){
       // cast off const
-      (const_cast<SurfaceMap*>(this))->initialize();
+      (const_cast<KinKalGeom*>(this))->initialize();
       initialized_ = true;
     }
   }
 
-  void SurfaceMap::initialize() {
+  void KinKalGeom::initialize() {
     using KinKal::Surface;
     // create the entries for the map; first tracker
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Front),std::static_pointer_cast<Surface>(tracker_.frontPtr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Mid),std::static_pointer_cast<Surface>(tracker_.middlePtr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Back),std::static_pointer_cast<Surface>(tracker_.backPtr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Inner),std::static_pointer_cast<Surface>(tracker_.innerPtr())));
-    map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Outer),std::static_pointer_cast<Surface>(tracker_.outerPtr())));
+    tracker_.addSurfaces(map_);
     // DS
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Front),std::static_pointer_cast<Surface>(ds_.frontPtr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Back),std::static_pointer_cast<Surface>(ds_.backPtr())));
@@ -41,7 +37,7 @@ namespace mu2e {
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(tcrv_.ex1Ptr())));
     map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,2),std::static_pointer_cast<Surface>(tcrv_.t2Ptr())));
   }
-  void SurfaceMap::surfaces(SurfaceIdCollection const& ids,SurfacePairCollection& surfs) const {
+  void KinKalGeom::surfaces(SurfaceIdCollection const& ids,SurfacePairCollection& surfs) const {
     surfs.clear();
     surfs.reserve(ids.size());
     for(auto const& id : ids ) {

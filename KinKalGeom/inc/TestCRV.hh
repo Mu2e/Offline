@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class TestCRV {
       public:
         using RecPtr = std::shared_ptr<KinKal::Rectangle>;

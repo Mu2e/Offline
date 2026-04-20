@@ -31,7 +31,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 // geometry
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 // KinKal includes
@@ -159,7 +159,7 @@ namespace mu2e {
       double addStrawMinDz_;
       int strawNBuffer_;
       bool saveHitCalib_;
-      SurfaceMap smap_;
+      KinKalGeom smap_;
       SurfaceIdCollection ssids_;
   };
 
@@ -864,9 +864,9 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK& kktrk) const {
-    // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+    // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
     // extrapolation and sampling options
-    SurfaceMap::SurfacePairCollection tosample; // surfaces to sample the fit
+    KinKalGeom::SurfacePairCollection tosample; // surfaces to sample the fit
     smap_.surfaces(ssids_,tosample);
 
     auto const& ptraj = kktrk.fitTraj();

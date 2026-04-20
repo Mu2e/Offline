@@ -36,7 +36,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -171,7 +171,7 @@ namespace mu2e {
     double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-    SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+    KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
     bool extrapolate_, toCRV_;
     ExtrapolateTCRV TCRV_; // extrapolation predicate based on Z values
     double tcrvthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
@@ -225,9 +225,9 @@ namespace mu2e {
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
       // geometry service eventually, TODO
-      SurfaceMap smap;
+      KinKalGeom smap;
       smap.surfaces(ssids,sample_);
       // configure extrapolation
       if(settings().Extrapolation()){
