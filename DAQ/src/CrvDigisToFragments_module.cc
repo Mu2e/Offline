@@ -1,7 +1,7 @@
 // ======================================================================
 //
 // CrvDigisToFragments_module: Create DTCEVT artdaq::Fragment collection
-// from CrvDigiCollection (+ CrvDigiADCWaveformCollection)
+// from CrvDigiCollection
 //
 // ======================================================================
 
