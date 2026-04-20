@@ -3,6 +3,7 @@ cet_make_library(
     SOURCE
       src/CaloDAQUtilities.cc
     LIBRARIES PUBLIC
+      art::Framework_Principal
       artdaq-core-mu2e::Data
 
 )
