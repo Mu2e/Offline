@@ -60,8 +60,8 @@ class CrvDigisToFragments : public art::EDProducer
     using Comment = fhicl::Comment;
     fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
     fhicl::Atom<art::InputTag> crvDigiTag{Name("CrvDigiTag"), Comment("Input CrvDigiCollection"), art::InputTag("makeSD")};
-    fhicl::Atom<int>           crvDtcIdStart{Name("CrvDtcIdStart"), Comment("First CRV DTC ID"), 0};  //FIXME: Which DTC IDs do the CRV use?
-    fhicl::Atom<int>           fragmentIdOffset{Name("FragmentIdOffset"), Comment("Fragment ID offset"), 0}; //FIXME: Is this the correct fragment ID offset for the CRV?
+    fhicl::Atom<uint8_t>       crvDtcIdStart{Name("CrvDtcIdStart"), Comment("First CRV DTC ID"), 0};  //FIXME: Which DTC IDs do the CRV use?
+    fhicl::Atom<uint8_t>       fragmentIdOffset{Name("FragmentIdOffset"), Comment("Fragment ID offset"), 0}; //FIXME: Is this the correct fragment ID offset for the CRV?
   };
 
   explicit CrvDigisToFragments(const art::EDProducer::Table<Config>& config);
@@ -73,8 +73,8 @@ class CrvDigisToFragments : public art::EDProducer
   private:
   int           _diagLevel;
   art::InputTag _crvDigiTag;
-  int           _crvDtcIdStart;
-  int           _fragmentIdOffset;
+  uint8_t       _crvDtcIdStart;
+  uint8_t       _fragmentIdOffset;
 
   long int _totalEvents;
   long int _totalDigis;
@@ -226,7 +226,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
 
       if(byteCount%2!=0)
       {
-        throw cet::exception("CRVDIGI_TO_FRAGMENT") << "Byte count is not a multiple of 2" << std::endl;
+        throw cet::exception("CRVDIGI_TO_FRAGMENT") << "Byte count is not a multiple of 2";
       }
 
       block.crvROCstatus.ControllerEventWordCount=byteCount/2;
@@ -264,7 +264,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
                                        ts,
                                        0);
 
-      auto hdrPkt = hdr.ConvertToDataPacket();  //this function has a bug. it does not transfer the subsystem ID to the DTC_DataPacket.
+      auto hdrPkt = hdr.ConvertToDataPacket();  //this function has a bug. the subsystem ID gets written to byte 3 of the DTC_DataPacket, but later read back from byte 5.
       hdrPkt.SetByte(5, static_cast<uint8_t>(((packetCount & 0x0700) >> 8) | (subsystem << 5)));  //this is a temporary bug fix.
 
       size_t pos = 0;

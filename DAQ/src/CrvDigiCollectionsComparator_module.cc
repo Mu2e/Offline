@@ -199,10 +199,10 @@ void CrvDigiCollectionsComparator::analyze(art::Event const& event) {
 }
 
 void CrvDigiCollectionsComparator::endJob() {
-    std::cout << "\n ----- [CrvDigiCollectionsComparator] Summary ----- " << std::endl;
-    std::cout << "Total events: " << totalEvents_ << std::endl;
-    std::cout << "Matching events: " << matchingEvents_ << std::endl;
-    std::cout << "Mismatched events: " << mismatchedEvents_ << std::endl;
+  std::cout << "\n ----- [CrvDigiCollectionsComparator] Summary ----- " << std::endl;
+  std::cout << "Total events: " << totalEvents_ << std::endl;
+  std::cout << "Matching events: " << matchingEvents_ << std::endl;
+  std::cout << "Mismatched events: " << mismatchedEvents_ << std::endl;
 }
 
 } // namespace mu2e
