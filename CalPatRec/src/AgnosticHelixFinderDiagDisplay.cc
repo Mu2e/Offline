@@ -774,9 +774,13 @@ void AgnosticHelixFinderDiag::plotHelixStageXY(int stage) {
   } else { // All helices
     const bool use_tc = stage == kTimeCluster;
     if(use_tc) title = "Helices (time cluster)";
+    if(_debugLevel > 1) printf("  %12s: Plotting %zu helices, stage = %i\n",
+                               __func__, _data->helixSeedData.size(), stage);
     plotHitsXY(use_tc); // draw (relevant) hits
     plotMC(kHelix);
     for(size_t index = 0; index < _data->helixSeedData.size(); ++index) {
+      if(_debugLevel > 1) printf("  %12s: Plotting the helix XY circle %zu, stage = %i\n",
+                                 __func__, index, stage);
       plotHelixXY(_data->helixSeedData.at(index).seed, index);
     }
   }
