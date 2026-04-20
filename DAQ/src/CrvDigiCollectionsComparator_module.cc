@@ -194,17 +194,15 @@ void CrvDigiCollectionsComparator::analyze(art::Event const& event) {
   }
 
   if (failOnMismatch_) {
-    throw cet::exception("CALODIGI_COMPARE") << summary.str();
+    throw cet::exception("CRVDIGI_COMPARE") << summary.str();
   }
 }
 
 void CrvDigiCollectionsComparator::endJob() {
-  if (diagLevel_ > 0) {
     std::cout << "\n ----- [CrvDigiCollectionsComparator] Summary ----- " << std::endl;
     std::cout << "Total events: " << totalEvents_ << std::endl;
     std::cout << "Matching events: " << matchingEvents_ << std::endl;
     std::cout << "Mismatched events: " << mismatchedEvents_ << std::endl;
-  }
 }
 
 } // namespace mu2e

@@ -51,13 +51,77 @@ struct CrvBlockData
   std::vector<CRVDataDecoder::CRVHitRawFEBII> crvHits;
 };
 
-CRVDataDecoder::CRVHitRawFEBII encodeCrvHit(CrvDigi const& digi)
+class CrvDigisToFragments : public art::EDProducer
+{
+  public:
+  struct Config
+  {
+    using Name = fhicl::Name;
+    using Comment = fhicl::Comment;
+    fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
+    fhicl::Atom<art::InputTag> crvDigiTag{Name("CrvDigiTag"), Comment("Input CrvDigiCollection"), art::InputTag("makeSD")};
+    fhicl::Atom<int>           crvDtcIdStart{Name("CrvDtcIdStart"), Comment("First CRV DTC ID"), 0};  //FIXME: Which DTC IDs do the CRV use?
+    fhicl::Atom<int>           fragmentIdOffset{Name("FragmentIdOffset"), Comment("Fragment ID offset"), 0}; //FIXME: Is this the correct fragment ID offset for the CRV?
+  };
+
+  explicit CrvDigisToFragments(const art::EDProducer::Table<Config>& config);
+  virtual ~CrvDigisToFragments() {}
+
+  virtual void produce(art::Event&);
+  virtual void endJob();
+
+  private:
+  int           _diagLevel;
+  art::InputTag _crvDigiTag;
+  int           _crvDtcIdStart;
+  int           _fragmentIdOffset;
+
+  long int _totalEvents;
+  long int _totalDigis;
+  long int _totalDigisEncoded;
+
+  std::set<uint16_t> _ROCs;
+
+  ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
+
+  CRVDataDecoder::CRVHitRawFEBII encodeCrvHit(CrvDigi const& digi);
+
+  static void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
+                              DTCLib::DTC_DataBlock const& thisBlock);
+
+  void buildDtcEventsFromDigis(art::Event const& event,
+                               mu2e::CrvDigiCollection const& crvDigis,
+                               std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents);
+};
+
+CrvDigisToFragments::CrvDigisToFragments(const art::EDProducer::Table<Config>& config)
+    : art::EDProducer{config}
+    , _diagLevel(config().diagLevel())
+    , _crvDigiTag(config().crvDigiTag())
+    , _crvDtcIdStart(config().crvDtcIdStart())
+    , _fragmentIdOffset(config().fragmentIdOffset())
+{
+  produces<artdaq::Fragments>();
+  _totalEvents = 0;
+  _totalDigis = 0;
+  _totalDigisEncoded = 0;
+}
+
+CRVDataDecoder::CRVHitRawFEBII CrvDigisToFragments::encodeCrvHit(CrvDigi const& digi)
 {
   CRVDataDecoder::CRVHitRawFEBII hitPacket;
   hitPacket.hitInfo.portNumber  = digi.GetFEB();
   hitPacket.hitInfo.fpgaNumber  = digi.GetFEBchannel()/CRVId::nChanPerFPGA;
   hitPacket.hitInfo.fpgaChannel = digi.GetFEBchannel()%CRVId::nChanPerFPGA;
   hitPacket.hitInfo.hitTime     = digi.GetStartTDC()*2; //online: period of 6.25ns, offline: period of 12.5ns.
+  if(digi.GetStartTDC()>0x7fff)
+  {
+    hitPacket.hitInfo.hitTime=0xffff;
+    if(_diagLevel > 0)
+    {
+      std::cout << "[CrvDigisToFragments::encodeCrvHit] WARNING: hit time (in 6.25ns) exceeds 16 bits - setting it 0xffff" << std::endl;
+    }
+  }
 
   const std::vector<int16_t> &adcs = digi.GetADCs();  //check for correct number of samples in calling function
   for(size_t adcBlock=0; adcBlock<CRVDataDecoder::nADCblocks; ++adcBlock)
@@ -73,57 +137,6 @@ CRVDataDecoder::CRVHitRawFEBII encodeCrvHit(CrvDigi const& digi)
   }
 
   return hitPacket;
-}
-
-class CrvDigisToFragments : public art::EDProducer
-{
-  public:
-  struct Config
-  {
-    using Name = fhicl::Name;
-    using Comment = fhicl::Comment;
-    fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
-    fhicl::Atom<art::InputTag> crvDigiTag{Name("CrvDigiTag"), Comment("Input CrvDigiCollection"), art::InputTag("makeSD")};
-    fhicl::Atom<int>           crvDtcIdStart{Name("CrvDtcIdStart"), Comment("First CRV DTC ID"), 0};  //FIXME: Which DTC IDs do the CRV use?
-  };
-
-  explicit CrvDigisToFragments(const art::EDProducer::Table<Config>& config);
-  virtual ~CrvDigisToFragments() {}
-
-  virtual void produce(art::Event&);
-  virtual void endJob();
-
-  private:
-  int           _diagLevel;
-  art::InputTag _crvDigiTag;
-  int           _crvDtcIdStart;
-
-  long int _totalEvents;
-  long int _totalDigis;
-
-  std::set<uint16_t> _ROCs;
-
-  ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
-
-  const int _fragmentIdOffset = 0; // IDs start from here
-
-  static void putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
-                              DTCLib::DTC_DataBlock const& thisBlock);
-
-  void buildDtcEventsFromDigis(art::Event const& event,
-                               mu2e::CrvDigiCollection const& crvDigis,
-                               std::map<uint8_t, DTCLib::DTC_Event>& dtcEvents);
-};
-
-CrvDigisToFragments::CrvDigisToFragments(const art::EDProducer::Table<Config>& config)
-    : art::EDProducer{config}
-    , _diagLevel(config().diagLevel())
-    , _crvDigiTag(config().crvDigiTag())
-    , _crvDtcIdStart(config().crvDtcIdStart())
-{
-  produces<artdaq::Fragments>();
-  _totalEvents = 0;
-  _totalDigis = 0;
 }
 
 void CrvDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent, uint8_t dtcID,
@@ -170,7 +183,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
     {
       if(_diagLevel > 0)
       {
-        std::cout << "[CrvDigisToFragments::buildDrcEventsFromDigis] WARNING: Encountered waveform with " << digi.GetADCs().size() << " samples. "
+        std::cout << "[CrvDigisToFragments::buildDtcEventsFromDigis] WARNING: Encountered waveform with " << digi.GetADCs().size() << " samples. "
                   << "Can handle only " << CRVDataDecoder::nADCsamples << " samples. - skipping digi" << std::endl;
       }
       continue;
@@ -182,6 +195,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
     auto& block = byDtcAndLink[dtcID][linkID];
 
     block.crvHits.emplace_back(encodeCrvHit(digi));
+    ++_totalDigisEncoded;
   }
 
   for(auto& [dtcID, linkMap] : byDtcAndLink)
@@ -202,7 +216,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
       DTCLib::DTC_Subsystem subsystem = DTCLib::DTC_Subsystem_CRV;
 
       uint16_t ROC = (dtcID-_crvDtcIdStart)*CRVId::nROCPerDTC + linkID + 1;
-      if(_ROCs.find(ROC)==_ROCs.end()) //not a used ROC
+      if(_ROCs.find(ROC)==_ROCs.end()) // link (ROC) not used, but still have a data block written out.
       {
         byteCount=0;
         packetCount=0;
@@ -212,11 +226,7 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
 
       if(byteCount%2!=0)
       {
-        if(_diagLevel > 0)
-        {
-          std::cout << "[buildDtcEventsFromDigis] Byte count is not a multiple of 2" << std::endl;
-        }
-        continue;
+        throw cet::exception("CRVDIGI_TO_FRAGMENT") << "Byte count is not a multiple of 2" << std::endl;
       }
 
       block.crvROCstatus.ControllerEventWordCount=byteCount/2;
@@ -373,7 +383,7 @@ void CrvDigisToFragments::produce(art::Event& event)
     fragPtr->setUserType(mu2e::FragmentType::DTCEVT);
     fragPtr->setSequenceID(static_cast<artdaq::Fragment::sequence_id_t>(event.event()));
     fragPtr->setFragmentID(static_cast<artdaq::Fragment::fragment_id_t>(dtcID + _fragmentIdOffset));
-    fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.event()));
+    fragPtr->setTimestamp(static_cast<artdaq::Fragment::timestamp_t>(event.time().value()));
     if (!packed.empty()) std::memcpy(fragPtr->dataBeginBytes(), packed.data(), packed.size());
 
     fragments->emplace_back(std::move(*fragPtr));
@@ -396,7 +406,8 @@ void CrvDigisToFragments::endJob()
   {
     std::cout << "\n ----- [CrvDigisToFragments] Summary ----- " << std::endl;
     std::cout << "Total events: " << _totalEvents << std::endl;
-    std::cout << "Total CrvDigis processed: " << _totalDigis << std::endl;
+    std::cout << "Total CrvDigis found: " << _totalDigis << std::endl;
+    std::cout << "Total CrvDigis encoded: " << _totalDigisEncoded << std::endl;
   }
 }
 
