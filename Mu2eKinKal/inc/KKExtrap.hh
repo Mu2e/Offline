@@ -195,7 +195,7 @@ namespace mu2e {
 
     // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
     // track exits the ST in Z
-    ExtrapolateST extrapST(maxdt_,btol_,intertol_,kkg.ST(),debug_);
+    ExtrapolateST extrapST(maxdt_,btol_,intertol_,*kkg.ST(),debug_);
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto startdir = ftraj.direction(starttime);
