@@ -2259,7 +2259,7 @@ namespace mu2e {
           double wireRodAngle = std::abs((rodCenterToWire).angle(spokeAxis));
           // deltaLength = std::abs(tan(wireRodAngle)/tgt->spokeRadius());
           // wheelPos -= (deltaLength+1.)*spokeAxis;
-          deltaLength = std::abs(tgt->spokeRadius()/std::tan(wireRodAngle)); // seems to be a typo in the hayman
+          deltaLength = std::abs(tgt->spokeRadius()*std::cos(wireRodAngle)/std::sin(wireRodAngle)); // seems to be a typo in the hayman
           wheelPos -= (deltaLength+0.1)*spokeAxis;
           if(verbosityLevel > 0)
             G4cout << __PRETTY_FUNCTION__
