@@ -12,6 +12,7 @@
 #include "Offline/KinKalGeom/inc/TestCRV.hh"
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -46,6 +47,7 @@ namespace mu2e {
     auto const& tracker = *(GeomHandle<mu2e::Tracker>());
     GeomHandle<Beamline> bg;
     GeomHandle<DetectorSystem> det;
+    GeomHandle<DetectorSolenoid> ds;
     double vdHL(0.01); // hardcoded in VirtualDetectorMaker line 56
     // below are from VirtualDetectorMaker lnes 241-244
     double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
@@ -57,17 +59,15 @@ namespace mu2e {
     double halfLen = 0.5*(zBackLocal-zFrontLocal);
     double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
     double irvd = tracker.g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
-
-    // std::cout << " zfronloc " << zFrontLocal << " zmidloc " << zMidLocal << " zbackloc " << zBackLocal << " orvd " << orvd << " irvd " << irvd << std::endl;
-
+    double irds = ds->rIn1();
     // cylinders are defined by TT_outer (_inner) virtual detectors
     // Disks are defined to match TT_front (mid, back) virtual detectors
     auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),orvd,halfLen);
     auto inner = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),irvd,halfLen);
-    // expand the disk radii to meet the DS
-    auto front = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zFrontLocal),950.);
-    auto mid = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zMidLocal),950.);
-    auto back = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zBackLocal),950.);
+    // expand the disk radii to the DS
+    auto front = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zFrontLocal),irds);
+    auto mid = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zMidLocal),irds);
+    auto back = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zBackLocal),irds);
     // add all these to the map
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Mid),std::static_pointer_cast<Surface>(mid)));
@@ -79,6 +79,7 @@ namespace mu2e {
   }
 
   void KinKalGeomMaker::makeDS() {
+    // currently use hard-coded geometry
     auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),950,5450);
     auto outer= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),1328,5450); // bounding surfaces
     auto front= std::make_shared<Disk>(outer->frontDisk());
