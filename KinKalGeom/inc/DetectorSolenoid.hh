@@ -19,7 +19,13 @@ namespace mu2e {
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
         using AnnPtr = std::shared_ptr<KinKal::Annulus>;
         // default constructor with nominal geometry
-        DetectorSolenoid();
+        DetectorSolenoid( CylPtr inner, CylPtr outer, DiskPtr front, DiskPtr back,
+            CylPtr ipa, DiskPtr ipafront, DiskPtr ipaback,
+            FruPtr opa, AnnPtr tsda) :
+          inner_(inner) , outer_(outer), front_(front), back_(back),
+          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda)
+      {}
+
         // accessors
         // return by reference
         auto const& outer() const { return *outer_; }

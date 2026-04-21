@@ -15,6 +15,9 @@
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 namespace mu2e {
   using KinKal::VEC3;
   using KinKal::TimeDir;
@@ -40,13 +43,7 @@ namespace mu2e {
     private:
       int debug_;
       double btol_, intertol_, maxdt_;
-      KinKalGeom smap_;
       KKMaterial const& kkmat_;
-      AnnPtr tsdaptr() const { return smap_.DS().upstreamAbsorberPtr(); }
-      DiskPtr trkfrontptr() const {return smap_.tracker().frontPtr(); }
-      DiskPtr trkmidptr() const {return smap_.tracker().middlePtr(); }
-      DiskPtr trkbackptr() const {return smap_.tracker().backPtr(); }
-      FruPtr opaptr() const {return smap_.DS().outerProtonAbsorberPtr(); }
       bool backToTracker_, toOPA_, toTrackerEnds_, upstream_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
@@ -65,7 +62,9 @@ namespace mu2e {
   {}
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
-    ExtrapolateToZ trackerFront(maxdt_,btol_,smap_.tracker().front().center().Z(),debug_);
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker()->front().center().Z(),debug_);
 
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
@@ -103,8 +102,11 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
-    ExtrapolateToZ trackerFront(maxdt_,btol_,smap_.tracker().front().center().Z(),debug_);
-    ExtrapolateToZ trackerBack(maxdt_,btol_,smap_.tracker().back().center().Z(),debug_);
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+
+    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker()->front().center().Z(),debug_);
+    ExtrapolateToZ trackerBack(maxdt_,btol_,kkg.tracker()->back().center().Z(),debug_);
     // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
     // reflect inside the tracker volume
     auto const& ftraj = ktrk.fitTraj();
@@ -119,18 +121,18 @@ namespace mu2e {
     static const SurfaceId tt_back("TT_Back");
 
     // start with the middle
-    auto midinter = KinKal::intersect(ftraj,*trkmidptr(),ftraj.range(),intertol_);
+    auto midinter = KinKal::intersect(ftraj,kkg.tracker()->middle(),ftraj.range(),intertol_);
     if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
     if(tofront){
       // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*trkfrontptr(),fhel.range(),intertol_,fronttdir);
+      auto frontinter = KinKal::intersect(fhel,kkg.tracker()->front(),fhel.range(),intertol_,fronttdir);
       if(!frontinter.good()){
         // start from the middle
         TimeRange frange = ftraj.range();
         if(midinter.good())frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-        frontinter = KinKal::intersect(ftraj,*trkfrontptr(),frange,intertol_,fronttdir);
+        frontinter = KinKal::intersect(ftraj,kkg.tracker()->front(),frange,intertol_,fronttdir);
       }
       if(frontinter.good()) ktrk.addIntersection(tt_front,frontinter);
     }
@@ -138,17 +140,19 @@ namespace mu2e {
       // start from the middle
       TimeRange brange = ftraj.range();
       if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-      auto backinter = KinKal::intersect(ftraj,*trkbackptr(),brange,intertol_,backtdir);
+      auto backinter = KinKal::intersect(ftraj,kkg.tracker()->back(),brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(tt_back,backinter);
     }
   }
 
   template <class KTRAJ> bool KKExtrap::extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
     using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
     using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
     // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
     // track exits the IPA
-    ExtrapolateIPA extrapIPA(maxdt_,btol_,intertol_,smap_.DS().innerProtonAbsorberPtr(),debug_);
+    ExtrapolateIPA extrapIPA(maxdt_,btol_,intertol_,kkg.DS()->innerProtonAbsorberPtr(),debug_);
     if(extrapIPA.debug() > 0)std::cout << "extrapolating to IPA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId IPASID("IPA");
@@ -159,7 +163,7 @@ namespace mu2e {
       if(extrapIPA.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto const& IPA = smap_.DS().innerProtonAbsorberPtr();
+        auto const& IPA = kkg.DS()->innerProtonAbsorberPtr();
         KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_.IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance());
         if(extrapIPA.debug() > 0){
           double dmom, paramomvar, perpmomvar;
@@ -186,10 +190,12 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
     using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
 
     // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
     // track exits the ST in Z
-    ExtrapolateST extrapST(maxdt_,btol_,intertol_,smap_.ST(),debug_);
+    ExtrapolateST extrapST(maxdt_,btol_,intertol_,kkg.ST(),debug_);
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto startdir = ftraj.direction(starttime);
@@ -224,14 +230,16 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
-    ExtrapolateToZ trackerFront(maxdt_,btol_,smap_.tracker().front().center().Z(),debug_);
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker()->front().center().Z(),debug_);
     if(trackerFront.debug() > 0)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TrackerSID("TT_Front");
     ktrk.extrapolate(tdir,trackerFront);
     // the last piece appended should cover the necessary range
     auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto trkfrontinter = KinKal::intersect(ftraj,*trkfrontptr(),ktraj.range(),intertol_,tdir);
+    auto trkfrontinter = KinKal::intersect(ftraj,kkg.tracker()->front(),ktraj.range(),intertol_,tdir);
     if(trkfrontinter.onsurface_){ // dont worry about bounds here
       ktrk.addIntersection(TrackerSID,trkfrontinter);
       return true;
@@ -240,7 +248,9 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool KKExtrap::extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
-    ExtrapolateToZ TSDA(maxdt_,btol_,smap_.DS().upstreamAbsorber().center().Z(),debug_);
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    ExtrapolateToZ TSDA(maxdt_,btol_,kkg.DS()->upstreamAbsorber().center().Z(),debug_);
     if(TSDA.debug() > 0)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TSDASID("TSDA");
@@ -251,17 +261,19 @@ namespace mu2e {
     bool retval = epos.Z() < TSDA.zVal();
     if(retval){
       auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto tsdainter = KinKal::intersect(ftraj,*tsdaptr(),ktraj.range(),intertol_,tdir);
+      auto tsdainter = KinKal::intersect(ftraj,kkg.DS()->upstreamAbsorber(),ktraj.range(),intertol_,tdir);
       if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
     }
     return retval;
   }
 
   template <class KTRAJ> void KKExtrap::toOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const {
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId OPASID("OPA");
     TimeRange trange = tdir == TimeDir::forwards ? TimeRange(tstart,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tstart);
-    auto opainter = KinKal::intersect(ftraj,*opaptr(),trange,intertol_,tdir);
+    auto opainter = KinKal::intersect(ftraj,kkg.DS()->outerProtonAbsorber(),trange,intertol_,tdir);
     if(opainter.good()){
       ktrk.addIntersection(OPASID,opainter);
     }

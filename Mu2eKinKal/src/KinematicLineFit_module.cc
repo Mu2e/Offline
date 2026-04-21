@@ -227,8 +227,9 @@ namespace mu2e {
       }
       // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
       // geometry service eventually, TODO
-      KinKalGeom smap;
-      smap.surfaces(ssids,sample_);
+      GeomHandle<mu2e::KinKalGeom> kkg_h;
+      auto const& kkg = *kkg_h;
+      kkg.surfaces(ssids,sample_);
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
@@ -239,7 +240,7 @@ namespace mu2e {
         double minv = settings().Extrapolation()->MinV();
         int debug =  settings().Extrapolation()->Debug();
         // extrapolate to the front of the tracker
-        TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,smap.TCRV(),debug);
+        TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,*kkg.TCRV(),debug);
       }
 
       if(print_ > 0) std::cout << config_;
