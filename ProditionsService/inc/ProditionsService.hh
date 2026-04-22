@@ -87,10 +87,6 @@ class ProditionsService {
         Name("alignedTracker"), Comment("Tracker alignment in reco code")};
     fhicl::Table<AlignedTrackerConfig> alignedTrackerSim{
         Name("alignedTrackerSim"), Comment("Tracker alignment in sim code")};
-    fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
-        Name("mu2eMaterial"), Comment("Mu2e material for BTrk")};
-    fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
-        Name("mu2eDetector"), Comment("Mu2e detector model for BTrk")};
     fhicl::Table<CaloDAQMapConfig> caloDAQConditions{
         Name("caloDAQConditions"), Comment("DAQ channel maps for calorimeter")};
     fhicl::Table<MVACatalogConfig> trkQualCatalog{
@@ -100,7 +96,7 @@ class ProditionsService {
     fhicl::Table<CalCalibConfig> calCalib{
           Name("calCalib"),
           Comment("calorimeter energy calib") };
-          
+
   };
 
   // this line is required by art to allow the command line help print

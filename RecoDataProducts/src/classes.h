@@ -46,13 +46,8 @@
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
 
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/KKCentralHelix.hh"
-#include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
-#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
-#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
@@ -64,18 +59,13 @@
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
 
 // extrapolation and PID
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
-#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -107,7 +97,7 @@
 #include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
-// MTP
-#include "Offline/RecoDataProducts/inc/MTPHit.hh"
+// MSD
+#include "Offline/RecoDataProducts/inc/MSDHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

@@ -17,7 +17,7 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId roid, float Peak, float ErrPeak, float Width, float ErrWidth, float Sigma, float ErrSigma, float chisq, int Nhits):
+      Row(CaloSiPMId roid, float Peak, float ErrPeak, float Width, float ErrWidth, float Sigma, float ErrSigma, float chisq, int ndf, int Nhits):
         _roid(roid),
         _Peak(Peak),
         _ErrPeak(ErrPeak),
@@ -26,6 +26,7 @@ namespace mu2e {
         _Sigma(Sigma),
         _ErrSigma(ErrSigma),
         _chisq(chisq),
+        _ndf(ndf),
         _Nhits(Nhits){}
       CaloSiPMId  roid() const { return _roid;}
       float Peak() const { return _Peak; }
@@ -35,6 +36,7 @@ namespace mu2e {
       float Sigma() const { return _Sigma; }
       float ErrSigma() const { return _ErrSigma; }
       float chisq() const { return _chisq; }
+      int ndf() const { return _ndf; }
       int Nhits() const { return _Nhits; }
 
     private:
@@ -46,12 +48,13 @@ namespace mu2e {
       float _Sigma;
       float _ErrSigma;
       float _chisq;
+      int _ndf;
       int _Nhits;
     };
 
     constexpr static const char* cxname = "CalCosmicEnergyCalib";
 
-    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,peak,errpeak,width,errwidth,sigma,errsigma,chisq,nhits"){}
+    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,peak,errpeak,width,errwidth,sigma,errsigma,chisq,ndf,nhits"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
@@ -77,7 +80,8 @@ namespace mu2e {
       std::stof(columns[5]),
       std::stof(columns[6]),
       std::stof(columns[7]),
-      std::stoi(columns[8]));
+      std::stoi(columns[8]),
+      std::stoi(columns[9]));
 
   }
 
@@ -92,6 +96,7 @@ namespace mu2e {
       sstream << r.Sigma()<<",";
       sstream << r.ErrSigma()<<",";
       sstream << r.chisq()<<",";
+      sstream << r.ndf()<<",";
       sstream << r.Nhits();
     }
 

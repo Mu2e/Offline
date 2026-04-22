@@ -15,7 +15,6 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"

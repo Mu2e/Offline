@@ -19,13 +19,14 @@
 //        linear piecewise approxmiation are problematic for the minimization
 
 #include <vector>
+#include <string>
 
 namespace mu2e {
 
     class CaloPulseShape
     {
        public:
-          CaloPulseShape(double digiSampling);
+          CaloPulseShape(const std::string& fileName, const std::string& histName, double digiSampling);
           ~CaloPulseShape() {};
 
           void buildShapes();
@@ -36,6 +37,8 @@ namespace mu2e {
           void                       diag            (bool fullDiag=false)   const;
 
        private:
+          std::string                 fileName_;
+          std::string                 histName_;
           int                         nSteps_;
           double                      digiStep_;
           int                         nBinShape_;

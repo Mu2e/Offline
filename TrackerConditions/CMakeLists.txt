@@ -4,10 +4,6 @@ cet_make_library(
       src/DriftInfo.cc
       src/FullReadoutStraw.cc
       src/FullReadoutStrawMaker.cc
-      src/Mu2eDetector.cc
-      src/Mu2eDetectorMaker.cc
-      src/Mu2eMaterial.cc
-      src/Mu2eMaterialMaker.cc
       src/StrawDrift.cc
       src/StrawDriftMaker.cc
       src/StrawElectronics.cc
@@ -21,7 +17,6 @@ cet_make_library(
       src/TrackerPanelMap.cc
       src/TrackerPanelMapMaker.cc
     LIBRARIES PUBLIC
-      BTrk_MatEnv
       Offline::BFieldGeom
       Offline::DAQConditions
       Offline::DataProducts
@@ -29,7 +24,6 @@ cet_make_library(
       Offline::DbTables
       Offline::GeneralUtilities
       Offline::GeometryService
-      Offline::Mu2eBTrk
       Offline::Mu2eInterfaces
       Offline::ProditionsService
       Offline::TrackerConfig

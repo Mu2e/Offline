@@ -8,6 +8,8 @@ using namespace std;
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/EventDisplay/src/Cube.h"
 #include "Offline/EventDisplay/src/Cylinder.h"
@@ -32,10 +34,10 @@ using namespace std;
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -53,10 +55,6 @@ using namespace std;
 #include <boost/shared_array.hpp>
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/BaBar/ExternalInfo.hh"
 
 namespace mu2e_eventdisplay
 {
@@ -74,9 +72,6 @@ DataInterface::DataInterface(EventDisplayFrame *mainframe, double kalStepSize):
     _showNeutrinos=true;
     _showNeutrons=true;
     _showOthers=true;
-
-    _particleInfo = make_unique<mu2e::ParticleInfo>();
-    ExternalInfo::set(_particleInfo.get());
 }
 
 DataInterface::~DataInterface()
@@ -255,7 +250,7 @@ void DataInterface::fillGeometry()
       int idLayer =  s.id().getLayer();
       int idPanel =  s.id().getPanel();
       int idPlane =  s.id().getPlane();
-      int id = s.id().asUint16();
+      size_t id = s.id().asUint16();
 
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       std::string c=Form("Straw %i  Layer %i  Panel %i  Plane %i",idStraw,idLayer,idPanel,idPlane);
@@ -393,7 +388,7 @@ void DataInterface::fillGeometry()
 
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
 
-    int icrystal=0;
+    size_t icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
       CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
@@ -539,7 +534,7 @@ void DataInterface::fillGeometry()
           for (int ib = 0; ib < nBars; ++ib)
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
-            int index = bar.index().asInt();
+            size_t index = bar.index().asUint();
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
             double x=barOffset.x();
             double y=barOffset.y();
@@ -549,7 +544,7 @@ void DataInterface::fillGeometry()
             findBoundaryP(_crvMinmax, x-dx, y-dy, z-dz);
 
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-            std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
+            std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %lu)",shieldName.c_str(),im,il,ib, index);
             info->setName(c.c_str());
             info->setText(0,c.c_str());
             info->setText(1,Form("Dimension x: %.f mm, y: %.f mm, z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm));
@@ -616,7 +611,7 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
 
 void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
 {
-  std::map<int, boost::shared_ptr<Cube> >::const_iterator crvbars;
+  std::map<size_t, boost::shared_ptr<Cube> >::const_iterator crvbars;
   for(crvbars=_crvscintillatorbars.begin(); crvbars!=_crvscintillatorbars.end(); crvbars++)
   {
     crvbars->second->makeGeometryVisible(visible);
@@ -628,19 +623,19 @@ void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
 
 void DataInterface::toForeground()
 {
-  std::map<int,boost::shared_ptr<Straw> >::const_iterator straw;
+  std::map<size_t,boost::shared_ptr<Straw> >::const_iterator straw;
   for(straw=_straws.begin(); straw!=_straws.end(); straw++)
   {
     straw->second->toForeground();
   }
 
-  std::map<int,boost::shared_ptr<VirtualShape> >::const_iterator crystal;
+  std::map<size_t,boost::shared_ptr<VirtualShape> >::const_iterator crystal;
   for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
   {
     crystal->second->toForeground();
   }
 
-  std::map<int,boost::shared_ptr<Cube> >::const_iterator crvbar;
+  std::map<size_t,boost::shared_ptr<Cube> >::const_iterator crvbar;
   for(crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
   {
     crvbar->second->toForeground();
@@ -850,11 +845,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=steppointMChits->begin(); iter!=steppointMChits->end(); iter++)
     {
       const mu2e::StepPointMC& hit = *iter;
-      int sid = hit.strawId().asUint16();
+      size_t sid = hit.strawId().asUint16();
       int trackid = hit.trackId().asInt();
       double time = hit.time();
       double energy = hit.eDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+      std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -886,11 +881,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=strawhits->begin(); iter!=strawhits->end(); iter++, hitnumber++)
     {
       const mu2e::StrawHit& hit = *iter;
-      int sid  = hit.strawId().asUint16();
+      size_t sid  = hit.strawId().asUint16();
       double time = hit.time();
       double dt = hit.dt();
       double energy = hit.energyDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+      std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -913,86 +908,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       }
     }
   }
-
-  const mu2e::KalRepCollection *kalRepHits=contentSelector->getSelectedHitCollection<mu2e::KalRepCollection>();
-  if(kalRepHits!=nullptr)
-  {
-    boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
-    residualGraph->SetTitle("Residual Graph");
-
-    for(unsigned int i=0; i<kalRepHits->size(); i++)
-    {
-      const KalRep &particle = kalRepHits->at(i);
-      TrkHitVector const& hots = particle.hitVector();
-      if(hots.size() > 0)
-      {
-        _numberHits+=hots.size();
-        for(auto iter=hots.begin(); iter!=hots.end(); iter++)
-        {
-          const TrkHit *hitOnTrack = *iter;
-          const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
-          if(strawHit)
-          {
-            int    sid=strawHit->straw().id().asUint16();
-            double time = strawHit->time();
-            double hitT0 = strawHit->hitT0()._t0; //this is the time the hit "arrived at the straw"
-                                              //don't know what the other times are
-            double strawtime = strawHit->comboHit().time();
-            double driftRadius = strawHit->driftRadius();
-            const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
-            double theta = strawHit->straw().getDirection().theta();
-            double phi = strawHit->straw().getDirection().phi();
-
-            double residual, residualError;
-            if(strawHit->resid(residual, residualError))
-            {
-              int n=residualGraph->GetN();
-              residualGraph->SetPoint(n,p.z(),residual);
-              residualGraph->SetPointError(n,0,residualError);
-            }
-
-            std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
-            if(straw!=_straws.end() && !std::isnan(time))
-            {
-              double previousStartTime=straw->second->getStartTime();
-              if(std::isnan(previousStartTime))
-              {
-                findBoundaryT(_hitsTimeMinmax, hitT0);  //is it Ok to exclude all following hits from the time window?
-                straw->second->setStartTime(hitT0);
-                straw->second->getComponentInfo()->setText(1,Form("hitT0(s): %gns",hitT0/CLHEP::ns));
-                straw->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
-                straw->second->getComponentInfo()->setText(3,Form("strawhit time(s): %gns",strawtime/CLHEP::ns));
-                residualGraph->GetXaxis()->SetTitle("z [mm]");
-                residualGraph->GetYaxis()->SetTitle("Residual [??]");
-                straw->second->getComponentInfo()->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
-                _hits.push_back(straw->second);
-              }
-              else
-              {
-                straw->second->getComponentInfo()->expandLine(1,Form("%gns",hitT0/CLHEP::ns));
-                straw->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
-                straw->second->getComponentInfo()->expandLine(3,Form("%gns",strawtime/CLHEP::ns));
-              }
-
-              const boost::shared_ptr<std::string> strawname=straw->second->getComponentInfo()->getName();
-              boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-              info->setName(Form("Drift Radius for %s",strawname->c_str()));
-              info->setText(0,strawname->c_str());
-              info->setText(1,Form("Drift Radius %gcm",driftRadius/CLHEP::cm));
-              boost::shared_ptr<Cylinder> driftradius(new Cylinder(p.x(),p.y(),p.z(),
-                                                          phi+TMath::Pi()/2.0,theta,0,
-                                                          5, //the halflength of 5 has no meaning
-                                                          0,driftRadius,hitT0,
-                                                          _geometrymanager, _topvolume, _mainframe, info, false));
-              _components.push_back(driftradius);
-              _driftradii.push_back(driftradius);
-            }
-          }
-        }
-      }
-    }
-  }
-
   // KalSeed hits
   const mu2e::KalSeedCollection *kalSeedsWithHits=contentSelector->getSelectedHitCollection<mu2e::KalSeedCollection>();
   if(kalSeedsWithHits!=NULL)
@@ -1004,10 +919,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       for(size_t j=0; j<hits.size(); j++)
       {
         const mu2e::TrkStrawHitSeed &hit = hits.at(j);
-        int    sid = hit.strawId().asUint16();
+        size_t sid = hit.strawId().asUint16();
         double time = hit.time();
 
-        std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
+        std::map<size_t,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
         if(straw!=_straws.end() && !std::isnan(time))
         {
           double previousStartTime=straw->second->getStartTime();
@@ -1036,11 +951,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calosteppoints->begin(); iter!=calosteppoints->end(); iter++)
     {
       const mu2e::StepPointMC& calohit = *iter;
-      int crystalid = calohit.volumeId();
+      size_t crystalid = calohit.volumeId();
       int trackid = calohit.trackId().asInt();
       double time = calohit.time();
       double energy = calohit.eDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -1063,6 +978,35 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
+  const mu2e::CaloDigiCollection *calodigis=contentSelector->getSelectedCaloHitCollection<mu2e::CaloDigiCollection>();
+  if(calodigis!=nullptr)
+  {
+    _numberCrystalHits=calodigis->size();
+    std::vector<mu2e::CaloDigi>::const_iterator iter;
+    for(iter=calodigis->begin(); iter!=calodigis->end(); iter++)
+    {
+      const mu2e::CaloDigi& calodigi = *iter;
+      size_t crystalid = mu2e::CaloSiPMId(calodigi.SiPMID()).crystal().id();
+      double time = calodigi.t0();
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !std::isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(std::isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
+        }
+      }
+    }
+  }
+
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   if(calohits!=nullptr)
   {
@@ -1071,11 +1015,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
-      int crystalid = calohit.crystalID();
+      size_t crystalid = static_cast<size_t>(calohit.crystalID());
 
       double time = calohit.time();
       double energy = calohit.energyDep();
-      std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
       {
         double previousStartTime=crystal->second->getStartTime();
@@ -1097,7 +1041,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
 //CRV waveforms
-  for(std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
+  for(std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
   {
     crvbar->second->getComponentInfo()->getHistVector().clear();
   }
@@ -1111,10 +1055,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(size_t j=0; j<crvDigis->size(); j++)
     {
       mu2e::CrvDigi const& digi(crvDigis->at(j));
-      int index = digi.GetScintillatorBarIndex().asInt();
+      size_t index = digi.GetScintillatorBarIndex().asUint();
       int sipm  = digi.GetSiPMNumber();
+      size_t channel  = index*mu2e::CRVId::nChanPerBar + sipm;
+      double timeOffset = _calib->timeOffset(channel);
       std::string multigraphName = Form("Waveform (%s) SiPM %i",moduleLabel.c_str(),sipm);
-      std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
+      std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end())
       {
         //each digi collection and each SiPM gets its own multigraph
@@ -1138,7 +1084,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         graph->SetMarkerSize(2);
         for(size_t k=0; k<digi.GetADCs().size(); k++)
         {
-          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod,digi.GetADCs()[k]);
+          graph->SetPoint(k,TDC0time+(digi.GetStartTDC()+k)*mu2e::CRVDigitizationPeriod+timeOffset,digi.GetADCs()[k]);
         }
         boost::dynamic_pointer_cast<TMultiGraph>(v[multigraphIndex])->Add(graph,"p");
       }
@@ -1152,15 +1098,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(size_t i=0; i<crvRecoPulses->size(); i++)
     {
       const mu2e::CrvRecoPulse &recoPulse = crvRecoPulses->at(i);
-      int    index = recoPulse.GetScintillatorBarIndex().asInt();
+      size_t index = recoPulse.GetScintillatorBarIndex().asUint();
       int    sipm  = recoPulse.GetSiPMNumber();
       double time  = recoPulse.GetPulseTime();
       int    PEs   = recoPulse.GetPEs();
 
-      size_t channel  = index*4 + sipm;
+      size_t channel  = index*mu2e::CRVId::nChanPerBar + sipm;
       double recoPulsePedestal = _calib->pedestal(channel);
 
-      std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
+      std::map<size_t,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
       if(crvbar!=_crvscintillatorbars.end() && !std::isnan(time))
       {
         double previousStartTime=crvbar->second->getStartTime();
@@ -1227,8 +1173,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
       std::string particlename=ptable->particle(particle.pdgId()).name();
-      std::string startVolumeName="unknown volume";
-      std::string endVolumeName="unknown volume";
+      std::string startVolumeName="volume index "+std::to_string(particle.startVolumeIndex());
+      std::string endVolumeName="volume index "+std::to_string(particle.endVolumeIndex());
       if(physicalVolumesMulti!=nullptr)
       {
         mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(physicalVolumesMulti);
@@ -1273,109 +1219,6 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       _tracks.push_back(shape);
     }
   }
-
-  trackInfos.clear();
-  std::vector<const mu2e::KalRepCollection*> kalRepCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalRepCollection>(trackInfos);
-  for(unsigned int i=0; i<kalRepCollectionVector.size(); i++)
-  {
-    const mu2e::KalRepCollection *kalReps=kalRepCollectionVector[i];
-    for(unsigned int j=0; j<kalReps->size(); j++)
-    {
-      KalRep const* kalrep = kalReps->get(j);
-        int trackclass=trackInfos[i].classID;
-        int trackclassindex=trackInfos[i].index;
-        std::string trackcollection=trackInfos[i].entryText;
-        int particleid=kalrep->particleType().particleType();
-        std::string particlename=ptable->particle(particleid).name();
-        std::string c=Form("Kalman Track %i  %s  (%s)",j,particlename.c_str(),trackcollection.c_str());
-        boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-        info->setName(c.c_str());
-        info->setText(0,c.c_str());
-
-        double hitcount=0;
-        double offset=0;
-        TrkHitVector const& hots=kalrep->hitVector();
-        if(hots.size()>0)
-        {
-          boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
-          residualGraph->SetTitle("Residual Graph");
-          for(auto iter=hots.begin(); iter!=hots.end(); iter++)
-          {
-            const TrkHit *hitOnTrack = *iter;
-            const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
-            if(strawHit)
-            {
-              double strawTime   = strawHit->hitT0()._t0/CLHEP::ns;
-              double trackTime   = strawTime*CLHEP::ns;  //TODO: add correction for drift time
-              double weight= strawHit->weight();
-              double fltLen= strawHit->fltLen();
-              const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
-              double t     = kalrep->arrivalTime(fltLen);
-              offset+=(trackTime-t)*weight;
-              hitcount+=weight;
-
-              double residual, residualError;
-              if(strawHit->resid(residual, residualError))
-              {
-                int n=residualGraph->GetN();
-                residualGraph->SetPoint(n,p.z(),residual);
-                residualGraph->SetPointError(n,0,residualError);
-              }
-            }
-          }
-          residualGraph->GetXaxis()->SetTitle("z [mm]");
-          residualGraph->GetYaxis()->SetTitle("Residual [??]");
-          info->getHistVector().push_back(boost::dynamic_pointer_cast<TObject>(residualGraph));
-        }
-        if(hitcount>0) offset/=hitcount; else offset=0;
-
-        double fltLMin=kalrep->startValidRange();
-        double fltLMax=kalrep->endValidRange();
-        double p1=kalrep->momentum(fltLMin).mag();
-        double p2=kalrep->momentum(fltLMax).mag();
-        double x1=kalrep->position(fltLMin).x();
-        double y1=kalrep->position(fltLMin).y();
-        double z1=kalrep->position(fltLMin).z();
-        double x2=kalrep->position(fltLMax).x();
-        double y2=kalrep->position(fltLMax).y();
-        double z2=kalrep->position(fltLMax).z();
-        double t1=kalrep->arrivalTime(fltLMin)+offset;
-        double t2=kalrep->arrivalTime(fltLMax)+offset;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                                 particleid, trackclass, trackclassindex, p1,
-                                                 _geometrymanager, _topvolume, _mainframe, info, false));
-        _components.push_back(track);
-        _tracks.push_back(track);
-
-        double fltStep = (fltLMax - fltLMin)/400.0;
-        for(unsigned int step = 0; step <= 400.0; step++)
-        {
-          double fltL = fltLMin + step*fltStep;
-          double   t = kalrep->arrivalTime(fltL)+offset;
-          HepPoint p = kalrep->position(fltL);
-          findBoundaryT(_tracksTimeMinmax, t);
-          findBoundaryP(_tracksMinmax, p.x(), p.y(), p.z());
-          track->addTrajectoryPoint(p.x(), p.y(), p.z(), t);
-        }
-
-        int charge = kalrep->charge();
-        double t0=kalrep->t0().t0();
-        double firsthitfltlen = kalrep->lowFitRange();
-        double lasthitfltlen = kalrep->hiFitRange();
-        double entlen = min(firsthitfltlen,lasthitfltlen);
-        double loclen(0.0);
-        const TrkSimpTraj* ltraj = kalrep->localTrajectory(entlen,loclen);
-        const CLHEP::HepVector &params=ltraj->parameters()->parameter();
-        double d0 = params[0];
-        double om = params[2];
-        double rmax = d0+2.0/om;
-
-        info->setText(1,Form("Charge %i",charge));
-        info->setText(2,Form("Start Momentum %gMeV/c  End Momentum %gMeV/c",p1/CLHEP::MeV,p2/CLHEP::MeV));
-        info->setText(3,Form("t0 %gns  d0 %gmm  rmax %gmm",t0/CLHEP::ns,d0/CLHEP::mm,rmax/CLHEP::mm));
-    }
-  }
-
   // KalSeed tracks
   trackInfos.clear();
   std::vector<const mu2e::KalSeedCollection*> kalSeedCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::KalSeedCollection>(trackInfos);
@@ -1491,49 +1334,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     }
   }
 
-  // TrkExt track
   trackInfos.clear();
-  std::vector<const mu2e::TrkExtTrajCollection*> trkExtTrajCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(trackInfos);
-  for(unsigned int i=0; i<trkExtTrajCollectionVector.size(); i++)
-  {
-    // Read a TrkExtTrajCollection
-    const mu2e::TrkExtTrajCollection & trkExtTrajCollection = *trkExtTrajCollectionVector[i];
-    for(unsigned int j=0; j<trkExtTrajCollection.size(); j++)
-    {
-      // read a TrkExtTraj
-      const mu2e::TrkExtTraj &trkExtTraj = trkExtTrajCollection.at(j);
-      int particleid=11;
-      int trackclass=trackInfos[i].classID;
-      int trackclassindex=trackInfos[i].index;
-      std::string trackcollection=trackInfos[i].entryText;
-
-      std::string particlename=ptable->particle(particleid).name();
-      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-      std::string c=Form("TrkExt Trajectory %i  %s  (%s)", trkExtTraj.id(), particlename.c_str(),trackcollection.c_str());
-      info->setName(c.c_str());
-      info->setText(0,c.c_str());
-
-      double p1 = trkExtTraj.front().momentum().mag();
-      double x1 = trkExtTraj.front().x();
-      double y1 = trkExtTraj.front().y();
-      double z1 = trkExtTraj.front().z();
-      double x2 = trkExtTraj.back().x();
-      double y2 = trkExtTraj.back().y();
-      double z2 = trkExtTraj.back().z();
-      double t1 = 0;
-      double t2 = 0;
-      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
-                                               particleid, trackclass, trackclassindex, p1,
-                                               _geometrymanager, _topvolume, _mainframe, info, false));
-      _components.push_back(track);
-      _tracks.push_back(track);
-
-      for (unsigned int k = 0 ; k < trkExtTraj.size() ; k+=10) {
-        const mu2e::TrkExtTrajPoint & trkExtTrajPoint = trkExtTraj[k];
-        track->addTrajectoryPoint(trkExtTrajPoint.x(), trkExtTrajPoint.y(), trkExtTrajPoint.z(), 0);
-      }
-    }
-  }
 }
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,

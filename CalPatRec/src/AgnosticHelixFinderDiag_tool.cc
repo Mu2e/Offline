@@ -515,7 +515,7 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
     if(_data->hseed) {
       // only display at this level, where per-helix wasn't displayed but accepted helices are each plotted
       if(_display && _data->diagLevel == 3) {
-        std::cout << "Helix stage: Loop condition " << ConditionName(_data->loopCondition)
+        std::cout << "Final stage: Loop condition " << ConditionName(_data->loopCondition)
                   << std::endl;
         plotTripletStage();
         plotHelixStageXY(kHelix);
@@ -535,6 +535,8 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
   if(Mode == DIAG::kTimeCluster) {
     if(_display && _data->diagLevel > 1) {
+      std::cout << "TimeCluster stage:"
+                << std::endl;
       // plotTripletStage(true);
       plotCircleStage(true);
       plotHelixStageXY(kTimeCluster);
@@ -550,6 +552,8 @@ int AgnosticHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
   if(Mode == DIAG::kEnd) {
     if(_display) {
+      std::cout << "End stage:"
+                << std::endl;
       // plotTripletStage(true);
       plotCircleStage(true);
       plotHelixStageXY(kEnd);

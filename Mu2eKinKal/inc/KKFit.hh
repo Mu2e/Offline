@@ -146,10 +146,10 @@ namespace mu2e {
       float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_, maxStrawUposBuff_;
       int maxDStraw_; // maximum distance from the track a strawhit can be to consider it for adding.
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
-      mutable double strawradius_;
-      mutable double ymin_, ymax_, umax_; // panel-level info
-      mutable double rmin_, rmax_; // plane-level info
-      mutable double spitch_;
+      mutable double strawradius_ = 0;
+      mutable double ymin_ = 0, ymax_ = 0, umax_ = 0; // panel-level info
+      mutable double rmin_ = 0, rmax_ = 0; // plane-level info
+      mutable double spitch_ = 0;
       mutable bool needstrackerinfo_ = true;
       // extrapolation and sampling options
       SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
@@ -476,7 +476,7 @@ namespace mu2e {
                 // require consistency with this track passing through this straw
                 double du = fabs((pca.sensorPoca().Vect()-VEC3(straw.wirePosition(0.0))).Dot(VEC3(straw.wireDirection(0.0))));
                 double doca = fabs(pca.doca());
-                double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
+                double dsig = std::max(0.0,doca-strawradius_)/sqrt(std::max(pca.docaVar(),std::numeric_limits<double>::min()));
                 if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
                   addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                   oldstraws.insert(straw.id());
@@ -533,7 +533,7 @@ namespace mu2e {
                       // require consistency with this track passing through this straw
                       double du = fabs((pca.sensorPoca().Vect()-VEC3(straw.wirePosition(0.0))).Dot(VEC3(straw.wireDirection(0.0))));
                       double doca = fabs(pca.doca());
-                      double dsig = std::max(0.0,doca-strawradius_)/sqrt(pca.docaVar());
+                      double dsig = std::max(0.0,doca-strawradius_)/sqrt(std::max(pca.docaVar(),std::numeric_limits<double>::min()));
                       if(doca < maxStrawDoca_ && dsig < maxStrawDocaCon_ && du < straw.halfLength() + maxStrawUposBuff_){
                         addexings.push_back(std::make_shared<KKSTRAWXING>(shptr,static_cast<CA>(pca),smat,straw));
                         oldstraws.insert(straw.id());
@@ -625,8 +625,8 @@ namespace mu2e {
 
 
   template <class KTRAJ> TimeRange KKFit<KTRAJ>::range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const{
-    double tmin = std::numeric_limits<float>::max();
-    double tmax = -tmin;
+    double tmin = std::numeric_limits<double>::max();
+    double tmax = std::numeric_limits<double>::lowest();
     for( auto const& strawhit : strawhits) {
       tmin = std::min(tmin,strawhit->time());
       tmax = std::max(tmax,strawhit->time());
@@ -763,8 +763,8 @@ namespace mu2e {
         }
       } else if (savetraj_ == detector ) {
         // only save segments inside the tracker volume. Find the limits for that. Start with the times of active hits
-        double tmin = std::numeric_limits<float>::max();
-        double tmax = -tmin;
+        double tmin = std::numeric_limits<double>::max();
+        double tmax = std::numeric_limits<double>::lowest();
         for(auto const& kkshp : kktrk.strawHits()){
           if(kkshp->active()){
             tmin = std::min(tmin,kkshp->time());

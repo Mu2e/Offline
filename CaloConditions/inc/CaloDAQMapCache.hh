@@ -16,22 +16,33 @@ namespace mu2e {
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
+      if (_useDb) {
+        _cch_p = std::make_unique<DbHandle<CalChannels>>();
+      }
     }
 
     set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
-      return cids;
+      if (_useDb) {
+        _cch_p->get(eid);
+        cids.insert(_cch_p->cid());
+      }
+     return cids;
     }
 
     DbIoV makeIov(art::EventID const& eid) {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
+      if (_useDb) {
+        _cch_p->get(eid);
+        iov.overlap(_cch_p->iov());
+      }
       return iov;
     }
 
     ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
       if (_useDb) {
-        return _maker.fromDb();
+        return _maker.fromDb(_cch_p->getPtr(eid));
       } else {
         return _maker.fromFcl();
       }
@@ -40,6 +51,10 @@ namespace mu2e {
   private:
     bool _useDb;
     CaloDAQMapMaker _maker;
+
+    // these handles are not default constructed
+    // so the db can be completely turned off
+    std::unique_ptr<DbHandle<CalChannels>> _cch_p;
 
   };
 }

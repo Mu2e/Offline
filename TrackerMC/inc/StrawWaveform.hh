@@ -17,7 +17,6 @@
 // Mu2e includes
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronics.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"

@@ -1,6 +1,8 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "Offline/CaloReco/fcl/common.fcl"
+
 
 BEGIN_PROLOG
 
@@ -10,12 +12,14 @@ CaloReco : {
       windowPeak       : 3
       minPeakAmplitude : 5
       shiftTime        : 57.5
-      scaleFactor      : 0.0625
+      scaleFactor      : @local::ADCToMeV
       diagLevel        : 0
    }
 
    TemplateProcessor :
    {
+      pulseFileName      : @local::pulseFileName
+      pulseHistName      : @local::pulseHistName
       windowPeak         : 3
       minPeakAmplitude   : 24
       numNoiseBins       : 5
@@ -30,7 +34,8 @@ CaloReco : {
    }
 }
 
-CaloReco : { @table::CaloReco
+CaloReco : {
+   @table::CaloReco
 
    CaloRecoDigiMaker :
    {
@@ -41,6 +46,7 @@ CaloReco : { @table::CaloReco
       processorStrategy   : "TemplateFit"
       digiSampling        : @local::HitMakerDigiSampling
       ProtonBunchTimeTag  : "EWMProducer"
+      UseProtonBunchTime  : true
       maxChi2Cut          : 2.0
       maxPlots            : 50
       diagLevel           : 0
@@ -53,15 +59,35 @@ CaloReco : { @table::CaloReco
       time4Merge             : 6.0   #ns
       diagLevel              : 0
    }
+
+   CaloHitFastMaker : {
+     module_type         : "CaloHitMakerFast"
+     ProtonBunchTimeTag  : "EWMProducer"
+     caloDigiCollection  : "CaloDigiMaker"
+     caphriEDepMax       : 100
+     caphriEDepMin       : 1
+     deltaTPulses        : 11
+     digiSampling        : 5
+     nPEperMeV           : 30
+     nSigmaNoise         : 4
+     noiseLevelMeV       : 5.5e-1
+     ADCToMeV            : @local::ADCToMeV
+     diagLevel           : 0
+   }
 }
 
 
-CaloReco : { @table::CaloReco
+CaloReco : {
+   @table::CaloReco
+
    producers : {
       CaloRecoDigiMaker  : { @table::CaloReco.CaloRecoDigiMaker}
       CaloHitMaker       : { @table::CaloReco.CaloHitMaker}
+      CaloHitFastMaker   : { @table::CaloReco.CaloHitFastMaker}
    }
-   Reco : [ CaloRecoDigiMaker, CaloHitMaker ]
+   Reco : [ CaloRecoDigiMaker, CaloHitMaker, CaloHitFastMaker ]
 }
+
+
 
 END_PROLOG

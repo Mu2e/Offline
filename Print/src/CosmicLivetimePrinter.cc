@@ -7,8 +7,7 @@
 
 void mu2e::CosmicLivetimePrinter::Print(art::Event const& event, std::ostream& os) {}
 
-void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
-                                              std::ostream& os) {
+void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun, std::ostream& os) {
   if (verbose() < 1) return;
   if (tags().empty()) {
     // if a list of instances not specified, print all instances
@@ -19,15 +18,15 @@ void mu2e::CosmicLivetimePrinter::PrintSubRun(art::SubRun const& subrun,
     auto vscl = subrun.getMany<art::Sampled<CosmicLivetime>>();
     if(vscl.size() > 0){
       for (auto const& scl : vscl){
-        std::cout << "SampledCosmicLivetime with tag " << scl->originalInputTag() << std::endl;
+        os << "SampledCosmicLivetime with tag " << scl->originalInputTag() << std::endl;
         auto sinfomh = subrun.getHandle<art::SampledSubRunInfo>("SamplingInput");
         if(sinfomh.isValid()){
           auto const& sinfom = *sinfomh;
           for(auto sinfoit = sinfom.begin(); sinfoit != sinfom.end(); ++sinfoit) {
             if(sinfoit->first.find("Cosmic") != std::string::npos){
-              std::cout << "With SampledSubRunInfo entry for dataset " << sinfoit->first << " Has the following CosmicLivetimes: " << std::endl;
+              os << "With SampledSubRunInfo entry for dataset " << sinfoit->first << " Has the following CosmicLivetimes: " << std::endl;
               for(auto const& sr : sinfoit->second.ids){
-                std::cout << sr << " : ";
+                os << sr << " : ";
                 auto sclp = scl->get(sinfoit->first,sr);
                 if(!sclp.empty()) Print(*sclp);
               }

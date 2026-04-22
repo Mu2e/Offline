@@ -7,13 +7,13 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalTable.h"
 
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 #include "Offline/DataProducts/inc/StrawIdMask.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/BkgCluster.hh"
 #include "Offline/RecoDataProducts/inc/BkgClusterHit.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/TrkHitReco/inc/TNTClusterer.hh"
 #include "Offline/TrkHitReco/inc/Chi2Clusterer.hh"
 #include "Offline/TrkHitReco/inc/DBSClusterer.hh"
@@ -35,11 +35,15 @@ namespace mu2e
         using Comment = fhicl::Comment;
 
         fhicl::Atom<art::InputTag>                    comboHitCollection{   Name("ComboHitCollection"),   Comment("ComboHit collection name") };
-        fhicl::Atom<float>                            clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster poisiton error") };
+        fhicl::Atom<float>                            clusterPositionError{ Name("ClusterPositionError"), Comment("Cluster position error") };
         fhicl::Atom<int>                              clusterAlgorithm{     Name("ClusterAlgorithm"),     Comment("Clusterer algorithm") };
         fhicl::Atom<bool>                             filterHits{           Name("FilterHits"),           Comment("Produce filtered ComboHit collection")  };
         fhicl::Sequence<std::string>                  backgroundMask{       Name("BackgroundMask"),       Comment("Bkg hit selection mask") };
         fhicl::Atom<bool>                             saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters") };
+        fhicl::Atom<bool>                             countProtons{         Name("CountProtons"),         Comment("Count protons") };
+        fhicl::Atom<float>                            minEdep{              Name("MinEdep"),              Comment("Min Edep") };
+        fhicl::Atom<int>                              minHits{              Name("MinHits"),              Comment("Min hits in a proton candidate cluster") };
+        fhicl::Atom<float>                            minFrac{              Name("MinFrac"),              Comment("Min Frac") };
         fhicl::Atom<std::string>                      outputLevel{          Name("OutputLevel"),          Comment("Level of the output ComboHitCollection") };
         fhicl::OptionalTable<TNTClusterer::Config>    TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
         fhicl::OptionalTable<Chi2Clusterer::Config>   Chi2Clustering{       Name("Chi2Clustering"),       Comment("Chi2 Clusterer config") };
@@ -57,16 +61,19 @@ namespace mu2e
       const art::ProductToken<ComboHitCollection> chtoken_;
       bool                                        filter_;
       bool                                        savebkg_;
+      bool                                        countprotons_;
+      float                                       minedep_;
+      int                                         minhits_;
+      float                                       minfrac_;
       StrawHitFlag                                bkgmsk_;
       StrawIdMask::Level                          level_;
       std::unique_ptr<BkgClusterer>               clusterer_;
       float                                       cperr2_;
       int const                                   debug_;
       float                                       kerasQ_;
-      int                                         iev_;
 
-      void classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
-      int  findClusterIdx( BkgClusterCollection& bkgccol, unsigned ich) const;
+      void classifyCluster(BkgClusterCollection& bkgccol, BkgClusterHitCollection& bkghitcol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
+      int countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const;
   };
 
 
@@ -76,13 +83,17 @@ namespace mu2e
     chtoken_{     consumes<ComboHitCollection>(config().comboHitCollection()) },
     filter_(      config().filterHits()),
     savebkg_(     config().saveBkgClusters()),
+    countprotons_(config().countProtons()),
+    minedep_(     config().minEdep()),
+    minhits_(     config().minHits()),
+    minfrac_(     config().minFrac()),
     bkgmsk_(      config().backgroundMask()),
     debug_(       config().debugLevel()),
-    kerasQ_(      config().kerasQuality()),
-    iev_(0)
+    kerasQ_(      config().kerasQuality())
     {
       ConfigFileLookupPolicy configFile;
       produces<ComboHitCollection>();
+      produces<IntensityInfoTimeCluster>();
 
       if (savebkg_)
         {
@@ -143,70 +154,56 @@ namespace mu2e
     auto chH = event.getValidHandle(chtoken_);
     const ComboHitCollection& chcol = *chH.product();
     unsigned nch = chcol.size();
+    auto bkgccol = std::make_unique<BkgClusterCollection>();
+    auto bkghitcol = std::make_unique<BkgClusterHitCollection>();
+    bkgccol->reserve(nch/2);
+    if (savebkg_)
+      bkghitcol->assign(nch, BkgClusterHit(999.0, StrawHitFlag())); // Pre-fill with defaults
 
-    // the primary output is either a deep copy of selected inputs or a flag collection on those
-    // intermediate results: keep these on the heap unless requested for diagnostics later
-    BkgClusterCollection bkgccol;
-    BkgClusterHitCollection bkghitcol;
-    bkgccol.reserve(nch/2);
-    if (savebkg_) bkghitcol.reserve(nch);
+    clusterer_->findClusters(*bkgccol, chcol);
 
-    // find clusters, sort is needed for recovery algorithm. bkgccolFast has hits that are autmoatically marked as bkg.
-    clusterer_->findClusters(bkgccol, chcol);
-    std::sort(bkgccol.begin(),bkgccol.end(),[](const BkgCluster& c1,const BkgCluster& c2) {return c1.time() < c2.time();});
-
-    // classify clusters
     StrawHitFlagCollection chfcol(nch);
-    classifyCluster(bkgccol, chfcol, chcol);
+    classifyCluster(*bkgccol, *bkghitcol, chfcol, chcol);
 
-    //produce BkgClusterHit info collection
-    if (savebkg_) {
-      for (size_t ich=0;ich < nch; ++ich) {
-        const ComboHit& ch = chcol[ich];
-        //StrawHitFlag const& flagbkg = chfcol[ich];
-        int icl = findClusterIdx(bkgccol,ich);
-        if (icl > -1) bkghitcol.emplace_back(BkgClusterHit(clusterer_->distance(bkgccol[icl],ch),ch.flag()));
-        else          bkghitcol.emplace_back(BkgClusterHit(999.0,ch.flag()));
-      }
+    int nprotons = 0;
+    if(countprotons_){
+      nprotons = countProton(*bkgccol, chfcol, chcol);
     }
-
-    // produce output ComboHit collection, either filtered or not
+    // When countprotons_ is false, nprotons = 0 indicates counting disabled
+    event.put(std::make_unique<IntensityInfoTimeCluster>(nprotons));
 
     auto chcol_out = std::make_unique<ComboHitCollection>();
-    if(chfcol.size()>0){
-      // same parent as the original collection
+    if(!chfcol.empty()){
       if(level_ == chcol.level()){
         chcol_out->setSameParent(chcol);
         chcol_out->reserve(nch);
-        for(size_t ich=0;ich < nch; ++ich) {
+        for(size_t ich=0; ich < nch; ++ich) {
           StrawHitFlag const& flag = chfcol[ich];
-          //std::cout<<"Before Flag = "<<flag<<std::endl;
-          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-            // write out hits
+          if (!filter_ || !flag.hasAnyProperty(bkgmsk_)) {
             chcol_out->push_back(chcol[ich]);
             chcol_out->back()._flag.merge(flag);
           }
         }
-      } else {
-        // go down to the specified level
+      }
+      else {
+        // Sub-level logic remains same but uses reserve/push_back effectively
         auto pptr = chcol.parent(level_);
         auto const& chcol_p = *pptr;
         chcol_out->setSameParent(chcol_p);
         ComboHitCollection::SHIV shiv;
-        chcol_out->reserve(chcol_p.size()*2);
-        for(size_t ich=0;ich < nch; ++ich) {
+        chcol_out->reserve(chcol_p.size());
+        for(size_t ich=0; ich < nch; ++ich) {
           shiv.clear();
           StrawHitFlag const& flag = chfcol[ich];
-          if (! filter_ || !flag.hasAnyProperty(bkgmsk_)) {
-            // write out hits
-            if(&chcol_p == chcol.fillStrawHitIndices(ich,shiv,level_)){
+          if (!filter_ || !flag.hasAnyProperty(bkgmsk_)) {
+            if(&chcol_p == chcol.fillStrawHitIndices(ich, shiv, level_)){
               for(auto ishi : shiv ){
                 chcol_out->push_back(chcol_p[ishi]);
                 chcol_out->back()._flag.merge(flag);
               }
-            } else {
-              throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
             }
+            else
+              throw cet::exception("RECO")<< "FlagBkgHits: inconsistent ComboHits" << std::endl;
           }
         }
         if((! filter_) && chcol_out->size() != chcol_p.size())
@@ -214,20 +211,16 @@ namespace mu2e
       }
     }
     event.put(std::move(chcol_out));
-
-    //produce background collection
+    // Produce background collection
     if (savebkg_) {
-      event.put(std::make_unique<BkgClusterHitCollection>(bkghitcol));
-      event.put(std::make_unique<BkgClusterCollection>(bkgccol));
+      event.put(std::move(bkghitcol));
+      event.put(std::move(bkgccol));
     }
-
-    ++iev_;
-    return;
   }
 
 
   //------------------------------------------------------------------------------------------
-  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
+  void FlagBkgHits::classifyCluster(BkgClusterCollection& bkgccol, BkgClusterHitCollection& bkghitcol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
     for (auto& cluster : bkgccol) {
       clusterer_->classifyCluster(cluster,chcol);
@@ -236,19 +229,41 @@ namespace mu2e
         flag.merge(StrawHitFlag(StrawHitFlag::bkg));
         cluster._flag.merge(BkgClusterFlag::bkg);
       }
-
-      for (const auto& chit : cluster.hits())
+      for (const auto& chit : cluster.hits()){
         chfcol[chit].merge(flag);
+        if(savebkg_){
+          float dist = clusterer_->distance(cluster, chcol[chit]);
+          bkghitcol[chit] = BkgClusterHit(dist, chcol[chit].flag());
+        }
+      }
     }
   }
 
-
-  //----------------------------------------------------------------------------------
-  int FlagBkgHits::findClusterIdx(BkgClusterCollection& bkgccol, unsigned ich) const
+  //------------------------------------------------------------------------------------------
+  // If a hit is not flagged as background and the hit edep > 3 keV it is flagged with energysel
+  // as this could be a potential proton hit. The proton clusters are counted so as to have an
+  // alternative method for normalization. Same logic followed by DeltaFinder as well.
+  int FlagBkgHits::countProton(BkgClusterCollection& bkgccol, StrawHitFlagCollection& chfcol, const ComboHitCollection& chcol) const
   {
-    for (size_t icl=0;icl < bkgccol.size(); ++icl)
-      if (std::find(bkgccol[icl].hits().begin(),bkgccol[icl].hits().end(),ich) != bkgccol[icl].hits().end()) return icl;
-    return -1;
+    int npc(0);
+    for (auto& cluster : bkgccol) {
+      bool isAlreadyBkg = cluster._flag.hasAllProperties(BkgClusterFlag::bkg);
+      if (!isAlreadyBkg) {
+        int nhighedep(0);
+        int nhits = cluster.hits().size();
+        StrawHitFlag bkgFlag(StrawHitFlag::energysel);
+        for (const auto& hitIdx : cluster.hits()) {
+          if (chcol[hitIdx].energyDep() > minedep_){
+             chfcol[hitIdx].merge(bkgFlag);
+             nhighedep++;
+          }
+        }
+        // Placeholder logic, may change in the future
+        if(nhits > minhits_ && (float)nhighedep/nhits > minfrac_)
+          npc++;
+      }
+    }
+    return npc;
   }
 
 }

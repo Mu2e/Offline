@@ -148,9 +148,6 @@ namespace mu2e {
   GeometryService::preBeginRun(art::Run const &) {
 
     if(++_run_count > 1) {
-      if( _run_count == 2 ){
-        mf::LogWarning("GEOM") << "This test version does not change geometry on run boundaries.";
-      }
       return;
     }
 
@@ -241,17 +238,8 @@ namespace mu2e {
 
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-
-   if (_config->getString("targetPS_model") == "MDC2018"){
-     //      std::cout << "adding Tier1 in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-        } else
-      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){
-        //        std::cout << " adding Hayman in GeometryService" << std::endl;
-        addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
-          } else
-        {throw cet::exception("GEOM") << " " << static_cast<char const*>(__func__) << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
+    // Use ProductionTarget's built-in method to get the correct position based on model type
+    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.targetPositionByVersion()));
 
 
 

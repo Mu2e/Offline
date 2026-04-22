@@ -24,10 +24,10 @@ namespace mu2e {
   class ExtrapolateST {
     public:
       ExtrapolateST() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      zmin_(std::numeric_limits<float>::max()),
-      zmax_(-std::numeric_limits<float>::max()),
-      rmin_(std::numeric_limits<float>::max()),
-      rmax_(-std::numeric_limits<float>::max()),
+      zmin_(std::numeric_limits<double>::max()),
+      zmax_(std::numeric_limits<double>::lowest()),
+      rmin_(std::numeric_limits<double>::max()),
+      rmax_(std::numeric_limits<double>::lowest()),
       debug_(0){}
 
       ExtrapolateST(double maxdt, double dptol, double intertol, StoppingTarget const& stoptarg, int debug=0) :

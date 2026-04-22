@@ -139,7 +139,7 @@ namespace mu2e {
       G4VUserTrackInformation* info = trk->GetUserInformation();
       Mu2eG4UserTrackInformation const* tinfo   = dynamic_cast<Mu2eG4UserTrackInformation*>(info);
 
-      if ( tinfo->isForced() ){
+      if ( tinfo && tinfo->isForced() ){
         return tinfo->code().name();
       }
 

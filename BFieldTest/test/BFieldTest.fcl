@@ -14,7 +14,6 @@ services: {
   scheduler : { defaultExceptions : false }
 
   GeometryService        : { inputFile      : "Offline/Mu2eG4/test/geom_mau10_custom.txt" }
-  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
   GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
 }

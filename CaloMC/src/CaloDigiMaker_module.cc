@@ -17,9 +17,7 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloMC/inc/CaloNoiseSimGenerator.hh"
 #include "Offline/CaloMC/inc/CaloWFExtractor.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -27,6 +25,7 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -60,11 +59,16 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerCollection { Name("caloShowerROCollection"), Comment("CaloShowerRO collection name") };
              fhicl::Atom<art::InputTag> ewMarkerTag          { Name("eventWindowMarker"),      Comment("EventWindowMarker producer") };
              fhicl::Atom<art::InputTag> pbtmcTag             { Name("protonBunchTimeMC"),      Comment("ProtonBunchTimeMC producer") };
-             fhicl::Atom<double>        digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
-             fhicl::Atom<double>        digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
+             fhicl::Atom<std::string>   pulseFileName        { Name("pulseFileName"),          Comment("Calo pulse file name") };
+             fhicl::Atom<std::string>   pulseHistName        { Name("pulseHistName"),          Comment("Calo pulse hist name") };
+             fhicl::Atom<float>         digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
+             fhicl::Atom<float>         digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
-             fhicl::Atom<double>        digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
+             fhicl::Atom<float>         digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
+             fhicl::Atom<float>         pePerMeVCsI          { Name("readoutPEPerMeVCsI"),     Comment("Number of pe / MeV for Readout for CsI") };
+             fhicl::Atom<float>         pePerMeVLyso         { Name("readoutPEPerMeVLyso"),    Comment("Number of pe / MeV for Readout for LYSO") };
+             fhicl::Atom<float>         MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
              fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") };
@@ -82,8 +86,11 @@ namespace mu2e {
             digiSampling_      (config().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
-            maxADCCounts_      ((1 << config().nBits()) - 1),
-            pulseShape_        (CaloPulseShape(config().digiSampling())),
+            maxADCCounts_      ((1 << config().nBits()) -1),
+            pePerMeVCsI_       (config().pePerMeVCsI()),
+            pePerMeVLyso_      (config().pePerMeVLyso()),
+            MeVToADC_          (config().MeVToADC()),
+            pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             addNoise_          (config().addNoise()),
@@ -107,10 +114,9 @@ namespace mu2e {
     private:
 
        void makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&);
-       bool fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&,
-                               const ConditionsHandle<CalorimeterCalibrations>&, const ProtonBunchTimeMC&);
-       void generateSpotNoise (std::vector<double>& waveform, unsigned iRO, const ConditionsHandle<CalorimeterCalibrations>&);
-       void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection&);
+       bool fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ProtonBunchTimeMC&);
+       void generateSpotNoise (std::vector<double>& waveform);
+       void buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection&);
        void diag0             (unsigned, const std::vector<int>&);
        void diag1             (unsigned, double, size_t, const std::vector<int>&, int);
        void plotWF            (const std::vector<int>& waveform,    const std::string& pname, int pedestal);
@@ -119,13 +125,16 @@ namespace mu2e {
        const art::ProductToken<CaloShowerROCollection> caloShowerToken_;
        art::InputTag           ewMarkerTag_;
        art::InputTag           pbtmcTag_;
-       double                  digitizationStart_;
-       double                  digitizationEnd_;
-       double                  timeFromProtonsToDRMarker_;
-       double                  digiSampling_;
+       float                   digitizationStart_;
+       float                   digitizationEnd_;
+       float                   timeFromProtonsToDRMarker_;
+       float                   digiSampling_;
        unsigned                bufferDigi_;
-       double                  startTimeBuffer_;
+       float                   startTimeBuffer_;
        int                     maxADCCounts_;
+       float                   pePerMeVCsI_;
+       float                   pePerMeVLyso_;
+       float                   MeVToADC_;
        CaloPulseShape          pulseShape_;
        CaloWFExtractor         wfExtractor_;
        CLHEP::HepRandomEngine& engine_;
@@ -184,8 +193,6 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       calorimeter_ = ch.get();
 
-      ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-
       if (calorimeter_->nCrystals()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill)
@@ -201,19 +208,19 @@ namespace mu2e {
       for (int iRO=0;iRO<nWaveforms;++iRO)
       {
           if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
-          bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, calorimeterCalibrations, pbtmc);
+          bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, pbtmc);
           resetWaveform = (addRandomNoise_ || !isEmpty);
 
           // if we add random noise, then we need to scan all waveforms. Otherwise we can skip empty waveforms
           if (addRandomNoise_) {
-            if (!isEmpty) generateSpotNoise(waveform, iRO, calorimeterCalibrations);
+            if (!isEmpty) generateSpotNoise(waveform);
             noiseGenerator_.addSaltAndPepper(waveform);
             buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
           }
           else
           {
             if (isEmpty) continue;
-            if (addNoise_) generateSpotNoise(waveform, iRO, calorimeterCalibrations);
+            if (addNoise_) generateSpotNoise(waveform);
             buildOutputDigi(iRO, waveform, noiseGenerator_.pedestal(), caloDigiColl);
           }
      }
@@ -222,10 +229,12 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------
   bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
-                                 const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations, const ProtonBunchTimeMC& pbtmc)
+                                 const ProtonBunchTimeMC& pbtmc)
   {
-      bool  isEmpty(true);
-      float scaleFactor = calorimeterCalibrations->MeV2ADC(iRO)/calorimeterCalibrations->peMeV(iRO);
+      bool isEmpty  = true;
+      bool isCaphri = CaloSiPMId(iRO).crystal().isCaphri();
+      auto pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
+      auto scaleFactor = MeVToADC_/pePerMeV;
 
       for (const auto& CaloShowerRO : CaloShowerROs)
       {
@@ -250,10 +259,9 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform, unsigned iRO,
-                                        const ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
+  void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform)
   {
-       double minAmplitude = 0.1*calorimeterCalibrations->MeV2ADC(iRO);
+       double minAmplitude = 0.1*MeVToADC_;
 
        size_t timeSample(0);
        std::vector<size_t> hitStarts{}, hitStops{};
@@ -294,11 +302,13 @@ namespace mu2e {
 
 
   //-------------------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, int pedestal, CaloDigiCollection& caloDigiColl)
+  void CaloDigiMaker::buildOutputDigi(unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection& caloDigiColl)
   {
        // round the waveform into non-null integers and apply maxADC cut
        std::vector<int> wf(waveform.size(),0);
-       for (unsigned i=0; i<waveform.size(); ++i) {if (waveform[i] > pedestal) wf[i] = std::min(maxADCCounts_, int(waveform[i] - pedestal));}
+       for (size_t i=0; i<waveform.size(); ++i) {
+         if (waveform[i] > pedestal) wf[i] = std::min(maxADCCounts_, int(waveform[i] - pedestal));
+       }
        if (diagLevel_ > 2) diag0(iRO, wf);
 
        //extract hits start / stop times

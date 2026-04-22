@@ -3,7 +3,6 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

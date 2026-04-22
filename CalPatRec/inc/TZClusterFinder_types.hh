@@ -71,6 +71,7 @@ namespace mu2e {
       const CaloClusterCollection*    _ccColl;
       TimeClusterCollection*          _tcColl; // 'tcColl': time cluster collection
       IntensityInfoTimeCluster*       _iiTC;
+      TimeClusterCollection*          _protonTCColl = nullptr; // proton time clusters, optionally filled
       int                             _nTZClusters;
 
       // diagnostic data members used in TZ tool

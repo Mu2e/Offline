@@ -7,7 +7,6 @@ cet_make_library(
       src/EMFSimHitHistograms.cc
     LIBRARIES PUBLIC
       
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::RecoDataProducts

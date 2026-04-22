@@ -1,0 +1,96 @@
+# Produce fragments from digis, and validate the results from digi -> fragment -> digi are identical
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : DigiTest
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+}
+
+services : @local::Services.Reco
+services.GeometryService.bFieldFile     : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+
+physics : {
+
+  producers : {
+    CaloDigisToFragments : {
+      module_type : CaloDigisToFragments
+      diagLevel : 0
+      caloDigiTag : "CaloDigiMaker"
+    }
+    CaloFragmentsToDigis : {
+      module_type   : "CaloDigisFromDTCEvents"
+      dataType : 0
+      diagLevel : 0
+      useOfflineID : true
+      useDTCROCID : false
+    }
+
+    StrawDigisToFragments : {
+      module_type : StrawDigisToFragments
+      diagLevel : 0
+      fallbackToOfflineWhenMapMissing : true
+      forceOfflineAddressing : true
+      strawDigiTag : "makeSD"
+      strawDigiADCTag : "makeSD"
+    }
+    StrawFragmentsToDigis : {
+      module_type   : "StrawDigisFromArtdaqFragments"
+      diagLevel : 0
+      debugMode : 0
+      debugBits : [ "bit0:0", "bit1:0" ]
+      saveWaveforms : true
+      missingDTCHeaders : false
+      keyOnMnid : false
+      allowOfflineFallbackWhenPanelMapMissing : true
+      forceOfflineAddressing : true
+      geography : []
+    }
+  }
+
+  analyzers : {
+    CompareCaloDigis : {
+      module_type : CaloDigiCollectionsComparator
+      referenceTag : "CaloDigiMaker"
+      candidateTag : "CaloFragmentsToDigis"
+      failOnMismatch : true
+      diagLevel : 0
+    }
+    CompareStrawDigis : {
+      module_type : StrawDigiCollectionsComparator
+      referenceDigiTag : "makeSD"
+      candidateDigiTag : "StrawFragmentsToDigis"
+      compareWaveforms : true
+      normalizeWaveformsTo10Bit : true
+      normalizePmpTo10Bit : true
+      referenceWaveformTag : "makeSD"
+      candidateWaveformTag : "StrawFragmentsToDigis"
+      failOnMismatch : true
+      diagLevel : 1
+    }
+  }
+
+  TrigPath      : [ CaloDigisToFragments, StrawDigisToFragments, CaloFragmentsToDigis, StrawFragmentsToDigis ]
+  CaloEndPath       : [ CompareCaloDigis ]
+  TrkEndPath        : [ CompareStrawDigis ]
+  OutputPath        : [ out ]
+  trigger_paths : [ TrigPath ]
+  end_paths     : [ CaloEndPath, TrkEndPath, OutputPath ]
+}
+
+outputs : {
+  out : {
+    module_type : RootOutput
+    fileName : "digi_to_frag.art"
+    SelectEvents : [  ]
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep *_CaloDigisToFragments_*_*",
+      "keep *_StrawDigisToFragments_*_*",
+      "keep mu2e::ProtonBunchTime_*_*_*",
+      "keep mu2e::EventWindowMarker_*_*_*"
+    ]
+  }
+}

@@ -32,12 +32,10 @@ cet_make_library(
       src/ValStrawHit.cc
       src/ValStrawHitFlag.cc
       src/ValTimeCluster.cc
-      src/ValTrackClusterMatch.cc
-      src/ValTrackSummary.cc
       src/ValTriggerInfo.cc
       src/ValTriggerResults.cc
     LIBRARIES PUBLIC
-      
+
       Offline::DataProducts
       Offline::GeometryService
       Offline::KinKalGeom
@@ -58,7 +56,6 @@ cet_make_library(LIBRARY_NAME Validation_Root
       root/TValHist2.cc
       root/TValPar.cc
     LIBRARIES PUBLIC
-      BTrk_difAlgebra
       Offline::Validation
       ROOT::Postscript
       ROOT::Core
@@ -71,7 +68,7 @@ cet_make_exec(NAME valCompare
     LIBRARIES
       Offline::Validation_Root
       Offline::Validation_dict
-      
+
 )
 
 cet_build_plugin(Validation art::module
@@ -79,7 +76,7 @@ cet_build_plugin(Validation art::module
     LIBRARIES REG
       Offline::Validation_Root
       Offline::Validation_dict
-      
+
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION

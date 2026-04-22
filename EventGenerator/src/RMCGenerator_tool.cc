@@ -99,13 +99,13 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
-      _randomUnitSphereExternal = new RandomUnitSphere(eng, _czmin, _czmax);
-      _randomUnitSphereInternal = new RandomUnitSphere(eng);
-      _randFlat = new CLHEP::RandFlat(eng);
-      _randSpectrum = new CLHEP::RandGeneral(eng, _spectrum.getPDF(), _spectrum.getNbins());
-      _muonCaptureSpectrum = new MuonCaptureSpectrum(_randFlat, _randomUnitSphereInternal);
+      _randomUnitSphereExternal = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
+      _randomUnitSphereInternal = std::make_unique<RandomUnitSphere>(eng);
+      _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
+      _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _muonCaptureSpectrum = std::make_unique<MuonCaptureSpectrum>(_randFlat.get(), _randomUnitSphereInternal.get());
       if(_useRate) {
-        _randomPoissonQ = new CLHEP::RandPoissonQ(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
+        _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
         _internalRate = GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCInternalRate(material);
       }
     }
@@ -120,16 +120,16 @@ namespace mu2e {
     const double _czmin; //range of cos(theta_z) generated
     const double _czmax;
     BinnedSpectrum _spectrum; //RMC photon spectrum
-    MuonCaptureSpectrum*  _muonCaptureSpectrum; // internal conversion spectrum
+    std::unique_ptr<MuonCaptureSpectrum> _muonCaptureSpectrum; // internal conversion spectrum
     double _internalRate;
 
     const bool _makeHistograms;
 
-    RandomUnitSphere*   _randomUnitSphereExternal;
-    RandomUnitSphere*   _randomUnitSphereInternal;
-    CLHEP::RandFlat*    _randFlat;
-    CLHEP::RandGeneral* _randSpectrum;
-    CLHEP::RandPoissonQ* _randomPoissonQ;
+    std::unique_ptr<RandomUnitSphere>   _randomUnitSphereExternal;
+    std::unique_ptr<RandomUnitSphere>   _randomUnitSphereInternal;
+    std::unique_ptr<CLHEP::RandFlat>    _randFlat;
+    std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
+    std::unique_ptr<CLHEP::RandPoissonQ> _randomPoissonQ;
 
     TH1* _hmomentum;
     TH1* _hCosz;

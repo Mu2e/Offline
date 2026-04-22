@@ -14,7 +14,6 @@ services: {
     TFileService: { fileName: "hist_emfRecoTracks.root" }
     message: @local::default_message
     GeometryService        : { inputFile      : "Production/JobConfig/common/geom_baseline.txt" }
-    ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
     GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 }
 

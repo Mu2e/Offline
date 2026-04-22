@@ -177,7 +177,7 @@ namespace mu2e {
       _chcol = _strawhitsH.product();
     }
     else {
-      _chcol  = 0;
+      _chcol  = nullptr;
       printf(" >>> ERROR in CalHelixFinder::findData: StrawHitCollection with label=%s not found.\n",
              _shLabel.data());
     }
@@ -196,14 +196,15 @@ namespace mu2e {
       _timeclcol = _timeclcolH.product();
     }
     else {
-      _timeclcol = 0;
+      _timeclcol = nullptr;
       printf(" >>> ERROR in CalHelixFinder::findData: TimeClusterCollection with label=%s not found.\n",
              _timeclLabel.data());
     }
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
-   return (_chcol != 0) /*&& (_shpcol != 0) */&& (_timeclcol != 0);
+   return (_chcol != nullptr) //&& (_shpcol != nullptr) 
+	&& (_timeclcol != nullptr);
   }
 
 //-----------------------------------------------------------------------------

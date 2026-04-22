@@ -6,7 +6,6 @@ cet_make_library(
       src/SiliconProperties.cc
     LIBRARIES PUBLIC
       
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::MCDataProducts
@@ -19,7 +18,6 @@ cet_build_plugin(ExtMonFNALHitMaker art::module
     LIBRARIES REG
       Offline::ExtinctionMonitorFNAL_Digitization
       
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::GlobalConstantsService
       Offline::MCDataProducts

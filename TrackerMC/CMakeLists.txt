@@ -10,7 +10,6 @@ cet_make_library(
       src/TruncatedSinusoid.cc
     LIBRARIES PUBLIC
 
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::TrackerConditions
@@ -24,7 +23,6 @@ cet_build_plugin(MakeMCKalSeed art::module
       Offline::TrackerMC
 
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
@@ -70,7 +68,6 @@ cet_build_plugin(StrawDigisFromStrawGasSteps art::module
       Offline::TrackerMC
 
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeometryService

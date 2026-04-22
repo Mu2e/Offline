@@ -29,6 +29,7 @@ namespace mu2e {
       if (hit.strawHitState() > WireHitState::inactive) ++ntest;
     }
 
+    if(ntest + ncurrent == 0) return test.fitConsistency() > current.fitConsistency();
     float nhitfrac = 2*float(ntest - ncurrent)/float(ntest + ncurrent);
     if(fabs(nhitfrac) > minsignhit_){
       // hit difference is significant;

@@ -14,10 +14,6 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
 
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"

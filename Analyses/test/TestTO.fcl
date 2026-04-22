@@ -33,11 +33,6 @@ services :
     inputFile : "Offline/Mu2eG4/geom/geom_common_v42_lght_1.txt"
   }
 
-  ConditionsService :
-  {
-    conditionsfile : "Offline/Mu2eG4/test/conditions_01_it.txt"
-  }
-
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
 
   Mu2eG4Helper : { }

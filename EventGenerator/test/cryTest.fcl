@@ -38,7 +38,6 @@ services : {
   TFileService : { fileName : "nts.cryHist.owner.version.sequencer.root" }
   GeometryService : @local::Services.Core.GeometryService
 
-  ConditionsService : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   Mu2eG4Helper : { }
   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }

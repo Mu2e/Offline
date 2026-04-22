@@ -172,7 +172,6 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<bool> useDQMcollector{Name("useDQMcollector"), Comment("fill DQM values, histograms, ...")};
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("label of CrvDigi module")};
-      fhicl::Atom<std::string> crvDigiModuleLabelNZS{Name("crvDigiModuleLabelNZS"), Comment("label of CrvDigi NZS module")};
       //fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
@@ -189,9 +188,6 @@ namespace mu2e
       fhicl::Atom<int>    histDigisBins{Name("histDigisBins"), Comment("number of bins for digis per channel and event histograms"), 200};
       fhicl::Atom<double> histDigisStart{Name("histDigisStart"), Comment("range start for digis per channel and event histograms"), 0};
       fhicl::Atom<double> histDigisEnd{Name("histDigisEnd"), Comment("range end for digis per channel and event histograms"), 0.1};
-      fhicl::Atom<int>    histDigisNZSBins{Name("histDigisNZSBins"), Comment("number of bins for NZS digis per channel and event histograms"), 200};
-      fhicl::Atom<double> histDigisNZSStart{Name("histDigisNZSStart"), Comment("range start for NZS digis per channel and event histograms"), 0};
-      fhicl::Atom<double> histDigisNZSEnd{Name("histDigisNZSEnd"), Comment("range end for NZS digis per channel and event histograms"), 0.1};
       fhicl::Atom<double> PEfitRangeStart{Name("PEfitRangeStart"), Comment("low end of the PE MPV fit range as fraction of peak"), 0.7};
       fhicl::Atom<double> PEfitRangeEnd{Name("PEfitRangeEnd"), Comment("high end of the PE MPV fit range as fraction of peak"), 2.0};
       fhicl::Atom<double> PEstart{Name("PEstart"), Comment("lowest PE for fit"), 15.0};
@@ -207,7 +203,6 @@ namespace mu2e
     private:
     bool        _useDQMcollector;
     std::string _crvDigiModuleLabel;
-    std::string _crvDigiModuleLabelNZS;
     //std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceClusterFinderModuleLabel;
     std::string _crvDaqErrorModuleLabel;
@@ -224,9 +219,6 @@ namespace mu2e
     int                _histDigisBins;
     double             _histDigisStart;
     double             _histDigisEnd;
-    int                _histDigisNZSBins;
-    double             _histDigisNZSStart;
-    double             _histDigisNZSEnd;
     double             _PEfitRangeStart;
     double             _PEfitRangeEnd;
     double             _PEstart;
@@ -238,22 +230,19 @@ namespace mu2e
     std::pair<int,int> _lastRunSubrun;
 
     std::vector<int>   _nCoincidences;       //for each sector
-    std::vector<int>   _nDigis, _nDigisNZS;  //for each channel
-    std::vector<int>   _nDigisROC, _nDigisROCNZS;  //for each channel
+    std::vector<int>   _nDigis;              //for each channel
+    std::vector<int>   _nDigisROC;           //for each channel
     std::vector<TH1F*> _histPEs;             //for each channel
     std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
 
     std::vector<TH1F*> _histDigisPerChannelAndEvent;
-    std::vector<TH1F*> _histDigisPerChannelAndEventNZS;
     std::vector<TH1F*> _histDigiRatesROC;
-    std::vector<TH1F*> _histDigiRatesROCNZS;
     std::vector<TH1F*> _histPEsMPV;
     std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
     std::vector<TH1F*> _histCalibConstants;
     TH2F*              _hist2DDigiRatesROC;
-    TH2F*              _hist2DDigiRatesROCNZS;
     TH2F*              _hist2DPEsMPVROC;
     TH1I*              _histCoincidenceClusters;
     TTree*             _treeMetaData;
@@ -267,7 +256,6 @@ namespace mu2e
     art::EDAnalyzer(conf),
     _useDQMcollector(conf().useDQMcollector()),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
-    _crvDigiModuleLabelNZS(conf().crvDigiModuleLabelNZS()),
     //_crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterFinderModuleLabel(conf().crvCoincidenceClusterFinderModuleLabel()),
     _crvDaqErrorModuleLabel(conf().crvDaqErrorModuleLabel()),
@@ -283,9 +271,6 @@ namespace mu2e
     _histDigisBins(conf().histDigisBins()),
     _histDigisStart(conf().histDigisStart()),
     _histDigisEnd(conf().histDigisEnd()),
-    _histDigisNZSBins(conf().histDigisNZSBins()),
-    _histDigisNZSStart(conf().histDigisNZSStart()),
-    _histDigisNZSEnd(conf().histDigisNZSEnd()),
     _PEfitRangeStart(conf().PEfitRangeStart()),
     _PEfitRangeEnd(conf().PEfitRangeEnd()),
     _PEstart(conf().PEstart()),
@@ -307,7 +292,6 @@ namespace mu2e
       int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
 
       _histDigisPerChannelAndEvent.at(sectorNumber)->Fill((float)(_nDigis.at(channel))/_totalEvents);
-      _histDigisPerChannelAndEventNZS.at(sectorNumber)->Fill((float)(_nDigisNZS.at(channel))/_totalEvents);
 
       float MPV=0;
       float FWHM=0;
@@ -326,7 +310,6 @@ namespace mu2e
         size_t ROCchannel=(FEB-1)*CRVId::nChanPerFEB+FEBchannel;
 
         _histDigiRatesROC.at(ROC-1)->Fill(ROCchannel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
-        _histDigiRatesROCNZS.at(ROC-1)->Fill(ROCchannel,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
 
         float MPV=0;
         float FWHM=0;
@@ -338,7 +321,6 @@ namespace mu2e
         size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+FEB-1;
 
         _hist2DDigiRatesROC->Fill(FEBchannel,portIndex,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
-        _hist2DDigiRatesROCNZS->Fill(FEBchannel,portIndex,(float)(_nDigisROCNZS.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
         _hist2DPEsMPVROC->Fill(FEBchannel,portIndex,MPV);
       }
     }
@@ -358,14 +340,10 @@ namespace mu2e
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
     _histDigisPerChannelAndEvent.reserve(crvSectors.size());
-    _histDigisPerChannelAndEventNZS.reserve(crvSectors.size());
     _histDigiRatesROC.reserve(CRVId::nROC);
-    _histDigiRatesROCNZS.reserve(CRVId::nROC);
     _nCoincidences.resize(crvSectors.size());
     _nDigis.resize(crvCounters.size()*CRVId::nChanPerBar);
-    _nDigisNZS.resize(crvCounters.size()*CRVId::nChanPerBar);
     _nDigisROC.resize(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
-    _nDigisROCNZS.resize(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
     _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
@@ -395,9 +373,6 @@ namespace mu2e
       _histDigisPerChannelAndEvent.emplace_back(tfs->make<TH1F>(Form("crvDigisPerChannelAndEvent_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             Form("crvDigisPerChannelAndEvent_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             _histDigisBins,_histDigisStart,_histDigisEnd));
-      _histDigisPerChannelAndEventNZS.emplace_back(tfs->make<TH1F>(Form("crvDigisPerChannelAndEventNZS_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            Form("crvDigisPerChannelAndEventNZS_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            _histDigisNZSBins,_histDigisNZSStart,_histDigisNZSEnd));
     }
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
@@ -407,14 +382,10 @@ namespace mu2e
       _histDigiRatesROC.emplace_back(tfs->make<TH1F>(Form("crvDigiRates_ROC%zu",ROC),
                                             Form("crvDigiRates_ROC%zu",ROC),
                                             CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
-      _histDigiRatesROCNZS.emplace_back(tfs->make<TH1F>(Form("crvDigiRatesNZS_ROC%zu",ROC),
-                                            Form("crvDigiRatesNZS_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
     }
-    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _hist2DDigiRatesROCNZS=tfs->make<TH2F>("crvDigiRatesNZS","crvDigiRatesNZS", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters",10,0,10);
+    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
+    _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters:sectorType",10,0,10);
 
     _treeMetaData=tfs->make<TTree>("crvMetaData","crvMetaData");
     _treeMetaData->Branch("runNumberStart",&_firstRunSubrun.first);
@@ -433,13 +404,11 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    art::Handle<CrvDigiCollection> crvDigiCollectionNZS;
     //art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
     art::Handle<CrvDAQerrorCollection> crvDaqErrorCollection;
 
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
-    event.getByLabel(_crvDigiModuleLabelNZS,"NZS",crvDigiCollectionNZS);
     //event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(_crvDaqErrorModuleLabel,"",crvDaqErrorCollection);
@@ -461,21 +430,6 @@ namespace mu2e
       int FEBchannel=digi.GetFEBchannel();
       size_t channelOnline = (ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB + (ROCport-1)*CRVId::nChanPerFEB + FEBchannel;
       ++_nDigisROC.at(channelOnline);
-    }
-
-    for(size_t i=0; i<crvDigiCollectionNZS->size(); ++i)
-    {
-      const CrvDigi &digi = crvDigiCollectionNZS->at(i);
-      int barIndex = digi.GetScintillatorBarIndex().asUint();
-      int SiPM = digi.GetSiPMNumber();
-      size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
-      ++_nDigisNZS.at(channel);
-
-      int ROC=digi.GetROC();
-      int ROCport=digi.GetFEB();
-      int FEBchannel=digi.GetFEBchannel();
-      size_t channelOnline = (ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB + (ROCport-1)*CRVId::nChanPerFEB + FEBchannel;
-      ++_nDigisROCNZS.at(channelOnline);
     }
 
     static bool first=true;

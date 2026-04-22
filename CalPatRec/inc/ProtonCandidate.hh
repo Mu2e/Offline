@@ -80,11 +80,11 @@ namespace mu2e {
       float      maxHitTime(int Station) const { return fMaxHitTime[Station]; }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
-      float      eDep                 () const { return fSumEDep/fNStrawHitsTot; }
-      float      FBest                () const { return float(fNHitsMcP)/fNHitsTot; }
+      float      eDep                 () const { return (fNStrawHitsTot > 0) ? fSumEDep/fNStrawHitsTot : 0.f; }
+      float      FBest                () const { return (fNHitsTot > 0) ? float(fNHitsMcP)/fNHitsTot : 0.f; }
 
-      float      xMean(int Station)  { return fSumX[Station]/fNHitsStation[Station]; }
-      float      yMean(int Station)  { return fSumY[Station]/fNHitsStation[Station]; }
+      float      xMean(int Station)  { return (fNHitsStation[Station] > 0) ? fSumX[Station]/fNHitsStation[Station] : 0.f; }
+      float      yMean(int Station)  { return (fNHitsStation[Station] > 0) ? fSumY[Station]/fNHitsStation[Station] : 0.f; }
       float      phi  (int Station)  { return fPhi[Station] ; }
       float      t0   (int Station)  { return fT0 + fDtDz*DeltaFinderTypes::stationZ[Station]; }
       float      tMid()              { return fTMid; }

@@ -32,12 +32,6 @@ class ProditionsHandle {
   }
   ~ProditionsHandle() {}
 
-  ENTITY const& get(art::RunID const& rid) {
-    return get(art::EventID(rid.run(), 0, 0));
-  }
-  ENTITY const& get(art::SubRunID const& sid) {
-    return get(art::EventID(sid, 0));
-  }
   cptr_t getPtr(art::EventID const& eid) {
     get(eid);
     return ptr;

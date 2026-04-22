@@ -25,14 +25,18 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<double>   elecNphotPerNs { Name("elecNphotPerNs"), Comment("Electronics noise number of PE / ns ") };
-            fhicl::Atom<double>   rinNphotPerNs  { Name("rinNphotPerNs"),  Comment("RIN noise number of PE / ns ") };
-            fhicl::Atom<double>   darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
-            fhicl::Atom<double>   digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
-            fhicl::Atom<unsigned> noiseWFSize    { Name("noiseWFSize"),    Comment("Noise WF size") };
-            fhicl::Atom<unsigned> nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") };
-            fhicl::Atom<int>      minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") };
-            fhicl::Atom<int>      diagLevel      { Name("diagLevel"),      Comment("Diag Level"),0 };
+            fhicl::Atom<std::string> pulseFileName  { Name("pulseFileName"),  Comment("Calo pulse file name") };
+            fhicl::Atom<std::string> pulseHistName  { Name("pulseHistName"),  Comment("Calo pulse hist name") };
+            fhicl::Atom<double>      elecNphotPerNs { Name("elecNphotPerNs"), Comment("Electronics noise number of PE / ns ") };
+            fhicl::Atom<double>      rinNphotPerNs  { Name("rinNphotPerNs"),  Comment("RIN noise number of PE / ns ") };
+            fhicl::Atom<double>      darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
+            fhicl::Atom<double>      digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
+            fhicl::Atom<double>      pePerMeV       { Name("readoutPEPerMeV"),Comment("Number of pe / MeV for Readout") };
+            fhicl::Atom<double>      MeVToADC       { Name("MeVToADC"),       Comment("MeV to ADC conversion factor") };
+            fhicl::Atom<unsigned>    noiseWFSize    { Name("noiseWFSize"),    Comment("Noise WF size") };
+            fhicl::Atom<unsigned>    nMaxFragment   { Name("nMaxFragment"),   Comment("maximum number of wf generated for extracting noise fragments ") };
+            fhicl::Atom<int>         minPeakADC     { Name("minPeakADC"),     Comment("Minimum ADC hits of local peak to digitize") };
+            fhicl::Atom<int>         diagLevel      { Name("diagLevel"),      Comment("Diag Level"),0 };
         };
 
 
@@ -46,7 +50,7 @@ namespace mu2e {
         void                         plotNoise(const std::string& name);
 
         const std::vector<double>&   noise()    const {return waveform_;}
-        int                          pedestal() const {return pedestal_;}
+        double                       pedestal() const {return pedestal_;}
 
 
      private:
@@ -64,6 +68,8 @@ namespace mu2e {
         double                noiseRinDark_;
         double                noiseElec_;
         double                minPeakADC_;
+        double                pePerMeV_;
+        double                MeVToADC_;
         CLHEP::RandPoissonQ   randPoisson_;
         CLHEP::RandGaussQ     randGauss_;
         CLHEP::RandFlat       randFlat_;

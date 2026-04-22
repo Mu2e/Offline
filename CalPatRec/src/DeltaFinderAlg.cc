@@ -51,7 +51,6 @@ namespace mu2e {
     _doTiming = _data->doTiming;
     _watch = _data->watch;
 
-    printf("DeltaFinderAlg created\n");
   }
 //-----------------------------------------------------------------------------
 // make sure the two hits used to make a new seed are not a part of an already found seed
@@ -730,10 +729,13 @@ namespace mu2e {
       int of       = co.Face;
       int op       = co.Panel;
 
-      if (_printErrors) { // FIXME: If these errors happen, why do we allow the following invalid array access?
-        if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-        if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-        if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+      if ((os < 0) || (os >= kNStations) || (of < 0) || (of >= kNFaces) || (op < 0) || (op >= kNPanelsPerFace)) {
+        if (_printErrors) {
+          if ((os < 0) || (os >= kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+          if ((of < 0) || (of >= kNFaces        )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+          if ((op < 0) || (op >= kNPanelsPerFace)) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+        }
+        continue;
       }
 //-----------------------------------------------------------------------------
 // prototype face-based hit storage

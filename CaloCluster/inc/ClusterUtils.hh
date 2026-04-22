@@ -29,7 +29,6 @@ namespace mu2e {
             double            e9          () const;
             double            e25         () const;
 
-
         private:
            const Calorimeter&     cal_;
            const CaloHitPtrVector hits_;

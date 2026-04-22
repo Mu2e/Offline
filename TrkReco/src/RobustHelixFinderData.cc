@@ -2,7 +2,6 @@
 
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/TrkReco/inc/RobustHelixFinderData.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
@@ -63,12 +62,6 @@ namespace mu2e {
 
     _nXYSh       = 0;
     _nZPhiSh     = 0;
-
-    _nStrawHits  = 0;
-    _nComboHits  = 0;
-
-    _nFiltComboHits = 0;
-    _nFiltStrawHits = 0;
 
     //clear the panel-based structure
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {

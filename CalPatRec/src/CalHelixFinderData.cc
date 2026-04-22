@@ -2,7 +2,7 @@
 
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
@@ -13,7 +13,7 @@ namespace mu2e {
 // CalHelixFinderData
 //-----------------------------------------------------------------------------
   CalHelixFinderData::CalHelixFinderData() {
-    _helix = NULL;
+    _helix = nullptr;
     _goodhits.reserve(kNMaxChHits);
     _chHitsToProcess. reserve(kNMaxChHits);
   }
@@ -100,7 +100,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::clearTempVariables() {
 
-    _timeCluster    = NULL;
+    _timeCluster    = nullptr;
     _timeClusterPtr = art::Ptr<TimeCluster>();
 
     _chHitsToProcess.clear();
@@ -150,7 +150,7 @@ namespace mu2e {
 
  void CalHelixFinderData::clearTimeClusterInfo() {
 
-    _timeCluster    = NULL;
+    _timeCluster    = nullptr;
     _timeClusterPtr = art::Ptr<TimeCluster>();
 
     _chHitsToProcess.clear();

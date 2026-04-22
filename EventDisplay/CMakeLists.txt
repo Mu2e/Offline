@@ -6,7 +6,6 @@ cet_make_library(
       src/TrackColorSelector.cc
     LIBRARIES PUBLIC
 
-      Offline::BTrkData
       Offline::CalorimeterGeom
       Offline::ConfigTools
       Offline::CosmicRayShieldGeom

@@ -28,7 +28,6 @@ cet_build_plugin(ReadTriggerInfo art::module
     LIBRARIES REG
       
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService
