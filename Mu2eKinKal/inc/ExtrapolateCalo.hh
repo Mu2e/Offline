@@ -15,7 +15,7 @@
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
-  using KinKalGeom::Calo;
+  using KKGeom::Calo;
   using KinKal::Annulus;
   using KinKal::Intersection;
   using AnnPtr = std::shared_ptr<KinKal::Annulus>;

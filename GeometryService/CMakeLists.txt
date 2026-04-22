@@ -18,6 +18,7 @@ cet_make_library(
       src/ExtShieldUpstreamMaker.cc
       src/G4GeometryOptions.cc
       src/GeometryService.cc
+      src/KinKalGeomMaker.cc
       src/MBSMaker.cc
       src/MECOStyleProtonAbsorberMaker.cc
       src/Mu2eCoordTransform.cc
@@ -67,13 +68,17 @@ cet_make_library(
       Offline::STMGeom
       Offline::StoppingTargetGeom
       Offline::TrackerGeom
+      Offline::KinKalGeom
+      KinKal::Geometry
+      KinKal::Trajectory
+      KinKal::General
 )
 
 cet_build_plugin(GeometryService art::service
     REG_SOURCE src/GeometryService_service.cc
     LIBRARIES REG
       Offline::GeometryService
-      
+
       Offline::BeamlineGeom
       Offline::BFieldGeom
       Offline::CalorimeterGeom

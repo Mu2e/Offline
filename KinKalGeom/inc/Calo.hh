@@ -10,7 +10,7 @@
 #include "KinKal/Geometry/Annulus.hh"
 #include <memory>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class Calo {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;

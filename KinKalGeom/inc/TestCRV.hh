@@ -8,13 +8,15 @@
 #include <vector>
 #include <memory>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class TestCRV {
       public:
         using RecPtr = std::shared_ptr<KinKal::Rectangle>;
 
         // default constructor with nominal geometry
-        TestCRV();
+        TestCRV(RecPtr ex1, RecPtr t1, RecPtr t2 ) :
+          ex1_(ex1), t1_(t1), t2_(t2) {}
+
         // accessors
         // return by reference
         auto const& ex1() const { return *ex1_; }

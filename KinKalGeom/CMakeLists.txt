@@ -1,15 +1,14 @@
 cet_make_library(
     SOURCE
       src/CRV.cc
-      src/DetectorSolenoid.cc
-      src/StoppingTarget.cc
-      src/SurfaceMap.cc
-      src/TestCRV.cc
-      src/Tracker.cc
       src/Calo.cc
+      src/KinKalGeom.cc
     LIBRARIES PUBLIC
       KinKal::Geometry
+      KinKal::Trajectory
+      KinKal::General
       Offline::GeneralUtilities
+      Offline::GeomPrimitives
 )
 
 install_source(SUBDIRS src)

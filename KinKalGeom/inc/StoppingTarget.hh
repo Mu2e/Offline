@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class StoppingTarget {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;
@@ -18,7 +18,9 @@ namespace mu2e {
         using AnnPtr = std::shared_ptr<KinKal::Annulus>;
         using FoilCol = std::vector<AnnPtr>;
         // default constructor with nominal geometry
-        StoppingTarget();
+        StoppingTarget(CylPtr outer, CylPtr inner, DiskPtr front, DiskPtr back, FoilCol foils) :
+        outer_(outer), inner_(inner), front_(front), back_(back), foils_(foils) {}
+
         // accessors
         // return by reference
         auto const& outer() const { return *outer_; }

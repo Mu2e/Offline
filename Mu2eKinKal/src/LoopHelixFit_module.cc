@@ -21,7 +21,6 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -45,9 +44,6 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Vectors.hh"
-#include "KinKal/Geometry/Cylinder.hh"
-#include "KinKal/Geometry/Disk.hh"
-#include "KinKal/Geometry/Frustrum.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -115,11 +111,6 @@ namespace mu2e {
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
-
-  using CylPtr = std::shared_ptr<KinKal::Cylinder>;
-  using DiskPtr = std::shared_ptr<KinKal::Disk>;
-  using AnnPtr = std::shared_ptr<KinKal::Annulus>;
-  using FruPtr = std::shared_ptr<KinKal::Frustrum>;
 
   // extend the generic module configuration as needed
   struct KKLHModuleConfig : KKModuleConfig {
@@ -552,7 +543,6 @@ namespace mu2e {
             kseg.mom(), kseg.momerr());
       }
     }
-
   }
 
   void LoopHelixFit::endJob() {
