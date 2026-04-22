@@ -19,7 +19,7 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-	 verbosityLevel : 1
+	 verbosityLevel : 6
 	 saveRawWithHeaderFile: false
 	}
          
@@ -52,7 +52,7 @@ physics : {
 
    }
 
-  t1 : [ makeSTMDigis, makeSTMBinary ]
+  t1 : [ makeSTMDigis ]
    e1 : [ stmOutput ]
    #e1 : [ ]
    #e1 : [ frag, stmOutput ]
