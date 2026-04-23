@@ -52,6 +52,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateTCRV.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -119,21 +120,13 @@ namespace mu2e {
       fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     };
 
-    // Extrapolation configuration
-    struct KKExtrapConfig {
-      fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
-      fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum Y vel to extrapolate a fit") };
-      fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV") };
-      fhicl::Atom<int> Debug { Name("Debug"), Comment("Debug level"), 0 };
-    };
-
     struct GlobalConfig {
       fhicl::Table<KKLineModuleConfig> modSettings { Name("ModuleSettings") };
       fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
       fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+      fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
       fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
 
@@ -171,10 +164,12 @@ namespace mu2e {
     double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
+    SurfaceIdCollection ssids_; // surface IDs to sample
     KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
     bool extrapolate_, toCRV_;
     ExtrapolateTCRV TCRV_; // extrapolation predicate based on Z values
     double tcrvthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+    std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
   };
@@ -221,26 +216,15 @@ namespace mu2e {
       }else{
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
-      SurfaceIdCollection ssids;
+      // store surface IDs to be resolved when geometry is available
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
-      // geometry service eventually, TODO
-      GeomHandle<mu2e::KinKalGeom> kkg_h;
-      auto const& kkg = *kkg_h;
-      kkg.surfaces(ssids,sample_);
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
-        toCRV_ = settings().Extrapolation()->ToCRV();
-        // global configs
-        double maxdt = settings().Extrapolation()->MaxDt();
-        double btol =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        double minv = settings().Extrapolation()->MinV();
-        int debug =  settings().Extrapolation()->Debug();
-        // extrapolate to the front of the tracker
-        TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,kkg.TCRV(),debug);
+        // create KKExtrap for calorimeter and upstream extrapolations
+        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
       }
 
       if(print_ > 0) std::cout << config_;
@@ -259,6 +243,10 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
+    // now that geometry is available, resolve sample surface IDs to actual surfaces
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
@@ -435,6 +423,8 @@ namespace mu2e {
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);
+    // apply additional extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
+    if(extrap_) extrap_->extrapolate(ktrk);
   }
 }
 DEFINE_ART_MODULE(mu2e::KinematicLineFit)
