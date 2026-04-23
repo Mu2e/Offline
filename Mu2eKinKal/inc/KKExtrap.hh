@@ -229,10 +229,9 @@ namespace mu2e {
     static const SurfaceId d0_back("EMC_Disk_0_Back");
     std::cout<<"extrapolating to calo d0"<<std::endl;
     if(tocalofront){
-      // check the front piece first; that is usually correct
-      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
-      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*calod0frontptr_,fhel.range(),intertol_,fronttdir);
+      // use full trajectory range for intersection calculation
+      TimeRange frange = ftraj.range();
+      auto frontinter = KinKal::intersect(ftraj,*calod0frontptr_,frange,intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
@@ -264,10 +263,9 @@ namespace mu2e {
     static const SurfaceId d1_back("EMC_Disk_1_Back");
     std::cout<<"extrapolating to calo d1"<<std::endl;
     if(tocalofront){
-      // check the front piece first; that is usually correct
-      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
-      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,*calod1frontptr_,fhel.range(),intertol_,fronttdir);
+      // use full trajectory range for intersection calculation
+      TimeRange frange = ftraj.range();
+      auto frontinter = KinKal::intersect(ftraj,*calod1frontptr_,frange,intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
       std::cout<<"to front "<<std::endl;
     }
