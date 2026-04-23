@@ -1,16 +1,16 @@
 #include "Offline/DataProducts/inc/CaloConst.hh"
-#include <iostream>
+#include <ostream>
 
 namespace mu2e {
 
-const std::string CaloConst::detTypeName(detType type) {
+std::string CaloConst::detTypeName(detType type) {
   switch (type) {
   case CaloConst::detType::CsI:
     return "CsI";
-  case CaloConst::detType::PINDiode:
-    return "PINDiode";
   case CaloConst::detType::CAPHRI:
     return "CAPHRI";
+  case CaloConst::detType::PINDiode:
+    return "PINDiode";
   case CaloConst::detType::Invalid:
     return "Invalid";
   default:

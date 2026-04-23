@@ -1,6 +1,5 @@
 #include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 #include "cetlib_except/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 #include <iomanip>
 
 using namespace std;

@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <ostream>
 
 namespace mu2e {
 
@@ -42,7 +43,7 @@ public:
   enum SiPMn { SiPM0 = 0, SiPM1 = 1 };
   enum detType { CsI = 0, CAPHRI = 1, PINDiode = 2, Invalid = 3 };
 
-  static const std::string detTypeName(detType type);
+  static std::string detTypeName(detType type);
 };
 
 std::ostream& operator<<(std::ostream& ost, const CaloConst::detType& type);
