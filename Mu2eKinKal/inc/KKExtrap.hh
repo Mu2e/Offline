@@ -110,11 +110,11 @@ namespace mu2e {
     const_cast<ExtrapolateIPA&>(extrapIPA_) = ExtrapolateIPA(maxdt_,btol_,intertol_,kkg.DS().innerProtonAbsorberPtr(),debug_);
     const_cast<ExtrapolateST&>(extrapST_) = ExtrapolateST(maxdt_,btol_,intertol_,kkg.ST(),debug_);
 
-    // calo predicates
-    const_cast<ExtrapolateToZ&>(calod0Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Front().center().Z(),debug_);
-    const_cast<ExtrapolateToZ&>(calod0Back_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Back().center().Z(),debug_);
-    const_cast<ExtrapolateToZ&>(calod1Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_1_Front().center().Z(),debug_);
-    const_cast<ExtrapolateToZ&>(calod1Back_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_1_Back().center().Z(),debug_);
+    // calo predicates - use local Z values stored in Calo class
+    const_cast<ExtrapolateToZ&>(calod0Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Front_Z(),debug_);
+    const_cast<ExtrapolateToZ&>(calod0Back_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Back_Z(),debug_);
+    const_cast<ExtrapolateToZ&>(calod1Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_1_Front_Z(),debug_);
+    const_cast<ExtrapolateToZ&>(calod1Back_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_1_Back_Z(),debug_);
 
     if(debug_ > 0)std::cout << "IPA limits z " << extrapIPA_.zmin() << " " << extrapIPA_.zmax() << std::endl;
     if(debug_ > 0)std::cout << "ST limits z " << extrapST_.zmin() << " " << extrapST_.zmax() << " r " << extrapST_.rmin() << " " << extrapST_.rmax() << std::endl;
