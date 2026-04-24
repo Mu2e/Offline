@@ -218,8 +218,11 @@ namespace mu2e {
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    std::cout<<"calod0Front_ "<<kkg.calo().EMC_Disk_0_Front().center().Z()<<std::endl;
-    std::cout<<"calod0Back_ "<<kkg.calo().EMC_Disk_0_Back().center().Z()<<std::endl;
+    if(debug_ > 0){
+      std::cout<<"toCaloD0 DEBUG:"<<std::endl;
+      std::cout<<"  Disk face Z values (from surface centers): front="<<kkg.calo().EMC_Disk_0_Front().center().Z()<<" back="<<kkg.calo().EMC_Disk_0_Back().center().Z()<<std::endl;
+      std::cout<<"  Predicate Z values: front="<<kkg.calo().EMC_Disk_0_Front_Z()<<" back="<<kkg.calo().EMC_Disk_0_Back_Z()<<std::endl;
+    }
     auto tocalofront = ktrk.extrapolate(fronttdir,calod0Front_);
     auto tocaloback = ktrk.extrapolate(backtdir,calod0Back_);
     // record the standard tracker intersections
