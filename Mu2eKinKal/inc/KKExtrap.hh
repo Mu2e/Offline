@@ -189,7 +189,6 @@ namespace mu2e {
     auto midinter = KinKal::intersect(ftraj,kkg.tracker().middle(),ftraj.range(),intertol_);
     if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
     if(tofront){
-      // check the front piece first; that is usually correct
       // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
       auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
       auto frontinter = KinKal::intersect(fhel,kkg.tracker().front(),fhel.range(),intertol_,fronttdir);
@@ -266,13 +265,11 @@ namespace mu2e {
     static const SurfaceId d1_outer("EMC_Disk_1_Outer");
 
     if(tocalofront){
-      // use full trajectory range for intersection calculation
       TimeRange frange = ftraj.range();
       auto frontinter = KinKal::intersect(ftraj,*calod1frontptr_,frange,intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d1_front,frontinter);
     }
     if(tocaloback){
-      // start from the middle
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*calod1backptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d1_back,backinter);

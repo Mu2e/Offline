@@ -176,7 +176,7 @@ namespace mu2e {
       KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
       bool extrapolate_;
-      std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
+      std::unique_ptr<KKExtrap> extrap_; //  extrapolations
     };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -235,7 +235,7 @@ namespace mu2e {
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
-        // create KKExtrap for calorimeter and upstream extrapolations
+        // create KKExtrap
         extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
       }
     }

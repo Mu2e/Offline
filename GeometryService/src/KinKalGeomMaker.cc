@@ -49,11 +49,6 @@ namespace mu2e {
     auto const& tracker = *(GeomHandle<mu2e::Tracker>());
 
     // Extract geometry from the first two disks (D0 and D1)
-    if (calo_det.nDisks() < 2) {
-      throw cet::exception("KinKalGeomMaker")
-        << "Calorimeter has fewer than 2 disks; cannot construct KinKal geometry\n";
-    }
-
     auto const& disk0 = calo_det.disk(0);
     auto const& disk1 = calo_det.disk(1);
     auto const& geom0 = disk0.geomInfo();
@@ -68,8 +63,6 @@ namespace mu2e {
     double r1_outer = geom1.outerEnvelopeR();
 
     // Use true disk geometry: compute symmetric front/back from disk center
-    // geomInfo().size().z() gives the full disk extent (front plate + crystals + back plate)
-    // This matches how VirtualDetectors are defined in VirtualDetectorMaker
     double diskHalfLen_0 = 0.5 * geom0.size().z();
     double diskHalfLen_1 = 0.5 * geom1.size().z();
 
