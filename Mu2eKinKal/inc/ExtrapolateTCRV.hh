@@ -14,7 +14,7 @@
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
-  using KinKalGeom::TestCRV;
+  using KKGeom::TestCRV;
   using KinKal::Rectangle;
   using KinKal::Intersection;
   using RecPtr = std::shared_ptr<KinKal::Rectangle>;

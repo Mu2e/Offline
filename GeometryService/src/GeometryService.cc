@@ -26,6 +26,7 @@
 #include "Offline/GeometryService/inc/Mu2eHallMaker.hh"
 #include "Offline/GeometryService/inc/TSdAMaker.hh"
 #include "Offline/GeometryService/inc/TrackerMaker.hh"
+#include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/GeometryService/inc/WorldG4Maker.hh"
 #include "Offline/GeometryService/src/DetectorSystemMaker.hh"
@@ -59,6 +60,7 @@
 #include "Offline/GeometryService/inc/ElectronicRackMaker.hh"
 #include "Offline/BeamlineGeom/inc/TSdA.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -352,6 +354,10 @@ namespace mu2e {
     // This class has a default c'tor with all available information internally.
     std::unique_ptr<DUSAFMu2eConverter> dusafMu2e{ std::make_unique<DUSAFMu2eConverter>() };
     addDetector( std::move(dusafMu2e) );
+
+    // build KinKalGeom, used in track reconstruction and extrapolation
+    KinKalGeomMaker kkgm;
+    addDetector( std::move(kkgm.makeKKG()) );
 
   } // preBeginRun()
 

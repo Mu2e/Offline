@@ -8,7 +8,7 @@
 */
 
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     using KinKal::VEC3;
     using KinKal::Rectangle;
     // currently use hard-coded geometry

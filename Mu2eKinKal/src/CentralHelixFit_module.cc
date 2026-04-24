@@ -39,7 +39,7 @@
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -170,7 +170,7 @@ namespace mu2e {
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-      SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
+      KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
     };
 
@@ -222,9 +222,9 @@ namespace mu2e {
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
+      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
       // geometry service eventually, TODO
-      SurfaceMap smap;
+      KinKalGeom smap;
       smap.surfaces(ssids,sample_);
     }
 
