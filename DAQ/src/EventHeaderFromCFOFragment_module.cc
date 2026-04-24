@@ -94,6 +94,8 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
 
   if(!event.getByLabel(cfoFragmentTag_, cfoFragmentHandle)) {
+    // Set the EWT to be the art event number for now, useful for simulations
+    evtHdr->ewt = static_cast<long unsigned int>(event.event());
     event.put(std::move(evtHdr));
     if(ewm_) event.put(std::move(ewm));
     TLOG(TLVL_DEBUG + 1) << "No CFO fragments found";
