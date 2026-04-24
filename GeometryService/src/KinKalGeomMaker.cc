@@ -87,18 +87,6 @@ namespace mu2e {
     double z1_front = z1_front_global - tracker_z0;
     double z1_back  = z1_back_global - tracker_z0;
 
-    std::cout << "KinKalGeomMaker::makeCalo() DEBUG:" << std::endl;
-    std::cout << "  Tracker z0 offset: " << tracker_z0 << std::endl;
-    std::cout << "  Disk 0 (global): z=" << z0_global << " z_front=" << z0_front_global << " z_back=" << z0_back_global << std::endl;
-    std::cout << "  Disk 0 (local):  z=" << z0 << " z_front=" << z0_front << " z_back=" << z0_back << std::endl;
-    std::cout << "  Disk 0 thickness check: front_to_back = " << (z0_back_global - z0_front_global) << " mm (should be positive)" << std::endl;
-    std::cout << "  Disk 0 center check: center z = " << z0_global << ", midpoint of front/back = " << (0.5*(z0_front_global + z0_back_global)) << std::endl;
-    std::cout << "  Disk 1 (global): z=" << z1_global << " z_front=" << z1_front_global << " z_back=" << z1_back_global << std::endl;
-    std::cout << "  Disk 1 (local):  z=" << z1 << " z_front=" << z1_front << " z_back=" << z1_back << std::endl;
-    std::cout << "  Disk 1 thickness check: front_to_back = " << (z1_back_global - z1_front_global) << " mm (should be positive)" << std::endl;
-    std::cout << "  Disk 1 center check: center z = " << z1_global << ", midpoint of front/back = " << (0.5*(z1_front_global + z1_back_global)) << std::endl;
-    std::cout << "  Radii: r0_inner=" << r0_inner << " r0_outer=" << r0_outer << " r1_inner=" << r1_inner << " r1_outer=" << r1_outer << std::endl;
-
     // Construct Calo with geometry in local coordinates
     kkg_->calo_ = std::make_unique<KKGeom::Calo>(z0, z1, r0_inner, r0_outer, r1_inner, r1_outer, z0_front, z0_back, z1_front, z1_back);
     auto const& calo = *kkg_->calo_;

@@ -230,20 +230,17 @@ namespace mu2e {
     static const SurfaceId d0_back("EMC_Disk_0_Back");
     static const SurfaceId d0_inner("EMC_Disk_0_Inner");
     static const SurfaceId d0_outer("EMC_Disk_0_Outer");
-    std::cout<<"extrapolating to calo d0"<<std::endl;
     if(tocalofront){
       // use full trajectory range for intersection calculation
       TimeRange frange = ftraj.range();
       auto frontinter = KinKal::intersect(ftraj,*calod0frontptr_,frange,intertol_,fronttdir);
       if(frontinter.good()) ktrk.addIntersection(d0_front,frontinter);
-      std::cout<<"to front "<<std::endl;
     }
     if(tocaloback){
       // start from the middle
       TimeRange brange = ftraj.range();
       auto backinter = KinKal::intersect(ftraj,*calod0backptr_,brange,intertol_,backtdir);
       if(backinter.good())ktrk.addIntersection(d0_back,backinter);
-      std::cout<<"to back "<<std::endl;
     }
     // get intersections with inner and outer cylinders
     auto innerinter = KinKal::intersect(ftraj,kkg.calo().EMC_Disk_0_Inner(),ftraj.range(),intertol_);

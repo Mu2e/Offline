@@ -7,6 +7,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -60,6 +61,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -129,7 +131,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-// helix module specific config
+    fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
   };
 
   class CentralHelixFit : public art::EDProducer {
@@ -142,6 +144,7 @@ namespace mu2e {
     protected:
       bool goodFit(KKTRK const& ktrk) const;
       void sampleFit(KKTRK& kktrk) const;
+      void extrapolate(KKTRK& ktrk) const;
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
@@ -172,6 +175,8 @@ namespace mu2e {
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
+      bool extrapolate_;
+      std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
     };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -194,7 +199,8 @@ namespace mu2e {
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
     sampleinrange_(settings().modSettings().sampleInRange()),
-    sampleinbounds_(settings().modSettings().sampleInBounds())
+    sampleinbounds_(settings().modSettings().sampleInBounds()),
+    extrapolate_(false)
     {
       // collection handling
       for(const auto& cseedtag : settings().modSettings().seedCollections()) { cseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(cseedtag)); }
@@ -226,6 +232,12 @@ namespace mu2e {
       // geometry service eventually, TODO
       KinKalGeom smap;
       smap.surfaces(ssids,sample_);
+      // configure extrapolation
+      if(settings().Extrapolation()){
+        extrapolate_ = true;
+        // create KKExtrap for calorimeter and upstream extrapolations
+        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
+      }
     }
 
   void CentralHelixFit::beginRun(art::Run& run) {
@@ -339,6 +351,8 @@ namespace mu2e {
           }
 
           if(print_>1)kktrk->printFit(std::cout,print_);
+          // extrapolate as required
+          if(goodfit && extrapolate_) extrapolate(*kktrk);
           if(goodfit || saveall_){
             TrkFitFlag fitflag;//(hptr->status());
             fitflag.merge(fitflag_);
@@ -421,6 +435,11 @@ namespace mu2e {
         }
       }
     }
+  }
+
+  void CentralHelixFit::extrapolate(KKTRK& ktrk) const {
+    // apply extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
+    if(extrap_) extrap_->extrapolate(ktrk);
   }
 
 } // mu2e
