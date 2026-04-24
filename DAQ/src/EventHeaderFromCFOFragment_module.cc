@@ -49,6 +49,7 @@ public:
     using Comment = fhicl::Comment;
     fhicl::Atom<art::InputTag> cfoTag   {Name("cfoTag"),    Comment("Input CFO fragment tag")};
     fhicl::Atom<bool>          ewm      {Name("createEWM"), Comment("Produce an event window marker object")};
+    fhicl::Atom<bool>          isSim    {Name("isSim")    , Comment("Flag to indicate simulation processing"), false};
     fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level")};
   };
 
@@ -64,6 +65,7 @@ public:
 private:
   art::InputTag cfoFragmentTag_;
   bool          ewm_;
+  bool          isSim_;
   int           diagLevel_;
 };
 
@@ -76,12 +78,14 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     art::EDProducer{config},
     cfoFragmentTag_(config().cfoTag()),
     ewm_(config().ewm()),
+    isSim_(config().isSim()),
     diagLevel_(config().diagLevel()) {
   produces<mu2e::EventHeader>();
   if(ewm_) {
     TLOG(TLVL_DEBUG + 2) << "Producing EventWindowMarker";
     produces<mu2e::EventWindowMarker>();
   }
+  if(isSim_) TLOG(TLVL_DEBUG + 2) << "Assuming simulation inputs!";
 }
 
 // ----------------------------------------------------------------------
@@ -93,15 +97,21 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   std::unique_ptr<mu2e::EventWindowMarker> ewm((ewm_) ? new mu2e::EventWindowMarker : nullptr);
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
 
-  if(!event.getByLabel(cfoFragmentTag_, cfoFragmentHandle)) {
-    // Set the EWT to be the art event number for now, useful for simulations
+  // Set values that are useful in simulations
+  if(isSim_) {
+    // Set the EWT to be the art event number for now
     evtHdr->ewt = static_cast<long unsigned int>(event.event());
+  }
+
+  // Check for the CFO fragment list
+  if(!event.getByLabel(cfoFragmentTag_, cfoFragmentHandle)) {
     event.put(std::move(evtHdr));
     if(ewm_) event.put(std::move(ewm));
     TLOG(TLVL_DEBUG + 1) << "No CFO fragments found";
     return;
   }
 
+  // Process the first fragment found
   const auto *fragments = cfoFragmentHandle.product();
   if (fragments->size()>0){
     const auto &frag = fragments->at(0);
@@ -114,14 +124,14 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     evtHdr->eventDuration = cfoRecord.event_duration;
     TLOG(TLVL_DEBUG + 20) << "mode = " << evtHdr->mode << " ewt  = "<< evtHdr->ewt << " flags = " << evtHdr->flags
                           << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
+    if(ewm_) {
+      constexpr double tick = 25.; // clock ticks -> ns
+      ewm->_spillType   = (evtHdr->isOnSpill()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
+      ewm->_eventLength = tick * evtHdr->eventDuration;
+    }
+
   } else {
     TLOG(TLVL_DEBUG + 3) << "No CFO fragments found in the event";
-  }
-
-  if(ewm_) {
-    constexpr double tick = 25.; // clock ticks -> ns
-    ewm->_spillType   = (evtHdr->isOnSpill()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
-    ewm->_eventLength = tick * evtHdr->eventDuration;
   }
 
   event.put(std::move(evtHdr));
