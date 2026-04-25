@@ -159,7 +159,6 @@ namespace mu2e {
       double addStrawMinDz_;
       int strawNBuffer_;
       bool saveHitCalib_;
-      KinKalGeom smap_;
       SurfaceIdCollection ssids_;
   };
 
@@ -207,7 +206,7 @@ namespace mu2e {
     } else {
       throw cet::exception("RECO")<<"mu2e::KKFit: unknown trajectory option "<< fitconfig.saveTraj() << endl;
     }
-    // Lookup surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
+    // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
     for(auto const& sidname : fitconfig.sampleSurfaces()){
       ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
     }
@@ -866,8 +865,10 @@ namespace mu2e {
   template <class KTRAJ> void KKFit<KTRAJ>::sampleFit(KKTRK& kktrk) const {
     // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
     // extrapolation and sampling options
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
     KinKalGeom::SurfacePairCollection tosample; // surfaces to sample the fit
-    smap_.surfaces(ssids_,tosample);
+    kkg.surfaces(ssids_,tosample);
 
     auto const& ptraj = kktrk.fitTraj();
     std::vector<TimeRange> ranges;

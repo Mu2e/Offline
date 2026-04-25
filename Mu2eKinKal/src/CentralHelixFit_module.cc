@@ -170,7 +170,7 @@ namespace mu2e {
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-      KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
+      SurfaceIdCollection ssids_;
       std::array<double,KinKal::NParams()> paramconstraints_;
     };
 
@@ -218,14 +218,10 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
-      SurfaceIdCollection ssids;
+      // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
-      // geometry service eventually, TODO
-      KinKalGeom smap;
-      smap.surfaces(ssids,sample_);
     }
 
   void CentralHelixFit::beginRun(art::Run& run) {
@@ -397,9 +393,15 @@ namespace mu2e {
   }
 
   void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
+    // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done every call as the KKGeom object now comes
+    // from GeometryService
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    KinKalGeom::SurfacePairCollection sample; // surfaces to sample the fit
+    kkg.surfaces(ssids_,sample);
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    for(auto const& surf : sample_){
+    for(auto const& surf : sample){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool goodinter(true);
