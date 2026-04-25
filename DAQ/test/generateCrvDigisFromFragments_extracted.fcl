@@ -1,0 +1,64 @@
+#CrvDigi generator from artFragments at KPP
+
+#contact: R. Ehrlich
+
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CrvPass1
+
+services :
+{
+  @table::Services.Core
+  @table::Services.Reco
+}
+
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics :
+{
+  producers :
+  {
+    CrvDigi :
+    {
+      module_type   : CrvDigisFromArtdaqFragmentsFEBII
+      diagLevel     : 10
+    }
+  }
+
+  t1 : [ CrvDigi ]
+  e1 : [ outfileReco ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfileReco :
+  {
+    module_type   :   RootOutput
+    fileName      :   "crvRecoExtracted.art"
+    outputCommands : [ "keep *_*_*_*" ,
+                       "drop artdaq::*_*_*_*" ]
+  }
+}
+
+services.TFileService.fileName : "crvRecoExtracted_DQM.root"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+services.ProditionsService.crvStatus.useDb: true
+services.ProditionsService.crvCalib.useDb: true
+#current status and calibration until we can use the database
+services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260221.txt","Offline/CRVConditions/data/calib_extracted_20260221.txt"]
+services.DbService.verbose : 0
+services.TimeTracker.printSummary: true
+services.scheduler.wantSummary: true
+services.message.destinations.log.outputStatistics : true

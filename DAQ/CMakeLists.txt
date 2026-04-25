@@ -197,7 +197,9 @@ cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
     Offline::DAQ
+    Offline::CRVConditions
     Offline::DataProducts
+    Offline::ProditionsService
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Overlays
@@ -207,7 +209,9 @@ cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragmentsFEBII_module.cc
   LIBRARIES REG
     Offline::DAQ
+    Offline::CRVConditions
     Offline::DataProducts
+    Offline::ProditionsService
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Data_dict
@@ -223,6 +227,25 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Data_dict
     artdaq-core-mu2e::Overlays
+)
+
+cet_build_plugin(CrvDigisToFragments art::module
+    REG_SOURCE src/CrvDigisToFragments_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::CRVConditions
+      Offline::DataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
+)
+
+cet_build_plugin(CrvDigiCollectionsComparator art::module
+    REG_SOURCE src/CrvDigiCollectionsComparator_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 cet_build_plugin(MSDHitsFromDTCEvents art::module

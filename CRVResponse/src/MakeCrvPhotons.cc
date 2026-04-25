@@ -538,22 +538,20 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
 {
   if(charge==0) return 0;
 
-  bool first=true;
   double prevBeta=0;
   double prevNumberPhotons=0;
   std::map<double,double>::const_iterator i;
   for(i=photons.begin(); i!=photons.end(); i++)
   {
-    if(beta<=i->first)
+    if(beta<=i->first) //first beta in the Cerenkov map is always greater than 0.0 and has number of photons of 0.
     {
-      if(first) return 0; //this shouldn't happen
+      if(i->first==0) return i->second;  //beta=0 in Cerenkov map shouldn't happen. if it did and was the first entry, i->first-prevBeta would result in a division by 0.
       double numberPhotons=prevNumberPhotons+(i->second-prevNumberPhotons)/(i->first-prevBeta)*(beta-prevBeta);
       numberPhotons*=fabs(charge/eplus);
       return numberPhotons;
     }
     prevBeta=i->first;
     prevNumberPhotons=i->second;
-    first=false;
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
 }
