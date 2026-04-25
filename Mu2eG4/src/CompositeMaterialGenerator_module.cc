@@ -122,7 +122,7 @@ namespace mu2e{
       auto generator_config = element.generator_tool.get<fhicl::ParameterSet>();
       auto generator_tool = art::make_tool<ParticleGeneratorTool>(generator_config);
       // dummy argument because material is not actually needed in this context
-      generator_tool->finishInitialization(_engine, "");
+      generator_tool->finishInitialization(_engine, "", false);
 
       // enforce that keys to subgenerators are unique
       // would be better in a protected class, but eh
