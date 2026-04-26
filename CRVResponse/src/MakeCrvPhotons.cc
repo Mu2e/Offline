@@ -515,6 +515,7 @@ int MakeCrvPhotons::GetNumberOfPhotonsFromAverage(double average, int nSteps)  /
   {
     double sigma = std::sqrt(average);
     nPhotons = lrint(_randGaussQ.fire(average,sigma)/nSteps);
+    if(nPhotons<0) nPhotons=0;
   }
   else
   {
