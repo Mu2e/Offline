@@ -37,7 +37,7 @@ namespace mu2e {
 
     virtual ~ParticleGeneratorTool() noexcept = default;
 
-    bool isPrimary_ = true; // flag to indicate if this is for primary generation or not
+    bool _isPrimary = true; // flag to indicate if this is for primary generation or not
   };
 }
 

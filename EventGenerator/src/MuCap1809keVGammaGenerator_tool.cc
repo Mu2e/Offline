@@ -38,7 +38,7 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
-      isPrimary_ = isPrimary;
+      _isPrimary = isPrimary;
       _energy = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaEnergy(material);
       _intensity = GlobalConstantsHandle<PhysicsParams>()->get1809keVGammaIntensity(material);
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czMin, _czMax);
@@ -61,7 +61,7 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
     const double intensity = _intensity * (_czMax - _czMin)/2.; // account for potential cz selection in the intensity
-    if (isPrimary_ || _randFlat->fire() < intensity) {
+    if (_isPrimary || _randFlat->fire() < intensity) {
       const double momentum = _energy * sqrt(1 - std::pow(_mass/_energy,2));
       CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(momentum);
       CLHEP::HepLorentzVector fourmom(p3, _energy);

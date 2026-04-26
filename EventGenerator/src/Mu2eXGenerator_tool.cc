@@ -65,7 +65,7 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&, const bool isPrimary) override {
-      isPrimary_ = isPrimary;
+      _isPrimary = isPrimary;
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
     }

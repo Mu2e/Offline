@@ -46,7 +46,7 @@ namespace mu2e {
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
-      isPrimary_ = isPrimary;
+      _isPrimary = isPrimary;
       _rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureProtonRate(material);
       const double rate = _rate * (_czMax - _czMin)/2.; // accouunt for potential cz selection in the produced rates
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czMin, _czMax);
@@ -72,7 +72,7 @@ namespace mu2e {
   std::vector<ParticleGeneratorTool::Kinematic> MuCapProtonGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
 
-    const int n_gen = (isPrimary_) ? 1 : _randomPoissonQ->fire();
+    const int n_gen = (_isPrimary) ? 1 : _randomPoissonQ->fire();
     for (int i_gen = 0; i_gen < n_gen; ++i_gen) {
       double energy = _spectrum.sample(_randSpectrum->fire());
 
