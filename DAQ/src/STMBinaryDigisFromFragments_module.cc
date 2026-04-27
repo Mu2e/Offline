@@ -23,20 +23,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <list>
-#include <numeric>
-#include <random>
 #include <vector>
-
-// ROOT includes
-#include <TROOT.h>
-#include <TApplication.h>
-#include <TCanvas.h>
-#include <TH1F.h>
-#include <TF1.h>
-#include <TString.h>
-#include <TLine.h>
-#include <TGraph.h>
 #include <stdbool.h>
 
 namespace art
@@ -137,10 +124,10 @@ void STMBinaryDigisFromFragments::produce(Event& event)
   
   ++_totalEvents; //Increment Total Event Counter
   
-  std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  std::unique_ptr<mu2e::STMPHDigiCollection> ph_digis(new mu2e::STMPHDigiCollection);
-  std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  //std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  //std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  //std::unique_ptr<mu2e::STMPHDigiCollection> ph_digis(new mu2e::STMPHDigiCollection);
+  //std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
   //std::unique_ptr<mu2e::STMWaveformDigiCollection> ph_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original
 
   art::Handle<artdaq::Fragments> STMFragmentsH;
@@ -164,6 +151,10 @@ void STMBinaryDigisFromFragments::produce(Event& event)
   size_t emptyRaw_frags{0};
   size_t emptyZS_frags{0};
   size_t emptyPH_frags{0};
+  
+  size_t extractedRawWaveforms{0};
+  size_t extractedZSWaveforms{0};
+  size_t extractedPHDigis{0};
   //uint16_t ZSfromRaw{0}; //Keep track of ZS length from raw header
   //bool readRawZSinfo{false};
   
@@ -239,26 +230,16 @@ void STMBinaryDigisFromFragments::produce(Event& event)
 			<< " , i = " << i << " @Raw\n";
 	    }
 	  }
-	  //ZSfromRaw = stm_frag.zsLength();//Stores ZS length on outside variable
-	  // readRawZSinfo = 1;//Shows we were able to read the Raw header information
-	  
           //Ideally only good frags get up to here
           //------full data (header + payload)
-          { 
-            //Waveform with data creation
-            auto dataPtr = stm_frag.dataBegin();//Inner variable
-            auto dataWords = stm_frag.dataWords();
-            writePayload( _rawHeaderOut , dataPtr, dataWords); 
-          }
-
+	  //Waveform with data creation
+	  auto dataPtr = stm_frag.dataBegin();//Inner variable
+	  auto dataWords = stm_frag.dataWords();
+	  writePayload( _rawHeaderOut , dataPtr, dataWords);
+	  
           //----- payload-only
-          {
-	    //auto payloadPtr = stm_frag.payloadBegin();
-            //auto payloadWords = stm_frag.payloadWords();
-            stm_waveform.set_data(payloadWords, payloadPtr);
-            raw_waveform_digis->emplace_back(stm_waveform);
-            writePayload(_rawOut, payloadPtr, payloadWords);
-          }
+	  writePayload(_rawOut, payloadPtr, payloadWords);
+	  ++extractedRawWaveforms;
 
         }//End of isRaw
 	
@@ -317,18 +298,14 @@ void STMBinaryDigisFromFragments::produce(Event& event)
 	    uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
 	    uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
 	    auto adc = dataPtr + 2;
-	    if (adc + current_zs_size > dataEnd)
-	      break;
-
-	    uint32_t trigTimeOffset = current_zs_location;
-	    std::vector<int16_t> segADCS(adc, adc +  current_zs_size); //1D array, contains adcs to this_zs_Size - 1
-	    mu2e::STMWaveformDigi stm_waveform(trigTimeOffset, segADCS); //New constructore use
-	    zs_waveform_digis->emplace_back(stm_waveform); //emplace
+	    if (adc + current_zs_size > dataEnd){ break;}
+	
+	    ++extractedZSWaveforms;
 
 	    if (_verbosityLevel >=6){
 	      //A print check per segment
 	      std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
-			<< " , trigTimeOffset = " << trigTimeOffset << "\n" ;
+			<< "\n" ;
 	    }
 	    
 	    //Update variables
@@ -395,12 +372,7 @@ void STMBinaryDigisFromFragments::produce(Event& event)
           auto const* digiPtr = stm_frag.payloadBegin();
 
 	  writePayload(_phOut,digiPtr, digiWords);
-	  
-	  for (size_t i_PH = 0; i_PH < digiWords ; ++i_PH){
-	    int16_t PH = digiPtr[i_PH];
-	    mu2e::STMPHDigi PH_digi(0, PH);
-	    ph_digis->emplace_back(PH_digi);
-	  }
+	  extractedPHDigis += digiWords;
 
       }//End of isPH and is checks
 
@@ -443,9 +415,9 @@ void STMBinaryDigisFromFragments::produce(Event& event)
   if (_verbosityLevel >= 2 ){ 
     //Event Summary -> tells us what happens per event
     std::cout << "\n========== STM EVENT SUMMARY - (Binary Module) ==========\n";
-    std::cout << "Extracted Raw waveforms     : "<< raw_waveform_digis->size() <<"\n";
-    std::cout << "Extracted ZS waveforms      : "<< zs_waveform_digis->size() <<"\n";
-    std::cout << "Extracted PH digis          : " << ph_digis->size() <<"\n";
+    std::cout << "Extracted Raw waveforms     : " << extractedRawWaveforms <<"\n";
+    std::cout << "Extracted ZS waveforms      : " << extractedZSWaveforms <<"\n";
+    std::cout << "Extracted PH digis          : " << extractedPHDigis <<"\n";
 
     std::cout << "\n--- Frags Read ---\n";
     std::cout << "Raw frags   : " << localRaw_frags << "\n";

@@ -34,9 +34,6 @@ class art::STMPrintFragments : public EDAnalyzer
   struct Config
    {
      fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("stmTag for new file")};
-  //   //    fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-  //   //    fhicl::Atom<art::InputTag> CRVDataDecodersTag{fhicl::Name("crvTag"),
-  //   //                                               fhicl::Comment("crv Fragments Tag")};
   };
 
   // --- C'tor/d'tor:
@@ -48,13 +45,6 @@ class art::STMPrintFragments : public EDAnalyzer
   private:
 
   art::InputTag _stmFragmentsTag;
-  //  int decompressCrvDigi(uint8_t adc);
-  //  int16_t decompressCrvDigi(int16_t adc);
-
-  //  int                                      _diagLevel;
-  //  art::InputTag                            _CRVDataDecodersTag;
-  //  mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
-
 }; // STMPrintFragments
 
 // ======================================================================
@@ -62,9 +52,7 @@ class art::STMPrintFragments : public EDAnalyzer
 STMPrintFragments::STMPrintFragments(const art::EDAnalyzer::Table<Config>& config) :
     art::EDAnalyzer{config}
     ,_stmFragmentsTag(config().stmTag())
-{
-  //  produces<mu2e::CrvDigiCollection>();
-}
+{}
 
 // ----------------------------------------------------------------------
 
@@ -78,16 +66,6 @@ void STMPrintFragments::analyze(const Event& event)
             << ", event " << eventNumber << " has " << std::endl;
   std::cout << STMContainerFragments->size() << " STM fragments." << std::endl;
 
-  // std::vector<art::Handle<std::vector<artdaq::Fragment>>> fragmentHandles;
-  // fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
-  // std::cout << "AE: fragmentHandles.size() = " << fragmentHandles.size() << std::endl;
-  // for (auto const& hndl : fragmentHandles) {
-  //   std::cout << "AE: hdnle = " << hndl << std::endl;
-  //   for (auto const& fragment : *hndl) {
-  //       int fragID = fragment.fragmentID();
-  //       std::cout << "AE: fragID = " << fragID << std::endl;
-  //   }
-  // }
   int frag_counter = 0;
   for (auto& frag : *STMContainerFragments) {
     ++frag_counter;
@@ -95,8 +73,7 @@ void STMPrintFragments::analyze(const Event& event)
     //New lines
     artdaq::ContainerFragment contf(frag); // interpret the fragment as a ContainerFragemnt (Will look inside here)
     std::cout<<"N Blocks in the container = " << std::endl; //Should be 3 for the 3 STM Fragments
-    // auto stm_frag = static_cast<mu2e::STMFragment>(frag);
-
+  
     for (size_t ii = 0; ii< contf.block_count(); ++ii){
       const auto dataBegin = frag.dataBegin();
       const auto dataEnd = frag.dataEnd();
@@ -110,19 +87,6 @@ void STMPrintFragments::analyze(const Event& event)
 	std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
       }
 
-    // //    std::cout << "Trigger Header Address: " << stm_frag.GetTHdr() << std::endl;
-    // std::cout << "Frag #" << frag_counter << ": EvNum: " << *(stm_frag.EvNum()) << std::endl;
-    // std::cout << "Frag #" << frag_counter << ": DataType: " << *(stm_frag.DataType()) << std::endl;
-    // std::cout << "Frag #" << frag_counter << ": EvLen: " << *(stm_frag.EvLen()) << std::endl;
-
-    // unsigned int max_samples = (*(stm_frag.EvLen()))/100.;
-    // std::cout << "Frag #" << frag_counter << ": First " << max_samples << " int16s of data: ";
-    // for (size_t i = 0; i < max_samples; ++i) {
-    //   std::cout << *(stm_frag.DataBegin()+i) << " ";
-    // }
-    // std::cout << std::endl;
-    //    std::cout << "Trigger Header Channel: " << *(stm_frag.GetTHdr()) << std::endl;
-    //    std::cout << "Trigger Header EvNum: " << *(stm_frag.GetTHdr()+8) << std::endl;
     }
   }
 }// produce()

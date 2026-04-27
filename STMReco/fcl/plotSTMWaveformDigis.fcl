@@ -21,32 +21,55 @@ physics: {
   producers : {  }
   filters : {  }
   analyzers : {
-    plotRawWaveformDigis : {
+    plotRawWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:raw"
+      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
     }
-    plotZSWaveformDigis : {
+    plotZSWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:zs"
+      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
     }
 
-    plotPHWaveformDigis : {
+    plotPHWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:ph"
+      stmWaveformDigisTag : "makeSTMDigis:phHPGe"
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
     }
+
+    plotRawWaveformDigisLaBr : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:rawLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+    }
+    plotZSWaveformDigisLaBr : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+    }
+
+    plotPHWaveformDigisLaBr : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:phLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+     }
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigis, plotZSWaveformDigis ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
   end_paths: [anaPath]
 }
 

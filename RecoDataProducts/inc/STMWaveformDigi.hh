@@ -35,7 +35,7 @@ namespace mu2e {
     double                      peak_fitTime2 () const { return _peak_fitTime2; }
     double                      peak_sep      () const { return _peak_sep; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
-    void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); } // TODO: remove this method
+    void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); }
 
   private:
     int16_t  _DetID;

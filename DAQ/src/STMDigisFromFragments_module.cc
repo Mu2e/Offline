@@ -23,20 +23,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <list>
-#include <numeric>
-#include <random>
 #include <vector>
-
-// ROOT includes
-#include <TROOT.h>
-#include <TApplication.h>
-#include <TCanvas.h>
-#include <TH1F.h>
-#include <TF1.h>
-#include <TString.h>
-#include <TLine.h>
-#include <TGraph.h>
 #include <stdbool.h>
 
 namespace art
@@ -51,8 +38,14 @@ class art::STMDigisFromFragments : public EDProducer
 public:
   struct Config {
     fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("Input module")};
-    fhicl::Atom<bool> saveRawWithHeaderFile {fhicl::Name("saveRawWithHeaderFile"), false};
     fhicl::OptionalAtom<int> verbosityLevel{fhicl::Name("verbosityLevel"), fhicl::Comment("Verbosity level")};
+    fhicl::Atom<bool> saveRawWithHeaderWaveform_HPGe {fhicl::Name("saveRawWithHeaderWaveform_HPGe"), false};
+    fhicl::Atom<bool> saveRawWaveform_HPGe {fhicl::Name("saveRawWaveform_HPGe"), false};
+    fhicl::Atom<bool> saveZSWaveform_HPGe{fhicl::Name("saveZSWaveform_HPGe"), false};
+    fhicl::Atom<bool> saveRawWithHeaderWaveform_LaBr{fhicl::Name("saveRawWithHeaderWaveform_LaBr"), false};
+    fhicl::Atom<bool> saveRawWaveform_LaBr{fhicl::Name("saveRawWaveform_LaBr"), false};
+    fhicl::Atom<bool> saveZSWaveform_LaBr{fhicl::Name("saveZSWaveform_LaBr"), false};
+
   };
   
   explicit STMDigisFromFragments(const art::EDProducer::Table<Config>& config); // constructor created, config via fcl
@@ -62,10 +55,12 @@ public:
 private:
   art::InputTag _stmFragmentsTag;
   
-  //Metrics-> Will change this soon 
+  //Metrics 
   size_t _totalEvents{0};
   size_t _totalFragments{0};
   size_t _totalContainers{0};
+  size_t _totalContainersHPGe{0};
+  size_t _totalContainersLaBr{0};
   size_t _totalInner{0};
   size_t _totalRaw{0};
   size_t _totalZS{0};
@@ -76,7 +71,6 @@ private:
   size_t _totalEmptyRaw{0};
   size_t _totalEmptyZS{0};
   size_t _totalEmptyPH{0};
-
   size_t _unreadInnerFrags{0};
 
   //Additional metrics
@@ -84,6 +78,9 @@ private:
   size_t _totalRawHPGe{0};
   size_t _totalZSHPGe{0};
   size_t _totalPHHPGe{0};
+  size_t _totalGoodRawHPGe{0};
+  size_t _totalGoodZSHPGe{0};
+  size_t _totalGoodPHHPGe{0};
   size_t _totalZeroRawHPGe{0};
   size_t _totalZeroZSHPGe{0};
   size_t _totalZeroPHHPGe{0};
@@ -94,7 +91,10 @@ private:
   //LaBr
   size_t _totalRawLaBr{0};
   size_t _totalZSLaBr{0};
-  size_t _totalPHLaBr{0};
+  size_t _totalPHLaBr{0};  
+  size_t _totalGoodRawLaBr{0};
+  size_t _totalGoodZSLaBr{0};
+  size_t _totalGoodPHLaBr{0};
   size_t _totalZeroRawLaBr{0};
   size_t _totalZeroZSLaBr{0};
   size_t _totalZeroPHLaBr{0};
@@ -104,7 +104,13 @@ private:
 
   //fhicl varibales
   int _verbosityLevel = 0;
-  bool _saveRawWithHeaderFile{false};
+  bool _saveRawWithHeaderWaveform_HPGe{false};
+  bool _saveRawWaveform_HPGe{false};
+  bool _saveZSWaveform_HPGe{false};
+  bool _saveRawWithHeaderWaveform_LaBr{false};
+  bool _saveRawWaveform_LaBr{false};
+  bool _saveZSWaveform_LaBr{false};
+  
 }; // STMDigisFromFragments
 
 // ======================================================================
@@ -113,22 +119,28 @@ private:
 STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config>& config)
   : art::EDProducer{config}
   ,_stmFragmentsTag(config().stmTag())
-  ,_saveRawWithHeaderFile(config().saveRawWithHeaderFile())
+  ,_saveRawWithHeaderWaveform_HPGe(config().saveRawWithHeaderWaveform_HPGe())
+  ,_saveRawWaveform_HPGe(config().saveRawWaveform_HPGe())
+  ,_saveZSWaveform_HPGe(config().saveZSWaveform_HPGe())
+  ,_saveRawWithHeaderWaveform_LaBr(config().saveRawWithHeaderWaveform_LaBr())
+  ,_saveRawWaveform_LaBr(config().saveRawWaveform_LaBr())
+  ,_saveZSWaveform_LaBr(config().saveZSWaveform_LaBr())
   ,_verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
 
 {
   // Set the size of vectors for HPGe
-  produces<mu2e::STMWaveformDigiCollection>("rawHPGe");//Waveforms
-  produces<mu2e::STMWaveformDigiCollection>("zsHPGe");
+  if (_saveRawWithHeaderWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderHPGe");}
+  if (_saveRawWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawHPGe");}//Waveforms           
+  if (_saveZSWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("zsHPGe");}
   produces<mu2e::STMPHDigiCollection>("phHPGe"); // digi series
-  if(_saveRawWithHeaderFile){ produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderHPGe");}
 
+  
   //Set the size of vectors for LaBr
-  produces<mu2e::STMWaveformDigiCollection>("rawLaBr");
-  produces<mu2e::STMWaveformDigiCollection>("zsLaBr");
-  produces<mu2e::STMPHDigiCollection>("phLaBr"); // digi series                                                                                                          
-  if(_saveRawWithHeaderFile){ produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderLaBr");}
-
+  if (_saveRawWithHeaderWaveform_LaBr){produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderLaBr");}
+  if (_saveRawWaveform_LaBr){produces<mu2e::STMWaveformDigiCollection>("rawLaBr");}
+  if (_saveZSWaveform_LaBr){produces<mu2e::STMWaveformDigiCollection>("zsLaBr");}
+  produces<mu2e::STMPHDigiCollection>("phLaBr"); // digi series    
+  
 }
 
 // ----------------------------------------------------------------------
@@ -143,14 +155,12 @@ void STMDigisFromFragments::produce(Event& event)
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMPHDigiCollection> ph_HPGe_digis(new mu2e::STMPHDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> ph_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original
 
   //LaBr
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_LaBr_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_LaBr_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMPHDigiCollection> ph_LaBr_digis(new mu2e::STMPHDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_LaBr_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> ph_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original   
   
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
@@ -187,8 +197,6 @@ void STMDigisFromFragments::produce(Event& event)
   //loop over frags
   for (const auto& frag : *STMFragments) {
     ++_totalFragments; //Increment Total Frag counter
-    bool isLaBr{false};
-    bool isHPGe{false};
 
     uint16_t ZSfromRaw{0};
     uint16_t expectedZSRegions{0};
@@ -196,8 +204,6 @@ void STMDigisFromFragments::produce(Event& event)
 
     ContainerFragID = frag.fragmentID();
     if (_verbosityLevel >= 3){std::cout << "\nFrag_id : " << ContainerFragID << "\n";}
-
-    if(ContainerFragID == 103) {isHPGe = true;} else if (ContainerFragID == 203){isLaBr = true ;}
     
     //Check if this is a container fragment
     if (frag.type() == artdaq::Fragment::ContainerFragmentType){
@@ -214,15 +220,12 @@ void STMDigisFromFragments::produce(Event& event)
         mu2e::STMFragment stm_frag(*inner_frag);
         mu2e::STMWaveformDigi stm_waveform;
 
-        //auto ptr = stm_frag.payloadBegin();//Outer variable
-        //auto words = stm_frag.payloadWords();
-
-        if (stm_frag.isRaw()) {
+        if ( stm_frag.isRaw() ) {
 	  
 	  //Job Counter
           ++_totalRaw;	
-	  //Conitional Job and Event Counter
-	  if(isHPGe){ ++_totalRawHPGe ; ++localRawHPGe_frags;} else if (isLaBr){++_totalRawLaBr ; ++localRawLaBr_frags;}
+	  //Conditional Job and Event Counter
+	  if( stm_frag.isHPGe() ){ ++_totalRawHPGe ; ++localRawHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalRawLaBr ; ++localRawLaBr_frags; }
 	  
           auto payloadPtr = stm_frag.payloadBegin();
           auto payloadWords = stm_frag.payloadWords();
@@ -233,7 +236,7 @@ void STMDigisFromFragments::produce(Event& event)
 	    if(_verbosityLevel >=3){std::cout<< "\nFound an empty frag, i = " << i <<" @Raw\n";}
 	    ++_totalEmptyRaw;//Job counter
 	    //Eventcounter
-	    if(isHPGe){ ++_totalEmptyRawHPGe; ++emptyRawHPGe_frags;}else if (isLaBr){ ++_totalEmptyRawLaBr; ++emptyRawLaBr_frags;}
+	    if( stm_frag.isHPGe() ){ ++_totalEmptyRawHPGe; ++emptyRawHPGe_frags; } else if (stm_frag.isLaBr()){ ++_totalEmptyRawLaBr; ++emptyRawLaBr_frags; }
 	    continue;//stops this loop check and goes to next frag
             }
 
@@ -250,7 +253,7 @@ void STMDigisFromFragments::produce(Event& event)
 	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = " << i << " @Raw\n";}
 	    ++_totalZeroRaw;//Increment counters
 	    //Eventcounter                                                                                                                                                
-            if(isHPGe){++_totalZeroRawHPGe; ++zeroRawHPGe_frags;} else if (isLaBr){ ++_totalZeroRawLaBr; ++zeroRawLaBr_frags;}
+            if( stm_frag.isHPGe() ){++_totalZeroRawHPGe; ++zeroRawHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalZeroRawLaBr; ++zeroRawLaBr_frags; }
             continue;
           }
 
@@ -274,39 +277,39 @@ void STMDigisFromFragments::produce(Event& event)
 	  readRawZSinfo = true;//Shows we were able to read the Raw header information
 	  
           //Ideally only good frags get up to here
-	  if (isHPGe){
-	    if (_saveRawWithHeaderFile){
+	  if ( stm_frag.isHPGe() ){
+	    ++ _totalGoodRawHPGe;
+	    if (_saveRawWithHeaderWaveform_HPGe){
 	      auto dataPtr = stm_frag.dataBegin();
 	      auto dataWords = stm_frag.dataWords();
 	      stm_waveform.set_data(dataWords, dataPtr);
 	      raw_HPGe_header_waveform_digis->emplace_back(stm_waveform);
 	    }
-
-	    {
+	    if(_saveRawWaveform_HPGe) {
 	      stm_waveform.set_data(payloadWords, payloadPtr);
 	      raw_HPGe_waveform_digis->emplace_back(stm_waveform);
 	    }
 
-	  } else if (isLaBr){
-            if (_saveRawWithHeaderFile){
+	  } else if ( stm_frag.isLaBr() ){
+	    ++ _totalGoodRawLaBr;
+	    if (_saveRawWithHeaderWaveform_LaBr){
               auto dataPtr = stm_frag.dataBegin();
               auto dataWords = stm_frag.dataWords();
               stm_waveform.set_data(dataWords, dataPtr);
               raw_LaBr_header_waveform_digis->emplace_back(stm_waveform);
             }
-
-            {
+	    if(_saveRawWaveform_LaBr){
               stm_waveform.set_data(payloadWords, payloadPtr);
               raw_LaBr_waveform_digis->emplace_back(stm_waveform);
             }
 	    
 	  }//End of if CFID=103,203
-	  
         }//End of isRaw
+
 	
         else if (stm_frag.isZS()){
           ++_totalZS; //Incremenet ZS counter
-          if (isHPGe){ ++_totalZSHPGe; ++localZSHPGe_frags; } else if (isLaBr){ ++_totalZSLaBr; ++localZSLaBr_frags;}
+          if ( stm_frag.isHPGe() ){ ++_totalZSHPGe; ++localZSHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalZSLaBr; ++localZSLaBr_frags; }
 	  	  
 	  auto payloadPtr = stm_frag.payloadBegin();
 	  auto payloadWords = stm_frag.payloadWords();
@@ -316,7 +319,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  if (payloadWords == 0) {
 	    if (_verbosityLevel >=3){std::cout << "\nFound an empty frag, i = " << i << " @ZS\n";}
 	    ++_totalEmptyZS;
-	    if (isHPGe){ ++_totalEmptyZSHPGe; ++emptyZSHPGe_frags; } else if (isLaBr){ ++_totalEmptyZSLaBr; ++emptyZSLaBr_frags;}
+	    if ( stm_frag.isHPGe() ){ ++_totalEmptyZSHPGe; ++emptyZSHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalEmptyZSLaBr; ++emptyZSLaBr_frags; }
 	    continue;
 	  }
 	  //Check if any adc are non-zero
@@ -330,7 +333,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  if (allZeros) {
 	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = "<< i << " @ZS\n";}
 	    ++_totalZeroZS;
-	    if (isHPGe){ ++_totalZeroZSHPGe; ++zeroZSHPGe_frags; } else if (isLaBr){ ++_totalZeroZSLaBr; ++zeroZSLaBr_frags;}
+	    if ( stm_frag.isHPGe() ){ ++_totalZeroZSHPGe; ++zeroZSHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalZeroZSLaBr; ++zeroZSLaBr_frags; }
 	    continue;
 	  }
 	  //Print first 20 payload adcs
@@ -356,6 +359,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  if(_verbosityLevel >= 6){std::cout << "dataWords  : " << dataWords
 					     << " dataWords%4 : " << dataWords%4
 					     <<" @ZS" << "\n"; }
+	  if ( stm_frag.isHPGe()){ ++_totalGoodZSHPGe;} else if(stm_frag.isLaBr()){++ _totalGoodZSLaBr;}
 	  
 	  while (dataPtr + 2 <= dataEnd){
 	    if ( readRawZSinfo && seg >= expectedZSRegions ) break;
@@ -370,10 +374,12 @@ void STMDigisFromFragments::produce(Event& event)
 	    mu2e::STMWaveformDigi stm_waveform(trigTimeOffset, segADCS); //New constructore use
 
 	    //emplacing 
-	    if (isHPGe){zs_HPGe_waveform_digis->emplace_back(stm_waveform);
-	    } else if (isLaBr){zs_LaBr_waveform_digis->emplace_back(stm_waveform);
+	    if ( stm_frag.isHPGe() && _saveZSWaveform_HPGe){
+	      zs_HPGe_waveform_digis->emplace_back(stm_waveform);
+	    } else if ( stm_frag.isLaBr() && _saveZSWaveform_LaBr){
+	      zs_LaBr_waveform_digis->emplace_back(stm_waveform);
 	    }
-
+ 
 	    if (_verbosityLevel >=6){
 	      //A print check per segment
 	      std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
@@ -409,10 +415,10 @@ void STMDigisFromFragments::produce(Event& event)
 	  
         }//End of isZS
 	
-        else if (stm_frag.isPH()){
+        else if ( stm_frag.isPH() ){
 	  
 	  ++_totalPH;
-	  if (isHPGe){ ++_totalPHHPGe; ++localPHHPGe_frags; } else if (isLaBr){ ++_totalPHLaBr; ++localPHLaBr_frags; }
+	  if ( stm_frag.isHPGe() ){ ++_totalPHHPGe; ++localPHHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalPHLaBr; ++localPHLaBr_frags; }
 
 	  //Check if zero filled
 	  auto payloadPtr = stm_frag.payloadBegin();
@@ -422,7 +428,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  if (payloadWords ==0){
             if (_verbosityLevel >= 3){std::cout << "\nFound an empty frag, i = " << i<< " @PH\n";}
 	    ++_totalEmptyPH;
-	    if (isHPGe){ ++_totalEmptyPHHPGe; ++emptyPHHPGe_frags; } else if (isLaBr){ ++_totalEmptyPHLaBr; ++emptyPHLaBr_frags; }
+	    if ( stm_frag.isHPGe() ){ ++_totalEmptyPHHPGe; ++emptyPHHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalEmptyPHLaBr; ++emptyPHLaBr_frags; }
 	    continue;
 	  }
 
@@ -437,7 +443,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  if (allZeros){
 	    if (_verbosityLevel >=3){ std::cout<< "\nFound a zero filled frag, i = " << i<< " @PH\n";}
 	    ++_totalZeroPH;
-	    if (isHPGe){ ++_totalZeroPHHPGe; ++zeroPHHPGe_frags; } else if (isLaBr){ ++_totalZeroPHLaBr; ++zeroPHLaBr_frags; }
+	    if ( stm_frag.isHPGe() ){ ++_totalZeroPHHPGe; ++zeroPHHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalZeroPHLaBr; ++zeroPHLaBr_frags; }
 	    continue;
 	  }
 
@@ -450,15 +456,18 @@ void STMDigisFromFragments::produce(Event& event)
 	    int16_t PH = digiPtr[i_PH];
 	    mu2e::STMPHDigi PH_digi(0, PH);
 
-	    if(isHPGe){ ph_HPGe_digis->emplace_back(PH_digi);
-	    } else if (isLaBr){ ph_LaBr_digis->emplace_back(PH_digi);
-	    }
+	    if( stm_frag.isHPGe() ){
+	      ++ _totalGoodPHHPGe;
+	      ph_HPGe_digis->emplace_back(PH_digi); }
+	    else if ( stm_frag.isLaBr() ){
+	      ++ _totalGoodPHLaBr;
+	      ph_LaBr_digis->emplace_back(PH_digi); }
 	    
 	  }
 
 	}//End of isPH and is checks
 	else{
-	  if(_verbosityLevel >=3){
+	  if(_verbosityLevel >=3){}
 	    //std::cout << "\n Inner frag i = " << i
 	    //	      << "\nDid not read Raw/ZS/PH\n"
 	    //	      << "Inner Frag_id : " << inner_frag->fragmentID() << "\n" ;
@@ -467,7 +476,6 @@ void STMDigisFromFragments::produce(Event& event)
 	    ++ unread_InnerFrags; //For event summary
 
 
-	  }
 	}
       }
     } else {
@@ -478,7 +486,7 @@ void STMDigisFromFragments::produce(Event& event)
 
       //if (stm_frag.isRaw()){}	//        writePayload(_rawOut, ptr, words);
     }
-  } //End of frags loop---George suggestions
+  } //End of frags loop
 
   if (_verbosityLevel >= 2 ){ 
     //Event Summary -> tells us what happens per event
@@ -527,17 +535,17 @@ void STMDigisFromFragments::produce(Event& event)
   
   //Final move
   //HPGe
-  event.put(std::move(raw_HPGe_waveform_digis), "rawHPGe");
-  event.put(std::move(zs_HPGe_waveform_digis), "zsHPGe");
+  if (_saveRawWithHeaderWaveform_HPGe){ event.put(std::move(raw_HPGe_header_waveform_digis), "rawWithHeaderHPGe"); }
+  if (_saveRawWaveform_HPGe){event.put(std::move(raw_HPGe_waveform_digis), "rawHPGe");}
+  if (_saveZSWaveform_HPGe){event.put(std::move(zs_HPGe_waveform_digis), "zsHPGe");}
   event.put(std::move(ph_HPGe_digis), "phHPGe");
-  if (_saveRawWithHeaderFile){ event.put(std::move(raw_HPGe_header_waveform_digis), "rawWithHeaderHPGe"); }
 
 
   //LaBr
-  event.put(std::move(raw_LaBr_waveform_digis), "rawLaBr");
-  event.put(std::move(zs_LaBr_waveform_digis), "zsLaBr");
+  if (_saveRawWithHeaderWaveform_LaBr){ event.put(std::move(raw_LaBr_header_waveform_digis), "rawWithHeaderLaBr"); }
+  if (_saveRawWaveform_LaBr){event.put(std::move(raw_LaBr_waveform_digis), "rawLaBr");}
+  if (_saveZSWaveform_LaBr){event.put(std::move(zs_LaBr_waveform_digis), "zsLaBr");}
   event.put(std::move(ph_LaBr_digis), "phLaBr");
-  if (_saveRawWithHeaderFile){ event.put(std::move(raw_LaBr_header_waveform_digis), "rawWithHeaderLaBr"); }
     
 } // produce()
 
@@ -568,13 +576,21 @@ void STMDigisFromFragments::endJob() {
     std::cout << "PH  HPGe                 : " << _totalPHHPGe << "\n";
 
     std::cout << "\n--- Data types filtered ---\n";
+    std::cout << "Good RAW   HPGe frags    : " << _totalGoodRawHPGe << "\n";
+    std::cout << "Good ZS    HPGe frags    : " << _totalGoodZSHPGe << "\n";
+    std::cout << "Good PH    HPGe frags    : " << _totalGoodPHHPGe << "\n";
     std::cout << "Zero RAW   HPGe frags    : " << _totalZeroRawHPGe << "\n";
     std::cout << "Zero ZS    HPGe frags    : " << _totalZeroZSHPGe << "\n";
     std::cout << "Zero PH    HPGe frags    : " << _totalZeroPHHPGe << "\n";
     std::cout << "Empty Raw  HPGe frags    : " << _totalEmptyRawHPGe << "\n";
     std::cout << "Empty ZS   HPGe frags    : " << _totalEmptyZSHPGe << "\n";
     std::cout << "Empty PH   HPGe frags    : " << _totalEmptyPHHPGe << "\n";
-  
+
+    std::cout << "\n";
+
+    std::cout << "Good RAW   LaBr frags    : " << _totalGoodRawHPGe << "\n";
+    std::cout << "Good ZS    LaBr frags    : " << _totalGoodZSHPGe << "\n";
+    std::cout << "Good PH    LaBr frags    : " << _totalGoodPHHPGe << "\n";
     std::cout << "Zero RAW   LaBr frags    : " << _totalZeroRawLaBr << "\n";
     std::cout << "Zero ZS    LaBr frags    : " << _totalZeroZSLaBr << "\n";
     std::cout << "Zero PH    LaBr frags    : " << _totalZeroPHLaBr << "\n";
@@ -584,8 +600,6 @@ void STMDigisFromFragments::endJob() {
     
     std::cout << "Unread frags             : " << _unreadInnerFrags << "\n";
 
-
-    
     std::cout << "=================================\n";
 
   }
