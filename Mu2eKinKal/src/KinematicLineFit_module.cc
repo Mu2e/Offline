@@ -175,7 +175,8 @@ namespace mu2e {
     bool extrapolate_, toCRV_;
     double maxdt_ = 0.0, btol_ = 0.0, minv_ = 0.0;
     SurfaceIdCollection ssids_;
-    int extrapdebug_ = false;
+    KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
+    int extrapdebug_ = 0;
     double tcrvthick_ = 150.0; // CRV sector thickness: should come from geometry service TODO
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
@@ -254,6 +255,10 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
+    // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,surfacess_to_sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
@@ -374,18 +379,13 @@ namespace mu2e {
   }
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
-    KinKalGeom::SurfacePairCollection sample; // surfaces to sample the fit
-    kkg.surfaces(ssids_,sample);
-
     auto const& ftraj = kktrk.fitTraj();
     // need to extend range for now even if sampleinrange_ is false
     TimeRange extrange(ftraj.range().begin() - sampletbuff_,ftraj.range().end() + sampletbuff_);
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
-    for(auto const& surf : sample){
+    for(auto const& surf : surfacess_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg;
       bool goodinter(true);
@@ -413,7 +413,7 @@ namespace mu2e {
   void KinematicLineFit::extrapolate(KKTRK& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
-    // extrapolate to the front of the tracker
+    // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
     auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg.TCRV(),extrapdebug_);
 
     auto const& ftraj = ktrk.fitTraj();
@@ -436,7 +436,7 @@ namespace mu2e {
         hadintersection = true;
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        // FIXME material?
+        // TODO add DS and shielding material
         KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_.STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
