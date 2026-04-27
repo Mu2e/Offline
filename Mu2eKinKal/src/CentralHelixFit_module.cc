@@ -121,7 +121,7 @@ namespace mu2e {
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
     fhicl::Atom<float> minCenterRho { Name("MinCenterRho"), Comment("Minimum transverse distance from the helix axis to the Z axis to consider the fit non-degenerate (mm)") };
-};
+  };
 
   struct GlobalConfig {
     fhicl::Table<KKCHModuleConfig> modSettings { Name("ModuleSettings") };
@@ -129,7 +129,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-// helix module specific config
+    // helix module specific config
   };
 
   class CentralHelixFit : public art::EDProducer {
@@ -170,9 +170,10 @@ namespace mu2e {
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-      KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
+      SurfaceIdCollection ssids_;
+      KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
-    };
+  };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
     fitflag_(TrkFitFlag::KKCentralHelix),
@@ -218,14 +219,10 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
-      SurfaceIdCollection ssids;
+      // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
-      // geometry service eventually, TODO
-      KinKalGeom smap;
-      smap.surfaces(ssids,sample_);
     }
 
   void CentralHelixFit::beginRun(art::Run& run) {
@@ -240,6 +237,10 @@ namespace mu2e {
       kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
     }
     if(print_ > 0) kkbf_->print(std::cout);
+    // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,surfacess_to_sample_);
   }
 
   void CentralHelixFit::produce(art::Event& event ) {
@@ -399,7 +400,7 @@ namespace mu2e {
   void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    for(auto const& surf : sample_){
+    for(auto const& surf : surfacess_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool goodinter(true);
