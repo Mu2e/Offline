@@ -169,8 +169,6 @@ namespace mu2e {
     KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
     bool extrapolate_, toCRV_;
     double maxdt_ = 0.0, btol_ = 0.0, minv_ = 0.0;
-    SurfaceIdCollection ssids_;
-    KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
     int extrapdebug_ = 0;
     double tcrvthick_ = 150.0; // CRV sector thickness: should come from geometry service TODO
     std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
@@ -222,18 +220,16 @@ namespace mu2e {
       }
       // store surface IDs to be resolved when geometry is available
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids__.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
         // create KKExtrap for calorimeter and upstream extrapolations
         extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
-        toCRV_ = settings().Extrapolation()->ToCRV();
         // global configs
         maxdt_ = settings().Extrapolation()->MaxDt();
         btol_ =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        minv_ = settings().Extrapolation()->MinV();
         extrapdebug_ =  settings().Extrapolation()->Debug();
       }
 
@@ -255,10 +251,6 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
-    // now that geometry is available, resolve sample surface IDs to actual surfaces
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     kkg.surfaces(ssids_,sample_);
@@ -387,7 +379,7 @@ namespace mu2e {
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
-    for(auto const& surf : surfacess_to_sample_){
+    for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg;
       bool goodinter(true);
@@ -416,7 +408,7 @@ namespace mu2e {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
-    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg.TCRV(),extrapdebug_);
+    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,kkg.TCRV(),extrapdebug_);
 
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TCRVSID("TCRV");

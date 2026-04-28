@@ -175,7 +175,7 @@ namespace mu2e {
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceIdCollection ssids_;
-      KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
+      KinKalGeom::SurfacePairCollection surfaces_to_sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
       bool extrapolate_;
       std::unique_ptr<KKExtrap> extrap_; //  extrapolations
@@ -233,7 +233,7 @@ namespace mu2e {
       // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
       // geometry service eventually, TODO
       KinKalGeom smap;
-      smap.surfaces(ssids,sample_);
+      smap.surfaces(ssids_,surfaces_to_sample_);
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
@@ -257,7 +257,7 @@ namespace mu2e {
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
+    kkg.surfaces(ssids_,surfaces_to_sample_);
   }
 
   void CentralHelixFit::produce(art::Event& event ) {
@@ -419,7 +419,7 @@ namespace mu2e {
   void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    for(auto const& surf : surfacess_to_sample_){
+    for(auto const& surf : surfaces_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool goodinter(true);
