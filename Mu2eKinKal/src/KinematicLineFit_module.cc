@@ -229,6 +229,12 @@ namespace mu2e {
         extrapolate_ = true;
         // create KKExtrap for calorimeter and upstream extrapolations
         extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
+        toCRV_ = settings().Extrapolation()->ToCRV();
+        // global configs
+        maxdt_ = settings().Extrapolation()->MaxDt();
+        btol_ =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
+        minv_ = settings().Extrapolation()->MinV();
+        extrapdebug_ =  settings().Extrapolation()->Debug();
       }
 
 
@@ -248,6 +254,14 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
+    // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,surfacess_to_sample_);
+    // now that geometry is available, resolve sample surface IDs to actual surfaces
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
