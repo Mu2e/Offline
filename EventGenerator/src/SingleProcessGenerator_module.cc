@@ -99,7 +99,7 @@ namespace mu2e {
 
     const auto pset = conf().decayProducts.get<fhicl::ParameterSet>();
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
-    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
+    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial(), true);
 
     if(pdgId_==PDGCode::e_plus) {
       muonLifeTime_=0; //decay time already included for stopped muon(+) FIXME!!!

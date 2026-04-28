@@ -107,12 +107,12 @@ namespace mu2e {
     const auto cap_psets = conf_.captureProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& i_cap_pset : cap_psets) {
       _muonCaptureGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_cap_pset));
-      _muonCaptureGenerators.back()->finishInitialization(eng_, material_);
+      _muonCaptureGenerators.back()->finishInitialization(eng_, material_, false);
     }
     const auto decay_psets = conf_.decayProducts.get<std::vector<fhicl::ParameterSet>>();
     for (const auto& i_decay_pset : decay_psets) {
       _muonDecayGenerators.push_back(art::make_tool<ParticleGeneratorTool>(i_decay_pset));
-      _muonDecayGenerators.back()->finishInitialization(eng_, material_);
+      _muonDecayGenerators.back()->finishInitialization(eng_, material_, false);
     }
   }
 

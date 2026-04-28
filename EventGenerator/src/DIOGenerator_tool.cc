@@ -1,8 +1,8 @@
 #include "art/Utilities/ToolMacros.h"
 #include "cetlib_except/exception.h"
 
-#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandFlat.h"
 
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
@@ -73,9 +73,11 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&, const bool isPrimary) override {
+      _isPrimary = isPrimary;
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
     }
 
   private:
@@ -88,20 +90,24 @@ namespace mu2e {
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
+    std::unique_ptr<CLHEP::RandFlat>    _randFlat;
   };
 
 
   std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
+    const double r = (_czmax - _czmin)/2.;
+    if(_isPrimary || _randFlat->fire() <= r) {
 
-    double energy = _spectrum.sample(_randSpectrum->fire());
+      double energy = _spectrum.sample(_randSpectrum->fire());
 
-    const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
-    CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
+      const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
+      CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
+      CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
-    res.emplace_back(k);
+      ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
+      res.emplace_back(k);
+    }
 
     return res;
   }
