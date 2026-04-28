@@ -73,7 +73,6 @@ namespace mu2e {
 }
 
   void MakeSurfaceSteps::produce(art::Event& event) {
-    std::cout<<"MakeSurfaceSteps ---> produce"<<std::endl;
     GeomHandle<DetectorSystem> det;
     // create output
     std::unique_ptr<SurfaceStepCollection> ssc(new SurfaceStepCollection);
@@ -83,7 +82,7 @@ namespace mu2e {
     for(auto const& vdspmc : vdspmccol) {
       // only some VDs are kept
       auto isid = vdmap_.find(vdspmc.virtualDetectorId());
-      std::cout<<" VID "<<vdspmc.virtualDetectorId().name()<<std::endl;
+      if(debug_ > 0) std::cout<<" VID "<<vdspmc.virtualDetectorId().name()<<std::endl;
       if(isid != vdmap_.end())ssc->emplace_back(isid->second,vdspmc,det); // no aggregation of VD hits
     }
     auto nvdsteps = ssc->size();
