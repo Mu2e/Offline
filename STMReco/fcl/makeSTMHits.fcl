@@ -14,10 +14,10 @@ services : @local::Services.Reco
 physics: {
   producers : {
     stmHitsHPGe : { module_type : MakeSTMHits
-                    stmPHDigisTag : "phHPGe"
+                    stmPHDigisTag : "makeSTMDigis:phHPGe"
     }
     stmHitsLaBr : { module_type : MakeSTMHits
-                    stmPHDigisTag : "makeSTMDigis:ph"
+                    stmPHDigisTag : "makeSTMDigis:phLaBr"
     }
   }
   filters : {
@@ -25,7 +25,7 @@ physics: {
   analyzers : {
   }
   # setup paths
- # HPGePath : [ stmHitsHPGe ]
+  HPGePath : [ stmHitsHPGe ]
   LaBrPath : [ stmHitsLaBr ]
   trigger_paths: [LaBrPath ]
   outPath : [ STMOutput ]

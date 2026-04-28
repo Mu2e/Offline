@@ -42,13 +42,6 @@ physics : {
 
 
    analyzers  : {
-
-   # frag:
-
-#    {
-   #    module_type : FragmentWatcher
-   #    mode_bitmask : 7
-   #    }
    
     stmPrint : {
       module_type : STMPrintFragments

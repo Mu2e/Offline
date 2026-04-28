@@ -158,10 +158,10 @@ namespace mu2e {
       if (M < L)
         throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
-      if (verbosityLevel > 10)
-        verbosityLevel = 10;
-      _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
-      std::cout<<"BG"<<_xAxis<<std::endl;
+      if (verbosityLevel >= 7){
+	_xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
+	std::cout<<"BG"<<_xAxis<<std::endl;
+      }
       makeTTreePH = conf().makeTTreePH() ? *(conf().makeTTreePH()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
       TTreeEnergyCalib = conf().TTreeEnergyCalib() ? *(conf().TTreeEnergyCalib()) : 1.0;
@@ -224,9 +224,11 @@ namespace mu2e {
     for (STMWaveformDigi waveform : *waveformDigisHandle) {
 
       //Check prints --------------------------------------
-      std::cout << "event id = "<< event.id().event()<<std::endl;
-      std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
-      std::cout << "waveform id =" << waveformID << std::endl;
+      if (verbosityLevel>=7){
+	std::cout << "event id = "<< event.id().event()<<std::endl;
+	std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
+	std::cout << "waveform id =" << waveformID << std::endl;
+      }
       // clear out data from previous waveform
       ADCs.clear();
       deconvolved_data.clear();

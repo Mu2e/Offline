@@ -65,7 +65,7 @@ namespace mu2e {
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
-    _channel(STMChannel::findByName("HPGe")) // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
+    _channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
 
   { }
 
@@ -97,7 +97,9 @@ namespace mu2e {
 
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    std::cout<<"size = "<<waveformsHandle->size()<<std::endl;
+    if (_verbosityLevel > 1){
+      std::cout<<"size = "<<waveformsHandle->size()<<std::endl;
+    }
     for (const auto& waveform : *waveformsHandle) {
 
       histname.str("");
@@ -134,7 +136,7 @@ namespace mu2e {
 	  hWaveformOffset->SetBinContent(i_adc+1,content); //Exact copy
 	}
 
-	//For offset waveforms
+	//For offset waveforms -> Better organize this area
 	auto zs_offset = waveform.trigTimeOffset(); //Grabs stored offset
 	int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform
 	double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform

@@ -53,12 +53,13 @@ namespace mu2e {
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmPHDigisToken(consumes<STMPHDigiCollection>(config().stmPHDigisTag()))
-    ,_channel(STMChannel::LaBr)
+    ,_channel(STMUtils::getChannel(config().stmPHDigisTag()))
     ,_stmEnergyCalib_h()
     {
       produces<STMHitCollection>();
     }
-
+  //Originally had _channel(STMChannel::LaBr)
+  
     void MakeSTMHits::produce(art::Event& event) {
     // create output
     unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);

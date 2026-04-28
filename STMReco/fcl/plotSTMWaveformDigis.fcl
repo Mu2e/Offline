@@ -21,6 +21,7 @@ physics: {
   producers : {  }
   filters : {  }
   analyzers : {
+  
     plotRawWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
@@ -28,6 +29,7 @@ physics: {
       verbosityLevel : 0
       xAxis : "sample_number"
     }
+    
     plotZSWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
@@ -51,6 +53,7 @@ physics: {
       verbosityLevel : 0
       xAxis : "sample_number"
     }
+    
     plotZSWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
@@ -66,6 +69,7 @@ physics: {
       verbosityLevel : 0
       xAxis : "sample_number"
      }
+     
   }
   # setup paths
   trigger_paths: [  ]

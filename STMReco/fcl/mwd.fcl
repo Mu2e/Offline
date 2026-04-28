@@ -19,7 +19,7 @@ physics: {
   producers : {
     phHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "makeSTMDigis:zs"
+      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
       verbosityLevel : 6
       tau : @local::STM.HPGe.tau
       M : @local::STM.HPGe.M
@@ -33,7 +33,7 @@ physics: {
 
     phLaBr : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "makeSTMDigis:zs"
+      stmWaveformDigisTag : "makeSTMDigis:LaBr"
       verbosityLevel : 6
       tau : @local::STM.LaBr.tau
       M : @local::STM.LaBr.M
@@ -50,8 +50,8 @@ physics: {
 
   # setup paths
   HPGePath : [ phHPGe ]
- # LaBrPath : [ phLaBr ]
-  trigger_paths: [ HPGePath ]
+  LaBrPath : [ phLaBr ]
+  trigger_paths: [ HPGePath, LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }

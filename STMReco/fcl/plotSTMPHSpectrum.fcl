@@ -23,7 +23,7 @@ physics: {
     }
     plotLaBrPHSpectrum : {
       module_type : PlotSTMPHSpectrum
-      stmPHDigisTag : "makeSTMDigis:ph"
+      stmPHDigisTag : "makeSTMDigis:phHPGe"
     }
   }
   # setup paths

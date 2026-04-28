@@ -72,19 +72,20 @@ void STMPrintFragments::analyze(const Event& event)
     
     //New lines
     artdaq::ContainerFragment contf(frag); // interpret the fragment as a ContainerFragemnt (Will look inside here)
-    std::cout<<"N Blocks in the container = " << std::endl; //Should be 3 for the 3 STM Fragments
+    std::cout<<"N Blocks in the container = " << contf.block_count() << std::endl; //Should be 3 for the 3 STM Fragments
   
     for (size_t ii = 0; ii< contf.block_count(); ++ii){
-      const auto dataBegin = frag.dataBegin();
-      const auto dataEnd = frag.dataEnd();
+      auto inner = contf.at(ii);
+      const auto dataBegin = inner->dataBegin();
+      const auto dataEnd = inner->dataEnd();
+      auto frag_id = inner->fragmentID();
       const auto stmDataBegin = reinterpret_cast<int16_t const*>(dataBegin);
       const auto stmDataEnd = reinterpret_cast<int16_t const*>(dataEnd);
-      auto frag_id = frag.fragmentID();
-      std::cout << "frag_id = " << frag_id << std::endl;
-      std::cout<< "container block_count = "<<contf.block_count()<<std::endl;
+      std::cout << "Frag_ID = " << frag_id << std::endl;
+      std::cout << "Container block_count = "<<contf.block_count()<<std::endl;
       
       for (auto i = stmDataBegin; i != stmDataEnd; ++i) {
-	std::cout << "Frag #" << frag_counter << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
+	std::cout << "Frag #" << frag_counter << ", inner #" << ii  << ": *(stmDataBegin+" << i - stmDataBegin << ") = " << *i << std::endl;
       }
 
     }
