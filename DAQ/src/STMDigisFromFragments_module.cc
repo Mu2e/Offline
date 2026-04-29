@@ -72,7 +72,11 @@ private:
   size_t _totalEmptyZS{0};
   size_t _totalEmptyPH{0};
   size_t _unreadInnerFrags{0};
-
+  size_t _totalEventsWithHPGeLaBr{0};
+  size_t _totalEventsWithOnlyHPGe{0};
+  size_t _totalEventsWithOnlyLaBr{0};
+  size_t _totalEventsWithNone{0};
+  
   //Additional metrics
   //HPGe
   size_t _totalRawHPGe{0};
@@ -110,6 +114,7 @@ private:
   bool _saveRawWithHeaderWaveform_LaBr{false};
   bool _saveRawWaveform_LaBr{false};
   bool _saveZSWaveform_LaBr{false};
+  
   
 }; // STMDigisFromFragments
 
@@ -193,6 +198,8 @@ void STMDigisFromFragments::produce(Event& event)
   //Additional
   size_t unread_InnerFrags{0};
   uint16_t outerFragID{0};
+  bool eventHasHPGe{false};
+  bool eventHasLaBr{false};
   
   //loop over outer frags
   for (const auto& frag : *STMFragments) {
@@ -210,12 +217,19 @@ void STMDigisFromFragments::produce(Event& event)
     if (frag.type() == artdaq::Fragment::ContainerFragmentType){
 
       mu2e::STMFragment container_frag(frag);
-      if ( container_frag.isHPGeContainer()){ ++_totalContainersHPGe; } else if ( container_frag.isLaBrContainer() ) { ++_totalContainersLaBr;}
-      
+      if ( container_frag.isHPGeContainer()){ ++_totalContainersHPGe; eventHasHPGe = true; }
+      else if ( container_frag.isLaBrContainer() ) { ++_totalContainersLaBr; eventHasLaBr = true; }
+      else if (_verbosityLevel >= 1){
+	std::cout << "Encounter an unknown STM Container frag ID\n"
+		  << "Frag ID : " << frag.fragmentID() <<"\n"
+		  << "Event   : " << _totalEvents <<"\n";
+	  }
+          
       artdaq::ContainerFragment cont_frag(frag);
       ++_totalContainers;
       size_t blocks = cont_frag.block_count();
       _totalInner += blocks;
+      
       
       //loop over container where i corresponds to inner frag 
       for (size_t i = 0; i < cont_frag.block_count(); ++i){
@@ -243,7 +257,7 @@ void STMDigisFromFragments::produce(Event& event)
 	    if( stm_frag.isHPGe() ){ ++_totalEmptyRawHPGe; ++emptyRawHPGe_frags; } else if (stm_frag.isLaBr()){ ++_totalEmptyRawLaBr; ++emptyRawLaBr_frags; }
 	    continue;//stops this loop check and goes to next frag
             }
-
+	  
           //Check if any data points are not zero
           for (size_t k =0; k < payloadWords; ++k){
             if (payloadPtr[k] != 0){
@@ -416,6 +430,12 @@ void STMDigisFromFragments::produce(Event& event)
 	      << "Found at inner frag i : " << i <<"\n"
 	      << "Encountered at event : " << _totalEvents <<"\n"      ;
 	  }
+
+	  //reset variables after ZS
+	  readRawZSinfo = false;
+	  ZSfromRaw = 0;
+	  expectedZSRegions = 0;
+	  
 	  
         }//End of isZS
 	
@@ -471,71 +491,73 @@ void STMDigisFromFragments::produce(Event& event)
 
 	}//End of isPH and is checks
 	else{
-	  if(_verbosityLevel >=3){}
-	    //std::cout << "\n Inner frag i = " << i
-	    //	      << "\nDid not read Raw/ZS/PH\n"
-	    //	      << "Inner Frag_id : " << inner_frag->fragmentID() << "\n" ;
-
-	    ++ _unreadInnerFrags; //For Job summary
-	    ++ unread_InnerFrags; //For event summary
-
-
+	  ++ _unreadInnerFrags; //For Job summary                                                                                                                                                         
+	  ++ unread_InnerFrags; //For event summary      
+	  if(_verbosityLevel >=3){
+	    std::cout << "Unread Inner fragment" << "\n"
+		      << "Inner frag i : " << i << "\n"
+		      << "Frag ID      : " << inner_frag->fragmentID() << "\n"
+		      << "Event        : " <<_totalEvents << "\n";
+	  }
 	}
       }
+      
     } else {
       //fallback (non-container case)
-      mu2e::STMFragment stm_frag(frag);
       if (_verbosityLevel >=1) {
-	std::cout << "\nFound non-container STM Fragment "
-		  <<"\n fragment ID : " << frag.fragmentID()
-		  <<"\n       event : " << _totalEvents << "\n";
+	std::cout << "Found non-container STM Fragment " <<"\n"
+		  << "Fragment ID : " << frag.fragmentID() << "\n"
+		  << "Event : " << _totalEvents << "\n";
       }
-
-
     }
   } //End of frags loop
 
+  if (eventHasHPGe && eventHasLaBr){ ++_totalEventsWithHPGeLaBr; }
+  else if (eventHasHPGe){ ++_totalEventsWithOnlyHPGe; }
+  else if (eventHasLaBr){ ++_totalEventsWithOnlyLaBr; }
+  else { ++_totalEventsWithNone; }
+  
   if (_verbosityLevel >= 2 ){ 
     //Event Summary -> tells us what happens per event
     std::cout << "\n========== STM EVENT SUMMARY - (Unpacking Module) ==========\n";
+    std::cout << "\n--- Products extracted ---\n";
     std::cout << "Extracted Raw HPGe waveforms     : " << raw_HPGe_waveform_digis->size() <<"\n";
     std::cout << "Extracted ZS  HPGe waveforms     : " << zs_HPGe_waveform_digis->size() <<"\n";
     std::cout << "Extracted PH  HPGe digis         : " << ph_HPGe_digis->size() <<"\n";
- 
+    std::cout << "\n";
     std::cout << "Extracted Raw LaBr waveforms     : " << raw_LaBr_waveform_digis->size() <<"\n";
     std::cout << "Extracted ZS  LaBr waveforms     : " << zs_LaBr_waveform_digis->size() <<"\n";
     std::cout << "Extracted PH  LaBr digis         : " << ph_LaBr_digis->size() <<"\n";
-
     
-    std::cout << "\n--- Frags Read ---\n";
-    std::cout << "Raw HPGE frags         : " << localRawHPGe_frags << "\n";
-    std::cout << "ZS  HPGe frags         : " << localZSHPGe_frags << "\n";
-    std::cout << "PH  HPGe frags         : " << localPHHPGe_frags << "\n";
     
-    std::cout << "Raw LaBr frags         : " << localRawLaBr_frags << "\n";
-    std::cout << "ZS  LaBr frags         : " << localZSLaBr_frags << "\n";
-    std::cout << "PH  LaBr frags         : " << localPHLaBr_frags << "\n";
+    std::cout << "\n--- Frags Seen ---\n";
+    std::cout << "Raw HPGE frags seen    : " << localRawHPGe_frags << "\n";
+    std::cout << "ZS  HPGe frags seen    : " << localZSHPGe_frags << "\n";
+    std::cout << "PH  HPGe frags seen    : " << localPHHPGe_frags << "\n";
+    std::cout << "\n";
+    std::cout << "Raw LaBr frags seen    : " << localRawLaBr_frags << "\n";
+    std::cout << "ZS  LaBr frags seen    : " << localZSLaBr_frags << "\n";
+    std::cout << "PH  LaBr frags seen    : " << localPHLaBr_frags << "\n";
+    std::cout << "\nUnread frags           : " << unread_InnerFrags << "\n";
 
   
     std::cout << "\n--- Filter results ---\n";
     std::cout << "Zero Raw  HPGe frags   : " << zeroRawHPGe_frags << "\n";
     std::cout << "Zero ZS   HPGe frags   : " << zeroZSHPGe_frags << "\n";
     std::cout << "Zero PH   HPGe frags   : " << zeroPHHPGe_frags << "\n";
-    
+    std::cout << "\n";
     std::cout << "Zero Raw  LaBr frags   : " << zeroRawLaBr_frags << "\n";
     std::cout << "Zero ZS   LaBr frags   : " << zeroZSLaBr_frags << "\n";
     std::cout << "Zero PH   LaBr frags   : " << zeroPHLaBr_frags << "\n";
-
-
+    std::cout << "\n";
+    
     std::cout << "Empty Raw HPGe frags   : " << emptyRawHPGe_frags <<"\n";
     std::cout << "Empty ZS  HPGe frags   : " << emptyZSHPGe_frags << "\n";
     std::cout << "Empty PH  HPGe frags   : " << emptyPHHPGe_frags << "\n";
-
+    std::cout << "\n";
     std::cout << "Empty Raw LaBr frags   : " << emptyRawLaBr_frags <<"\n";
     std::cout << "Empty ZS  LaBr frags   : " << emptyZSLaBr_frags << "\n";
     std::cout << "Empty PH  LaBr frags   : " << emptyPHLaBr_frags << "\n";
-
-    std::cout << "Unread frags           : " << unread_InnerFrags << "\n";
   
     std::cout << "=================================\n";
   }
@@ -563,24 +585,28 @@ void STMDigisFromFragments::endJob() {
   if (_verbosityLevel >= 1){
     //Tells us what happened at the very end
     std::cout << "\n========== STM JOB SUMMARY - (Unpacking Module) ==========\n";
-
+    
     std::cout << "Total events             : " << _totalEvents << "\n";
+    std::cout << "Total events w/HPGe&LaBr : " << _totalEventsWithHPGeLaBr << "\n";
+    std::cout << "Total events w/only HPGe : " << _totalEventsWithOnlyHPGe << "\n";
+    std::cout << "Total events w/only LaBr : " << _totalEventsWithOnlyLaBr << "\n";
+    std::cout << "Total events w/Neither   : " << _totalEventsWithNone << "\n";
     std::cout << "Total frags              : " << _totalFragments << "\n";
     std::cout << "Total Container frags    : " << _totalContainers << "\n";
     std::cout << "Total HPGe Containers    : " << _totalContainersHPGe << "\n";
     std::cout << "Total LaBr Containers    : " << _totalContainersLaBr << "\n";
     std::cout << "Total Inner frags        : " << _totalInner << "\n";
-
+    std::cout << "Unread frags             : " << _unreadInnerFrags << "\n";
 
     std::cout << "\n--- Data types read ---\n";
-    std::cout << "RAW Total                : " << _totalRaw << "\n";
-    std::cout << "ZS  Total                : " << _totalZS << "\n";
-    std::cout << "PH  Total                : " << _totalPH << "\n";
-
+    std::cout << "RAW seen                 : " << _totalRaw << "\n";
+    std::cout << "ZS  seen                 : " << _totalZS << "\n";
+    std::cout << "PH  seen                 : " << _totalPH << "\n";
+    std::cout << "\n";
     std::cout << "RAW LaBr                 : " << _totalRawLaBr << "\n";
     std::cout << "ZS  LaBr                 : " << _totalZSLaBr << "\n";
     std::cout << "PH  LaBr                 : " << _totalPHLaBr << "\n";
-    
+    std::cout << "\n";
     std::cout << "RAW HPGe                 : " << _totalRawHPGe << "\n";
     std::cout << "ZS  HPGe                 : " << _totalZSHPGe << "\n";
     std::cout << "PH  HPGe                 : " << _totalPHHPGe << "\n";
@@ -589,9 +615,11 @@ void STMDigisFromFragments::endJob() {
     std::cout << "Good RAW   HPGe frags    : " << _totalGoodRawHPGe << "\n";
     std::cout << "Good ZS    HPGe frags    : " << _totalGoodZSHPGe << "\n";
     std::cout << "Good PH    HPGe frags    : " << _totalGoodPHHPGe << "\n";
+    std::cout << "\n";
     std::cout << "Zero RAW   HPGe frags    : " << _totalZeroRawHPGe << "\n";
     std::cout << "Zero ZS    HPGe frags    : " << _totalZeroZSHPGe << "\n";
     std::cout << "Zero PH    HPGe frags    : " << _totalZeroPHHPGe << "\n";
+    std::cout << "\n";
     std::cout << "Empty Raw  HPGe frags    : " << _totalEmptyRawHPGe << "\n";
     std::cout << "Empty ZS   HPGe frags    : " << _totalEmptyZSHPGe << "\n";
     std::cout << "Empty PH   HPGe frags    : " << _totalEmptyPHHPGe << "\n";
@@ -601,15 +629,15 @@ void STMDigisFromFragments::endJob() {
     std::cout << "Good RAW   LaBr frags    : " << _totalGoodRawLaBr << "\n";
     std::cout << "Good ZS    LaBr frags    : " << _totalGoodZSLaBr << "\n";
     std::cout << "Good PH    LaBr frags    : " << _totalGoodPHLaBr << "\n";
+    std::cout << "\n";
     std::cout << "Zero RAW   LaBr frags    : " << _totalZeroRawLaBr << "\n";
     std::cout << "Zero ZS    LaBr frags    : " << _totalZeroZSLaBr << "\n";
     std::cout << "Zero PH    LaBr frags    : " << _totalZeroPHLaBr << "\n";
+    std::cout << "\n";
     std::cout << "Empty Raw  LaBr frags    : " << _totalEmptyRawLaBr << "\n";
     std::cout << "Empty ZS   LaBr frags    : " << _totalEmptyZSLaBr << "\n";
     std::cout << "Empty PH   LaBr frags    : " << _totalEmptyPHLaBr << "\n";
     
-    std::cout << "Unread frags             : " << _unreadInnerFrags << "\n";
-
     std::cout << "=================================\n";
 
   }
