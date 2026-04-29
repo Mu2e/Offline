@@ -121,13 +121,32 @@ cet_build_plugin(PrefetchDAQData art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(STMWaveformDigisFromFragments art::module
-  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+cet_build_plugin(STMDigisFromFragments art::module
+  REG_SOURCE src/STMDigisFromFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
   Offline::ProditionsService
   Offline::DataProducts
   Offline::RecoDataProducts
+)
+
+cet_build_plugin(STMBinaryDigisFromFragments art::module
+  REG_SOURCE src/STMBinaryDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
+cet_build_plugin(STMPrintFragments art::module
+  REG_SOURCE src/STMPrintFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+  BTrk_difAlgebra
 )
 
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module
@@ -255,6 +274,8 @@ cet_build_plugin(MSDHitsFromDTCEvents art::module
       Offline::RecoDataProducts
 )
 
+install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/DAQ)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
+install_fhicl(SUBDIRS test GLOB SUBDIRNAME Offline/DAQ/test)

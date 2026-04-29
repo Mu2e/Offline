@@ -1,0 +1,35 @@
+#
+# Plot STMWaveformDigis
+#
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: PlotSTMPHSpectrum
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Reco
+physics: {
+  producers : {
+  }
+  filters : {
+  }
+  analyzers : {
+    plotHPGePHSpectrum : {
+      module_type : PlotSTMPHSpectrum
+      stmPHDigisTag : "phHPGe"
+    }
+    plotLaBrPHSpectrum : {
+      module_type : PlotSTMPHSpectrum
+      stmPHDigisTag : "makeSTMDigis:phHPGe"
+    }
+  }
+  # setup paths
+  trigger_paths: [  ]
+  anaPath : [ plotLaBrPHSpectrum ]
+  end_paths: [anaPath]
+}
+
+services.TFileService.fileName : "stmPHSpectrum.root"

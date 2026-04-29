@@ -1,5 +1,5 @@
 // Adapted from ReadVirtualDetector_module.cc
-// For STMMWDDigis, generates a TTree with the time and energy
+// For STMPHDigis, generates a TTree with the time and energy
 // Original author: Ivan Logashenko
 // Adapted by: Pawel Plesniak
 
@@ -25,7 +25,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -36,44 +36,44 @@ typedef cet::map_vector_key key_type;
 typedef unsigned long VolumeId_type;
 
 namespace mu2e {
-  class MWDTree : public art::EDAnalyzer {
+  class PHTree : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> STMMWDDigiTag{Name("STMMWDDigiTag"), Comment("Tag identifying the MWD Digis")};
+        fhicl::Atom<art::InputTag> STMPHDigiTag{Name("STMPHDigiTag"), Comment("Tag identifying the PH Digis")};
         fhicl::OptionalAtom<double> EnergyCalib{ Name("EnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit MWDTree(const Parameters& conf);
+      explicit PHTree(const Parameters& conf);
       void analyze(const art::Event& e);
       void endJob();
     private:
-      art::ProductToken<STMMWDDigiCollection> STMMWDDigiToken;
+      art::ProductToken<STMPHDigiCollection> STMPHDigiToken;
       int eventCounter = 0, digiCounter = 0;
       TTree* ttree;
       uint32_t time = 0;
       double E = 0, EnergyCalib = 0;
   };
 
-  MWDTree::MWDTree(const Parameters& conf) :
+  PHTree::PHTree(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    STMMWDDigiToken(consumes<STMMWDDigiCollection>(conf().STMMWDDigiTag())) {
+    STMPHDigiToken(consumes<STMPHDigiCollection>(conf().STMPHDigiTag())) {
       EnergyCalib = conf().EnergyCalib() ? *(conf().EnergyCalib()) : 1.0;
       art::ServiceHandle<art::TFileService> tfs;
-      ttree = tfs->make<TTree>("ttree", "MWD ttree");
+      ttree = tfs->make<TTree>("ttree", "PH ttree");
       ttree->Branch("time", &time, "time/i"); // ns
       ttree->Branch("E", &E, "E/D"); // keV
     };
 
-  void MWDTree::analyze(const art::Event& event) {
+  void PHTree::analyze(const art::Event& event) {
     // Get the data products from the event
-    auto const& MWDDigis = event.getProduct(STMMWDDigiToken);
-    if (MWDDigis.empty())
+    auto const& PHDigis = event.getProduct(STMPHDigiToken);
+    if (PHDigis.empty())
       return;
     eventCounter++;
     // Loop over all VD hits
-    for (const STMMWDDigi& digi : MWDDigis) {
+    for (const STMPHDigi& digi : PHDigis) {
       // Extract the parameters
       time = digi.time();
       E = digi.energy() * EnergyCalib;
@@ -87,13 +87,13 @@ namespace mu2e {
     return;
   };
 
-  void MWDTree::endJob() {
-    mf::LogInfo log("MWD tree summary");
-    log << "=========MWD tree summary =========\n";
+  void PHTree::endJob() {
+    mf::LogInfo log("PH tree summary");
+    log << "========= PH tree summary =========\n";
     log << std::left << std::setw(25) << "\tProcessed events: " << eventCounter << "\n";
     log << std::left << std::setw(25) << "\tProcessed digis: "  << digiCounter << "\n";
     log << "===================================\n";
   };
 }; // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::MWDTree)
+DEFINE_ART_MODULE(mu2e::PHTree)

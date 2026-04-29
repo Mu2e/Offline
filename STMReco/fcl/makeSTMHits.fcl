@@ -1,5 +1,5 @@
 #
-# Create STMHits from STMMWDDigis
+# Create STMHits from STMPHDigis
 #
 
 #include "Offline/fcl/standardServices.fcl"
@@ -14,10 +14,10 @@ services : @local::Services.Reco
 physics: {
   producers : {
     stmHitsHPGe : { module_type : MakeSTMHits
-                    stmMWDDigisTag : "mwdHPGe"
+                    stmPHDigisTag : "makeSTMDigis:phHPGe"
     }
     stmHitsLaBr : { module_type : MakeSTMHits
-                    stmMWDDigisTag : "mwdLaBr"
+                    stmPHDigisTag : "makeSTMDigis:phLaBr"
     }
   }
   filters : {
@@ -27,7 +27,7 @@ physics: {
   # setup paths
   HPGePath : [ stmHitsHPGe ]
   LaBrPath : [ stmHitsLaBr ]
-  trigger_paths: [ HPGePath, LaBrPath ]
+  trigger_paths: [LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }

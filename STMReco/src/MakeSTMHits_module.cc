@@ -1,5 +1,5 @@
 //
-// Create STMHits from STMMWDDigis
+// Create STMHits from STMPHDigis
 //
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -22,7 +22,7 @@
 #include "TH1F.h"
 #include "TTree.h"
 
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
 // C++
@@ -37,7 +37,7 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<art::InputTag> stmMWDDigisTag{ Name("stmMWDDigisTag"), Comment("InputTag for STMMWDDigiCollection")};
+      fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollection")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit MakeSTMHits(const Parameters& conf);
@@ -45,33 +45,34 @@ namespace mu2e {
   private:
     void produce(art::Event& e) override;
 
-    art::ProductToken<STMMWDDigiCollection> _stmMWDDigisToken;
+    art::ProductToken<STMPHDigiCollection> _stmPHDigisToken;
     STMChannel _channel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
-    ,_stmMWDDigisToken(consumes<STMMWDDigiCollection>(config().stmMWDDigisTag()))
-    ,_channel(STMUtils::getChannel(config().stmMWDDigisTag()))
+    ,_stmPHDigisToken(consumes<STMPHDigiCollection>(config().stmPHDigisTag()))
+    ,_channel(STMUtils::getChannel(config().stmPHDigisTag()))
     ,_stmEnergyCalib_h()
     {
       produces<STMHitCollection>();
     }
-
+  //Originally had _channel(STMChannel::LaBr)
+  
     void MakeSTMHits::produce(art::Event& event) {
     // create output
     unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);
-    auto mwdDigisHandle = event.getValidHandle(_stmMWDDigisToken);
+    auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
 
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get calibration
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
     const auto& pars = stmEnergyCalib.calib(_channel);
 
-    for (const auto& mwd_digi : *mwdDigisHandle) {
-      auto uncalib_time = mwd_digi.time();
-      auto uncalib_energy = mwd_digi.energy();
+    for (const auto& ph_digi : *phDigisHandle) {
+      auto uncalib_time = ph_digi.time();
+      auto uncalib_energy = ph_digi.energy();
       float time = uncalib_time*nsPerCt;
       float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
 

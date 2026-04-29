@@ -9,8 +9,6 @@ process_name : STMDigiFromFragment
 source : {
    module_type : RootInput
    fileNames   : @nil
-
-   # firstEvent  : 500
    maxEvents   : -1
 }
 
@@ -18,39 +16,59 @@ source : {
 physics : {
 
    producers : {
-      makeSTMDigisHPGe : {
-         module_type : STMWaveformDigisFromFragments
-	 stmTag : "daq:STM"
-	 }
+      makeSTMDigis : {
+         module_type : STMDigisFromFragments
+         stmTag : "daq:ContainerSTM"
+	 verbosityLevel : 2
+	 saveRawWithHeaderWaveform_HPGe: false
+	 saveRawWaveform_HPGe: true
+	 saveZSWaveform_HPGe: true
+	 saveRawWithHeaderWaveform_LaBr: false
+	 saveRawWaveform_LaBr: true
+	 saveZSWaveform_LaBr: true
+	}
+         
+       makeSTMBinary : { 
+      	 module_type : STMBinaryDigisFromFragments
+         stmTag : "daq:ContainerSTM"
+         verbosityLevel : 1
+	 rawFile : "raw.bin"
+	 zsFile : "zs.bin"
+	 phFile : "ph.bin"
+	 rawHeaderFile : "rawWithHeader.bin"
+	 eventFile : "event.bin"
+      }  
    }
+
 
    analyzers  : {
-
-   frag:
-      {	
-	module_type : FragmentWatcher
-	mode_bitmask : 7
-	}	     
-      #stm :
-      #{
-      #   module_type : STMPrintFragments
-      #}
+   
+    stmPrint : {
+      module_type : STMPrintFragments
+      stmTag : "daq:ContainerSTM"
+    }
 
    }
 
-   t1 : [ makeSTMDigisHPGe ]
-   # e1 : [ stm, stmOutput ]
-   e1 : [ frag, stmOutput ]  
+   t1 : [ makeSTMDigis ]
+   e1 : [ stmOutput ]
+   #e1 : [ ]
+   #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
 
 }
 
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
 outputs : {
    stmOutput : {
       module_type : RootOutput
       fileName : "dig.stm.art"
-      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
+      outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
+#      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
    }
 }
