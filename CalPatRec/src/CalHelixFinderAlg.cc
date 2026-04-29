@@ -79,7 +79,14 @@ namespace mu2e {
     // the helix fit introduces a radial bias due to an asymmetry in the detector (more phase space for
     // noise hits outside the circle than inside.  correct for it.
     float radius = Helix._radius; //  + _rbias;
-    if (radius == 0. || Helix._dfdz == 0.) return;
+    if (radius == 0. || Helix._dfdz == 0.) {
+      std::cout << "[CalHelixFinderAlg::" << __func__ << "] "
+                << "Bad Helix parameters! Radius = " << radius
+                << " dphi/dz = " << Helix._dfdz
+                << std::endl;
+      Helix._helix = nullptr;
+      return;
+    }
     // omega is the inverse transverse radius of the particle's circular motion.
     // It is signed by the particle angular momentum about the cirle center.
     // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
@@ -337,7 +344,7 @@ namespace mu2e {
       Helix._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
     }
     else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax) ||
-             (fabs(Helix._szphi.dfdz()) < _minDfDz) || (fabs(Helix._szphi.dfdz()) > _maxDfDz)) {
+             (fabs(Helix._dfdz) < _minDfDz) || (fabs(Helix._dfdz) > _maxDfDz)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }
     else {
@@ -363,7 +370,7 @@ namespace mu2e {
       }
 
       defineHelixParams(Helix);
-      retval = true;
+      retval = Helix.helix() != nullptr;
     }
 
     return retval;
@@ -1049,8 +1056,8 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-    if ( (Helix._szphi.qn() < minNFitHits) ||
-         ((Helix._szphi.qn() >= minNFitHits) && (Helix._szphi.dfdz()*_dfdzsign < 0.)) ) {
+    if ( (Helix._szphi.qn() < minNFitHits) || // too few hits
+         (Helix._szphi.dfdz()*_dfdzsign < 0.) ) { // wrong slope
       success = false;
     }
     else if (success) {                               // update helix results
@@ -1189,7 +1196,7 @@ namespace mu2e {
     ordChCol.reserve(size);
 
     if (_debug >0 ){
-      printf("-----------------------------------------------------------------------------------/n");
+      printf("-----------------------------------------------------------------------------------\n");
       printf("[CalHelixFinderAlg::fillFaceOrderedHits]  Plane   Panel  Layer Straw     x          y           z  \n");
     }
 
@@ -1731,8 +1738,9 @@ namespace mu2e {
       Helix._diag.nHitsRatio = nHitsRatio;
     }
 
-    if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END;
-    if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
+    if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END; // bad hit ratio
+    if (Helix._szphi.qn() == 0.)     goto PATTERN_RECOGNITION_END; // no hits found on line
+    if (!rc)                         goto PATTERN_RECOGNITION_END; // failed linear fit
 
     rescueHitsBeforeSeed(Helix);
 //-----------------------------------------------------------------------------

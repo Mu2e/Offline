@@ -99,10 +99,10 @@ namespace mu2e {
       float    eDepAvg;
     };
 
-    const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
+    const TimeCluster*                _timeCluster = nullptr;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
-    HelixTraj*                        _helix;
+    HelixTraj*                        _helix = nullptr;
     Helicity                          _helicity;
 
     std::vector<int>                  _goodhits;

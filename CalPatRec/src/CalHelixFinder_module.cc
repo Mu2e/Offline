@@ -288,6 +288,11 @@ namespace mu2e {
         int rc = _hfinder.findHelix(tmpResult);
 
         if (!rc)                         continue;
+        if(!tmpResult.helix()) {
+          std::cout << "[CalHelixFinder::" << __func__ << "] " << event.id()
+               << " Helix found but nullptr returned!!\n";
+          continue;
+        }
         HelixSeed     tmp_helix_seed;
 
         initHelixSeed(tmp_helix_seed, tmpResult);
