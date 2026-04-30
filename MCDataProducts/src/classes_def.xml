@@ -389,5 +389,17 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <!--   ******************Analysis ************************ -->
 <class name="mu2e::MCRelationship"/>
 
+<!-- ejc -->
+<class name="art::Sampled<mu2e:ProtonBunchIntensity>"/>
+<class name="art::Wrapper< art::Sampled<mu2e:ProtonBunchIntensity> >"/>
+<class name="std::map<art::SubRunID,mu2e::ProtonBunchIntensity>"/>
+<class name="art::Wrapper< std::map<art::SubRunID,mu2e::ProtonBunchIntensity> >"/>
+<class name="std::map< std::string,std::map<art::SubRunID,mu2e::ProtonBunchIntensity> >"/>
+
+<class name="art::Sampled<mu2e:GenEventCount>"/>
+<class name="art::Wrapper< art::Sampled<mu2e:GenEventCount> >"/>
+<class name="std::map<art::SubRunID,mu2e::GenEventCount>"/>
+<class name="art::Wrapper< std::map<art::SubRunID,mu2e::GenEventCount> >"/>
+<class name="std::map< std::string,std::map<art::SubRunID,mu2e::GenEventCount> >"/>
 
 </lcgdict>
