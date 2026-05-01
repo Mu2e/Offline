@@ -33,9 +33,11 @@ namespace mu2e
     public:
       struct Config
       {
-        fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-        fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
-        fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
+        fhicl::Atom<int>     diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
+        fhicl::Atom<uint8_t> firstCrvDtcID{fhicl::Name("firstCrvDtcID"), fhicl::Comment("First CRV DTC ID"), 0};
+        fhicl::Atom<bool>    produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
+        fhicl::Atom<bool>    produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
+        fhicl::Atom<bool>    useROC4asROC2{fhicl::Name("useROC4asROC2"), fhicl::Comment("use ROC4 as ROC2"), false};
       };
 
       explicit CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config);
@@ -44,16 +46,20 @@ namespace mu2e
 
     private:
       int                                      _diagLevel;
+      uint8_t                                  _firstCrvDtcID;
       bool                                     _produceZS;
       bool                                     _produceNZS;
+      bool                                     _useROC4asROC2;
       mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
   };
 
   CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _diagLevel(config().diagLevel()),
+    _firstCrvDtcID(config().firstCrvDtcID()),
     _produceZS(config().produceZS()),
-    _produceNZS(config().produceNZS())
+    _produceNZS(config().produceNZS()),
+    _useROC4asROC2(config().useROC4asROC2())
     {
       if(_produceZS) produces<mu2e::CrvDigiCollection>();
       if(_produceNZS) produces<mu2e::CrvDigiCollection>("NZS");
@@ -212,7 +218,8 @@ namespace mu2e
               {
                 uint16_t dtcID = header->GetID();
                 uint16_t linkID = header->GetLinkID();
-                uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                if(_useROC4asROC2 && rocID==4) rocID=2;
                 uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                 //the 5th bit indicates special situations
@@ -284,7 +291,8 @@ namespace mu2e
 
                   uint16_t dtcID = header->GetID();
                   uint16_t linkID = header->GetLinkID();
-                  uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                  uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                  if(_useROC4asROC2 && rocID==4) rocID=2;
 
                   if((crvHit.getFpgaChannel() & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                   {
