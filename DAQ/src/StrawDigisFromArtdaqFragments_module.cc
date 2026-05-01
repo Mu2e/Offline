@@ -74,58 +74,56 @@ public:
     fhicl::Atom<bool>            keyOnMnid        {fhicl::Name("keyOnMnid"        ), fhicl::Comment("true if need to key on MnID, default:false")};
     fhicl::Atom<bool>            allowOfflineFallbackWhenPanelMapMissing{
       fhicl::Name("allowOfflineFallbackWhenPanelMapMissing"),
-      fhicl::Comment("If TrackerPanelMap lookup fails, decode using offline StrawId(dtc,link,straw)"),
-      false};
+      fhicl::Comment("If TrackerPanelMap lookup fails, decode using offline StrawId(dtc,link,straw)")};
     fhicl::Atom<bool>            forceOfflineAddressing{
       fhicl::Name("forceOfflineAddressing"),
-      fhicl::Comment("Ignore TrackerPanelMap/mnid and decode StrawId directly as (dtc,link,straw)"),
-      false};
+      fhicl::Comment("Ignore TrackerPanelMap/mnid and decode StrawId directly as (dtc,link,straw)")};
 
-    // individual tuple specifying a minnesota label, e.g. MN123,
-    // with geographic plane/panel numbers, i.e. from DocDB-#888
-    struct GeographicTuple{
-      fhicl::Atom<std::string> minnesota{
-        fhicl::Name("minnesota"),
-        fhicl::Comment("Minnesota # label")
-      };
-      fhicl::Atom<uint16_t> plane{
-        fhicl::Name("plane"),
-        fhicl::Comment("Geographic plane [DocDB-888]")
-      };
-      fhicl::Atom<uint16_t> panel{
-        fhicl::Name("panel"),
-        fhicl::Comment("Geographic panel [DocDB-888]")
-      };
-    };
-    // mandatory listing of geographic entries, to enable translation
-    // of panel-labelings in the data to Offline StrawIds
-    fhicl::Sequence< fhicl::Table<GeographicTuple> > geography{
-      fhicl::Name("geography"),
-      fhicl::Comment("Mapping of Minnesota numbers to geographic planes and panels")
-    };
+  //   // individual tuple specifying a minnesota label, e.g. MN123,
+  //   // with geographic plane/panel numbers, i.e. from DocDB-#888
+  //   struct GeographicTuple{
+  //     fhicl::Atom<std::string> minnesota{
+  //       fhicl::Name("minnesota"),
+  //       fhicl::Comment("Minnesota # label")
+  //     };
+  //     fhicl::Atom<uint16_t> plane{
+  //       fhicl::Name("plane"),
+  //       fhicl::Comment("Geographic plane [DocDB-888]")
+  //     };
+  //     fhicl::Atom<uint16_t> panel{
+  //       fhicl::Name("panel"),
+  //       fhicl::Comment("Geographic panel [DocDB-888]")
+  //     };
+  //   };
+  //   // mandatory listing of geographic entries, to enable translation
+  //   // of panel-labelings in the data to Offline StrawIds
+  //   fhicl::Sequence< fhicl::Table<GeographicTuple> > geography{
+  //     fhicl::Name("geography"),
+  //     fhicl::Comment("Mapping of Minnesota numbers to geographic planes and panels")
+  //   };
 
-    // individual tuple specifying a minnesota label, e.g. MN123,
-    // with logical channeling, i.e. DTC ID and associated Link #
-    struct LogicalTuple{
-      fhicl::Atom<uint16_t> dtc{
-        fhicl::Name("dtc"),
-        fhicl::Comment("DTC ID")
-      };
-      fhicl::Atom<uint16_t> link{
-        fhicl::Name("link"),
-        fhicl::Comment("Link #")
-      };
-      fhicl::Atom<std::string> minnesota{
-        fhicl::Name("minnesota"),
-        fhicl::Comment("Minnesota # label")
-      };
-    };
-    // optional listing of logical entries, to provide a backup
-    // translation in case of invalid labeling in the data
-    fhicl::OptionalSequence< fhicl::Table<LogicalTuple> > channeling{
-      fhicl::Name("channeling"),
-      fhicl::Comment("Logical channeling of panels (optional)")
-    };
+  //   // individual tuple specifying a minnesota label, e.g. MN123,
+  //   // with logical channeling, i.e. DTC ID and associated Link #
+  //   struct LogicalTuple{
+  //     fhicl::Atom<uint16_t> dtc{
+  //       fhicl::Name("dtc"),
+  //       fhicl::Comment("DTC ID")
+  //     };
+  //     fhicl::Atom<uint16_t> link{
+  //       fhicl::Name("link"),
+  //       fhicl::Comment("Link #")
+  //     };
+  //     fhicl::Atom<std::string> minnesota{
+  //       fhicl::Name("minnesota"),
+  //       fhicl::Comment("Minnesota # label")
+  //     };
+  //   };
+  //   // optional listing of logical entries, to provide a backup
+  //   // translation in case of invalid labeling in the data
+  //   fhicl::OptionalSequence< fhicl::Table<LogicalTuple> > channeling{
+  //     fhicl::Name("channeling"),
+  //     fhicl::Comment("Logical channeling of panels (optional)")
+  //   };
   };
 
   // --- C'tor/d'tor:
@@ -246,11 +244,11 @@ void mu2e::StrawDigisFromArtdaqFragments::print_(const std::string& Message, con
 }
 
 //-----------------------------------------------------------------------------
-// HEX print of a fragment, the data has to be in 2-byte words
+// HEX print of a fragment, the Mu2e data come in 2-byte words
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment* Frag) {
   ushort* buf = (ushort*) (Frag->dataBegin());
-  int nw      = buf[0]/2;
+  int nw      = Frag->dataSizeBytes()/2;
   int loc     = 0;
 
   for (int i=0; i<nw; i++) {
@@ -305,7 +303,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   auto fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   if (debugMode_ > 0) {
-    std::string msg = std::format("n(fragments):{}",fragmentHandles.size());
+    std::string msg = std::format("n_fragment_collections):{}",fragmentHandles.size());
     print_(msg);
   }
 
@@ -327,8 +325,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // each artdaq fragment corresponds to a single DTC, or a plane
 // loop over them
 //-----------------------------------------------------------------------------
-      int nfrag = handle->size();
-      for (int ifrag=0; ifrag<nfrag; ifrag++) {
+      int n_fragments = handle->size();
+      
+      if (debugMode_) {
+        print_(std::format("-- next fragment collection with n_fragments:{}",n_fragments));
+      }
+      
+      for (int ifrag=0; ifrag<n_fragments; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
 
         if (debugMode_ and (debugBit_[0] > 0)) {
@@ -337,7 +340,10 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                              frag->typeString(),sizeof(DTCLib::DTC_SubEventHeader)));
           print_fragment(frag);
         }
-
+//-----------------------------------------------------------------------------
+// skip CFO fragment (type = 12)
+//-----------------------------------------------------------------------------
+        if (frag->type() == mu2e::FragmentType::CFO)        continue;
         uint8_t* fdata = (uint8_t*) (frag->dataBegin());
         if (not missingDTCHeaders_) {
 //-----------------------------------------------------------------------------
@@ -388,16 +394,36 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // trust that but watch if it changes
 // so far, any corruptions we saw were contained withing the ROC payload, and nhits
 // was a reliable number
+// 2026-03-20: don't store waveforms if only one packet per hit
 //-----------------------------------------------------------------------------
               mu2e::TrackerDataDecoder::TrackerDataPacket* h0;
               h0           = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+packet_size);
+//-----------------------------------------------------------------------------
+// don't expect zero ADC packets, the error seen was that one of the ROCs just
+// doesn't send the second packet at all... work under that assumption
+//-----------------------------------------------------------------------------
+              if (h0->NumADCPackets == 0) {
+                print_(std::format("ERROR: dtc_id:{} link_id:{} N(ADC packets) = 0, skip ROC data",
+                                   dtc_id,(int) rdh->linkID));
+                
+                roc_data += (rdh->packetCount+1)*packet_size;
+                continue;
+              }
               nADCPackets_ = h0->NumADCPackets;
               nSamples_    = 3+12*nADCPackets_;
               np_per_hit_  = nADCPackets_+1;
             }
             uint32_t link_id = rdh->linkID;
             nhits            = rdh->packetCount/(nADCPackets_+1);
-
+//-----------------------------------------------------------------------------
+// there should not be more than 255 hits per ROC, if nhits>=255 it is a corruption,
+// stop processing of the event 
+//-----------------------------------------------------------------------------
+            if (nhits > 255) {
+              print_(std::format("ERROR: nhits:{}, skip event",nhits));
+              break;
+            }
+            
             const TrkPanelMap::Row* tpm(nullptr);
             if (!forceOfflineAddressing_ && not keyOnMnid_) {
               tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
@@ -429,6 +455,11 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
               int offset = (ihit*np_per_hit_+1)*packet_size;   // in bytes
               hit_data   = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+offset);
+              if (roc_data+offset >= last_address) {
+                print_(std::format("ERROR: dtc_id:{} link_id:{} roc_data:{} offset:{} last_address:{} , SKIPPING",
+                                   dtc_id, link_id, (void*) roc_data, offset, (void*) last_address));
+                break;
+              }
 //-----------------------------------------------------------------------------
 // at this point, check consistency between the channel_id, dtc_id and link_id for a given run
 // panel ID is a derivative of the DTC ID and the link iD
@@ -438,9 +469,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               uint16_t channel = static_cast<uint16_t>(hit_data->StrawIndex);
               uint16_t chid   = mu2e::StrawId(channel).straw(); // channel ID within the panel
 
-              if (chid > StrawId::_nstraws) {
-                print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING",
-                                   hit_data->StrawIndex, chid, dtc_id, link_id));
+              if (chid >= StrawId::_nstraws) {
+                if (debugBit_[52] == 0) print_(std::format("ERROR: hit with corrupted chid:{:04x} : straw:{} / dtc_id:{} link_id:{}, SKIPPING",
+                                                          hit_data->StrawIndex, chid, dtc_id, link_id));
                 continue;
               }
 
@@ -453,7 +484,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
 //-----------------------------------------------------------------------------
-                    print_(std::format("ERROR: corrupted mnid:{}, skip hit data",mnid));
+                    if (debugBit_[51] == 0) print_(std::format("ERROR: corrupted mnid:{}, skip hit data",mnid));
                     continue;
                   }
                   print_(std::format("WARNING: no panel map for mnid:{}, using offline fallback",mnid));
@@ -469,28 +500,6 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
                 digi_flag = mu2e::StrawDigiFlag::corrupted;
               }
-//               uint16_t panel_id;
-//               if (0 < minnesota_map_.count(mnid)){
-//                 panel_id = minnesota_map_[mnid];
-//               }
-// //-----------------------------------------------------------------------------
-// // in case of a single channel ID error no need to skip the rest of the ROC data -
-// // force geographical address and mark the produced digi
-// //-----------------------------------------------------------------------------
-//               else{
-//                 print_(std::format("ERROR: hit chid:{:04x} inconsistent with the dtc_id:{} and link_id:{}\n", hit_data->StrawIndex, dtc_id, link_id));
-//                 mn_id = channel_map_[dtc_id][link_id];
-//                 if (mn_id == StrawDigisFromArtdaqFragments::invalid_minnesota_){
-//                   std::string msg = "encountered invalid PanelID";
-//                   throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-//                 }
-//                 if (minnesota_map_.count(mn_id) < 1){
-//                   std::string msg = "undefined minnesota number in fallback mapping:" + std::to_string(mn_id);
-//                   throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-//                 }
-//                 panel_id = minnesota_map_[mn_id];
-//                 digi_flag = mu2e::StrawDigiFlag::corrupted;
-//               }
 
               if (hit_data->NumADCPackets != nADCPackets_) {
                 int np = hit_data->NumADCPackets;
@@ -531,35 +540,40 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               auto digi = straw_digis->back();
               digi.digiFlag() = digi_flag;
 //------------------------------------------------------------------------------
-// the corresponding waveform
+// the corresponding waveform, store only if at least the second packet is present (nSamples_ = 15 or more)
 //-----------------------------------------------------------------------------
               if (saveWaveforms_) {
-                std::vector<uint16_t> wf(nSamples_);
-
-                wf[0] = hit_data->ADC00;
-                wf[1] = hit_data->ADC01();
-                wf[2] = hit_data->ADC02;
-
-                auto npackets   = 0;
-                auto idx        = 2;
-                auto adc_packet = (mu2e::TrackerDataDecoder::TrackerADCPacket*)((char*) hit_data + 16); // the packet size is 16 bytes
-                while (npackets < nADCPackets_) {
-                  wf[++idx] = adc_packet->ADC0;
-                  wf[++idx] = adc_packet->ADC1();
-                  wf[++idx] = adc_packet->ADC2;
-                  wf[++idx] = adc_packet->ADC3;
-                  wf[++idx] = adc_packet->ADC4();
-                  wf[++idx] = adc_packet->ADC5;
-                  wf[++idx] = adc_packet->ADC6;
-                  wf[++idx] = adc_packet->ADC7();
-                  wf[++idx] = adc_packet->ADC8;
-                  wf[++idx] = adc_packet->ADC9;
-                  wf[++idx] = adc_packet->ADC10();
-                  wf[++idx] = adc_packet->ADC11;
-                  npackets++;
-                  adc_packet++;
+                if (nSamples_ <= 3) {
+                  print_(std::format("ERROR: nSamples:{}, do not store waveforms",nSamples_));
                 }
-                straw_digi_adcs->emplace_back(wf);
+                else {
+                  std::vector<uint16_t> wf(nSamples_);
+
+                  wf[0] = hit_data->ADC00;
+                  wf[1] = hit_data->ADC01();
+                  wf[2] = hit_data->ADC02;
+
+                  auto npackets   = 0;
+                  auto idx        = 2;
+                  auto adc_packet = (mu2e::TrackerDataDecoder::TrackerADCPacket*)((char*) hit_data + 16); // the packet size is 16 bytes
+                  while (npackets < nADCPackets_) {
+                    wf[++idx] = adc_packet->ADC0;
+                    wf[++idx] = adc_packet->ADC1();
+                    wf[++idx] = adc_packet->ADC2;
+                    wf[++idx] = adc_packet->ADC3;
+                    wf[++idx] = adc_packet->ADC4();
+                    wf[++idx] = adc_packet->ADC5;
+                    wf[++idx] = adc_packet->ADC6;
+                    wf[++idx] = adc_packet->ADC7();
+                    wf[++idx] = adc_packet->ADC8;
+                    wf[++idx] = adc_packet->ADC9;
+                    wf[++idx] = adc_packet->ADC10();
+                    wf[++idx] = adc_packet->ADC11;
+                    npackets++;
+                    adc_packet++;
+                  }
+                  straw_digi_adcs->emplace_back(wf);
+                }
               }
             }
           }
