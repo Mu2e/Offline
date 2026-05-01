@@ -27,8 +27,10 @@
 #include "fhiclcpp/types/Sequence.h"
 
 // mu2e
+#include "Offline/CaloMC/inc/CaloDigiWrapper.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -46,6 +48,10 @@ namespace mu2e{
           fhicl::Name("StrawDigiCollection"),
           fhicl::Comment("art::InputTag of digis to displace")
         };
+        fhicl::Atom<art::InputTag> calo_digi_tag{
+          fhicl::Name("CaloDigiCollection"),
+          fhicl::Comment("art::InputTag of digis to displace")
+        };
         fhicl::Atom<art::InputTag> kalseed_tag{
           fhicl::Name("KalSeedCollection"),
           fhicl::Comment("art::InputTag of KalSeedCollection to prescale")
@@ -58,6 +64,11 @@ namespace mu2e{
           fhicl::Name("SurfaceIds"),
           fhicl::Comment("Prioritized sequence of mu2e::SurfaceIds at which tracks may be sampled for reference timing")
         };
+        // would be better for the sampling period to come from conditions
+        fhicl::Atom<double> calo_adc_sample_period{
+          fhicl::Name("CaloADCSamplePeriod"),
+          fhicl::Comment("Sample spacing of calorimeter waveforms")
+        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -67,8 +78,10 @@ namespace mu2e{
 
     protected:
       art::InputTag _tracker_digi_tag;
+      art::InputTag _calo_digi_tag;
       art::InputTag _kalseed_tag;
       SurfaceIdCollection _surface_ids;
+      double _calo_adc_sample_period;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
       art::RandomNumberGenerator::base_engine_t& _engine;
       BinnedSpectrum _target_distribution;
@@ -82,7 +95,9 @@ namespace mu2e{
   DisplaceDigiTimes::DisplaceDigiTimes(const Parameters& config):
       art::EDProducer(config),
       _tracker_digi_tag(config().tracker_digi_tag()),
+      _calo_digi_tag(config().calo_digi_tag()),
       _kalseed_tag(config().kalseed_tag()),
+      _calo_adc_sample_period(config().calo_adc_sample_period()),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
     // initialize target distribution
     const auto pset = config().target_distribution.get<fhicl::ParameterSet>();
@@ -106,6 +121,8 @@ namespace mu2e{
     this->produces<StrawDigiADCWaveformCollection>();
 
     // calorimeter...
+    this->consumes<CaloDigiCollection>(_calo_digi_tag);
+    this->produces<CaloDigiCollection>();
   }
 
   void DisplaceDigiTimes::produce(art::Event& event){
@@ -118,6 +135,9 @@ namespace mu2e{
            + " and " + std::to_string(adcs_handle->size());
       throw cet::exception("DisplaceDigiTimes") << msg << std::endl;
     }
+
+    // calorimeter
+    auto cdigi_handle = event.getValidHandle<CaloDigiCollection>(_calo_digi_tag);
 
     // first, check that there is only a single KalSeed associated with
     // these digis
@@ -185,7 +205,26 @@ namespace mu2e{
     event.put(std::move(digis));
     event.put(std::move(adcss));
 
-    // calorimeter...
+    // apply the shift to calorimeter digis
+    double sample_period = _calo_adc_sample_period;
+    auto cdigis = std::make_unique<CaloDigiCollection>();
+    if (0 < cdigi_handle->size()){
+      for (const auto& old: *cdigi_handle){
+        auto id = old.SiPMID();
+        auto t0 = old.t0();
+        auto peakpos = old.peakpos();
+        auto& waveform = old.waveform();
+
+        // displace waveform start times
+        auto analog = t0 * sample_period;
+        auto shifted = analog + shift;
+        t0 = static_cast<CaloDigiWrapper::sample_t>(shifted / sample_period);
+
+        // new digi is identical to input digi, with displaced start index
+        cdigis->emplace_back(id, t0, waveform, peakpos);
+      }
+    }
+    event.put(std::move(cdigis));
   }
 
   double DisplaceDigiTimes::sample_target_time(){
