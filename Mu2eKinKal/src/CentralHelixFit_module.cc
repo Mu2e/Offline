@@ -7,6 +7,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -60,6 +61,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -130,6 +132,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     // helix module specific config
+    fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
   };
 
   class CentralHelixFit : public art::EDProducer {
@@ -142,6 +145,7 @@ namespace mu2e {
     protected:
       bool goodFit(KKTRK const& ktrk) const;
       void sampleFit(KKTRK& kktrk) const;
+      void extrapolate(KKTRK& ktrk) const;
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
@@ -171,9 +175,11 @@ namespace mu2e {
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceIdCollection ssids_;
-      KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
+      KinKalGeom::SurfacePairCollection surfaces_to_sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
-  };
+      bool extrapolate_;
+      std::unique_ptr<KKExtrap> extrap_; //  extrapolations
+    };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
     fitflag_(TrkFitFlag::KKCentralHelix),
@@ -195,7 +201,8 @@ namespace mu2e {
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
     sampleinrange_(settings().modSettings().sampleInRange()),
-    sampleinbounds_(settings().modSettings().sampleInBounds())
+    sampleinbounds_(settings().modSettings().sampleInBounds()),
+    extrapolate_(false)
     {
       // collection handling
       for(const auto& cseedtag : settings().modSettings().seedCollections()) { cseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(cseedtag)); }
@@ -223,6 +230,16 @@ namespace mu2e {
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
+      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
+      // geometry service eventually, TODO
+      KinKalGeom smap;
+      smap.surfaces(ssids_,surfaces_to_sample_);
+      // configure extrapolation
+      if(settings().Extrapolation()){
+        extrapolate_ = true;
+        // create KKExtrap
+        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
+      }
     }
 
   void CentralHelixFit::beginRun(art::Run& run) {
@@ -240,7 +257,7 @@ namespace mu2e {
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
+    kkg.surfaces(ssids_,surfaces_to_sample_);
   }
 
   void CentralHelixFit::produce(art::Event& event ) {
@@ -340,6 +357,8 @@ namespace mu2e {
           }
 
           if(print_>1)kktrk->printFit(std::cout,print_);
+          // extrapolate as required
+          if(goodfit && extrapolate_) extrapolate(*kktrk);
           if(goodfit || saveall_){
             TrkFitFlag fitflag;//(hptr->status());
             fitflag.merge(fitflag_);
@@ -400,7 +419,7 @@ namespace mu2e {
   void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    for(auto const& surf : surfacess_to_sample_){
+    for(auto const& surf : surfaces_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool goodinter(true);
@@ -422,6 +441,11 @@ namespace mu2e {
         }
       }
     }
+  }
+
+  void CentralHelixFit::extrapolate(KKTRK& ktrk) const {
+    // apply extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
+    if(extrap_) extrap_->extrapolate(ktrk);
   }
 
 } // mu2e

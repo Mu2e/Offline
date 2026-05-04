@@ -13,6 +13,7 @@ namespace mu2e {
       void makeTracker();
       void makeDS();
       void makeTarget();
+      void makeCalo();
       void makeTCRV();
       std::unique_ptr<KinKalGeom> kkg_;
   };

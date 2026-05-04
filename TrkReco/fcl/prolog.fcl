@@ -8,6 +8,7 @@ BEGIN_PROLOG
 #
 # may use a more careful optimization, but this is it for now
 #------------------------------------------------------------------------------
+
 TrkReco: {
   McUtils : { tool_type : "TrkRecoMcUtils"
     comboHitCollTag    : "makeSH"

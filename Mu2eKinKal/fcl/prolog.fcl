@@ -391,6 +391,8 @@ Mu2eKinKal : {
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   LHSEEDXTRAP : {
@@ -401,6 +403,8 @@ Mu2eKinKal : {
     Upstream : false
     BackToTracker : false
     ToOPA : false
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   CENTRALHELIX : {
@@ -435,9 +439,16 @@ Mu2eKinKal : {
   }
 
   LINEEXTRAPOLATION : {
-    MaxDt : 200.0 # (ns)
-    MinV : 1e-5
-    ToCRV : true
+    MaxDt : 200.0
+    BCorrTolerance : 1e-5
+    ToTrackerEnds : true
+    Upstream : true
+    BackToTracker : false
+    ToTrackerEnds : false
+    ToOPA : false
+    ToCaloD0 : true
+    ToCaloD1 : true
+    IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
   }
 }
 

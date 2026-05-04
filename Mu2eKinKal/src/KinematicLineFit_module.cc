@@ -53,6 +53,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateTCRV.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -120,21 +121,13 @@ namespace mu2e {
       fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     };
 
-    // Extrapolation configuration
-    struct KKExtrapConfig {
-      fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit") };
-      fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum Y vel to extrapolate a fit") };
-      fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV") };
-      fhicl::Atom<int> Debug { Name("Debug"), Comment("Debug level"), 0 };
-    };
-
     struct GlobalConfig {
       fhicl::Table<KKLineModuleConfig> modSettings { Name("ModuleSettings") };
       fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
       fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+      fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
       fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
 
@@ -172,12 +165,13 @@ namespace mu2e {
     double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
+    SurfaceIdCollection ssids_; // surface IDs to sample
+    KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
     bool extrapolate_, toCRV_;
     double maxdt_ = 0.0, btol_ = 0.0, minv_ = 0.0;
-    SurfaceIdCollection ssids_;
-    KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
     int extrapdebug_ = 0;
     double tcrvthick_ = 150.0; // CRV sector thickness: should come from geometry service TODO
+    std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
   };
@@ -224,17 +218,18 @@ namespace mu2e {
       }else{
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
+      // store surface IDs to be resolved when geometry is available
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
-        toCRV_ = settings().Extrapolation()->ToCRV();
+        // create KKExtrap for calorimeter and upstream extrapolations
+        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
         // global configs
         maxdt_ = settings().Extrapolation()->MaxDt();
         btol_ =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        minv_ = settings().Extrapolation()->MinV();
         extrapdebug_ =  settings().Extrapolation()->Debug();
       }
 
@@ -258,7 +253,7 @@ namespace mu2e {
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
+    kkg.surfaces(ssids_,sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
@@ -384,7 +379,7 @@ namespace mu2e {
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
-    for(auto const& surf : surfacess_to_sample_){
+    for(auto const& surf : sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg;
       bool goodinter(true);
@@ -413,7 +408,7 @@ namespace mu2e {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
-    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg.TCRV(),extrapdebug_);
+    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,kkg.TCRV(),extrapdebug_);
 
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TCRVSID("TCRV");
@@ -440,6 +435,8 @@ namespace mu2e {
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);
+    // apply additional extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
+    if(extrap_) extrap_->extrapolate(ktrk);
   }
 }
 DEFINE_ART_MODULE(mu2e::KinematicLineFit)
