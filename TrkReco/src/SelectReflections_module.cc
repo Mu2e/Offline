@@ -95,7 +95,7 @@ namespace mu2e {
             }
           }
           // if no intersections found, skip testing for a match with this track
-          if(uptrkiinter == upks.intersections().end())break;
+          if(uptrkiinter == upks.intersections().end())continue;
           // otherwise, search for a matching downstream track
           for(size_t idown = 0; idown <downksc.size(); ++idown){
             auto const& downks = downksc[idown];
@@ -130,7 +130,7 @@ namespace mu2e {
         ibest = 0;
         if(matches.size()>1){
           if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
-          double value = std::numeric_limits<float>::max();
+          double value = std::numeric_limits<double>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
             if(selbest_ == mom && -std::get<2>(match) < value){

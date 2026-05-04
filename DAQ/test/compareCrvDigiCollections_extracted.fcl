@@ -1,0 +1,78 @@
+#Produces artFragments from CrvDigis and converts them back to CrvDigis. Both CrvDigi collections are compared at the end.
+
+#contact: R. Ehrlich
+
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVResponse/fcl/prolog.fcl"
+
+process_name : CrvDigiCollectionComparison
+
+services :
+{
+  @table::Services.Core
+  @table::Services.Reco
+}
+
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics :
+{
+  producers :
+  {
+    CrvFragment :
+    {
+      module_type   : CrvDigisToFragments
+      CrvDigiTag    : "CrvDigi"
+      diagLevel     : 0
+    }
+    CrvDigiNew :
+    {
+      module_type   : CrvDigisFromArtdaqFragmentsFEBII
+      diagLevel     : 0
+    }
+  }
+  analyzers:
+  {
+    CrvDigiComparison :
+    {
+      module_type   : CrvDigiCollectionsComparator
+      diagLevel     : 10
+      referenceTag  : "CrvDigi"
+      candidateTag  : "CrvDigiNew"
+    }
+  }
+
+  t1 : [ CrvFragment, CrvDigiNew ]
+  e1 : [ CrvDigiComparison, outfileReco ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfileReco :
+  {
+    module_type   :   RootOutput
+    fileName      :   "crvRecoExtractedComparison.art"
+  }
+}
+
+services.TFileService.fileName : "crvRecoExtracted_DQM.root"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+services.ProditionsService.crvStatus.useDb: true
+services.ProditionsService.crvCalib.useDb: true
+#current status and calibration until we can use the database
+services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260221.txt","Offline/CRVConditions/data/calib_extracted_20260221.txt"]
+services.DbService.verbose : 0
+services.TimeTracker.printSummary: true
+services.scheduler.wantSummary: true
+services.message.destinations.log.outputStatistics : true

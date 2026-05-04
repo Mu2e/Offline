@@ -149,6 +149,7 @@ cet_build_plugin(TZClusterFinder art::module
       Offline::ConfigTools
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+      Offline::TimeoutService
 )
 
 cet_build_plugin(CalHelixFinderDiag art::tool

@@ -26,6 +26,7 @@
 #include "Offline/GeometryService/inc/Mu2eHallMaker.hh"
 #include "Offline/GeometryService/inc/TSdAMaker.hh"
 #include "Offline/GeometryService/inc/TrackerMaker.hh"
+#include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/GeometryService/inc/WorldG4Maker.hh"
 #include "Offline/GeometryService/src/DetectorSystemMaker.hh"
@@ -59,6 +60,7 @@
 #include "Offline/GeometryService/inc/ElectronicRackMaker.hh"
 #include "Offline/BeamlineGeom/inc/TSdA.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -238,17 +240,8 @@ namespace mu2e {
 
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-
-   if (_config->getString("targetPS_model") == "MDC2018"){
-     //      std::cout << "adding Tier1 in GeometryService" << std::endl;
-      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
-        } else
-      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){
-        //        std::cout << " adding Hayman in GeometryService" << std::endl;
-        addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
-          } else
-        {throw cet::exception("GEOM") << " " << static_cast<char const*>(__func__) << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
+    // Use ProductionTarget's built-in method to get the correct position based on model type
+    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.targetPositionByVersion()));
 
 
 
@@ -361,6 +354,10 @@ namespace mu2e {
     // This class has a default c'tor with all available information internally.
     std::unique_ptr<DUSAFMu2eConverter> dusafMu2e{ std::make_unique<DUSAFMu2eConverter>() };
     addDetector( std::move(dusafMu2e) );
+
+    // build KinKalGeom, used in track reconstruction and extrapolation
+    KinKalGeomMaker kkgm;
+    addDetector( std::move(kkgm.makeKKG()) );
 
   } // preBeginRun()
 

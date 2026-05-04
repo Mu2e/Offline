@@ -48,6 +48,7 @@ namespace mu2e {
       fhicl::Atom<int>               debugLevel       {Name("debugLevel"       ), Comment("turn on/off debug"           ) };
       fhicl::Atom<int>               printFrequency   {Name("printFrequency"   ), Comment("print frequency"             ) };
       fhicl::Atom<int>               runDisplay       {Name("runDisplay"       ), Comment("will plot t vs z"            ) };
+      fhicl::Atom<bool>              protonTCs        {Name("protonTCs"        ), Comment("Produce proton time clusters"), false};
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
@@ -83,10 +84,11 @@ namespace mu2e {
     int              _debugLevel;
     int              _printfreq;
     int              _runDisplay;
+    bool             _protonTCs;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
-    std::optional<art::ServiceHandle<TimeoutWatchdogService>> _timeoutService;
-    std::optional<TimeoutWatchdogService::ModuleGuard> _timeoutGuard;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
@@ -124,7 +126,7 @@ namespace mu2e {
     art::Handle<CaloClusterCollection>     _ccHandle;
     facilitateVars                         _f;
     std::unique_ptr<ModuleHistToolBase>    _hmanager;
-    TCanvas*                               _c1;
+    TCanvas*                               _c1 = nullptr;
 
     //-----------------------------------------------------------------------------
     // functions
@@ -172,10 +174,11 @@ namespace mu2e {
     _debugLevel             (config().debugLevel()                              ),
     _printfreq              (config().printFrequency()                          ),
     _runDisplay             (config().runDisplay()                              ),
+    _protonTCs              (config().protonTCs()                               ),
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
-    _timeoutService         (std::nullopt                                        ),
-    _timeoutGuard           (std::nullopt                                        ),
+    _timeoutService         (std::nullopt                                       ),
+    _timeoutGuard           (std::nullopt                                       ),
     _chLabel                (config().chCollLabel()                             ),
     _tcLabel                (config().tcCollLabel()                             ),
     _ccLabel                (config().ccCollLabel()                             ),
@@ -207,6 +210,7 @@ namespace mu2e {
       consumes<CaloClusterCollection>(_ccLabel);
       produces<TimeClusterCollection>();
       produces<IntensityInfoTimeCluster>();
+      if(_protonTCs) produces<TimeClusterCollection>("proton");
 
 
       if (_runDisplay == 1) { _c1 = new TCanvas("_c1", "t vs. z", 900, 900); }
@@ -221,7 +225,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // destructor
   //-----------------------------------------------------------------------------
-  TZClusterFinder::~TZClusterFinder() {}
+  TZClusterFinder::~TZClusterFinder() {
+    delete _c1;
+  }
 
   //-----------------------------------------------------------------------------
   // beginJob
@@ -290,9 +296,11 @@ namespace mu2e {
 
     std::unique_ptr<IntensityInfoTimeCluster> iiTC(new IntensityInfoTimeCluster);
     std::unique_ptr<TimeClusterCollection>    tcColl(new TimeClusterCollection);
+    std::unique_ptr<TimeClusterCollection>    protonTCColl = (_protonTCs) ? std::make_unique<TimeClusterCollection>() : nullptr;
 
     _data._tcColl = tcColl.get();
     _data._iiTC = iiTC.get();
+    _data._protonTCColl = (_protonTCs) ? protonTCColl.get() : nullptr;
 
     bool ok = findData(event);
 
@@ -306,6 +314,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     event.put(std::move(tcColl));
     event.put(std::move(iiTC));
+    if(_protonTCs) event.put(std::move(protonTCColl), "proton");
 
     _timeoutGuard.reset();
 
@@ -350,7 +359,7 @@ namespace mu2e {
       cHit comboHit;
       comboHit.hIndex = i;
       comboHit.hTime = hit->correctedTime();
-      comboHit.hWeight = 1/(hit->timeVar());
+      comboHit.hWeight = (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.;
       comboHit.hZpos = hit->pos().z();
       comboHit.nStrawHits = hit->nStrawHits();
       comboHit.hIsUsed = 0;
@@ -756,10 +765,24 @@ namespace mu2e {
 
     unsigned short nProtons = 0;
 
+    auto tcs = (_protonTCs) ? _data._protonTCColl : nullptr;
     for (size_t i=0; i<_f.chunks.size(); i++) {
       if (_f.chunks[i].nrgSelection == 1) {continue;}
       if (_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
       nProtons++;
+
+      // If proton time clusters are requested, add them to the output collection
+      if(_protonTCs) {
+        TimeCluster tc;
+        for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
+          tc._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));
+        }
+        tc._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
+        const int caloIdx = _f.chunks[i].caloIndex;
+        if (_useCaloClusters == 1 && caloIdx != -1) tc._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
+        tc._nsh = _f.chunks[i].nStrawHits;
+        tcs->push_back(std::move(tc));
+      }
     }
 
     outIITC.setNProtonTCs(nProtons);
@@ -813,7 +836,7 @@ namespace mu2e {
             hit = &_data._chColl->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
-              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->timeVar()));
+              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.);
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }

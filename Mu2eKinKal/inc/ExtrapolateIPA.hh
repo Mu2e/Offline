@@ -17,8 +17,8 @@ namespace mu2e {
     public:
       using CylPtr = std::shared_ptr<KinKal::Cylinder>;
       ExtrapolateIPA() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      zmin_(std::numeric_limits<float>::max()),
-      zmax_(-std::numeric_limits<float>::max()),debug_(0) {}
+      zmin_(std::numeric_limits<double>::max()),
+      zmax_(std::numeric_limits<double>::lowest()),debug_(0) {}
 
       ExtrapolateIPA(double maxdt, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
         maxDt_(maxdt), dptol_(dptol), intertol_(intertol), ipa_(ipa),

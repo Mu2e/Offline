@@ -17,6 +17,9 @@ int            pbarwedge.nStrips          = 2;
 vector<double> pbarwedge.stripThicknesses = { 0.127, 0.127 };  // mm
 vector<double> pbarwedge.stripHeights     = {  90.0, 140.0 };  // mm
 
+// Switch the COL5 material name, but the underlying material is G4_POLYETHYLENE
+string ts.coll5.material1Name = "COL5Poly";
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

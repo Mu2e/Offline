@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 find_package(cetmodules)
 
-project(Offline VERSION 11.01.00)
+project(Offline VERSION 13.07.00)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -165,6 +165,7 @@ add_subdirectory(GlobalConstantsService)
 add_subdirectory(HelloWorld)
 add_subdirectory(KalmanTests)
 add_subdirectory(KinKalGeom)
+add_subdirectory(MachineLearningTools)
 add_subdirectory(MBSGeom)
 add_subdirectory(MCDataProducts)
 add_subdirectory(MECOStyleProtonAbsorberGeom)

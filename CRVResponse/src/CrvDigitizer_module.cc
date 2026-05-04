@@ -103,7 +103,7 @@ namespace mu2e
         const std::vector<double> &voltages = crvDigiMC.GetVoltages();
         double startTime = crvDigiMC.GetStartTime();
         double TDC0time = crvDigiMC.GetTDC0Time();
-        double NZS = crvDigiMC.IsNZS();
+        bool NZS = crvDigiMC.IsNZS();
 
         //start time gets measured with respect to FEB's TDC near the event window start.
         //that's the TDC that gets set to TDC=0 and can be anywhere within: event window start <= t < event window start + digitization period
