@@ -54,8 +54,8 @@ namespace mu2e {
       KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
           bfield_(rhs.bfield()),
           whstate_(rhs.hitState()),
-          dVar_(driftVariance()),
-          dDdT_(driftVelocity()),
+          dVar_(rhs.dVar_),
+          dDdT_(rhs.dDdT_),
           ca_(rhs.closestApproach()),
           resids_(rhs.refResiduals()),
           chit_(rhs.hit()),

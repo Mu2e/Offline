@@ -98,14 +98,15 @@ namespace mu2e {
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
+      _isPrimary = isPrimary;
       _randomUnitSphereExternal = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randomUnitSphereInternal = std::make_unique<RandomUnitSphere>(eng);
       _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
       _muonCaptureSpectrum = std::make_unique<MuonCaptureSpectrum>(_randFlat.get(), _randomUnitSphereInternal.get());
       if(_useRate) {
-        _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
+        _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material) * (_czmax - _czmin)/2.);
         _internalRate = GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCInternalRate(material);
       }
     }

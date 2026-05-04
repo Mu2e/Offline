@@ -87,9 +87,6 @@ BEGIN_PROLOG
                                                     //-may be changed for testing purposes,
                                                     // if a database table of a random gaussian distribution is used
                                                     // (current random table uses a sigma equal to 5% of the nominal photon yied)
-      photonYieldVariationCutoffLow         :-0.2   //the photon yield variation is cut off at 20% below the mean
-      photonYieldVariationCutoffHigh        : 0.2   //the photon yield variation is cut off at 20% above the mean
-                                                    //note: if measured deviations are used, the cutoffs should be set to the maximum values
       digitizationStart                     : @local::DigitizationStart
       digitizationEnd                       : @local::DigitizationEnd
       digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times

@@ -188,7 +188,7 @@ bool LookupBinDefinitions::findScintillatorCerenkovBinReverse(unsigned int bin, 
   int nZBins=zBins.size()-1;
   int nBetaBins=betaBins.size()-1;
   xbin = (bin / (nBetaBins*nZBins*nYBins)) % nXBins;
-  ybin = (bin / nBetaBins*nZBins) % nYBins;
+  ybin = (bin / (nBetaBins*nZBins)) % nYBins;
   zbin = (bin / nBetaBins) % nZBins;
   betabin = bin % nBetaBins;
   return true;
@@ -321,9 +321,6 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
   stepEnd[3].setZ(-stepEnd[3].z());
   stepEnd[3].setY(-stepEnd[3].y());
 
-static int nPScintillation=0;
-static int nPCerenkov=0;
-
   for(int SiPM=0; SiPM<_nSiPMs; SiPM++)
   {
     //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
@@ -387,9 +384,6 @@ static int nPCerenkov=0;
         }
       }
 
-nPScintillation+=nPhotonsScintillation;
-nPCerenkov+=nPhotonsCerenkov;
-
       //loop over all photons created at this point
       int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
       for(int i=0; i<nPhotons; i++)
@@ -418,11 +412,9 @@ nPCerenkov+=nPhotonsCerenkov;
           else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 
         }// if a photon was created
-      }//loop over all SiPMs
-    }//loop over all photons at this point
-  }//loop over all points along the track
-
-//std::cout<<"Lookup tables:  total scintillation: "<<nPScintillation<<"  total Cerenkov: "<<nPCerenkov<<std::endl;
+      }//loop over all photons at this point
+    }//loop over all steps along the track
+  }//loop over all SiPMs
 
 }
 
@@ -523,6 +515,7 @@ int MakeCrvPhotons::GetNumberOfPhotonsFromAverage(double average, int nSteps)  /
   {
     double sigma = std::sqrt(average);
     nPhotons = lrint(_randGaussQ.fire(average,sigma)/nSteps);
+    if(nPhotons<0) nPhotons=0;
   }
   else
   {
@@ -546,25 +539,20 @@ double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double cha
 {
   if(charge==0) return 0;
 
-  bool first=true;
   double prevBeta=0;
   double prevNumberPhotons=0;
   std::map<double,double>::const_iterator i;
   for(i=photons.begin(); i!=photons.end(); i++)
   {
-    if(beta<=i->first)
+    if(beta<=i->first) //first beta in the Cerenkov map is always greater than 0.0 and has number of photons of 0.
     {
-      if(first) return 0; //this shouldn't happen
+      if(i->first==0) return i->second;  //beta=0 in Cerenkov map shouldn't happen. if it did and was the first entry, i->first-prevBeta would result in a division by 0.
       double numberPhotons=prevNumberPhotons+(i->second-prevNumberPhotons)/(i->first-prevBeta)*(beta-prevBeta);
       numberPhotons*=fabs(charge/eplus);
       return numberPhotons;
     }
-    if(first)
-    {
-      prevBeta=i->first;
-      prevNumberPhotons=i->second;
-      first=false;
-    }
+    prevBeta=i->first;
+    prevNumberPhotons=i->second;
   }
   return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
 }

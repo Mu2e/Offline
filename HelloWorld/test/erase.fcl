@@ -1,4 +1,4 @@
-process : HelloWorld
+process_name : HelloWorld
 
 source : {
   module_type : EmptyEvent

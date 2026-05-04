@@ -578,7 +578,7 @@ bool RobustHelixFit::initFZ_2(RobustHelixFinderData& HelixData) {
       for (int n=nmin; n<=nmax; n++) { //
         double x = dphidz + n*2*M_PI/dz;
         int bin = (x-minX)/stepX;
-        hist[bin] += weight;
+        if(bin >= 0 && bin < int(nbinsX)) hist[bin] += weight;
       }
     }
   }
