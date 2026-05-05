@@ -127,9 +127,9 @@ namespace mu2e {
       return false;  // stop, we found material crossing
     } else {
       if(debug_ == -300) {
-        std::cout << "  No intersection found" << std::endl;
+        std::cout << "  No intersection found with annulus in Z-range" << std::endl;
       }
-      return true;  // keep going
+      return false;  // stop - panel in range but no intersection means we're past it
     }
   }
 }
