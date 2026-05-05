@@ -218,7 +218,8 @@ namespace mu2e{
         // displace waveform start times
         auto analog = t0 * sample_period;
         auto shifted = analog + shift;
-        t0 = static_cast<CaloDigiWrapper::sample_t>(shifted / sample_period);
+        auto rounded = std::lround(shifted / sample_period);
+        t0 = static_cast<CaloDigiWrapper::sample_t>(rounded);
 
         // new digi is identical to input digi, with displaced start index
         cdigis->emplace_back(id, t0, waveform, peakpos);
