@@ -23,6 +23,9 @@ Mylar       1.4    0.   0.   -3    10    Carbon     0 4 Oxygen 0 8 Hydrogen 0   
 straw-wire    19.300000    0.   0.   +1    100.0e-2    Tungsten   0    -10 -20 -30     20.0    1.0    solid
 # 80:20 (by volume) Argon:CO2
 straw-gas        0.0016980   0. 0. +2   0.78304 Argon 0 0.21696 CO2 1 -10 -20 -30  20.0    1.0    gas  0.01
+# Calorimeter materials
+AluminumHoneycomb  0.03      0.   0.   +1    100.0e-2    Aluminum   0    -10 -20 -30     20.0    1.0    solid
+CarbonFiber        1.60      0.   0.   +1    100.0e-2    Carbon     0    -10 -20 -30     20.0    1.0    solid
 straw-wall       1.4325    0.   0.   +3    96.95e-2   Mylar  1 1.80e-2 Gold 0 1.25e-2 Aluminum 0 -10     -20     -30     20.0    1.0    solid  1.5
 #straw-wall       1.48    0.   0.   +3    97.0e-2   Mylar  1 2.0e-2 Copper 0 1.0e-2 Aluminum 0 -10     -20     -30     20.0    1.0    solid
 cathode       5.2 0.   0.   +2    86.4e-2    Copper 0 13.6e-2 straw-wall 1   -10 -20 -30     20.0    1.0    solid

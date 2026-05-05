@@ -118,7 +118,8 @@ namespace mu2e {
         // update the cache
         inter_ = newinter;
         ann_ = disks_[idisk];
-        //sid_ = SurfaceId(SurfaceIdEnum::calo_Foils,idisk); //FIXME
+        SurfaceIdEnum::enum_type diskEnum = (idisk == 0) ? SurfaceIdEnum::EMC_Disk_0_Outer : SurfaceIdEnum::EMC_Disk_1_Outer;
+        sid_ = SurfaceId(diskEnum, idisk);
         if(debug_ > 0)std::cout << "Good calo disk " << newinter << " sid " << sid_ << std::endl;
         return false;
       }

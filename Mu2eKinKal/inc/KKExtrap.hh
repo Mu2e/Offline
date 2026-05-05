@@ -13,10 +13,12 @@
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateCalo.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateCaloMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "cetlib_except/exception.h"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 namespace mu2e {
@@ -38,6 +40,7 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> bool extrapolateCaloMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void toCaloD0(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> void toCaloD1(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
@@ -51,17 +54,21 @@ namespace mu2e {
       DiskPtr trkfrontptr_, trkmidptr_, trkbackptr_;
       FruPtr opaptr_;
       bool backToTracker_, toOPA_, toTrackerEnds_, upstream_;
-      bool toCaloD0_, toCaloD1_;
+      bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // calo surfaces and predicates
       DiskPtr calod0frontptr_, calod0backptr_, calod1frontptr_, calod1backptr_;
       mutable ExtrapolateToZ calod0Front_, calod0Back_, calod1Front_, calod1Back_;
       mutable ExtrapolateToZ TSDA_, trackerFront_, trackerBack_; // extrapolation predicate based on Z values
       mutable ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
       mutable ExtrapolateST extrapST_; // extrapolation to intersections with the ST
+      mutable ExtrapolateCaloMaterial extrapCaloMat_; // extrapolation through passive calo materials
       mutable bool geom_initialized_ = false;
       void initGeometry() const; // lazy initialization method
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+      // calorimeter front panel passive material thicknesses (should come from geometry service TODO)
+      double calofmthick_ = 21.75; // calo front panel foam thickness (mm)
+      double calocarb_thick_ = 3.0; // calo front panel carbon thickness (mm)
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig,KKMaterial const& kkmat) :
@@ -81,6 +88,7 @@ namespace mu2e {
     upstream_(extrapconfig.Upstream()),
     toCaloD0_(extrapconfig.ToCaloD0()),
     toCaloD1_(extrapconfig.ToCaloD1()),
+    toCaloMaterial_(extrapconfig.ToCaloMaterial()),
     geom_initialized_(false)
   {
     // geometry initialization is deferred to first use via initGeometry()
@@ -88,7 +96,7 @@ namespace mu2e {
 
   inline void KKExtrap::initGeometry() const {
     if(geom_initialized_) return; // already initialized
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
 
     const_cast<AnnPtr&>(tsdaptr_) = kkg.DS().upstreamAbsorberPtr();
@@ -109,6 +117,8 @@ namespace mu2e {
     const_cast<ExtrapolateToZ&>(trackerBack_) = ExtrapolateToZ(maxdt_,btol_,kkg.tracker().back().center().Z(),debug_);
     const_cast<ExtrapolateIPA&>(extrapIPA_) = ExtrapolateIPA(maxdt_,btol_,intertol_,kkg.DS().innerProtonAbsorberPtr(),debug_);
     const_cast<ExtrapolateST&>(extrapST_) = ExtrapolateST(maxdt_,btol_,intertol_,kkg.ST(),debug_);
+    // Initialize calo material predicates (depth 0 = disk 0 front panel)
+    const_cast<ExtrapolateCaloMaterial&>(extrapCaloMat_) = ExtrapolateCaloMaterial(maxdt_,btol_,intertol_,kkg.calo(),0,debug_);
 
     // calo predicates - use local Z values stored in Calo class
     const_cast<ExtrapolateToZ&>(calod0Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Front_Z(),debug_);
@@ -123,7 +133,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
     initGeometry(); // lazy initialization: initialize geometry on first use
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker().front().center().Z(),debug_);
 
@@ -141,7 +151,13 @@ namespace mu2e {
 
       if(exitsIPA){ // if it exits out the back, extrapolate through the target
         bool exitsST = extrapolateST(ktrk,tdir);
-        if(exitsST) { // if it exits out the back, extrapolate to the TSDA (DS rear absorber)
+        if(exitsST) { // if it exits out the back, optionally extrapolate through calorimeter materials
+          if(toCaloMaterial_) {
+            if(!extrapolateCaloMaterial(ktrk,tdir)) {
+              if(debug_ > 0) std::cout << "Calo material extrapolation did not complete (particle exited backwards)" << std::endl;
+            }
+          }
+          // then extrapolate to the TSDA (DS rear absorber)
           bool hitTSDA = extrapolateTSDA(ktrk,tdir);
           // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST
           if(!hitTSDA){ // reflection upstream of the target: go back through the target
@@ -167,7 +183,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
 
     ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker().front().center().Z(),debug_);
@@ -211,7 +227,7 @@ namespace mu2e {
 
     template <class KTRAJ> void KKExtrap::toCaloD0(KKTrack<KTRAJ>& ktrk) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
@@ -250,7 +266,7 @@ namespace mu2e {
 
    template <class KTRAJ> void KKExtrap::toCaloD1(KKTrack<KTRAJ>& ktrk) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
@@ -283,7 +299,7 @@ namespace mu2e {
 
   template <class KTRAJ> bool KKExtrap::extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     using KKIPAXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
     using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
@@ -328,7 +344,7 @@ namespace mu2e {
     using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
     using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
 
     // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
@@ -369,7 +385,7 @@ namespace mu2e {
 
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker().front().center().Z(),debug_);
     if(trackerFront.debug() > 0)std::cout << "extrapolating to Tracker " << std::endl;
@@ -386,9 +402,109 @@ namespace mu2e {
     return false;
   }
 
+  template <class KTRAJ> bool KKExtrap::extrapolateCaloMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    using KKCALOMATXING = KKShellXing<KTRAJ,KinKal::Annulus>;
+    using KKCALOMATXINGPTR = std::shared_ptr<KKCALOMATXING>;
+    initGeometry();
+
+    // Extrapolate through passive calorimeter front panel materials (foam, carbon)
+    // This adds material effects (energy loss, scattering) for material crossing
+    // Pattern mirrors IPA and ST extrapolation
+
+    if(debug_ == -300) {
+      std::cout << "\n### KKExtrap::extrapolateCaloMaterial - START ###" << std::endl;
+      std::cout << "  Direction: " << (tdir == TimeDir::forwards ? "FORWARD" : "BACKWARD") << std::endl;
+      std::cout << "  About to extrapolate through calo front panel passive materials" << std::endl;
+      std::cout << "  Material: AluminumHoneycomb (21.75mm) + CarbonFiber (3.0mm) = 24.75mm total" << std::endl;
+    }
+
+    auto const& ftraj = ktrk.fitTraj();
+
+    // Front panel combined thickness: 21.75 mm (foam) + 3.0 mm (carbon) = 24.75 mm
+    double fp_combined_thick = calofmthick_ + calocarb_thick_;
+
+    // Static surface ID for calo material crossings
+    static const SurfaceId CaloMatSID(SurfaceIdDetail::EMC_FrontPanel);
+
+    // Check for intersection with front panel (thin surface, only one crossing expected)
+    int xing_count = 0;
+    ktrk.extrapolate(tdir,extrapCaloMat_);
+    if(extrapCaloMat_.intersection().good()){
+      xing_count++;
+      if(debug_ == -300) {
+        std::cout << "\n  === Crossing #" << xing_count << " ===" << std::endl;
+        std::cout << "    Found intersection with calo front panel Annulus" << std::endl;
+        auto const& inter = extrapCaloMat_.intersection();
+        std::cout << "    Intersection: " << inter << std::endl;
+      }
+
+      // We have a good intersection. Create a shell material Xing for the annulus surface
+      auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+      auto const& annulusptr = extrapCaloMat_.frontPanelAnnulus();
+
+      if(debug_ == -300) {
+        std::cout << "    Before material: momentum = " << reftrajptr->momentum() << " MeV/c" << std::endl;
+      }
+
+      // Create the material xing using combined front panel thickness
+      KKCALOMATXINGPTR matxingptr = std::make_shared<KKCALOMATXING>(
+        annulusptr, CaloMatSID, *kkmat_.CaloFrontFoamMaterial(),
+        extrapCaloMat_.intersection(), reftrajptr, fp_combined_thick, extrapCaloMat_.interTolerance());
+
+      if(debug_ == -300){
+        double dmom, paramomvar, perpmomvar;
+        matxingptr->materialEffects(dmom,paramomvar,perpmomvar);
+        std::cout << "    Material Effects:" << std::endl;
+        std::cout << "      dE/dx momentum loss: " << dmom << " MeV" << std::endl;
+        std::cout << "      Parallel scattering sigma: " << std::sqrt(paramomvar) << " MeV" << std::endl;
+        std::cout << "      Perpendicular scattering sigma: " << std::sqrt(perpmomvar) << " MeV" << std::endl;
+      }
+
+      // Try to add the xing. Note: This may fail if the surface is in the trajectory past
+      // In that case, we just track the intersection for analysis
+      try {
+        ktrk.addCaloMatXing(matxingptr,tdir);
+        if(debug_ == -300){
+          auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+          std::cout << "    After material: momentum = " << newtrajptr->momentum() << " MeV/c" << std::endl;
+        }
+        // Clear the cached intersection after successfully adding it
+        extrapCaloMat_.reset();
+      } catch (cet::exception const& e) {
+        if(debug_ > 0) {
+          std::cout << "Warning: Could not add calo material xing: " << e.what() << std::endl;
+          std::cout << "Intersection will be tracked but not applied to fit" << std::endl;
+        }
+        // Still clear the cached intersection to prevent re-finding it
+        extrapCaloMat_.reset();
+      }
+    }
+
+    if(debug_ == -300) {
+      std::cout << "\n  === Loop Complete ===" << std::endl;
+      std::cout << "  Total crossings found: " << xing_count << std::endl;
+    }
+
+    // check if the particle exited in the same physical direction or not (reflection)
+    double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+    auto startdir = ftraj.direction(starttime);
+    double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
+    auto enddir = ftraj.direction(endtime);
+
+    bool no_reflection = (enddir.Z() * startdir.Z() > 0.0);
+
+    if(debug_ == -300) {
+      std::cout << "  Reflection check: startdir.Z()=" << startdir.Z() << " enddir.Z()=" << enddir.Z() << std::endl;
+      std::cout << "  No reflection (particle exited in same Z direction): " << no_reflection << std::endl;
+      std::cout << "### KKExtrap::extrapolateCaloMaterial - END ###\n" << std::endl;
+    }
+
+    return no_reflection;
+  }
+
   template <class KTRAJ> bool KKExtrap::extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     ExtrapolateToZ TSDA(maxdt_,btol_,kkg.DS().upstreamAbsorber().center().Z(),debug_);
     if(TSDA.debug() > 0)std::cout << "extrapolating to TSDA " << std::endl;
@@ -409,7 +525,7 @@ namespace mu2e {
 
   template <class KTRAJ> void KKExtrap::toOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const {
     initGeometry();
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId OPASID("OPA");
