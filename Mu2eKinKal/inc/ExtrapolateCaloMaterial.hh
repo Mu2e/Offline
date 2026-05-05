@@ -1,5 +1,5 @@
 // predicate to extrapolate to passive calorimeter front panel materials (foam, carbon)
-// Sophie Middleton (2025)
+// Sophie Middleton (2026)
 #ifndef Mu2eKinKal_ExtrapolateCaloMaterial_hh
 #define Mu2eKinKal_ExtrapolateCaloMaterial_hh
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
