@@ -57,30 +57,30 @@ BEGIN_PROLOG
                                    "CRVConditions/v6_0/LookupTable_1550_1"]  //C4
 
                                 //all measurements were done at 1m away from SiPM with a reference date of 12/2023
+                                //see doc-db 56425
                                 //CRV-Top (1.8mm) modules: 39794 - based on comparison between Wideband measurements and fined-tuned simulation
                                 //                         (all counters come from scintillator batch 1)
-                                //CRV-Top (1.4mm) modules: 30442 - based on comparions between UVA measurements of 1.4mm and 1.8mm CRV-Top modules (adjusted for age)
+                                //CRV-Top (1.4mm) modules: 30482 - based on comparions between UVA measurements of 1.4mm and 1.8mm CRV-Top modules (adjusted for age)
                                 //                         (most counters come from scintillator batch 1)
-                                //                         assuming 3% aging per year
-                                //                         T (1.4mm) measured 2/2022 at 44.5 PEs, 1.83 years to 12/2023, aging factor 0.946, --> 42.1 PEs
-                                //                         T (1.8mm) measured 8/2022 at 57.3 PEs, 1.33 years to 12/2023, aging factor 0.960, --> 55.0 PEs
-                                //                         --> photon yield ratio: 0.765
-                                //CRV-TS modules:          30442 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
-                                //CRV-R19-T module:        30442 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
-                                //all other modules:       28573 - counters come from scintillator batch 2, with a photon yield ratio of 1.07/1.14
-                                //CRV-U, CRV-TS-Ext:       23811 - reference CRV-Top (1.8mm) was measured at 3.0V overvoltage,
+                                //                         assuming 2.5% aging per year
+                                //                         T (1.4mm) measured 2/2022 and age adjusted to 12/2023: 42.4PEs (average)
+                                //                         T (1.8mm) measured 4/2022-12/2022 and age adjusted to 12/2023: 55.4PEs (average)
+                                //                         --> photon yield ratio: 0.766 --> 39794*0.766=30482
+                                //CRV-TS modules:          30482 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //CRV-R19-T module:        30482 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //all other modules:       28610 - counters come from scintillator batch 2, with a photon yield ratio of 1.07/1.14
+                                //CRV-U, CRV-TS-Ext:       23841 - reference CRV-Top (1.8mm) was measured at 3.0V overvoltage,
                                 //                         but CRV-U/CRV-TS-Ext will run at 2.5V --> scale to 2.5/3.0
-      scintillationYields       : [28573,28573,30442,28573,28573,28573,  //R1...6
-                                   28573,28573,28573,                    //L1...3
-                                   30442,30442,39794,39794,30442,        //T1...5
-                                   23811,23811,                          //E1,E2
-                                   23811,                                //U
-                                   28573,28573,28573,28573,              //D1...4
-                                   0,0,28573,28573]                      //C1...4
+      scintillationYields       : [28610,28610,30482,28610,28610,28610,  //R1...6
+                                   28610,28610,28610,                    //L1...3
+                                   30482,30482,39794,39794,30482,        //T1...5
+                                   23841,23841,                          //E1,E2
+                                   23841,                                //U
+                                   28610,28610,28610,28610,              //D1...4
+                                   0,0,28610,28610]                      //C1...4
 
-      photonYieldScaleFactor                : 0.91  //scale factor applied to photon yields to mimic aging
-                                                    //of 3 years with a rate 3% per year (from 12/2023 to 12/2026)
-                                                    //used in SU2020
+      photonYieldScaleFactor                : 0.86  //scale factor applied to photon yields to mimic aging
+                                                    //of 6.1 years with a rate 2.5% per year (from 12/2023 to 1/2030)
       photonYieldVariationScale             : 1.0   //scale factor for the photon yield variation in the database
                                                     //-should be kept at 1.0 (i.e. no scaling),
                                                     // if a database table of measured deviations from a nominal photon yield is used,
