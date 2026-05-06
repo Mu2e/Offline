@@ -19,12 +19,13 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-	 verbosityLevel : 2
+	 verbosityLevel : 1
 	 saveRawWithHeaderWaveform_HPGe: false
-	 saveRawWaveform_HPGe: true
+	 saveRawWaveform_HPGe: false
 	 saveZSWaveform_HPGe: true
+	 
 	 saveRawWithHeaderWaveform_LaBr: false
-	 saveRawWaveform_LaBr: true
+	 saveRawWaveform_LaBr: false
 	 saveZSWaveform_LaBr: true
 	}
          

@@ -67,8 +67,8 @@ namespace mu2e {
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
-    _channel(STMChannel::findByName("HPGe"))
-    //_channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
+    //_channel(STMChannel::findByName("HPGe"))
+    _channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
 
   { }
 

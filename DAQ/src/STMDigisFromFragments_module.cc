@@ -169,7 +169,7 @@ void STMDigisFromFragments::produce(Event& event)
   
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
-  const auto STMFragments = STMFragmentsH.product();
+  const auto& STMFragments = STMFragmentsH.product();
 
   //Event Metrics
   
@@ -200,14 +200,20 @@ void STMDigisFromFragments::produce(Event& event)
   uint16_t outerFragID{0};
   bool eventHasHPGe{false};
   bool eventHasLaBr{false};
+
+  //HPGe
+  uint16_t expectedZSLengthHPGe{0};
+  uint16_t expectedZSRegionsHPGe{0};
+  bool readZSinfoFromRawHeaderHPGe{false};
+
+  //LaBr
+  uint16_t expectedZSLengthLaBr{0};
+  uint16_t expectedZSRegionsLaBr{0};
+  bool readZSinfoFromRawHeaderLaBr{false};
   
   //loop over outer frags
-  for (const auto& frag : *STMFragments) {
+  for (const auto& frag : *STMFragments) { 
     ++_totalFragments; //Increment Total Frag counter
-
-    uint16_t ZSfromRaw{0};
-    uint16_t expectedZSRegions{0};
-    bool readRawZSinfo{false};
 
     outerFragID = frag.fragmentID();
     if (_verbosityLevel >= 3){std::cout << "\nFrag_id : " << outerFragID << "\n";}
@@ -241,9 +247,17 @@ void STMDigisFromFragments::produce(Event& event)
         if ( stm_frag.isRaw() ) {
 	  
 	  //Job Counter
-          ++_totalRaw;	
+          ++_totalRaw;
+	  
 	  //Conditional Job and Event Counter
-	  if( stm_frag.isHPGe() ){ ++_totalRawHPGe ; ++localRawHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalRawLaBr ; ++localRawLaBr_frags; }
+	  if( stm_frag.isHPGe() ){
+	    ++_totalRawHPGe ;
+	    ++localRawHPGe_frags;
+	    
+	  } else if ( stm_frag.isLaBr() ){
+	    ++_totalRawLaBr ;
+	    ++localRawLaBr_frags;
+	  }
 	  
           auto payloadPtr = stm_frag.payloadBegin();
           auto payloadWords = stm_frag.payloadWords();
@@ -290,15 +304,17 @@ void STMDigisFromFragments::produce(Event& event)
 			<< " , i = " << i << " @Raw\n";
 	    }
 	  }
-	  expectedZSRegions = stm_frag.zsRegions();
-	  ZSfromRaw = stm_frag.zsLength();//Stores ZS length on outside variable
-	  readRawZSinfo = true;//Shows we were able to read the Raw header information
 	  
-          //Ideally only good frags get up to here
+	  //Ideally only good frags get up to here
 	  if ( stm_frag.isHPGe() ){
+	    expectedZSRegionsHPGe = stm_frag.zsRegions();
+	    expectedZSLengthHPGe = stm_frag.zsLength();
+	    readZSinfoFromRawHeaderHPGe = true;
+	    
 	    ++ _totalGoodRawHPGe;
+	    
 	    if (_saveRawWithHeaderWaveform_HPGe){
-	      auto dataPtr = stm_frag.dataBegin();
+	      auto dataPtr = stm_frag.dataBegin();//memory check for emplace_back
 	      auto dataWords = stm_frag.dataWords();
 	      stm_waveform.set_data(dataWords, dataPtr);
 	      raw_HPGe_header_waveform_digis->emplace_back(stm_waveform);
@@ -309,7 +325,12 @@ void STMDigisFromFragments::produce(Event& event)
 	    }
 
 	  } else if ( stm_frag.isLaBr() ){
+	    expectedZSRegionsLaBr = stm_frag.zsRegions();
+            expectedZSLengthLaBr = stm_frag.zsLength();
+            readZSinfoFromRawHeaderLaBr = true;
+
 	    ++ _totalGoodRawLaBr;
+
 	    if (_saveRawWithHeaderWaveform_LaBr){
               auto dataPtr = stm_frag.dataBegin();
               auto dataWords = stm_frag.dataWords();
@@ -321,7 +342,8 @@ void STMDigisFromFragments::produce(Event& event)
               raw_LaBr_waveform_digis->emplace_back(stm_waveform);
             }
 	    
-	  }//End of if CFID=103,203
+	  }
+	  
         }//End of isRaw
 
 	
@@ -334,7 +356,7 @@ void STMDigisFromFragments::produce(Event& event)
 	  bool allZeros = true; //assumes all adcs are zero
 
 	  //Check if payload is empty
-	  if (payloadWords == 0) {
+	  if ( payloadWords == 0) {
 	    if (_verbosityLevel >=3){std::cout << "\nFound an empty frag, i = " << i << " @ZS\n";}
 	    ++_totalEmptyZS;
 	    if ( stm_frag.isHPGe() ){ ++_totalEmptyZSHPGe; ++emptyZSHPGe_frags; } else if ( stm_frag.isLaBr() ){ ++_totalEmptyZSLaBr; ++emptyZSLaBr_frags; }
@@ -374,13 +396,20 @@ void STMDigisFromFragments::produce(Event& event)
 	  uint16_t lastZSindex = 0; //keeps track of last recorded index from header -> with respect to what?
 	  uint16_t lastLen = 0; //keeps track of last recoded length from header
 
+
+	  //Try the ? and : 
+	  bool readZSinfoFromRawHeader = stm_frag.isHPGe() ? readZSinfoFromRawHeaderHPGe : readZSinfoFromRawHeaderLaBr;
+	  uint16_t expectedZSRegions = stm_frag.isHPGe() ? expectedZSRegionsHPGe : expectedZSRegionsLaBr;
+	  uint16_t expectedZSLength = stm_frag.isHPGe() ? expectedZSLengthHPGe : expectedZSLengthLaBr;
+	  
 	  if(_verbosityLevel >= 6){std::cout << "dataWords  : " << dataWords
 					     << " dataWords%4 : " << dataWords%4
 					     <<" @ZS" << "\n"; }
+	  
 	  if ( stm_frag.isHPGe()){ ++_totalGoodZSHPGe;} else if(stm_frag.isLaBr()){++ _totalGoodZSLaBr;}
 	  
 	  while (dataPtr + 2 <= dataEnd){
-	    if ( readRawZSinfo && seg >= expectedZSRegions ) break;
+	    if ( readZSinfoFromRawHeader && seg >= expectedZSRegions ) break;
 	    uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
 	    uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
 	    auto adc = dataPtr + 2;
@@ -390,15 +419,18 @@ void STMDigisFromFragments::produce(Event& event)
 	    uint32_t trigTimeOffset = current_zs_location;
 	    std::vector<int16_t> segADCS(adc, adc +  current_zs_size); //1D array, contains adcs to this_zs_Size - 1
 	    mu2e::STMWaveformDigi stm_waveform(trigTimeOffset, segADCS); //New constructore use
-
 	    //emplacing 
-	    if ( stm_frag.isHPGe() && _saveZSWaveform_HPGe){
-	      zs_HPGe_waveform_digis->emplace_back(stm_waveform);
-	    } else if ( stm_frag.isLaBr() && _saveZSWaveform_LaBr){
-	      zs_LaBr_waveform_digis->emplace_back(stm_waveform);
+	    if ( stm_frag.isHPGe() && _saveZSWaveform_HPGe){  
+	      std::vector<int16_t> segADCS(adc, adc + current_zs_size); //1D array, contains adcs to this_zs_size - 1
+	      zs_HPGe_waveform_digis->emplace_back(trigTimeOffset,segADCS);
+	    }
+	    else if ( stm_frag.isLaBr() && _saveZSWaveform_LaBr){
+	      std::vector<int16_t> segADCS(adc, adc + current_zs_size);
+	      zs_LaBr_waveform_digis->emplace_back(trigTimeOffset,segADCS);
 	    }
  
 	    if (_verbosityLevel >=6){
+
 	      //A print check per segment
 	      std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
 			<< " , trigTimeOffset = " << trigTimeOffset << "\n" ;
@@ -422,20 +454,26 @@ void STMDigisFromFragments::produce(Event& event)
 	  }
 
 	  //Throw out if ZSLengthfromRaw != totalLen
-	  if (readRawZSinfo && ZSfromRaw != totalLen){
+	  if (readZSinfoFromRawHeader && expectedZSLength != totalLen){
 	    throw cet::exception("STM_UNPACKING")
 	      << "\n=== ZS Length mismatch ===\n"
-	      << "ZS length from Raw header : " << ZSfromRaw << "\n"
+	      << "ZS length from Raw header : " << expectedZSLength << "\n"
 	      << "ZS length calculated from file : " << totalLen << "\n"
-	      << "Found at inner frag i : " << i <<"\n"
-	      << "Encountered at event : " << _totalEvents <<"\n"      ;
+	      << "Found at inner frag i : " << i << "\n"
+	      << "Encountered at event : " << _totalEvents << "\n"      ;
 	  }
 
 	  //reset variables after ZS
-	  readRawZSinfo = false;
-	  ZSfromRaw = 0;
-	  expectedZSRegions = 0;
-	  
+	  if (stm_frag.isHPGe()){
+	    readZSinfoFromRawHeaderHPGe = false;
+	    expectedZSLengthHPGe = 0;
+	    expectedZSRegionsHPGe = 0;
+	     
+	  } else if (stm_frag.isLaBr()){
+	    readZSinfoFromRawHeaderLaBr = false;
+	    expectedZSLengthLaBr = 0;
+	    expectedZSRegionsLaBr = 0;
+	    }
 	  
         }//End of isZS
 	
@@ -568,7 +606,6 @@ void STMDigisFromFragments::produce(Event& event)
   if (_saveRawWaveform_HPGe){event.put(std::move(raw_HPGe_waveform_digis), "rawHPGe");}
   if (_saveZSWaveform_HPGe){event.put(std::move(zs_HPGe_waveform_digis), "zsHPGe");}
   event.put(std::move(ph_HPGe_digis), "phHPGe");
-
 
   //LaBr
   if (_saveRawWithHeaderWaveform_LaBr){ event.put(std::move(raw_LaBr_header_waveform_digis), "rawWithHeaderLaBr"); }
