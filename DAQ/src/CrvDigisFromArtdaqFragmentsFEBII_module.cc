@@ -34,7 +34,7 @@ namespace mu2e
       struct Config
       {
         fhicl::Atom<int>     diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-        fhicl::Atom<uint8_t> firstCrvDtcID{fhicl::Name("firstCrvDtcID"), fhicl::Comment("First CRV DTC ID"), 0};
+        fhicl::Atom<uint16_t> firstCrvDtcID{fhicl::Name("firstCrvDtcID"), fhicl::Comment("First CRV DTC ID"), 0};
         fhicl::Atom<bool>    produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
         fhicl::Atom<bool>    produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
         fhicl::Atom<bool>    useROC4asROC2{fhicl::Name("useROC4asROC2"), fhicl::Comment("use ROC4 as ROC2"), false};
@@ -46,7 +46,7 @@ namespace mu2e
 
     private:
       int                                      _diagLevel;
-      uint8_t                                  _firstCrvDtcID;
+      uint16_t                                 _firstCrvDtcID;
       bool                                     _produceZS;
       bool                                     _produceNZS;
       bool                                     _useROC4asROC2;
@@ -217,6 +217,10 @@ namespace mu2e
               for(auto const& crvHit : crvHits)
               {
                 uint16_t dtcID = header->GetID();
+                if(dtcID<_firstCrvDtcID)
+                {
+                  throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
+                }
                 uint16_t linkID = header->GetLinkID();
                 uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                 if(_useROC4asROC2 && rocID==4) rocID=2;
@@ -290,6 +294,10 @@ namespace mu2e
                   if(rocPort==0) continue; //corrupted data
 
                   uint16_t dtcID = header->GetID();
+                  if(dtcID<_firstCrvDtcID)
+                  {
+                    throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
+                  }
                   uint16_t linkID = header->GetLinkID();
                   uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                   if(_useROC4asROC2 && rocID==4) rocID=2;
