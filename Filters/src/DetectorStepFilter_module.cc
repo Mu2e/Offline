@@ -211,6 +211,9 @@ namespace mu2e {
           break;
         }
       }
+      if(diagLevel_ > 1) std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                                   << " Total E(dep) = " << total_edep
+                                   << std::endl;
       if(useMinSumCaloTotalE_) {
         if(total_edep > minSumCaloTotalE_) {
           selectcalo = true;
