@@ -441,10 +441,9 @@ Mu2eKinKal : {
   LINEEXTRAPOLATION : {
     MaxDt : 200.0
     BCorrTolerance : 1e-5
-    ToTrackerEnds : true
     Upstream : true
     BackToTracker : false
-    ToTrackerEnds : false
+    ToTrackerEnds : true
     ToOPA : false
     ToCaloD0 : true
     ToCaloD1 : true
