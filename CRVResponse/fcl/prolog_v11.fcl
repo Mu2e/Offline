@@ -79,8 +79,8 @@ BEGIN_PROLOG
                                    28610,28610,28610,28610,              //D1...4
                                    0,0,28610,28610]                      //C1...4
 
-      photonYieldScaleFactor                : 0.86  //scale factor applied to photon yields to mimic aging
-                                                    //of 6.1 years with a rate 2.5% per year (from 12/2023 to 1/2030)
+      photonYieldScaleFactor                : 0.84  //scale factor applied to photon yields to mimic aging
+                                                    //of 7.1 years with a rate 2.5% per year (from 12/2023 to 1/2031)
       photonYieldVariationScale             : 1.0   //scale factor for the photon yield variation in the database
                                                     //-should be kept at 1.0 (i.e. no scaling),
                                                     // if a database table of measured deviations from a nominal photon yield is used,
