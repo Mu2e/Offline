@@ -21,6 +21,7 @@
 #include "cetlib_except/exception.h"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
+#include "TProfile.h"
 namespace mu2e {
   using KinKal::VEC3;
   using KinKal::TimeDir;
@@ -45,6 +46,8 @@ namespace mu2e {
       template <class KTRAJ> void toCaloD1(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void toOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
+      // validation histogram support
+      void setValidationHistograms(class TH2F* h_eff, class TH2F* h_pos, class TH1F* h_deg = nullptr, class TH1F* h_scat100 = nullptr, class TH1F* h_scat80 = nullptr, class TProfile* h_res = nullptr) const;
 
     private:
       int debug_;
@@ -61,7 +64,8 @@ namespace mu2e {
       mutable ExtrapolateToZ TSDA_, trackerFront_, trackerBack_; // extrapolation predicate based on Z values
       mutable ExtrapolateIPA extrapIPA_; // extrapolation to intersections with the IPA
       mutable ExtrapolateST extrapST_; // extrapolation to intersections with the ST
-      mutable ExtrapolateCaloMaterial extrapCaloMat_; // extrapolation through passive calo materials
+      mutable ExtrapolateCaloMaterial extrapCaloMat_; // extrapolation through passive calo materials (disk 0)
+      mutable ExtrapolateCaloMaterial extrapCaloMatD1_; // extrapolation through passive calo materials (disk 1)
       mutable bool geom_initialized_ = false;
       void initGeometry() const; // lazy initialization method
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
@@ -69,6 +73,13 @@ namespace mu2e {
       // calorimeter front panel passive material thicknesses (should come from geometry service TODO)
       double calofmthick_ = 21.75; // calo front panel foam thickness (mm)
       double calocarb_thick_ = 3.0; // calo front panel carbon thickness (mm)
+      // Validation histogram pointers - stored to re-apply after geometry initialization
+      mutable class TH2F* h_intersection_efficiency_ptr_ = nullptr;
+      mutable class TH2F* h_frontpanel_hits_ptr_ = nullptr;
+      mutable class TH1F* h_momentum_degradation_ptr_ = nullptr;
+      mutable class TH1F* h_scatter_100mev_ptr_ = nullptr;
+      mutable class TH1F* h_scatter_80mev_ptr_ = nullptr;
+      mutable class TProfile* h_resolution_vs_momentum_ptr_ = nullptr;
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig,KKMaterial const& kkmat) :
@@ -117,8 +128,18 @@ namespace mu2e {
     const_cast<ExtrapolateToZ&>(trackerBack_) = ExtrapolateToZ(maxdt_,btol_,kkg.tracker().back().center().Z(),debug_);
     const_cast<ExtrapolateIPA&>(extrapIPA_) = ExtrapolateIPA(maxdt_,btol_,intertol_,kkg.DS().innerProtonAbsorberPtr(),debug_);
     const_cast<ExtrapolateST&>(extrapST_) = ExtrapolateST(maxdt_,btol_,intertol_,kkg.ST(),debug_);
-    // Initialize calo material predicates (depth 0 = disk 0 front panel)
+    // Initialize calo material predicates for both disks
     const_cast<ExtrapolateCaloMaterial&>(extrapCaloMat_) = ExtrapolateCaloMaterial(maxdt_,btol_,intertol_,kkg.calo(),0,debug_);
+    const_cast<ExtrapolateCaloMaterial&>(extrapCaloMatD1_) = ExtrapolateCaloMaterial(maxdt_,btol_,intertol_,kkg.calo(),1,debug_);
+
+    // Re-apply validation histograms if they were previously set
+    if(h_intersection_efficiency_ptr_ || h_frontpanel_hits_ptr_ || h_momentum_degradation_ptr_ || h_scatter_100mev_ptr_ || h_scatter_80mev_ptr_ || h_resolution_vs_momentum_ptr_) {
+      const_cast<ExtrapolateCaloMaterial&>(extrapCaloMat_).setValidationHistograms(h_intersection_efficiency_ptr_, h_frontpanel_hits_ptr_, h_momentum_degradation_ptr_, h_scatter_100mev_ptr_, h_scatter_80mev_ptr_);
+      const_cast<ExtrapolateCaloMaterial&>(extrapCaloMatD1_).setValidationHistograms(h_intersection_efficiency_ptr_, h_frontpanel_hits_ptr_, h_momentum_degradation_ptr_, h_scatter_100mev_ptr_, h_scatter_80mev_ptr_);
+      if(debug_ > 0) {
+        std::cout << "Re-applied validation histograms to both calo material extrapolators after geometry initialization" << std::endl;
+      }
+    }
 
     // calo predicates - use local Z values stored in Calo class
     const_cast<ExtrapolateToZ&>(calod0Front_) = ExtrapolateToZ(maxdt_,btol_,kkg.calo().EMC_Disk_0_Front_Z(),debug_);
@@ -178,6 +199,20 @@ namespace mu2e {
       }
       // optionally test for intersection with the OPA
       if(toOPA_)toOPA(ktrk,starttime,tdir);
+    }
+
+    // Fill momentum resolution histogram after all extrapolations
+    if(h_resolution_vs_momentum_ptr_) {
+      auto const& ftraj = ktrk.fitTraj();
+      double t_mid = ftraj.range().mid();
+      double p_fit = ftraj.momentum(t_mid);
+      if(p_fit > 0.0) {
+        // Get momentum variance from the state estimate
+        auto state = ftraj.stateEstimate(t_mid);
+        double p_err = std::sqrt(state.momentumVariance());  // radial momentum uncertainty
+        double rel_err = p_err / p_fit;
+        h_resolution_vs_momentum_ptr_->Fill(p_fit, rel_err);
+      }
     }
   }
 
@@ -407,14 +442,14 @@ namespace mu2e {
     using KKCALOMATXINGPTR = std::shared_ptr<KKCALOMATXING>;
     initGeometry();
 
-    // Extrapolate through passive calorimeter front panel materials (foam, carbon)
+    // Extrapolate through passive calorimeter front panel materials (foam, carbon) for BOTH disks
     // This adds material effects (energy loss, scattering) for material crossing
     // Pattern mirrors IPA and ST extrapolation
 
     if(debug_ == -300) {
       std::cout << "\n### KKExtrap::extrapolateCaloMaterial - START ###" << std::endl;
       std::cout << "  Direction: " << (tdir == TimeDir::forwards ? "FORWARD" : "BACKWARD") << std::endl;
-      std::cout << "  About to extrapolate through calo front panel passive materials" << std::endl;
+      std::cout << "  About to extrapolate through BOTH calo front panel disks" << std::endl;
       std::cout << "  Material: AluminumHoneycomb (21.75mm) + CarbonFiber (3.0mm) = 24.75mm total" << std::endl;
     }
 
@@ -426,21 +461,39 @@ namespace mu2e {
     // Static surface ID for calo material crossings
     static const SurfaceId CaloMatSID(SurfaceIdDetail::EMC_FrontPanel);
 
-    // Check for intersection with front panel (thin surface, only one crossing expected)
-    int xing_count = 0;
-    ktrk.extrapolate(tdir,extrapCaloMat_);
-    if(extrapCaloMat_.intersection().good()){
-      xing_count++;
+    // Lambda function to process a single disk
+    auto processDiskMaterial = [&](ExtrapolateCaloMaterial& extrapCaloMatDisk, int disk_id) {
+      // Check for intersection with this disk's front panel
+      if(!ktrk.extrapolate(tdir, extrapCaloMatDisk)) {
+        if(debug_ == -300) {
+          std::cout << "  [Disk " << disk_id << "] Did not reach front panel" << std::endl;
+        }
+        return false;  // Particle didn't reach this disk
+      }
+
+      if(!extrapCaloMatDisk.intersection().good()) {
+        if(debug_ == -300) {
+          std::cout << "  [Disk " << disk_id << "] No intersection with annulus" << std::endl;
+        }
+        return false;  // No intersection
+      }
+
       if(debug_ == -300) {
-        std::cout << "\n  === Crossing #" << xing_count << " ===" << std::endl;
+        std::cout << "\n  === Disk " << disk_id << " Crossing ===" << std::endl;
         std::cout << "    Found intersection with calo front panel Annulus" << std::endl;
-        auto const& inter = extrapCaloMat_.intersection();
+        auto const& inter = extrapCaloMatDisk.intersection();
         std::cout << "    Intersection: " << inter << std::endl;
       }
 
       // We have a good intersection. Create a shell material Xing for the annulus surface
       auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-      auto const& annulusptr = extrapCaloMat_.frontPanelAnnulus();
+      auto const& annulusptr = extrapCaloMatDisk.frontPanelAnnulus();
+
+      // Fill validation histograms
+      auto const& inter = extrapCaloMatDisk.intersection();
+      double momentum = reftrajptr->momentum();
+      double xpos = inter.pos_.X();
+      double ypos = inter.pos_.Y();
 
       if(debug_ == -300) {
         std::cout << "    Before material: momentum = " << reftrajptr->momentum() << " MeV/c" << std::endl;
@@ -449,11 +502,24 @@ namespace mu2e {
       // Create the material xing using combined front panel thickness
       KKCALOMATXINGPTR matxingptr = std::make_shared<KKCALOMATXING>(
         annulusptr, CaloMatSID, *kkmat_.CaloFrontFoamMaterial(),
-        extrapCaloMat_.intersection(), reftrajptr, fp_combined_thick, extrapCaloMat_.interTolerance());
+        extrapCaloMatDisk.intersection(), reftrajptr, fp_combined_thick, extrapCaloMatDisk.interTolerance());
+
+      // Extract momentum degradation from material effects
+      double dmom = 0.0, paramomvar = 0.0, perpmomvar = 0.0;
+      matxingptr->materialEffects(dmom, paramomvar, perpmomvar);
+      double dmom_abs = std::abs(dmom);
+
+      // Calculate scattering angle from perpendicular momentum uncertainty
+      double scatter_angle = 0.0;
+      if (perpmomvar > 0.0 && momentum > 0.0) {
+        double p_perp_err = std::sqrt(perpmomvar);
+        scatter_angle = p_perp_err / momentum;  // scattering angle in radians
+      }
+
+      // Fill validation histograms with momentum degradation and scattering angle
+      extrapCaloMatDisk.fillValidationPlots(momentum, disk_id, xpos, ypos, dmom_abs, scatter_angle);
 
       if(debug_ == -300){
-        double dmom, paramomvar, perpmomvar;
-        matxingptr->materialEffects(dmom,paramomvar,perpmomvar);
         std::cout << "    Material Effects:" << std::endl;
         std::cout << "      dE/dx momentum loss: " << dmom << " MeV" << std::endl;
         std::cout << "      Parallel scattering sigma: " << std::sqrt(paramomvar) << " MeV" << std::endl;
@@ -469,15 +535,26 @@ namespace mu2e {
           std::cout << "    After material: momentum = " << newtrajptr->momentum() << " MeV/c" << std::endl;
         }
         // Clear the cached intersection after successfully adding it
-        extrapCaloMat_.reset();
+        extrapCaloMatDisk.reset();
+        return true;
       } catch (cet::exception const& e) {
         if(debug_ > 0) {
           std::cout << "Warning: Could not add calo material xing: " << e.what() << std::endl;
           std::cout << "Intersection will be tracked but not applied to fit" << std::endl;
         }
         // Still clear the cached intersection to prevent re-finding it
-        extrapCaloMat_.reset();
+        extrapCaloMatDisk.reset();
+        return false;
       }
+    };
+
+    // Process both disk 0 and disk 1
+    int xing_count = 0;
+    if(processDiskMaterial(const_cast<ExtrapolateCaloMaterial&>(extrapCaloMat_), 0)) {
+      xing_count++;
+    }
+    if(processDiskMaterial(const_cast<ExtrapolateCaloMaterial&>(extrapCaloMatD1_), 1)) {
+      xing_count++;
     }
 
     if(debug_ == -300) {
@@ -533,6 +610,21 @@ namespace mu2e {
     auto opainter = KinKal::intersect(ftraj,kkg.DS().outerProtonAbsorber(),trange,intertol_,tdir);
     if(opainter.good()){
       ktrk.addIntersection(OPASID,opainter);
+    }
+  }
+
+  inline void KKExtrap::setValidationHistograms(class TH2F* h_eff, class TH2F* h_pos, class TH1F* h_deg, class TH1F* h_scat100, class TH1F* h_scat80, class TProfile* h_res) const {
+    // Store pointers for later re-application after geometry initialization
+    const_cast<KKExtrap*>(this)->h_intersection_efficiency_ptr_ = h_eff;
+    const_cast<KKExtrap*>(this)->h_frontpanel_hits_ptr_ = h_pos;
+    const_cast<KKExtrap*>(this)->h_momentum_degradation_ptr_ = h_deg;
+    const_cast<KKExtrap*>(this)->h_scatter_100mev_ptr_ = h_scat100;
+    const_cast<KKExtrap*>(this)->h_scatter_80mev_ptr_ = h_scat80;
+    const_cast<KKExtrap*>(this)->h_resolution_vs_momentum_ptr_ = h_res;
+    // If geometry is already initialized, apply to extrapCaloMat_ immediately
+    if(geom_initialized_) {
+      const_cast<ExtrapolateCaloMaterial&>(extrapCaloMat_).setValidationHistograms(h_eff, h_pos, h_deg, h_scat100, h_scat80);
+      const_cast<ExtrapolateCaloMaterial&>(extrapCaloMatD1_).setValidationHistograms(h_eff, h_pos, h_deg, h_scat100, h_scat80);
     }
   }
 }

@@ -10,6 +10,7 @@
 #include "Offline/KinKalGeom/inc/Calo.hh"
 #include "cetlib_except/exception.h"
 #include <limits>
+#include "TH2F.h"
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
@@ -24,7 +25,7 @@ namespace mu2e {
       enum SurfaceType { FrontPanelFoam = 0, FrontPanelCarbon = 1, Unknown = 2 };
 
       ExtrapolateCaloMaterial() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      fp_z_(std::numeric_limits<double>::max()),
+      fp_z_(std::numeric_limits<double>::max()), disk_(0),
       inter_(), surftype_(Unknown), intersection_found_(false), fpann_(nullptr), debug_(0) {}
 
       // Constructor that initializes from calorimeter geometry
@@ -46,6 +47,16 @@ namespace mu2e {
       // reset between tracks
       void reset() const { inter_ = Intersection(); surftype_ = Unknown; intersection_found_ = false; }
 
+      // Validation plot methods - histograms created externally via TFileService
+      void setValidationHistograms(TH2F* h_eff, TH2F* h_pos, TH1F* h_deg = nullptr, TH1F* h_scat100 = nullptr, TH1F* h_scat80 = nullptr) {
+        h_intersection_efficiency_ = h_eff;
+        h_frontpanel_hits_ = h_pos;
+        h_momentum_degradation_ = h_deg;
+        h_scatter_100mev_ = h_scat100;
+        h_scatter_80mev_ = h_scat80;
+      }
+      void fillValidationPlots(double momentum, int disk, double pos_x, double pos_y, double dmom = 0.0, double scatter_angle = 0.0) const;
+
       // thickness of passive materials (should come from geometry TODO)
       static constexpr double foamThickness_ = 21.75;  // mm, front panel foam
       static constexpr double carbonThickness_ = 3.0;  // mm, front panel carbon
@@ -55,11 +66,19 @@ namespace mu2e {
       double dptol_; // fractional momentum tolerance
       double intertol_; // intersection tolerance (mm)
       double fp_z_; // z position of front panel
+      int disk_; // disk ID (0 or 1)
       mutable Intersection inter_; // cache of most recent intersection
       mutable SurfaceType surftype_; // type of surface that was intersected
       mutable bool intersection_found_; // flag to prevent finding same intersection twice
       AnnPtr fpann_; // annulus surface for front panel
       int debug_; // debug level
+
+      // Validation histograms (managed externally by TFileService)
+      mutable TH2F* h_intersection_efficiency_ = nullptr; // Plot 1: efficiency vs momentum and disk
+      mutable TH2F* h_frontpanel_hits_ = nullptr;         // Plot 2: hit distribution on front panel (phi vs r)
+      mutable TH1F* h_momentum_degradation_ = nullptr;    // Plot 3: momentum degradation distribution
+      mutable TH1F* h_scatter_100mev_ = nullptr;          // Plot 4: scattering angle at 100 MeV
+      mutable TH1F* h_scatter_80mev_ = nullptr;           // Plot 4: scattering angle at 80 MeV
   };
 
   template <class KTRAJ> bool ExtrapolateCaloMaterial::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
@@ -118,9 +137,27 @@ namespace mu2e {
     }
     Intersection newinter = KinKal::intersect(fittraj, *fpann_, trange, intertol_);
 
+    if(debug_ > 0 || debug_ == -300) {
+      std::cout << "[ExtrapolateCaloMaterial::needsExtrapolation] Intersection test result:" << std::endl;
+      std::cout << "  good() = " << newinter.good() << std::endl;
+      if(newinter.good()) {
+        std::cout << "  *** INTERSECTION FOUND ***" << std::endl;
+        std::cout << "  Position: (" << newinter.pos_.X() << ", " \
+                  << newinter.pos_.Y() << ", " << newinter.pos_.Z() << ")" << std::endl;
+      } else {
+        std::cout << "  No intersection detected" << std::endl;
+      }
+    }
+
     if(newinter.good()){
       inter_ = newinter;
       intersection_found_ = true;  // Mark that we've found THE intersection
+
+      // Fill validation plots
+      double momentum = fittraj.momentum(newinter.time_);
+      auto pos = newinter.pos_;
+      fillValidationPlots(momentum, disk_, pos.X(), pos.Y());
+
       if(debug_ == -300) {
         std::cout << "  Good intersection with front panel FOUND" << std::endl;
       }

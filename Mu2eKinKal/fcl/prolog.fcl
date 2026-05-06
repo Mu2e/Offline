@@ -397,7 +397,7 @@ Mu2eKinKal : {
     ToOPA : true
     ToCaloD0 : true
     ToCaloD1 : true
-    ToCaloMaterial : true
+    ToCaloMaterial : false
   }
 
   LHSEEDXTRAP : {
@@ -410,6 +410,7 @@ Mu2eKinKal : {
     ToOPA : false
     ToCaloD0 : true
     ToCaloD1 : true
+    ToCaloMaterial : false
   }
 
   CENTRALHELIX : {
@@ -454,7 +455,7 @@ Mu2eKinKal : {
     ToOPA : false
     ToCaloD0 : true
     ToCaloD1 : true
-    ToCaloMaterial : true
+    ToCaloMaterial : false
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
   }
 }

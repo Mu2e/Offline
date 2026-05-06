@@ -1,8 +1,11 @@
+// ExtrapolateCaloMaterial.cc
+// Sophie Middleton (Caltech), 2026
 #include "Offline/Mu2eKinKal/inc/ExtrapolateCaloMaterial.hh"
 #include "Offline/KinKalGeom/inc/Calo.hh"
 #include "KinKal/Geometry/Annulus.hh"
 #include <iostream>
 #include <limits>
+#include <cmath>
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -11,7 +14,7 @@ namespace mu2e {
   ExtrapolateCaloMaterial::ExtrapolateCaloMaterial(double maxdt, double dptol, double intertol,
                                                    Calo const& calo, int depth, int debug) :
     maxDt_(maxdt), dptol_(dptol), intertol_(intertol), fp_z_(std::numeric_limits<double>::max()),
-    inter_(), surftype_(Unknown), intersection_found_(false), fpann_(nullptr), debug_(debug)
+    disk_(depth), inter_(), surftype_(Unknown), intersection_found_(false), fpann_(nullptr), debug_(debug)
   {
     // Get disk 0 or 1 based on depth
     auto const& diskref = (depth == 0) ? calo.EMC_Disk_0_Front() : calo.EMC_Disk_1_Front();
@@ -50,6 +53,55 @@ namespace mu2e {
       std::cout << "  Max extrapolation time: " << maxDt_ << " (unbounded if < 0)" << std::endl;
       std::cout << "  Intersection tolerance: " << intertol_ << " mm" << std::endl;
       std::cout << "=== Initialization Complete ===\n" << std::endl;
+    }
+  }
+
+  // Fill validation plots with intersection data
+  void ExtrapolateCaloMaterial::fillValidationPlots(double momentum, int disk, double pos_x, double pos_y, double dmom, double scatter_angle) const {
+    // Histograms are created externally via TFileService
+    // Only fill if they have been provided
+    if (!h_intersection_efficiency_ && !h_frontpanel_hits_ && !h_momentum_degradation_ && !h_scatter_100mev_ && !h_scatter_80mev_) {
+      if(debug_ > 0) {
+        std::cout << "[fillValidationPlots] WARNING: No histograms available!" << std::endl;
+      }
+      return;
+    }
+
+    // Plot 1: Intersection Efficiency Map
+    if (h_intersection_efficiency_) {
+      h_intersection_efficiency_->Fill(momentum, disk);
+    }
+
+    // Plot 2: Front Panel Hit Positions
+    // Convert (x, y) to cylindrical coordinates (r, phi)
+    if (h_frontpanel_hits_) {
+      double r = std::sqrt(pos_x * pos_x + pos_y * pos_y);
+      double phi = std::atan2(pos_y, pos_x);
+      if (phi < 0) phi += 2.0 * M_PI;
+      h_frontpanel_hits_->Fill(phi, r);
+    }
+
+    // Plot 3: Momentum Degradation Distribution
+    if (h_momentum_degradation_ && dmom > 0.0) {
+      h_momentum_degradation_->Fill(dmom);
+    }
+
+    // Plot 4: Multiple Scattering Angle Distribution
+    if (scatter_angle > 0.0) {
+      double scatter_mrad = scatter_angle * 1000.0;  // convert to milliradians
+      if (h_scatter_100mev_ && momentum > 95.0 && momentum < 105.0) {
+        h_scatter_100mev_->Fill(scatter_mrad);
+      }
+      if (h_scatter_80mev_ && momentum > 75.0 && momentum < 85.0) {
+        h_scatter_80mev_->Fill(scatter_mrad);
+      }
+    }
+
+    if(debug_ > 0) {
+      std::cout << "[fillValidationPlots] FILLED: momentum=" << momentum
+                << " disk=" << disk
+                << " dmom=" << dmom
+                << " scatter_angle=" << scatter_angle << std::endl;
     }
   }
 
