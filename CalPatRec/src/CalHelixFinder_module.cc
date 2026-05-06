@@ -461,7 +461,6 @@ namespace mu2e {
   void CalHelixFinder::initHelixSeed(HelixSeed& HelSeed, CalHelixFinderData& HfResult) {
 
     HelixTraj* hel = HfResult.helix();
-    if (!hel) return;
 
     double   helixRadius   = 1./fabs(hel->omega());
     double   impactParam   = hel->d0();
