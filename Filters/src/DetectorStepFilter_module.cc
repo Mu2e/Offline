@@ -8,6 +8,7 @@
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "cetlib_except/exception.h"
@@ -53,12 +54,16 @@ namespace mu2e {
 
         fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum"), 0.0 };
         fhicl::Atom<double> maxPartMom { Name("MaximumPartMom"), Comment("Maximum particle momentum"), maxE_ };
+        fhicl::Atom<double> minCaloPartMom{ Name("MinimumCaloPartMom"), Comment("Minimum particle momentum for calo steps"), 0.0 };
+        fhicl::Atom<double> maxCaloPartMom{ Name("MaximumCaloPartMom"), Comment("Maximum particle momentum for calo steps"), maxE_ };
 
         fhicl::Atom<bool> orRequirements { Name("ORRequirements"), Comment("Take the logical OR of requirements, otherwise take the AND"), true };
 
         fhicl::Atom<unsigned> minNTrkSteps { Name("MinimumTrkSteps"), Comment("Minimum number of good tracker steps"), 10};
         fhicl::Atom<double> minSumCaloStepE { Name("MinimumSumCaloStepE"), Comment("Minimum E sum of good calorimeter steps (MeV) "), 50.0 };
         fhicl::Atom<unsigned> minNCrvSteps { Name("MinimumCrvSteps"), Comment("Minimum number of good CRV steps"), 3 };
+
+        fhicl::OptionalAtom<double> minSumCaloTotalE { Name("MinimumSumCaloE"), Comment("Minimum E sum of good calorimeter steps by all good particles (MeV) ")};
 
         fhicl::Atom<unsigned> maxNTrkSteps { Name("MaximumTrkSteps"), Comment("Maximum number of good tracker steps"), maxN_ };
         fhicl::Atom<double> maxSumCaloStepE { Name("MaximumSumCaloStepE"), Comment("Maximum E sum of good calorimeter steps (MeV) "),  maxE_ };
@@ -68,6 +73,7 @@ namespace mu2e {
 
         fhicl::OptionalTable<TimeCutConfig> timeCutConfig { fhicl::Name("TimeCutConfig") };
 
+        fhicl::Atom<int> diagLevel { Name("DiagLevel"), Comment("Diagnostic output level"), 0 };
       };
 
       using Parameters = art::EDFilter::Table<Config>;
@@ -79,17 +85,19 @@ namespace mu2e {
       bool goodParticle(SimParticle const& simp) const; // select particles whose steps to count
       bool timeCut(double time) const; // particle time
       double minTrkE_, minCaloE_, minCrvE_;
-      double minPartM_, maxPartM_;
+      double minPartM_, maxPartM_, minCaloPartM_, maxCaloPartM_;
       bool or_;
       std::vector<PDGCode::type> pdgToKeep_;
       std::vector<art::InputTag> trkStepCols_, caloStepCols_, crvStepCols_;
       unsigned minNTrk_, minNCrv_;
-      double minSumCaloE_;
+      double minSumCaloE_, minSumCaloTotalE_;
+      bool useMinSumCaloTotalE_;
       unsigned maxNTrk_, maxNCrv_;
       double maxSumCaloE_;
       bool timecut_;
       double minTime_, maxTime_;
       unsigned nEvt_, nPassed_;
+      int diagLevel_;
   };
 
   //================================================================
@@ -100,10 +108,13 @@ namespace mu2e {
     , minCrvE_(conf().minCrvStepEnergy())
     , minPartM_(conf().minPartMom())
     , maxPartM_(conf().maxPartMom())
+    , minCaloPartM_(conf().minCaloPartMom())
+    , maxCaloPartM_(conf().maxCaloPartMom())
     , or_(conf().orRequirements())
     , minNTrk_(conf().minNTrkSteps())
     , minNCrv_(conf().minNCrvSteps())
     , minSumCaloE_(conf().minSumCaloStepE())
+    , useMinSumCaloTotalE_(conf().minSumCaloTotalE(minSumCaloTotalE_))
     , maxNTrk_(conf().maxNTrkSteps())
     , maxNCrv_(conf().maxNCrvSteps())
     , maxSumCaloE_(conf().maxSumCaloStepE())
@@ -111,6 +122,7 @@ namespace mu2e {
     , minTime_(0.0), maxTime_(0.0)
     , nEvt_(0)
     , nPassed_(0)
+    , diagLevel_(conf().diagLevel())
     {
       for(const auto ikeep : conf().keepPDG()) { pdgToKeep_.emplace_back(PDGCode::type(ikeep)); }
       for(const auto& trktag : conf().trkSteps()) { trkStepCols_.emplace_back(trktag); consumes<StrawGasStepCollection>(trktag); }
@@ -159,25 +171,55 @@ namespace mu2e {
     }
     // sum Calo energy from same particle
     using CES = std::map<const SimParticle*,float>;
+    float total_edep = 0.; // for total calorimeter deposits
     for(const auto& calocoltag : caloStepCols_) {
       CES caloESum;
       auto csscolH = event.getValidHandle<CaloShowerStepCollection>(calocoltag);
       for(const auto& css : *csscolH ) {
-        if(css.energyDepBirks() > minCaloE_ &&
-            css.momentumIn() > minPartM_ && css.momentumIn() < maxPartM_ &&
+        const float edep_step = css.energyDepBirks();
+        if(edep_step > minCaloE_ &&
+            css.momentumIn() > minCaloPartM_ && css.momentumIn() < maxCaloPartM_ &&
             goodParticle(*css.simParticle()) &&
             timeCut(fmod(css.time(),mbtime))) {
           auto ifnd = caloESum.find(css.simParticle().get());
           if(ifnd == caloESum.end())
-            caloESum.insert(CES::value_type(css.simParticle().get(),css.energyDepBirks()));
+            caloESum.insert(CES::value_type(css.simParticle().get(),edep_step));
           else
-            ifnd->second += css.energyDepBirks();
+            ifnd->second += edep_step;
+          total_edep += edep_step;
+        }
+        if(diagLevel_ > 2) {
+          auto ifnd = caloESum.find(css.simParticle().get());
+          std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                    << " pdg = " << css.simParticle()->pdgId()
+                    << " E_start = " << css.simParticle()->startMomentum().e()
+                    << " z_start = " << css.simParticle()->startPosition().z()
+                    << " cz_start = " << css.simParticle()->startMomentum().vect().cosTheta()
+                    << " step E birks = " << edep_step
+                    << " mom in = " << css.momentumIn()
+                    << " time = " << css.time()
+                    << " edep sum = " << float((ifnd != caloESum.end()) ? ifnd->second : -1.f)
+                    << std::endl;
         }
       }
       for(auto icalo=caloESum.begin();icalo != caloESum.end();icalo++){
+        if(diagLevel_ > 1) std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                                     << " edep sum = " << icalo->second
+                                     << std::endl;
         if(icalo->second >= minSumCaloE_ && icalo->second <= maxSumCaloE_ ){
           selectcalo = true;
           break;
+        }
+      }
+      if(diagLevel_ > 1) std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                                   << " Total E(dep) = " << total_edep
+                                   << std::endl;
+      if(useMinSumCaloTotalE_) {
+        if(total_edep > minSumCaloTotalE_) {
+          selectcalo = true;
+          if(diagLevel_ > 0) std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                                       << " Passing total edep cut with E(dep) = " << total_edep
+                                       << std::endl;
         }
       }
       if(selectcalo)break;
@@ -212,6 +254,12 @@ namespace mu2e {
     bool retval =( (or_ && (selecttrk || selectcalo || selectcrv)) ||
         ((!or_) && ( selecttrk && selectcalo && selectcrv)) );
     if(retval)nPassed_++;
+    if(diagLevel_ > 3 || (diagLevel_ > 0 && retval)) std::cout << "[DetectorStepsFilter::" << __func__ << "]"
+                                                               << " " << event.id()
+                                                               << " selecttrk = " << selecttrk
+                                                               << " selectcalo = " << selectcalo
+                                                               << " selectcrv = " << selectcrv
+                                                               << std::endl;
     return retval;
   }
 
