@@ -129,27 +129,28 @@ namespace mu2e {
 
       virtualdetectorId = step.virtualDetectorId();
       pz = step.momentum().z();
-      if (virtualdetectorId != VirtualDetectorID || pz <= 0)
-      {
-        // mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
-        //                                        << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
-        nThrownEvents += 1;
-        continue; // Filter hits based on the virtual detector ID and pz
-      }
 
       if (doROOTDump) {
+          time = step.time();
           x = step.position().x();
           y = step.position().y();
           z = step.position().z();
           px = step.momentum().x();
           py = step.momentum().y();
-          pz = step.momentum().z();
           mass = pdt->particle(pdgId).mass();
           E = std::sqrt(step.momentum().mag2()+mass*mass)-mass; // Subtract the rest mass
           if (E < 0)
             throw cet::exception("LogicError", "Energy is negative");
 
           ttree->Fill();
+      }
+
+      if (virtualdetectorId != VirtualDetectorID || pz <= 0)
+      {
+        // mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
+        //                                        << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
+        nThrownEvents += 1;
+        continue; // Filter hits based on the virtual detector ID and pz
       }
 
       // Count the number of hits for each particle type for the summary
@@ -272,7 +273,7 @@ namespace mu2e {
 
     fclOutFile << "  end_paths: [" + trainingPathNames + "]\n";
     fclOutFile << "}\n\n";
-    if (doROOTDump) fclOutFile << "services.TFileService.fileName : @nil\n";
+    fclOutFile << "services.SeedService.baseSeed : 8\n"; // fixed random seed for reproducibility, can be changed if needed
 
     return;
   };
