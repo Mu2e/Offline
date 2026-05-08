@@ -1,0 +1,310 @@
+// VDResamplerTrainFromRoot_module.cc
+// A copy of VDResamplerTrain_module.cc but takes ROOT file input instead of 
+// StepPointMCCollection and SimParticleCollection from art::Event.
+// Using ROOT file input from VDResamplerConfigure_module.cc,
+// and saving models at specified epochs as well as the final epoch.
+// Yongyi Wu, May 2026
+
+#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <vector>
+#include <string>
+
+#include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+
+#include "art/Framework/Core/EDAnalyzer.h"
+#include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
+
+#include "TFile.h"
+#include "TTree.h"
+
+typedef unsigned long VolumeId_type;
+
+namespace mu2e {
+  class VDResamplerTrainFromRoot : public art::EDAnalyzer {
+    public:
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      struct Config {
+        fhicl::Atom<std::string> InputRootFile{ Name("InputRootFile"), Comment("Input ROOT file with TTree") };
+        fhicl::Atom<std::string> TreeName{ Name("TreeName"), Comment("Name of the TTree in the ROOT file"), "VDResamplerTrainingSetup/ttree" };
+        fhicl::Atom<bool> SBDMuseTwoStageTraining{ Name("SBDMuseTwoStageTraining"), Comment("If true, train two-stage model"), true };
+        fhicl::Atom<std::string> SBDMallAtOnceModelFile{ Name("SBDMallAtOnceModelFile"), Comment("CSV filename for all-at-once model"), "" };
+        fhicl::Atom<std::string> SBDMstage1ModelFile{ Name("SBDMstage1ModelFile"), Comment("CSV filename for stage-1 model"), "" };
+        fhicl::Atom<std::string> SBDMstage2ModelFile{ Name("SBDMstage2ModelFile"), Comment("CSV filename for stage-2 model"), "" };
+        fhicl::Atom<int> VirtualDetectorID{ Name("VirtualDetectorID"), Comment("Virtual detector ID to select"), 116 };
+        fhicl::Atom<double> VDz0{ Name("VDz0"), Comment("z coordinate of the virtual detector"), 37700.39};
+        fhicl::Atom<double> VDr{ Name("VDr"), Comment("VD radius"), 2000.0 };
+        fhicl::Atom<int> pdgID{ Name("pdgID"), Comment("PDG ID to select"), 22 };
+        fhicl::Atom<int> SBDMhidden{ Name("SBDMhidden"), Comment("Hidden layer size"), 128 };
+        fhicl::Atom<int> SBDMlayers{ Name("SBDMlayers"), Comment("Number of layers"), 4 };
+        fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"), Comment("Optimizer (SGD/ADAM)"), "ADAM" };
+        fhicl::Atom<double> SBDMadamBeta1{ Name("SBDMadamBeta1"), Comment("Adam beta1"), 0.9 };
+        fhicl::Atom<double> SBDMadamBeta2{ Name("SBDMadamBeta2"), Comment("Adam beta2"), 0.999 };
+        fhicl::Atom<double> SBDMadamEps{ Name("SBDMadamEps"), Comment("Adam epsilon"), 1e-8 };
+        fhicl::Atom<std::string> SBDMnoiseSchedule{ Name("SBDMnoiseSchedule"), Comment("Noise schedule (LINEAR/COSINE)"), "COSINE" };
+        fhicl::Atom<double> SBDMbetaMin{ Name("SBDMbetaMin"), Comment("Min beta (LINEAR)") , 1e-4 };
+        fhicl::Atom<double> SBDMbetaMax{ Name("SBDMbetaMax"), Comment("Max beta (LINEAR)"), 0.02 };
+        fhicl::Atom<double> SBDMcosineOffset{ Name("SBDMcosineOffset"), Comment("Cosine offset"), 0.008 };
+        fhicl::Atom<int> SBDMbatchSize{ Name("SBDMbatchSize"), Comment("Batch size"), 32 };
+        fhicl::Atom<double> SBDMgradientClip{ Name("SBDMgradientClip"), Comment("Gradient clip threshold"), 1.0 };
+        fhicl::Atom<double> SBDMlearningRate{ Name("SBDMlearningRate"), Comment("Learning rate"), 1e-3 };
+        fhicl::Atom<int> SBDMdiffusionSteps{ Name("SBDMdiffusionSteps"), Comment("Diffusion steps"), 200 };
+        fhicl::Atom<int> SBDMtrainingSize{ Name("SBDMtrainingSize"), Comment("Size of the training data for the SBDM"), -1}; // -1 means use all available data
+        fhicl::Atom<int> SBDMtrainingEpochs{ Name("SBDMtrainingEpochs"), Comment("Number of epochs"), 10 };
+        fhicl::Sequence<int> SaveEpochs{ Name("SaveEpochs"), Comment("Epochs at which to save models") };
+      };
+      using Parameters = art::EDAnalyzer::Table<Config>;
+      explicit VDResamplerTrainFromRoot(const Parameters& conf);
+      void analyze(const art::Event&) override {}
+      void endJob() override;
+    private:
+      art::RandomNumberGenerator::base_engine_t& engine;
+      CLHEP::RandFlat randFlat_;
+      CLHEP::RandGaussQ randGaussQ_;
+
+      std::string inputRootFile;
+      std::string treeName;
+      bool useTwoStageTraining;
+      std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel;
+      std::unique_ptr<ScoreBasedDiffusionModel> stage1Model;
+      std::unique_ptr<ScoreBasedDiffusionModel> stage2Model;
+      std::vector<DiffusionTrainingSample> allAtOnceTrainingData;
+      std::vector<DiffusionTrainingSample> stage1TrainingData;
+      std::vector<DiffusionTrainingSample> stage2TrainingData;
+      std::string SBDMallAtOnceModelFile;
+      std::string SBDMstage1ModelFile;
+      std::string SBDMstage2ModelFile;
+      VolumeId_type VirtualDetectorID = 0;
+      double VDz0 = 0.0;
+      double VDr = 0.0;
+      int pdgID = 0;
+      int trainingEpochs = 0;
+      int trainingSize = -1;
+  };
+
+  VDResamplerTrainFromRoot::VDResamplerTrainFromRoot(const Parameters& conf) :
+    art::EDAnalyzer(conf),
+    engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
+    randFlat_(engine),
+    randGaussQ_(engine),
+    inputRootFile(conf().InputRootFile()),
+    treeName(conf().TreeName()),
+    useTwoStageTraining(conf().SBDMuseTwoStageTraining()),
+    SBDMallAtOnceModelFile(conf().SBDMallAtOnceModelFile()),
+    SBDMstage1ModelFile(conf().SBDMstage1ModelFile()),
+    SBDMstage2ModelFile(conf().SBDMstage2ModelFile()),
+    VirtualDetectorID(conf().VirtualDetectorID()),
+    VDz0(conf().VDz0()),
+    VDr(conf().VDr()),
+    pdgID(conf().pdgID()),
+    trainingEpochs(conf().SBDMtrainingEpochs()),
+    trainingSize(conf().SBDMtrainingSize())
+  {
+    const auto& saveEpochs = conf().SaveEpochs();
+
+    // Validate geometry configuration
+    if (VDr <= 0.0) {
+        throw cet::exception("VDResamplerTrainFromRoot")
+            << "VDr must be positive (got " << VDr << "); "
+            << "rho = r/VDr would produce inf/NaN in training data.";
+    }
+    if (!std::isfinite(VDz0)) {
+        throw cet::exception("VDResamplerTrainFromRoot")
+            << "VDz0 must be finite (got " << VDz0 << ").";
+    }
+
+    // optimizer selection
+    ScoreBasedDiffusionModel::OptimizerType opt;
+    if (conf().SBDMoptimizer() == "SGD") {
+        opt = ScoreBasedDiffusionModel::OptimizerType::SGD;
+    } else {
+        if (conf().SBDMoptimizer() != "ADAM") {
+            mf::LogWarning("VDResamplerTrainFromRoot")
+                << "Unrecognized SBDMoptimizer value \"" << conf().SBDMoptimizer()
+                << "\"; falling back to ADAM.";
+        }
+        opt = ScoreBasedDiffusionModel::OptimizerType::ADAM;
+    }
+
+    // noise schedule
+    ScoreBasedDiffusionModel::NoiseScheduleType sched;
+    if (conf().SBDMnoiseSchedule() == "LINEAR") {
+        sched = ScoreBasedDiffusionModel::NoiseScheduleType::LINEAR;
+    } else {
+        if (conf().SBDMnoiseSchedule() != "COSINE") {
+            mf::LogWarning("VDResamplerTrainFromRoot")
+                << "Unrecognized SBDMnoiseSchedule value \"" << conf().SBDMnoiseSchedule()
+                << "\"; falling back to COSINE.";
+        }
+        sched = ScoreBasedDiffusionModel::NoiseScheduleType::COSINE;
+    }
+
+    if (useTwoStageTraining) {
+      stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
+      randFlat_, randGaussQ_, 3, 0, conf().SBDMhidden(), conf().SBDMlayers(), opt,
+      conf().SBDMadamBeta1(), conf().SBDMadamBeta2(), conf().SBDMadamEps(), sched,
+      conf().SBDMbetaMin(), conf().SBDMbetaMax(), conf().SBDMcosineOffset(),
+      conf().SBDMbatchSize(), conf().SBDMgradientClip(), conf().SBDMlearningRate(), conf().SBDMdiffusionSteps()
+      );
+      stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
+      randFlat_, randGaussQ_, 3, 3, conf().SBDMhidden(), conf().SBDMlayers(), opt,
+      conf().SBDMadamBeta1(), conf().SBDMadamBeta2(), conf().SBDMadamEps(), sched,
+      conf().SBDMbetaMin(), conf().SBDMbetaMax(), conf().SBDMcosineOffset(),
+      conf().SBDMbatchSize(), conf().SBDMgradientClip(), conf().SBDMlearningRate(), conf().SBDMdiffusionSteps()
+      );
+      if (trainingSize > 0) {
+        stage1TrainingData.reserve(trainingSize);
+        stage2TrainingData.reserve(trainingSize);
+      } else {
+        stage1TrainingData.reserve(1000);
+        stage2TrainingData.reserve(1000);
+      }
+    } else {
+      allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
+      randFlat_, randGaussQ_, 6, 0, conf().SBDMhidden(), conf().SBDMlayers(), opt,
+      conf().SBDMadamBeta1(), conf().SBDMadamBeta2(), conf().SBDMadamEps(), sched,
+      conf().SBDMbetaMin(), conf().SBDMbetaMax(), conf().SBDMcosineOffset(),
+      conf().SBDMbatchSize(), conf().SBDMgradientClip(), conf().SBDMlearningRate(), conf().SBDMdiffusionSteps()
+      );
+      if (trainingSize > 0) {
+        allAtOnceTrainingData.reserve(trainingSize);
+      } else {
+        allAtOnceTrainingData.reserve(1000);
+      }
+    }
+  }
+
+  void VDResamplerTrainFromRoot::endJob() {
+    // Open ROOT file and TTree
+    TFile fin(inputRootFile.c_str(), "READ");
+    if (!fin.IsOpen()) throw cet::exception("VDResamplerTrainFromRoot") << "Cannot open ROOT file: " << inputRootFile;
+    TTree* ttree = dynamic_cast<TTree*>(fin.Get(treeName.c_str()));
+    if (!ttree) throw cet::exception("VDResamplerTrainFromRoot") << "Cannot find TTree: " << treeName;
+
+    // Set up branches
+    double time, x, y, z, px, py, pz;
+    int stepPdgId;
+    VolumeId_type virtualdetectorId;
+    ttree->SetBranchAddress("time", &time);
+    ttree->SetBranchAddress("x", &x);
+    ttree->SetBranchAddress("y", &y);
+    ttree->SetBranchAddress("z", &z);
+    ttree->SetBranchAddress("px", &px);
+    ttree->SetBranchAddress("py", &py);
+    ttree->SetBranchAddress("pz", &pz);
+    ttree->SetBranchAddress("pdgId", &stepPdgId);
+    ttree->SetBranchAddress("virtualdetectorId", &virtualdetectorId);
+
+    // Prepare training data
+    for (Long64_t i = 0; i < ttree->GetEntries(); ++i) {
+      ttree->GetEntry(i);
+
+      if (virtualdetectorId != VirtualDetectorID || (stepPdgId != pdgID && pdgID != 0) || pz <= 0)
+        continue; // Filter hits based on the virtual detector ID, particle type, and pz
+
+      double x_trans, y_trans, t_trans, pr_t, pphi_t, pz_t;
+      VDResampler::forwardTransformSample(x, y, z, time, px, py, pz,
+                                          VDResampler::kX0, VDResampler::kY0, VDResampler::kT0, VDResampler::kTScale, VDResampler::kP0,
+                                          VDr, VDz0,
+                                          x_trans, y_trans, t_trans, pr_t, pphi_t, pz_t);
+      if (useTwoStageTraining) {
+        DiffusionTrainingSample s1; 
+        s1.x = {t_trans, x_trans, y_trans};
+        stage1TrainingData.push_back(std::move(s1));
+        DiffusionTrainingSample s2; 
+        s2.x = {pr_t, pphi_t, pz_t}; s2.cond = {t_trans, x_trans, y_trans};
+        stage2TrainingData.push_back(std::move(s2));
+      } else {
+        DiffusionTrainingSample s; 
+        s.x = {t_trans, x_trans, y_trans, pr_t, pphi_t, pz_t};
+        allAtOnceTrainingData.push_back(std::move(s));
+      }
+    }
+    fin.Close();
+
+    if (useTwoStageTraining && (stage1TrainingData.empty() || stage2TrainingData.empty())) {
+      mf::LogWarning("VDResamplerTrainFromRoot") << "No training data collected.";
+      return;
+    }
+    if (!useTwoStageTraining && allAtOnceTrainingData.empty()) {
+      mf::LogWarning("VDResamplerTrainFromRoot") << "No training data collected.";
+      return;
+    }
+
+    // Training and saving at specified epochs
+    if (useTwoStageTraining) {
+      if(trainingSize > 0 && (int)stage1TrainingData.size() > trainingSize)
+        stage1TrainingData.resize(trainingSize);
+      if(trainingSize > 0 && (int)stage2TrainingData.size() > trainingSize)
+        stage2TrainingData.resize(trainingSize);
+
+      if (SBDMstage1ModelFile.empty() || SBDMstage2ModelFile.empty()) {
+        throw cet::exception("VDResamplerTrainFromRoot") << "Two-stage training requires both SBDMstage1ModelFile and SBDMstage2ModelFile.";
+      }
+
+      mf::LogInfo("VDResamplerTrainFromRoot")
+          << "Training stage-1 diffusion model with " << stage1TrainingData.size()
+          << " samples and " << trainingEpochs << " epochs...";
+      std::string base = SBDMstage1ModelFile;
+      if (base.size() > 4 && base.substr(base.size()-4) == ".csv") base = base.substr(0, base.size()-4);
+      for (int e = 1; e <= trainingEpochs; ++e) {
+        stage1Model->train(stage1TrainingData, 1);
+        if (std::find(saveEpochs.begin(), saveEpochs.end(), e) != saveEpochs.end()) {
+          stage1Model->saveModel(base + ".epoch" + std::to_string(e) + ".csv");
+        }
+      }
+      stage1Model->saveModel(SBDMstage1ModelFile); // Always save final model
+      mf::LogInfo("VDResamplerTrainFromRoot") << "Stage-1 training completed";
+
+      mf::LogInfo("VDResamplerTrainFromRoot")
+          << "Training stage-2 diffusion model with " << stage2TrainingData.size()
+          << " samples and " << trainingEpochs << " epochs...";
+      base = SBDMstage2ModelFile;
+      if (base.size() > 4 && base.substr(base.size()-4) == ".csv") base = base.substr(0, base.size()-4);
+      for (int e = 1; e <= trainingEpochs_; ++e) {
+        stage2Model->train(stage2TrainingData, 1);
+        if (std::find(saveEpochs.begin(), saveEpochs.end(), e) != saveEpochs.end()) {
+          stage2Model->saveModel(base + ".epoch" + std::to_string(e) + ".csv");
+        }
+      }
+      stage2Model->saveModel(SBDMstage2ModelFile);
+      mf::LogInfo("VDResamplerTrainFromRoot") << "Stage-2 training completed";
+
+    } else {
+      if(trainingSize > 0 && (int)allAtOnceTrainingData.size() > trainingSize)
+        allAtOnceTrainingData.resize(trainingSize);
+
+      if (SBDMallAtOnceModelFile.empty()) {
+        throw cet::exception("VDResamplerTrainFromRoot") << "All-at-once training requires SBDMallAtOnceModelFile.";
+      }
+
+      mf::LogInfo("VDResamplerTrainFromRoot")
+          << "Training all-at-once diffusion model with " << allAtOnceTrainingData.size()
+          << " samples and " << trainingEpochs << " epochs...";
+      std::string base = SBDMallAtOnceModelFile;
+      if (base.size() > 4 && base.substr(base.size()-4) == ".csv") base = base.substr(0, base.size()-4);
+      for (int e = 1; e <= trainingEpochs_; ++e) {
+        allAtOnceModel->train(allAtOnceTrainingData, 1);
+        if (std::find(saveEpochs.begin(), saveEpochs.end(), e) != saveEpochs.end()) {
+          allAtOnceModel->saveModel(base + ".epoch" + std::to_string(e) + ".csv");
+        }
+      }
+      allAtOnceModel->saveModel(SBDMallAtOnceModelFile);
+      mf::LogInfo("VDResamplerTrainFromRoot") << "All-at-once training completed";
+    }
+    return;
+  }
+} // end namespace mu2e
+
+DEFINE_ART_MODULE(mu2e::VDResamplerTrainFromRoot)
