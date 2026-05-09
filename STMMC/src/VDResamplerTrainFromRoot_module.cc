@@ -14,6 +14,7 @@
 
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -91,6 +92,7 @@ namespace mu2e {
       int pdgID = 0;
       int trainingEpochs = 0;
       int trainingSize = -1;
+      std::vector<int> saveEpochs;
   };
 
   VDResamplerTrainFromRoot::VDResamplerTrainFromRoot(const Parameters& conf) :
@@ -109,9 +111,9 @@ namespace mu2e {
     VDr(conf().VDr()),
     pdgID(conf().pdgID()),
     trainingEpochs(conf().SBDMtrainingEpochs()),
-    trainingSize(conf().SBDMtrainingSize())
+    trainingSize(conf().SBDMtrainingSize()),
+    saveEpochs(conf().SaveEpochs())
   {
-    const auto& saveEpochs = conf().SaveEpochs();
 
     // Validate geometry configuration
     if (VDr <= 0.0) {
@@ -272,7 +274,7 @@ namespace mu2e {
           << " samples and " << trainingEpochs << " epochs...";
       base = SBDMstage2ModelFile;
       if (base.size() > 4 && base.substr(base.size()-4) == ".csv") base = base.substr(0, base.size()-4);
-      for (int e = 1; e <= trainingEpochs_; ++e) {
+      for (int e = 1; e <= trainingEpochs; ++e) {
         stage2Model->train(stage2TrainingData, 1);
         if (std::find(saveEpochs.begin(), saveEpochs.end(), e) != saveEpochs.end()) {
           stage2Model->saveModel(base + ".epoch" + std::to_string(e) + ".csv");
@@ -294,7 +296,7 @@ namespace mu2e {
           << " samples and " << trainingEpochs << " epochs...";
       std::string base = SBDMallAtOnceModelFile;
       if (base.size() > 4 && base.substr(base.size()-4) == ".csv") base = base.substr(0, base.size()-4);
-      for (int e = 1; e <= trainingEpochs_; ++e) {
+      for (int e = 1; e <= trainingEpochs; ++e) {
         allAtOnceModel->train(allAtOnceTrainingData, 1);
         if (std::find(saveEpochs.begin(), saveEpochs.end(), e) != saveEpochs.end()) {
           allAtOnceModel->saveModel(base + ".epoch" + std::to_string(e) + ".csv");
