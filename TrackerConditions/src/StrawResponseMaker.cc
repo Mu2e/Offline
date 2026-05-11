@@ -144,4 +144,28 @@ namespace mu2e {
     return ptr;
   }
 
+  StrawResponse::ptr_t StrawResponseMaker::fromDb(
+      StrawDrift::cptr_t strawDrift,
+      StrawElectronics::cptr_t strawElectronics,
+      StrawPhysics::cptr_t strawPhysics,
+      TrkTOTCalib::cptr_t ttc,
+      TrkTOTCalibParams::cptr_t ttcp) {
+    // initially fill from fcl to get all the constants
+    auto ptr = fromFcl(strawDrift, strawElectronics, strawPhysics);
+
+    size_t tottbins = (size_t) ttcp->rowAt(0).totTBins();
+    size_t totebins = (size_t) ttcp->rowAt(0).totEBins();
+    double tottbinwidth = ttcp->rowAt(0).totTBinWidth();
+    double totebinwidth = ttcp->rowAt(0).totEBinWidth();
+    std::vector<double> totdtime;
+    std::vector<double> totderror;
+    for (size_t i=0;i<tottbins*totebins;i++){
+      totdtime.push_back(ttc->rowAt(i).driftTime());
+      totderror.push_back(ttc->rowAt(i).driftError());
+    }
+
+    ptr->setTOTCalib(tottbins, tottbinwidth, totebins, totebinwidth, totdtime, totderror);
+
+    return ptr;
+  }
 }
