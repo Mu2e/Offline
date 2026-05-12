@@ -85,7 +85,7 @@ namespace mu2e {
       // momentum scaling
       prTrans = std::asinh(pr / p0); // tunable scale where I want best resolution
       pphiTrans = std::asinh(pphi / p0);
-      pzTrans = std::asinh(pz / p0);
+      pzTrans = std::log(pz / p0); // tried std::asinh(pz / p0) but hard cutoff at 0 was not friendly for DM
 
       // time transform
       const double tSafe = (t > kMinSafeTime) ? t : kMinSafeTime; // avoid log(0)
@@ -129,7 +129,7 @@ namespace mu2e {
 
       const double pr = p0 * std::sinh(prTrans);
       const double pphi = p0 * std::sinh(pphiTrans);
-      pz = p0 * std::sinh(pzTrans);
+      pz = p0 * std::exp(pzTrans); // changed conversion, pzTrans = log(pz / p0);
 
       if (r > kRadiusSafetyEpsilon) {
         const double rx = dx / r;
