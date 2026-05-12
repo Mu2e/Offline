@@ -44,7 +44,7 @@
 #include "Geant4/G4SubtractionSolid.hh"
 
 // C++ includes
-#include <format>
+#include <string>
 
 using namespace std;
 
@@ -224,7 +224,7 @@ namespace mu2e {
         CLHEP::Hep3Vector offset(tube_dxs[i]*CLHEP::mm, tube_dys[i]*CLHEP::mm,
                                  tube_z0s[i]*CLHEP::mm - ds2VacuumInfo.centerInMu2e().z());
         G4Material* material = findMaterialOrThrow(tube_materials[i]);
-        nestTubs(std::format("TSdATube{}", i),
+        nestTubs(std::string("TSdATube") + std::to_string(i),
                  params,
                  material,
                  0,
