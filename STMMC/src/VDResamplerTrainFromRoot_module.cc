@@ -197,7 +197,7 @@ namespace mu2e {
     // Set up branches
     double time, x, y, z, px, py, pz;
     int stepPdgId;
-    VolumeId_type virtualdetectorId;
+    ULong64_t virtualdetectorId;
     ttree->SetBranchAddress("time", &time);
     ttree->SetBranchAddress("x", &x);
     ttree->SetBranchAddress("y", &y);
