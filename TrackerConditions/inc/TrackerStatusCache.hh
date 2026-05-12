@@ -4,6 +4,7 @@
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
 #include "Offline/DbTables/inc/TrkElementStatus.hh"
+#include "Offline/DbTables/inc/TrkHVTripStatus.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatusMaker.hh"
 
 
@@ -21,6 +22,7 @@ namespace mu2e {
           _tpas_p = std::make_unique<DbHandle<TrkPanelStatus>>();
           _tssl_p = std::make_unique<DbHandle<TrkStrawStatusLong>>();
           _tsss_p = std::make_unique<DbHandle<TrkStrawStatusShort>>();
+          _thvs_p = std::make_unique<DbHandle<TrkHVTripStatus>>();
         }
       }
 
@@ -32,10 +34,12 @@ namespace mu2e {
           _tpas_p->get(eid);
           _tssl_p->get(eid);
           _tsss_p->get(eid);
+          _thvs_p->get(eid);
           cids.insert(_tpls_p->cid());
           cids.insert(_tpas_p->cid());
           cids.insert(_tssl_p->cid());
           cids.insert(_tsss_p->cid());
+          cids.insert(_thvs_p->cid());
         }
         return cids;
       }
@@ -48,6 +52,7 @@ namespace mu2e {
           iov.overlap(_tpas_p->iov());
           iov.overlap(_tssl_p->iov());
           iov.overlap(_tsss_p->iov());
+          iov.overlap(_thvs_p->iov());
         }
         return iov;
       }
@@ -57,7 +62,8 @@ namespace mu2e {
           return _maker.fromDb( _tpls_p->getPtr(eid),
               _tpas_p->getPtr(eid),
               _tssl_p->getPtr(eid),
-              _tsss_p->getPtr(eid) );
+              _tsss_p->getPtr(eid),
+              _thvs_p->getPtr(eid));
         } else {
           return _maker.fromFcl();
         }
@@ -72,6 +78,7 @@ namespace mu2e {
       std::unique_ptr<DbHandle<TrkPanelStatus>>       _tpas_p;
       std::unique_ptr<DbHandle<TrkStrawStatusLong>>   _tssl_p;
       std::unique_ptr<DbHandle<TrkStrawStatusShort>>  _tsss_p;
+      std::unique_ptr<DbHandle<TrkHVTripStatus>>      _thvs_p;
   };
 }
 

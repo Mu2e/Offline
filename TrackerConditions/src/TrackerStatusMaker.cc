@@ -38,7 +38,8 @@ namespace mu2e {
       TrkPlaneStatus::cptr_t tpls_p,
       TrkPanelStatus::cptr_t   tpas_p,
       TrkStrawStatusLong::cptr_t   tssl_p,
-      TrkStrawStatusShort::cptr_t   tsss_p ) {
+      TrkStrawStatusShort::cptr_t   tsss_p,
+      TrkHVTripStatus::cptr_t thvs_p) {
     // create return object
     auto trkstatptr = std::make_shared<TrackerStatus>();
     auto const& settings = config_.settings();
@@ -48,12 +49,14 @@ namespace mu2e {
       cout << "Panel table has " << tpas_p->rows().size() << " rows " << endl;
       cout << "Long-term Straw table has " << tssl_p->rows().size() << " rows " << endl;
       cout << "Short-term Straw table has " << tsss_p->rows().size() << " rows " << endl;
+      cout << "HV trip table has " << thvs_p->rows().size() << " rows " << endl;
     }
 
     for (auto const& row : tpls_p->rows()) trkstatptr->addStatus(row.id(),tpls_p->sidMask(),row.status());
     for (auto const& row : tpas_p->rows()) trkstatptr->addStatus(row.id(),tpas_p->sidMask(),row.status());
     for (auto const& row : tssl_p->rows()) trkstatptr->addStatus(row.id(),tssl_p->sidMask(),row.status());
     for (auto const& row : tsss_p->rows()) trkstatptr->addStatus(row.id(),tsss_p->sidMask(),row.status());
+    for (auto const& row : thvs_p->rows()) trkstatptr->addTrip(row.id(), row.startevent(), row.endevent());
 
     if ( settings.verbose() > 1 ) trkstatptr->print(cout);
     return trkstatptr;

@@ -33,6 +33,7 @@
 #include "Offline/DbTables/inc/TrkPanelMap.hh"
 #include "Offline/DbTables/inc/TrkPreampStraw.hh"
 #include "Offline/DbTables/inc/TrkTOTCalib.hh"
+#include "Offline/DbTables/inc/TrkHVTripStatus.hh"
 #include "Offline/DbTables/inc/TstCalib1.hh"
 #include "Offline/DbTables/inc/TstCalib2.hh"
 #include "Offline/DbTables/inc/TstCalib3.hh"
@@ -81,6 +82,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkStrawStatusLong());
   } else if (name == "TrkStrawStatusShort") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkStrawStatusShort());
+  } else if (name == "TrkHVTripStatus") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkHVTripStatus());
   } else if (name == "TrkTOTCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkTOTCalib());
   } else if (name == "TrkTOTCalibParams") {

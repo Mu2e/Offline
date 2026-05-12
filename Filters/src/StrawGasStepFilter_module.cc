@@ -50,7 +50,7 @@ namespace mu2e{
     auto steps = event.getValidHandle<StrawGasStepCollection>(_stepsTag);
     auto const& stepcol = *steps;
     for (auto const& step : stepcol){
-      if (!trackerStatus->noSignal(step.strawId()))
+      if (!trackerStatus->noSignal(step.strawId(),event.event()))
         count += 1;
     }
     return count >= _minSteps;

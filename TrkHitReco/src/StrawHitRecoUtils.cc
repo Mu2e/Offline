@@ -77,7 +77,7 @@ namespace mu2e {
     return (peak-pedestal);
   }
 
-  bool StrawHitRecoUtils::createComboHit(EventWindowMarker const& ewm, size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
+  bool StrawHitRecoUtils::createComboHit(uint32_t event, EventWindowMarker const& ewm, size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
       std::unique_ptr<StrawHitCollection> const& shCol, const CaloClusterCollection* caloClusters,
       double pbtOffset,
       StrawId const& sid, TrkTypes::TDCValues const& tdc, TrkTypes::TOTValues const& tot,
@@ -93,7 +93,7 @@ namespace mu2e {
 
     // flag digis that shouldn't be here or we don't want; true for both On and OffSpill
     StrawHitFlag flag;
-    if (trackerStatus.noSignal(sid) || trackerStatus.suppress(sid)) {
+    if (trackerStatus.noSignal(sid,event) || trackerStatus.suppress(sid)) {
       if(_filter)
         return false;
       else

@@ -210,7 +210,7 @@ namespace mu2e {
         pmp = _shrUtils.peakMinusPedWF(adcwf,srep,maxiter);
         if(_diagLevel > 0)_maxiter->Fill( std::distance(adcwf.begin(),maxiter));
       }
-      _shrUtils.createComboHit(ewm, isd, chCol, shCol, caloClusters, pbtOffset,
+      _shrUtils.createComboHit(event.event(), ewm, isd, chCol, shCol, caloClusters, pbtOffset,
           digi.strawId(), digi.TDC(), digi.TOT(), pmp,
           trackerStatus,  srep, tt);
       //flag straw and electronic cross-talk

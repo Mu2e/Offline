@@ -625,7 +625,7 @@ namespace mu2e {
           auto const& sgs = steps[isgs];
           // lookup straw here, to avoid having to find the tracker for every step
           StrawId const & sid = sgs.strawId();
-          if ( ((!_usestatus) || (!trackerStatus->noSignal(sid))) && sgs.ionizingEdep() > _minstepE){
+          if ( ((!_usestatus) || (!trackerStatus->noSignal(sid,event.event()))) && sgs.ionizingEdep() > _minstepE){
             Straw const& straw = _tracker->getStraw(sid);
             auto sgsptr = SGSPtr(sgsch,isgs);
             // create a clust from this step, and add it to the clust map
