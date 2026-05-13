@@ -66,7 +66,8 @@ namespace mu2e {
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
         batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         diffusionSteps_(diffusionSteps),
-        runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_() {
+        runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_(),
+        clipCount_(0), totalClipChecks_(0), clipScaleAccum_(0.0) {
 
         // Validate model dimensions and parameters
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
@@ -425,7 +426,8 @@ namespace mu2e {
     // Compute Mean Squared Error per dimension between predicted score and target score.
     double ScoreBasedDiffusionModel::computeLoss(
         const std::vector<double>& score,
-        const std::vector<double>& target
+        const std::vector<double>& target,
+        double weight // use weighted loss to prevent sigma(t) at tiny t from blowing up and dominating the training.
     ) const {
 
         if (score.size() != static_cast<size_t>(dim_)) {
@@ -443,7 +445,7 @@ namespace mu2e {
 
         for (int i = 0; i < dim_; ++i) {
             double d = score[i] - target[i];
-            loss += d * d;
+            loss += weight * d * d;
         }
 
         return loss / dim_;
@@ -467,13 +469,17 @@ namespace mu2e {
         }
         norm = std::sqrt(norm);
 
+        totalClipChecks_++;
         // If the norm is below the threshold, no clipping is needed.
         if (norm <= maxNorm) {
+            clipScaleAccum_ += 1.0;
             return;
         }
+        clipCount_++;
 
         // Scale down the gradients to have the specified maximum norm.
         double scale = maxNorm / norm;
+        clipScaleAccum_ += scale;
         for (auto& layer : network_)
         {
             for (auto& row : layer.gradW)
@@ -560,12 +566,13 @@ namespace mu2e {
                 std::vector<double> eps;
 
                 auto xt = addNoise(sample.x,t,eps);
-                double s = sigma(t);
+                double s = std::max(sigma(t), eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
+                double weight = s * s; // Use sigma(t)^2 as the weight
 
                 // The target score is the negative of the noise scaled by the noise standard deviation, i.e., -eps/sigma(t).
                 std::vector<double> target(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    target[i] = -eps[i] / std::max(s, eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
+                    target[i] = -eps[i] / s;
                 }
 
                 // Prepare input vector for the network by concatenating the noisy sample xt with the diffusion time t.
@@ -584,13 +591,13 @@ namespace mu2e {
                 auto score = forward(input);
 
                 // Compute the loss (Mean Squared Error) per dimension between the predicted score and the target score.
-                double loss = computeLoss(score, target);
+                double loss = computeLoss(score, target, weight);
 
                 // Compute the gradient of the loss w.r.t. the predicted score
                 // Gradient of the loss w.r.t. the predicted score is 2*(score-target)/dim_ (the division by dim_ is for averaging the loss per dimension).
                 std::vector<double> grad(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    grad[i] = 2.0 * (score[i] - target[i]) / dim_;
+                    grad[i] = 2.0 * weight * (score[i] - target[i]) / dim_;
                 }
 
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
@@ -647,7 +654,10 @@ namespace mu2e {
             }
 
             epochLoss /= n;
-            mf::LogInfo("ScoreBasedDiffusionModel::train") << "Epoch " << e << "  Loss=" << epochLoss;
+            double clipRatio = (totalClipChecks_ > 0) ? double(clipCount_) / totalClipChecks_ : 0.0;
+            double avgClipScale = (totalClipChecks_ > 0) ? clipScaleAccum_ / totalClipChecks_ : 1.0;
+
+            mf::LogInfo("ScoreBasedDiffusionModel::train") << "Epoch " << e << "  Loss=" << epochLoss << "  ClipRatio=" << clipRatio << "  AvgClipScale=" << avgClipScale;
             epochLosses_.push_back(epochLoss);
         }
     }

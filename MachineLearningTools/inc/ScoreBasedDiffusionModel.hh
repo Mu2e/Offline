@@ -258,7 +258,8 @@ namespace mu2e{
         // Returns: MSE loss value (scalar)
         double computeLoss(
             const std::vector<double>& score,
-            const std::vector<double>& target
+            const std::vector<double>& target,
+            double weight // use weighted loss to prevent sigma(t) at tiny t from blowing up and dominating the training.
         ) const;
 
         // Clip gradients to prevent exploding gradients during training.
@@ -319,6 +320,11 @@ namespace mu2e{
 
         // Container for tracking training loss over epochs
         std::vector<double> epochLosses_;
+
+        // Variables to track gradient clipping statistics for monitoring
+        size_t clipCount_;
+        size_t totalClipChecks_;
+        double clipScaleAccum_;
 
     };
 }
