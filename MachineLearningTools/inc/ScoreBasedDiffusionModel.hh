@@ -213,7 +213,9 @@ namespace mu2e{
         // ----- diffusion -----
 
         // Noise schedule parameter beta(t) over diffusion time [0,1].
-        // Linear interpolation between betaMin_ and betaMax_.
+        // Linear scheme: interpolation between betaMin_ and betaMax_.
+        // Cosine scheme: derived from sigma(t) = sqrt(1 - alpha_bar(t)),
+        //     where alpha_bar(t) = cos^2((t + cosineOffset_) / (1 + cosineOffset_) * pi/2).
         //
         // Parameters:
         //   t - Diffusion time parameter in [0,1]
@@ -221,8 +223,18 @@ namespace mu2e{
         // Returns: Beta value for the given time step
         double beta(double t) const;
 
-        // Standard deviation of noise at diffusion time t.
-        // Related to the noise schedule via sigma(t) = sqrt(1 - exp(-integral(beta(s) ds))).
+        // Cumulative signal retention factor alpha_bar(t) over diffusion time [0,1].
+        // For linear noise schedule, alpha_bar(t) = exp(-integral_0^t beta(s) ds).
+        // For cosine noise schedule, alpha_bar(t) = cos^2((t + cosineOffset_) / (1 + cosineOffset_) * pi/2).
+        //
+        // Parameters:
+        //   t - Diffusion time parameter in [0,1]
+        //
+        // Returns: Cumulative signal retention factor at time t
+        double alphabar(double t) const;
+
+        // Cumulative perturbation standard deviation of noise sigma(t) at diffusion time [0,1].
+        // Related to the noise schedule via sigma(t) = sqrt(1 - alpha_bar(t)).
         //
         // Parameters:
         //   t - Diffusion time parameter in [0,1]

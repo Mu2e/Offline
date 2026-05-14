@@ -15,26 +15,43 @@ namespace mu2e {
         return s * (1.0 + x * (1.0 - s));
     }
 
-    // Linear interpolation of beta(t) between betaMin_ and betaMax_.
-    // This is only used in the linear noise schedule.
+    // Here instantaneous noise scale, cumulative signal retention factor,
+    // and cumulative perturbation stddev are defined for variance preserving (VP) SDEs
+    // for both linear and cosine noise schedules. This choice is out of the consideration
+    // of numerical stability, ease of implementation, and faster sampler convergence
+    
+    // Instantaneous noise scale (diffusion coefficient) at time t
     double ScoreBasedDiffusionModel::beta(double t) const {
-        return betaMin_ + t * (betaMax_ - betaMin_);
+        if (noiseScheduleType_ == NoiseScheduleType::COSINE) {
+            // Cosine noise schedule does not use betaMin and betaMax, but we can still define an effective beta if needed
+            double f = (t + cosineOffset_) / (1.0 + cosineOffset_);
+            double beta = (M_PI / (1.0 + cosineOffset_)) * std::tan(f * M_PI * 0.5); // beta(t) = pi / (1+offset) * tan(pi*f/2)
+            // Cap beta to prevent numerical issues at t close to 1
+            return std::min(beta, 20.0); // cap beta to a large value
+        } else {
+            // Linear interpolation of beta(t) between betaMin_ and betaMax_.
+            return betaMin_ + t * (betaMax_ - betaMin_);
+        }
     }
 
-    // Standard deviation of noise at diffusion time t.
-    // For the linear schedule, use simply sqrt(beta(t)).
-    // For the cosine schedule, this is derived from the cumulative noise schedule.
-    double ScoreBasedDiffusionModel::sigma(double t) const {
+    // cumulative signal retention factor at time t
+    double ScoreBasedDiffusionModel::alphabar(double t) const {
         if (noiseScheduleType_ == NoiseScheduleType::COSINE) {
             // Cosine noise schedule
             double f = (t + cosineOffset_) / (1.0 + cosineOffset_);
             double alpha_bar = std::cos(f * M_PI * 0.5);
-            alpha_bar *= alpha_bar;
-            return std::sqrt(1.0 - alpha_bar);
+            alpha_bar *= alpha_bar; // alpha_bar(t) = cos^2(pi*f/2)
+            return alpha_bar;
         } else {
-            // Linear noise schedule (default)
-            return std::sqrt(beta(t));
+            // Linear noise schedule
+            double integral = betaMin_ * t + 0.5 * (betaMax_ - betaMin_) * t * t;
+            return std::exp(-integral); // alpha_bar(t) = exp(-integral(beta(s) ds))
         }
+    }
+
+    // Cumulative perturbation stddev (noise level)
+    double ScoreBasedDiffusionModel::sigma(double t) const {
+        return std::sqrt(1.0 - alphabar(t)); // sigma(t) = sqrt(1 - alpha_bar(t))
     }
 
 
@@ -408,7 +425,8 @@ namespace mu2e {
                 << ", expected " << dim_;
         }
 
-        double s = sigma(t);
+        double alpha_bar = alphabar(t);
+        double s = std::sqrt(1.0 - alpha_bar); // i.e. sigma(t), avoid recalculating alpha_bar inside the function for efficiency
 
         // Generate Gaussian noise vector eps of dimension dim_ using the external random engine.
         eps.resize(dim_);
@@ -417,7 +435,7 @@ namespace mu2e {
 
         for (int i = 0; i < dim_; ++i) {
             eps[i] = randGaussQ_.fire(); // Gaussian N(0,1)
-            xt[i] = x[i] + s * eps[i];
+            xt[i] = std::sqrt(alpha_bar) * x[i] + s * eps[i];
         }
 
         return xt;
@@ -561,6 +579,9 @@ namespace mu2e {
                 const auto& sample = data[indices[idx]];
 
                 // Sample diffusion time
+                // if really need to focus on small peaks, can scale towards smaller t by doing:
+                // //double u = randFlat_.fire();
+                // //double t = u*u;
                 double t = randFlat_.fire();
                 // container for noise vector eps
                 std::vector<double> eps;
@@ -1043,9 +1064,9 @@ namespace mu2e {
         // Reverse diffusion process
         for (int step = steps - 1; step >= 0; --step) {
 
-            double t = (double)step/steps;
+            double t = ((double)step + 1.0)/steps;
             double dt = 1.0/steps;
-            double s = sigma(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
+            double beta_val = beta(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
 
             if (!useHeun) {
                 // Euler method (1st order)
@@ -1056,10 +1077,15 @@ namespace mu2e {
                 auto score = forward(input);
 
                 for (int i = 0; i < dim_; ++i) {
-                    x[i] += -s * s * score[i] * dt;
+                    double drift = 0.5 * beta_val * x[i] + 0.5 * beta_val * score[i];
+                    x[i] += drift * dt;
+                    // if SDE solver:
+                    // double drift = 0.5 * beta_val * x[i] + beta_val * score[i];
+                    // double noise = std::sqrt(beta_val * dt) * randGaussQ_.fire();
+                    // x[i] += drift * dt + noise;
                 }
             } else {
-                // Heun's method (2nd order)
+                // Heun's method (2nd order) Only ODE solver, no noise added
                 // k1 = f(x,t)
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
@@ -1068,7 +1094,7 @@ namespace mu2e {
 
                 std::vector<double> k1(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    k1[i] = -s * s * score_k1[i];
+                    k1[i] = 0.5 * beta_val * x[i] + 0.5 * beta_val * score_k1[i];
                 }
 
                 // predictor
@@ -1079,7 +1105,7 @@ namespace mu2e {
 
                 // next time
                 double t_next = std::max(0.0, t - dt);
-                double s_next = sigma(t_next);
+                double b_next = beta(t_next);
 
                 // k2 = f(x_pred,t_next)
                 std::vector<double> input_next = x_pred;
@@ -1089,7 +1115,7 @@ namespace mu2e {
 
                 std::vector<double> k2(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    k2[i] = -s_next * s_next * score_k2[i];
+                    k2[i] = 0.5 * b_next * x_pred[i] + 0.5 * b_next * score_k2[i];
                 }
 
                 // trapezoidal update

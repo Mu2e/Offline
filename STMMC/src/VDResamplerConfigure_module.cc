@@ -234,10 +234,10 @@ namespace mu2e {
                     << "      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag\n"
                     << "      SBDMuseTwoStageTraining : " << (useTwoStageTraining ? "true" : "false") << "\n";
         if (useTwoStageTraining) {
-          fclOutFile << "      SBDMstage1ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage1_VD" << VirtualDetectorID << "_pdg" << pdgIdstr << ".csv\"\n"
-                     << "      SBDMstage2ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage2_VD" << VirtualDetectorID << "_pdg" << pdgIdstr << ".csv\"\n";
+          fclOutFile << "      SBDMstage1ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage1_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n"
+                     << "      SBDMstage2ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage2_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
         } else {
-          fclOutFile << "      SBDMallAtOnceModelFile : \"" << VDResamplerDir << "/SBDMmodel_allAtOnce_VD" << VirtualDetectorID << "_pdg" << pdgIdstr << ".csv\"\n";
+          fclOutFile << "      SBDMallAtOnceModelFile : \"" << VDResamplerDir << "/SBDMmodel_allAtOnce_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
         }
         fclOutFile << "      VirtualDetectorID : " << VirtualDetectorID << "\n"
                     // << "      VDz0 : " << std::to_string(<value>) << "\n" // include if not VD116
