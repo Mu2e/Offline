@@ -267,6 +267,7 @@ namespace mu2e {
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
     bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
+    bool         goodTimeCluster           (const TimeCluster& tc);
 
   };
 
@@ -490,13 +491,7 @@ namespace mu2e {
         // if cluster is busy or event is intense then only process the time cluster if it has calo cluster
         const auto& tc = _tcColl->at(i);
         _intenseCluster = (int) tc.nhits() > _intenseClusterThresh;
-        if (_intenseEvent || _intenseCluster) {
-          if (!tc.hasCaloCluster()) {
-            if(_diagLevel > 1)
-              printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
-            continue;
-          }
-        }
+        if(!goodTimeCluster(tc)) continue;
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
         while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if not configured for multi-helix reco
@@ -1583,13 +1578,14 @@ namespace mu2e {
     } else {
       // if line fit was good enough make sure momenta are within allowable range
       float radius = _circleFitter.radius();
-      float slope = _lineFitter.dydx();
-      float mom2 = computeHelixMomentum2(radius, slope);
       float pt = computeHelixPerpMomentum(radius);
-      if (mom2 < _minHelixMomentumSq ||
-          mom2 > _maxHelixMomentumSq || pt < _minHelixPerpMomentum ||
-          pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
-      else { outcome = GOOD; }
+      if(pt < _minHelixPerpMomentum || pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
+      else {
+        float slope = _lineFitter.dydx();
+        float mom2 = computeHelixMomentum2(radius, slope);
+        if (mom2 < _minHelixMomentumSq || mom2 > _maxHelixMomentumSq) { outcome = CONTINUE; }
+        else { outcome = GOOD; }
+      }
     }
 
     if(_diagLevel > 0) {
@@ -1687,6 +1683,32 @@ namespace mu2e {
 
     return false;
 
+  }
+
+  //-----------------------------------------------------------------------------
+  // check if the time cluster passes selection criteria
+  //-----------------------------------------------------------------------------
+  bool AgnosticHelixFinder::goodTimeCluster(const TimeCluster& tc) {
+    // For intense events/clusters, require a cluster
+    if (_intenseEvent || _intenseCluster) {
+      if (!tc.hasCaloCluster()) {
+        if(_diagLevel > 1)
+          printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
+        return false;
+      }
+    }
+
+    // At least 3 hits are necessary for helix finding
+    const int nhits = tc.nhits();
+    if(nhits < 3) return false;
+
+    // Not enough hits for the search
+    if(nhits < _minSeedCircleHits)  return false;
+    if(nhits < _minLineSegmentHits) return false;
+    if(nhits < _minNHelixComboHits) return false;
+
+    // Passes all cuts
+    return true;
   }
 
 } // namespace mu2e
