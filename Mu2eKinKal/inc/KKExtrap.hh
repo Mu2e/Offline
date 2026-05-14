@@ -67,7 +67,7 @@ namespace mu2e {
       mutable ExtrapolateCaloMaterial extrapCaloMat_; // extrapolation through passive calo materials (disk 0)
       mutable ExtrapolateCaloMaterial extrapCaloMatD1_; // extrapolation through passive calo materials (disk 1)
       mutable bool geom_initialized_ = false;
-      void initGeometry() const; // lazy initialization method
+      void initGeometry() const; // new initialization method
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
       // calorimeter front panel passive material thicknesses (should come from geometry service TODO)
@@ -153,7 +153,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
-    initGeometry(); // lazy initialization: initialize geometry on first use
+    initGeometry(); // initialize geometry on first use
     GeomHandle<KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,btol_,kkg.tracker().front().center().Z(),debug_);
