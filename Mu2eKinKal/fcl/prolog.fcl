@@ -397,7 +397,7 @@ Mu2eKinKal : {
     ToOPA : true
     ToCaloD0 : true
     ToCaloD1 : true
-    ToCaloMaterial : false
+    ToCaloMaterial : true
   }
 
   LHSEEDXTRAP : {
@@ -410,7 +410,7 @@ Mu2eKinKal : {
     ToOPA : false
     ToCaloD0 : true
     ToCaloD1 : true
-    ToCaloMaterial : false
+    ToCaloMaterial : true
   }
 
   CENTRALHELIX : {
@@ -455,7 +455,7 @@ Mu2eKinKal : {
     ToOPA : false
     ToCaloD0 : true
     ToCaloD1 : true
-    ToCaloMaterial : false
+    ToCaloMaterial : true
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
   }
 }
@@ -480,6 +480,7 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings : @local::Mu2eKinKal.LHSEEDXTRAP
     UsePDGCharge: false
+    #MakeValidationPlots : false
     HelixMask: {
       MinHelixMom : 0
     }
@@ -505,6 +506,7 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP
     UsePDGCharge: false
+    #MakeValidationPlots : false
     HelixMask: {
       MinHelixMom : 0
     }
@@ -562,6 +564,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    MakeValidationPlots : false
   }
 
   CHDriftFit : {
@@ -578,6 +581,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    MakeValidationPlots : false
   }
 }
 

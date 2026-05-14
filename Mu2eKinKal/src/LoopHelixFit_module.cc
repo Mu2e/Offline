@@ -136,6 +136,7 @@ namespace mu2e {
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
     fhicl::OptionalTable<HelixMaskConfig> HelixMask { Name("HelixMask"), Comment("Selections applied to input helices")};
+    //fhicl::Atom<bool> makeValidationPlots { Name("MakeValidationPlots"), Comment("Enable creation of validation plots for calorimeter material effects") };
   };
 
   class LoopHelixFit : public art::EDProducer {
@@ -189,6 +190,7 @@ namespace mu2e {
       int nAmbiguous_ = 0;
       int nDownstream_ = 0;
       int nUpstream_ = 0;
+      bool makeValidationPlots_ = false;
       // validation histograms for calorimeter material intersection
       TH2F* h_intersection_efficiency_ = nullptr;
       TH2F* h_frontpanel_hits_ = nullptr;
@@ -215,7 +217,8 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false)
+    fixedfield_(false)//,
+    //makeValidationPlots_(settings().makeValidationPlots())
     {
       std::string fdir;
       if(settings().fitDirection(fdir))fdir_ = fdir;
@@ -261,7 +264,7 @@ namespace mu2e {
   void LoopHelixFit::beginJob() {
     // Create validation histograms for calorimeter material effects
     art::ServiceHandle<art::TFileService> tfs;
-    if(extrap_) {
+    if(makeValidationPlots_ && extrap_) {
       h_intersection_efficiency_ = tfs->make<TH2F>("h_intersection_efficiency",
         "Calorimeter front panel intersection efficiency;Momentum (MeV/c);Disk ID",
         100, 0.0, 150.0, 2, -0.5, 1.5);
@@ -290,19 +293,21 @@ namespace mu2e {
       extrap_->setValidationHistograms(h_intersection_efficiency_, h_frontpanel_hits_, h_momentum_degradation_, h_scatter_100mev_, h_scatter_80mev_, h_resolution_vs_momentum_);
     }
 
-    // Create PID discriminant histograms
-    h_pid_e_vs_p_ = tfs->make<TH2F>("h_pid_e_vs_p",
-      "Particle ID: Energy vs. Momentum;E/p ratio;Momentum (MeV/c)",
-      50, 0.0, 2.0, 60, 50.0, 150.0);
+    if(makeValidationPlots_) {
+      // Create PID discriminant histograms
+      h_pid_e_vs_p_ = tfs->make<TH2F>("h_pid_e_vs_p",
+        "Particle ID: Energy vs. Momentum;E/p ratio;Momentum (MeV/c)",
+        50, 0.0, 2.0, 60, 50.0, 150.0);
 
-    h_pid_ep_ratio_ = tfs->make<TH1F>("h_pid_ep_ratio",
-      "Particle ID: E/p ratio distribution;E/p ratio;Count",
-      100, 0.0, 2.0);
+      h_pid_ep_ratio_ = tfs->make<TH1F>("h_pid_ep_ratio",
+        "Particle ID: E/p ratio distribution;E/p ratio;Count",
+        100, 0.0, 2.0);
 
-    // Create energy loss vs momentum histogram (Plot 9)
-    h_dedx_vs_momentum_ = tfs->make<TH2F>("h_dedx_vs_momentum",
-      "Energy Loss vs. Momentum;Momentum (MeV/c);-dE/dx (MeV/mm)",
-      60, 50.0, 150.0, 100, 0.0, 5.0);
+      // Create energy loss vs momentum histogram
+      h_dedx_vs_momentum_ = tfs->make<TH2F>("h_dedx_vs_momentum",
+        "Energy Loss vs. Momentum;Momentum (MeV/c);-dE/dx (MeV/mm)",
+        60, 50.0, 150.0, 100, 0.0, 5.0);
+    }
   }
 
   void LoopHelixFit::beginRun(art::Run& run) {
@@ -493,7 +498,7 @@ namespace mu2e {
               }
             }
 
-            // Fill energy loss vs momentum histogram (Plot 9)
+            // Fill energy loss vs momentum histogram
             if(h_dedx_vs_momentum_ && hseed.caloCluster().isNonnull() && kkseed.segments().size() > 0) {
               auto const& seg = kkseed.segments()[0];
               double p_fit = seg.loopHelix().momentum(seg.tmin());
