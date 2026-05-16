@@ -4,6 +4,7 @@ cet_make_library(
       src/CADSHU.cc
       src/Chi2SHU.cc
       src/DriftANNSHU.cc
+      src/ExtrapolateCaloMaterial.cc
       src/KKBField.cc
       src/KKConstantBField.cc
       src/KKFitSettings.cc

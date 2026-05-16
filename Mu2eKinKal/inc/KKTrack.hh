@@ -48,6 +48,9 @@ namespace mu2e {
       using KKSTXING = KKShellXing<KTRAJ,KinKal::Annulus>;
       using KKSTXINGPTR = std::shared_ptr<KKSTXING>;
       using KKSTXINGCOL = std::vector<KKSTXINGPTR>;
+      using KKCALOMAT_XING = KKShellXing<KTRAJ,KinKal::Annulus>;
+      using KKCALOMAT_XINGPTR = std::shared_ptr<KKCALOMAT_XING>;
+      using KKCALOMAT_XINGCOL = std::vector<KKCALOMAT_XINGPTR>;
       using KKCRVXING = KKShellXing<KTRAJ,KinKal::Rectangle>;
       using KKCRVXINGPTR = std::shared_ptr<KKCRVXING>;
       using KKCRVXINGCOL = std::vector<KKCRVXINGPTR>;
@@ -125,6 +128,8 @@ namespace mu2e {
       void addIPAXing(KKIPAXINGPTR const& ipaxing,TimeDir const& tdir);
       // add ST Xing
       void addSTXing(KKSTXINGPTR const& stxing,TimeDir const& tdir);
+      // add calo material Xing
+      void addCaloMatXing(KKCALOMAT_XINGPTR const& calomatxing,TimeDir const& tdir);
       // add TCRV Xing
       void addTCRVXing(KKCRVXINGPTR const& crvxing,TimeDir const& tdir);
       // add intersections
@@ -137,6 +142,7 @@ namespace mu2e {
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
       KKIPAXINGCOL const& IPAXings() const { return ipaxings_; }
       KKSTXINGCOL const& STXings() const { return stxings_; }
+      KKCALOMAT_XINGCOL const& CaloMatXings() const { return calomatxings_; }
       KKCRVXINGCOL const& CRVXings() const { return crvxings_; }
       KKINTERCOL const& intersections() const { return inters_; }
       KKCALOHITCOL const& caloHits() const { return calohits_; }
@@ -155,6 +161,7 @@ namespace mu2e {
       KKCALOHITCOL calohits_;  // calo hits used in this fit
       KKIPAXINGCOL ipaxings_;  // ipa material crossings used in extrapolation
       KKSTXINGCOL stxings_;  // stopping target material crossings used in extrapolation
+      KKCALOMAT_XINGCOL calomatxings_;  // calorimeter passive material crossings used in extrapolation
       KKCRVXINGCOL crvxings_; // crv crossings using in extrapolation
       KKINTERCOL inters_; // other recorded intersections
       KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
@@ -337,6 +344,15 @@ namespace mu2e {
     if(!this->extrapolate(exptr,tdir))throw cet::exception("RECO")<<"mu2e::KKTrack: Shell extrapolation failure"<< std::endl;
     // store the xing
     stxings_.push_back(stxingptr);
+  }
+
+  template <class KTRAJ> void KKTrack<KTRAJ>::addCaloMatXing(KKCALOMAT_XINGPTR const& calomatxingptr,TimeDir const& tdir) {
+    // convert to a generic Xing
+    std::shared_ptr<KinKal::ElementXing<KTRAJ>> exptr = std::static_pointer_cast<KinKal::ElementXing<KTRAJ>>(calomatxingptr);
+    // extrapolate the fit through this xing
+    if(!this->extrapolate(exptr,tdir))throw cet::exception("RECO")<<"mu2e::KKTrack: Calo Material extrapolation failure"<< std::endl;
+    // store the xing
+    calomatxings_.push_back(calomatxingptr);
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addTCRVXing(KKCRVXINGPTR const& crvxingptr,TimeDir const& tdir) {

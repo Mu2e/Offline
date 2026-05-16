@@ -7,12 +7,14 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -60,8 +62,11 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
+#include "TH2F.h"
+#include "TProfile.h"
 #include "TTree.h"
 #include "Math/AxisAngle.h"
 // C++
@@ -130,6 +135,8 @@ namespace mu2e {
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     // helix module specific config
+    fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+    fhicl::Atom<bool> makeValidationPlots { Name("MakeValidationPlots"), Comment("Enable creation of validation plots for calorimeter material effects") };
   };
 
   class CentralHelixFit : public art::EDProducer {
@@ -137,11 +144,13 @@ namespace mu2e {
       using Parameters = art::EDProducer::Table<GlobalConfig>;
       explicit CentralHelixFit(const Parameters& settings);
       virtual ~CentralHelixFit() {}
+      void beginJob() override;
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
     protected:
       bool goodFit(KKTRK const& ktrk) const;
       void sampleFit(KKTRK& kktrk) const;
+      void extrapolate(KKTRK& ktrk) const;
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
@@ -171,9 +180,22 @@ namespace mu2e {
       double minCenterRho_; // min center distance to z axis
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceIdCollection ssids_;
-      KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
+      KinKalGeom::SurfacePairCollection surfaces_to_sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
-  };
+      bool extrapolate_;
+      std::unique_ptr<KKExtrap> extrap_; //  extrapolations
+      bool makeValidationPlots_ = false;
+      // validation histograms for calorimeter material intersection
+      TH2F* h_intersection_efficiency_ = nullptr;
+      TH2F* h_frontpanel_hits_ = nullptr;
+      TH1F* h_momentum_degradation_ = nullptr;
+      TH1F* h_scatter_100mev_ = nullptr;
+      TH1F* h_scatter_80mev_ = nullptr;
+      TProfile* h_resolution_vs_momentum_ = nullptr;
+      TH2F* h_pid_e_vs_p_ = nullptr;
+      TH1F* h_pid_ep_ratio_ = nullptr;
+      TH2F* h_dedx_vs_momentum_ = nullptr;
+    };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
     fitflag_(TrkFitFlag::KKCentralHelix),
@@ -195,7 +217,9 @@ namespace mu2e {
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
     sampleinrange_(settings().modSettings().sampleInRange()),
-    sampleinbounds_(settings().modSettings().sampleInBounds())
+    sampleinbounds_(settings().modSettings().sampleInBounds()),
+    extrapolate_(false),
+    makeValidationPlots_(settings().makeValidationPlots())
     {
       // collection handling
       for(const auto& cseedtag : settings().modSettings().seedCollections()) { cseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(cseedtag)); }
@@ -223,7 +247,66 @@ namespace mu2e {
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
+      // translate the sample and extend surface names to actual surfaces using the KinKalGeom.  This should come from the
+      // geometry service eventually, TODO
+      KinKalGeom smap;
+      smap.surfaces(ssids_,surfaces_to_sample_);
+      // configure extrapolation
+      if(settings().Extrapolation()){
+        extrapolate_ = true;
+        // create KKExtrap
+        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
+      }
     }
+
+  void CentralHelixFit::beginJob() {
+    // Create validation histograms for calorimeter material effects
+    art::ServiceHandle<art::TFileService> tfs;
+    if(makeValidationPlots_ && extrap_) {
+      h_intersection_efficiency_ = tfs->make<TH2F>("h_intersection_efficiency",
+        "Calorimeter front panel intersection efficiency;Momentum (MeV/c);Disk ID",
+        100, 0.0, 150.0, 2, -0.5, 1.5);
+
+      h_frontpanel_hits_ = tfs->make<TH2F>("h_frontpanel_hits",
+        "Track hits on calorimeter front panel;Phi (rad);Radius (mm)",
+        32, 0.0, 2.0*M_PI, 60, 300.0, 600.0);
+
+      h_momentum_degradation_ = tfs->make<TH1F>("h_momentum_degradation",
+        "Momentum degradation due to calorimeter material;dP (MeV/c);Count",
+        100, 0.0, 2.0);
+
+      h_scatter_100mev_ = tfs->make<TH1F>("h_scatter_100mev",
+        "Multiple scattering angle (100 MeV);Scattering angle (mrad);Count",
+        100, 10.0, 50.0);
+
+      h_scatter_80mev_ = tfs->make<TH1F>("h_scatter_80mev",
+        "Multiple scattering angle (80 MeV);Scattering angle (mrad);Count",
+        100, 10.0, 50.0);
+
+      h_resolution_vs_momentum_ = tfs->make<TProfile>("h_resolution_vs_momentum",
+        "Momentum resolution (relative error) vs. fitted momentum;Fitted Momentum (MeV/c);Relative Error (dP/P)",
+        20, 50.0, 150.0);
+
+      // Pass histograms to extrapolation module
+      extrap_->setValidationHistograms(h_intersection_efficiency_, h_frontpanel_hits_, h_momentum_degradation_, h_scatter_100mev_, h_scatter_80mev_, h_resolution_vs_momentum_);
+    }
+
+    if(makeValidationPlots_) {
+      // Create PID discriminant histograms
+      h_pid_e_vs_p_ = tfs->make<TH2F>("h_pid_e_vs_p",
+        "Particle ID: Energy vs. Momentum;E/p ratio;Momentum (MeV/c)",
+        50, 0.0, 2.0, 60, 50.0, 150.0);
+
+      h_pid_ep_ratio_ = tfs->make<TH1F>("h_pid_ep_ratio",
+        "Particle ID: E/p ratio distribution;E/p ratio;Count",
+        100, 0.0, 2.0);
+
+      // Create energy loss vs momentum histogram
+      h_dedx_vs_momentum_ = tfs->make<TH2F>("h_dedx_vs_momentum",
+        "Energy Loss vs. Momentum;Momentum (MeV/c);-dE/dx (MeV/mm)",
+        60, 50.0, 150.0, 100, 0.0, 5.0);
+    }
+  }
 
   void CentralHelixFit::beginRun(art::Run& run) {
     // setup things that rely on data related to beginRun
@@ -240,7 +323,7 @@ namespace mu2e {
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
+    kkg.surfaces(ssids_,surfaces_to_sample_);
   }
 
   void CentralHelixFit::produce(art::Event& event ) {
@@ -340,6 +423,8 @@ namespace mu2e {
           }
 
           if(print_>1)kktrk->printFit(std::cout,print_);
+          // extrapolate as required
+          if(goodfit && extrapolate_) extrapolate(*kktrk);
           if(goodfit || saveall_){
             TrkFitFlag fitflag;//(hptr->status());
             fitflag.merge(fitflag_);
@@ -365,7 +450,33 @@ namespace mu2e {
               if(!degen){
                 sampleFit(*kktrk);
                 auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
+                // Fill PID histograms if enabled
+                if(makeValidationPlots_ && cc_H.isValid() && cc_H->size() > 0) {
+                  auto const& cluster = cc_H->at(0);
+                  if(makeValidationPlots_ && kkseed.segments().size() > 0) {
+                    auto const& seg = kkseed.segments()[0];
+                    double p_fit = seg.loopHelix().momentum(seg.tmin());
+                    double E_cluster = cluster.energyDep();
+                    if(p_fit > 0.0 && E_cluster > 0.0) {
+                      double ep_ratio = E_cluster / p_fit;
+                      if(h_pid_e_vs_p_) h_pid_e_vs_p_->Fill(ep_ratio, p_fit);
+                      if(h_pid_ep_ratio_) h_pid_ep_ratio_->Fill(ep_ratio);
+                    }
+                  }
+                }
                 kkseedcol->push_back(kkseed);
+                // Fill energy loss vs momentum histogram
+                if(makeValidationPlots_ && cc_H.isValid() && cc_H->size() > 0 && kkseed.segments().size() > 0) {
+                  auto const& cluster = cc_H->at(0);
+                  auto const& seg = kkseed.segments()[0];
+                  double p_fit = seg.loopHelix().momentum(seg.tmin());
+                  double E_loss = cluster.energyDep();  // energy deposited
+                  double thickness_mm = 24.75;  // foam (21.75 mm) + carbon (3.0 mm)
+                  if(p_fit > 0.0 && thickness_mm > 0.0 && E_loss > 0.0) {
+                    double dedx = E_loss / thickness_mm;  // MeV/mm
+                    if(h_dedx_vs_momentum_) h_dedx_vs_momentum_->Fill(p_fit, dedx);
+                  }
+                }
                 // save (unpersistable) KKTrk in the event
                 kktrkcol->push_back(kktrk.release());
               }
@@ -400,7 +511,7 @@ namespace mu2e {
   void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     double tbeg = ftraj.range().begin();
-    for(auto const& surf : surfacess_to_sample_){
+    for(auto const& surf : surfaces_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg - sampletbuff_;
       bool goodinter(true);
@@ -422,6 +533,11 @@ namespace mu2e {
         }
       }
     }
+  }
+
+  void CentralHelixFit::extrapolate(KKTRK& ktrk) const {
+    // apply extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
+    if(extrap_) extrap_->extrapolate(ktrk);
   }
 
 } // mu2e

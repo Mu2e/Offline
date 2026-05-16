@@ -12,6 +12,9 @@ Mu2eKinKal : {
     strawWireMaterialName : "straw-wire"
     IPAMaterialName : "HDPE"
     STMaterialName : "Target"
+    CaloFrontFoamMaterialName : "AluminumHoneycomb"
+    CaloFrontCarbonMaterialName : "CarbonFiber"
+    CaloBackPlateMaterialName : "Polyetheretherketone"
     IonizationEnergyLossMode : 1 # Moyal mean
     SolidScatteringFraction : 0.999999
     GasScatteringFraction : 0.9999999
@@ -384,6 +387,7 @@ Mu2eKinKal : {
   }
 
   LHDRIFTXTRAP : {
+    Debug : -300
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
     BCorrTolerance : 1e-4 # momemntum fraction
@@ -391,6 +395,9 @@ Mu2eKinKal : {
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToCaloD0 : true
+    ToCaloD1 : true
+    ToCaloMaterial : true
   }
 
   LHSEEDXTRAP : {
@@ -401,6 +408,9 @@ Mu2eKinKal : {
     Upstream : false
     BackToTracker : false
     ToOPA : false
+    ToCaloD0 : true
+    ToCaloD1 : true
+    ToCaloMaterial : true
   }
 
   CENTRALHELIX : {
@@ -435,9 +445,18 @@ Mu2eKinKal : {
   }
 
   LINEEXTRAPOLATION : {
-    MaxDt : 200.0 # (ns)
-    MinV : 1e-5
-    ToCRV : true
+    Debug : 2
+    MaxDt : 200.0
+    BCorrTolerance : 1e-5
+    ToTrackerEnds : true
+    Upstream : true
+    BackToTracker : false
+    ToTrackerEnds : false
+    ToOPA : false
+    ToCaloD0 : true
+    ToCaloD1 : true
+    ToCaloMaterial : true
+    IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
   }
 }
 
@@ -461,6 +480,7 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings : @local::Mu2eKinKal.LHSEEDXTRAP
     UsePDGCharge: false
+    #MakeValidationPlots : false
     HelixMask: {
       MinHelixMom : 0
     }
@@ -486,6 +506,7 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP
     UsePDGCharge: false
+    #MakeValidationPlots : false
     HelixMask: {
       MinHelixMom : 0
     }
@@ -543,6 +564,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    MakeValidationPlots : false
   }
 
   CHDriftFit : {
@@ -559,6 +581,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    MakeValidationPlots : false
   }
 }
 

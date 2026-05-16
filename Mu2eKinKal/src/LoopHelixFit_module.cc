@@ -14,6 +14,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art_root_io/TFileService.h"
+#include "TH2F.h"
 // conditions
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -133,12 +136,14 @@ namespace mu2e {
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     fhicl::Atom<bool> pdgCharge { Name("UsePDGCharge"), Comment("Use particle charge from fitParticle")};
     fhicl::OptionalTable<HelixMaskConfig> HelixMask { Name("HelixMask"), Comment("Selections applied to input helices")};
+    //fhicl::Atom<bool> makeValidationPlots { Name("MakeValidationPlots"), Comment("Enable creation of validation plots for calorimeter material effects") };
   };
 
   class LoopHelixFit : public art::EDProducer {
     public:
       using Parameters = art::EDProducer::Table<LoopHelixFitConfig>;
       explicit LoopHelixFit(const Parameters& settings);
+      void beginJob() override;
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
       void endJob() override;
@@ -185,6 +190,17 @@ namespace mu2e {
       int nAmbiguous_ = 0;
       int nDownstream_ = 0;
       int nUpstream_ = 0;
+      bool makeValidationPlots_ = false;
+      // validation histograms for calorimeter material intersection
+      TH2F* h_intersection_efficiency_ = nullptr;
+      TH2F* h_frontpanel_hits_ = nullptr;
+      TH1F* h_momentum_degradation_ = nullptr;
+      TH1F* h_scatter_100mev_ = nullptr;
+      TH1F* h_scatter_80mev_ = nullptr;
+      TProfile* h_resolution_vs_momentum_ = nullptr;
+      TH2F* h_pid_e_vs_p_ = nullptr;
+      TH1F* h_pid_ep_ratio_ = nullptr;
+      TH2F* h_dedx_vs_momentum_ = nullptr;
   };
 
   LoopHelixFit::LoopHelixFit(const Parameters& settings) :  art::EDProducer{settings},
@@ -201,7 +217,8 @@ namespace mu2e {
     kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
-    fixedfield_(false)
+    fixedfield_(false)//,
+    //makeValidationPlots_(settings().makeValidationPlots())
     {
       std::string fdir;
       if(settings().fitDirection(fdir))fdir_ = fdir;
@@ -243,6 +260,55 @@ namespace mu2e {
 
       }
     }
+
+  void LoopHelixFit::beginJob() {
+    // Create validation histograms for calorimeter material effects
+    art::ServiceHandle<art::TFileService> tfs;
+    if(makeValidationPlots_ && extrap_) {
+      h_intersection_efficiency_ = tfs->make<TH2F>("h_intersection_efficiency",
+        "Calorimeter front panel intersection efficiency;Momentum (MeV/c);Disk ID",
+        100, 0.0, 150.0, 2, -0.5, 1.5);
+
+      h_frontpanel_hits_ = tfs->make<TH2F>("h_frontpanel_hits",
+        "Track hits on calorimeter front panel;Phi (rad);Radius (mm)",
+        32, 0.0, 2.0*M_PI, 60, 300.0, 600.0);
+
+      h_momentum_degradation_ = tfs->make<TH1F>("h_momentum_degradation",
+        "Momentum degradation due to calorimeter material;dP (MeV/c);Count",
+        100, 0.0, 2.0);
+
+      h_scatter_100mev_ = tfs->make<TH1F>("h_scatter_100mev",
+        "Multiple scattering angle (100 MeV);Scattering angle (mrad);Count",
+        100, 10.0, 50.0);
+
+      h_scatter_80mev_ = tfs->make<TH1F>("h_scatter_80mev",
+        "Multiple scattering angle (80 MeV);Scattering angle (mrad);Count",
+        100, 10.0, 50.0);
+
+      h_resolution_vs_momentum_ = tfs->make<TProfile>("h_resolution_vs_momentum",
+        "Momentum resolution (relative error) vs. fitted momentum;Fitted Momentum (MeV/c);Relative Error (dP/P)",
+        20, 50.0, 150.0);
+
+      // Pass histograms to extrapolation module
+      extrap_->setValidationHistograms(h_intersection_efficiency_, h_frontpanel_hits_, h_momentum_degradation_, h_scatter_100mev_, h_scatter_80mev_, h_resolution_vs_momentum_);
+    }
+
+    if(makeValidationPlots_) {
+      // Create PID discriminant histograms
+      h_pid_e_vs_p_ = tfs->make<TH2F>("h_pid_e_vs_p",
+        "Particle ID: Energy vs. Momentum;E/p ratio;Momentum (MeV/c)",
+        50, 0.0, 2.0, 60, 50.0, 150.0);
+
+      h_pid_ep_ratio_ = tfs->make<TH1F>("h_pid_ep_ratio",
+        "Particle ID: E/p ratio distribution;E/p ratio;Count",
+        100, 0.0, 2.0);
+
+      // Create energy loss vs momentum histogram
+      h_dedx_vs_momentum_ = tfs->make<TH2F>("h_dedx_vs_momentum",
+        "Energy Loss vs. Momentum;Momentum (MeV/c);-dE/dx (MeV/mm)",
+        60, 50.0, 150.0, 100, 0.0, 5.0);
+    }
+  }
 
   void LoopHelixFit::beginRun(art::Run& run) {
     // setup things that rely on data related to beginRun
@@ -419,6 +485,30 @@ namespace mu2e {
             // convert to seed output format
             auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
             if(print_>0) print_track_info(kkseed, *ktrk);
+
+            // Fill PID histogram if calorimeter intersection exists
+            if((h_pid_e_vs_p_ || h_pid_ep_ratio_) && hseed.caloCluster().isNonnull()) {
+              auto const& seg = kkseed.segments()[0];
+              double p_fit = seg.loopHelix().momentum(seg.tmin());
+              double caloE = hseed.caloCluster()->energyDep();
+              if(p_fit > 0.0) {
+                double ep_ratio = caloE / p_fit;
+                if(h_pid_e_vs_p_) h_pid_e_vs_p_->Fill(ep_ratio, p_fit);
+                if(h_pid_ep_ratio_) h_pid_ep_ratio_->Fill(ep_ratio);
+              }
+            }
+
+            // Fill energy loss vs momentum histogram
+            if(h_dedx_vs_momentum_ && hseed.caloCluster().isNonnull() && kkseed.segments().size() > 0) {
+              auto const& seg = kkseed.segments()[0];
+              double p_fit = seg.loopHelix().momentum(seg.tmin());
+              double E_loss = hseed.caloCluster()->energyDep();  // energy deposited
+              double thickness_mm = 24.75;  // foam (21.75 mm) + carbon (3.0 mm)
+              if(p_fit > 0.0 && thickness_mm > 0.0 && E_loss > 0.0) {
+                double dedx = E_loss / thickness_mm;  // MeV/mm
+                h_dedx_vs_momentum_->Fill(p_fit, dedx);
+              }
+            }
             kkseedcol->push_back(kkseed);
             // fill assns with the helix seed
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);

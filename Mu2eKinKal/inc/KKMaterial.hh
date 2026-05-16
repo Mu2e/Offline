@@ -30,6 +30,9 @@ namespace mu2e {
         fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
+        fhicl::Atom<std::string> CaloFrontFoamMaterialName{ Name("CaloFrontFoamMaterialName"), Comment("Calo front panel foam MaterialName") };
+        fhicl::Atom<std::string> CaloFrontCarbonMaterialName{ Name("CaloFrontCarbonMaterialName"), Comment("Calo front panel carbon MaterialName") };
+        fhicl::Atom<std::string> CaloBackPlateMaterialName{ Name("CaloBackPlateMaterialName"), Comment("Calo back plate MaterialName") };
         fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
         fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
         fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
@@ -40,9 +43,13 @@ namespace mu2e {
       KKStrawMaterial const& strawMaterial() const;
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
+      auto CaloFrontFoamMaterial() const { return matdbinfo_->findDetMaterial(calofoammatname_); }
+      auto CaloFrontCarbonMaterial() const { return matdbinfo_->findDetMaterial(calocarbonmatname_); }
+      auto CaloBackPlateMaterial() const { return matdbinfo_->findDetMaterial(calobackplatematname_); }
     private:
       KKFileFinder filefinder_; // used to find material info
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_;
+      std::string calofoammatname_, calocarbonmatname_, calobackplatematname_;
       mutable std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };

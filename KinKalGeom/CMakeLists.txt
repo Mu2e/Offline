@@ -1,6 +1,7 @@
 cet_make_library(
     SOURCE
       src/CRV.cc
+      src/Calo.cc
       src/KinKalGeom.cc
     LIBRARIES PUBLIC
       KinKal::Geometry
