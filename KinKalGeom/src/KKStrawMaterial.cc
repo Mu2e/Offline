@@ -1,5 +1,4 @@
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
-#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/Detector/MaterialXing.hh"

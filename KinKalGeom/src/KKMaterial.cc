@@ -1,4 +1,4 @@
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"

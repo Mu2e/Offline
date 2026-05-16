@@ -47,7 +47,7 @@
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"

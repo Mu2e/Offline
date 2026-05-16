@@ -8,7 +8,7 @@
 #define RecoDataProducts_TrkStraw_HH
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/StrawFlag.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 

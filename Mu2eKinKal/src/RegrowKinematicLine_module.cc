@@ -54,7 +54,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"

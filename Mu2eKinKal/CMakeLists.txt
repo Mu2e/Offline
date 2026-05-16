@@ -8,9 +8,7 @@ cet_make_library(
       src/KKConstantBField.cc
       src/KKFitSettings.cc
       src/KKFitUtilities.cc
-      src/KKMaterial.cc
       src/KKSHFlag.cc
-      src/KKStrawMaterial.cc
       src/StrawHitUpdaters.cc
       src/StrawXingUpdater.cc
       src/WHSIterator.cc

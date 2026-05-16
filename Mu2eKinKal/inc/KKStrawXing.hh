@@ -6,7 +6,7 @@
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "Offline/TrackerGeom/inc/Straw.hh"
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"

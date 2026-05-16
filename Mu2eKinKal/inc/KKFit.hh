@@ -7,7 +7,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"

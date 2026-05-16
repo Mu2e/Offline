@@ -13,7 +13,7 @@
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"

@@ -1,5 +1,5 @@
-#ifndef Mu2eKinKal_KKMaterial_hh
-#define Mu2eKinKal_KKMaterial_hh
+#ifndef KinKalGeom_KKMaterial_hh
+#define KinKalGeom_KKMaterial_hh
 //
 //  build KinKal DetMaterial objects from art parameter configuration
 //
@@ -9,8 +9,8 @@
 // KinKal
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/MatEnv/FileFinderInterface.hh"
-// Mu2eKinKal: moveme!
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+// KKGeom
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 // mu2e
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
