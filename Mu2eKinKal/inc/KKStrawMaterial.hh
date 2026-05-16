@@ -6,6 +6,7 @@
 //
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/TrackerGeom/inc/StrawProperties.hh"
+#include <memory>
 
 namespace MatEnv {
   class MatDBInfo;
@@ -29,7 +30,8 @@ namespace mu2e {
           const std::shared_ptr<DetMaterial> gasmat_,
           const std::shared_ptr<DetMaterial> wiremat_);
       // construct using materials by name
-      KKStrawMaterial(MatDBInfo const& matdbinfo,StrawProperties const& sprops);
+      KKStrawMaterial(MatDBInfo const& matdbinfo,StrawProperties const& sprops,
+          const std::string& wallmat, const std::string& gasmat, const std::string& wiremat);
       // pathlength through straw components, given closest approach. Return the method used to compute the paths
       PathCalc pathLengths(ClosestApproachData const& cadata,double nsig, double& wallpath, double& gaspath, double& wirepath,int diag=0) const;
       PathCalc averagePathLengths(double& wallpath, double& gaspath, double& wirepath) const;

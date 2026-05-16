@@ -78,7 +78,7 @@ namespace mu2e {
     return tlen;
   }
 
-  KKStrawMaterial::PathCalc KKStrawMaterial::findXings(ClosestApproachData const& cadata, double nsig, std::vector<Materiaint diag) const {
+  KKStrawMaterial::PathCalc KKStrawMaterial::findXings(ClosestApproachData const& cadata, double nsig, std::vector<MaterialXing>& mxings, int diag) const {
     mxings.clear();
     double wallpath, gaspath, wirepath;
     auto retval = pathLengths(cadata,nsig,wallpath, gaspath, wirepath,diag);
