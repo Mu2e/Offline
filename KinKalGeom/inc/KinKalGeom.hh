@@ -25,7 +25,7 @@ namespace mu2e {
       using SurfacePairCollection = std::vector<SurfacePair>;
       using SurfacePairIter = std::multimap<SurfaceId,SurfacePtr>::const_iterator;
       using KKGMap = std::multimap<SurfaceId,SurfacePtr>;
-      // default constructor, now using GeometryService
+      // default constructor, now using GeometryService to create content
       KinKalGeom();
       // accessor to the raw map
       auto const& map() const { return map_; }
