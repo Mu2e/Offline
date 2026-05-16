@@ -13,12 +13,14 @@
 #include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 // mu2e
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 #include <memory>
 #include <string>
 
 namespace mu2e {
-  class KKMaterial : public MatEnv::FileFinderInterface {
+  class KKMaterial : public MatEnv::FileFinderInterface, public Detector, public ProditionsEntity {
     public:
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;

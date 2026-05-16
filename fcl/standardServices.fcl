@@ -42,6 +42,20 @@ Services : {
         inputFile           : "Offline/Mu2eG4/geom/geom_common.txt"
         bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
         simulatedDetector   : { tool_type: "Mu2e" }
+        KinKalMaterial : {
+          elements  : "Offline/TrackerConditions/data/ElementsList.data"
+          isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+          materials : "Offline/TrackerConditions/data/MaterialsList.data"
+          strawGasMaterialName  : "straw-gas"
+          strawWallMaterialName : "straw-wall"
+          strawWireMaterialName : "straw-wire"
+          IPAMaterialName : "HDPE"
+          STMaterialName : "Target"
+          IonizationEnergyLossMode : 1 # Moyal mean
+          SolidScatteringFraction : 0.999999
+          GasScatteringFraction : 0.9999999
+          ElectronBrehmsFraction : 0.04
+        }
     }
     GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     DbService : @local::DbEmpty

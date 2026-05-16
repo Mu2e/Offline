@@ -7,7 +7,7 @@ namespace mu2e {
   using MatDBInfo = MatEnv::MatDBInfo;
   using MatEnv::DetMaterial;
 
-  KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
+  KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) : ProditionsEntity("KKMaterial"),
     elementsBaseName_(matconfig.elements()),
     isotopesBaseName_(matconfig.isotopes()),
     materialsBaseName_(matconfig.materials()),
