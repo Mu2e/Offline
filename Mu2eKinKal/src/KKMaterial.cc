@@ -2,14 +2,15 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
-#include "Offline/GeometryService/inc/GeometryService.hh"
 
 namespace mu2e {
   using MatDBInfo = MatEnv::MatDBInfo;
   using MatEnv::DetMaterial;
 
   KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
-    filefinder_(matconfig.elements(),matconfig.isotopes(),matconfig.materials()),
+    elementsBaseName_(matconfig.elements()),
+    isotopesBaseName_(matconfig.isotopes()),
+    materialsBaseName_(matconfig.materials()),
     wallmatname_(matconfig.strawWallMaterialName()),
     gasmatname_(matconfig.strawGasMaterialName()),
     wirematname_(matconfig.strawWireMaterialName()),
@@ -20,7 +21,7 @@ namespace mu2e {
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();
-      matdbinfo_ = std::make_unique<MatDBInfo>(filefinder_,dmconf);
+      matdbinfo_ = std::make_unique<MatDBInfo>(*this,dmconf);
     }
 
   KKStrawMaterial const& KKMaterial::strawMaterial() const {
@@ -36,4 +37,10 @@ namespace mu2e {
     }
     return *smat_;
   }
+
+  std::string KKMaterial::findFile( std::string const& basename ) const { return policy_( basename ); }
+  std::string KKMaterial::matElmDictionaryFileName() const { return findFile(elementsBaseName_); }
+  std::string KKMaterial::matIsoDictionaryFileName() const { return findFile(isotopesBaseName_); }
+  std::string KKMaterial::matMtrDictionaryFileName() const { return findFile(materialsBaseName_); }
+
 }

@@ -8,14 +8,17 @@
 #include "fhiclcpp/types/Tuple.h"
 // KinKal
 #include "KinKal/MatEnv/MatDBInfo.hh"
+#include "KinKal/MatEnv/FileFinderInterface.hh"
+// Mu2eKinKal: moveme!
 #include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
-#include "Offline/Mu2eKinKal/inc/KKFileFinder.hh"
+// mu2e
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include <memory>
 #include <string>
 
 namespace mu2e {
-  class KKMaterial {
+  class KKMaterial : public MatEnv::FileFinderInterface {
     public:
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -40,11 +43,22 @@ namespace mu2e {
       KKStrawMaterial const& strawMaterial() const;
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
+
+      // FileFinder interface
+      std::string matElmDictionaryFileName() const override;
+      std::string matIsoDictionaryFileName() const override;
+      std::string matMtrDictionaryFileName() const override;
+      std::string findFile( std::string const& path ) const override;
     private:
-      KKFileFinder filefinder_; // used to find material info
+      // material description files base names (not path)
+      std::string elementsBaseName_;
+      std::string isotopesBaseName_;
+      std::string materialsBaseName_;
+      mutable ConfigFileLookupPolicy policy_;
+      // specific material names
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_;
       mutable std::unique_ptr<MatDBInfo> matdbinfo_; // material database
-      mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material
+      mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material; move to KinKalGeom
   };
 }
 #endif
