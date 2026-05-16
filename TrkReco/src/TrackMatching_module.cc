@@ -198,8 +198,8 @@ namespace mu2e
 
     std::vector<KalSeedCluster> clusters;
     for(auto& handle : handles) {
-      const size_t ntrks = handle->size();
-      for(size_t itrk = 0; itrk < ntrks; ++itrk) {
+      const size_t ntrks_handle = handle->size();
+      for(size_t itrk = 0; itrk < ntrks_handle; ++itrk) {
         KalSeedPtr ptr(handle, itrk);
         clusters.push_back(KalSeedCluster({ptr}));
       }

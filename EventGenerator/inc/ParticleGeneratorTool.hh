@@ -27,7 +27,8 @@ namespace mu2e {
       CLHEP::HepLorentzVector fourmom;
     };
 
-    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName) = 0;
+    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName,
+                                      const bool isPrimary) = 0;
 
     virtual std::vector<Kinematic> generate() = 0;
 
@@ -35,6 +36,8 @@ namespace mu2e {
     virtual void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) = 0;
 
     virtual ~ParticleGeneratorTool() noexcept = default;
+
+    bool _isPrimary = true; // flag to indicate if this is for primary generation or not
   };
 }
 

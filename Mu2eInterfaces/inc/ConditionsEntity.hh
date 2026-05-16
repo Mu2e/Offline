@@ -1,5 +1,5 @@
-#ifndef ConditionsService_ConditionsEntity_hh
-#define ConditionsService_ConditionsEntity_hh
+#ifndef Mu2eInterfaces_ConditionsEntity_hh
+#define Mu2eInterfaces_ConditionsEntity_hh
 //
 // A base class for objects held by the conditions data system.
 //
@@ -20,4 +20,4 @@ namespace mu2e
   };
 }
 
-#endif /* ConditionsService_ConditionsEntity_hh */
+#endif /* Mu2eInterfaces_ConditionsEntity_hh */

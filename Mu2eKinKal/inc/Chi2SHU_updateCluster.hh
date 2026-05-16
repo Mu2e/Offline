@@ -33,7 +33,7 @@ namespace mu2e {
     // in marginal fits removing even a few hits can leave the fit underconstrained, resulting in a zero determinant.  For now, do nothing
     // with these clusters
     double determinant;
-    if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<float>::min()){
+    if(!uparams.covariance().Det(determinant) || determinant < std::numeric_limits<double>::min()){
       if(diag_ > 2)std::cout << "Negative unbiased covar determinant = " << determinant << std::endl;
       return;
     }

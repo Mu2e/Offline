@@ -316,11 +316,6 @@
  <class name="mu2e::CrvRecoPulseCollection" />
  <class name="art::Wrapper<mu2e::CrvRecoPulseCollection>" />
 
- <class name="mu2e::CrvCoincidence" />
- <class name="std::vector<mu2e::CrvCoincidence>" />
- <class name="mu2e::CrvCoincidenceCollection" />
- <class name="art::Wrapper<mu2e::CrvCoincidenceCollection>" />
-
  <class name="mu2e::CrvCoincidenceCluster" />
  <class name="std::vector<mu2e::CrvCoincidenceCluster>" />
  <class name="mu2e::CrvCoincidenceClusterCollection" />

@@ -49,18 +49,27 @@ cet_build_plugin(FilterEcalMVATrigger art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(FilterEcalNNTrigger art::module
-    REG_SOURCE src/FilterEcalNNTrigger_module.cc
+cet_build_plugin(CaloNNEval art::module
+    REG_SOURCE src/CaloNNEval_module.cc
     LIBRARIES REG
+      Offline::CaloCluster
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(FilterEcalNNTrigger art::module
+    REG_SOURCE src/FilterEcalNNTrigger_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ce_bkg_20_BDT.weights.xml ${CURRENT_BINARY_DIR} data/ce_bkg_20_BDT.weights.xml)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/ce_bkg_ecal_20_BDT.weights.xml ${CURRENT_BINARY_DIR} data/ce_bkg_ecal_20_BDT.weights.xml)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/CE_NN_ReLU.weights.xml ${CURRENT_BINARY_DIR} data/CE_NN_ReLU.weights.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/CE_NN_ReLU_noET.weights.xml ${CURRENT_BINARY_DIR} data/CE_NN_ReLU_noET.weights.xml)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/FlatPhoton_ReLU_noET.weights.xml ${CURRENT_BINARY_DIR} data/FlatPhoton_ReLU_noET.weights.xml)
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloFilters)
 

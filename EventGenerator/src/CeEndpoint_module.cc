@@ -43,6 +43,8 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> inputSimParticles{Name("inputSimParticles"),Comment("A SimParticleCollection with input stopped muons.")};
         fhicl::Atom<std::string> stoppingTargetMaterial{
         Name("stoppingTargetMaterial"),Comment("Material determines endpoint energy and muon life time.  Material must be known to the GlobalConstantsService."),"Al" };
+        fhicl::Atom<double> czMin{Name("czMin"), Comment("Minimum cos(theta_z) to generate in"), -1.};
+        fhicl::Atom<double> czMax{Name("czMax"), Comment("Maximum cos(theta_z) to generate in"),  1.};
         fhicl::Atom<unsigned> verbosity{Name("verbosity"),0};
         fhicl::Atom<int> pdgId{Name("pdgId"),Comment("pdg id of daughter particle")};
     };
@@ -59,6 +61,8 @@ namespace mu2e {
     double endPointEnergy_;
     double endPointMomentum_;
     double muonLifeTime_;
+    double czMin_;
+    double czMax_;
 
     art::ProductToken<SimParticleCollection> const simsToken_;
 
@@ -79,15 +83,18 @@ namespace mu2e {
     , endPointEnergy_()
     , endPointMomentum_ ()
     , muonLifeTime_{GlobalConstantsHandle<PhysicsParams>()->getDecayTime(conf().stoppingTargetMaterial())}
+    , czMin_(conf().czMin())
+    , czMax_(conf().czMax())
     , simsToken_{consumes<SimParticleCollection>(conf().inputSimParticles())}
     , verbosity_{conf().verbosity()}
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randExp_{eng_}
-    , randomUnitSphere_{eng_}
+    , randomUnitSphere_{eng_, czMin_, czMax_}
     , pdgId_(conf().pdgId())
   {
     produces<mu2e::StageParticleCollection>();
     pid = static_cast<PDGCode::type>(pdgId_);
+    if(czMax_ < czMin_ || czMin_ < -1. || czMax_ > 1.) throw cet::exception("BADCONFIG") << "CeEndpoint generator cos(theta_z) range is not defined\n";
 
     if (pid == PDGCode::e_minus) {
       process = ProcessCode::mu2eCeMinusEndpoint;
@@ -107,6 +114,7 @@ namespace mu2e {
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
          <<", endpoint energy = "<<endPointEnergy_
          <<", muon lifetime = "<<muonLifeTime_
+         <<", cos(theta_z) range = [" << czMin_ << ", " << czMax_ << "]"
          <<std::endl;
     }
   }

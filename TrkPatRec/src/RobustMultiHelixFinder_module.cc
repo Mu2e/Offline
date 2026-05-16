@@ -98,7 +98,7 @@ namespace mu2e {
         fhicl::Atom<float>         maxDTHelFit           {Name("MaxDTHelFit"),            Comment("Maximum time difference between hit time and z-time fit") };
         fhicl::Atom<float>         maxChi2Hit            {Name("MaxChi2Hit"),             Comment("Maximum chi2 for a hit to be associated to the helix") };
         fhicl::Atom<float>         minDZTrk              {Name("MinDZTrk"),               Comment("Minimum z span of a trk") };
-        fhicl::Atom<std::string>   fitCircleStr          {Name("FitCircleStrategy"),      Comment("Fit Circle algorhithm HyperFit or ChiSquared") };
+        fhicl::Atom<std::string>   fitCircleStr          {Name("FitCircleStrategy"),      Comment("Fit Circle algorithm HyperFit or ChiSquared") };
         fhicl::Atom<unsigned>      minStrawHits          {Name("MinStrawHits"),           Comment("Minimum number of Straw hits for a helix candidate") };
         fhicl::Atom<unsigned>      nMaxTrkIter           {Name("NMaxTrkIter"),            Comment("Number of track finding iterations ") };
         fhicl::Atom<int>           diagLevel             {Name("DiagLevel"),              Comment("Diag level"), 0 };
@@ -210,7 +210,7 @@ namespace mu2e {
 
     if      (config().fitCircleStr()=="HyperFit")   fitCircleStrategy_ = circleFitter::HyperFit;
     else if (config().fitCircleStr()=="ChiSquared") fitCircleStrategy_ = circleFitter::ChiSquared;
-    else    throw cet::exception("CATEGORY")<< "RobustMultiHelixFinder: unrecognixed FitCirclestrategy specified";
+    else    throw cet::exception("CATEGORY")<< "RobustMultiHelixFinder: unrecognized FitCircleStrategy specified";
   }
 
 
@@ -529,7 +529,7 @@ chi2dXY = bestHelix.fita_zt_;
      }
 
      //compute the rolling sum over three bins and find the maximum.
-     //use cyclic buffer trick to go past the end of the veccctor to correctly llok at boundaries
+     //use cyclic buffer trick to go past the end of the vector to correctly look at boundaries
      int sumMax(0),imax(0);
      for (int i=0;i<nBins+3;++i){
        int sum = phiCluster[(i+nBins-1)%nBins] + phiCluster[i%nBins] + phiCluster[(i+1)%nBins];
