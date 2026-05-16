@@ -259,6 +259,8 @@ namespace mu2e {
   void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
