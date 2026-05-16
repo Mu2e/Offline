@@ -32,23 +32,28 @@ namespace mu2e {
 
       // add status for an element.  This is cumulative
       void addStatus(StrawId const& sid, StrawIdMask const& mask, StrawStatus const& status);
+      void addTrip(StrawId const&sid, uint32_t startevent, uint32_t endevent);
 
       void print( std::ostream& ) const override;
       // convenience operators for some common situations
-      bool noSignal(StrawId const& sid) const;    // return 'true' if we expect no signal from this straw
+      bool hvTripped(StrawId const& sid, uint32_t event) const;
+      bool noSignal(StrawId const& sid, uint32_t event) const;    // return 'true' if we expect no signal from this straw
       bool noisy(StrawId const& sid) const;  // This straw sometimes produces a valid signal, but not always
       bool suppress(StrawId const& sid) const;  // This straw may produce a signal, but it should be suppressed as it is inaccurate
       bool noMaterial(StrawId const& sid) const;  // straw doesn't contribute to scattering or energy loss
 
       // Net status of an individual Straw.  If the straw is in a plane or panel with status, that will be aggregated
       StrawStatus strawStatus(StrawId const& sid) const;
+      StrawStatus strawStatus(StrawId const& sid, uint32_t event) const; // including HV trips
       // same for panel, plane.  Note; these will return only status that applies to the ENTIRE PANEL (or plane)
       // It will NOT detect (say) a panel where every straw has had the same status individually set (that's not a good configuration)
       StrawStatus panelStatus(StrawId const& sid) const;
+      StrawStatus panelStatus(StrawId const& sid, uint32_t event) const; // including HV trips
       StrawStatus planeStatus(StrawId const& sid) const;
     private:
       std::array<StrawStatus,StrawId::_nustraws> _fullstatus;
       estat_t _status;
+      std::map<uint16_t,std::vector<std::pair<uint32_t, uint32_t>>> _trips;
   };
 
 } // namespace mu2e

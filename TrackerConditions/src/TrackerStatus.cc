@@ -68,6 +68,11 @@ namespace mu2e {
     }
   }
 
+  void TrackerStatus::addTrip(StrawId const& sid, uint32_t startevent, uint32_t endevent) {
+    _trips[sid.uniquePanel()].emplace_back(startevent, endevent);
+  }
+
+
   void TrackerStatus::print( ostream& out) const{
     for( auto ielem = _status.begin(); ielem != _status.end(); ++ielem) {
       auto const& mask = ielem->first;
@@ -84,6 +89,13 @@ namespace mu2e {
     return _fullstatus[sid.uniqueStraw()];
   }
 
+  StrawStatus TrackerStatus::strawStatus(StrawId const& sid, uint32_t event) const {
+    StrawStatus sstat = strawStatus(sid);
+    if (hvTripped(sid,event))
+      sstat.merge(StrawStatus::noHV);
+    return sstat;
+  }
+
   StrawStatus TrackerStatus::panelStatus(StrawId const& sid) const {
     StrawStatus sstat;
     for( auto ielem = _status.begin(); ielem != _status.end(); ++ielem) {
@@ -97,6 +109,13 @@ namespace mu2e {
         }
       }
     }
+    return sstat;
+  }
+
+  StrawStatus TrackerStatus::panelStatus(StrawId const& sid, uint32_t event) const {
+    StrawStatus sstat = panelStatus(sid);
+    if (hvTripped(sid,event))
+      sstat.merge(StrawStatus::noHV);
     return sstat;
   }
 
@@ -116,8 +135,22 @@ namespace mu2e {
     return sstat;
   }
 
+  bool TrackerStatus::hvTripped(StrawId const& sid, uint32_t event) const {
+    auto ifnd = _trips.find(sid.uniquePanel());
+    if(ifnd != _trips.end()){
+      for ( auto ielem = ifnd->second.begin(); ielem != ifnd->second.end(); ++ielem) {
+        if (ielem->second < event)
+          continue;
+        else if (ielem->first <= event){
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   // no signal expected from this straw
-  bool TrackerStatus::noSignal(StrawId const& sid) const {
+  bool TrackerStatus::noSignal(StrawId const& sid, uint32_t event) const {
     static StrawStatus mask = StrawStatus(StrawStatus::absent) |
       StrawStatus(StrawStatus::nowire) |
       StrawStatus(StrawStatus::noHV) |
@@ -127,7 +160,7 @@ namespace mu2e {
       StrawStatus(StrawStatus::noHVPreamp) |
       StrawStatus(StrawStatus::noCalPreamp) |
       StrawStatus(StrawStatus::disabled);
-    StrawStatus status = strawStatus(sid);
+    StrawStatus status = strawStatus(sid, event);
     return status.hasAnyProperty(mask);
   }
 
