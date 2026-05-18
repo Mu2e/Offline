@@ -81,14 +81,14 @@ namespace mu2e {
   void KinKalGeomMaker::makeDS() {
     GeomHandle<DetectorSystem> det;
     GeomHandle<DetectorSolenoid> ds;
-    std::cout << "DS Cryo or " << ds->rOut1() << "," << ds->rOut2() << " ir " << ds->rIn1()<<","<< ds->rIn2() << " halfl " << ds->halfLength()
-      << " zpos " << ds->position().z() << " material " << ds->material() << std::endl;
-    std::cout << "DS shield or " << ds->shield_rOut1() << "," << ds->shield_rOut2() << " ir " << ds->shield_rIn1()<<","<< ds->shield_rIn2() << " halfl " << ds->shield_halfLength() << " material " << ds->shield_material() << std::endl;
-    std::cout << "DS ncoils " << ds->nCoils() << std::endl;
-    for(size_t icoil = 0; icoil < static_cast<size_t>(ds->nCoils()); icoil++){
-      std::cout << "DS coil ir " << ds->coil_rIn() << " or " << ds->coil_rOut()[icoil] << " length " << ds->coil_zLength()[icoil] << " zpos " << ds->coil_zPosition()[icoil]
-        << " material " << ds->coil_materials()[icoil] << std::endl;
-    }
+//    std::cout << "DS Cryo or " << ds->rOut1() << "," << ds->rOut2() << " ir " << ds->rIn1()<<","<< ds->rIn2() << " halfl " << ds->halfLength()
+//      << " zpos " << ds->position().z() << " material " << ds->material() << std::endl;
+//    std::cout << "DS shield or " << ds->shield_rOut1() << "," << ds->shield_rOut2() << " ir " << ds->shield_rIn1()<<","<< ds->shield_rIn2() << " halfl " << ds->shield_halfLength() << " material " << ds->shield_material() << std::endl;
+//    std::cout << "DS ncoils " << ds->nCoils() << std::endl;
+//    for(size_t icoil = 0; icoil < static_cast<size_t>(ds->nCoils()); icoil++){
+//      std::cout << "DS coil ir " << ds->coil_rIn() << " or " << ds->coil_rOut()[icoil] << " length " << ds->coil_zLength()[icoil] << " zpos " << ds->coil_zPosition()[icoil]
+//        << " material " << ds->coil_materials()[icoil] << std::endl;
+//    }
     //DS Cryo or 1303,1328 ir 950,969.05 halfl 5450 zpos 8689 material StainlessSteel
     //DS shield or 1237.3,1250 ir 1010,1022.7 halfl 5287.7 material G4_Al
     //DS ncoils 11

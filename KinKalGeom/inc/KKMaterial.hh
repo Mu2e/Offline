@@ -14,13 +14,12 @@
 // mu2e
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
-#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 #include <memory>
 #include <string>
 
 namespace mu2e {
-  class KKMaterial : public MatEnv::FileFinderInterface, public Detector, public ProditionsEntity {
+  class KKMaterial : public MatEnv::FileFinderInterface, public Detector {
     public:
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -29,7 +28,6 @@ namespace mu2e {
         fhicl::Atom<std::string> isotopes { Name("isotopes"), Comment("Filename for istotopes information")};
         fhicl::Atom<std::string> elements { Name("elements"), Comment("Filename for elements information") };
         fhicl::Atom<std::string> materials { Name("materials"), Comment("Filename for materials information") };
-        fhicl::Atom<int> eloss { Name("ELossMode"), Comment("Energy Loss model (0=MPV, 1=Moyal"),MatEnv::DetMaterial::moyalmean };
         fhicl::Atom<std::string> strawGasMaterialName{ Name("strawGasMaterialName"), Comment("strawGasMaterialName") };
         fhicl::Atom<std::string> strawWallMaterialName{ Name("strawWallMaterialName"), Comment("strawWallMaterialName") };
         fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
