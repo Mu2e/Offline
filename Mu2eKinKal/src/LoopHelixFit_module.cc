@@ -52,7 +52,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -108,7 +108,6 @@ namespace mu2e {
   using EXINGPTR = std::shared_ptr<EXING>;
   using EXINGCOL = std::vector<EXINGPTR>;
 
-  using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
 
@@ -125,7 +124,6 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
-    fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
     // LoopHelix module specific config
@@ -167,7 +165,6 @@ namespace mu2e {
       TrkFitDirection fdir_;
       bool usePDGCharge_; // use the pdg particle charge: otherwise use the helicity and direction to determine the charge
       KKFIT kkfit_; // fit helper
-      KKMaterial kkmat_; // material helper
       DMAT seedcov_; // seed covariance matrix
       double mass_; // particle mass
       int PDGcharge_; // PDG particle charge
@@ -198,7 +195,6 @@ namespace mu2e {
     useHelixSlope_(settings().slopeSigThreshold(slopeSigThreshold_)),
     usePDGCharge_(settings().pdgCharge()),
     kkfit_(settings().kkfitSettings()),
-    kkmat_(settings().matSettings()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     fixedfield_(false)
@@ -224,7 +220,7 @@ namespace mu2e {
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
       // setup extrapolation
-      if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings(),kkmat_);
+      if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
 
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
@@ -288,10 +284,9 @@ namespace mu2e {
     // check the input
     if(fdir.fitDirection() != TrkFitDirection::FitDirection::downstream && fdir.fitDirection() != TrkFitDirection::FitDirection::upstream)
       throw cet::exception("RECO") << "mu2e::LoopHelixFit: Unknown helix propagation direction " << fdir.name();
-
-    // Retrieve event information
-    // calo geom
+    // geom
     GeomHandle<Calorimeter> calo_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -336,7 +331,7 @@ namespace mu2e {
     strawhits.reserve(strawHitIdxs.size());
     KKSTRAWXINGCOL strawxings;
     strawxings.reserve(strawHitIdxs.size());
-    if(!kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)) {
+    if(!kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_h->strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)) {
       if(print_>0) printf("[LoopHelixFit::%s] Failed to create a track\n", __func__);
       return nullptr;
     }
@@ -358,7 +353,7 @@ namespace mu2e {
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
-      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
+      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_h->strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
       goodfit = goodFit(*ktrk,seedtraj);
       // if finalizing, apply that now.
       if(goodfit && fconfig_.schedule().size() > 0){

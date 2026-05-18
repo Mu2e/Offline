@@ -79,11 +79,41 @@ namespace mu2e {
   }
 
   void KinKalGeomMaker::makeDS() {
-    // currently use hard-coded geometry
-    auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),950,5450);
-    auto outer= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),1328,5450); // bounding surfaces
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<DetectorSolenoid> ds;
+//    std::cout << "DS Cryo or " << ds->rOut1() << "," << ds->rOut2() << " ir " << ds->rIn1()<<","<< ds->rIn2() << " halfl " << ds->halfLength()
+//      << " zpos " << ds->position().z() << " material " << ds->material() << std::endl;
+//    std::cout << "DS shield or " << ds->shield_rOut1() << "," << ds->shield_rOut2() << " ir " << ds->shield_rIn1()<<","<< ds->shield_rIn2() << " halfl " << ds->shield_halfLength() << " material " << ds->shield_material() << std::endl;
+//    std::cout << "DS ncoils " << ds->nCoils() << std::endl;
+//    for(size_t icoil = 0; icoil < static_cast<size_t>(ds->nCoils()); icoil++){
+//      std::cout << "DS coil ir " << ds->coil_rIn() << " or " << ds->coil_rOut()[icoil] << " length " << ds->coil_zLength()[icoil] << " zpos " << ds->coil_zPosition()[icoil]
+//        << " material " << ds->coil_materials()[icoil] << std::endl;
+//    }
+    //DS Cryo or 1303,1328 ir 950,969.05 halfl 5450 zpos 8689 material StainlessSteel
+    //DS shield or 1237.3,1250 ir 1010,1022.7 halfl 5287.7 material G4_Al
+    //DS ncoils 11
+    //DS coil ir 1050 or 1091 length 419.75 zpos 3539 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 419.75 zpos 3964 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 419.75 zpos 4389 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 419.75 zpos 5042 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 362.25 zpos 5699 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 362.25 zpos 6369 material DS1CoilMix
+    //DS coil ir 1050 or 1091 length 362.25 zpos 7176 material DS1CoilMix
+    //DS coil ir 1050 or 1070.5 length 1777.5 zpos 7949 material DS2CoilMix
+    //DS coil ir 1050 or 1070.5 length 1777.5 zpos 9761 material DS2CoilMix
+    //DS coil ir 1050 or 1070.5 length 1777.5 zpos 11544 material DS2CoilMix
+    //DS coil ir 1050 or 1091 length 362.25 zpos 13326 material DS1CoilMix
+    //
+    //
+    //
+    //
+    auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),ds->rIn1(),ds->halfLength());
+    auto outer= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),ds->rOut2(),ds->halfLength()); // bounding surfaces
     auto front= std::make_shared<Disk>(outer->frontDisk());
     auto back= std::make_shared<Disk>(outer->backDisk());
+
+
+    // hard-coded for now
     auto ipa= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-2770),300.0,500.0);
     auto ipafront= std::make_shared<Disk>(ipa->frontDisk());
     auto ipaback= std::make_shared<Disk>(ipa->backDisk());

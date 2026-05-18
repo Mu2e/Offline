@@ -5,6 +5,7 @@
 // Original author: Dave Brown (LBNL) 4/2026
 //
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 namespace mu2e {
   class KinKalGeomMaker {
     public:
