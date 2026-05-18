@@ -259,7 +259,6 @@ namespace mu2e {
   void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
 
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
@@ -300,7 +299,7 @@ namespace mu2e {
           KKSTRAWXINGCOL strawxings;
           strawhits.reserve(strawHitIdxs.size());
           strawxings.reserve(strawHitIdxs.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_h->strawMaterial(), pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
+          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
 
           //here
           KKCALOHITCOL calohits;
@@ -321,7 +320,7 @@ namespace mu2e {
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_h->strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *kktrk );
           }
           goodfit = goodFit(*kktrk);
           // extrapolate as required
