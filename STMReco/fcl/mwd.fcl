@@ -5,7 +5,7 @@
 #include "Offline/fcl/standardServices.fcl"
 #include "Offline/STMReco/fcl/prolog.fcl"
 
-process_name: STMMWD
+process_name: STMPH
 
 source : {
   module_type : RootInput
@@ -17,34 +17,40 @@ services : {
 
 physics: {
   producers : {
-    mwdHPGe : {
+    phHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "zeroSuppressHPGe"
-      verbosityLevel : 1
+      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
+      verbosityLevel : 6
       tau : @local::STM.HPGe.tau
       M : @local::STM.HPGe.M
       L : @local::STM.HPGe.L
       nsigma_cut : @local::STM.HPGe.nsigma_cut
       thresholdgrad : @local::STM.HPGe.thresholdgrad
+      defaultBaselineMean: @local::STM.HPGe.defaultBaselineMean
+      defaultBaselineSD: @local::STM.HPGe.defaultBaselineSD
+      xAxis: "sample_number"
     }
 
-    mwdLaBr : {
+    phLaBr : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "zeroSuppressLaBr"
-      verbosityLevel : 1
+      stmWaveformDigisTag : "makeSTMDigis:LaBr"
+      verbosityLevel : 6
       tau : @local::STM.LaBr.tau
       M : @local::STM.LaBr.M
       L : @local::STM.LaBr.L
       nsigma_cut : @local::STM.LaBr.nsigma_cut
       thresholdgrad : @local::STM.LaBr.thresholdgrad
+      defaultBaselineMean: @local::STM.HPGe.defaultBaselineMean
+      defaultBaselineSD: @local::STM.HPGe.defaultBaselineSD
+      xAxis: "sample_number"
     }
   }
   filters : {  }
   analyzers : {  }
 
   # setup paths
-  HPGePath : [ mwdHPGe ]
-  LaBrPath : [ mwdLaBr ]
+  HPGePath : [ phHPGe ]
+  LaBrPath : [ phLaBr ]
   trigger_paths: [ HPGePath, LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
@@ -56,6 +62,6 @@ outputs: {
     module_type: RootOutput
     outputCommands:   [ "keep *_*_*_*" ]
     SelectEvents: [ ]
-    fileName : "dig.owner.MWDWaveformDigis.version.sequencer.art"
+    fileName : "dig.owner.PHWaveformDigis.version.sequencer.art"
   }
 }
