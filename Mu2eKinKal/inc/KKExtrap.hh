@@ -68,14 +68,12 @@ namespace mu2e {
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
-
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
+    TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     if(toTrackerEnds_)toTrackerEnds(ktrk);
     if(upstream_){
-      auto dir0 = ftraj.direction(ftraj.t0());
-      TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
       bool exitsIPA = extrapolateIPA(ktrk,tdir);
@@ -98,14 +96,14 @@ namespace mu2e {
           }
         }
       } else { // reflection inside the IPA; extrapolate back through the IPA, then to the tracker entrance
+        ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
         if(backToTracker_)ktrk.extrapolate(tdir,trackerFront);
       }
       // optionally test for intersection with the OPA
       if(extrapolateOPA_)extrapolateOPA(ktrk,starttime,tdir);
-      // optionally test for intersection with the Test CRV
-      if(toTCRV_)extrapolateTCRV(ktrk,tdir);
-      if(toCRV_)extrapolateCRV(ktrk,tdir);
     }
+    if(toTCRV_)extrapolateTCRV(ktrk,tdir);
+    if(toCRV_)extrapolateCRV(ktrk,tdir);
   }
 
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
