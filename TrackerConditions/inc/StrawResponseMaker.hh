@@ -21,7 +21,7 @@ namespace mu2e {
       StrawResponse::ptr_t fromDb(StrawDrift::cptr_t strawDrift,
           StrawElectronics::cptr_t strawElectronics,
           StrawPhysics::cptr_t strawPhysics,
-          TrkTOTCalib::cptr_t ttc, TrkTOTCalibParams::cptr_t ttcp);
+          TrkTOTCalib::cptr_t ttc);
 
     private:
 

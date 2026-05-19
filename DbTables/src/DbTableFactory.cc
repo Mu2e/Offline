@@ -86,8 +86,6 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkHVTripStatus());
   } else if (name == "TrkTOTCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkTOTCalib());
-  } else if (name == "TrkTOTCalibParams") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkTOTCalibParams());
   } else if (name == "AnaTrkQualDb") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::AnaTrkQualDb());
   } else if (name == "SimEfficiencies") {

@@ -9,32 +9,37 @@
 
 namespace mu2e {
 
-  class TrkTOTCalibParams : public DbTable {
+  class TrkTOTCalib : public DbTable {
     public:
-      typedef std::shared_ptr<TrkTOTCalibParams> ptr_t;
-      typedef std::shared_ptr<const TrkTOTCalibParams> cptr_t;
+      typedef std::shared_ptr<TrkTOTCalib> ptr_t;
+      typedef std::shared_ptr<const TrkTOTCalib> cptr_t;
 
       class Row {
         public:
-          Row(int totTBins, float totTBinWidth, int totEBins, float totEBinWidth)
+          Row(int totTBins, float totTBinWidth, int totEBins, float totEBinWidth, std::vector<float> driftTimes, std::vector<float> driftErrors)
             : _totTBins(totTBins), _totTBinWidth(totTBinWidth),
-            _totEBins(totEBins), _totEBinWidth(totEBinWidth) {}
+            _totEBins(totEBins), _totEBinWidth(totEBinWidth),
+            _driftTimes(std::move(driftTimes)), _driftErrors(std::move(driftErrors)) {}
           int   totTBins()    const { return _totTBins; }
           float totTBinWidth() const { return _totTBinWidth; }
           int   totEBins()    const { return _totEBins; }
           float totEBinWidth() const { return _totEBinWidth; }
+          std::vector<float> const& driftTimes() const { return _driftTimes; }
+          std::vector<float> const& driftErrors() const { return _driftErrors; }
         private:
           int   _totTBins;
           float _totTBinWidth;
           int   _totEBins;
           float _totEBinWidth;
+          std::vector<float> _driftTimes;
+          std::vector<float> _driftErrors;
       };
 
-      constexpr static const char* cxname = "TrkTOTCalibParams";
+      constexpr static const char* cxname = "TrkTOTCalib";
 
-      TrkTOTCalibParams() :
-        DbTable(cxname, "trk.totcalibparams",
-            "tottbins,tottbinwidth,totebins,totebinwidth") {}
+      TrkTOTCalib() :
+        DbTable(cxname, "trk.totcalib",
+            "tottbins,tottbinwidth,totebins,totebinwidth,drifttimes,drifterrors") {}
       const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
       std::vector<Row> const& rows() const { return _rows; }
       std::size_t nrow() const override { return _rows.size(); };
@@ -44,10 +49,30 @@ namespace mu2e {
 
       void addRow(const std::vector<std::string>& columns) override {
         if (_rows.size() != 0)
-          throw cet::exception("TRKTOTCALIBPARAMS_BAD_INDEX")
-            << "TrkTOTCalibParams::addRow adding more than one row\n";
-        _rows.emplace_back(std::stoi(columns[0]), std::stof(columns[1]),
-            std::stoi(columns[2]), std::stof(columns[3]));
+          throw cet::exception("TRKTOTCALIB_BAD_INDEX")
+            << "TrkTOTCalib::addRow adding more than one row\n";
+        int totTBins = std::stoi(columns[0]);
+        int totEBins = std::stoi(columns[2]);
+        std::istringstream is(columns[4]); // drift times
+        std::vector<float> driftTimes;
+        driftTimes.reserve(totTBins*totEBins);
+        float x;
+        while (is >> x) driftTimes.push_back(x);
+        if (!is.eof()){
+          throw cet::exception("TRKTOTCALIB_BAD_INDEX")
+            << "TrkTOTCalib::addRow bad driftTime\n";
+        }
+        std::istringstream is2(columns[5]); // drift errors
+        std::vector<float> driftErrors;
+        driftErrors.reserve(totTBins*totEBins);
+        while (is2 >> x) driftErrors.push_back(x);
+        if (!is2.eof()){
+          throw cet::exception("TRKTOTCALIB_BAD_INDEX")
+            << "TrkTOTCalib::addRow bad driftError\n";
+        }
+
+        _rows.emplace_back(totTBins, std::stof(columns[1]),
+            totEBins, std::stof(columns[3]), driftTimes, driftErrors);
       }
 
       void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
@@ -56,63 +81,16 @@ namespace mu2e {
         sstream << r.totTBins() << ",";
         sstream << r.totTBinWidth() << ",";
         sstream << r.totEBins() << ",";
-        sstream << r.totEBinWidth();
-      }
-
-      virtual void clear() override {
-        baseClear();
-        _rows.clear();
-      }
-
-    private:
-      std::vector<Row> _rows;
-  };
-
-  class TrkTOTCalib : public DbTable {
-    public:
-      typedef std::shared_ptr<TrkTOTCalib> ptr_t;
-      typedef std::shared_ptr<const TrkTOTCalib> cptr_t;
-
-      class Row {
-        public:
-          Row(int index, float driftTime, float driftError)
-            : _index(index), _driftTime(driftTime), _driftError(driftError) {}
-          int   index()      const { return _index; }
-          float driftTime()  const { return _driftTime; }
-          float driftError() const { return _driftError; }
-        private:
-          int   _index;
-          float _driftTime;
-          float _driftError;
-      };
-
-      constexpr static const char* cxname = "TrkTOTCalib";
-
-      TrkTOTCalib() :
-        DbTable(cxname, "trk.totcalib",
-            "index,drifttime,drifterror") {}
-      const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
-      std::vector<Row> const& rows() const { return _rows; }
-      std::size_t nrow() const override { return _rows.size(); };
-      size_t size() const override { return baseSize() + nrow() * sizeof(Row); };
-      const std::string orderBy() const { return std::string("index"); }
-
-      void addRow(const std::vector<std::string>& columns) override {
-        int index = std::stoi(columns[0]);
-        // enforce a strict sequential order
-        if (index != int(_rows.size())) {
-          throw cet::exception("TRKTOTCALIB_BAD_INDEX")
-            << "TrkTOTCalib::addRow found index out of order: " << index
-            << " != " << _rows.size() << "\n";
+        sstream << r.totEBinWidth() << ",";
+        for (size_t k=0;k<r.driftTimes().size();k++){
+          if (k) sstream << " ";
+          sstream << r.driftTimes()[k];
         }
-        _rows.emplace_back(index,std::stof(columns[1]), std::stof(columns[2]));
-      }
-
-      void rowToCsv(std::ostringstream& sstream, std::size_t irow) const override {
-        Row const& r = _rows.at(irow);
-        sstream << std::fixed << std::setprecision(1);
-        sstream << r.driftTime() << ",";
-        sstream << r.driftError();
+        sstream << ",";
+        for (size_t k=0;k<r.driftErrors().size();k++){
+          if (k) sstream << " ";
+          sstream << r.driftErrors()[k];
+        }
       }
 
       virtual void clear() override {
@@ -123,6 +101,5 @@ namespace mu2e {
     private:
       std::vector<Row> _rows;
   };
-
 };  // namespace mu2e
 #endif

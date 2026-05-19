@@ -238,8 +238,9 @@ namespace mu2e {
 
   }
 
+  template<typename T>
   void StrawResponse::printVector(std::ostream& os, std::string const& name,
-      std::vector<double> const& a) const {
+      std::vector<T> const& a) const {
     size_t n = a.size();
     if(n<=4) {
       os << name << " ("<<n<<") = ";

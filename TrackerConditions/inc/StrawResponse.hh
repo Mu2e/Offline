@@ -38,8 +38,8 @@ namespace mu2e {
           double central, std::vector<double> centres,
           std::vector<double> resslope, bool truncateLongitudinal,
           bool rmsLongErrors, int totTBins, double totTBinWidth,
-          int totEBins, double totEBinWidth, std::vector<double> totdtime,
-          std::vector<double> totderror,
+          int totEBins, double totEBinWidth, std::vector<float> totdtime,
+          std::vector<float> totderror,
           std::vector<double> llDriftTimeOffBins, std::vector<double> llDriftTimeOffset,
           std::vector<double> llDriftTimeRMSBins, std::vector<double> llDriftTimeRMS,
           std::vector<double> driftOffBins, std::vector<double> driftOffset,
@@ -108,7 +108,7 @@ namespace mu2e {
         _timeOffsetStrawCal = timeOffsetStrawCal;
       }
       void setTOTCalib(size_t tottbins, double tottbinwidth, size_t totebins, double totebinwidth,
-          std::vector<double> totdtime, std::vector<double> totderror){
+          std::vector<float> totdtime, std::vector<float> totderror){
         _totTBins = tottbins;
         _totTBinWidth = tottbinwidth;
         _totEBins = totebins;
@@ -138,8 +138,9 @@ namespace mu2e {
       double TOTdriftTimeError(Straw const& straw, double tot, double edep) const;
 
       void print(std::ostream& os) const;
+      template<typename T>
       void printVector(std::ostream& os, std::string const& name,
-          std::vector<double> const& a) const;
+          std::vector<T> const& a) const;
 
       template<typename T, size_t SIZE>
         void printArray(std::ostream& os, std::string const& name,
@@ -189,8 +190,8 @@ namespace mu2e {
       double _totTBinWidth;
       size_t _totEBins;
       double _totEBinWidth;
-      std::vector<double> _totdtime;
-      std::vector<double> _totderror;
+      std::vector<float> _totdtime;
+      std::vector<float> _totderror;
       std::vector<double> _llDriftTimeOffBins;
       std::vector<double> _llDriftTimeOffset;
       std::vector<double> _llDriftTimeRMSBins;
