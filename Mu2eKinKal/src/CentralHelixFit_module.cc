@@ -8,6 +8,7 @@
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Tuple.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
@@ -59,6 +60,7 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -126,6 +128,7 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
+    fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
     // helix module specific config
   };
 
@@ -138,7 +141,7 @@ namespace mu2e {
       void produce(art::Event& event) override;
     protected:
       bool goodFit(KKTRK const& ktrk) const;
-      void sampleFit(KKTRK& kktrk) const;
+      void sampleFit(KKTRK& ktrk) const;
       TrkFitFlag fitflag_;
       // parameter-specific functions that need to be overridden in subclasses
       // data payload
@@ -158,6 +161,7 @@ namespace mu2e {
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // initial fit configuration object
       Config exconfig_; // extension configuration object
+      std::unique_ptr<KKExtrap> extrap_; // extrapolation helper
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
@@ -214,6 +218,9 @@ namespace mu2e {
         fixedfield_ = true;
         kkbf_ = std::move(std::make_unique<KKConstantBField>(VEC3(0.0,0.0,bz)));
       }
+      // setup extrapolation
+      if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+
       // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
         ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
@@ -249,7 +256,7 @@ namespace mu2e {
     auto cc_H = event.getHandle<CaloClusterCollection>(cccol_T_);
     auto const& chcol = *ch_H;
     // create output
-    unique_ptr<KKTRKCOL> kktrkcol(new KKTRKCOL );
+    unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
 
     unsigned nseed(0);
@@ -324,47 +331,33 @@ namespace mu2e {
         try {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           // Check the fit
-          auto goodfit = goodFit(*kktrk);
+          auto goodfit = goodFit(*ktrk);
           // if we have an extension schedule, extend.
           if(goodfit && exconfig_.schedule().size() > 0) {
             //  std::cout << "EXTENDING TRACK " << event.id() << " " << index << std::endl;
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *kktrk );
-            goodfit = goodFit(*kktrk);
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *ktrk );
+            goodfit = goodFit(*ktrk);
           }
-
-          if(print_>1)kktrk->printFit(std::cout,print_);
+          // extrapolate as required
+          if(goodfit && extrap_)extrap_->extrapolate(*ktrk);
+          if(print_>1)ktrk->printFit(std::cout,print_);
           if(goodfit || saveall_){
-            TrkFitFlag fitflag;//(hptr->status());
+            TrkFitFlag fitflag;
             fitflag.merge(fitflag_);
             if(goodfit)
               fitflag.merge(TrkFitFlag::FitOK);
             else
               fitflag.clear(TrkFitFlag::FitOK);
-            // compare charge after the fit; either adjust or skip
-            auto const& t0seg = kktrk->fitTraj().nearestPiece(kktrk->fitTraj().t0());
-            double t0charge = t0seg.charge();
-            if(t0charge*PDGcharge_> 0 || useFitCharge_){
-              // flip the PDG particle assignment charge if required
-              if(t0charge*PDGcharge_ < 0)kktrk->reverseCharge();
-              // check that the segments are non-degenerate
-              bool degen(false);
-              for(auto const& seg : kktrk->fitTraj().pieces()){
-                auto cdist = fabs(-1.0/seg->omega() - seg->d0());
-                if( cdist < minCenterRho_){
-                  degen = true;
-                  break;
-                }
-              }
-              if(!degen){
-                sampleFit(*kktrk);
-                auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
-                kkseedcol->push_back(kkseed);
-                // save (unpersistable) KKTrk in the event
-                kktrkcol->push_back(kktrk.release());
-              }
-            }
+            // flip the PDG particle assignment charge if required
+            double t0charge = ktrk->fitTraj().nearestPiece(ktrk->fitTraj().t0()).charge();
+            if(t0charge*PDGcharge_ < 0)ktrk->reverseCharge();
+            // sample as requested: this may be redundant with extrapolation
+            sampleFit(*ktrk);
+            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+            kkseedcol->push_back(kkseed);
+            ktrkcol->push_back(ktrk.release());
           }
         } catch (std::invalid_argument const& error) {
           if(print_ > 0) std::cout << "CentralHelixFit Error " << error.what() << std::endl;
@@ -372,14 +365,19 @@ namespace mu2e {
       }
     }
     // put the output products into the event
-    if(print_ > 0) std::cout << "Fitted " << kktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
-    event.put(move(kktrkcol));
+    if(print_ > 0) std::cout << "Fitted " << ktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
+    event.put(move(ktrkcol));
     event.put(move(kkseedcol));
   }
 
   bool CentralHelixFit::goodFit(KKTRK const& ktrk) const {
     // require physical consistency: fit can succeed but the result can have changed charge or helicity
     bool retval = ktrk.fitStatus().usable();
+    // compare fit charge with intent
+    if(retval){
+      double t0charge = ktrk.fitTraj().nearestPiece(ktrk.fitTraj().t0()).charge();
+      retval = t0charge*PDGcharge_> 0 || useFitCharge_;
+    }
     // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
     if(retval){
       for(auto const& shptr : ktrk.strawHits()) {
@@ -389,11 +387,21 @@ namespace mu2e {
         }
       }
     }
+    if(retval){
+      // check that the segments are non-degenerate
+      for(auto const& seg : ktrk.fitTraj().pieces()){
+        auto cdist = fabs(-1.0/seg->omega() - seg->d0());
+        if( cdist < minCenterRho_){
+          retval = false;
+          break;
+        }
+      }
+    }
     return retval;
   }
 
-  void CentralHelixFit::sampleFit(KKTRK& kktrk) const {
-    auto const& ftraj = kktrk.fitTraj();
+  void CentralHelixFit::sampleFit(KKTRK& ktrk) const {
+    auto const& ftraj = ktrk.fitTraj();
     double tbeg = ftraj.range().begin();
     for(auto const& surf : surfacess_to_sample_){
       // search for intersections with each surface from the begining
@@ -410,7 +418,7 @@ namespace mu2e {
         goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(goodinter) {
           // save the intersection information
-          kktrk.addIntersection(surf.first,surfinter);
+          ktrk.addIntersection(surf.first,surfinter);
           // update for the next intersection
           double epsilon = intertol_/ftraj.speed(surfinter.time_);
           tstart = surfinter.time_ + epsilon;// move psst existing intersection to avoid repeating

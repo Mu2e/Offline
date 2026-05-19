@@ -234,8 +234,7 @@ namespace mu2e {
       }
       if (settings().HelixMask()){
         if (settings().HelixMask()->minHelixP())
-          {minHelixP_ = settings().HelixMask()->minHelixP().value();}
-
+        {minHelixP_ = settings().HelixMask()->minHelixP().value();}
       }
     }
 
@@ -403,24 +402,24 @@ namespace mu2e {
           if(extrap_)extrap_->extrapolate(*ktrk);
           if(print_>1) ktrk->printFit(std::cout,print_-1);
           // save the fit result
-            auto hptr = HPtr(hseedcol_h,iseed);
-            TrkFitFlag fitflag(hptr->status());
-            fitflag.merge(fitflag_);
-            if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-            // sample the fit as requested
-            kkfit_.sampleFit(*ktrk);
-            // convert to seed output format
-            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
-            if(print_>0) print_track_info(kkseed, *ktrk);
-            kkseedcol->push_back(kkseed);
-            // fill assns with the helix seed
-            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-            kkseedassns->addSingle(kseedptr,hptr);
-            // save (unpersistable) KKTrk in the event
-            ktrkcol->push_back(ktrk.release());
-            //increment the counts
-            if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
-            if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
+          auto hptr = HPtr(hseedcol_h,iseed);
+          TrkFitFlag fitflag(hptr->status());
+          fitflag.merge(fitflag_);
+          if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
+          // sample the fit as requested
+          kkfit_.sampleFit(*ktrk);
+          // convert to seed output format
+          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          if(print_>0) print_track_info(kkseed, *ktrk);
+          kkseedcol->push_back(kkseed);
+          // fill assns with the helix seed
+          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+          kkseedassns->addSingle(kseedptr,hptr);
+          // save (unpersistable) KKTrk in the event
+          ktrkcol->push_back(ktrk.release());
+          //increment the counts
+          if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
+          if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
         } //end track fit result loop
       } //end helix seed loop
     } //end helix colllection loop
@@ -541,7 +540,7 @@ namespace mu2e {
   void LoopHelixFit::endJob() {
     if(print_ > 0) {
       printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-                          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
       printf("Number of fits: %i;  number of helices skipped: %i \n ", nFit_, nSkipped_);
     }
   }
