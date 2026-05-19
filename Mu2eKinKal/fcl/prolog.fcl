@@ -373,21 +373,41 @@ Mu2eKinKal : {
   LHDRIFTXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-4 # momemntum fraction
     ToTrackerEnds : true
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToCRV : false
+    ToTCRV : false
   }
 
   LHSEEDXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : true
     Upstream : false
     BackToTracker : false
     ToOPA : false
+    ToCRV : false
+    ToTCRV : false
+  }
+
+  LINEXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerEnds : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : false
+    ToTCRV : true
+    ToCRV : true
   }
 
   CENTRALHELIX : {
@@ -421,11 +441,6 @@ Mu2eKinKal : {
     SampleInBounds : false # require sample be in surface bounds
   }
 
-  LINEEXTRAPOLATION : {
-    MaxDt : 200.0 # (ns)
-    MinV : 1e-5
-    ToCRV : true
-  }
 }
 
 Mu2eKinKal : {
@@ -509,7 +524,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
     }
-    Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
+    ExtrapolationSettings : @local::Mu2eKinKal.LINEXTRAP
   }
 
   CHSeedFit : {
