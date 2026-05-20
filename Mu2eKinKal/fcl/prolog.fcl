@@ -396,7 +396,7 @@ Mu2eKinKal : {
     ToTCRV : false
   }
 
-  LINEXTRAP : {
+  KLXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
     MinV : 1e-5 # mm/ns
@@ -407,6 +407,20 @@ Mu2eKinKal : {
     ToOPA : false
     ToCRV : false
     ToTCRV : true
+    ToCRV : true
+  }
+
+  CHXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerEnds : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : false
+    ToTCRV : false
     ToCRV : true
   }
 
@@ -524,7 +538,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
     }
-    ExtrapolationSettings : @local::Mu2eKinKal.LINEXTRAP
+    ExtrapolationSettings : @local::Mu2eKinKal.KLXTRAP
   }
 
   CHSeedFit : {
@@ -555,6 +569,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP
   }
 }
 

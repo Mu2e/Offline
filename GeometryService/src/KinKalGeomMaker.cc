@@ -162,9 +162,9 @@ namespace mu2e {
 
   void KinKalGeomMaker::makeTCRV() {
     // currently use hard-coded geometry
-    auto ex1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4775,-438),3000,1675); // layer widths are approximate FIXME
-    auto t1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0.0,4625,-438),1185,850);
-    auto t2= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4925,-438),1600,850);
+    auto ex1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4387,-438),3000,1675); // layer widths are approximate FIXME
+    auto t1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0.0,4237,-438),1185,850);
+    auto t2= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4537,-438),1600,850);
 
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,0),std::static_pointer_cast<Surface>(t1)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(ex1)));
