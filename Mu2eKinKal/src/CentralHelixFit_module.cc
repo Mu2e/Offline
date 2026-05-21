@@ -53,6 +53,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -248,6 +249,7 @@ namespace mu2e {
   void CentralHelixFit::produce(art::Event& event ) {
     GeomHandle<Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -321,7 +323,7 @@ namespace mu2e {
         strawhits.reserve(strawHitIdxs.size());
         KKSTRAWXINGCOL strawxings;
         strawxings.reserve(strawHitIdxs.size());
-        kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
+        kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_h->strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings);
         // optionally (and if present) add the CaloCluster as a constraint
         // verify the cluster looks physically reasonable before adding it TODO!  Or, let the KKCaloHit updater do it TODO
         KKCALOHITCOL calohits;
