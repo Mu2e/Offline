@@ -32,6 +32,13 @@ class CRVOrdinal : virtual public ProditionsEntity {
   CRVOrdinal(OnlineMap const& onMap, OfflineMap const& offMap) :
       ProditionsEntity(cxname), _onMap(onMap), _offMap(offMap) {}
 
+  // check, if a channel exists
+  bool onlineExists(std::uint16_t channel) const {
+    if (channel >= _onMap.size()) return false;
+    if (_onMap.at(channel).FEBchannel() >= CRVId::nChanPerFEB) return false;
+    return true;
+  }
+
   // online numbering triplet for an offline channel number
   const CRVROC& online(std::uint16_t channel) const {
     if (_onMap.at(channel).FEBchannel() >= CRVId::nChanPerFEB) {

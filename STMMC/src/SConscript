@@ -48,6 +48,8 @@ helper.make_plugins( [ mainlib,
                        'mu2e_MCDataProducts',
                        'mu2e_GlobalConstantsService',
                        'mu2e_GeometryService',
+                       'mu2e_MachineLearningTools',
+                       'mu2e_SeedService',
                        rootlibs
                      ] )
 

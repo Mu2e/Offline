@@ -37,6 +37,7 @@ cet_build_plugin(AgnosticHelixFinder art::module
       Offline::GeometryService
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+      Offline::TimeoutService
       Offline::TrackerGeom
 )
 
@@ -65,6 +66,20 @@ cet_build_plugin(CalTimePeakFinder art::module
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
       Offline::TrackerGeom
+)
+
+cet_build_plugin(CalLineTimePeakFinder art::module
+    REG_SOURCE src/CalLineTimePeakFinder_module.cc
+    LIBRARIES REG
+      Offline::CalPatRec
+
+      Offline::CalorimeterGeom
+      Offline::ConfigTools
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::StoppingTargetGeom
 )
 
 cet_build_plugin(ComboHitFilter art::module
@@ -134,6 +149,7 @@ cet_build_plugin(TZClusterFinder art::module
       Offline::ConfigTools
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+      Offline::TimeoutService
 )
 
 cet_build_plugin(CalHelixFinderDiag art::tool

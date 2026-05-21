@@ -32,7 +32,6 @@ cet_make_library(
       src/ValStrawHit.cc
       src/ValStrawHitFlag.cc
       src/ValTimeCluster.cc
-      src/ValTrackSummary.cc
       src/ValTriggerInfo.cc
       src/ValTriggerResults.cc
     LIBRARIES PUBLIC

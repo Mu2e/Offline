@@ -33,6 +33,7 @@ class DbEngine {
   // these must be set before beginJob is called
   void setDbId(DbId const& id) { _id = id; }
   void setVersion(DbVersion const& version) { _version = version; }
+  DbVersion const& version() const { return _version; }
   // copy in the cache - optionally set before beginJob
   void setValCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
   // add tables directly - optionally set before beginJob

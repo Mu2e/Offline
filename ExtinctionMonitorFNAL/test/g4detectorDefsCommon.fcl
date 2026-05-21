@@ -36,7 +36,6 @@ services : {
     RandomNumberGenerator: {defaultEngineKind: "MixMaxRng"}
 
     GeometryService: {@table::Services.Core.GeometryService}
-    ConditionsService: { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
     GlobalConstantsService: { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     SeedService: @local::automaticSeeds
     Mu2eG4Helper: { }

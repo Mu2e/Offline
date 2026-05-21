@@ -264,7 +264,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   int RobustHelixFinderDiag::fillHistograms(void* Data, int Mode) {
 
-    _data = (Data_t*) Data;
+    _data = static_cast<Data_t*>(Data);
 
     //-----------------------------------------------------------------------------
     // fill helix-level histograms
@@ -275,7 +275,6 @@ namespace mu2e {
     int   nhelicities(2);
 
     for (int k=0; k<nhelicities; ++k){
-      _hist.nseeds[k]->Fill(_data->nseeds[k]);
       _hist.nseeds[k]->Fill(_data->nseeds[k]);
 
       for (int i=0; i<_data->nseeds[k]; i++) {

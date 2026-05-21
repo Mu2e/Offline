@@ -9,9 +9,11 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
@@ -35,10 +37,13 @@
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 #include "Offline/Mu2eUtilities/inc/HelixTool.hh"
 #include "Offline/Mu2eUtilities/inc/StopWatch.hh"
+#include "Offline/TimeoutService/inc/TimeoutWatchdog.hh"
 
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
+
+#include <optional>
 
 namespace mu2e {
 
@@ -96,6 +101,7 @@ namespace mu2e {
       fhicl::Atom<float>           chi2LineSaveThresh     {Name("chi2LineSaveThresh"   ), Comment("max chi2Dof for line"        )  };
       fhicl::Atom<float>           maxEDepAvg             {Name("maxEDepAvg"           ), Comment("max avg edep of combohits"   )  };
       fhicl::Atom<float>           tzSlopeSigThresh       {Name("tzSlopeSigThresh"     ), Comment("direction ambiguous if below")  };
+      fhicl::OptionalAtom<double>  timeoutMs              {Name("timeoutMs"            ), Comment("Optional timeout budget in ms; <= 0 disables timeout checks")};
       fhicl::Sequence<std::string> validHelixDirections   {Name("validHelixDirections" ), Comment("only save desired directions")  };
 
       fhicl::Table<AgnosticHelixFinderTypes::Config> diagPlugin  {Name("diagPlugin"), Comment("diag plugin"                   )  };
@@ -108,6 +114,8 @@ namespace mu2e {
     int _diagLevel;
     int _doTiming;
     std::unique_ptr<StopWatch> _watch;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
@@ -176,6 +184,8 @@ namespace mu2e {
     float    _maxEDepAvg;
     float    _tzSlopeSigThresh;
     std::vector<TrkFitDirection::FitDirection> _validHelixDirections;
+    bool     _enableTimeout;
+    double   _timeoutMs;
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -239,6 +249,7 @@ namespace mu2e {
     void         tcHitsFill                (size_t tc);
     void         setFlags                  ();
     void         resetFlags                ();
+    bool         shouldExitForTimeout      (char const* functionName);
     bool         findHelix                 (size_t tc, HelixSeedCollection& HSColl);
     bool         passesFlags               (size_t tcHitsIndex);
     void         setTripletI               (size_t tcHitsIndex, triplet& trip, LoopCondition& outcome);
@@ -256,6 +267,7 @@ namespace mu2e {
     void         checkHelixViability       (LoopCondition& outcome);
     void         saveHelix                 (size_t tc, HelixSeedCollection& HSColl);
     bool         validHelixDirection       (TrkFitDirection::FitDirection direction);
+    bool         goodTimeCluster           (const TimeCluster& tc);
 
   };
 
@@ -266,6 +278,8 @@ namespace mu2e {
     art::EDProducer{config},
     _diagLevel                     (config().diagLevel()                             ),
     _doTiming                      (config().doTiming()                              ),
+    _timeoutService                (std::nullopt                                     ),
+    _timeoutGuard                  (std::nullopt                                     ),
     _chLabel                       (config().chCollLabel()                           ),
     _tcLabel                       (config().tcCollLabel()                           ),
     _ccLabel                       (config().ccCollLabel()                           ),
@@ -309,7 +323,9 @@ namespace mu2e {
     _maxHelixMomentum              (config().maxHelixMomentum()                      ),
     _chi2LineSaveThresh            (config().chi2LineSaveThresh()                    ),
     _maxEDepAvg                    (config().maxEDepAvg()                            ),
-    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      )
+    _tzSlopeSigThresh              (config().tzSlopeSigThresh()                      ),
+    _enableTimeout                 (false                                            ),
+    _timeoutMs                     (0.0                                              )
   {
     // to cache the evaluations
     _minTripletDistSq = _minTripletDist * _minTripletDist;
@@ -328,6 +344,12 @@ namespace mu2e {
     for(auto helix_dir : config().validHelixDirections()) {
       _validHelixDirections.push_back(TrkFitDirection::fitDirectionFromName(helix_dir));
     }
+
+    if (config().timeoutMs(_timeoutMs) && _timeoutMs > 0.0) {
+      _enableTimeout = true;
+      _timeoutService.emplace();
+    }
+
     consumes<ComboHitCollection>     (_chLabel);
     consumes<TimeClusterCollection>  (_tcLabel);
     consumes<CaloClusterCollection>  (_ccLabel);
@@ -440,6 +462,14 @@ namespace mu2e {
   void AgnosticHelixFinder::produce(art::Event& event) {
     if(_doTiming) _watch->Increment(__func__);
 
+    _timeoutGuard.reset();
+    if (_enableTimeout && _timeoutService) {
+      _timeoutGuard.emplace(*(*_timeoutService),
+                            event,
+                            moduleDescription().moduleLabel(),
+                            _timeoutMs);
+    }
+
     // Prepare the helix collection
     std::unique_ptr<HelixSeedCollection> hsColl(new HelixSeedCollection);
 
@@ -453,20 +483,20 @@ namespace mu2e {
 
       for (size_t i = 0; i < _tcColl->size(); i++) {
         if(_doTiming) _watch->Increment("per-time cluster");
+        if (shouldExitForTimeout(__func__)) {
+          if(_doTiming > 0) _watch->StopTime("per-time cluster");
+          break;
+        }
         // check to see if cluster is a busy one
         // if cluster is busy or event is intense then only process the time cluster if it has calo cluster
         const auto& tc = _tcColl->at(i);
         _intenseCluster = (int) tc.nhits() > _intenseClusterThresh;
-        if (_intenseEvent || _intenseCluster) {
-          if (!tc.hasCaloCluster()) {
-            if(_diagLevel > 1)
-              printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
-            continue;
-          }
-        }
+        if(!goodTimeCluster(tc)) continue;
         const int nHelicesInitial = _diagInfo.nHelices; // Only valid if diagLevel > 0, for diagnostic tracking
         tcHitsFill(i); // Initialize the list of hits in the time cluster
         while(findHelix(i, *hsColl) && _findMultipleHelices); // Exit the search if no helix is found or after finding a helix if not configured for multi-helix reco
+        if(_diagLevel > 1)
+          printf("  Time cluster %zu has %i helices\n", i, _diagInfo.nHelices - nHelicesInitial);
 
         if (_diagLevel > 0) {
           tcInfo timeClusterInfo;
@@ -482,6 +512,8 @@ namespace mu2e {
       printf("[AgnosticHelixFinder::%s] %i:%i:%i Event data not found!\n", __func__, event.run(), event.subRun(), event.event());
     }
     if(_doTiming) _watch->StopTime("per-time cluster");
+    if(_diagLevel > 1)
+      printf("  Found %i helices total (%zu in collection)\n", _diagInfo.nHelices, hsColl->size());
 
     // fill necessary data members for diagnostic tool
     if (_diagLevel > 0) {
@@ -494,6 +526,8 @@ namespace mu2e {
     if(_doTiming) _watch->Increment("output");
     event.put(std::move(hsColl));
     if(_doTiming) _watch->StopTime ("output");
+
+    _timeoutGuard.reset();
 
     if(_doTiming) _watch->StopTime(__func__);
   }
@@ -751,10 +785,33 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
+  // shared timeout check helper so more call sites can opt in with one line
+  //-----------------------------------------------------------------------------
+  bool AgnosticHelixFinder::shouldExitForTimeout(char const* functionName) {
+    if (!_timeoutGuard) {
+      return false;
+    }
+
+    if (!_timeoutGuard->check()) {
+      return false;
+    }
+
+    if (_diagLevel > 0) {
+      printf("[AgnosticHelixFinder::%s] Exiting due to timeout (timeoutMs=%.3f)\n", functionName, _timeoutMs);
+    }
+    return true;
+  }
+
+  //-----------------------------------------------------------------------------
   // logic to find helix
   //-----------------------------------------------------------------------------
   bool AgnosticHelixFinder::findHelix(size_t tc, HelixSeedCollection& HSColl) {
     if(_doTiming) _watch->SetTime(__func__);
+
+    if (shouldExitForTimeout(__func__)) {
+      if(_doTiming > 0) _watch->StopTime(__func__);
+      return false;
+    }
 
     // clear line and circle fitters
     _circleFitter.clear();
@@ -769,6 +826,11 @@ namespace mu2e {
     for (size_t i = 0; i < _tcHits.size() - 2; i++) {
       if(_doTiming > 1) _watch->Increment("triplet-i");
       if(_doTiming > 2) _watch->StopTime ("triplet-j");
+      if(shouldExitForTimeout(__func__)) {
+        if(_doTiming > 0) _watch->StopTime(__func__);
+        if(_doTiming > 1) _watch->StopTime("triplet-i");
+        return false;
+      }
       bool uselessSeed = true;
       setTripletI(i, tripletInfo, loopCondition);
       if (loopCondition == CONTINUE) { continue; }
@@ -1516,13 +1578,14 @@ namespace mu2e {
     } else {
       // if line fit was good enough make sure momenta are within allowable range
       float radius = _circleFitter.radius();
-      float slope = _lineFitter.dydx();
-      float mom2 = computeHelixMomentum2(radius, slope);
       float pt = computeHelixPerpMomentum(radius);
-      if (mom2 < _minHelixMomentumSq ||
-          mom2 > _maxHelixMomentumSq || pt < _minHelixPerpMomentum ||
-          pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
-      else { outcome = GOOD; }
+      if(pt < _minHelixPerpMomentum || pt > _maxHelixPerpMomentum) { outcome = CONTINUE; }
+      else {
+        float slope = _lineFitter.dydx();
+        float mom2 = computeHelixMomentum2(radius, slope);
+        if (mom2 < _minHelixMomentumSq || mom2 > _maxHelixMomentumSq) { outcome = CONTINUE; }
+        else { outcome = GOOD; }
+      }
     }
 
     if(_diagLevel > 0) {
@@ -1620,6 +1683,32 @@ namespace mu2e {
 
     return false;
 
+  }
+
+  //-----------------------------------------------------------------------------
+  // check if the time cluster passes selection criteria
+  //-----------------------------------------------------------------------------
+  bool AgnosticHelixFinder::goodTimeCluster(const TimeCluster& tc) {
+    // For intense events/clusters, require a cluster
+    if (_intenseEvent || _intenseCluster) {
+      if (!tc.hasCaloCluster()) {
+        if(_diagLevel > 1)
+          printf("  --> Skipping time cluster (%zu hits) without a calo cluster\n", tc.nhits());
+        return false;
+      }
+    }
+
+    // At least 3 hits are necessary for helix finding
+    const int nhits = tc.nhits();
+    if(nhits < 3) return false;
+
+    // Not enough hits for the search
+    if(nhits < _minSeedCircleHits)  return false;
+    if(nhits < _minLineSegmentHits) return false;
+    if(nhits < _minNHelixComboHits) return false;
+
+    // Passes all cuts
+    return true;
   }
 
 } // namespace mu2e

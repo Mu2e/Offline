@@ -39,11 +39,12 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
-      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit")};
-      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 201};
-      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), -50.5};
-      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 150.5};
-      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal")};
+      fhicl::Atom<bool>        useNZS{Name("useNZS"), Comment("use NZS data"), false};
+      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit"), true};
+      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 401};
+      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), 1799.5};
+      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 2200.5};
+      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal"), 5}; //if not firstSampleOnly
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -56,6 +57,7 @@ namespace mu2e
 
     private:
     std::string        _crvDigiModuleLabel;
+    bool               _useNZS;
     bool               _firstSampleOnly;
     int                _histBins;
     double             _histMin, _histMax;
@@ -72,6 +74,7 @@ namespace mu2e
   CrvPedestalFinder::CrvPedestalFinder(const Parameters& conf) :
     art::EDAnalyzer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _useNZS(conf().useNZS()),
     _firstSampleOnly(conf().firstSampleOnly()),
     _histBins(conf().histBins()),
     _histMin(conf().histMin()),
@@ -166,7 +169,7 @@ namespace mu2e
   void CrvPedestalFinder::analyze(const art::Event& event)
   {
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    if(!event.getByLabel(_crvDigiModuleLabel,"NZS",crvDigiCollection)) return;
+    if(!event.getByLabel(_crvDigiModuleLabel,(_useNZS?"NZS":""),crvDigiCollection)) return;
 
     //find time offsets from first event
     //need to assume that this is only used for calibration runs where the time offsets stay constant over the entire run

@@ -68,8 +68,6 @@ namespace mu2e
       fhicl::Sequence<double> scintillationYields{ Name("scintillationYields"), Comment("scintillation yields at Crv sectors")};
       fhicl::Atom<double> photonYieldScaleFactor{ Name("photonYieldScaleFactor"), Comment("global scale factor for the photon yield")};
       fhicl::Atom<double> photonYieldVariationScale{ Name("photonYieldVariationScale"),Comment("scale factor of the photon yield variation")};
-      fhicl::Atom<double> photonYieldVariationCutoffLow{ Name("photonYieldVariationCutoffLow"),Comment("lower cutoff at photon yield variation")};
-      fhicl::Atom<double> photonYieldVariationCutoffHigh{ Name("photonYieldVariationCutoffHigh"),Comment("upper cutoff at photon yield variation")};
       fhicl::Atom<double> digitizationStart{ Name("digitizationStart"), Comment("start of digitization after DAQ event window start")};
       fhicl::Atom<double> digitizationEnd{ Name("digitizationEnd"), Comment("end of digitization after DAQ event window start")};
       fhicl::Atom<double> digitizationStartMargin{ Name("digitizationStartMargin"),
@@ -100,8 +98,6 @@ namespace mu2e
     double                                       _photonYieldScaleFactor;
     mu2e::ProditionsHandle<mu2e::CRVPhotonYield> _photonYieldVariationVector;
     double                                       _photonYieldVariationScale;
-    double                                       _photonYieldVariationCutoffLow;
-    double                                       _photonYieldVariationCutoffHigh;
 
     //On-spill
     //-Event length: 1695ns (microbunch period)
@@ -164,8 +160,6 @@ namespace mu2e
     _scintillationYields(conf().scintillationYields()),
     _photonYieldScaleFactor(conf().photonYieldScaleFactor()),
     _photonYieldVariationScale(conf().photonYieldVariationScale()),
-    _photonYieldVariationCutoffLow(conf().photonYieldVariationCutoffLow()),
-    _photonYieldVariationCutoffHigh(conf().photonYieldVariationCutoffHigh()),
     _digitizationStart(conf().digitizationStart()),
     _digitizationEnd(conf().digitizationEnd()),
     _digitizationStartMargin(conf().digitizationStartMargin()),
@@ -347,8 +341,6 @@ namespace mu2e
             size_t channel = step.barIndex().asUint()*CRVId::nChanPerBar + SiPM;
             float photonYieldDeviation = photonYieldVariationVector.photonYieldDeviation(channel);
             photonYieldDeviation *= _photonYieldVariationScale;  //scale factor for the variation
-            if(photonYieldDeviation<_photonYieldVariationCutoffLow) photonYieldDeviation=_photonYieldVariationCutoffLow;
-            if(photonYieldDeviation>_photonYieldVariationCutoffHigh) photonYieldDeviation=_photonYieldVariationCutoffHigh;
             photonYieldDeviation = (photonYieldDeviation+1.0)*_photonYieldScaleFactor;  //global photon yield scale factor for e.g. aging
             photonMaker->SetPhotonYieldDeviation(photonYieldDeviation,SiPM);
           }

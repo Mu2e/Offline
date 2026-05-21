@@ -54,7 +54,6 @@ services : {
   TFileService : { fileName : "nts.corsikaHist.owner.version.sequencer.root" }
   GeometryService : @local::Services.Core.GeometryService
 
-  ConditionsService : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
   Mu2eG4Helper : { }
   SeedService : @local::automaticSeeds

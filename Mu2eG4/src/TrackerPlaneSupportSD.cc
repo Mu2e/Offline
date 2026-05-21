@@ -149,7 +149,7 @@ namespace mu2e {
     }
 
     // Debugging tests (empty for now)
-    if ( !_debugList.inList() ) return true;
+    // if ( !_debugList.inList() ) return true;
     return true;
 
   }

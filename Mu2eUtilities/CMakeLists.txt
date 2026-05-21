@@ -15,7 +15,6 @@ cet_make_library(
       src/GammaPairConversionSpectrum.cc
       src/GeneratorSummaryHistograms.cc
       src/HelixTool.cc
-      src/HistTrackSum.cc
       src/LsqSums2.cc
       src/LsqSums4.cc
       src/McUtilsToolBase.cc
@@ -45,7 +44,6 @@ cet_make_library(
       src/STMUtils.cc
       src/StopWatch.cc
       src/Table.cc
-      src/TrackCuts.cc
       src/TrackerBFieldInfo.cc
       src/TrackPatRecType.cc
       src/TrackTool.cc
@@ -56,7 +54,6 @@ cet_make_library(
     LIBRARIES PUBLIC
       art_root_io::tfile_support
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeneralUtilities

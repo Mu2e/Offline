@@ -129,10 +129,6 @@ physics :{
       timeClusterPrinter : {
         verbose: 1   # 0, 1
       }
-      trackSummaryPrinter : {
-        verbose: 4   # 0 - 4
-        #inputTags : [ "TrackSummaryMaker" ] # select instances
-      }
 
       kalSeedPrinter : {
         verbose: 4   # 0,1,2,3,4

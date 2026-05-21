@@ -1,5 +1,4 @@
 install_scripts(LIST
-  TEveMu2e.sh
   addroot.sh
   browse
   browse.C

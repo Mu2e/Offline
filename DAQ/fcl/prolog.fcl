@@ -1,5 +1,6 @@
-#
-## : #include "Offline/DAQ/fcl/panel_map.fcl" ## not needed any more
+#------------------------------------------------------------------------------
+# #include "Offline/DAQ/fcl/panel_map.fcl" ## not needed any more
+#------------------------------------------------------------------------------
 
 BEGIN_PROLOG
 DAQ : {

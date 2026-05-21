@@ -36,7 +36,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -51,6 +51,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
+#include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateTCRV.hh"
 // root
 #include "TH1F.h"
@@ -134,6 +135,7 @@ namespace mu2e {
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
       fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
       fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+      fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
 
     public:
@@ -159,6 +161,7 @@ namespace mu2e {
     int print_;
     float seedmom_;
     PDGCode::type fpart_;
+    TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
     KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
@@ -169,10 +172,12 @@ namespace mu2e {
     double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-    SurfaceMap::SurfacePairCollection sample_; // surfaces to sample the fit
     bool extrapolate_, toCRV_;
-    ExtrapolateTCRV TCRV_; // extrapolation predicate based on Z values
-    double tcrvthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+    double maxdt_ = 0.0, btol_ = 0.0, minv_ = 0.0;
+    SurfaceIdCollection ssids_;
+    KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
+    int extrapdebug_ = 0;
+    double tcrvthick_ = 150.0; // CRV sector thickness: should come from geometry service TODO
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
   };
@@ -195,6 +200,8 @@ namespace mu2e {
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
+      std::string fdir;
+      if(settings().fitDirection(fdir))fdir_ = fdir;
       // collection handling
       for(const auto& seedtag : settings().modSettings().seedCollections()) { seedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(seedtag)); }
       produces<KKTRKCOL>();
@@ -217,26 +224,20 @@ namespace mu2e {
       }else{
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
-      SurfaceIdCollection ssids;
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
       }
-      // translate the sample and extend surface names to actual surfaces using the SurfaceMap.  This should come from the
-      // geometry service eventually, TODO
-      SurfaceMap smap;
-      smap.surfaces(ssids,sample_);
       // configure extrapolation
       if(settings().Extrapolation()){
         extrapolate_ = true;
         toCRV_ = settings().Extrapolation()->ToCRV();
         // global configs
-        double maxdt = settings().Extrapolation()->MaxDt();
-        double btol =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        double minv = settings().Extrapolation()->MinV();
-        int debug =  settings().Extrapolation()->Debug();
-        // extrapolate to the front of the tracker
-        TCRV_ = ExtrapolateTCRV(maxdt,btol,intertol_,minv,smap.TCRV(),debug);
+        maxdt_ = settings().Extrapolation()->MaxDt();
+        btol_ =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
+        minv_ = settings().Extrapolation()->MinV();
+        extrapdebug_ =  settings().Extrapolation()->Debug();
       }
+
 
       if(print_ > 0) std::cout << config_;
 
@@ -254,6 +255,10 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
+    // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    kkg.surfaces(ssids_,surfacess_to_sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
@@ -333,7 +338,6 @@ namespace mu2e {
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
-            auto hptr = art::Ptr<CosmicTrackSeed>(hseedcol_h,iseed);
             auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
             kkseedassns->addSingle(kseedptr,hptr);
             // save (unpersistable) KKTrk in the event
@@ -355,6 +359,13 @@ namespace mu2e {
     KinKal::VEC4 pos(hseed._track.MinuitParams.A0, 0, hseed._track.MinuitParams.B0, hseed._t0._t0);
     XYZVectorF mom3(hseed._track.MinuitParams.A1, -1, hseed._track.MinuitParams.B1);
     mom3 = mom3.Unit()*seedmom_;
+    if (fdir_ == TrkFitDirection::FitDirection::downstream){
+      if (mom3.z() < 0)
+        mom3 *= -1;
+    }else if (fdir_ == TrkFitDirection::FitDirection::upstream){
+      if (mom3.z() > 0)
+        mom3 *= -1;
+    }
     KinKal::MOM4 mom(mom3.x(),mom3.y(),mom3.z(),mass_);
 
     auto seedtraj = KTRAJ(pos,mom,charge_,bnom,Mu2eKinKal::timeBounds(hseed.hits()));
@@ -373,7 +384,7 @@ namespace mu2e {
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
-    for(auto const& surf : sample_){
+    for(auto const& surf : surfacess_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg;
       bool goodinter(true);
@@ -399,6 +410,11 @@ namespace mu2e {
   }
 
   void KinematicLineFit::extrapolate(KKTRK& ktrk) const {
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& kkg = *kkg_h;
+    // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
+    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg.TCRV(),extrapdebug_);
+
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TCRVSID("TCRV");
     auto dir0 = ftraj.direction(ftraj.t0());
@@ -409,18 +425,18 @@ namespace mu2e {
       // iterate until the extrapolation condition is met
       double time = starttime;
       double tstart = time;
-      while(fabs(time-tstart) < TCRV_.maxDt() && TCRV_.needsExtrapolation(ftraj,tdir) ){
-        TimeRange range = tdir == TimeDir::forwards ? TimeRange(time,time+TCRV_.step()) : TimeRange(time-TCRV_.step(),time);
+      while(fabs(time-tstart) < TCRV.maxDt() && TCRV.needsExtrapolation(ftraj,tdir) ){
+        TimeRange range = tdir == TimeDir::forwards ? TimeRange(time,time+TCRV.step()) : TimeRange(time-TCRV.step(),time);
         ktrk.extendTraj(range);
         time = tdir == TimeDir::forwards ? range.end() : range.begin();
       }
       hadintersection = false;
-      if (TCRV_.intersection().good()){
+      if (TCRV.intersection().good()){
         hadintersection = true;
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        // FIXME material?
-        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV_.module(), TCRVSID, *kkmat_.STMaterial(),TCRV_.intersection(),reftrajptr,tcrvthick_,TCRV_.interTolerance());
+        // TODO add DS and shielding material
+        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_.STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);

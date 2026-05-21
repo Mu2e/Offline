@@ -6,10 +6,12 @@
 #include "Offline/CalPatRec/inc/TZClusterFinder_types.hh"
 
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
@@ -20,7 +22,9 @@
 #include "Offline/Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/TimeoutService/inc/TimeoutWatchdog.hh"
 
+#include <optional>
 #include <vector>
 #include <TH1.h>
 #include <TF1.h>
@@ -44,6 +48,7 @@ namespace mu2e {
       fhicl::Atom<int>               debugLevel       {Name("debugLevel"       ), Comment("turn on/off debug"           ) };
       fhicl::Atom<int>               printFrequency   {Name("printFrequency"   ), Comment("print frequency"             ) };
       fhicl::Atom<int>               runDisplay       {Name("runDisplay"       ), Comment("will plot t vs z"            ) };
+      fhicl::Atom<bool>              protonTCs        {Name("protonTCs"        ), Comment("Produce proton time clusters"), false};
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
@@ -64,6 +69,7 @@ namespace mu2e {
       fhicl::Atom<float>             caloDtMax        {Name("caloDtMax"        ), Comment("search time window (ns)"     ) };
       fhicl::Atom<float>             caloTimeOffset   {Name("caloTimeOffset"   ), Comment("in ns"                       ) };
       fhicl::Atom<int>               doRefine         {Name("doRefine"         ), Comment("filter out bad TCs at end"   ) };
+      fhicl::OptionalAtom<double>    timeoutMs        {Name("timeoutMs"        ), Comment("Optional timeout budget in ms; <= 0 disables timeout checks")};
 
       fhicl::Table<TZClusterFinderTypes::Config> diagPlugin{Name("diagPlugin"      ), Comment("Diag plugin") };
     };
@@ -78,8 +84,11 @@ namespace mu2e {
     int              _debugLevel;
     int              _printfreq;
     int              _runDisplay;
+    bool             _protonTCs;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
+    std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
+    std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
     //-----------------------------------------------------------------------------
     // event object labels
@@ -107,6 +116,8 @@ namespace mu2e {
     float    _caloDtMax; // max time from time cluster for calo cluster to be associated with time cluster
     float    _caloTimeOffset; // time offset for calo clusters
     int      _doRefine; // if set to 1 then some pattern recogntion is used to filter out bad TC candidates
+    bool     _enableTimeout; // whether or not to enable timeout checks
+    double   _timeoutMs; // timeout threshold for this module in milliseconds
 
     //-----------------------------------------------------------------------------
     // diagnostics
@@ -115,7 +126,7 @@ namespace mu2e {
     art::Handle<CaloClusterCollection>     _ccHandle;
     facilitateVars                         _f;
     std::unique_ptr<ModuleHistToolBase>    _hmanager;
-    TCanvas*                               _c1;
+    TCanvas*                               _c1 = nullptr;
 
     //-----------------------------------------------------------------------------
     // functions
@@ -151,6 +162,7 @@ namespace mu2e {
     void checkCaloClusters      ();
     void refineChunks           ();
     void findClusters           (TimeClusterCollection& OutSeeds);
+    bool shouldExitForTimeout   (char const* functionName);
   };
 
   //-----------------------------------------------------------------------------
@@ -162,8 +174,11 @@ namespace mu2e {
     _debugLevel             (config().debugLevel()                              ),
     _printfreq              (config().printFrequency()                          ),
     _runDisplay             (config().runDisplay()                              ),
+    _protonTCs              (config().protonTCs()                               ),
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
+    _timeoutService         (std::nullopt                                       ),
+    _timeoutGuard           (std::nullopt                                       ),
     _chLabel                (config().chCollLabel()                             ),
     _tcLabel                (config().tcCollLabel()                             ),
     _ccLabel                (config().ccCollLabel()                             ),
@@ -181,13 +196,21 @@ namespace mu2e {
     _minCaloEnergy          (config().minCaloEnergy()                           ),
     _caloDtMax              (config().caloDtMax()                               ),
     _caloTimeOffset         (config().caloTimeOffset()                          ),
-    _doRefine               (config().doRefine()                                )
+    _doRefine               (config().doRefine()                                ),
+    _enableTimeout          (false                                               ),
+    _timeoutMs              (0.0                                                 )
     {
+
+      if (config().timeoutMs(_timeoutMs) && _timeoutMs > 0.0) {
+        _enableTimeout = true;
+        _timeoutService.emplace();
+      }
 
       consumes<ComboHitCollection>(_chLabel);
       consumes<CaloClusterCollection>(_ccLabel);
       produces<TimeClusterCollection>();
       produces<IntensityInfoTimeCluster>();
+      if(_protonTCs) produces<TimeClusterCollection>("proton");
 
 
       if (_runDisplay == 1) { _c1 = new TCanvas("_c1", "t vs. z", 900, 900); }
@@ -202,7 +225,9 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // destructor
   //-----------------------------------------------------------------------------
-  TZClusterFinder::~TZClusterFinder() {}
+  TZClusterFinder::~TZClusterFinder() {
+    delete _c1;
+  }
 
   //-----------------------------------------------------------------------------
   // beginJob
@@ -259,13 +284,23 @@ namespace mu2e {
     // for when we are in runDisplay mode
     if (_runDisplay == 1) { _c1->Clear(); }
 
+    _timeoutGuard.reset();
+    if (_enableTimeout && _timeoutService) {
+      _timeoutGuard.emplace(*(*_timeoutService),
+                            event,
+                            moduleDescription().moduleLabel(),
+                            _timeoutMs);
+    }
+
     _data._event = &event;
 
     std::unique_ptr<IntensityInfoTimeCluster> iiTC(new IntensityInfoTimeCluster);
     std::unique_ptr<TimeClusterCollection>    tcColl(new TimeClusterCollection);
+    std::unique_ptr<TimeClusterCollection>    protonTCColl = (_protonTCs) ? std::make_unique<TimeClusterCollection>() : nullptr;
 
     _data._tcColl = tcColl.get();
     _data._iiTC = iiTC.get();
+    _data._protonTCColl = (_protonTCs) ? protonTCColl.get() : nullptr;
 
     bool ok = findData(event);
 
@@ -279,7 +314,28 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     event.put(std::move(tcColl));
     event.put(std::move(iiTC));
+    if(_protonTCs) event.put(std::move(protonTCColl), "proton");
 
+    _timeoutGuard.reset();
+
+  }
+
+  //-----------------------------------------------------------------------------
+  // shared timeout check helper
+  //-----------------------------------------------------------------------------
+  bool TZClusterFinder::shouldExitForTimeout(char const* functionName) {
+    if (!_timeoutGuard) {
+      return false;
+    }
+
+    if (!_timeoutGuard->check()) {
+      return false;
+    }
+
+    if (_diagLevel > 0) {
+      printf("[TZClusterFinder::%s] Exiting due to timeout (timeoutMs=%.3f)\n", functionName, _timeoutMs);
+    }
+    return true;
   }
 
   //-----------------------------------------------------------------------------
@@ -303,7 +359,7 @@ namespace mu2e {
       cHit comboHit;
       comboHit.hIndex = i;
       comboHit.hTime = hit->correctedTime();
-      comboHit.hWeight = 1/(hit->timeVar());
+      comboHit.hWeight = (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.;
       comboHit.hZpos = hit->pos().z();
       comboHit.nStrawHits = hit->nStrawHits();
       comboHit.hIsUsed = 0;
@@ -496,6 +552,7 @@ namespace mu2e {
 
     // first two for loops create seed point
     for (int i=(int)_f.cHits.size()-1; i>=0; i--) {
+      if (shouldExitForTimeout(__func__)) { return; }
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
         if ( _f.cHits[i].plnHits[j].hIsUsed != 0 ) {continue;}
         setSeed(i,j);
@@ -617,6 +674,7 @@ namespace mu2e {
     size_t chunkIndex      = 0;
 
     for (int i=(int)_f.cHits.size()-1; i>=0; i--) {
+      if (shouldExitForTimeout(__func__)) { return; }
       for (size_t j=0; j<_f.cHits[i].plnHits.size(); j++) {
         if (_f.cHits[i].plnHits[j].hIsUsed == 1) {continue;}
         _f.testTime = _f.cHits[i].plnHits[j].hTime;
@@ -707,10 +765,24 @@ namespace mu2e {
 
     unsigned short nProtons = 0;
 
+    auto tcs = (_protonTCs) ? _data._protonTCColl : nullptr;
     for (size_t i=0; i<_f.chunks.size(); i++) {
       if (_f.chunks[i].nrgSelection == 1) {continue;}
       if (_f.chunks[i].nStrawHits < _clusterThresh) {continue;}
       nProtons++;
+
+      // If proton time clusters are requested, add them to the output collection
+      if(_protonTCs) {
+        TimeCluster tc;
+        for (size_t j=0; j<_f.chunks[i].hIndices.size(); j++) {
+          tc._strawHitIdxs.push_back(StrawHitIndex(_f.chunks[i].hIndices[j]));
+        }
+        tc._t0 = TrkT0(_f.chunks[i].fitter.y0(), 0.);
+        const int caloIdx = _f.chunks[i].caloIndex;
+        if (_useCaloClusters == 1 && caloIdx != -1) tc._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccHandle, caloIdx);
+        tc._nsh = _f.chunks[i].nStrawHits;
+        tcs->push_back(std::move(tc));
+      }
     }
 
     outIITC.setNProtonTCs(nProtons);
@@ -730,6 +802,7 @@ namespace mu2e {
     int    addedToTC = 0;
 
     for (int i=0; i<ncc; i++) {
+      if (shouldExitForTimeout(__func__)) { return; }
       cc = &_data._ccColl->at(i);
       if (cc->energyDep() < _minCaloEnergy || cc->size() < _minCaloSize) {continue;}
       ccTime = cc->time() + _caloTimeOffset;
@@ -763,7 +836,7 @@ namespace mu2e {
             hit = &_data._chColl->at(k);
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
-              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), 1/(hit->timeVar()));
+              _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.);
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }
@@ -799,6 +872,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void TZClusterFinder::findClusters(TimeClusterCollection& TimeClusterColl) {
 
+    if (shouldExitForTimeout(__func__)) { return; }
+
     // clear relevant data members that carry over from processing of previous event
     _f.clear_cHits();
     _f.clear_chunks();
@@ -807,40 +882,49 @@ namespace mu2e {
 
     // fill cHits array to loop over
     cHitsFill();
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // loop over cHits looking for hits that can be chunked together
     chunkHits();
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // look for chunks that can be combined together
     if (_f.chunks.size() != 0) {
       _f.moreCombines = true;
       while(_f.moreCombines) {
+        if (shouldExitForTimeout(__func__)) { return; }
         combineChunks();
       }
     }
 
     // recover hits that were missed
     recoverHits();
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // combine lines (chunks that could be considered clusters but are separated)
     if (_f.chunks.size() != 0) {
       _f.moreCombines = true;
       while(_f.moreCombines) {
+        if (shouldExitForTimeout(__func__)) { return; }
         combineLines();
       }
     }
 
     // count number of protons
     countProtons(*_data._iiTC);
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // use calo clusters
     if (_useCaloClusters == 1 && _data._ccColl != NULL) { checkCaloClusters(); }
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // flag bad clusters
     if (_doRefine == 1) { refineChunks(); }
+    if (shouldExitForTimeout(__func__)) { return; }
 
     // fill TimeClusterColl and perform final fit to save
     for (size_t i=0; i<_f.chunks.size(); i++) {
+      if (shouldExitForTimeout(__func__)) { return; }
       if (_f.chunks[i].nrgSelection == 0) {continue;} // don't save proton clusters
       if ((int)_f.chunks[i].nStrawHits < _clusterThresh) {continue;} // only save chunks with enough straw hits
       if (_doRefine == 1 && _f.chunks[i].goodCluster == false) {continue;} // filter out bad TCs if requested

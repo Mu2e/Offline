@@ -19,6 +19,8 @@ cet_make_library(
       src/CrvStepPrinter.cc
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
+      src/FilterFractionPrinter.cc
+      src/PrescaleFilterFractionPrinter.cc
       src/HelixSeedPrinter.cc
       src/KalSeedPrinter.cc
       src/MCTrajectoryPrinter.cc
@@ -40,12 +42,10 @@ cet_make_library(
       src/StrawHitPrinter.cc
       src/SurfaceStepPrinter.cc
       src/TimeClusterPrinter.cc
-      src/TrackSummaryPrinter.cc
       src/TriggerInfoPrinter.cc
       src/TriggerResultsPrinter.cc
     LIBRARIES PUBLIC
       KinKal::General
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService

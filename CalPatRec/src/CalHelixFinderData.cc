@@ -13,7 +13,7 @@ namespace mu2e {
 // CalHelixFinderData
 //-----------------------------------------------------------------------------
   CalHelixFinderData::CalHelixFinderData() {
-    _helix = NULL;
+    _helix = nullptr;
     _goodhits.reserve(kNMaxChHits);
     _chHitsToProcess. reserve(kNMaxChHits);
   }
@@ -100,7 +100,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void CalHelixFinderData::clearTempVariables() {
 
-    _timeCluster    = NULL;
+    _timeCluster    = nullptr;
     _timeClusterPtr = art::Ptr<TimeCluster>();
 
     _chHitsToProcess.clear();
@@ -113,9 +113,11 @@ namespace mu2e {
     _szphi.clear();
 
     _radius = -1.;
+    _circle_chisq_dof = 1e10;
 
     _dfdz = -1.e6;
     _fz0  = -1.e6;
+    _dfdz_chisq_dof = 1e10;
 
     _nFiltPoints    = 0;
     _nFiltStrawHits = 0;
@@ -150,7 +152,7 @@ namespace mu2e {
 
  void CalHelixFinderData::clearTimeClusterInfo() {
 
-    _timeCluster    = NULL;
+    _timeCluster    = nullptr;
     _timeClusterPtr = art::Ptr<TimeCluster>();
 
     _chHitsToProcess.clear();
@@ -185,9 +187,11 @@ void CalHelixFinderData::clearHelixInfo() {
     _szphi.clear();
 
     _radius = -1.;
+    _circle_chisq_dof = 1e10;
 
     _dfdz = -1.e6;
     _fz0  = -1.e6;
+    _dfdz_chisq_dof = 1e10;
 
     _nXYSh       = 0;
     _nZPhiSh     = 0;
@@ -216,9 +220,11 @@ void CalHelixFinderData::clearHelixInfo() {
     _szphi.clear();
     //    _chi2   = -1.;
     _radius = -1.;
+    _circle_chisq_dof = 1e10;
 
     _dfdz = -1.e6;
     _fz0  = -1.e6;
+    _dfdz_chisq_dof = 1e10;
 
 
     _nXYSh       = 0;

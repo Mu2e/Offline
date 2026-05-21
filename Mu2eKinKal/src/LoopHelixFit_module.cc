@@ -21,7 +21,6 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -45,9 +44,6 @@
 #include "KinKal/Fit/Config.hh"
 #include "KinKal/General/Parameters.hh"
 #include "KinKal/General/Vectors.hh"
-#include "KinKal/Geometry/Cylinder.hh"
-#include "KinKal/Geometry/Disk.hh"
-#include "KinKal/Geometry/Frustrum.hh"
 #include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
@@ -115,11 +111,6 @@ namespace mu2e {
   using KKMaterialConfig = KKMaterial::Config;
   using Name    = fhicl::Name;
   using Comment = fhicl::Comment;
-
-  using CylPtr = std::shared_ptr<KinKal::Cylinder>;
-  using DiskPtr = std::shared_ptr<KinKal::Disk>;
-  using AnnPtr = std::shared_ptr<KinKal::Annulus>;
-  using FruPtr = std::shared_ptr<KinKal::Frustrum>;
 
   // extend the generic module configuration as needed
   struct KKLHModuleConfig : KKModuleConfig {
@@ -478,7 +469,7 @@ namespace mu2e {
       // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
       auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
       auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
-      bool retval = ktrk.fitStatus().usable() && t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
+      retval = t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
       // also check that the fit is inside the physical detector volume.  Test where the StrawHits are
       if(retval){
         for(auto const& shptr : ktrk.strawHits()) {
@@ -552,7 +543,6 @@ namespace mu2e {
             kseg.mom(), kseg.momerr());
       }
     }
-
   }
 
   void LoopHelixFit::endJob() {

@@ -66,7 +66,6 @@
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -98,7 +97,7 @@
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
-// MTP
-#include "Offline/RecoDataProducts/inc/MTPHit.hh"
+// MSD
+#include "Offline/RecoDataProducts/inc/MSDHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

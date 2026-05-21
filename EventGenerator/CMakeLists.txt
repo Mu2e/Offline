@@ -14,7 +14,6 @@ cet_make_library(
       
       art_root_io::tfile_support
       Offline::CalorimeterGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::ExtinctionMonitorFNAL_Geometry
@@ -170,7 +169,6 @@ cet_build_plugin(ExtMonFNALBoxGenerator art::module
     LIBRARIES REG
       Offline::EventGenerator
       
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::ExtinctionMonitorFNAL_Geometry
@@ -222,7 +220,6 @@ cet_build_plugin(FromAsciiMomentumAndPosition art::module
     LIBRARIES REG
       Offline::EventGenerator
       
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeneralUtilities
@@ -387,7 +384,6 @@ cet_build_plugin(PrimaryAntiProtonGun art::module
     LIBRARIES REG
       Offline::EventGenerator
       
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeneralUtilities

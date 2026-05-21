@@ -21,7 +21,6 @@ services : {
   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "Offline/BFieldGeom/test/geom_makeBinaries.txt" }
-  ConditionsService      : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"         }
   GlobalConstantsService : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt"    }
   Mu2eG4Helper           : {}
   SeedService            : @local::automaticSeeds

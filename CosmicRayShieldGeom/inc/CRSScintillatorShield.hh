@@ -73,6 +73,11 @@ namespace mu2e
       return *_barDetails;
     }
 
+    const CRSScintillatorBar& getFirstBar() const
+    {
+      return getModule(0).getLayer(0).getBar(0);
+    }
+
     const std::string &getAbsorberMaterialName() const
     {
       return _absorberMaterialName;

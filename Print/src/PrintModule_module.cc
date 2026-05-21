@@ -18,6 +18,8 @@
 #include "Offline/Print/inc/CaloShowerStepPrinter.hh"
 #include "Offline/Print/inc/ComboHitPrinter.hh"
 #include "Offline/Print/inc/CosmicLivetimePrinter.hh"
+#include "Offline/Print/inc/FilterFractionPrinter.hh"
+#include "Offline/Print/inc/PrescaleFilterFractionPrinter.hh"
 #include "Offline/Print/inc/CrvCoincidenceClusterPrinter.hh"
 #include "Offline/Print/inc/CrvDigiMCPrinter.hh"
 #include "Offline/Print/inc/CrvDigiPrinter.hh"
@@ -48,7 +50,6 @@
 #include "Offline/Print/inc/TimeClusterPrinter.hh"
 #include "Offline/Print/inc/HelixSeedPrinter.hh"
 #include "Offline/Print/inc/CosmicTrackSeedPrinter.hh"
-#include "Offline/Print/inc/TrackSummaryPrinter.hh"
 #include "Offline/Print/inc/TriggerInfoPrinter.hh"
 #include "Offline/Print/inc/TriggerResultsPrinter.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -74,6 +75,10 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("ProtonBunchIntensityPrinter")};
     fhicl::Table<ProductPrinter::Config> CosmicLivetimePrinter{
         fhicl::Name("CosmicLivetimePrinter")};
+    fhicl::Table<ProductPrinter::Config> FilterFractionPrinter{
+        fhicl::Name("FilterFractionPrinter")};
+    fhicl::Table<ProductPrinter::Config> PrescaleFilterFractionPrinter{
+        fhicl::Name("PrescaleFilterFractionPrinter")};
     fhicl::Table<ProductPrinter::Config> EventWindowMarkerPrinter{
         fhicl::Name("EventWindowMarkerPrinter")};
     fhicl::Table<ProductPrinter::Config> genParticlePrinter{
@@ -184,6 +189,10 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<CosmicLivetimePrinter>(conf().CosmicLivetimePrinter()));
   _printers.push_back(
+      make_unique<FilterFractionPrinter>(conf().FilterFractionPrinter()));
+  _printers.push_back(
+      make_unique<PrescaleFilterFractionPrinter>(conf().PrescaleFilterFractionPrinter()));
+  _printers.push_back(
       make_unique<EventWindowMarkerPrinter>(conf().EventWindowMarkerPrinter()));
   _printers.push_back(
       make_unique<GenParticlePrinter>(conf().genParticlePrinter()));
@@ -228,8 +237,6 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
   _printers.push_back(
       make_unique<BkgClusterPrinter>(conf().bkgClusterPrinter()));
   _printers.push_back(make_unique<BkgQualPrinter>(conf().bkgQualPrinter()));
-  _printers.push_back(
-      make_unique<TrackSummaryPrinter>(conf().trackSummaryPrinter()));
   _printers.push_back(make_unique<ComboHitPrinter>(conf().comboHitPrinter()));
   _printers.push_back(make_unique<TimeClusterPrinter>(conf().timeClusterPrinter()));
   _printers.push_back(make_unique<HelixSeedPrinter>(conf().helixSeedPrinter()));

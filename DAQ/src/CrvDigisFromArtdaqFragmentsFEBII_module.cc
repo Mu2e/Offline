@@ -33,11 +33,11 @@ namespace mu2e
     public:
       struct Config
       {
-        fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-        //for currently wrongly encoded subevent headers
-        fhicl::Atom<bool> useSubsystem0{fhicl::Name("useSubsystem0"), fhicl::Comment("consider subevents encoded with subsystem 0")};
-        fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce NZS digi collection"), true};
-        fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), true};
+        fhicl::Atom<int>     diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
+        fhicl::Atom<uint16_t> firstCrvDtcID{fhicl::Name("firstCrvDtcID"), fhicl::Comment("First CRV DTC ID"), 0};
+        fhicl::Atom<bool>    produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
+        fhicl::Atom<bool>    produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
+        fhicl::Atom<bool>    useROC4asROC2{fhicl::Name("useROC4asROC2"), fhicl::Comment("use ROC4 as ROC2"), false};
       };
 
       explicit CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config);
@@ -46,18 +46,20 @@ namespace mu2e
 
     private:
       int                                      _diagLevel;
-      bool                                     _useSubsystem0;
+      uint16_t                                 _firstCrvDtcID;
       bool                                     _produceZS;
       bool                                     _produceNZS;
+      bool                                     _useROC4asROC2;
       mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
   };
 
   CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _diagLevel(config().diagLevel()),
-    _useSubsystem0(config().useSubsystem0()),
+    _firstCrvDtcID(config().firstCrvDtcID()),
     _produceZS(config().produceZS()),
-    _produceNZS(config().produceNZS())
+    _produceNZS(config().produceNZS()),
+    _useROC4asROC2(config().useROC4asROC2())
     {
       if(_produceZS) produces<mu2e::CrvDigiCollection>();
       if(_produceNZS) produces<mu2e::CrvDigiCollection>("NZS");
@@ -103,12 +105,25 @@ namespace mu2e
         mu2e::DTCEventFragment dtcEventFragment(artFragment);
         ++iFragment;
 
+        if(_diagLevel>3)
+        {
+          std::cout << std::dec << "Fragment index: " << iFragment << std::endl;
+        }
+
         //collect sub events
         auto dtcSubEvents = dtcEventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_CRV);
-        if(_useSubsystem0)
+        if(dtcSubEvents.empty())
         {
-          auto dtcSubEventsTmp = dtcEventFragment.getSubsystemData(DTCLib::DTC_Subsystem::DTC_Subsystem_Tracker);  //currently wrongly encoded in the DTC Subevent header
-          dtcSubEvents.insert(dtcSubEvents.end(),dtcSubEventsTmp.begin(),dtcSubEventsTmp.end()); //temporarily add fragments with wrongly encoded headers
+          if(_diagLevel>3)
+          {
+            std::cout << "This fragment has no CRV subEvents. Size: " << dtcEventFragment.getData().GetEventByteCount() << std::endl;
+            size_t nSubEvents = dtcEventFragment.getData().GetSubEvents().size();
+            if(nSubEvents>0)
+            {
+              std::cout << "It has " << nSubEvents << " subEvents of subsystem ID " << (int)dtcEventFragment.getData().GetSubEvents().at(0).GetSubsystem() << std::endl;
+            }
+          }
+          continue;
         }
 
         //check for errors
@@ -116,13 +131,14 @@ namespace mu2e
         size_t expectedSize = dtcEvent.GetEventByteCount();
         size_t actualSize = sizeof(DTCLib::DTC_EventHeader);
         for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent) actualSize+=dtcSubEvents.at(iSubEvent).GetSubEventByteCount();
-        if(_diagLevel>1)
+        if(_diagLevel>3)
         {
-          std::cout << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << "      ";
-          std::cout << "Number of subEvents: " << dtcSubEvents.size() << std::endl;
+          std::cout << "Number of subEvents: " << dtcSubEvents.size() << " Size: " << expectedSize << std::endl;
         }
         if(expectedSize!=actualSize)
         {
+          std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+          std::cout << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << "      ";
           std::cerr << "mismatch between expected event size and actual event size!" << std::endl;
           crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::byteCountMismatch,iFragment,0,0,0);
         }
@@ -138,6 +154,7 @@ namespace mu2e
             auto block = decoder.dataAtBlockIndex(iDataBlock);
             if(block == nullptr)
             {
+              std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
               std::cerr << "Unable to retrieve data block." << std::endl;
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::unableToGetDataBlock,iFragment,iSubEvent,iDataBlock,0);
@@ -147,6 +164,7 @@ namespace mu2e
             auto header = block->GetHeader();
             if(!header->isValid())
             {
+              std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
               std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
               std::cerr << "CRV packet is not valid." << std::endl;
               std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
@@ -156,7 +174,7 @@ namespace mu2e
 
             if(header->GetSubsystemID() != DTCLib::DTC_Subsystem::DTC_Subsystem_CRV)
             {
-              if(_diagLevel>0)
+              if(_diagLevel>2)
               {
                 std::cout << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cout << "CRV packet does not have subsystem ID 2." << std::endl;
@@ -178,6 +196,7 @@ namespace mu2e
               auto crvRocHeader = decoder.GetCRVROCStatusPacketFEBII(iDataBlock);
               if(crvRocHeader == nullptr)
               {
+                std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cerr << "Error retrieving CRV ROC Status Packet" << std::endl;
                 crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
@@ -188,6 +207,7 @@ namespace mu2e
               auto crvHits = decoder.GetCRVHitRangeFEBII(iDataBlock);
               if(crvHits.error())
               {
+                std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cerr << "Error unpacking of CRV Hits" << std::endl;
                 decoder.PrintBlockFEBII(iDataBlock);
@@ -197,8 +217,13 @@ namespace mu2e
               for(auto const& crvHit : crvHits)
               {
                 uint16_t dtcID = header->GetID();
+                if(dtcID<_firstCrvDtcID)
+                {
+                  throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
+                }
                 uint16_t linkID = header->GetLinkID();
-                uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                if(_useROC4asROC2 && rocID==4) rocID=2;
                 uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                 //the 5th bit indicates special situations
@@ -207,6 +232,7 @@ namespace mu2e
                 //don't decode them, since there is no match to any offline channel.
                 if(rocPort==0) //corrupted data
                 {
+                  std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                   std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                   std::cerr << "ROC-port-0 error!" << std::endl;
                   decoder.PrintBlockFEBII(iDataBlock);
@@ -268,8 +294,13 @@ namespace mu2e
                   if(rocPort==0) continue; //corrupted data
 
                   uint16_t dtcID = header->GetID();
+                  if(dtcID<_firstCrvDtcID)
+                  {
+                    throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
+                  }
                   uint16_t linkID = header->GetLinkID();
-                  uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                  uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                  if(_useROC4asROC2 && rocID==4) rocID=2;
 
                   if((crvHit.getFpgaChannel() & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                   {

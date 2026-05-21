@@ -43,7 +43,6 @@ Services : {
         bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
         simulatedDetector   : { tool_type: "Mu2e" }
     }
-    ConditionsService            : { conditionsfile : "Offline/ConditionsService/data/conditions_01.txt"      }
     GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     DbService : @local::DbEmpty
     ProditionsService: @local::Proditions
@@ -55,8 +54,14 @@ Services : {
     Mu2eG4Helper: {}
   }
 
-  #RecoOnly : {
-  #}
+  RecoOnly : {
+      TimeoutWatchdog : {
+          eventTimeoutMs  : 0.
+          moduleTimeoutMs : 0.
+          registerPreEventCallback : true
+          debugLevel      : 0
+      }
+  }
 
 }
 # aggregate to make complete sets that can be used to fully configure common jobs
@@ -67,13 +72,13 @@ Services.Sim            : {
 
 Services.Reco            : {
   @table::Services.Core
-  #@table::Services.RecoOnly
+  @table::Services.RecoOnly
 }
 
 Services.SimAndReco : {
   @table::Services.Core
   @table::Services.SimOnly
-  #@table::Services.RecoOnly
+  @table::Services.RecoOnly
 }
 
 END_PROLOG

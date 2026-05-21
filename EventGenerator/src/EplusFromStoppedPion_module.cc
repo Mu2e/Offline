@@ -8,14 +8,6 @@
 //
 // Original author Rob Kutschke.
 //
-// Notes:
-//
-// 1) At the writing of this code, it was not possible to access the particle data table in
-//    the constructor.  This is because the ConditionsService is not initialized until
-//    begin run time.  The service will be rewritten to initialize in its ctor those parts that can
-//    be initialized without a run number.  At that time we can move the PDT related stuff to
-//    the c'tor from the beginRun method.
-//
 
 // Mu2e includes.
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"

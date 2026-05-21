@@ -23,7 +23,6 @@
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
 // Mu2e Utilities
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/TrkDiag/inc/TrkMCTools.hh"
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //Mu2e Tracker Geom:
@@ -31,7 +30,6 @@
 #include "Offline/TrackerGeom/inc/Straw.hh"
 
 // Mu2e diagnostics
-#include "Offline/TrkDiag/inc/ComboHitInfo.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
 
 //Cosmics:

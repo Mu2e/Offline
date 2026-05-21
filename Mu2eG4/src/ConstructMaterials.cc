@@ -1832,6 +1832,14 @@ namespace mu2e {
      Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_V"),VPercentage*CLHEP::perCent);
     }
 
+    // COL5 poly
+    mat = uniqueMaterialOrThrow("COL5Poly");
+    {
+      G4Material* met = findMaterialOrThrow("G4_POLYETHYLENE");
+      G4Material* poly = new G4Material(mat.name, met->GetDensity(), 1);
+      poly->AddMaterial(met, 1.);
+    }
+
     // Add new materials before this line
 
   }

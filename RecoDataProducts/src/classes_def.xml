@@ -316,11 +316,6 @@
  <class name="mu2e::CrvRecoPulseCollection" />
  <class name="art::Wrapper<mu2e::CrvRecoPulseCollection>" />
 
- <class name="mu2e::CrvCoincidence" />
- <class name="std::vector<mu2e::CrvCoincidence>" />
- <class name="mu2e::CrvCoincidenceCollection" />
- <class name="art::Wrapper<mu2e::CrvCoincidenceCollection>" />
-
  <class name="mu2e::CrvCoincidenceCluster" />
  <class name="std::vector<mu2e::CrvCoincidenceCluster>" />
  <class name="mu2e::CrvCoincidenceClusterCollection" />
@@ -452,7 +447,9 @@
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
 
- <!--  ********* MTP ********* -->
-  <class name="mu2e::MTPHit"/>
+ <!--  ********* MSD ********* -->
+  <class name="mu2e::MSDHit"/>
+  <class name="mu2e::MSDHitCollection"/>
+  <class name="art::Wrapper<mu2e::MSDHitCollection>"/>
 
 </lcgdict>

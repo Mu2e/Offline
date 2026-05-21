@@ -113,7 +113,7 @@ namespace mu2e {
     DeltaFinderTypes::Data_t     _data;              // all data used
     int                          _testOrderPrinted;
 
-    DeltaFinderAlg*              _finder;
+    std::unique_ptr<DeltaFinderAlg> _finder;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -167,7 +167,7 @@ namespace mu2e {
       _data.watch = _watch;
     }
 
-    _finder = new DeltaFinderAlg(config().finderParameters,&_data);
+    _finder = std::make_unique<DeltaFinderAlg>(config().finderParameters,&_data);
     _data.timeBin = config().finderParameters().timeBin();
 
     _testOrderPrinted = 0;
@@ -177,7 +177,7 @@ namespace mu2e {
 
     _data.chCollTag      = _chCollTag;
     _data.sdmcCollTag    = _sdmcCollTag;
-    _data._finder        = _finder;         // for diagnostics
+    _data._finder        = _finder.get();    // for diagnostics
   }
 
   //-----------------------------------------------------------------------------

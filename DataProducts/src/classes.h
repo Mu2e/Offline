@@ -61,5 +61,9 @@
 #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/DataProducts/inc/STMTestBeamEventInfo.hh"
 
+// Filter
+#include "Offline/DataProducts/inc/FilterFraction.hh"
+#include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
+
 // General
 #include "Offline/DataProducts/inc/SurfaceId.hh"

@@ -26,7 +26,6 @@ cet_make_library(
       src/StrawHit.cc
       src/StrawHitFlag.cc
       src/StrawFlag.cc
-      src/TrackSummary.cc
       src/TrkCaloHitPID.cc
       src/TrkFitDirection.cc
       src/TrkFitFlag.cc

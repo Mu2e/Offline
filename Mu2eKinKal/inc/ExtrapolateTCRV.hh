@@ -14,7 +14,7 @@
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::TimeRange;
-  using KinKalGeom::TestCRV;
+  using KKGeom::TestCRV;
   using KinKal::Rectangle;
   using KinKal::Intersection;
   using RecPtr = std::shared_ptr<KinKal::Rectangle>;
@@ -22,8 +22,8 @@ namespace mu2e {
     public:
       ExtrapolateTCRV() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10), minv_(1e-5),
       step_(0),
-      ymin_(std::numeric_limits<float>::max()),
-      ymax_(-std::numeric_limits<float>::max()),
+      ymin_(std::numeric_limits<double>::max()),
+      ymax_(std::numeric_limits<double>::lowest()),
       debug_(0){}
 
       ExtrapolateTCRV(double maxdt, double dptol, double intertol, double minv, TestCRV const& tcrv, int debug=0) :
