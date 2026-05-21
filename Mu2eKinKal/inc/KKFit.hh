@@ -7,7 +7,7 @@
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
-#include "Offline/KinKalGeom/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
@@ -96,18 +96,18 @@ namespace mu2e {
       explicit KKFit(KKFitConfig const& fitconfig);
       // helper functions used to create components of the fit
       // Make KKStrawHits from ComboHits
-      bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,
+      bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
       // regrow KKTrack components from a KalSeed
       bool regrowComponents(KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
-          Tracker const& tracker,Calorimeter const& calo, StrawResponse const& strawresponse,BFieldMap const& kkbf,
+          Tracker const& tracker,Calorimeter const& calo, StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
           PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const;
       std::shared_ptr<SensorLine> caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
       void extendTrack(Config const& config, BFieldMap const& kkbf, Tracker const& tracker,
-          StrawResponse const& strawresponse, ComboHitCollection const& chcol,
+          StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
           Calorimeter const& calo, CCHandle const& cchandle,
           KKTRK& kktrk) const;
       // sample the fit at the specificed surfaces
@@ -122,9 +122,9 @@ namespace mu2e {
       auto const& strawHitClusterer() const { return shclusterer_; }
     private:
       void fillTrackerInfo(Tracker const& tracker) const;
-      void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,
+      void addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits,KKSTRAWXINGCOL& addexings) const;
-      void addStraws(Tracker const& tracker, KKTRK const& kktrk, KKSTRAWXINGCOL& addexings) const;
+      void addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       int print_;
@@ -212,12 +212,10 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf,
+  template <class KTRAJ> bool KKFit<KTRAJ>::makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat,
       PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
       KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const {
     unsigned ngood(0);
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
-    auto const& smat = kkmat_h->strawMaterial();
     // loop over the individual straw combo hits
     for(auto strawidx : strawHitIdxs) {
       const ComboHit& combohit(chcol.at(strawidx));
@@ -254,10 +252,8 @@ namespace mu2e {
   template <class KTRAJ> bool KKFit<KTRAJ>::regrowComponents(KalSeed const& kseed, // primary event input
       ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap, // ancillary event input
       Tracker const& tracker,Calorimeter const& calo, // geometries
-      StrawResponse const& strawresponse,BFieldMap const& kkbf, // other conditions
+      StrawResponse const& strawresponse,BFieldMap const& kkbf, KKStrawMaterial const& smat, // other conditions
       PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const { // return values
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
-    auto const& smat = kkmat_h->strawMaterial();
     unsigned ngood(0), nactive(0), nsactive(0);
     // loop over the TrkStrawHitSeeds in this KalSeed
     for(auto const& tshs : kseed.hits()) {
@@ -353,14 +349,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::extendTrack(Config const& exconfig, BFieldMap const& kkbf, Tracker const& tracker,
-      StrawResponse const& strawresponse, ComboHitCollection const& chcol,
+      StrawResponse const& strawresponse, KKStrawMaterial const& smat, ComboHitCollection const& chcol,
       Calorimeter const& calo, CCHandle const& cchandle,
       KKTRK& kktrk) const {
     KKSTRAWHITCOL addstrawhits;
     KKCALOHITCOL addcalohits;
     KKSTRAWXINGCOL addstrawxings;
-    if(addhits_)addStrawHits(tracker, strawresponse, kkbf, kktrk, chcol, addstrawhits, addstrawxings );
-    if(matcorr_ && addmat_)addStraws(tracker, kktrk, addstrawxings);
+    if(addhits_)addStrawHits(tracker, strawresponse, kkbf, smat, kktrk, chcol, addstrawhits, addstrawxings );
+    if(matcorr_ && addmat_)addStraws(tracker, smat, kktrk, addstrawxings);
     if(addhits_ && usecalo_ && kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
     if(print_ > 1){
       std::cout << "KKTrk extension adding "
@@ -371,10 +367,8 @@ namespace mu2e {
     kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,
+  template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf, KKStrawMaterial const& smat,
       KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& addhits, KKSTRAWXINGCOL& addexings) const {
-   GeomHandle<mu2e::KKMaterial> kkmat_h;
-    auto const& smat = kkmat_h->strawMaterial();
     auto const& ptraj = kktrk.fitTraj();
     // add the buffer to the time range; this defines the search range for new hits
     TimeRange brange(ptraj.range().begin()-maxStrawHitDt_, ptraj.range().end()+maxStrawHitDt_);
@@ -435,11 +429,8 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKTRK const& kktrk,
+  template <class KTRAJ> void KKFit<KTRAJ>::addStraws(Tracker const& tracker, KKStrawMaterial const& smat, KKTRK const& kktrk,
       KKSTRAWXINGCOL& addexings) const {
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
-    auto const& smat = kkmat_h->strawMaterial();
-
     // this algorithm assumes the track never hits the same straw twice.  That could be violated by reflecting tracks, and could be addressed
     // by including the time of the Xing as part of its identity.  That would slow things down so it remains to be proven it's a problem  TODO
     // build the set of existing straws

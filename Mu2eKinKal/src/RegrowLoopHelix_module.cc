@@ -54,6 +54,7 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -78,6 +79,7 @@ namespace mu2e {
   using Mu2eKinKal::KKFinalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
+  using KKMaterialConfig = KKMaterial::Config;
   using SDIS = std::set<StrawDigiIndex>;
 
   using Name    = fhicl::Name;
@@ -129,6 +131,8 @@ namespace mu2e {
       using EXINGCOL = std::vector<EXINGPTR>;
       using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
       using DOMAINCOL = std::set<DOMAINPTR>;
+
+      using KKMaterialConfig = KKMaterial::Config;
 
       explicit RegrowLoopHelix(const Parameters& settings);
       void beginRun(art::Run& run) override;
@@ -185,6 +189,7 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
    // find input event data
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
     const auto& kseedcol = *kseed_H;
@@ -219,7 +224,7 @@ namespace mu2e {
       DOMAINCOL domains;
       // create the trajectory. This is done here to be strongly typed
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
-          *tracker,*calo_h,*strawresponse,*kkbf_,
+          *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_h->strawMaterial(),
           trajptr, strawhits, calohits, strawxings, domains);
       if(debug_ > 1){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
@@ -238,7 +243,7 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
-          if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H , *ktrk );
+          if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, kkmat_h->strawMaterial(), chcol, *calo_h, cc_H , *ktrk );
           if(ktrk->fitStatus().usable()){
             // extrapolate as requested
             if(extrap_)extrap_->extrapolate(*ktrk);
