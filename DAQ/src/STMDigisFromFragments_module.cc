@@ -107,7 +107,6 @@ private:
   size_t _totalEmptyPHLaBr{0};
 
   //fhicl varibales
-  int _verbosityLevel = 0;
   bool _saveRawWithHeaderWaveform_HPGe{false};
   bool _saveRawWaveform_HPGe{false};
   bool _saveZSWaveform_HPGe{false};
@@ -115,7 +114,7 @@ private:
   bool _saveRawWaveform_LaBr{false};
   bool _saveZSWaveform_LaBr{false};
   
-  
+  int _verbosityLevel = 0;
 }; // STMDigisFromFragments
 
 // ======================================================================
