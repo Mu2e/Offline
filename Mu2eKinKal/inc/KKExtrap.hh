@@ -49,6 +49,7 @@ namespace mu2e {
       bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toTCRV_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+      double tcrvthick_ = 150.0; // test CRV sector thickness: should come from geometry service TODO
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig) :
@@ -56,6 +57,7 @@ namespace mu2e {
     btol_(extrapconfig.btol()),
     intertol_(extrapconfig.interTol()),
     maxdt_(extrapconfig.MaxDt()),
+    minv_(extrapconfig.MinV()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
