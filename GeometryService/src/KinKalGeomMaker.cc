@@ -166,10 +166,9 @@ namespace mu2e {
     auto const& sectors = CRS->getCRSScintillatorShields();
     for (auto const& sector : sectors) {
       auto const& firstbar = sector.getFirstBar();
-      auto lastmod = sector.nModules()-1;
-      auto lastlay = sector.getModule(lastmod).nLayers()-1;
-      auto lastbar = sector.getBar(lastlay.nBars()-1;
-      auto const& lasttbar = lastlay.getBar(lastbar);
+      auto const& lastmod = sector.getModule(sector.nModules()-1);
+      auto const& lastlay = lastmod.getLayer(lastmod.nLayers()-1);
+      auto const& lastbar = lastlay.getBar(lastlay.nBars()-1);
       std::cout << "CRSS name " << sector.getName()
         << " N Modules " << sector.nModules()
         << " N Layers " << sector.getModule(0).nLayers()
@@ -177,7 +176,6 @@ namespace mu2e {
         << " first bar " << firstbar.id() << " position " << firstbar.getPosition()
         << " last bar " << lastbar.id() << " position " << lastbar.getPosition()
         << std::endl;
-
     }
 
     // currently use hard-coded geometry
