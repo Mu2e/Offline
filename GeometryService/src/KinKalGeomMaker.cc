@@ -4,6 +4,7 @@
 //
 #include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/KinKalGeom/inc/Tracker.hh"
@@ -161,6 +162,24 @@ namespace mu2e {
   }
 
   void KinKalGeomMaker::makeTCRV() {
+    GeomHandle<CosmicRayShield> CRS;
+    auto const& sectors = CRS->getCRSScintillatorShields();
+    for (auto const& sector : sectors) {
+      auto const& firstbar = sector.getFirstBar();
+      auto lastmod = sector.nModules()-1;
+      auto lastlay = sector.getModule(lastmod).nLayers()-1;
+      auto lastbar = sector.getBar(lastlay.nBars()-1;
+      auto const& lasttbar = lastlay.getBar(lastbar);
+      std::cout << "CRSS name " << sector.getName()
+        << " N Modules " << sector.nModules()
+        << " N Layers " << sector.getModule(0).nLayers()
+        << " N Bars " << sector.getModule(0).getLayer(0).nBars()
+        << " first bar " << firstbar.id() << " position " << firstbar.getPosition()
+        << " last bar " << lastbar.id() << " position " << lastbar.getPosition()
+        << std::endl;
+
+    }
+
     // currently use hard-coded geometry
     auto ex1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4387,-438),3000,1675); // layer widths are approximate FIXME
     auto t1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0.0,4237,-438),1185,850);
