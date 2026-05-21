@@ -48,8 +48,8 @@ namespace mu2e {
         auto const& outerProtonAbsorberPtr() const { return opa_; }
         auto const& upstreamAbsorberPtr() const { return tsda_; }
       private:
-        CylPtr inner_; //  inner cryostat cylinder
-        CylPtr outer_; // outer cryostat cylinder
+        CylPtr inner_; //  inner cryostat cylinder boundary
+        CylPtr outer_; // outer cryostat cylinder boundary
         DiskPtr front_; // front (upstream) and back (downstream) of DS
         DiskPtr back_;
         CylPtr ipa_; // inner proton absorber

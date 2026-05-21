@@ -1,22 +1,9 @@
 #include "Offline/TrkReco/fcl/Particle.fcl"
 BEGIN_PROLOG
 Mu2eKinKal : {
+  #
   # general configuration
   #
-  MAT: {
-    elements  : "Offline/TrackerConditions/data/ElementsList.data"
-    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-    materials : "Offline/TrackerConditions/data/MaterialsList.data"
-    strawGasMaterialName  : "straw-gas"
-    strawWallMaterialName : "straw-wall"
-    strawWireMaterialName : "straw-wire"
-    IPAMaterialName : "HDPE"
-    STMaterialName : "Target"
-    IonizationEnergyLossMode : 1 # Moyal mean
-    SolidScatteringFraction : 0.999999
-    GasScatteringFraction : 0.9999999
-    ElectronBrehmsFraction : 0.04
-  }
   KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
@@ -446,7 +433,6 @@ Mu2eKinKal : {
 
   LHSeedFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Mid"]
@@ -468,7 +454,6 @@ Mu2eKinKal : {
 
   LHDriftFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
@@ -493,7 +478,6 @@ Mu2eKinKal : {
 
   KLSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
@@ -508,7 +492,6 @@ Mu2eKinKal : {
 
   KLDriftFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
@@ -531,7 +514,6 @@ Mu2eKinKal : {
 
   CHSeedFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
@@ -547,7 +529,6 @@ Mu2eKinKal : {
 
   CHDriftFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Detector

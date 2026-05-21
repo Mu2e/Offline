@@ -6,7 +6,7 @@
 //
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 #include "Offline/TrackerGeom/inc/StrawProperties.hh"
-#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
+#include <memory>
 
 namespace MatEnv {
   class MatDBInfo;
@@ -31,14 +31,14 @@ namespace mu2e {
           const std::shared_ptr<DetMaterial> wiremat_);
       // construct using materials by name
       KKStrawMaterial(MatDBInfo const& matdbinfo,StrawProperties const& sprops,
-          const std::string& wallmat="straw-wall", const std::string& gasmat="straw-gas", const std::string& wiremat="straw-wire");
+          const std::string& wallmat, const std::string& gasmat, const std::string& wiremat);
       // pathlength through straw components, given closest approach. Return the method used to compute the paths
-      PathCalc pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, double& wallpath, double& gaspath, double& wirepath) const;
+      PathCalc pathLengths(ClosestApproachData const& cadata,double nsig, double& wallpath, double& gaspath, double& wirepath,int diag=0) const;
       PathCalc averagePathLengths(double& wallpath, double& gaspath, double& wirepath) const;
       // transit length given closest approach
       double transitLength(ClosestApproachData const& cadata) const;
-      // find the material crossings given doca and error on doca.  Should allow for straw and wire to have different axes TODO
-      PathCalc findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig, std::vector<MaterialXing>& mxings) const;
+      // find the material crossings given doca and error on doca. The CA object should be WRT the straw axis, not the wire axis
+      PathCalc findXings(ClosestApproachData const& cadata, double nsig, std::vector<MaterialXing>& mxings, int diag=0) const;
       DetMaterial const& wallMaterial() const { return *wallmat_; }
       DetMaterial const& gasMaterial() const { return *gasmat_; }
       DetMaterial const& wireMaterial() const { return *wiremat_; }

@@ -47,7 +47,7 @@
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
@@ -103,7 +103,6 @@ namespace mu2e {
   using KKConfig = Mu2eKinKal::KinKalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
-  using KKMaterialConfig = KKMaterial::Config;
 
   class KinematicLineFit : public art::EDProducer {
     using Name    = fhicl::Name;
@@ -133,7 +132,6 @@ namespace mu2e {
       fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
       fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
-      fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
       fhicl::OptionalTable<KKExtrapConfig> Extrapolation { Name("Extrapolation") };
       fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
@@ -163,7 +161,6 @@ namespace mu2e {
     PDGCode::type fpart_;
     TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
-    KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
     std::array<double,KinKal::NParams()> paramconstraints_;
     double mass_; // particle mass
@@ -191,7 +188,6 @@ namespace mu2e {
     seedmom_(settings().modSettings().seedmom()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
-    kkmat_(settings().matSettings()),
     intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     sampleinrange_(settings().modSettings().sampleInRange()),
@@ -257,13 +253,14 @@ namespace mu2e {
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,surfacess_to_sample_);
+    kkg_h->surfaces(ssids_,surfacess_to_sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -303,7 +300,7 @@ namespace mu2e {
           KKSTRAWXINGCOL strawxings;
           strawhits.reserve(strawHitIdxs.size());
           strawxings.reserve(strawHitIdxs.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
+          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_h->strawMaterial(), pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
 
           //here
           KKCALOHITCOL calohits;
@@ -324,7 +321,7 @@ namespace mu2e {
           auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_h->strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
           }
           goodfit = goodFit(*kktrk);
           // extrapolate as required
@@ -411,9 +408,9 @@ namespace mu2e {
 
   void KinematicLineFit::extrapolate(KKTRK& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
     // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
-    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg.TCRV(),extrapdebug_);
+    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->TCRV(),extrapdebug_);
 
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TCRVSID("TCRV");
@@ -436,7 +433,7 @@ namespace mu2e {
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         // TODO add DS and shielding material
-        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_.STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
+        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_h->STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
         ktrk.addTCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);
