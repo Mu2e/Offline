@@ -43,9 +43,9 @@ physics: {
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
       Detector: @local::SimplifyStage2Data.DetectorName.LaBr
     }
-    MWDSpectra : {
-      module_type : MWDTree
-      STMMWDDigiTag : @local::STMMCAnalysis.MWD.HPGe.STMMWDDigiTag
+    PHSpectra : {
+      module_type : PHTree
+      STMPHDigiTag : @local::STMMCAnalysis.PH.HPGe.STMPHDigiTag
       EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
     }
   }
