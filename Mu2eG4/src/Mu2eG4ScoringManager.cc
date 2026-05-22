@@ -146,9 +146,9 @@ namespace mu2e {
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
-                                             <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, "
-                                             <<"FlatSurfaceFlux, TrackCounter, PassageCellFlux, VolumeFlux, "
-                                             <<"PromptDoseEff ResidualDose\n";
+                                             <<"Choose among CellFlux, FlatSurfaceFlux, DoseDeposit, "
+                                             <<"EnergyDeposit, TrackCounter, PromptDoseEff, "
+                                             <<" ResidualDoseEff, PromptDoseAmb, or ResidualDoseAmb\n";
         }
 
         //optionaly add a particle filter
@@ -224,9 +224,9 @@ namespace mu2e {
     if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
     if (str.find("PromptDoseEff")   != std::string::npos) return ScorerCode::PromptDoseEff;
-    if (str.find("ResidualDoseEff")  != std::string::npos) return ScorerCode::ResidualDoseEff;
+    if (str.find("ResidualDoseEff") != std::string::npos) return ScorerCode::ResidualDoseEff;
     if (str.find("PromptDoseAmb")   != std::string::npos) return ScorerCode::PromptDoseAmb;
-    if (str.find("ResidualDoseAmb")  != std::string::npos) return ScorerCode::ResidualDoseAmb;
+    if (str.find("ResidualDoseAmb") != std::string::npos) return ScorerCode::ResidualDoseAmb;
     return ScorerCode::Unknown;
   }
 
