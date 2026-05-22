@@ -1,5 +1,5 @@
-#ifndef RecoDataProducts_STMMWDDigi_hh
-#define RecoDataProducts_STMMWDDigi_hh
+#ifndef RecoDataProducts_STMPHDigi_hh
+#define RecoDataProducts_STMPHDigi_hh
 //
 // Data product that represents an uncalibrated hit in the STM
 //
@@ -12,11 +12,11 @@
 
 namespace mu2e {
 
-  class STMMWDDigi {
+  class STMPHDigi {
   public:
-    STMMWDDigi() : _time(0), _energy(0){};
+    STMPHDigi() : _time(0), _energy(0){};
 
-    STMMWDDigi(uint32_t time, int16_t energy) : _time(time), _energy(energy) {};
+    STMPHDigi(uint32_t time, int16_t energy) : _time(time), _energy(energy) {};
 
 
     uint32_t time() const { return _time; }
@@ -27,14 +27,14 @@ namespace mu2e {
     int16_t _energy; // uncalibrated energy [ADC units]
   };
 
-  typedef std::vector<STMMWDDigi> STMMWDDigiCollection;
+  typedef std::vector<STMPHDigi> STMPHDigiCollection;
 
-  bool lessByTime(const STMMWDDigi& a, const STMMWDDigi& b) {
+  bool lessByTime(const STMPHDigi& a, const STMPHDigi& b) {
     if (a.time() < b.time()) { return true; }
     else { return false; }
   }
 
-  bool lessByEnergy(const STMMWDDigi& a, const STMMWDDigi& b) {
+  bool lessByEnergy(const STMPHDigi& a, const STMPHDigi& b) {
     if (a.energy() < b.energy()) { return true; }
     else { return false; }
   }
