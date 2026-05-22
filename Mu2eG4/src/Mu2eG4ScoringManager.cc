@@ -146,9 +146,9 @@ namespace mu2e {
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
-                                             <<"Choose among CellFlux, FlatSurfaceFlux, DoseDeposit, "
-                                             <<"EnergyDeposit, TrackCounter, PromptDoseEff, "
-                                             <<" ResidualDoseEff, PromptDoseAmb, or ResidualDoseAmb\n";
+                                             <<"Choose among CellFlux, FlatSurfaceFlux, PassageCellFlux, "
+                                             <<"VolumeFlux, DoseDeposit, EnergyDeposit, TrackCounter, "
+                                             <<"PromptDoseEff, ResidualDoseEff, PromptDoseAmb, or ResidualDoseAmb\n";
         }
 
         //optionaly add a particle filter
@@ -219,9 +219,11 @@ namespace mu2e {
   Mu2eG4ScoringManager::ScorerCode Mu2eG4ScoringManager::hashScorer(const G4String& str)
   {
     if (str.find("CellFlux")        != std::string::npos) return ScorerCode::CellFlux;
-    if (str.find("FlatSurfaceFlux") != std::string::npos) return ScorerCode::FlatSurfaceFlux;
     if (str.find("DoseDeposit")     != std::string::npos) return ScorerCode::DoseDeposit;
     if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
+    if (str.find("FlatSurfaceFlux") != std::string::npos) return ScorerCode::FlatSurfaceFlux;
+    if (str.find("PassageCellFlux") != std::string::npos) return ScorerCode::PassageCellFlux;
+    if (str.find("VolumeFlux")      != std::string::npos) return ScorerCode::VolumeFlux;
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
     if (str.find("PromptDoseEff")   != std::string::npos) return ScorerCode::PromptDoseEff;
     if (str.find("ResidualDoseEff") != std::string::npos) return ScorerCode::ResidualDoseEff;

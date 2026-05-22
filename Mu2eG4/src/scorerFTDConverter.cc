@@ -2,7 +2,6 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "cetlib_except/exception.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <string>
 #include <vector>
