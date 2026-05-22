@@ -28,7 +28,7 @@ namespace mu2e{
     } else if (type == scorerDoseType::Ambient){
        photon_   = scorerFTDTable("Offline/Mu2eG4/data/Photon_ambient_dose.dat",  "ISO");
        electron_ = scorerFTDTable("Offline/Mu2eG4/data/Electron_ambient_dose.dat","ISO");
-       positron_ = scorerFTDTable("Offline/Mu2eG4/data/Electron_ambient_dose.dat","ISO");
+       positron_ = scorerFTDTable("Offline/Mu2eG4/data/Positron_ambient_dose.dat","ISO");
        muminus_  = scorerFTDTable("Offline/Mu2eG4/data/Muon_ambient_dose.dat",    "ISO");
        muplus_   = scorerFTDTable("Offline/Mu2eG4/data/Muon_ambient_dose.dat",    "ISO");
        piminus_  = scorerFTDTable("Offline/Mu2eG4/data/Piminus_ambient_dose.dat", "ISO");
@@ -77,7 +77,7 @@ namespace mu2e{
       case PDGCode::proton:
         return proton_.evaluate(energy);
       default:
-        //use proton as proxy for heavier nuclei and other particles
+        //use proton as proxy for helium and heavier nuclei
         return proton_.evaluate(energy);
     }
  }

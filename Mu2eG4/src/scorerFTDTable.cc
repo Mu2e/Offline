@@ -81,6 +81,8 @@ namespace mu2e{
 
   double scorerFTDTable::evaluate(double energy)
   {
+    if (energies_.empty()) throw cet::exception("BADINPUT")<<"scorerFTDTable: tables not initialized before calling eval.\n";
+
     if (energy < energies_.front()) return coeffs_.front();
     if (energy > energies_.back() ) return coeffs_.back();
 
@@ -88,10 +90,9 @@ namespace mu2e{
     while (energies_[idx+1]<energy) ++idx;
 
     // log interpolation
-    float coeff = exp((log(energy)-lenergies_[idx])*(lcoeffs_[idx+1]-lcoeffs_[idx])/(lenergies_[idx+1]-lenergies_[idx]) + lcoeffs_[idx]);
-    return coeff;
+    return exp((log(energy)-lenergies_[idx])*(lcoeffs_[idx+1]-lcoeffs_[idx])/(lenergies_[idx+1]-lenergies_[idx]) + lcoeffs_[idx]);
 
-    // linear interpolation
+    // linear interpolation (keep just in case)
     //return (energy-energies_[idx])*(coeffs_[idx+1]-coeffs_[idx])/(energies_[idx+1]-energies_[idx]) + coeffs_[idx];
   }
 }
