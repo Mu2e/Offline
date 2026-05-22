@@ -43,7 +43,7 @@
 // Member-init order matters: env must outlive session_options, and
 // session_options must outlive session. RAII resources lifetime
 // captured in declaration order at the bottom of this class.
-#include "onnxruntime/core/session/onnxruntime_cxx_api.h"
+#include "onnxruntime/onnxruntime_cxx_api.h"
 
 #include <cmath>
 #include <map>
