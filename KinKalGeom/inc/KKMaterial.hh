@@ -12,8 +12,8 @@
 // KKGeom
 #include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 // mu2e
-#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
+#include "Offline/TrackerGeom/inc/Tracker.hh"
 
 #include <memory>
 #include <string>
@@ -39,8 +39,8 @@ namespace mu2e {
         fhicl::Atom<double> eBrehms{ Name("ElectronBrehmsFraction"), Comment("Electron Brehmsstrahlung cutoff Fraction") };
       };
 
-      explicit KKMaterial( Config const& config);
-      KKStrawMaterial const& strawMaterial() const;
+      explicit KKMaterial( Config const& config, Tracker const& tracker);
+      KKStrawMaterial const& strawMaterial() const { return *smat_; }
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
 
@@ -54,11 +54,10 @@ namespace mu2e {
       std::string elementsBaseName_;
       std::string isotopesBaseName_;
       std::string materialsBaseName_;
-      mutable ConfigFileLookupPolicy policy_;
       // specific material names
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_;
-      mutable std::unique_ptr<MatDBInfo> matdbinfo_; // material database
-      mutable std::unique_ptr<KKStrawMaterial> smat_; // straw material; move to KinKalGeom
+      std::unique_ptr<MatDBInfo> matdbinfo_; // material database
+      std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };
 }
 #endif

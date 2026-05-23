@@ -356,8 +356,10 @@ namespace mu2e {
       KinKalGeomMaker kkgm;
       addDetector( std::move(kkgm.makeKKG()) );
       // directly build KKMaterial; it's constructor does everything
-      addDetector( std::make_unique<KKMaterial>(_kkMat));
-      return ;
+      DetMap::iterator itrk = _detectors.find("Tracker");
+      Tracker const& tracker = static_cast<Tracker const&>(*itrk->second);
+      addDetector( std::make_unique<KKMaterial>(_kkMat,tracker));
+      return;
 
     } // preBeginRun()
 

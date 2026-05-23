@@ -1,13 +1,12 @@
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 
 namespace mu2e {
   using MatDBInfo = MatEnv::MatDBInfo;
   using MatEnv::DetMaterial;
 
-  KKMaterial::KKMaterial(KKMaterial::Config const& matconfig) :
+  KKMaterial::KKMaterial(KKMaterial::Config const& matconfig,Tracker const& tracker) :
     elementsBaseName_(matconfig.elements()),
     isotopesBaseName_(matconfig.isotopes()),
     materialsBaseName_(matconfig.materials()),
@@ -22,23 +21,17 @@ namespace mu2e {
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();
       matdbinfo_ = std::make_unique<MatDBInfo>(*this,dmconf);
-    }
-
-  KKStrawMaterial const& KKMaterial::strawMaterial() const {
-    // deferred construction as this object depends on the tracker, which is created at beginJob
-    if(smat_ == nullptr){
-      Tracker const & tracker = *(GeomHandle<Tracker>());
-      auto const& sprop = tracker.strawProperties();
       smat_ = std::make_unique<KKStrawMaterial>(
-          sprop,
+          tracker.strawProperties(),
           matdbinfo_->findDetMaterial(wallmatname_),
           matdbinfo_->findDetMaterial(gasmatname_),
           matdbinfo_->findDetMaterial(wirematname_));
     }
-    return *smat_;
-  }
 
-  std::string KKMaterial::findFile( std::string const& basename ) const { return policy_( basename ); }
+// implement file finder policy using mu2e file policy
+  std::string KKMaterial::findFile( std::string const& basename ) const {
+    ConfigFileLookupPolicy policy;
+    return policy( basename ); }
   std::string KKMaterial::matElmDictionaryFileName() const { return findFile(elementsBaseName_); }
   std::string KKMaterial::matIsoDictionaryFileName() const { return findFile(isotopesBaseName_); }
   std::string KKMaterial::matMtrDictionaryFileName() const { return findFile(materialsBaseName_); }
