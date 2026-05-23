@@ -14,7 +14,7 @@ namespace mu2e {
       void makeTracker();
       void makeDS();
       void makeTarget();
-      void makeTCRV();
+      void makeCRV();
       std::unique_ptr<KinKalGeom> kkg_;
   };
 }

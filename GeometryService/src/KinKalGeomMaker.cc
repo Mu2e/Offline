@@ -10,7 +10,7 @@
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
-#include "Offline/KinKalGeom/inc/TestCRV.hh"
+#include "Offline/KinKalGeom/inc/CRV.hh"
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -36,7 +36,7 @@ namespace mu2e {
     makeTracker();
     makeDS();
     makeTarget();
-    makeTCRV();
+    makeCRV();
     return kkg_;
   }
 
@@ -161,32 +161,51 @@ namespace mu2e {
     kkg_->st_ = std::make_unique<KKGeom::StoppingTarget>(outer,inner,front,back,foils);
   }
 
-  void KinKalGeomMaker::makeTCRV() {
+  void KinKalGeomMaker::makeCRV() {
     GeomHandle<CosmicRayShield> CRS;
     auto const& sectors = CRS->getCRSScintillatorShields();
+    KKGeom::CRV::RecPtrVec midplanes;
+    std::vector<std::string> snames;
+    // loop over the sectors
     for (auto const& sector : sectors) {
-      auto const& firstbar = sector.getFirstBar();
+      // find the first and last bar; these define the rectangle bounds
+      auto const& firstbar = sector.getModule(0).getLayer(0).getBar(0);
       auto const& lastmod = sector.getModule(sector.nModules()-1);
       auto const& lastlay = lastmod.getLayer(lastmod.nLayers()-1);
       auto const& lastbar = lastlay.getBar(lastlay.nBars()-1);
+      auto const& opplay = lastmod.getLayer(0);
+      auto const& oppbar = opplay.getBar(opplay.nBars()-1);
       std::cout << "CRSS name " << sector.getName()
         << " N Modules " << sector.nModules()
         << " N Layers " << sector.getModule(0).nLayers()
         << " N Bars " << sector.getModule(0).getLayer(0).nBars()
         << " first bar " << firstbar.id() << " position " << firstbar.getPosition()
         << " last bar " << lastbar.id() << " position " << lastbar.getPosition()
+        << " opp bar " << oppbar.id() << " position " << oppbar.getPosition()
+        << " first bar tdir " << firstbar.getBarDetail().getThicknessDirection()
+        << " wdir " << firstbar.getBarDetail().getWidthDirection()
+        << " ldir " << firstbar.getBarDetail().getLengthDirection()
         << std::endl;
+//      fpos = firstbar.getPosition();
+//      lpos = lastbar.getPosition();
+//      opos = oppbar.getPosition();
+      // the midpoint of of the midplane is the average.
+//      auto midpoint = 0.5*(fpos + lpos);
+      // infer the orientation the positions of the first and last bar in the 0th layer
+//      double small(1.0);
+//      VEC3 norm, udir;
+//      if( fabs(fpos.y()-opos.y()) > small){
+
+      //
+      snames.push_back(sector.getName());
     }
 
-    // currently use hard-coded geometry
-    auto ex1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4387,-438),3000,1675); // layer widths are approximate FIXME
-    auto t1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0.0,4237,-438),1185,850);
-    auto t2= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4537,-438),1600,850);
+    kkg_->crv_ = std::make_unique<KKGeom::CRV>(midplanes,snames);
 
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,0),std::static_pointer_cast<Surface>(t1)));
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(ex1)));
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,2),std::static_pointer_cast<Surface>(t2)));
-
-    kkg_->tcrv_ = std::make_unique<KKGeom::TestCRV>(ex1,t1,t2);
+    unsigned isect(0);
+    for(auto const& midplane : kkg_->crv_->sectors()){
+      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(midplane)));
+      isect++;
+    }
   }
 }

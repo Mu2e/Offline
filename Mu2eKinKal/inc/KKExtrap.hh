@@ -12,7 +12,7 @@
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateTCRV.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateCRV.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -38,7 +38,6 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
-      template <class KTRAJ> void extrapolateTCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
       template <class KTRAJ> void toTrackerEnds(KKTrack<KTRAJ>& ktrk) const;
@@ -46,10 +45,10 @@ namespace mu2e {
     private:
       int debug_;
       double btol_, intertol_, maxdt_, minv_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toTCRV_, toCRV_;
+      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
-      double tcrvthick_ = 150.0; // test CRV sector thickness: should come from geometry service TODO
+      double crvsectorthick_ = 50.0; // CRV sector thickness: should come from geometry service TODO
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig) :
@@ -62,7 +61,6 @@ namespace mu2e {
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
     upstream_(extrapconfig.Upstream()),
-    toTCRV_(extrapconfig.ToTCRV()),
     toCRV_(extrapconfig.ToCRV())
   {}
 
@@ -102,7 +100,6 @@ namespace mu2e {
       // optionally test for intersection with the OPA
       if(extrapolateOPA_)extrapolateOPA(ktrk,starttime,tdir);
     }
-    if(toTCRV_)extrapolateTCRV(ktrk,tdir);
     if(toCRV_)extrapolateCRV(ktrk,tdir);
   }
 
@@ -281,16 +278,16 @@ namespace mu2e {
     }
   }
 
-  //extrapolate to the test CRV modules. This only makes sense for KKLine or CentralHelix
-  template <class KTRAJ> void KKExtrap::extrapolateTCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+  //extrapolate to the CRV sectors. This only makes sense for KKLine or CentralHelix
+  template <class KTRAJ> void KKExtrap::extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     using KKCRVXING = KKShellXing<KTRAJ,KinKal::Rectangle>;
     using KKCRVXINGPTR = std::shared_ptr<KKCRVXING>;
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     // extrapolate to the extracted CRV. Loop to cover multiple intersections
-    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->TCRV(),debug_);
+    auto CRV = ExtrapolateCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
     auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId TCRVSID("TCRV");
+    static const SurfaceId CRVSID("CRV");
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     bool hadintersection = false;
     do {
@@ -298,24 +295,21 @@ namespace mu2e {
       double time = starttime;
       double tstart = time;
       // cosmics are always (?) downwards, we can simplify this logic using that TODO
-      while(fabs(time-tstart) < TCRV.maxDt() && TCRV.needsExtrapolation(ftraj,tdir) ){
-        TimeRange range = tdir == TimeDir::forwards ? TimeRange(time,time+TCRV.step()) : TimeRange(time-TCRV.step(),time);
+      while(fabs(time-tstart) < CRV.maxDt() && CRV.needsExtrapolation(ftraj,tdir) ){
+        TimeRange range = tdir == TimeDir::forwards ? TimeRange(time,time+CRV.step()) : TimeRange(time-CRV.step(),time);
         ktrk.extendTraj(range);
         time = tdir == TimeDir::forwards ? range.end() : range.begin();
       }
       hadintersection = false;
-      if (TCRV.intersection().good()){
+      if (CRV.intersection().good()){
         hadintersection = true;
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         // TODO add DS and shielding material
-        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_h->STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
-        ktrk.addTCRVXing(crvxingptr,tdir);
+        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(CRV.module(), CRVSID, *kkmat_h->STMaterial(),CRV.intersection(),reftrajptr,tcrvthick_,CRV.interTolerance());
+        ktrk.addCRVXing(crvxingptr,tdir);
       }
     } while(hadintersection);
-  }
-  // no-op for now: TODO
-  template <class KTRAJ> void KKExtrap::extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
   }
 
 }
