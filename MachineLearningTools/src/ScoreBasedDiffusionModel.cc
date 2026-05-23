@@ -27,7 +27,7 @@ namespace mu2e {
             double f = (t + cosineOffset_) / (1.0 + cosineOffset_);
             double beta = (M_PI / (1.0 + cosineOffset_)) * std::tan(f * M_PI * 0.5); // beta(t) = pi / (1+offset) * tan(pi*f/2)
             // Cap beta to prevent numerical issues at t close to 1
-            return std::min(beta, 20.0); // cap beta to a large value
+            return std::min(beta, 10.0); // cap beta to a large value
         } else {
             // Linear interpolation of beta(t) between betaMin_ and betaMax_.
             return betaMin_ + t * (betaMax_ - betaMin_);
@@ -84,7 +84,9 @@ namespace mu2e {
         batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         diffusionSteps_(diffusionSteps),
         runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_(),
-        clipCount_(0), totalClipChecks_(0), clipScaleAccum_(0.0) {
+        clipCount_(0), totalClipChecks_(0), clipScaleAccum_(0.0),
+        dataMean_(dim + conditionDim, 0.0), dataStdev_(dim + conditionDim, 1.0),
+        normMin_(dim + conditionDim, -999.0), normMax_(dim + conditionDim, 999.0) {
 
         // Validate model dimensions and parameters
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
@@ -200,6 +202,114 @@ namespace mu2e {
         // Reserve space for forward-pass caches
         activations_.reserve(layers_ + 1);
         preactivations_.reserve(layers_);
+    }
+
+    // normalize input data
+    // note the order in the stdev and mean is always x then cond
+    void ScoreBasedDiffusionModel::normalizeData(
+        const std::vector<double>& mean,
+        const std::vector<double>& stdev,
+        std::vector<DiffusionTrainingSample>& data
+    )
+    {
+        if (data.empty()) {
+            throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
+                << "No training data provided";
+        }
+
+        const size_t totalDim = dim_ + conditionDim_;
+
+        // check mean and stdev dimensions
+        if (mean.size() != totalDim || stdev.size() != totalDim) {
+            throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
+                << "Mean or standard deviation dimension mismatch, expected "
+                << totalDim << " but got " << mean.size()
+                << " for mean and " << stdev.size() << " for standard deviation";
+        }
+        // store the mean and standard deviation of the original data
+        dataMean_ = mean;
+        dataStdev_ = stdev;
+
+        // containers to track the mean and standard deviation of the normalized data
+        std::vector<double> normMean(totalDim, 0.0);
+        std::vector<double> normStdev(totalDim, 0.0);
+        // containers to track the sum of squares of the normalized data
+        std::vector<double> M2(totalDim, 0.0);
+        // reset min/max trackers
+        normMin_.assign(totalDim, std::numeric_limits<double>::max());
+        normMax_.assign(totalDim, std::numeric_limits<double>::lowest());
+
+        size_t count = 0;
+
+        // Normalize the training data using the given mean and standard deviation
+        // keep track of the mean and standard deviation, min and max values
+        // of the normalized data
+        for (auto& sample : data) {
+            ++count;
+
+            // deal with sample.x first
+            for (int i = 0; i < dim_; ++i) {
+                if (stdev[i] == 0.0) {
+                    throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
+                        << "Zero standard deviation encountered at dimension "
+                        << i;
+                }
+
+                double value = (sample.x[i] - mean[i]) / stdev[i];
+                sample.x[i] = value; //overwrite the original value
+
+                // update min/max values
+                normMin_[i] = std::min(normMin_[i], value);
+                normMax_[i] = std::max(normMax_[i], value);
+                // Welford update
+                double delta = value - normMean[i];
+                normMean[i] += delta / static_cast<double>(count);
+                double delta2 = value - normMean[i];
+                M2[i] += delta * delta2;
+            }
+            //now deal with sample.cond
+            for (int i = 0; i < conditionDim_; ++i) {
+                const int idx = dim_ + i;
+                if (stdev[idx] == 0.0) {
+                    throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
+                        << "Zero standard deviation encountered at dimension "
+                        << idx;
+                }
+
+                double value = (sample.cond[i] - mean[idx]) / stdev[idx];
+                sample.cond[i] = value;
+
+                // update min/max
+                normMin_[idx] = std::min(normMin_[idx], value);
+                normMax_[idx] = std::max(normMax_[idx], value);
+                // Welford update
+                double delta = value - normMean[idx];
+                normMean[idx] += delta / static_cast<double>(count);
+                double delta2 = value - normMean[idx];
+                M2[idx] += delta * delta2;
+            }
+        }
+
+        for (size_t i = 0; i < totalDim; ++i) {
+            normStdev[i] = std::sqrt(M2[i] / static_cast<double>(count));
+            mf::LogInfo("ScoreBasedDiffusionModel::normalizeData")
+                << "Dimension " << i << " normalized: mean = " << normMean[i] << ", stdev = " << normStdev[i];
+
+            // sanity checks
+            if (std::abs(normMean[i]) > 0.1) {
+                mf::LogWarning("ScoreBasedDiffusionModel::normalizeData")
+                    << "Normalized mean deviates from 0 at dimension "
+                    << i
+                    << ": mean = " << normMean[i];
+            }
+            if (std::abs(normStdev[i] - 1.0) > 0.1) {
+                mf::LogWarning("ScoreBasedDiffusionModel::normalizeData")
+                    << "Normalized stdev deviates from 1 at dimension "
+                    << i
+                    << ": stdev = " << normStdev[i];
+            }
+        }
+        return;
     }
 
     // forward pass to compute the score function given input (state + time embedding)
@@ -751,6 +861,34 @@ namespace mu2e {
             out << "\n";
         }
 
+        // Write data normalization parameters
+        out << "\n[DATA_NORMALIZATION]\n";
+        out << "numDimensions," << dataMean_.size() << "\n";
+        out << "dataMean\n";
+        for (size_t i = 0; i < dataMean_.size(); ++i) {
+            out << dataMean_[i];
+            if (i < dataMean_.size() - 1) out << ",";
+        }
+        out << "\n";
+        out << "dataStdev\n";
+        for (size_t i = 0; i < dataStdev_.size(); ++i) {
+            out << dataStdev_[i];
+            if (i < dataStdev_.size() - 1) out << ",";
+        }
+        out << "\n";
+        out << "normMin\n";
+        for (size_t i = 0; i < normMin_.size(); ++i) {
+            out << normMin_[i];
+            if (i < normMin_.size() - 1) out << ",";
+        }
+        out << "\n";
+        out << "normMax\n";
+        for (size_t i = 0; i < normMax_.size(); ++i) {
+            out << normMax_[i];
+            if (i < normMax_.size() - 1) out << ",";
+        }
+        out << "\n";
+
         // Write training history
         out << "\n[TRAINING_HISTORY]\n";
         out << "numEpochs," << epochLosses_.size() << "\n";
@@ -784,6 +922,8 @@ namespace mu2e {
         double betaMin = 0.0, betaMax = 0.0, cosineOffset = 0.0;
         int batchSize = 1, diffusionSteps = 1;
         double gradientClipThreshold = 0.0, learningRate = 0.0;
+
+        std::vector<double> dataMean, dataStdev, normMin, normMax;
 
         std::vector<Layer> loadedNetwork;
         std::vector<double> epochLosses;
@@ -928,6 +1068,70 @@ namespace mu2e {
                 }
             }
 
+            // DATA NORMALIZATION
+            else if (section == "[DATA_NORMALIZATION]") {
+                if (line.rfind("numDimensions", 0) == 0) {
+                    int normalizationDim = std::stoi(split(line)[1]);
+                    dataMean.resize(normalizationDim);
+                    dataStdev.resize(normalizationDim);
+                    normMin.resize(normalizationDim);
+                    normMax.resize(normalizationDim);
+                    continue;
+                }
+                if (line == "dataMean") {
+                    if (!std::getline(in, line)) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF while reading dataMean";
+                    }
+                    auto vals = split(line);
+                    if (vals.size() != dataMean.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Data mean size mismatch";
+                    }
+                    for (size_t j = 0; j < vals.size(); ++j) {
+                        dataMean[j] = std::stod(vals[j]);
+                    }
+                    continue;
+                }
+                if (line == "dataStdev") {
+                    if (!std::getline(in, line)) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF while reading dataStdev";
+                    }
+                    auto vals = split(line);
+                    if (vals.size() != dataStdev.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Data stdev size mismatch";
+                    }
+                    for (size_t j = 0; j < vals.size(); ++j) {
+                        dataStdev[j] = std::stod(vals[j]);
+                    }
+                    continue;
+                }
+                if (line == "normMin") {
+                    if (!std::getline(in, line)) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF while reading normMin";
+                    }
+                    auto vals = split(line);
+                    if (vals.size() != normMin.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Norm min size mismatch";
+                    }
+                    for (size_t j = 0; j < vals.size(); ++j) {
+                        normMin[j] = std::stod(vals[j]);
+                    }
+                    continue;
+                }
+                if (line == "normMax") {
+                    if (!std::getline(in, line)) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF while reading normMax";
+                    }
+                    auto vals = split(line);
+                    if (vals.size() != normMax.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Norm max size mismatch";
+                    }
+                    for (size_t j = 0; j < vals.size(); ++j) {
+                        normMax[j] = std::stod(vals[j]);
+                    }
+                    continue;
+                }
+            }
+
             // TRAINING HISTORY
             else if (section == "[TRAINING_HISTORY]") {
                 if (line == "EpochNumber,Loss") continue;
@@ -1029,19 +1233,28 @@ namespace mu2e {
             }
         }
 
+        if ((int)dataMean.size() != (dim + conditionDim)) {
+            throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Normalization parameter size mismatch";
+        } // dataStdev, normMin, normMax have same dimensions
+
         // Allocate weights with loaded values
         for (size_t l = 0; l < model.network_.size(); ++l) {
             model.network_[l].W = loadedNetwork[l].W;
             model.network_[l].b = loadedNetwork[l].b;
         }
+        model.dataMean_ = dataMean;
+        model.dataStdev_ = dataStdev;
+        model.normMin_ = normMin;
+        model.normMax_ = normMax;
         model.epochLosses_ = epochLosses;
 
         return model;
     }
 
-    std::vector<double> ScoreBasedDiffusionModel::generateSample(
+    SBDMGeneratedSample ScoreBasedDiffusionModel::generateSample(
         const std::vector<double>& condition,
         bool useHeun,
+        bool useSDE,
         int diffusionSteps
     )
     {
@@ -1077,15 +1290,27 @@ namespace mu2e {
                 auto score = forward(input);
 
                 for (int i = 0; i < dim_; ++i) {
-                    double drift = 0.5 * beta_val * x[i] + 0.5 * beta_val * score[i];
-                    x[i] += drift * dt;
-                    // if SDE solver:
-                    // double drift = 0.5 * beta_val * x[i] + beta_val * score[i];
-                    // double noise = std::sqrt(beta_val * dt) * randGaussQ_.fire();
-                    // x[i] += drift * dt + noise;
+                    if (useSDE) {
+                        // SDE solver:
+                        double drift = 0.5 * beta_val * x[i] + beta_val * score[i];
+                        double noise = std::sqrt(beta_val * dt) * randGaussQ_.fire();
+                        x[i] += drift * dt + noise;
+                    } else {
+                        // ODE solver:
+                        double drift = 0.5 * beta_val * x[i] + 0.5 * beta_val * score[i];
+                        x[i] += drift * dt;
+                    }
                 }
             } else {
                 // Heun's method (2nd order) Only ODE solver, no noise added
+
+                // sahred noise vector
+                std::vector<double> dw(dim_);
+                double noiseScale = std::sqrt(beta_val * dt);
+                for (int i = 0; i < dim_; ++i) {
+                    dw[i] = noiseScale * randGaussQ_.fire();
+                }
+
                 // k1 = f(x,t)
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
@@ -1094,13 +1319,22 @@ namespace mu2e {
 
                 std::vector<double> k1(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    k1[i] = 0.5 * beta_val * x[i] + 0.5 * beta_val * score_k1[i];
+                    if (useSDE) {
+                        // SDE solver:
+                        k1[i] = 0.5 * beta_val * x[i] + beta_val * score_k1[i];
+                    } else {
+                        // ODE solver:
+                        k1[i] = 0.5 * beta_val * x[i] + 0.5 * beta_val * score_k1[i];
+                    }
                 }
 
                 // predictor
                 std::vector<double> x_pred(dim_);
                 for (int i = 0; i < dim_; ++i) {
                     x_pred[i] = x[i] + k1[i] * dt;
+                    if (useSDE) {
+                        x_pred[i] += dw[i]; // add noise
+                    }
                 }
 
                 // next time
@@ -1115,17 +1349,33 @@ namespace mu2e {
 
                 std::vector<double> k2(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    k2[i] = 0.5 * b_next * x_pred[i] + 0.5 * b_next * score_k2[i];
+                    if (useSDE) {
+                        // SDE solver:
+                        k2[i] = 0.5 * b_next * x_pred[i] + b_next * score_k2[i];
+                    } else {
+                        // ODE solver:
+                        k2[i] = 0.5 * b_next * x_pred[i] + 0.5 * b_next * score_k2[i];
+                    }
                 }
 
                 // trapezoidal update
                 for (int i = 0; i < dim_; ++i) {
                     x[i] += 0.5 * (k1[i] + k2[i]) * dt;
+                    if (useSDE) {
+                        x[i] += dw[i]; // add noise
+                    }
                 }
             }
         }
 
-        return x;
+        SBDMGeneratedSample generatedSample;
+        generatedSample.zscore = x;
+        generatedSample.value.resize(dim_);
+        for (int i = 0; i < dim_; ++i) {
+            generatedSample.value[i] = x[i]*dataStdev_[i] + dataMean_[i];
+            // note the order in the stdev and mean is always x then cond
+        }
+        return generatedSample;
     }
 
 } // namespace mu2e

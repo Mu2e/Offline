@@ -112,6 +112,11 @@ namespace mu2e {
           Comment("Whether to use Heun's method for reverse diffusion"),
           true
         };
+        fhicl::Atom<bool> useSDE{
+          Name("useSDE"),
+          Comment("If true, use SDE solver. Otherwise use ODE solver."),
+          true
+        };
         fhicl::Atom<int> diffusionSteps{
           Name("diffusionSteps"),
           Comment("Number of diffusion steps for sampling"),
@@ -163,6 +168,7 @@ namespace mu2e {
       std::string modelFileDir_;
       int virtualDetectorID_ = 0;
       bool useHeun_ = true;
+      bool useSDE_ = true;
       int diffusionSteps_ = 0;
       double VDz0_ = 0.0;
       double VDr_ = 0.0;
@@ -212,6 +218,7 @@ namespace mu2e {
       modelFileDir_(conf().ModelFileDir()),
       virtualDetectorID_(conf().VirtualDetectorID()),
       useHeun_(conf().useHeun()),
+      useSDE_(conf().useSDE()),
       diffusionSteps_(conf().diffusionSteps()),
       VDz0_(conf().VDz0()),
       VDr_(conf().VDr()),
@@ -373,39 +380,42 @@ namespace mu2e {
     double& pzTrans
   ) const {
     if (modelSet.useTwoStageModel) {
-      const std::vector<double> stage1Sample = modelSet.stage1Model->generateSample({}, useHeun_, diffusionSteps_);
-      if (stage1Sample.size() != 3u) {
+      const SBDMGeneratedSample stage1Sample = modelSet.stage1Model->generateSample({}, useHeun_, useSDE_, diffusionSteps_);
+      if (stage1Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateMix")
-          << "Stage-1 model returned " << stage1Sample.size() << " values, expected 3.";
+          << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
       }
 
-      tTrans = stage1Sample[0];
-      xTrans = stage1Sample[1];
-      yTrans = stage1Sample[2];
+      tTrans = stage1Sample.value[0];
+      xTrans = stage1Sample.value[1];
+      yTrans = stage1Sample.value[2];
+      double t_zscore = stage1Sample.zscore[0];
+      double x_zscore = stage1Sample.zscore[1];
+      double y_zscore = stage1Sample.zscore[2];
 
-      const std::vector<double> condition = {tTrans, xTrans, yTrans};
-      const std::vector<double> stage2Sample = modelSet.stage2Model->generateSample(condition, useHeun_, diffusionSteps_);
-      if (stage2Sample.size() != 3u) {
+      const std::vector<double> condition = {t_zscore, x_zscore, y_zscore};
+      const SBDMGeneratedSample stage2Sample = modelSet.stage2Model->generateSample(condition, useHeun_, useSDE_, diffusionSteps_);
+      if (stage2Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateMix")
-          << "Stage-2 model returned " << stage2Sample.size() << " values, expected 3.";
+          << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
       }
 
-      prTrans = stage2Sample[0];
-      pphiTrans = stage2Sample[1];
-      pzTrans = stage2Sample[2];
+      prTrans = stage2Sample.value[0];
+      pphiTrans = stage2Sample.value[1];
+      pzTrans = stage2Sample.value[2];
     } else {
-      const std::vector<double> sample = modelSet.allAtOnceModel->generateSample({}, useHeun_, diffusionSteps_);
-      if (sample.size() != 6u) {
+      const SBDMGeneratedSample sample = modelSet.allAtOnceModel->generateSample({}, useHeun_, diffusionSteps_);
+      if (sample.zscore.size() != 6u) {
         throw cet::exception("VDResamplerGenerateMix")
-          << "All-at-once model returned " << sample.size() << " values, expected 6.";
+          << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";
       }
 
-      tTrans = sample[0];
-      xTrans = sample[1];
-      yTrans = sample[2];
-      prTrans = sample[3];
-      pphiTrans = sample[4];
-      pzTrans = sample[5];
+      tTrans = sample.value[0];
+      xTrans = sample.value[1];
+      yTrans = sample.value[2];
+      prTrans = sample.value[3];
+      pphiTrans = sample.value[4];
+      pzTrans = sample.value[5];
     }
   }
 

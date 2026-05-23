@@ -93,6 +93,15 @@ namespace mu2e {
       int trainingEpochs = 0;
       int trainingSize = -1;
       std::vector<int> saveEpochs;
+
+      // containers for normalization parameters
+      double t_trans_mean = 0.0, t_trans_M2 = 0.0, t_trans_stdev = 0.0;
+      double x_trans_mean = 0.0, x_trans_M2 = 0.0, x_trans_stdev = 0.0;
+      double y_trans_mean = 0.0, y_trans_M2 = 0.0, y_trans_stdev = 0.0;
+      double pr_t_mean = 0.0, pr_t_M2 = 0.0, pr_t_stdev = 0.0;
+      double pphi_t_mean = 0.0, pphi_t_M2 = 0.0, pphi_t_stdev = 0.0;
+      double pz_t_mean = 0.0, pz_t_M2 = 0.0, pz_t_stdev = 0.0;
+      int nNorm = 0;
   };
 
   VDResamplerTrainFromRoot::VDResamplerTrainFromRoot(const Parameters& conf) :
@@ -220,6 +229,33 @@ namespace mu2e {
                                           VDResampler::kX0, VDResampler::kY0, VDResampler::kT0, VDResampler::kTScale, VDResampler::kP0,
                                           VDr, VDz0,
                                           x_trans, y_trans, t_trans, pr_t, pphi_t, pz_t);
+      if (nNorm < trainingSize || trainingSize <= 0) { // Wellford update
+        nNorm++;
+        double t_trans_delta = t_trans - t_trans_mean;
+        t_trans_mean += t_trans_delta / static_cast<double>(nNorm);
+        double t_trans_delta2 = t_trans - t_trans_mean;
+        t_trans_M2 += t_trans_delta * t_trans_delta2;
+        double x_trans_delta = x_trans - x_trans_mean;
+        x_trans_mean += x_trans_delta / static_cast<double>(nNorm);
+        double x_trans_delta2 = x_trans - x_trans_mean;
+        x_trans_M2 += x_trans_delta * x_trans_delta2;
+        double y_trans_delta = y_trans - y_trans_mean;
+        y_trans_mean += y_trans_delta / static_cast<double>(nNorm);
+        double y_trans_delta2 = y_trans - y_trans_mean;
+        y_trans_M2 += y_trans_delta * y_trans_delta2;
+        double pr_t_delta = pr_t - pr_t_mean;
+        pr_t_mean += pr_t_delta / static_cast<double>(nNorm);
+        double pr_t_delta2 = pr_t - pr_t_mean;
+        pr_t_M2 += pr_t_delta * pr_t_delta2;
+        double pphi_t_delta = pphi_t - pphi_t_mean;
+        pphi_t_mean += pphi_t_delta / static_cast<double>(nNorm);
+        double pphi_t_delta2 = pphi_t - pphi_t_mean;
+        pphi_t_M2 += pphi_t_delta * pphi_t_delta2;
+        double pz_t_delta = pz_t - pz_t_mean;
+        pz_t_mean += pz_t_delta / static_cast<double>(nNorm);
+        double pz_t_delta2 = pz_t - pz_t_mean;
+        pz_t_M2 += pz_t_delta * pz_t_delta2;
+      }
       if (useTwoStageTraining) {
         DiffusionTrainingSample s1; 
         s1.x = {t_trans, x_trans, y_trans};
@@ -234,6 +270,13 @@ namespace mu2e {
       }
     }
     fin.Close();
+
+    t_trans_stdev = std::sqrt(t_trans_M2 / static_cast<double>(nNorm));
+    x_trans_stdev = std::sqrt(x_trans_M2 / static_cast<double>(nNorm));
+    y_trans_stdev = std::sqrt(y_trans_M2 / static_cast<double>(nNorm));
+    pr_t_stdev = std::sqrt(pr_t_M2 / static_cast<double>(nNorm));
+    pphi_t_stdev = std::sqrt(pphi_t_M2 / static_cast<double>(nNorm));
+    pz_t_stdev = std::sqrt(pz_t_M2 / static_cast<double>(nNorm));
 
     if (useTwoStageTraining && (stage1TrainingData.empty() || stage2TrainingData.empty())) {
       mf::LogWarning("VDResamplerTrainFromRoot") << "No training data collected.";
@@ -254,6 +297,14 @@ namespace mu2e {
       if (SBDMstage1ModelFile.empty() || SBDMstage2ModelFile.empty()) {
         throw cet::exception("VDResamplerTrainFromRoot") << "Two-stage training requires both SBDMstage1ModelFile and SBDMstage2ModelFile.";
       }
+
+      // insert normalization information and normalize the training data
+      std::vector<double> stage1Mean = {t_trans_mean, x_trans_mean, y_trans_mean};
+      std::vector<double> stage1Stdev = {t_trans_stdev, x_trans_stdev, y_trans_stdev};
+      stage1Model->normalizeData(stage1Mean, stage1Stdev, stage1TrainingData);
+      std::vector<double> stage2Mean = {pr_t_mean, pphi_t_mean, pz_t_mean, t_trans_mean, x_trans_mean, y_trans_mean};
+      std::vector<double> stage2Stdev = {pr_t_stdev, pphi_t_stdev, pz_t_stdev, t_trans_stdev, x_trans_stdev, y_trans_stdev};
+      stage2Model->normalizeData(stage2Mean, stage2Stdev, stage2TrainingData);
 
       mf::LogInfo("VDResamplerTrainFromRoot")
           << "Training stage-1 diffusion model with " << stage1TrainingData.size()
@@ -290,6 +341,11 @@ namespace mu2e {
       if (SBDMallAtOnceModelFile.empty()) {
         throw cet::exception("VDResamplerTrainFromRoot") << "All-at-once training requires SBDMallAtOnceModelFile.";
       }
+
+      // insert normalization information and normalize the training data
+      std::vector<double> allAtOnceMean = {t_trans_mean, x_trans_mean, y_trans_mean, pr_t_mean, pphi_t_mean, pz_t_mean};
+      std::vector<double> allAtOnceStdev = {t_trans_stdev, x_trans_stdev, y_trans_stdev, pr_t_stdev, pphi_t_stdev, pz_t_stdev};
+      allAtOnceModel->normalizeData(allAtOnceMean, allAtOnceStdev, allAtOnceTrainingData);
 
       mf::LogInfo("VDResamplerTrainFromRoot")
           << "Training all-at-once diffusion model with " << allAtOnceTrainingData.size()

@@ -110,6 +110,11 @@ namespace mu2e {
           Comment("If true, use Heun's method for reverse diffusion. Otherwise use Euler."),
           true
         };
+        fhicl::Atom<bool> useSDE{
+          Name("useSDE"),
+          Comment("If true, use SDE solver. Otherwise use ODE solver."),
+          true
+        };
         fhicl::Atom<int> diffusionSteps{
           Name("diffusionSteps"),
           Comment("Number of reverse-diffusion steps used for sampling"),
@@ -146,6 +151,7 @@ namespace mu2e {
       std::string stage2ModelFile_;
       std::string allAtOnceModelFile_;
       bool useHeun_;
+      bool useSDE_;
       int diffusionSteps_;
       double VDz0_;
       double VDr_;
@@ -188,6 +194,7 @@ namespace mu2e {
       stage2ModelFile_(conf().stage2ModelFile()),
       allAtOnceModelFile_(conf().allAtOnceModelFile()),
       useHeun_(conf().useHeun()),
+      useSDE_(conf().useSDE()),
       diffusionSteps_(conf().diffusionSteps()),
       VDz0_(conf().VDz0()),
       VDr_(conf().VDr()),
@@ -260,39 +267,44 @@ namespace mu2e {
     // Generate a new sample using the loaded model(s)
     // note the values here are transformed and need to be inverted back to the original coordinates after sampling.
     if (useTwoStageModel_) {
-      const std::vector<double> stage1Sample = stage1Model_->generateSample({}, useHeun_, diffusionSteps_);
-      if (stage1Sample.size() != 3u) {
+      const SBDMGeneratedSample stage1Sample = stage1Model_->generateSample({}, useHeun_, useSDE_, diffusionSteps_);
+      if (stage1Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-1 model returned " << stage1Sample.size() << " values, expected 3.";
+          << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
       }
 
-      t_trans = stage1Sample[0];
-      x_trans = stage1Sample[1];
-      y_trans = stage1Sample[2];
+      t_trans = stage1Sample.value[0];
+      x_trans = stage1Sample.value[1];
+      y_trans = stage1Sample.value[2];
 
-      const std::vector<double> stage2Condition = {t_trans, x_trans, y_trans};
-      const std::vector<double> stage2Sample = stage2Model_->generateSample(stage2Condition, useHeun_, diffusionSteps_);
-      if (stage2Sample.size() != 3u) {
+      // as the models are trained with normalized data, the conditions need to use z-scores
+      double t_zscore = stage1Sample.zscore[0];
+      double x_zscore = stage1Sample.zscore[1];
+      double y_zscore = stage1Sample.zscore[2];
+
+      const std::vector<double> stage2Condition = {t_zscore, x_zscore, y_zscore};
+      const SBDMGeneratedSample stage2Sample = stage2Model_->generateSample(stage2Condition, useHeun_, useSDE_, diffusionSteps_);
+      if (stage2Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-2 model returned " << stage2Sample.size() << " values, expected 3.";
+          << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
       }
 
-      pr_t = stage2Sample[0];
-      pphi_t = stage2Sample[1];
-      pz_t = stage2Sample[2];
+      pr_t = stage2Sample.value[0];
+      pphi_t = stage2Sample.value[1];
+      pz_t = stage2Sample.value[2];
     } else {
-      const std::vector<double> sample = allAtOnceModel_->generateSample({}, useHeun_, diffusionSteps_);
-      if (sample.size() != 6u) {
+      const SBDMGeneratedSample sample = allAtOnceModel_->generateSample({}, useHeun_, useSDE_, diffusionSteps_);
+      if (sample.zscore.size() != 6u) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "All-at-once model returned " << sample.size() << " values, expected 6.";
+          << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";
       }
 
-      t_trans = sample[0];
-      x_trans = sample[1];
-      y_trans = sample[2];
-      pr_t = sample[3];
-      pphi_t = sample[4];
-      pz_t = sample[5];
+      t_trans = sample.value[0];
+      x_trans = sample.value[1];
+      y_trans = sample.value[2];
+      pr_t = sample.value[3];
+      pphi_t = sample.value[4];
+      pz_t = sample.value[5];
     }
 
     VDResampler::invertGeneratedSample(

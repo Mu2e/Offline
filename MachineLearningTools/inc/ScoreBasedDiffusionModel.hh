@@ -28,6 +28,11 @@ namespace mu2e{
         std::vector<double> cond; // optional conditioning vector (size = conditionDim)
     };
 
+    struct SBDMGeneratedSample {
+        std::vector<double> zscore; // normalized data
+        std::vector<double> value;  // unnormalized data
+    };
+
     class ScoreBasedDiffusionModel {
     public:
         // Enumeration for optimizer selection
@@ -92,6 +97,17 @@ namespace mu2e{
             bool initializeRandomWeights = true
         );
 
+        // Data normalization to be applied before training
+        // Parameters:
+        //   mean - Mean values for each dimension of the data (both state and condition)
+        //   stdev - Standard deviation values for each dimension of the data (both state and condition)
+        //   data - Training samples (transformed state vectors)
+        void normalizeData(
+            const std::vector<double>& mean,
+            const std::vector<double>& stdev,
+            std::vector<DiffusionTrainingSample>& data
+        );
+
         // Train the score network on a batch of samples.
         // Uses random sampling and noise injection via the external engine.
         // Note that training needs to occur on all data samples. Training on multiple small subsets
@@ -112,12 +128,14 @@ namespace mu2e{
         // Parameters:
         //   condition       - Optional conditioning vector (must match conditionDim_ when enabled)
         //   useHeun         - If true, uses Heun's method (2nd order, default). If false, uses Euler's method (1st order)
+        //   useSDE          - If true, uses SDE (Stochastic Differential Equation) method. If false, uses the deterministic reverse process
         //   diffusionSteps  - Number of diffusion steps for sampling (default: -1 uses the model's configured diffusionSteps_)
         //
-        // Returns: A generated sample vector of dimension dim_
-        std::vector<double> generateSample(
+        // Returns: Two generated sample vectors, zscore and value of dimensions dim_
+        SBDMGeneratedSample generateSample(
             const std::vector<double>& condition = {},
             bool useHeun = true,
+            bool useSDE = true,
             int diffusionSteps = -1
         );
 
@@ -337,6 +355,14 @@ namespace mu2e{
         size_t clipCount_;
         size_t totalClipChecks_;
         double clipScaleAccum_;
+
+        // Data normalization containers
+        // Mean and variance of input data (for normalization)
+        std::vector<double> dataMean_;
+        std::vector<double> dataStdev_;
+        // Min and max of normalized data (for possible clamping or rescaling)
+        std::vector<double> normMin_;
+        std::vector<double> normMax_;
 
     };
 }
