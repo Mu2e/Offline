@@ -6,13 +6,15 @@ BEGIN_PROLOG
 DAQ : {
     producers : {
         makeSD: { module_type: StrawDigisFromArtdaqFragments
-            diagLevel        : 0                      ## not used yet
-            debugMode        : 0                      ##
-            debugBits        : [ "bit0:0", "bit1:0" ] ## 100 in total, configure printout details
-            saveWaveforms    : false
-            missingDTCHeaders: false                  ## true for runs <= 107246
-            keyOnMnid        : false                  ##
-            geography        : []                     ## for now, a real job should include a real map
+            diagLevel                               : 0                      ## not used yet
+            debugMode                               : 0                      ##
+            debugBits                               : [ "bit0:0", "bit1:0" ] ## 100 in total, configure printout details
+            saveWaveforms                           : false
+            missingDTCHeaders                       : false                  ## true for runs <= 107246
+            keyOnMnid                               : false                  ##
+            geography                               : []                     ## for now, a real job should include a real map
+            allowOfflineFallbackWhenPanelMapMissing : false
+            forceOfflineAddressing                  : false
         }
     }
 
@@ -37,7 +39,7 @@ DAQ : {
             minEDep             : 0.0006 ## in MeV
             debugMode           : false
             debugBits           : [ "bit0:0" ]
-            mnidToSkip          : [ ]    ## by default all panels are good
+            channelsToSkip      : [ ]    ## by default all channels are good
             fillHistograms      : false
         }
     }

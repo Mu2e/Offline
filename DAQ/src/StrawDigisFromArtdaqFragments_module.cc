@@ -66,12 +66,18 @@ class mu2e::StrawDigisFromArtdaqFragments : public art::EDProducer {
 public:
 
   struct Config {
-    fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("diagnostic severity level, default:0"      )};
+    fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("2026-04-25 PM: OBSOLETE, WILL BE REMOVED SOON")};
     fhicl::Atom<int>             debugMode        {fhicl::Name("debugMode"        ), fhicl::Comment("debug mode, default:0"                     )};
     fhicl::Sequence<std::string> debugBits        {fhicl::Name("debugBits"        ), fhicl::Comment("debug bits"                                )};
     fhicl::Atom<bool>            saveWaveforms    {fhicl::Name("saveWaveforms"    ), fhicl::Comment("save StrawDigiADCWaveforms, default:true"  )};
     fhicl::Atom<bool>            missingDTCHeaders{fhicl::Name("missingDTCHeaders"), fhicl::Comment("true for runs <= 107246, default:false"    )};
     fhicl::Atom<bool>            keyOnMnid        {fhicl::Name("keyOnMnid"        ), fhicl::Comment("true if need to key on MnID, default:false")};
+    fhicl::Atom<bool>            allowOfflineFallbackWhenPanelMapMissing{
+      fhicl::Name("allowOfflineFallbackWhenPanelMapMissing"),
+      fhicl::Comment("If TrackerPanelMap lookup fails, decode using offline StrawId(dtc,link,straw)")};
+    fhicl::Atom<bool>            forceOfflineAddressing{
+      fhicl::Name("forceOfflineAddressing"),
+      fhicl::Comment("Ignore TrackerPanelMap/mnid and decode StrawId directly as (dtc,link,straw)")};
 
     // individual tuple specifying a minnesota label, e.g. MN123,
     // with geographic plane/panel numbers, i.e. from DocDB-#888
@@ -145,6 +151,8 @@ private:
   bool      saveWaveforms_;
   bool      missingDTCHeaders_;
   bool      keyOnMnid_;
+  bool      allowOfflineFallbackWhenPanelMapMissing_;
+  bool      forceOfflineAddressing_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -175,6 +183,8 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     saveWaveforms_    (config().saveWaveforms()),
     missingDTCHeaders_(config().missingDTCHeaders()),
     keyOnMnid_        (config().keyOnMnid()),
+    allowOfflineFallbackWhenPanelMapMissing_(config().allowOfflineFallbackWhenPanelMapMissing()),
+    forceOfflineAddressing_(config().forceOfflineAddressing()),
     event_            (nullptr)
 {
   produces<mu2e::StrawDigiCollection>();
@@ -415,17 +425,21 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             }
             
             const TrkPanelMap::Row* tpm(nullptr);
-            if (not keyOnMnid_) {
+            if (!forceOfflineAddressing_ && not keyOnMnid_) {
               tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
               if (tpm == nullptr) {
+                if (!allowOfflineFallbackWhenPanelMapMissing_) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------
-                print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data",
+                  print_(std::format("ERROR: either dtc_id:{} or link_id:{} is corrupted, skip ROC data",
+                                     dtc_id,link_id));
+
+                  roc_data += (nhits*np_per_hit_+1)*packet_size;
+                  continue;
+                }
+                print_(std::format("WARNING: no panel map for dtc_id:{} link_id:{}, using offline fallback",
                                    dtc_id,link_id));
-                
-                roc_data += (nhits*np_per_hit_+1)*packet_size;
-                continue;
               }
             }
 
@@ -463,18 +477,21 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
 
-              if (keyOnMnid_) {
+              if (!forceOfflineAddressing_ && keyOnMnid_) {
                 tpm = _trackerPanelMap->panel_map_by_mnid(mnid);
                 if (tpm == nullptr) {
+                  if (!allowOfflineFallbackWhenPanelMapMissing_) {
 //-----------------------------------------------------------------------------
 // bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
 //-----------------------------------------------------------------------------
-                  if (debugBit_[51] == 0) print_(std::format("ERROR: corrupted mnid:{}, skip hit data",mnid));
-                  continue;
+                    if (debugBit_[51] == 0) print_(std::format("ERROR: corrupted mnid:{}, skip hit data",mnid));
+                    continue;
+                  }
+                  print_(std::format("WARNING: no panel map for mnid:{}, using offline fallback",mnid));
                 }
               }
 // in principle, could this could become an 'else if'
-              if (tpm->mnid() != mnid) {
+              if (!forceOfflineAddressing_ && tpm != nullptr && tpm->mnid() != mnid) {
                 print_(std::format("ERROR: mnid:{:3d} tpm->mnid():{:3d} hit chid:{:04x} inconsistent with the dtc_id:{:2d} and link_id:{}",
                                    mnid,tpm->mnid(),hit_data->StrawIndex, dtc_id, link_id));
 //-----------------------------------------------------------------------------
@@ -493,7 +510,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              mu2e::StrawId sid(tpm->uniquePlane(),tpm->panel(),chid);
+              mu2e::StrawId sid = (forceOfflineAddressing_ || tpm == nullptr)
+                ? mu2e::StrawId(dtc_id, link_id, chid)
+                : mu2e::StrawId(tpm->uniquePlane(), tpm->panel(), chid);
 
               mu2e::TrkTypes::TDCValues tdc = {hit_data->TDC0(), hit_data->TDC1()};
               mu2e::TrkTypes::TOTValues tot = {hit_data->TOT0  , hit_data->TOT1  };
@@ -505,9 +524,12 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                   header_printed = 1;
                 }
 
+                auto const planeForPrint = (tpm != nullptr) ? tpm->uniquePlane() : dtc_id;
+                auto const panelForPrint = (tpm != nullptr) ? tpm->panel() : link_id;
+
                 int ind = straw_digis->size();
                 std::cout << std::format("{:5} 0x{:04x}   0x{:04x} MN{:03d}   {:3} {:3}      0x:{:04x}  {:9} {:9}   {:2}   {:2}  {:5}\n",
-                                         ind,offset,hit_data->StrawIndex,mnid,tpm->uniquePlane(),tpm->panel(),sid.straw(),hit_data->TDC0(),
+                                         ind,offset,hit_data->StrawIndex,mnid,planeForPrint,panelForPrint,sid.straw(),hit_data->TDC0(),
                                          hit_data->TDC1(),tot[0],tot[1],pmp);
               }
 

@@ -351,6 +351,8 @@ namespace mu2e
     if(_produceNZS) event.put(std::move(crvDigisNZS),"NZS");
     event.put(std::move(crvDaqErrors));
     event.put(std::move(crvStatus));
+
+    if(_diagLevel>1) std::cout << std::format("N(CRV digis):{}\n",crvDigis->size());
   }
 
 } //namespace mu2e
