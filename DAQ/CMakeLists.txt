@@ -146,7 +146,6 @@ cet_build_plugin(STMPrintFragments art::module
   Offline::ProditionsService
   Offline::DataProducts
   Offline::RecoDataProducts
-  BTrk_difAlgebra
 )
 
 cet_build_plugin(StrawDigisFromArtdaqFragments art::module

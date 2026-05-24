@@ -3,6 +3,7 @@ cet_make_library(
       src/BkgANNSHU.cc
       src/CADSHU.cc
       src/Chi2SHU.cc
+      src/PanelDiagSHU.cc
       src/DriftANNSHU.cc
       src/KKBField.cc
       src/KKConstantBField.cc

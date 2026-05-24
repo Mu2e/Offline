@@ -16,6 +16,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
@@ -45,6 +46,8 @@ namespace mu2e {
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
       using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>>;
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
+      using PanelDiagSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,std::string,int>>;
+      PanelDiagSHUSettings paneldiagshuConfig{ Name("PanelDiagSHUSettings"), Comment(PanelDiagSHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
