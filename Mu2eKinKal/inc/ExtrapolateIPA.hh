@@ -6,6 +6,7 @@
 #include "KinKal/General/TimeDir.hh"
 #include "KinKal/General/TimeRange.hh"
 #include "KinKal/Geometry/Intersection.hh"
+#include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include <limits>
 #include "cetlib_except/exception.h"

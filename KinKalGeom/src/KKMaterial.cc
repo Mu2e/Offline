@@ -14,7 +14,8 @@ namespace mu2e {
     gasmatname_(matconfig.strawGasMaterialName()),
     wirematname_(matconfig.strawWireMaterialName()),
     ipamatname_(matconfig.IPAMaterialName()),
-    stmatname_(matconfig.STMaterialName()) {
+    stmatname_(matconfig.STMaterialName()),
+    crvmatname_(matconfig.CRVMaterialName()) {
       MatEnv::DetMaterialConfig dmconf;
       dmconf.elossmode_ = (DetMaterial::energylossmode)matconfig.elossMode();
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();

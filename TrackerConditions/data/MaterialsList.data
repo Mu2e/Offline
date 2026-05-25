@@ -34,4 +34,5 @@ NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0.35 Titanium  0    -10     -20     -30     20.
 DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0.33 NbTi  0    -10     -20     -30     20.0    1.0    solid
 DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0.187 NbTi  0    -10     -20     -30     20.0    1.0    solid
 DSSStainless 8.02 0.0 0.0 +5 0.02 Manganese 0.01 Silicon 0.19 Chromium 0.1 Nickel 0.68 Iron 0    -10     -20     -30     20.0    1.0    solid
-
+# CRV materials: module = scintilator bars + aluminum absorber (temporarily pure aluminum)
+CRVModule 2.700000    0.   0.   +1    100.0e-2    Aluminum   0   24.01000   106.40000    -30     20.0    1.0    solid
