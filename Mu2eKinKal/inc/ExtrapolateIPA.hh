@@ -52,6 +52,7 @@ namespace mu2e {
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
     // we are answering the question: did the segment last added to this extrapolated track hit the IPA or not?
     // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
+    reset(); // clear any cache
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small step to avoid re-intersecting
@@ -65,13 +66,11 @@ namespace mu2e {
     if(debug_ > 2)std::cout << "IPA extrap start time " << stime << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << std::endl;
     // stop if the particle is heading away from the IPA
     if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
-      reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from IPA: done" << std::endl;
       return false;
     }
     // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
     if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
-      reset();
       if(debug_ > 2)std::cout << "Heading towards IPA, z " << spos.Z()<< std::endl;
       return true;
     }
@@ -86,7 +85,6 @@ namespace mu2e {
       return false;
     } else {
       // no more intersections: keep extending in Z till we clear the IPA
-      reset();
       if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << spos.Z() << std::endl;
       if(zvel > 0.0)
         return spos.Z() < zmax_;
