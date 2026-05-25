@@ -14,6 +14,8 @@
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "cetlib_except/exception.h"
+#include <cmath>
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -46,21 +48,20 @@ namespace mu2e {
     // enters the volume, the reco track will be sampled at a different position depending on the track direction by that amount. This is a fundamental
     // discrepancy between reco and sim data
     auto const& tracker = *(GeomHandle<mu2e::Tracker>());
-    GeomHandle<Beamline> bg;
-    GeomHandle<DetectorSystem> det;
-    GeomHandle<DetectorSolenoid> ds;
+    auto const& g4tmom = tracker.g4Tracker()->mother();
+    auto const& ds = *(GeomHandle<DetectorSolenoid>());
     double vdHL(0.01); // hardcoded in VirtualDetectorMaker line 56
     // below are from VirtualDetectorMaker lnes 241-244
-    double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
-    double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
+    double zFrontGlobal = g4tmom.position().z()-g4tmom.tubsParams().zHalfLength()-vdHL;
+    double zBackGlobal  = g4tmom.position().z()+g4tmom.tubsParams().zHalfLength()+vdHL;
     // the 0.4 below comes from offsets in the mother volume nesting.
     double zFrontLocal  = zFrontGlobal - tracker.g4Tracker()->z0() + 0.4;
     double zBackLocal   = zBackGlobal  - tracker.g4Tracker()->z0() - 0.4;
     double zMidLocal = 10.1; // 10.1 is hard-coded in VirtualDetectorMaker line 224
     double halfLen = 0.5*(zBackLocal-zFrontLocal);
-    double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
+    double orvd = g4tmom.tubsParams().outerRadius();
     double irvd = tracker.g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
-    double irds = ds->rIn1();
+    double irds = ds.rIn1();
     // cylinders are defined by TT_outer (_inner) virtual detectors
     // Disks are defined to match TT_front (mid, back) virtual detectors
     auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),orvd,halfLen);
@@ -163,48 +164,103 @@ namespace mu2e {
 
   void KinKalGeomMaker::makeCRV() {
     GeomHandle<CosmicRayShield> CRS;
-    auto const& sectors = CRS->getCRSScintillatorShields();
-    KKGeom::CRV::RecPtrVec midplanes;
+    GeomHandle<DetectorSystem> det;
+    auto const& shields = CRS->getCRSScintillatorShields();
     std::vector<std::string> snames;
-    // loop over the sectors
-    for (auto const& sector : sectors) {
-      // find the first and last bar; these define the rectangle bounds
-      auto const& firstbar = sector.getModule(0).getLayer(0).getBar(0);
-      auto const& lastmod = sector.getModule(sector.nModules()-1);
-      auto const& lastlay = lastmod.getLayer(lastmod.nLayers()-1);
-      auto const& lastbar = lastlay.getBar(lastlay.nBars()-1);
-      auto const& opplay = lastmod.getLayer(0);
-      auto const& oppbar = opplay.getBar(opplay.nBars()-1);
-      std::cout << "CRSS name " << sector.getName()
-        << " N Modules " << sector.nModules()
-        << " N Layers " << sector.getModule(0).nLayers()
-        << " N Bars " << sector.getModule(0).getLayer(0).nBars()
-        << " first bar " << firstbar.id() << " position " << firstbar.getPosition()
-        << " last bar " << lastbar.id() << " position " << lastbar.getPosition()
-        << " opp bar " << oppbar.id() << " position " << oppbar.getPosition()
-        << " first bar tdir " << firstbar.getBarDetail().getThicknessDirection()
-        << " wdir " << firstbar.getBarDetail().getWidthDirection()
-        << " ldir " << firstbar.getBarDetail().getLengthDirection()
-        << std::endl;
-//      fpos = firstbar.getPosition();
-//      lpos = lastbar.getPosition();
-//      opos = oppbar.getPosition();
-      // the midpoint of of the midplane is the average.
-//      auto midpoint = 0.5*(fpos + lpos);
-      // infer the orientation the positions of the first and last bar in the 0th layer
-//      double small(1.0);
-//      VEC3 norm, udir;
-//      if( fabs(fpos.y()-opos.y()) > small){
-
+    KKGeom::CRV::RecPtrVec sectors;
+    // loop over the shields (= sectors)
+    for (auto const& shield : shields) {
       //
-      snames.push_back(sector.getName());
+      // First find this shield's orientation; the first bar is enough for that
+      //
+      auto const& firstbar = shield.getFirstBar();
+      auto fbarpos = VEC3(det->toDetector(firstbar.getPosition())); // convert to detector (tracker) coordinates and root vectors
+      auto bardet = firstbar.getBarDetail();
+      // normal (w) direction is the thickness direction. Make sure it points away from the tracker
+      VEC3 wdir;
+      switch(bardet.getThicknessDirection()) {
+        case 0:
+          wdir = VEC3(copysign(1.0,fbarpos.X()),0.0,0.0);
+          break;
+        case 1:
+          wdir = VEC3(0.0,copysign(1.0,fbarpos.Y()),0.0);
+          break;
+        case 2:
+          wdir = VEC3(0.0,0.0,copysign(1.0,fbarpos.Z()));
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< bardet.getThicknessDirection() << std::endl;
+          break;
+      }
+      // u direction points along the bars (length direction). Sign is unimportant.
+      VEC3 udir;
+      switch(bardet.getLengthDirection()) {
+        case 0:
+          udir = VEC3(1.0,0.0,0.0);
+          break;
+        case 1:
+          udir = VEC3(0.0,1.0,0.0);
+          break;
+        case 2:
+          udir = VEC3(0.0,0.0,1.0);
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< bardet.getLengthDirection() << std::endl;
+          break;
+      }
+      // v points along bar width
+      VEC3 vdir;
+      switch(bardet.getWidthDirection()) {
+        case 0:
+          vdir = VEC3(1.0,0.0,0.0);
+          break;
+        case 1:
+          vdir = VEC3(0.0,1.0,0.0);
+          break;
+        case 2:
+          vdir = VEC3(0.0,0.0,1.0);
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< firstbar.getBarDetail().getWidthDirection() << std::endl;
+          break;
+      }
+      // next compute the average position. All the bars have the same position along their length
+      double upos = fbarpos.Dot(udir);
+      double uhw = firstbar.getHalfLength();
+      // average first and last layers to get the w position and half-width
+      auto const& firstmod = shield.getModule(0);
+      auto flaypos = VEC3(det->toDetector(firstmod.getLayer(0).getPosition()));
+      auto llaypos = VEC3(det->toDetector(firstmod.getLayer(firstmod.nLayers()-1).getPosition()));
+      double wpos = 0.5*(flaypos+llaypos).Dot(wdir);
+      double whw = 0.5*(llaypos-flaypos).Dot(wdir) + firstbar.getHalfThickness();
+      // include the layer stagger when computing the position and width perp to the bars
+      auto nlay = firstmod.nLayers();
+      auto nbar = firstmod.getLayer(0).nBars();
+      auto const& lastmod = shield.getModule(shield.nModules()-1);
+      auto vf0 = VEC3(det->toDetector(firstmod.getLayer(0).getBar(0).getPosition())).Dot(vdir);
+      auto vf3 = VEC3(det->toDetector(firstmod.getLayer(nlay-1).getBar(0).getPosition())).Dot(vdir);
+      auto vl0 = VEC3(det->toDetector(lastmod.getLayer(0).getBar(nbar-1).getPosition())).Dot(vdir);
+      auto vl3 = VEC3(det->toDetector(lastmod.getLayer(nlay-1).getBar(nbar-1).getPosition())).Dot(vdir);
+      double vpos = 0.25*(vf0+vf3+vl0+vl3);
+      double vmin = std::min({vf0,vf3,vl0,vl3});
+      double vmax = std::max({vf0,vf3,vl0,vl3});
+      double vhw = 0.5*(vmax-vmin)+ firstbar.getHalfWidth();
+      VEC3 midpoint = upos*udir + vpos*vdir + wpos*wdir;
+      if(debug_ > 0){
+        std::cout << "CRSS name " << shield.getName() << " N Modules " << shield.nModules() << std::endl;
+        std::cout << "midpoint " << midpoint << " wdir " << wdir << " udir " << udir << " vdir " << vdir
+        << " uhw " << uhw << " vhw " << vhw << " whw " << whw <<  std::endl;
+      }
+      // create the rectangle
+      sectors.push_back(std::make_shared<KinKal::Rectangle>(wdir,udir,midpoint,uhw,vhw));
+      snames.push_back(shield.getName());
     }
 
-    kkg_->crv_ = std::make_unique<KKGeom::CRV>(midplanes,snames);
-
+    kkg_->crv_ = std::make_unique<KKGeom::CRV>(sectors,snames);
+    // fill map
     unsigned isect(0);
-    for(auto const& midplane : kkg_->crv_->sectors()){
-      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(midplane)));
+    for(auto const& sector : kkg_->crv_->sectors()){
+      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(sector)));
       isect++;
     }
   }

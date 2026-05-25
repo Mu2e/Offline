@@ -16,6 +16,7 @@ namespace mu2e {
       void makeTarget();
       void makeCRV();
       std::unique_ptr<KinKalGeom> kkg_;
+      int debug_ = 0;
   };
 }
 #endif
