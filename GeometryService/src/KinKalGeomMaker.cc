@@ -16,6 +16,7 @@
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "cetlib_except/exception.h"
 #include <cmath>
+#include <algorithm>
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -32,6 +33,8 @@ namespace mu2e {
   using FruPtr = std::shared_ptr<KinKal::Frustrum>;
   using SurfacePtr = std::shared_ptr<KinKal::Surface>;
   using KKGMap = std::multimap<SurfaceId,SurfacePtr>;
+  using mu2e::KKGeom::KKCRVSector;
+
 
   std::unique_ptr<KinKalGeom>& KinKalGeomMaker::makeKKG() {
     kkg_ = std::make_unique<KinKalGeom>();
@@ -41,6 +44,13 @@ namespace mu2e {
     makeCRV();
     return kkg_;
   }
+
+  // sort by transverse distance
+  struct sortCRVSectors {
+    bool operator () (KKCRVSector const& sect1, KKCRVSector const& sect2) {
+      return sect1.sector_->center().Rho() < sect2.sector_->center().Rho();
+    }
+  }crvsectorsort;
 
   void KinKalGeomMaker::makeTracker() {
       // surfaces need to match with virtual detectors. The following is extracted from VirtualDetectorMaker and needs to be updated if that changes.
@@ -166,8 +176,7 @@ namespace mu2e {
     GeomHandle<CosmicRayShield> CRS;
     GeomHandle<DetectorSystem> det;
     auto const& shields = CRS->getCRSScintillatorShields();
-    std::vector<std::string> snames;
-    KKGeom::CRV::RecPtrVec sectors;
+    std::vector<KKCRVSector> sectors;
     // loop over the shields (= sectors)
     for (auto const& shield : shields) {
       //
@@ -246,21 +255,29 @@ namespace mu2e {
       double vmax = std::max({vf0,vf3,vl0,vl3});
       double vhw = 0.5*(vmax-vmin)+ firstbar.getHalfWidth();
       VEC3 midpoint = upos*udir + vpos*vdir + wpos*wdir;
-      if(debug_ > 0){
-        std::cout << "CRSS name " << shield.getName() << " N Modules " << shield.nModules() << std::endl;
-        std::cout << "midpoint " << midpoint << " wdir " << wdir << " udir " << udir << " vdir " << vdir
-        << " uhw " << uhw << " vhw " << vhw << " whw " << whw <<  std::endl;
-      }
       // create the rectangle
-      sectors.push_back(std::make_shared<KinKal::Rectangle>(wdir,udir,midpoint,uhw,vhw));
-      snames.push_back(shield.getName());
+      KKCRVSector sector;
+      sector.sname_ = shield.getName();
+      sector.sector_ = std::make_shared<KinKal::Rectangle>(wdir,udir,midpoint,uhw,vhw);
+      sector.whw_ = whw;
+      sectors.push_back(sector);
+    }
+    // sort the sectors according to their transverse distance
+    std::sort(sectors.begin(),sectors.end(),crvsectorsort);
+    if(debug_ > 0){
+      for(auto const& sector : sectors){
+        std::cout << "CRV sector " <<  sector.sname_;
+        auto const& sectptr = sector.sector_;
+        std::cout << " midpoint " << sectptr->center() << " wdir " << sectptr->normal() << " udir " << sectptr->uDirection() << " vdir " << sectptr->vDirection()
+          << " uhw " << sectptr->uHalfLength() << " vhw " << sectptr->vHalfLength() <<  " whw " << sector.whw_ << std::endl;
+      }
     }
 
-    kkg_->crv_ = std::make_unique<KKGeom::CRV>(sectors,snames);
+    kkg_->crv_ = std::make_unique<KKGeom::CRV>(sectors);
     // fill map
     unsigned isect(0);
     for(auto const& sector : kkg_->crv_->sectors()){
-      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(sector)));
+      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(sector.sector_)));
       isect++;
     }
   }

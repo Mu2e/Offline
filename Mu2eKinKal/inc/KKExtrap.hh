@@ -49,7 +49,6 @@ namespace mu2e {
       bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
-      double crvthick_ = 50.0; // CRV sector thickness: should come from geometry service TODO
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig) :
@@ -101,7 +100,11 @@ namespace mu2e {
       // optionally test for intersection with the OPA
       if(extrapolateOPA_)extrapolateOPA(ktrk,starttime,tdir);
     }
-    if(toCRV_)extrapolateCRV(ktrk,tdir);
+    // try CRV in both directions
+    if(toCRV_){
+      extrapolateCRV(ktrk,TimeDir::backwards);
+      extrapolateCRV(ktrk,TimeDir::forwards);
+    }
   }
 
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
@@ -287,15 +290,24 @@ namespace mu2e {
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     // extrapolate to the extracted CRV. Loop to cover multiple intersections
     auto extrapCRV = ExtrapolateCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
+    if(debug_ > 2){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors" << std::endl;
+      for(auto const& sector : kkg_h->CRV()->sectors()) {
+        std::cout << sector.sname_ << " position " << sector.sector_->center() << " halfwidth " << sector.whw_ << std::endl;
+      }
+    }
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId CRVSID("CRV");
     do {
       // iterate until the extrapolation condition is met
       ktrk.extrapolate(tdir,extrapCRV);
       if(extrapCRV.intersection().good()){
+        if(debug_ > 1){
+          std::cout << "Good CRV intersection " << extrapCRV.intersection() << std::endl;
+        }
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector(),CRVSID,*kkmat_h->CRVMaterial(),extrapCRV.intersection(),reftrajptr,crvthick_,extrapCRV.interTolerance());
+        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector(),CRVSID,*kkmat_h->CRVMaterial(),extrapCRV.intersection(),reftrajptr,
+            2*kkg_h->CRV()->sectorHalfWidth(extrapCRV.sectorIndex()), extrapCRV.interTolerance());
         ktrk.addCRVXing(crvxingptr,tdir);
       }
     } while(extrapCRV.intersection().good());

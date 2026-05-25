@@ -380,7 +380,6 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : true
     ToCRV : false
-    ToTCRV : false
   }
 
   LHSEEDXTRAP : {
@@ -393,7 +392,6 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : false
-    ToTCRV : false
   }
 
   KLXTRAP : {
@@ -405,8 +403,6 @@ Mu2eKinKal : {
     Upstream : false
     BackToTracker : false
     ToOPA : false
-    ToCRV : false
-    ToTCRV : true
     ToCRV : true
   }
 
@@ -419,8 +415,6 @@ Mu2eKinKal : {
     Upstream : false
     BackToTracker : false
     ToOPA : false
-    ToCRV : false
-    ToTCRV : false
     ToCRV : true
   }
 
