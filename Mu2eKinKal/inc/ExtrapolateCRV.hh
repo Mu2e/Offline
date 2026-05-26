@@ -66,35 +66,32 @@ namespace mu2e {
     static const double epsilon(1.0e-6);
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto valid = tdir == TimeDir::forwards ? stime < etime : etime < stime; // why is this needed??
-    if(debug_ > 3)std::cout << "CRV extrap tdir " << tdir << " valid " << valid << " stime " << stime << " etime " << etime << std::endl;
-    if (valid){
-      auto time = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-      auto pos = ktraj.position3(time);
-      auto vel = ktraj.velocity(time);
-      if(debug_ > 2)std::cout << "CRV extrap testing time " << time << " vel " << vel << " pos " << pos << std::endl;
-      for(size_t isect = 0; isect < sectors_.size(); ++isect ){
-        auto const& sector = sectors_[isect];
-        double normvel = vel.Dot(sector->normal())*timeDirSign(tdir); // sign by extrapolation direction
-        double sdist = (sector->center()-pos).Dot(vel)*timeDirSign(tdir);
-        if(debug_ > 2)std::cout << "CRV extrap tdir " << tdir << " normvel " << normvel << " time " << time << std::endl;
-        // stop if horizontal or plane is past the current point.
-        if(fabs(normvel) < minvnorm_ || sdist < 0 )continue;
-        // try to intersect
-        auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
-        auto newinter = KinKal::intersect(fittraj,*sector,trange,intertol_,tdir);
-        if(debug_ > 2)std::cout << "CRV " << newinter  << std::endl;
-        if(newinter.good()){
-          inter_ = newinter;
-          sect_ = sector;
-          isect_ = isect;
-          if(debug_ > 0)std::cout << "Good CRV " <<  newinter << std::endl;
-          break;
-        } else if ( newinter.onsurface_ && newinter.inbounds_) { // inbounds might be too strict for CentralHelix tracks, will need to check TODO
-          // there's a potential intersection, but the trajectory hasn't gotten there yet. Tell the track to keep extending
-          retval = true;
-          if(debug_ > 1)std::cout << "Potential CRV " <<  newinter << std::endl;
-        }
+    if(debug_ > 4)std::cout << "CRV extrap tdir " << tdir << " stime " << stime << " etime " << etime << std::endl;
+    // test from the start of the end poiece
+    auto pos = ktraj.position3(stime);
+    auto vel = ktraj.velocity(stime);
+    if(debug_ > 4)std::cout << "CRV extrap testing time " << time << " vel " << vel << " pos " << pos << std::endl;
+    for(size_t isect = 0; isect < sectors_.size(); ++isect ){
+      auto const& sector = sectors_[isect];
+      double normvel = vel.Dot(sector->normal())*timeDirSign(tdir); // sign by extrapolation direction
+      double sdist = (sector->center()-pos).Dot(vel)*timeDirSign(tdir);
+      if(debug_ > 4)std::cout << "CRV extrap normvel " << normvel << " time " << time << " sdist " << sdist << std::endl;
+      // stop if horizontal or plane is past the current point.
+      if(fabs(normvel) < minvnorm_ || sdist < 0 )continue;
+      // try to intersect
+      auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
+      auto newinter = KinKal::intersect(fittraj,*sector,trange,intertol_,tdir);
+      if(debug_ > 3)std::cout << "CRV " << newinter  << std::endl;
+      if(newinter.good()){
+        inter_ = newinter;
+        sect_ = sector;
+        isect_ = isect;
+        if(debug_ > 1)std::cout << "Good CRV " <<  newinter << std::endl;
+        break;
+      } else if ( newinter.onsurface_ && newinter.inbounds_) { // inbounds might be too strict for CentralHelix tracks, will need to check TODO
+        // there's a potential intersection, but the trajectory hasn't gotten there yet. Tell the track to keep extending
+        retval = true;
+        if(debug_ > 2)std::cout << "Potential CRV " <<  newinter << std::endl;
       }
     }
     return retval;

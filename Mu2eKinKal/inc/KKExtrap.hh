@@ -158,7 +158,7 @@ namespace mu2e {
     // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
     // track exits the IPA
     ExtrapolateIPA extrapIPA(maxdt_,btol_,intertol_,kkg_h->DS()->innerProtonAbsorberPtr(),debug_);
-    if(extrapIPA.debug() > 0)std::cout << "extrapolating to IPA " << std::endl;
+    if(extrapIPA.debug() > 2)std::cout << "extrapolating to IPA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId IPASID("IPA");
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
@@ -170,14 +170,14 @@ namespace mu2e {
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = kkg_h->DS()->innerProtonAbsorberPtr();
         KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance());
-        if(extrapIPA.debug() > 0){
+        if(extrapIPA.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum();
         }
         ktrk.addIPAXing(ipaxingptr,tdir);
-        if(extrapIPA.debug() > 0){
+        if(extrapIPA.debug() > 2){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
@@ -204,14 +204,14 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto startdir = ftraj.direction(starttime);
-    if(extrapST.debug() > 0)std::cout << "extrapolating to ST " << std::endl;
+    if(extrapST.debug() > 2)std::cout << "extrapolating to ST " << std::endl;
     do {
       ktrk.extrapolate(tdir,extrapST);
       if(extrapST.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance());
-        if(extrapST.debug() > 0){
+        if(extrapST.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
@@ -219,7 +219,7 @@ namespace mu2e {
         }
         // Add the xing. This truncates the fit
         ktrk.addSTXing(stxingptr,tdir);
-        if(extrapST.debug() > 0){
+        if(extrapST.debug() > 2){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
@@ -237,7 +237,7 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
-    if(trackerFront.debug() > 0)std::cout << "extrapolating to Tracker " << std::endl;
+    if(trackerFront.debug() > 2)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TrackerSID("TT_Front");
     ktrk.extrapolate(tdir,trackerFront);
@@ -254,7 +254,7 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     ExtrapolateToZ TSDA(maxdt_,btol_,kkg_h->DS()->upstreamAbsorber().center().Z(),debug_);
-    if(TSDA.debug() > 0)std::cout << "extrapolating to TSDA " << std::endl;
+    if(TSDA.debug() > 2)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TSDASID("TSDA");
     ktrk.extrapolate(tdir,TSDA);
@@ -290,7 +290,7 @@ namespace mu2e {
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     // extrapolate to the extracted CRV. Loop to cover multiple intersections
     auto extrapCRV = ExtrapolateCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
-    if(debug_ > 2){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors" << std::endl;
+    if(debug_ > 5){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors" << std::endl;
       for(auto const& sector : kkg_h->CRV()->sectors()) {
         std::cout << sector.sname_ << " position " << sector.sector_->center() << " halfwidth " << sector.whw_ << std::endl;
       }
@@ -301,14 +301,13 @@ namespace mu2e {
       // iterate until the extrapolation condition is met
       ktrk.extrapolate(tdir,extrapCRV);
       if(extrapCRV.intersection().good()){
-        if(debug_ > 1){
-          std::cout << "Good CRV intersection " << extrapCRV.intersection() << std::endl;
-        }
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector(),CRVSID,*kkmat_h->CRVMaterial(),extrapCRV.intersection(),reftrajptr,
             2*kkg_h->CRV()->sectorHalfWidth(extrapCRV.sectorIndex()), extrapCRV.interTolerance());
+        if(debug_ > 0) std::cout << "Good CRV intersection " << extrapCRV.intersection() << " range before " << ftraj.range();
         ktrk.addCRVXing(crvxingptr,tdir);
+        if(debug_ > 0) std::cout <<  " range after " << ftraj.range() << std::endl;
       }
     } while(extrapCRV.intersection().good());
   }
