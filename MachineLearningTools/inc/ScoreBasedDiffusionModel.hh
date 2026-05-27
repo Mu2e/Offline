@@ -64,6 +64,7 @@ namespace mu2e{
         //   betaMin                 - Minimum noise schedule parameter (for LINEAR schedule, default: 1e-4)
         //   betaMax                 - Maximum noise schedule parameter (for LINEAR schedule, default: 0.02)
         //   cosineOffset            - Offset parameter (for cosine schedule, default: 0.008)
+        //   lossWeightPower         - Power for weighting the loss function (default: 2.0 for quadratic weighting)
         //   batchSize               - Batch size for training (default: 32)
         //   gradientClipThreshold   - Threshold for gradient clipping (default: 1.0)
         //   learningRate            - Learning rate for training (default: 1e-3)
@@ -89,6 +90,7 @@ namespace mu2e{
             double betaMax = 0.02,
             double cosineOffset = 0.008,
             // Training configuration
+            double lossWeightPower = 2.0,
             int batchSize = 32,
             double gradientClipThreshold = 1.0,
             double learningRate = 1e-3,
@@ -107,6 +109,28 @@ namespace mu2e{
             const std::vector<double>& stdev,
             std::vector<DiffusionTrainingSample>& data
         );
+
+        // functions to update certain training parameters
+        double updateLossWeightPower(
+            double value
+        ){
+            lossWeightPower_ = value;
+            return lossWeightPower_;
+        }
+
+        double updateGradientClipThreshold(
+            double value
+        ){
+            gradientClipThreshold_ = value;
+            return gradientClipThreshold_;
+        }
+
+        double updateLearningRate(
+            double value
+        ){
+            learningRate_ = value;
+            return learningRate_;
+        }
 
         // Train the score network on a batch of samples.
         // Uses random sampling and noise injection via the external engine.
@@ -336,6 +360,7 @@ namespace mu2e{
         double cosineOffset_;
 
         // Training configuration
+        double lossWeightPower_; // Power of the loss function weighting (default: 2.0)
         int batchSize_;  // Batch size for vectorized training (default: 32)
         double gradientClipThreshold_;  // Gradient clipping threshold (default: 1.0)
         double learningRate_; // Learning rate for training (default: 1e-3)

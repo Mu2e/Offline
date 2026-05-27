@@ -14,6 +14,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
+#include <numeric>
 
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
 
@@ -35,6 +36,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 // message handling
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -75,12 +77,17 @@ namespace mu2e {
         fhicl::Atom<double> SBDMbetaMin{              Name("SBDMbetaMin"),             Comment("Minimum noise schedule parameter (for LINEAR schedule)") ,       1e-4};
         fhicl::Atom<double> SBDMbetaMax{              Name("SBDMbetaMax"),             Comment("Maximum noise schedule parameter (for LINEAR schedule)"),        0.02};
         fhicl::Atom<double> SBDMcosineOffset{         Name("SBDMcosineOffset"),        Comment("Offset parameter (for cosine schedule)"),                        0.008};
+        fhicl::Atom<double> SBDMlossWeightPower{      Name("SBDMlossWeightPower"),     Comment("Power for weighting the loss function"),                         2.0};
         fhicl::Atom<int> SBDMbatchSize{               Name("SBDMbatchSize"),           Comment("Batch size for training the SBDM"),                              32};
         fhicl::Atom<double> SBDMgradientClip{         Name("SBDMgradientClip"),        Comment("Gradient clipping threshold for training the SBDM"),             1.0};
         fhicl::Atom<double> SBDMlearningRate{         Name("SBDMlearningRate"),        Comment("Learning rate for training the SBDM"),                           1e-3};
         fhicl::Atom<int> SBDMdiffusionSteps{          Name("SBDMdiffusionSteps"),      Comment("Number of steps in the diffusion process for the SBDM"),         200};
         fhicl::Atom<int> SBDMtrainingSize{            Name("SBDMtrainingSize"),        Comment("Size of the training data for the SBDM"),                        -1}; // -1 means use all available data
         fhicl::Atom<int> SBDMtrainingEpochs{          Name("SBDMtrainingEpochs"),      Comment("Number of epochs to train the selected SBDM mode"),              10};
+        fhicl::Sequence<int> SBDMTrainingCurriculumEpochs{             Name("SBDMTrainingCurriculum"),                Comment("Training curriculum epochs for each curriculum phase") };
+        fhicl::Sequence<double> SBDMTrainingCurriculumLossWeightPower{ Name("SBDMTrainingCurriculumLossWeightPower"), Comment("Loss weight power for each curriculum phase") };
+        fhicl::Sequence<double> SBDMTrainingCurriculumGradientClip{    Name("SBDMTrainingCurriculumGradientClip"),    Comment("Gradient clip threshold for each curriculum phase") };
+        fhicl::Sequence<double> SBDMTrainingCurriculumLearningRate{    Name("SBDMTrainingCurriculumLearningRate"),    Comment("Learning rate for each curriculum phase") };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrain(const Parameters& conf);
@@ -126,6 +133,13 @@ namespace mu2e {
       // momentum scaling
       double p0 = VDResampler::kP0;
 
+      int nPhase = 1;
+      std::vector<int> trainingCurriculumEpochs = {};
+      std::vector<double> trainingCurriculumLossWeightPower = {};
+      std::vector<double> trainingCurriculumGradientClip = {};
+      std::vector<double> trainingCurriculumLearningRate = {};
+      std::vector<int> phaseBoundaries = {};
+
       // containers for normalization parameters
       double t_trans_mean = 0.0, t_trans_M2 = 0.0, t_trans_stdev = 0.0;
       double x_trans_mean = 0.0, x_trans_M2 = 0.0, x_trans_stdev = 0.0;
@@ -152,7 +166,11 @@ namespace mu2e {
     VDr(conf().VDr()),
     pdgID(conf().pdgID()),
     trainingEpochs(conf().SBDMtrainingEpochs()),
-    trainingSize(conf().SBDMtrainingSize())
+    trainingSize(conf().SBDMtrainingSize()),
+    trainingCurriculumEpochs(conf().SBDMTrainingCurriculumEpochs()),
+    trainingCurriculumLossWeightPower(conf().SBDMTrainingCurriculumLossWeightPower()),
+    trainingCurriculumGradientClip(conf().SBDMTrainingCurriculumGradientClip()),
+    trainingCurriculumLearningRate(conf().SBDMTrainingCurriculumLearningRate())
   {
     // Validate geometry configuration
     if (VDr <= 0.0) {
@@ -163,6 +181,63 @@ namespace mu2e {
     if (!std::isfinite(VDz0)) {
         throw cet::exception("VDResamplerTrain")
             << "VDz0 must be finite (got " << VDz0 << ").";
+    }
+
+    // validate curriculum parameters. If trainingCurriculumEpochs is not empty, the other vectors need
+    // to be either the same length, or empty
+    if (!trainingCurriculumEpochs.empty()) {
+        nPhase = trainingCurriculumEpochs.size();
+        if (nPhase == 1) {
+            mf::LogWarning("VDResamplerTrain")
+                << "Only one curriculum phase. Curriculum training inputs will be ignored.";
+        } else {
+          mf::LogInfo("VDResamplerTrain")
+              << "[Curriculum Training Schema]: " << nPhase << " phases.";
+          trainingEpochs = std::accumulate(trainingCurriculumEpochs.begin(), trainingCurriculumEpochs.end(), 0);
+          if (trainingCurriculumLossWeightPower.empty()) {
+            for (int i = 0; i < nPhase; ++i) {
+              trainingCurriculumLossWeightPower.push_back(conf().SBDMlossWeightPower());
+            }
+          } else if (static_cast<int>(trainingCurriculumLossWeightPower.size()) != nPhase) {
+            throw cet::exception("VDResamplerTrain")
+                << "Inconsistent sizes for curriculum training parameters: SBDMTrainingCurriculumLossWeightPower.";
+          }
+          if (trainingCurriculumGradientClip.empty()) {
+            for (int i = 0; i < nPhase; ++i) {
+              trainingCurriculumGradientClip.push_back(conf().SBDMgradientClip());
+            }
+          } else if (static_cast<int>(trainingCurriculumGradientClip.size()) != nPhase) {
+            throw cet::exception("VDResamplerTrain")
+                << "Inconsistent sizes for curriculum training parameters: SBDMTrainingCurriculumGradientClip.";
+          }
+          if (trainingCurriculumLearningRate.empty()) {
+            for (int i = 0; i < nPhase; ++i) {
+              trainingCurriculumLearningRate.push_back(conf().SBDMlearningRate());
+            }
+          } else if (static_cast<int>(trainingCurriculumLearningRate.size()) != nPhase) {
+            throw cet::exception("VDResamplerTrain")
+                << "Inconsistent sizes for curriculum training parameters: SBDMTrainingCurriculumLearningRate.";
+          }
+          // Cache phase boundaries (ending epoch of each phase)
+          phaseBoundaries.clear();
+          int epochSum = 0;
+          for (int i = 0; i < nPhase; ++i) {
+            epochSum += trainingCurriculumEpochs[i];
+            phaseBoundaries.push_back(epochSum);
+          }
+          mf::LogInfo("VDResamplerTrain")
+              << std::setw(10) << "Epochs"
+              << std::setw(20) << "Loss Weight Power"
+              << std::setw(20) << "Gradient Clip"
+              << std::setw(20) << "Learning Rate";
+          for (int i = 0; i < nPhase; ++i) {
+            mf::LogInfo("VDResamplerTrain")
+                << std::setw(10) << trainingCurriculumEpochs[i]
+                << std::setw(20) << trainingCurriculumLossWeightPower[i]
+                << std::setw(20) << trainingCurriculumGradientClip[i]
+                << std::setw(20) << trainingCurriculumLearningRate[i];
+          }
+        }
     }
 
     // optimizer selection
@@ -208,9 +283,10 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
+          nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
+          nPhase > 1 ? trainingCurriculumLearningRate[0] : conf().SBDMlearningRate(),
           conf().SBDMdiffusionSteps()
       );
 
@@ -230,9 +306,10 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
+          nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
+          nPhase > 1 ? trainingCurriculumLearningRate[0] : conf().SBDMlearningRate(),
           conf().SBDMdiffusionSteps()
       );
       // allocate memory according to the training size (if specified, otherwise will grow dynamically)
@@ -259,9 +336,10 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
+          nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
+          nPhase > 1 ? trainingCurriculumLearningRate[0] : conf().SBDMlearningRate(),
           conf().SBDMdiffusionSteps()
       );
       // allocate memory according to the training size (if specified, otherwise will grow dynamically)
@@ -416,14 +494,52 @@ namespace mu2e {
         mf::LogInfo("VDResamplerTrain")
             << "Training stage-1 diffusion model with " << stage1TrainingData.size()
             << " samples and " << trainingEpochs << " epochs...";
-        stage1Model->train(stage1TrainingData, trainingEpochs);
+        if (nPhase > 1) {
+          for (int phase = 0; phase < nPhase; ++phase) {
+            stage1Model->train(stage1TrainingData, trainingCurriculumEpochs[phase]);
+            if (phase < nPhase - 1) {
+              double newLossWeightPower = trainingCurriculumLossWeightPower[phase + 1];
+              double newGradientClip = trainingCurriculumGradientClip[phase + 1];
+              double newLearningRate = trainingCurriculumLearningRate[phase + 1];
+              mf::LogInfo("VDResamplerTrainFromRoot")
+                << "Switching to phase " << (phase + 2)
+                << ": lossWeightPower=" << newLossWeightPower
+                << ", gradientClipThreshold=" << newGradientClip
+                << ", learningRate=" << newLearningRate;
+              stage1Model->updateLossWeightPower(newLossWeightPower);
+              stage1Model->updateGradientClipThreshold(newGradientClip);
+              stage1Model->updateLearningRate(newLearningRate);
+            }
+          }
+        } else {
+          stage1Model->train(stage1TrainingData, trainingEpochs);
+        }
         stage1Model->saveModel(SBDMstage1ModelFile);
         mf::LogInfo("VDResamplerTrain") << "Stage-1 model saved to " << SBDMstage1ModelFile;
 
         mf::LogInfo("VDResamplerTrain")
             << "Training stage-2 diffusion model with " << stage2TrainingData.size()
             << " samples and " << trainingEpochs << " epochs...";
-        stage2Model->train(stage2TrainingData, trainingEpochs);
+        if (nPhase > 1) {
+          for (int phase = 0; phase < nPhase; ++phase) {
+            stage2Model->train(stage2TrainingData, trainingCurriculumEpochs[phase]);
+            if (phase < nPhase - 1) {
+              double newLossWeightPower = trainingCurriculumLossWeightPower[phase + 1];
+              double newGradientClip = trainingCurriculumGradientClip[phase + 1];
+              double newLearningRate = trainingCurriculumLearningRate[phase + 1];
+              mf::LogInfo("VDResamplerTrainFromRoot")
+                << "Switching to phase " << (phase + 2)
+                << ": lossWeightPower=" << newLossWeightPower
+                << ", gradientClipThreshold=" << newGradientClip
+                << ", learningRate=" << newLearningRate;
+              stage2Model->updateLossWeightPower(newLossWeightPower);
+              stage2Model->updateGradientClipThreshold(newGradientClip);
+              stage2Model->updateLearningRate(newLearningRate);
+            }
+          }
+        } else {
+          stage2Model->train(stage2TrainingData, trainingEpochs);
+        }
         stage2Model->saveModel(SBDMstage2ModelFile);
         mf::LogInfo("VDResamplerTrain") << "Stage-2 model saved to " << SBDMstage2ModelFile;
 
@@ -443,7 +559,26 @@ namespace mu2e {
         mf::LogInfo("VDResamplerTrain")
             << "Training all-at-once diffusion model with " << allAtOnceTrainingData.size()
             << " samples and " << trainingEpochs << " epochs...";
-        allAtOnceModel->train(allAtOnceTrainingData, trainingEpochs);
+        if (nPhase > 1) {
+          for (int phase = 0; phase < nPhase; ++phase) {
+            allAtOnceModel->train(allAtOnceTrainingData, trainingCurriculumEpochs[phase]);
+            if (phase < nPhase - 1) {
+              double newLossWeightPower = trainingCurriculumLossWeightPower[phase + 1];
+              double newGradientClip = trainingCurriculumGradientClip[phase + 1];
+              double newLearningRate = trainingCurriculumLearningRate[phase + 1];
+              mf::LogInfo("VDResamplerTrainFromRoot")
+                << "Switching to phase " << (phase + 2)
+                << ": lossWeightPower=" << newLossWeightPower
+                << ", gradientClipThreshold=" << newGradientClip
+                << ", learningRate=" << newLearningRate;
+              allAtOnceModel->updateLossWeightPower(newLossWeightPower);
+              allAtOnceModel->updateGradientClipThreshold(newGradientClip);
+              allAtOnceModel->updateLearningRate(newLearningRate);
+            }
+          }
+        } else {
+          allAtOnceModel->train(allAtOnceTrainingData, trainingEpochs);
+        }
         allAtOnceModel->saveModel(SBDMallAtOnceModelFile);
 
         mf::LogInfo("VDResamplerTrain") << "All-at-once model saved to " << SBDMallAtOnceModelFile;

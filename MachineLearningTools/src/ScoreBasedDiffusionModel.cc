@@ -70,6 +70,7 @@ namespace mu2e {
         double betaMin,
         double betaMax,
         double cosineOffset,
+        double lossWeightPower,
         int batchSize,
         double gradientClipThreshold,
         double learningRate,
@@ -81,7 +82,7 @@ namespace mu2e {
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
-        batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
+        lossWeightPower_(lossWeightPower), batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         diffusionSteps_(diffusionSteps),
         runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_(),
         clipCount_(0), totalClipChecks_(0), clipScaleAccum_(0.0),
@@ -192,6 +193,7 @@ namespace mu2e {
                 << "      |- BetaMax=" << betaMax_ << "\n";
         }
         oss << "  Training configuration:\n"
+            << "    | LossWeightPower=" << lossWeightPower_ << "\n"
             << "    | BatchSize=" << batchSize_ << "\n"
             << "    | GradientClipThreshold=" << gradientClipThreshold_ << "\n"
             << "    | LearningRate=" << learningRate_ << "\n"
@@ -698,7 +700,7 @@ namespace mu2e {
 
                 auto xt = addNoise(sample.x,t,eps);
                 double s = std::max(sigma(t), eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
-                double weight = s * s; // Use sigma(t)^2 as the weight
+                double weight = std::pow(s, lossWeightPower_); // sigma(t)^power as the weight. Quadratic power good for convergence but missing details
 
                 // The target score is the negative of the noise scaled by the noise standard deviation, i.e., -eps/sigma(t).
                 std::vector<double> target(dim_);
@@ -823,6 +825,7 @@ namespace mu2e {
         out << "betaMax," << betaMax_ << "\n";
         out << "cosineOffset," << cosineOffset_ << "\n";
         // Training configuration
+        out << "lossWeightPower," << lossWeightPower_ << "\n";
         out << "batchSize," << batchSize_ << "\n";
         out << "gradientClipThreshold," << gradientClipThreshold_ << "\n";
         out << "learningRate," << learningRate_ << "\n";
@@ -920,6 +923,7 @@ namespace mu2e {
         double adamBeta1 = 0.0, adamBeta2 = 0.0, adamEps = 0.0;
         NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
         double betaMin = 0.0, betaMax = 0.0, cosineOffset = 0.0;
+        double lossWeightPower = 2.0;
         int batchSize = 1, diffusionSteps = 1;
         double gradientClipThreshold = 0.0, learningRate = 0.0;
 
@@ -986,6 +990,7 @@ namespace mu2e {
                 else if (key == "betaMin") betaMin = std::stod(val);
                 else if (key == "betaMax") betaMax = std::stod(val);
                 else if (key == "cosineOffset") cosineOffset = std::stod(val);
+                else if (key == "lossWeightPower") lossWeightPower = std::stod(val);
                 else if (key == "batchSize") batchSize = std::stoi(val);
                 else if (key == "gradientClipThreshold") gradientClipThreshold = std::stod(val);
                 else if (key == "learningRate") learningRate = std::stod(val);
@@ -1195,6 +1200,7 @@ namespace mu2e {
             betaMin,
             betaMax,
             cosineOffset,
+            lossWeightPower,
             batchSize,
             gradientClipThreshold,
             learningRate,
