@@ -17,16 +17,14 @@ namespace mu2e {
   class ExtrapolateIPA {
     public:
       using CylPtr = std::shared_ptr<KinKal::Cylinder>;
-      ExtrapolateIPA() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      zmin_(std::numeric_limits<double>::max()),
-      zmax_(std::numeric_limits<double>::lowest()),debug_(0) {}
 
-      ExtrapolateIPA(double maxdt, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
-        maxDt_(maxdt), dptol_(dptol), intertol_(intertol), ipa_(ipa),
+      ExtrapolateIPA(double maxdt, double maxdtstep, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
+        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol), ipa_(ipa),
         zmin_( (ipa_->center() - ipa_->axis()*ipa_->halfLength()).Z()),
         zmax_( (ipa_->center() + ipa_->axis()*ipa_->halfLength()).Z()), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; }
+      double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
       double interTolerance() const { return intertol_; }
       CylPtr const& IPACylinder() const { return ipa_; }
@@ -39,14 +37,16 @@ namespace mu2e {
       // reset between tracks
       void reset() const { inter_ = Intersection(); }
     private:
-      double maxDt_; // maximum extrapolation time
-      double dptol_; // fractional momentum tolerance
-      double intertol_; // intersection tolerance (mm)
+      double maxDt_ = -1; // maximum extrapolation time
+      double maxDtStep_ = -1; // maximum extrapolation time step in a single iteration
+      double dptol_ = 1e10; // fractional momentum tolerance
+      double intertol_ = 1e10; // intersection tolerance (mm)
       CylPtr ipa_; // IPA cylinder
       mutable Intersection inter_; // cache of most recent intersection
       // cache of IPA front and back Z positions
-      double zmin_, zmax_;
-      int debug_; // debug level
+      double zmin_ = std::numeric_limits<double>::max();
+      double zmax_ = std::numeric_limits<double>::lowest();
+      int debug_ = 0; // debug level
   };
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {

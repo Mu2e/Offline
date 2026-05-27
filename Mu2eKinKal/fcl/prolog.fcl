@@ -373,6 +373,7 @@ Mu2eKinKal : {
   LHDRIFTXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
     MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-4 # momemntum fraction
     ToTrackerEnds : true
@@ -385,6 +386,7 @@ Mu2eKinKal : {
   LHSEEDXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 10.0 # (ns)
     MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : true
@@ -397,6 +399,7 @@ Mu2eKinKal : {
   KLXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : false
@@ -409,6 +412,7 @@ Mu2eKinKal : {
   CHXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : false

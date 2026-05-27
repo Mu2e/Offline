@@ -48,7 +48,7 @@ namespace mu2e {
   // sort by transverse distance
   struct sortCRVSectors {
     bool operator () (KKCRVSector const& sect1, KKCRVSector const& sect2) {
-      return sect1.sector_->center().Rho() < sect2.sector_->center().Rho();
+      return sect1.sector_->center().Rho() > sect2.sector_->center().Rho(); // put largest distance first as cosmic rays (generally) go outside-in (downwards)
     }
   }crvsectorsort;
 
@@ -262,7 +262,7 @@ namespace mu2e {
       sector.whw_ = whw;
       sectors.push_back(sector);
     }
-    // sort the sectors according to their transverse distance
+    // sort the sectors according to their transverse distance (largest first), to optimize searching for downward going tracks.
     std::sort(sectors.begin(),sectors.end(),crvsectorsort);
     if(debug_ > 0){
       for(auto const& sector : sectors){

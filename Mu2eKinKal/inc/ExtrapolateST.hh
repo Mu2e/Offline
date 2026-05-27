@@ -23,21 +23,15 @@ namespace mu2e {
   using CylPtr = std::shared_ptr<KinKal::Cylinder>;
   class ExtrapolateST {
     public:
-      ExtrapolateST() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      zmin_(std::numeric_limits<double>::max()),
-      zmax_(std::numeric_limits<double>::lowest()),
-      rmin_(std::numeric_limits<double>::max()),
-      rmax_(std::numeric_limits<double>::lowest()),
-      debug_(0){}
-
-      ExtrapolateST(double maxdt, double dptol, double intertol, StoppingTarget const& stoptarg, int debug=0) :
-        maxDt_(maxdt), dptol_(dptol), intertol_(intertol),
+      ExtrapolateST(double maxdt, double maxdtstep, double dptol, double intertol, StoppingTarget const& stoptarg, int debug=0) :
+        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol),
         zmin_( (stoptarg.outer().center() - stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
         zmax_( (stoptarg.outer().center() + stoptarg.outer().axis()*stoptarg.outer().halfLength()).Z()),
         rmin_( stoptarg.inner().radius()), rmax_(stoptarg.outer().radius()),
         foils_(stoptarg.foils()),debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; }
+      double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
       double interTolerance() const { return intertol_; }
       double zmin() const { return zmin_; }
@@ -56,17 +50,20 @@ namespace mu2e {
       // find the nearest foil to a z positionin a given z direction
       size_t nearestFoil(double zpos, double zdir) const;
     private:
-      double maxDt_; // maximum extrapolation time
-      double dptol_; // fractional momentum tolerance
-      double intertol_; // intersection tolerance (mm)
+      double maxDt_ = -1; // maximum extrapolation time
+      double maxDtStep_ = -1; // maximum extrapolation time step in a single iteration
+      double dptol_ = 1e10; // fractional momentum tolerance
+      double intertol_ = 1e10; // intersection tolerance (mm)
       mutable Intersection inter_; // cache of most recent intersection
       mutable SurfaceId sid_; // cache of most recent intersection foil SID
       mutable AnnPtr ann_; // cache of most recent intersection foil surface
       // cache of front and back Z positions
-      double zmin_, zmax_; // z range of ST volume
-      double rmin_, rmax_; // inner and outer radii of the anuli
+      double zmin_ = std::numeric_limits<double>::max();
+      double zmax_ = std::numeric_limits<double>::lowest();
+      double rmin_ = std::numeric_limits<double>::max();
+      double rmax_ = std::numeric_limits<double>::lowest();
       FoilCol foils_; // foils
-      int debug_; // debug level
+      int debug_ = 0; // debug level
   };
 
   template <class KTRAJ> bool ExtrapolateST::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {

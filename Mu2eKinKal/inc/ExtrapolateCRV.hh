@@ -20,39 +20,48 @@ namespace mu2e {
   using KinKal::Intersection;
   class ExtrapolateCRV {
     public:
-      using RecPtr = std::shared_ptr<KinKal::Rectangle>;
-      ExtrapolateCRV() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10), minvnorm_(1e-5),
-      debug_(0){}
+      using CRVSV = std::vector<KKGeom::KKCRVSector>;
+      struct CRVI {
+        Intersection inter_;
+        double whw_ = 0;
+        int isect_ = -1;
+        CRVI(){}
+        CRVI(Intersection const& inter,double whw, int isect) : inter_(inter),whw_(whw),isect_(isect) {}
+      };
+      using CRVIV = std::vector<CRVI>;
 
-      ExtrapolateCRV(double maxdt, double dptol, double intertol, double minv, CRV const& crv, int debug=0) :
-        maxDt_(maxdt), dptol_(dptol), intertol_(intertol), minvnorm_(minv), debug_(debug) {
-          for(auto const& sector : crv.sectors() ) {
-            sectors_.push_back(sector.sector_);
-          }
+      struct sortIntersections { // sort in time direction
+        TimeDir tdir_;
+        bool operator () (CRVI const& inter1, CRVI const& inter2) {
+          return tdir_ == TimeDir::forwards ? inter1.inter_.time_ < inter2.inter_.time_ : inter1.inter_.time_ > inter2.inter_.time_;
         }
+        sortIntersections(TimeDir tdir) : tdir_(tdir) {}
+      };
+
+      ExtrapolateCRV(double maxdt, double maxdtstep, double dptol, double intertol, double minv, CRV const& crv, int debug=0) :
+        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol), minvnorm_(minv), debug_(debug), sectors_(crv.sectors()) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; }
+      double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
       double interTolerance() const { return intertol_; }
       // CRV specific
       auto const& sectors() const { return sectors_; }
-      auto const& intersection() const { return inter_; }
-      auto const& sector () const { return sect_; }
-      int sectorIndex() const { return isect_; }
+      auto const& sector(size_t isect) const { return sectors_[isect]; }
+      auto const& intersections() const { return inters_; }
       int debug() const { return debug_; }
-      void reset() const { inter_ = Intersection(); sect_ = RecPtr(); isect_ = -1; }
+      void reset() const { inters_.clear(); }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
     private:
-      double maxDt_; // maximum extrapolation time
-      double dptol_; // fractional momentum tolerance
-      double intertol_; // intersection tolerance (mm)
-      double minvnorm_; // minimum vel normal (outwards) to plane
-      mutable Intersection inter_; // cache of most recent intersection
-      mutable RecPtr sect_; // cache of most recent intersection
-      mutable int isect_; // index to intersected sector
-      int debug_; // debug level
-      std::vector<RecPtr> sectors_; // rectangles at the (layer) middle of each sector
+      double maxDt_ = -1; // maximum extrapolation time
+      double maxDtStep_ = -1; // maximum extrapolation time step in a single iteration
+      double dptol_ = 1e10; // fractional momentum tolerance
+      double intertol_ = 1e10; // intersection tolerance (mm)
+      double minvnorm_ = 1e-5; // minimum vel normal (outwards) to plane
+      int debug_ = 0; // debug level
+      CRVSV sectors_; // sectors cache
+      mutable CRVIV inters_; // cache of most recent intersections
   };
 
   template <class KTRAJ> bool ExtrapolateCRV::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
@@ -66,34 +75,33 @@ namespace mu2e {
     static const double epsilon(1.0e-6);
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    if(debug_ > 4)std::cout << "CRV extrap tdir " << tdir << " stime " << stime << " etime " << etime << std::endl;
+    TimeRange trange(stime,etime,false);
     // test from the start of the end poiece
     auto pos = ktraj.position3(stime);
     auto vel = ktraj.velocity(stime);
-    if(debug_ > 4)std::cout << "CRV extrap testing time " << time << " vel " << vel << " pos " << pos << std::endl;
+    if(debug_ > 4)std::cout << "CRV extrap tdir " << tdir << " stime " << stime << " etime " << etime << " vel " << vel << " pos " << pos << std::endl;
     for(size_t isect = 0; isect < sectors_.size(); ++isect ){
       auto const& sector = sectors_[isect];
-      double normvel = vel.Dot(sector->normal())*timeDirSign(tdir); // sign by extrapolation direction
-      double sdist = (sector->center()-pos).Dot(vel)*timeDirSign(tdir);
-      if(debug_ > 4)std::cout << "CRV extrap normvel " << normvel << " time " << time << " sdist " << sdist << std::endl;
+      double normvel = vel.Dot(sector.sector_->normal())*timeDirSign(tdir); // sign by extrapolation direction
+      double sdist = (sector.sector_->center()-pos).Dot(vel)*timeDirSign(tdir);
+      if(debug_ > 4)std::cout << "CRV extrap normvel " << normvel << " sdist " << sdist << std::endl;
       // stop if horizontal or plane is past the current point.
       if(fabs(normvel) < minvnorm_ || sdist < 0 )continue;
       // try to intersect
-      auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
-      auto newinter = KinKal::intersect(fittraj,*sector,trange,intertol_,tdir);
+      auto newinter = KinKal::intersect(fittraj,*sector.sector_,trange,intertol_,tdir);
       if(debug_ > 3)std::cout << "CRV " << newinter  << std::endl;
       if(newinter.good()){
-        inter_ = newinter;
-        sect_ = sector;
-        isect_ = isect;
-        if(debug_ > 1)std::cout << "Good CRV " <<  newinter << std::endl;
-        break;
+        inters_.emplace_back(newinter,sector.whw_,(int)isect);
+        if(debug_ > 1)std::cout << "Good CRV " <<  newinter << " sector " << sector.sname_ << std::endl;
       } else if ( newinter.onsurface_ && newinter.inbounds_) { // inbounds might be too strict for CentralHelix tracks, will need to check TODO
+        retval = trange.beyond(newinter.time_,tdir);
         // there's a potential intersection, but the trajectory hasn't gotten there yet. Tell the track to keep extending
-        retval = true;
-        if(debug_ > 2)std::cout << "Potential CRV " <<  newinter << std::endl;
+        if(retval && debug_ > 2)std::cout << "Potential CRV " <<  newinter << std::endl;
       }
     }
+    // sort intersections in the time direction
+    sortIntersections isort(tdir);
+    std::sort(inters_.begin(),inters_.end(),isort);
     return retval;
   }
 }

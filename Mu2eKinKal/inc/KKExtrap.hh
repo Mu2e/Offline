@@ -45,7 +45,7 @@ namespace mu2e {
 
     private:
       int debug_;
-      double btol_, intertol_, maxdt_, minv_;
+      double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
@@ -56,6 +56,7 @@ namespace mu2e {
     btol_(extrapconfig.btol()),
     intertol_(extrapconfig.interTol()),
     maxdt_(extrapconfig.MaxDt()),
+    maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
@@ -94,7 +95,7 @@ namespace mu2e {
           }
         }
       } else { // reflection inside the IPA; extrapolate back through the IPA, then to the tracker entrance
-        ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
+        ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
         if(backToTracker_)ktrk.extrapolate(tdir,trackerFront);
       }
       // optionally test for intersection with the OPA
@@ -110,8 +111,8 @@ namespace mu2e {
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
 
-    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
-    ExtrapolateToZ trackerBack(maxdt_,btol_,kkg_h->tracker()->back().center().Z(),debug_);
+    ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
+    ExtrapolateToZ trackerBack(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->back().center().Z(),debug_);
     // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
     // reflect inside the tracker volume
     auto const& ftraj = ktrk.fitTraj();
@@ -157,7 +158,7 @@ namespace mu2e {
     using KKIPAXINGPTR = std::shared_ptr<KKIPAXING>;
     // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
     // track exits the IPA
-    ExtrapolateIPA extrapIPA(maxdt_,btol_,intertol_,kkg_h->DS()->innerProtonAbsorberPtr(),debug_);
+    ExtrapolateIPA extrapIPA(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->DS()->innerProtonAbsorberPtr(),debug_);
     if(extrapIPA.debug() > 2)std::cout << "extrapolating to IPA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId IPASID("IPA");
@@ -200,7 +201,7 @@ namespace mu2e {
 
     // extraplate the fit through the ST. This will add material effects for each foil intersection. It will continue till the
     // track exits the ST in Z
-    ExtrapolateST extrapST(maxdt_,btol_,intertol_,*kkg_h->ST(),debug_);
+    ExtrapolateST extrapST(maxdt_,maxdtstep_,btol_,intertol_,*kkg_h->ST(),debug_);
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     auto startdir = ftraj.direction(starttime);
@@ -236,7 +237,7 @@ namespace mu2e {
 
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    ExtrapolateToZ trackerFront(maxdt_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
+    ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
     if(trackerFront.debug() > 2)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TrackerSID("TT_Front");
@@ -253,7 +254,7 @@ namespace mu2e {
 
   template <class KTRAJ> bool KKExtrap::extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    ExtrapolateToZ TSDA(maxdt_,btol_,kkg_h->DS()->upstreamAbsorber().center().Z(),debug_);
+    ExtrapolateToZ TSDA(maxdt_,maxdtstep_,btol_,kkg_h->DS()->upstreamAbsorber().center().Z(),debug_);
     if(TSDA.debug() > 2)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId TSDASID("TSDA");
@@ -289,7 +290,7 @@ namespace mu2e {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     // extrapolate to the extracted CRV. Loop to cover multiple intersections
-    auto extrapCRV = ExtrapolateCRV(maxdt_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
+    auto extrapCRV = ExtrapolateCRV(maxdt_,maxdtstep_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
     if(debug_ > 5){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors" << std::endl;
       for(auto const& sector : kkg_h->CRV()->sectors()) {
         std::cout << sector.sname_ << " position " << sector.sector_->center() << " halfwidth " << sector.whw_ << std::endl;
@@ -298,18 +299,18 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId CRVSID("CRV");
     do {
-      // iterate until the extrapolation condition is met
+      // iterate until we no longer hit CRV modules
       ktrk.extrapolate(tdir,extrapCRV);
-      if(extrapCRV.intersection().good()){
+      if(debug_ > 0) std::cout << "Found " << extrapCRV.intersections().size() << " CRV intersections " << std::endl;
+      for(auto const& inter : extrapCRV.intersections()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector(),CRVSID,*kkmat_h->CRVMaterial(),extrapCRV.intersection(),reftrajptr,
-            2*kkg_h->CRV()->sectorHalfWidth(extrapCRV.sectorIndex()), extrapCRV.interTolerance());
-        if(debug_ > 0) std::cout << "Good CRV intersection " << extrapCRV.intersection() << " range before " << ftraj.range();
+        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)inter.isect_).sector_,CRVSID,*kkmat_h->CRVMaterial(),inter.inter_,reftrajptr,
+            2*inter.whw_, extrapCRV.interTolerance());
         ktrk.addCRVXing(crvxingptr,tdir);
-        if(debug_ > 0) std::cout <<  " range after " << ftraj.range() << std::endl;
+        if(debug_ > 1) std::cout << "Good CRV " << inter.inter_ << ftraj.range() << std::endl;
       }
-    } while(extrapCRV.intersection().good());
+    } while(extrapCRV.intersections().size()>0);
   }
 
 }
