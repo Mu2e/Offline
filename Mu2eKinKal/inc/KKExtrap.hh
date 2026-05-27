@@ -297,7 +297,6 @@ namespace mu2e {
       }
     }
     auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId CRVSID("CRV");
     do {
       // iterate until we no longer hit CRV modules
       ktrk.extrapolate(tdir,extrapCRV);
@@ -305,7 +304,8 @@ namespace mu2e {
       for(auto const& inter : extrapCRV.intersections()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)inter.isect_).sector_,CRVSID,*kkmat_h->CRVMaterial(),inter.inter_,reftrajptr,
+        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)inter.isect_).sector_,
+            SurfaceId(kkg_h->CRV()->sectorName(inter.isect_)),*kkmat_h->CRVMaterial(),inter.inter_,reftrajptr,
             2*inter.whw_, extrapCRV.interTolerance());
         ktrk.addCRVXing(crvxingptr,tdir);
         if(debug_ > 1) std::cout << "Good CRV " << inter.inter_ << ftraj.range() << std::endl;

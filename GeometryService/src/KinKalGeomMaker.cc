@@ -277,7 +277,7 @@ namespace mu2e {
     // fill map
     unsigned isect(0);
     for(auto const& sector : kkg_->crv_->sectors()){
-      kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::CRV,isect),std::static_pointer_cast<Surface>(sector.sector_)));
+      kkg_->map_.emplace(std::make_pair(SurfaceId(sector.sname_),std::static_pointer_cast<Surface>(sector.sector_)));
       isect++;
     }
   }

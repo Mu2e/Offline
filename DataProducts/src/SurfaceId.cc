@@ -35,7 +35,10 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::ST_Outer, "ST_Outer"),
     std::make_pair(SurfaceIdEnum::ST_Foils, "ST_Foils"),
     std::make_pair(SurfaceIdEnum::TCRV, "TCRV"),
-    std::make_pair(SurfaceIdEnum::CRV, "CRV")
+    // separate IDs for each CRV sector
+    std::make_pair(SurfaceIdEnum::CRV_EX, "CRV_EX"),
+    std::make_pair(SurfaceIdEnum::CRV_T1, "CRV_T1"),
+    std::make_pair(SurfaceIdEnum::CRV_T2, "CRV_T2")
   };
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;
