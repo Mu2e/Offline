@@ -17,8 +17,6 @@ namespace mu2e {
     };
     class CRV {
       public:
-        // default constructor (empty)
-        CRV();
         // construct with rectangles representing the midplane of CRV sectors (shields)
         CRV(std::vector<KKCRVSector> const& sectors) : sectors_(sectors) {}
         // accessors
@@ -26,7 +24,6 @@ namespace mu2e {
         auto const& sector(size_t isect) const { return sectors_[isect].sector_; }
         auto const& sectorName(size_t isect) const { return sectors_[isect].sname_; }
         auto const& sectorHalfWidth(size_t isect) const { return sectors_[isect].whw_; }
-
       private:
         std::vector<KKCRVSector> sectors_;
     };

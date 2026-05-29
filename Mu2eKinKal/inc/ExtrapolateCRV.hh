@@ -76,7 +76,7 @@ namespace mu2e {
     auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
     auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
     TimeRange trange(stime,etime,false);
-    // test from the start of the end poiece
+    // test from the start of the end piece
     auto pos = ktraj.position3(stime);
     auto vel = ktraj.velocity(stime);
     if(debug_ > 4)std::cout << "CRV extrap tdir " << tdir << " stime " << stime << " etime " << etime << " vel " << vel << " pos " << pos << std::endl;
@@ -94,9 +94,9 @@ namespace mu2e {
         inters_.emplace_back(newinter,sector.whw_,(int)isect);
         if(debug_ > 1)std::cout << "Good CRV " <<  newinter << " sector " << sector.sname_ << std::endl;
       } else if ( newinter.onsurface_ && newinter.inbounds_) { // inbounds might be too strict for CentralHelix tracks, will need to check TODO
-        retval = trange.beyond(newinter.time_,tdir);
+        retval |= trange.beyond(newinter.time_,tdir);
         // there's a potential intersection, but the trajectory hasn't gotten there yet. Tell the track to keep extending
-        if(retval && debug_ > 2)std::cout << "Potential CRV " <<  newinter << std::endl;
+        if(trange.beyond(newinter.time_,tdir) && debug_ > 2)std::cout << "Potential CRV " <<  newinter << std::endl;
       }
     }
     // sort intersections in the time direction
