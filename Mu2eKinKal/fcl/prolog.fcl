@@ -430,7 +430,7 @@ Mu2eKinKal : {
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
@@ -447,7 +447,7 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
