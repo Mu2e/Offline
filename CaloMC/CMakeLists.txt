@@ -56,6 +56,7 @@ cet_build_plugin(CaloShowerROMaker art::module
       
       Offline::CalorimeterGeom
       Offline::DAQConditions
+      Offline::CaloConditions
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService

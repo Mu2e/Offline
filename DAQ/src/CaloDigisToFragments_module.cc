@@ -20,7 +20,7 @@
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CaloConditions/inc/CalDAQMap.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloRawSiPMId.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
@@ -143,7 +143,7 @@ public:
   virtual void endJob();
 
 private:
-  mu2e::ProditionsHandle<mu2e::CaloDAQMap> calodaqconds_h_;
+  mu2e::ProditionsHandle<mu2e::CalDAQMap> calodaqconds_h_;
 
   int diagLevel_;
   art::InputTag caloDigiTag_;

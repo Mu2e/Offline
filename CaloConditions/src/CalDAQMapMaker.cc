@@ -1,4 +1,4 @@
-#include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
+#include "Offline/CaloConditions/inc/CalDAQMapMaker.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "cetlib_except/exception.h"
@@ -9,16 +9,16 @@ using namespace std;
 
 namespace mu2e {
 
-  CaloDAQMap::ptr_t CaloDAQMapMaker::fromFcl() {
+  CalDAQMap::ptr_t CalDAQMapMaker::fromFcl() {
 
     if (_config.verbose()>0) {
-      cout << "CaloDAQMapMaker::fromFcl making nominal CaloDAQMap\n";
+      cout << "CalDAQMapMaker::fromFcl making nominal CalDAQMap\n";
     }
 
     ConfigFileLookupPolicy configFile;
     string fileSpec = configFile(_config.fileSpec());
     if (_config.verbose()>0) {
-      cout << "CaloDAQMapMaker::fromFcl reading from " << fileSpec << "\n";
+      cout << "CalDAQMapMaker::fromFcl reading from " << fileSpec << "\n";
     }
 
     ifstream ordFile;
@@ -30,8 +30,8 @@ namespace mu2e {
 
     string line;
 
-    CaloDAQMap::RawArray raw2Offline;
-    CaloDAQMap::OfflineArray offline2Raw;
+    CalDAQMap::RawArray raw2Offline;
+    CalDAQMap::OfflineArray offline2Raw;
     uint16_t oid,rid,nRead(0);
 
     while (!ordFile.eof()){
@@ -39,10 +39,10 @@ namespace mu2e {
       if (ordFile.eof()) break;
 
       if(rid >= CaloConst::_nRawChannel) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid rawId" << rid << endl;
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid rawId" << rid << endl;
       }
       if(oid != CaloConst::_invalid && oid >= CaloConst::_nChannel) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid offlineId " << oid << endl;
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid offlineId " << oid << endl;
       }
 
       nRead++;
@@ -57,11 +57,11 @@ namespace mu2e {
 
     if(nRead != CaloConst::_nRawChannel) {
       throw cet::exception("CALODAQMAPMAKER_COUNT")
-        << "CaloDAQMapMaker read the wrong number of id's "
+        << "CalDAQMapMaker read the wrong number of id's "
         << nRead << ", expected " << CaloConst::_nRawChannel << endl;
     }
 
-    auto ptr = make_shared<CaloDAQMap>(raw2Offline, offline2Raw);
+    auto ptr = make_shared<CalDAQMap>(raw2Offline, offline2Raw);
 
     return ptr;
 
@@ -69,23 +69,23 @@ namespace mu2e {
 
   //***************************************************
 
-  CaloDAQMap::ptr_t CaloDAQMapMaker::fromDb(CalChannels::cptr_t cch_p) {
+  CalDAQMap::ptr_t CalDAQMapMaker::fromDb(CalChannels::cptr_t cch_p) {
 
     if (_config.verbose()>0) {
-      cout << "CaloDAQMapMaker::fromDb making CaloDAQMap\n";
+      cout << "CalDAQMapMaker::fromDb making CalDAQMap\n";
     }
 
-    CaloDAQMap::RawArray raw2Offline;
-    CaloDAQMap::OfflineArray offline2Raw;
+    CalDAQMap::RawArray raw2Offline;
+    CalDAQMap::OfflineArray offline2Raw;
 
     for (auto const& row : cch_p->rows()) {
       CaloRawSiPMId rawid = row.rawid();
       CaloSiPMId roid = row.roid();
       if(!rawid.isValid()) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker found invalid rawId" << rawid << endl;
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid rawId" << rawid << endl;
       }
       if(!(roid.isValid() || roid.id() == CaloConst::_invalid)) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker found invalid offlineId " << roid << endl;
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid offlineId " << roid << endl;
       }
 
       raw2Offline[rawid.id()] = roid;
@@ -99,11 +99,11 @@ namespace mu2e {
     // to invalid and there is no other check that this was done correctly
     for (auto const& cc : offline2Raw) {
       if(!cc.isValid()) {
-        throw cet::exception("CALODAQMAPMAKER_MISSING") << "CaloDAQMapMaker found missing roid " << endl;
+        throw cet::exception("CALODAQMAPMAKER_MISSING") << "CalDAQMapMaker found missing roid " << endl;
       }
     }
 
-    auto ptr = make_shared<CaloDAQMap>(raw2Offline, offline2Raw);
+    auto ptr = make_shared<CalDAQMap>(raw2Offline, offline2Raw);
 
     return ptr;
 

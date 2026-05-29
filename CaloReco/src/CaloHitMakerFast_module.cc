@@ -10,7 +10,6 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"

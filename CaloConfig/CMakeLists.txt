@@ -1,7 +1,8 @@
 cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       inc/CalCalibConfig.hh
-      inc/CaloDAQMapConfig.hh
+      inc/CalDAQMapConfig.hh
+      inc/CalSimCrystalConfig.hh
     LIBRARIES INTERFACE
       
 )
