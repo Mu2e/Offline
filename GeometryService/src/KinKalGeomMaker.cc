@@ -4,15 +4,19 @@
 //
 #include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
-#include "Offline/KinKalGeom/inc/TestCRV.hh"
+#include "Offline/KinKalGeom/inc/CRV.hh"
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "cetlib_except/exception.h"
+#include <cmath>
+#include <algorithm>
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -29,15 +33,24 @@ namespace mu2e {
   using FruPtr = std::shared_ptr<KinKal::Frustrum>;
   using SurfacePtr = std::shared_ptr<KinKal::Surface>;
   using KKGMap = std::multimap<SurfaceId,SurfacePtr>;
+  using mu2e::KKGeom::KKCRVSector;
+
 
   std::unique_ptr<KinKalGeom>& KinKalGeomMaker::makeKKG() {
     kkg_ = std::make_unique<KinKalGeom>();
     makeTracker();
     makeDS();
     makeTarget();
-    makeTCRV();
+    makeCRV();
     return kkg_;
   }
+
+  // sort by transverse distance
+  struct sortCRVSectors {
+    bool operator () (KKCRVSector const& sect1, KKCRVSector const& sect2) {
+      return sect1.sector_->center().Rho() > sect2.sector_->center().Rho(); // put largest distance first as cosmic rays (generally) go outside-in (downwards)
+    }
+  }crvsectorsort;
 
   void KinKalGeomMaker::makeTracker() {
       // surfaces need to match with virtual detectors. The following is extracted from VirtualDetectorMaker and needs to be updated if that changes.
@@ -45,21 +58,20 @@ namespace mu2e {
     // enters the volume, the reco track will be sampled at a different position depending on the track direction by that amount. This is a fundamental
     // discrepancy between reco and sim data
     auto const& tracker = *(GeomHandle<mu2e::Tracker>());
-    GeomHandle<Beamline> bg;
-    GeomHandle<DetectorSystem> det;
-    GeomHandle<DetectorSolenoid> ds;
+    auto const& g4tmom = tracker.g4Tracker()->mother();
+    auto const& ds = *(GeomHandle<DetectorSolenoid>());
     double vdHL(0.01); // hardcoded in VirtualDetectorMaker line 56
     // below are from VirtualDetectorMaker lnes 241-244
-    double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
-    double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
+    double zFrontGlobal = g4tmom.position().z()-g4tmom.tubsParams().zHalfLength()-vdHL;
+    double zBackGlobal  = g4tmom.position().z()+g4tmom.tubsParams().zHalfLength()+vdHL;
     // the 0.4 below comes from offsets in the mother volume nesting.
     double zFrontLocal  = zFrontGlobal - tracker.g4Tracker()->z0() + 0.4;
     double zBackLocal   = zBackGlobal  - tracker.g4Tracker()->z0() - 0.4;
     double zMidLocal = 10.1; // 10.1 is hard-coded in VirtualDetectorMaker line 224
     double halfLen = 0.5*(zBackLocal-zFrontLocal);
-    double orvd = tracker.g4Tracker()->mother().tubsParams().outerRadius();
+    double orvd = g4tmom.tubsParams().outerRadius();
     double irvd = tracker.g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
-    double irds = ds->rIn1();
+    double irds = ds.rIn1();
     // cylinders are defined by TT_outer (_inner) virtual detectors
     // Disks are defined to match TT_front (mid, back) virtual detectors
     auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),orvd,halfLen);
@@ -160,16 +172,113 @@ namespace mu2e {
     kkg_->st_ = std::make_unique<KKGeom::StoppingTarget>(outer,inner,front,back,foils);
   }
 
-  void KinKalGeomMaker::makeTCRV() {
-    // currently use hard-coded geometry
-    auto ex1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4775,-438),3000,1675); // layer widths are approximate FIXME
-    auto t1= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,1.0), VEC3(0.0,4625,-438),1185,850);
-    auto t2= std::make_shared<Rectangle>(VEC3(0.0,1.0,0.0),VEC3(1.0,0.0,0.0), VEC3(0.0,4925,-438),1600,850);
+  void KinKalGeomMaker::makeCRV() {
+    GeomHandle<CosmicRayShield> CRS;
+    GeomHandle<DetectorSystem> det;
+    auto const& shields = CRS->getCRSScintillatorShields();
+    std::vector<KKCRVSector> sectors;
+    // loop over the shields (= sectors)
+    for (auto const& shield : shields) {
+      //
+      // First find this shield's orientation; the first bar is enough for that
+      //
+      auto const& firstbar = shield.getFirstBar();
+      auto fbarpos = VEC3(det->toDetector(firstbar.getPosition())); // convert to detector (tracker) coordinates and root vectors
+      auto bardet = firstbar.getBarDetail();
+      // normal (w) direction is the thickness direction. Make sure it points away from the tracker
+      VEC3 wdir;
+      switch(bardet.getThicknessDirection()) {
+        case 0:
+          wdir = VEC3(copysign(1.0,fbarpos.X()),0.0,0.0);
+          break;
+        case 1:
+          wdir = VEC3(0.0,copysign(1.0,fbarpos.Y()),0.0);
+          break;
+        case 2:
+          wdir = VEC3(0.0,0.0,copysign(1.0,fbarpos.Z()));
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< bardet.getThicknessDirection() << std::endl;
+          break;
+      }
+      // u direction points along the bars (length direction). Sign is unimportant.
+      VEC3 udir;
+      switch(bardet.getLengthDirection()) {
+        case 0:
+          udir = VEC3(1.0,0.0,0.0);
+          break;
+        case 1:
+          udir = VEC3(0.0,1.0,0.0);
+          break;
+        case 2:
+          udir = VEC3(0.0,0.0,1.0);
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< bardet.getLengthDirection() << std::endl;
+          break;
+      }
+      // v points along bar width
+      VEC3 vdir;
+      switch(bardet.getWidthDirection()) {
+        case 0:
+          vdir = VEC3(1.0,0.0,0.0);
+          break;
+        case 1:
+          vdir = VEC3(0.0,1.0,0.0);
+          break;
+        case 2:
+          vdir = VEC3(0.0,0.0,1.0);
+          break;
+        default:
+          throw cet::exception("Service")<<"invalid direction "<< firstbar.getBarDetail().getWidthDirection() << std::endl;
+          break;
+      }
+      // next compute the average position. All the bars have the same position along their length
+      double upos = fbarpos.Dot(udir);
+      double uhw = firstbar.getHalfLength();
+      // average first and last layers to get the w position and half-width
+      auto const& firstmod = shield.getModule(0);
+      auto flaypos = VEC3(det->toDetector(firstmod.getLayer(0).getPosition()));
+      auto llaypos = VEC3(det->toDetector(firstmod.getLayer(firstmod.nLayers()-1).getPosition()));
+      double wpos = 0.5*(flaypos+llaypos).Dot(wdir);
+      double whw = 0.5*(llaypos-flaypos).Dot(wdir) + firstbar.getHalfThickness();
+      // include the layer stagger when computing the position and width perp to the bars
+      auto nlay = firstmod.nLayers();
+      auto nbar = firstmod.getLayer(0).nBars();
+      auto const& lastmod = shield.getModule(shield.nModules()-1);
+      auto vf0 = VEC3(det->toDetector(firstmod.getLayer(0).getBar(0).getPosition())).Dot(vdir);
+      auto vf3 = VEC3(det->toDetector(firstmod.getLayer(nlay-1).getBar(0).getPosition())).Dot(vdir);
+      auto vl0 = VEC3(det->toDetector(lastmod.getLayer(0).getBar(nbar-1).getPosition())).Dot(vdir);
+      auto vl3 = VEC3(det->toDetector(lastmod.getLayer(nlay-1).getBar(nbar-1).getPosition())).Dot(vdir);
+      double vpos = 0.25*(vf0+vf3+vl0+vl3);
+      double vmin = std::min({vf0,vf3,vl0,vl3});
+      double vmax = std::max({vf0,vf3,vl0,vl3});
+      double vhw = 0.5*(vmax-vmin)+ firstbar.getHalfWidth();
+      VEC3 midpoint = upos*udir + vpos*vdir + wpos*wdir;
+      // create the rectangle
+      KKCRVSector sector;
+      sector.sname_ = shield.getName();
+      sector.sector_ = std::make_shared<KinKal::Rectangle>(wdir,udir,midpoint,uhw,vhw);
+      sector.whw_ = whw;
+      sectors.push_back(sector);
+    }
+    // sort the sectors according to their transverse distance (largest first), to optimize searching for downward going tracks.
+    std::sort(sectors.begin(),sectors.end(),crvsectorsort);
+    if(debug_ > 0){
+      for(auto const& sector : sectors){
+        std::cout << "CRV sector " <<  sector.sname_;
+        auto const& sectptr = sector.sector_;
+        std::cout << " midpoint " << sectptr->center() << " wdir " << sectptr->normal() << " udir " << sectptr->uDirection() << " vdir " << sectptr->vDirection()
+          << " uhw " << sectptr->uHalfLength() << " vhw " << sectptr->vHalfLength() <<  " whw " << sector.whw_ << std::endl;
+      }
+    }
 
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,0),std::static_pointer_cast<Surface>(t1)));
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,1),std::static_pointer_cast<Surface>(ex1)));
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TCRV,2),std::static_pointer_cast<Surface>(t2)));
-
-    kkg_->tcrv_ = std::make_unique<KKGeom::TestCRV>(ex1,t1,t2);
+    kkg_->crv_ = std::make_unique<KKGeom::CRV>(sectors);
+    // fill map
+    unsigned isect(0);
+    for(auto const& sector : kkg_->crv_->sectors()){
+      kkg_->map_.emplace(std::make_pair(SurfaceId(sector.sname_),std::static_pointer_cast<Surface>(sector.sector_)));
+      isect++;
+    }
   }
 }

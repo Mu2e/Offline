@@ -52,7 +52,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -235,8 +234,7 @@ namespace mu2e {
       }
       if (settings().HelixMask()){
         if (settings().HelixMask()->minHelixP())
-          {minHelixP_ = settings().HelixMask()->minHelixP().value();}
-
+        {minHelixP_ = settings().HelixMask()->minHelixP().value();}
       }
     }
 
@@ -286,7 +284,6 @@ namespace mu2e {
       throw cet::exception("RECO") << "mu2e::LoopHelixFit: Unknown helix propagation direction " << fdir.name();
     // geom
     GeomHandle<Calorimeter> calo_h;
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
@@ -331,7 +328,7 @@ namespace mu2e {
     strawhits.reserve(strawHitIdxs.size());
     KKSTRAWXINGCOL strawxings;
     strawxings.reserve(strawHitIdxs.size());
-    if(!kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_h->strawMaterial(), pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)) {
+    if(!kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, pseedtraj, chcol, strawHitIdxs, strawhits, strawxings)) {
       if(print_>0) printf("[LoopHelixFit::%s] Failed to create a track\n", __func__);
       return nullptr;
     }
@@ -353,7 +350,7 @@ namespace mu2e {
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
     // if we have an extension schedule, extend.
     if(goodfit && exconfig_.schedule().size() > 0) {
-      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_h->strawMaterial(), chcol, *calo_h, cc_H, *ktrk );
+      kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse,  chcol, *calo_h, cc_H, *ktrk );
       goodfit = goodFit(*ktrk,seedtraj);
       // if finalizing, apply that now.
       if(goodfit && fconfig_.schedule().size() > 0){
@@ -405,24 +402,24 @@ namespace mu2e {
           if(extrap_)extrap_->extrapolate(*ktrk);
           if(print_>1) ktrk->printFit(std::cout,print_-1);
           // save the fit result
-            auto hptr = HPtr(hseedcol_h,iseed);
-            TrkFitFlag fitflag(hptr->status());
-            fitflag.merge(fitflag_);
-            if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
-            // sample the fit as requested
-            kkfit_.sampleFit(*ktrk);
-            // convert to seed output format
-            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
-            if(print_>0) print_track_info(kkseed, *ktrk);
-            kkseedcol->push_back(kkseed);
-            // fill assns with the helix seed
-            auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
-            kkseedassns->addSingle(kseedptr,hptr);
-            // save (unpersistable) KKTrk in the event
-            ktrkcol->push_back(ktrk.release());
-            //increment the counts
-            if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
-            if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
+          auto hptr = HPtr(hseedcol_h,iseed);
+          TrkFitFlag fitflag(hptr->status());
+          fitflag.merge(fitflag_);
+          if(undefined_dir) fitflag.merge(TrkFitFlag::AmbFitDir);
+          // sample the fit as requested
+          kkfit_.sampleFit(*ktrk);
+          // convert to seed output format
+          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          if(print_>0) print_track_info(kkseed, *ktrk);
+          kkseedcol->push_back(kkseed);
+          // fill assns with the helix seed
+          auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
+          kkseedassns->addSingle(kseedptr,hptr);
+          // save (unpersistable) KKTrk in the event
+          ktrkcol->push_back(ktrk.release());
+          //increment the counts
+          if(helix_dir == TrkFitDirection::FitDirection::downstream) ++nDownstream_;
+          if(helix_dir == TrkFitDirection::FitDirection::upstream  ) ++nUpstream_;
         } //end track fit result loop
       } //end helix seed loop
     } //end helix colllection loop
@@ -543,7 +540,7 @@ namespace mu2e {
   void LoopHelixFit::endJob() {
     if(print_ > 0) {
       printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
-                          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
+          __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);
       printf("Number of fits: %i;  number of helices skipped: %i \n ", nFit_, nSkipped_);
     }
   }

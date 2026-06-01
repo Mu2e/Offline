@@ -106,6 +106,7 @@ namespace mu2e {
     _configStatsVerbosity( pars().configStatsVerbosity()),
     _printConfig(          pars().printConfig()),
     _printTopLevel(        pars().printConfigTopLevel()),
+    _debugLevel(           pars().debugLevel()),
     _config(nullptr),
     _simulatedDetector(    pars.get_PSet().get<fhicl::ParameterSet>("simulatedDetector")),
     _kkMat(                pars().matSettings()),
@@ -353,7 +354,7 @@ namespace mu2e {
       addDetector( std::move(dusafMu2e) );
 
       // build KinKalGeom, used in track reconstruction and extrapolation
-      KinKalGeomMaker kkgm;
+      KinKalGeomMaker kkgm(_debugLevel);
       addDetector( std::move(kkgm.makeKKG()) );
       // directly build KKMaterial; it's constructor does everything
       auto trkptr =  getElement<Tracker>();

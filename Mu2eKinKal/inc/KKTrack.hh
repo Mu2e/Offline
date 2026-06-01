@@ -125,8 +125,8 @@ namespace mu2e {
       void addIPAXing(KKIPAXINGPTR const& ipaxing,TimeDir const& tdir);
       // add ST Xing
       void addSTXing(KKSTXINGPTR const& stxing,TimeDir const& tdir);
-      // add TCRV Xing
-      void addTCRVXing(KKCRVXINGPTR const& crvxing,TimeDir const& tdir);
+      // add CRV Xing
+      void addCRVXing(KKCRVXINGPTR const& crvxing,TimeDir const& tdir);
       // add intersections
       void addIntersection(SurfaceId const& sid, Intersection const& inter) { inters_.emplace_back(sid,inter); }
 
@@ -339,7 +339,7 @@ namespace mu2e {
     stxings_.push_back(stxingptr);
   }
 
-  template <class KTRAJ> void KKTrack<KTRAJ>::addTCRVXing(KKCRVXINGPTR const& crvxingptr,TimeDir const& tdir) {
+  template <class KTRAJ> void KKTrack<KTRAJ>::addCRVXing(KKCRVXINGPTR const& crvxingptr,TimeDir const& tdir) {
     // convert to a generic Xing
     std::shared_ptr<KinKal::ElementXing<KTRAJ>> exptr = std::static_pointer_cast<KinKal::ElementXing<KTRAJ>>(crvxingptr);
     // extrapolate the fit throug this xing
