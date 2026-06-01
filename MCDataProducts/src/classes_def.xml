@@ -34,6 +34,9 @@
  <class name="mu2e::StageParticleCollection"/>
  <class name="art::Wrapper<mu2e::StageParticleCollection>"/>
 
+ <class name="mu2e::SpectrumConfig"/>
+ <class name="art::Wrapper<mu2e::SpectrumConfig>"/>
+
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
  <class name="std::vector<mu2e::StatusG4>"/>
