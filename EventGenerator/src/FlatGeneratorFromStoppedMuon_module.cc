@@ -21,6 +21,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -30,6 +31,7 @@
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 
 #include <TTree.h>
@@ -55,6 +57,7 @@ namespace mu2e {
     explicit FlatGeneratorFromStoppedMuon(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -75,6 +78,8 @@ namespace mu2e {
     ProcessCode process;
     int pdgId_;
     PDGCode::type pid;
+    double czMin_;
+    double czMax_;
   };
 
   //================================================================
@@ -91,9 +96,12 @@ namespace mu2e {
     , randExp_{eng_}
     , randomUnitSphere_{eng_, conf().czMin(), conf().czMax()}
     , pdgId_(conf().pdgId())
+    , czMin_(conf().czMin())
+    , czMax_(conf().czMax())
 
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     pid = static_cast<PDGCode::type>(pdgId_);
 
     if (pid == PDGCode::e_minus) { process = ProcessCode::mu2eFlateMinus; }
@@ -136,6 +144,15 @@ namespace mu2e {
                          );
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void FlatGeneratorFromStoppedMuon::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("momentum", 1., startMom_, endMom_));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (czMax_ - czMin_)/2., czMin_, czMax_));
+    config->type_ = SpectrumConfig::Type::kFlat;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

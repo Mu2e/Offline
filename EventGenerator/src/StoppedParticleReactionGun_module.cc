@@ -18,6 +18,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -29,6 +30,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
@@ -84,6 +86,7 @@ namespace mu2e {
     explicit StoppedParticleReactionGun(const fhicl::ParameterSet& pset);
 
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -105,6 +108,7 @@ namespace mu2e {
     , reseeder_(eng_,seed_,verbosityLevel_)
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if(genId_ == GenId::enum_type::unknown) {
       throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown genId "
@@ -207,6 +211,12 @@ namespace mu2e {
     case MOMENTUM      : res = sqrt(res*res+mass_*mass_); break;
     }
     return res;
+  }
+
+  void StoppedParticleReactionGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

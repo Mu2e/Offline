@@ -25,6 +25,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
@@ -32,6 +33,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
@@ -62,6 +64,7 @@ namespace mu2e {
     explicit Pileup(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -95,6 +98,7 @@ namespace mu2e {
     , randExp_{eng_}
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     if(verbosity_ > 0) {
       mf::LogInfo log("Pileup");
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
@@ -154,6 +158,13 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void Pileup::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

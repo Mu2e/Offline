@@ -8,6 +8,7 @@
 // art includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 
 // exception handling
 #include "cetlib_except/exception.h"
@@ -21,6 +22,7 @@
 
 // Offline includes
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
 // CLHEP includes
@@ -43,6 +45,7 @@ namespace mu2e {
     using Parameters = art::EDProducer::Table<Config>;
     explicit PhotonGun(const Parameters& conf);
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   private:
     double x = 0.0, y = 0.0, z = 0.0;
     double px = 0.0, py = 0.0, pz = 0.0;
@@ -56,6 +59,7 @@ namespace mu2e {
     z(conf().z()),
     E(conf().E()) {
       produces<GenParticleCollection>();
+      produces<SpectrumConfig, art::InSubRun>();
       px = conf().px() ? *conf().px() : 0;
       px = conf().py() ? *conf().py() : 0;
       if ((px*px + py*py) > (E*E))
@@ -71,6 +75,12 @@ namespace mu2e {
     output->push_back(GenParticle(PDGCode::gamma, GenId::particleGun, pos, mom, 0.));
     event.put(std::move(output));
   };
+
+  void PhotonGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
+  }
 }; // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::PhotonGun)

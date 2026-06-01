@@ -18,12 +18,14 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/Mu2eUtilities/inc/GammaPairConversionSpectrum.hh"
@@ -52,6 +54,7 @@ namespace mu2e {
     explicit GammaConversion(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -92,6 +95,7 @@ namespace mu2e {
     , makeHistograms_(conf().makeHistograms())
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     // make histograms of the conversion kinematics if requested
     if(makeHistograms_) {
@@ -199,6 +203,12 @@ namespace mu2e {
       hy_->Fill(y);
     }
     event.put(std::move(output));
+  }
+
+  void GammaConversion::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

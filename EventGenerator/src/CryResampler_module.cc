@@ -13,6 +13,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -21,6 +22,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
 #include "TTree.h"
@@ -60,6 +62,7 @@ namespace mu2e {
     public:
     explicit CryResampler(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -88,6 +91,7 @@ namespace mu2e {
       inputFile_ << std::endl;
 
     produces<GenParticleCollection>();
+    produces<SpectrumConfig, art::InSubRun>();
   }
 
   //================================================================
@@ -117,6 +121,13 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void CryResampler::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

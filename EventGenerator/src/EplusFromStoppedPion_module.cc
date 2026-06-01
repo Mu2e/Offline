@@ -15,11 +15,13 @@
 #include "Offline/GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // art includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -45,6 +47,7 @@ namespace mu2e {
 
     void beginRun(art::Run& run);
     void produce( art::Event& event);
+    void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -109,6 +112,7 @@ namespace mu2e {
 
     // What does this module produce?
     produces<GenParticleCollection>();
+    produces<SpectrumConfig, art::InSubRun>();
 
   }
 
@@ -211,6 +215,12 @@ namespace mu2e {
     event.put(std::move(output));
 
   } // end of ::analyze.
+
+  void EplusFromStoppedPion::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
+  }
 
 }
 

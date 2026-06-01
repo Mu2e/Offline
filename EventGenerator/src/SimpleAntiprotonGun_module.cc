@@ -14,6 +14,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -27,6 +28,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "Offline/StoppingTargetGeom/inc/TargetFoil.hh"
@@ -93,6 +95,7 @@ namespace mu2e {
 
     virtual void beginRun(art::Run& run);
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
     Stop_t generateStop();
   };
 
@@ -111,6 +114,7 @@ namespace mu2e {
     , makeHistograms_(conf().makeHistograms())
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if(verbosity_ > 0) {
       std::cout<<"SimpleAntiprotonGun: using gen ID " << genId_ << std::endl;
@@ -210,6 +214,13 @@ namespace mu2e {
       _hR->Fill(r);
       _hPz->Fill(p3.z());
     }
+  }
+
+  //================================================================
+  void SimpleAntiprotonGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

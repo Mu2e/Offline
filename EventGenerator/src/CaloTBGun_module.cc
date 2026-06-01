@@ -10,6 +10,7 @@
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -20,6 +21,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -34,6 +36,7 @@ namespace mu2e {
      public:
        explicit     CaloTBGun  (const fhicl::ParameterSet& pset);
        virtual void produce (art::Event& event);
+       virtual void endSubRun(art::SubRun& sr) override;
 
      private:
        int                 verbosityLevel_;
@@ -54,6 +57,7 @@ namespace mu2e {
 
   {
       produces<mu2e::GenParticleCollection>();
+      produces<mu2e::SpectrumConfig, art::InSubRun>();
       if (verbosityLevel_ > 0) std::cout<<"CaloTB gun: shoot! " << std::endl;
   }
 
@@ -71,6 +75,13 @@ namespace mu2e {
        std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
        output->emplace_back(PDGCode::e_minus,GenId::CeEndpoint,pos,mom,time_);
        event.put(std::move(output));
+  }
+
+  void CaloTBGun::endSubRun(art::SubRun& sr)
+  {
+      auto config = std::make_unique<SpectrumConfig>();
+      config->type_ = SpectrumConfig::Type::kOther;
+      sr.put(std::move(config), art::fullSubRun());
   }
 
 }

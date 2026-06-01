@@ -20,6 +20,7 @@
 // Framework includes
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -33,6 +34,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/MuonCaptureSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
@@ -91,6 +93,7 @@ namespace mu2e {
   public:
     explicit RMCGun(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -114,6 +117,7 @@ namespace mu2e {
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if(verbosityLevel_ > 0) {
       std::cout<<"RMCGun: using = "
@@ -224,6 +228,15 @@ namespace mu2e {
   //================================================================
   double RMCGun::generateEnergy() {
     return spectrum_.sample(randSpectrum_.fire());
+  }
+
+  //================================================================
+  void RMCGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., spectrum_.getXMin(), spectrum_.getXMax()));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
+    config->type_ = (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

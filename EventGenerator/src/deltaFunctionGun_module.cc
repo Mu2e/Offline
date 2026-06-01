@@ -23,11 +23,13 @@
 
 #include "art/Framework/Core/SharedProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 namespace mu2e {
 
@@ -75,6 +77,7 @@ namespace mu2e {
     explicit deltaFunctionGun(const Parameters& conf, const art::ProcessingFrame&);
 
     void produce(art::Event& event, const art::ProcessingFrame&) override;
+    void endSubRun(art::SubRun& sr, const art::ProcessingFrame&) override;
 
   private:
     const GenParticle particle_;
@@ -88,6 +91,7 @@ namespace mu2e {
     {
       async<art::InEvent>();
       produces<GenParticleCollection>();
+      produces<SpectrumConfig, art::InSubRun>();
     }
 
   //================================================================
@@ -95,6 +99,13 @@ namespace mu2e {
     using namespace std;
     auto output{make_unique<GenParticleCollection,initializer_list<GenParticle>>({particle_})};
     event.put(move(output));
+  }
+
+  //================================================================
+  void deltaFunctionGun::endSubRun(art::SubRun& sr, const art::ProcessingFrame&) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

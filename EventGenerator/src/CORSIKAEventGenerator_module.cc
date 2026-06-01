@@ -30,6 +30,7 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -117,6 +118,7 @@ namespace mu2e {
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
+    produces<SpectrumConfig,art::InSubRun>();
     if (_applyTimeOffset) {
       _timeOffsetTag = conf().simTimeOffset().value();
     }
@@ -132,6 +134,10 @@ namespace mu2e {
     std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(_primaries, _area, _lowE, _highE, _fluxConstant));
     std::cout << *livetime << std::endl;
     subrun.put(std::move(livetime), art::fullSubRun());
+
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    subrun.put(std::move(config), art::fullSubRun());
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)

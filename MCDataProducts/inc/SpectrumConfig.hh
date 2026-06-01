@@ -5,28 +5,47 @@
 #define MCDataProducts_inc_SpectrumConfig_hh
 
 #include <limits>
+#include <vector>
+#include <string>
 
 namespace mu2e {
 
   class SpectrumConfig {
   public:
+    // Indicate the broad class of primary simulations this falls under
     enum Type {kPhysical = 0, kFlat, kOther};
 
-    SpectrumConfig() {}
+    // A variable that can be restricted in a simulation
+    struct RestrictedVar {
+      RestrictedVar(const std::string name,
+                    const double fraction = 1.,
+                    const double xmin = std::numeric_limits<double>::lowest(),
+                    const double xmax = std::numeric_limits<double>::max()) : name_(name),
+                                                                              fraction_(fraction),
+                                                                              xmin_(xmin),
+                                                                              xmax_(xmax) {}
 
-    // Common operations for normalization
-    double ediff()  const { return emax_ - emin_; }
-    double czfrac() const { return (czmax_ - czmin_)/2.; }
+      std::string name_     ;
+      double      fraction_ ;
+      double      xmin_     ;
+      double      xmax_     ;
+    };
+
+    SpectrumConfig(const int type = Type::kOther) : type_(type) {}
+
+    double total_fraction(const bool verbose = false) {
+      double fraction = 1.;
+      for(const auto& var : vars_) {
+        fraction *= var.fraction_;
+        if(verbose) printf("  Component %12s has fraction %.4e\n", var.name_.c_str(), var.fraction_);
+      }
+      if(verbose) printf("  Total fraction: %.4e\n", fraction);
+      return fraction;
+    }
 
   public: // allow direct access/manipulation of the fields
-    double emin_             = -1.;
-    double emax_             = -1.;
-    double tmin_             = std::numeric_limits<double>::lowest();
-    double tmax_             = std::numeric_limits<double>::max();
-    double czmin_            = -1.;
-    double czmax_            =  1.;
-    double fraction_sampled_ = 1.;
-    int    type_             = Type::kOther;
+    std::vector<RestrictedVar> vars_;
+    int type_;
   };
 }
 

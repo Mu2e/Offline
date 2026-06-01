@@ -5,6 +5,7 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -51,6 +52,7 @@ namespace mu2e {
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
+    produces<SpectrumConfig,art::InSubRun>();
   }
 
   void CryEventGenerator::beginRun( art::Run &run){
@@ -83,6 +85,10 @@ namespace mu2e {
                                                                 cryGen->getLiveTime()  ));
     std::cout << *livetime << std::endl;
     subrun.put(std::move(livetime), art::fullSubRun());
+
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    subrun.put(std::move(config), art::fullSubRun());
   }
 
 }

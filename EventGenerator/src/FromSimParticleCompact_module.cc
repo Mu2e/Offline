@@ -20,6 +20,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -31,6 +32,7 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/SimpleSpectrum.hh"
@@ -99,6 +101,7 @@ namespace mu2e {
     explicit FromSimParticleCompact(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
     virtual void beginRun(art::Run& run);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -115,6 +118,7 @@ namespace mu2e {
     , firstEvent_(true)
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     if(inputFiles_.empty()) {
       throw cet::exception("BADCONFIG")<<"Error: no inputFiles";
     }
@@ -237,6 +241,13 @@ namespace mu2e {
     output->push_back(outGen);
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void FromSimParticleCompact::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

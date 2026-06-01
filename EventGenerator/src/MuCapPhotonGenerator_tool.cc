@@ -31,13 +31,17 @@ namespace mu2e {
     explicit MuCapPhotonGenerator(Parameters const& conf) :
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
       _czMin(conf().czMin()),
-      _czMax(conf().czMax())
+      _czMax(conf().czMax()),
+      _spectrumXMin(_spectrum.getXMin()),
+      _spectrumXMax(_spectrum.getXMax()),
+      _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {
       if(_czMin < -1. || _czMax > 1. || _czMin > _czMax) throw cet::exception("BADCONFIG") << "Cos(theta_z) range unphysical: " << _czMin << " - " << _czMax;
     }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
       _isPrimary = isPrimary;
@@ -54,6 +58,9 @@ namespace mu2e {
     BinnedSpectrum    _spectrum;
     double _czMin;
     double _czMax;
+    double _spectrumXMin;
+    double _spectrumXMax;
+    bool _flatSpectrum;
 
     std::unique_ptr<CLHEP::RandPoissonQ> _randomPoissonQ;
     std::unique_ptr<RandomUnitSphere>    _randomUnitSphere;
@@ -87,6 +94,14 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> MuCapPhotonGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
+    config->type_ = _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    return config;
   }
 }
 DEFINE_ART_CLASS_TOOL(mu2e::MuCapPhotonGenerator)

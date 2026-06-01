@@ -17,6 +17,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -32,6 +33,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
@@ -79,6 +81,7 @@ namespace mu2e {
     explicit MuStopProductsGun(const Parameters& conf);
 
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -94,6 +97,7 @@ namespace mu2e {
     , _captureFraction(1 - _decayFraction)
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if (verbosityLevel_ > 0) {
       std::cout<<"MuStopProductsGun: using = "
@@ -136,6 +140,13 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void MuStopProductsGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kPhysical;
+    sr.put(std::move(config), art::fullSubRun());
   }
   //================================================================
 } // namespace mu2e

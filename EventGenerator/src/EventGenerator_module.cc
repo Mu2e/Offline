@@ -32,6 +32,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/EventGenerator/inc/CosmicDYB.hh"
@@ -43,6 +44,7 @@
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -70,6 +72,7 @@ namespace mu2e {
 
     virtual void produce (art::Event& e);
     virtual void beginRun(art::Run&   r);
+    virtual void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -118,6 +121,7 @@ namespace mu2e {
     _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
   {
     produces<GenParticleCollection>();
+    produces<SpectrumConfig, art::InSubRun>();
     if ( _produceG4blInfo  ){
       produces<G4BeamlineInfoCollection>();
     }
@@ -208,6 +212,12 @@ namespace mu2e {
       evt.put(std::move(g4beamlineData));
     }
 
+  }
+
+  void EventGenerator::endSubRun(art::SubRun& sr){
+    auto config = std::make_unique<SpectrumConfig>();
+    config->type_ = SpectrumConfig::Type::kOther;
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   // Look for inconsistencies in the config file.

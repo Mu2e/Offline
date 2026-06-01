@@ -157,12 +157,9 @@ namespace mu2e {
   void CeEndpoint::endSubRun(art::SubRun& sr) {
     // Make a summary of how this generator was configured
     auto config = std::make_unique<SpectrumConfig>();
-    config->emin_  = endPointEnergy_;
-    config->emax_  = endPointEnergy_;
-    config->czmin_ = czMin_;
-    config->czmax_ = czMax_;
-    config->fraction_sampled_ = (czMax_ - czMin_)/2.; // fraction of full spectrum that was sampled (only cz can be constrained)
-    config->type_  = SpectrumConfig::Type::kPhysical;
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1.                  , endPointEnergy_, endPointEnergy_));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz"  , (czMax_ - czMin_)/2., czMin_         , czMax_         ));
+    config->type_ = SpectrumConfig::Type::kPhysical;
     sr.put(std::move(config), art::fullSubRun());
   }
 

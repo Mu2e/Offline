@@ -34,7 +34,8 @@ namespace mu2e {
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _czmin(conf().czmin()),
       _czmax(conf().czmax()),
-      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {
       if(_czmin > _czmax || _czmin < -1. || _czmax > 1.) throw cet::exception("BADCONFIG") << "DIOGenerator cos(theta_z) range is not defined\n";
 
@@ -94,6 +95,7 @@ namespace mu2e {
     double _emin;
     double _emax;
     double _energy_fraction;
+    bool _flatSpectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
@@ -133,12 +135,9 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> DIOGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->emin_  = _emin;
-    config->emax_  = _emax;
-    config->czmin_ = _czmin;
-    config->czmax_ = _czmax;
-    config->fraction_sampled_ = _energy_fraction * (_czmax - _czmin)/2.;
-    config->type_  = SpectrumConfig::Type::kPhysical;
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", _energy_fraction    , _emin , _emax ));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz"  , (_czmax - _czmin)/2., _czmin, _czmax));
+    config->type_ = _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
     return config;
   }
 

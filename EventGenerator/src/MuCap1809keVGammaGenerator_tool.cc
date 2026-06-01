@@ -36,6 +36,7 @@ namespace mu2e {
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
       _isPrimary = isPrimary;
@@ -82,6 +83,14 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> MuCap1809keVGammaGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., _energy, _energy));
+    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
+    config->type_ = SpectrumConfig::Type::kPhysical;
+    return config;
   }
 
 }
