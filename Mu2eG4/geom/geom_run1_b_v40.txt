@@ -8,6 +8,8 @@ string degrader.filter.materialName = "StoppingTarget_Al"; // stopping target ma
 double degrader.filter.halfLength   = 8.75; // 1.75 cm plate
 double degrader.filter.rIn          = 0.0;
 double degrader.filter.rOut         = 150.0; // 150 mm radius disk
+double degrader.supportArm.offsetz  = 245.0;
+double degrader.supportArm.dz       = 186.0;
 
 // Use the TSdA as an aluminum collimator, helping Run 1B
 bool hasTSdA             = true;

@@ -499,7 +499,7 @@ namespace mu2e {
           TubsParams vdParamsTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
           std::string theDS3("DS3Vacuum");
           if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+          VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
             _helper->locateVolInfo(theDS3) :
             _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
@@ -789,7 +789,7 @@ namespace mu2e {
 
           std::string theDS3("DS3Vacuum");
           if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+          VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
             _helper->locateVolInfo(theDS3) :
             _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
@@ -837,7 +837,7 @@ namespace mu2e {
 
         std::string theDS3("DS3Vacuum");
         if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-        VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+        VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
           _helper->locateVolInfo(theDS3) :
           _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
@@ -886,7 +886,7 @@ namespace mu2e {
 
         std::string theDS3("DS3Vacuum");
         if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-        VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+        VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
           _helper->locateVolInfo(theDS3) :
           _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
@@ -937,7 +937,7 @@ namespace mu2e {
 
         std::string theDS3("DS3Vacuum");
         if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-        VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+        VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
           _helper->locateVolInfo(theDS3) :
           _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 
@@ -2014,7 +2014,7 @@ vdParamsInnerFEB,downstreamVacuumMaterial,0,posInnerFEB,caloFEBParent,vdIdFEBEdg
 
     vdId = VirtualDetectorId::EMC_0_Front;
 
-    if ( !_config.getBool("isDumbbell",false) ){
+    if (_config.getBool("tracker.inDS2Vacuum",false) && !_config.getBool("isDumbbell",false) ){ // for now, only include in altered setup
       double Ravr = ds->rIn1();
 
       if ( _config.getBool("hasTSdA",false) ) {
@@ -2051,7 +2051,7 @@ vdParamsInnerFEB,downstreamVacuumMaterial,0,posInnerFEB,caloFEBParent,vdIdFEBEdg
         std::string theDS3("DS3Vacuum");
         if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
 
-        VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+        VolumeInfo const & parent = ( !_config.getBool("tracker.inDS2Vacuum",false) ) ?
           _helper->locateVolInfo(theDS3) :
           _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
 

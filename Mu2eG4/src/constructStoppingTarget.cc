@@ -75,15 +75,24 @@ namespace mu2e {
     Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
+    // Determine the largest radius object to ensure the mother volume encloses it
+    double maxMotherRadius = target->cylinderRadius();
+    double maxFoilRadius(0.);
+    for (int itf=0; itf<target->nFoils(); ++itf)
+      maxFoilRadius = std::max(maxFoilRadius, target->foil(itf).rOut());
+    for (int itf=0; itf<target->nSupportStructures(); ++itf)
+      maxMotherRadius = std::max(maxMotherRadius, target->supportStructure(itf).length() + maxFoilRadius + 0.1);
+
     //get the proton absorber elements to prevent overlaps
     bool overlapPabs = false;
     double rAtZClosest, opaZCenter, opaR1, opaR2, opaHL, stZCenter, zclosest;
     if ( config.getBool("hasProtonAbsorber", true) ) {
       GeomHandle<MECOStyleProtonAbsorber> pabs;
-      double cylinderRadius = target->cylinderRadius();
+      const double cylinderRadius = maxMotherRadius; // default cylindrical mother volume radius
       if(pabs->isAvailable(2)) { //there is the OPA in DS2
         opaR1 = pabs->part(2).innerRadiusAtStart();
         opaR2 = pabs->part(2).innerRadiusAtEnd();
+        if ( verbosity > 1) std::cout << "  OPA R1 = " << opaR1 << " OPA R2 = " << opaR2 << " target mother R = " << cylinderRadius << std::endl;
         if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap
           if(cylinderRadius > opaR1 && cylinderRadius > opaR2) {
             throw cet::exception("GEOM") << "constructStoppingTarget::" << __func__
@@ -93,18 +102,25 @@ namespace mu2e {
           opaZCenter = CLHEP::mm * pabs->part(2).center().z();
           opaHL = pabs->part(2).halfLength();
           stZCenter = target->centerInMu2e().z();
+          if ( verbosity > 1) std::cout << "  OPA Z = " << opaZCenter << " target center Z = " << stZCenter << std::endl;
           int side = (opaR1 <= opaR2) ? 1 : -1; //check which way the cone opens
           zclosest = stZCenter - side*target->cylinderLength()/2.;
           //make sure closest point is within OPA region
           if(zclosest > opaZCenter + opaHL) zclosest = opaZCenter+opaHL;
           else if(zclosest < opaZCenter - opaHL) zclosest = opaZCenter-opaHL;
           rAtZClosest = opaR1 + (opaR2-opaR1)*(zclosest - (opaZCenter-opaHL))/(2.*opaHL); //linear radius change in z
-          if(rAtZClosest < cylinderRadius + 0.001) overlapPabs = true; //require a small buffer
+          if(rAtZClosest < cylinderRadius + 0.001) {
+            overlapPabs = true; //require a small buffer
+            if ( verbosity > 1) std::cout << "  Identified an overlap with the OPA! Adjusting to compensate...\n";
+          }
         } //end possible radius overlap check
       } //end OPA is available check
+      else {
+        if ( verbosity > 1) std::cout << "  OPA (2) not available!\n";
+      }
     }
 
-    TubsParams targetMotherParams(0., target->cylinderRadius(), target->cylinderLength()/2.);
+    TubsParams targetMotherParams(0., maxMotherRadius, target->cylinderLength()/2.);
 
     VolumeInfo targetInfo;
     std::string targetMotherName = "StoppingTargetMother";
