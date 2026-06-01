@@ -1373,7 +1373,7 @@ namespace mu2e {
                                                       *CLHEP::degree);
         double yLocMoBox = pivotPos.at(1) + dptoc*sin(pabs->degraderRotation()
                                                       *CLHEP::degree);
-        const float dgr_z0 = pabs->degraderZ0(); // front face of the degrader
+        const double dgr_z0 = pabs->degraderZ0(); // front face of the degrader
         const double mother_half_width = filterDims.at(2) + frameDims.at(2) + 0.1; // contain both the frame and the filter
         CLHEP::Hep3Vector locationInMu2e (xLocMoBox, yLocMoBox, dgr_z0 + mother_half_width);
 
