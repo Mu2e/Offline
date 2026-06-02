@@ -18,6 +18,7 @@ namespace mu2e {
   class STMFragmentSummary {
 
   public:
+    STMFragmentSummary() : _nContainerFrags(0), _nInnerFrags(0){};
     STMFragmentSummary(size_t nContainerFrags, size_t nInnerFrags) : _nContainerFrags(nContainerFrags), _nInnerFrags(nInnerFrags) {};
 
     size_t nContainerFrags() const { return _nContainerFrags; }

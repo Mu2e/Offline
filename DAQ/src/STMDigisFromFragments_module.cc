@@ -135,7 +135,7 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
   ,_verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
 
 {
-  //if (_saveSTMFragmentSummary) {producers <mu2e::STMFragmentSummaryCollection>("
+  if (_saveSTMFragSummary) {produces <mu2e::STMFragmentSummaryCollection>("stmFragSummary");}
   // Set the size of vectors for HPGe
   if (_saveRawWithHeaderWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderHPGe");}
   if (_saveRawWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawHPGe");}//Waveforms           
@@ -158,8 +158,10 @@ void STMDigisFromFragments::produce(Event& event)
   
   ++_totalEvents; //Increment Total Event Counter
 
+  //
+  std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummary(new mu2e::STMFragmentSummaryCollection);
   //HPGe
-  std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);
+  std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);//add if statemnets to guard
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMPHDigiCollection> ph_HPGe_digis(new mu2e::STMPHDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
@@ -213,6 +215,10 @@ void STMDigisFromFragments::produce(Event& event)
   uint16_t expectedZSLengthLaBr{0};
   uint16_t expectedZSRegionsLaBr{0};
   bool readZSinfoFromRawHeaderLaBr{false};
+
+  //Frag counters
+  size_t nContainerFragsThisEvent{0};
+  size_t nInnerFragsThisEvent{0};
   
   //loop over outer frags
   for (const auto& frag : *STMFragments) { 
@@ -236,9 +242,10 @@ void STMDigisFromFragments::produce(Event& event)
           
       artdaq::ContainerFragment cont_frag(frag);
       ++_totalContainers;
+      ++nContainerFragsThisEvent;
       size_t blocks = cont_frag.block_count();
       _totalInner += blocks;
-      
+      nInnerFragsThisEvent += blocks;
       
       //loop over container where i corresponds to inner frag 
       for (size_t i = 0; i < cont_frag.block_count(); ++i){
@@ -557,6 +564,7 @@ void STMDigisFromFragments::produce(Event& event)
   else if (eventHasHPGe){ ++_totalEventsWithOnlyHPGe; }
   else if (eventHasLaBr){ ++_totalEventsWithOnlyLaBr; }
   else { ++_totalEventsWithNone; }
+  if(_saveSTMFragSummary){stmFragSummary->emplace_back(nContainerFragsThisEvent,nInnerFragsThisEvent);}
   
   if (_verbosityLevel >= 2 ){ 
     //Event Summary -> tells us what happens per event
@@ -604,6 +612,8 @@ void STMDigisFromFragments::produce(Event& event)
   }
   
   //Final move
+  if (_saveSTMFragSummary) {event.put(std::move(stmFragSummary),"stmFragSummary");}
+
   //HPGe
   if (_saveRawWithHeaderWaveform_HPGe){ event.put(std::move(raw_HPGe_header_waveform_digis), "rawWithHeaderHPGe"); }
   if (_saveRawWaveform_HPGe){event.put(std::move(raw_HPGe_waveform_digis), "rawHPGe");}

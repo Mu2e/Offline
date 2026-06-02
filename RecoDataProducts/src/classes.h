@@ -96,6 +96,7 @@
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+#include "Offline/RecoDataProducts/inc/STMFragmentSummary.hh"
 
 // MSD
 #include "Offline/RecoDataProducts/inc/MSDHit.hh"

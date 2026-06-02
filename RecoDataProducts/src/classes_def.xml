@@ -446,7 +446,10 @@
  <class name="mu2e::STMHit"/>
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
-
+ <class name="mu2e::STMFragmentSummary"/>
+ <class name="mu2e::STMFragmentSummaryCollection"/>
+ <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
+ 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
   <class name="mu2e::MSDHitCollection"/>
