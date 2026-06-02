@@ -11,6 +11,7 @@
 
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMFragmentSummary.hh"
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
@@ -45,6 +46,7 @@ public:
     fhicl::Atom<bool> saveRawWithHeaderWaveform_LaBr{fhicl::Name("saveRawWithHeaderWaveform_LaBr"), false};
     fhicl::Atom<bool> saveRawWaveform_LaBr{fhicl::Name("saveRawWaveform_LaBr"), false};
     fhicl::Atom<bool> saveZSWaveform_LaBr{fhicl::Name("saveZSWaveform_LaBr"), false};
+    fhicl::Atom<bool> saveSTMFragSummary{fhicl::Name("saveSTMFragSummary"),false};
 
   };
   
@@ -113,8 +115,8 @@ private:
   bool _saveRawWithHeaderWaveform_LaBr{false};
   bool _saveRawWaveform_LaBr{false};
   bool _saveZSWaveform_LaBr{false};
-  
-  int _verbosityLevel = 0;
+  bool _saveSTMFragSummary{false};
+  int _verbosityLevel{0};
 }; // STMDigisFromFragments
 
 // ======================================================================
@@ -129,9 +131,11 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
   ,_saveRawWithHeaderWaveform_LaBr(config().saveRawWithHeaderWaveform_LaBr())
   ,_saveRawWaveform_LaBr(config().saveRawWaveform_LaBr())
   ,_saveZSWaveform_LaBr(config().saveZSWaveform_LaBr())
+  ,_saveSTMFragSummary(config().saveSTMFragSummary())
   ,_verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
 
 {
+  //if (_saveSTMFragmentSummary) {producers <mu2e::STMFragmentSummaryCollection>("
   // Set the size of vectors for HPGe
   if (_saveRawWithHeaderWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderHPGe");}
   if (_saveRawWaveform_HPGe){produces<mu2e::STMWaveformDigiCollection>("rawHPGe");}//Waveforms           
