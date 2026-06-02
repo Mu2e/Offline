@@ -1,22 +1,9 @@
 #include "Offline/TrkReco/fcl/Particle.fcl"
 BEGIN_PROLOG
 Mu2eKinKal : {
+  #
   # general configuration
   #
-  MAT: {
-    elements  : "Offline/TrackerConditions/data/ElementsList.data"
-    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-    materials : "Offline/TrackerConditions/data/MaterialsList.data"
-    strawGasMaterialName  : "straw-gas"
-    strawWallMaterialName : "straw-wall"
-    strawWireMaterialName : "straw-wire"
-    IPAMaterialName : "HDPE"
-    STMaterialName : "Target"
-    IonizationEnergyLossMode : 1 # Moyal mean
-    SolidScatteringFraction : 0.999999
-    GasScatteringFraction : 0.9999999
-    ElectronBrehmsFraction : 0.04
-  }
   KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
@@ -386,21 +373,53 @@ Mu2eKinKal : {
   LHDRIFTXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-4 # momemntum fraction
     ToTrackerEnds : true
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToCRV : false
   }
 
   LHSEEDXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 10.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : true
     Upstream : false
     BackToTracker : false
     ToOPA : false
+    ToCRV : false
+  }
+
+  KLXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerEnds : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : true
+  }
+
+  CHXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerEnds : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : true
   }
 
   CENTRALHELIX : {
@@ -411,7 +430,7 @@ Mu2eKinKal : {
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
@@ -428,17 +447,12 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
   }
 
-  LINEEXTRAPOLATION : {
-    MaxDt : 200.0 # (ns)
-    MinV : 1e-5
-    ToCRV : true
-  }
 }
 
 Mu2eKinKal : {
@@ -446,7 +460,6 @@ Mu2eKinKal : {
 
   LHSeedFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Mid"]
@@ -468,7 +481,6 @@ Mu2eKinKal : {
 
   LHDriftFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
@@ -493,7 +505,6 @@ Mu2eKinKal : {
 
   KLSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
@@ -508,7 +519,6 @@ Mu2eKinKal : {
 
   KLDriftFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
@@ -517,7 +527,7 @@ Mu2eKinKal : {
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
       # save the full trajectory
-       SaveTrajectory: Detector
+       SaveTrajectory: Full
        SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
@@ -526,12 +536,11 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
     }
-    Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
+    ExtrapolationSettings : @local::Mu2eKinKal.KLXTRAP
   }
 
   CHSeedFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
@@ -547,7 +556,6 @@ Mu2eKinKal : {
 
   CHDriftFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Detector
@@ -559,6 +567,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP
   }
 }
 

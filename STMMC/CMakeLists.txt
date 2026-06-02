@@ -43,8 +43,8 @@ cet_build_plugin(HPGeWaveformsFromStepPointMCs art::module
       Offline::STMConditions
       Offline::GlobalConstantsService
 )
-cet_build_plugin(MWDTree art::module
-    REG_SOURCE src/MWDTree_module.cc
+cet_build_plugin(PHTree art::module
+    REG_SOURCE src/PHTree_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::RecoDataProducts

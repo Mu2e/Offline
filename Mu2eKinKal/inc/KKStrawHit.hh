@@ -23,6 +23,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // Other
@@ -178,10 +179,12 @@ namespace mu2e {
     auto cashu = miconfig.findUpdater<CADSHU>();
     auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
+    auto diagshu = miconfig.findUpdater<PanelDiagSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
       auto dinfo = fillDriftInfo(ca);
       // there can be multiple updaters: apply them all
+      if(diagshu)whstate_ = diagshu->wireHitState(whstate_,straw_.id());
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);

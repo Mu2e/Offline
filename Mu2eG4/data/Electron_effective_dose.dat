@@ -1,4 +1,5 @@
-Electrons: Effective dose per fluence, in units of pSv cm², for monoenergetic particles incident in various geometries.
+Electrons: Effective dose per fluence, in units of pSv cm2, for monoenergetic particles incident in various geometries.
+Data from ICRP 116
 
 Energy (MeV)        AP           PA           ISO
      0.01          0.0269       0.0268       0.0188

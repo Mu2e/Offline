@@ -1,10 +1,11 @@
-#ifndef scorerDoseEffective_h
-#define scorerDoseEffective_h 1
+#ifndef scorerDosePrompt_h
+#define scorerDosePrompt_h 1
 //
 // Custom scorer to calculate exposed dose using fluence-to-dose conversion tables
 // Author BE
 //
 #include "Offline/Mu2eG4/inc/scorerFTDConverter.hh"
+#include "Offline/Mu2eG4/inc/scorerDoseType.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "CLHEP/Random/RandFlat.h"
 
@@ -15,13 +16,14 @@
 
 namespace mu2e {
 
-  class scorerDoseEffective : public G4VPrimitiveScorer
+  class scorerDosePrompt : public G4VPrimitiveScorer
   {
     public:
-      scorerDoseEffective(const G4String& name,
-                          const Mu2eG4Config::Physics& configPhysics,
-                          G4int depth = 0);
-      ~scorerDoseEffective() override = default;
+      scorerDosePrompt(const G4String& name,
+                       scorerDoseType type,
+                       const Mu2eG4Config::Physics& configPhysics,
+                       G4int depth = 0);
+      ~scorerDosePrompt() override = default;
 
       void Initialize(G4HCofThisEvent*) override;
       void clear()                      override;
