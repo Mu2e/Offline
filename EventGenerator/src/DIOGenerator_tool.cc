@@ -46,8 +46,8 @@ namespace mu2e {
       }
 
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
-      _emin = fullconfig.get<double>("elow");
-      _emax = fullconfig.get<double>("ehi");
+      _emin = fullconfig.get<double>("elow", _spectrum.getXMin());
+      _emax = fullconfig.get<double>("ehi", _spectrum.getXMax());
       fullconfig.erase(std::string("elow"));
       fullconfig.erase(std::string("ehi"));
       fullconfig.put(std::string("elow"),double(0.0));
