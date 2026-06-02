@@ -17,7 +17,7 @@ namespace mu2e {
 
     // A variable that can be restricted in a simulation
     struct RestrictedVar {
-      RestrictedVar(const std::string name,
+      RestrictedVar(const std::string name = "default",
                     const double fraction = 1.,
                     const double xmin = std::numeric_limits<double>::lowest(),
                     const double xmax = std::numeric_limits<double>::max()) : name_(name),
