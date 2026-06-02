@@ -1,5 +1,4 @@
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
-#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 #include "KinKal/MatEnv/MatDBInfo.hh"
 #include "KinKal/Detector/MaterialXing.hh"
@@ -35,11 +34,11 @@ namespace mu2e {
     return KKStrawMaterial::average;
   }
 
-  KKStrawMaterial::PathCalc KKStrawMaterial::pathLengths(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig,
-      double& wallpath, double& gaspath, double& wirepath) const {
+  KKStrawMaterial::PathCalc KKStrawMaterial::pathLengths(ClosestApproachData const& cadata,double nsig,
+      double& wallpath, double& gaspath, double& wirepath,int diag) const {
     wallpath = gaspath = wirepath = 0.0;
     PathCalc retval = KKStrawMaterial::unknown;
-    double docarange = caconfig.nsig_*sqrt(std::max(0.0,cadata.docaVar()));
+    double docarange = nsig*sqrt(std::max(0.0,cadata.docaVar()));
     // if the doca range covers the straw, use the average
     double adoca = fabs(cadata.doca());
     double mindoca = std::max(0.0,std::min(adoca,irad_)-docarange);
@@ -58,10 +57,9 @@ namespace mu2e {
       if(awall>0.0)wallpath = awall/(omaxdoca-mindoca);
       retval = range;
     }
-    if(caconfig.diag_>0){
+    if(diag>0){
       std::cout << "KKStrawMaterial: DOCA " << fabs(cadata.doca()) << " DOCA Var " << cadata.docaVar() << " range [" << mindoca << "," << imaxdoca << "] wall path (mm)" << wallpath << " gas path " << gaspath << " retval " << retval << std::endl;
     }
-
     // Model the wire as a diffuse gas, density constrained by DOCA TODO
     // 3D pathlength includes projection along straw
     double afac = angleFactor(cadata.dirDot());
@@ -79,15 +77,14 @@ namespace mu2e {
     return tlen;
   }
 
-  KKStrawMaterial::PathCalc KKStrawMaterial::findXings(ClosestApproachData const& cadata,StrawXingUpdater const& caconfig,
-      std::vector<MaterialXing>& mxings) const {
+  KKStrawMaterial::PathCalc KKStrawMaterial::findXings(ClosestApproachData const& cadata, double nsig, std::vector<MaterialXing>& mxings, int diag) const {
     mxings.clear();
     double wallpath, gaspath, wirepath;
-    auto retval = pathLengths(cadata,caconfig,wallpath, gaspath, wirepath);
+    auto retval = pathLengths(cadata,nsig,wallpath, gaspath, wirepath,diag);
     if(wallpath > 0.0) mxings.push_back(MaterialXing(*wallmat_,wallpath));
     if(gaspath > 0.0) mxings.push_back(MaterialXing(*gasmat_,gaspath));
     if(wirepath > 0.0) mxings.push_back(MaterialXing(*wiremat_,wirepath));
-    if(caconfig.diag_ > 1){
+    if(diag > 1){
       std::cout << "Ce wall dE/dx " << wallmat_->energyLoss(105,1.0,0.511) << std::endl;
       std::cout << "Ce gas dE/dx " << gasmat_->energyLoss(105,1.0,0.511) << std::endl;
     }

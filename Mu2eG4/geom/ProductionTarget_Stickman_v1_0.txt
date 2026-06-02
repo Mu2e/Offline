@@ -18,7 +18,7 @@ vector<double> productionTarget.offset = { 0., 0., 0.};
 // Mother volume
 double targetPS_productionTargetMotherOuterRadius = 200.; //mm
 double targetPS_productionTargetMotherHalfLength = 120.; //mm  full target length 232.2 mm,
-                                                         //    allow the mother volume to be slightly larger
+//    allow the mother volume to be slightly larger
 
 // Overall rotation
 double targetPS_rotX = 0.0;
@@ -34,22 +34,22 @@ string targetPS_targetVacuumMaterial = "PSVacuum";
 // Start with target plates. Chose to specify certain parameters for each plate, so can easily play with plate-by-plate dimensions later on
 int targetPS_numberOfPlates = 35;
 vector<string> targetPS_plateMaterial = { // counting along mu2e +z direction, i.e. from the proton downstream side to the upstream side
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", //  5
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 10
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 15
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 20
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 25
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 30
-    "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718"  // 35
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", //  5
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 10
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 15
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 20
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 25
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718", // 30
+  "Inconel718", "Inconel718", "Inconel718", "Inconel718", "Inconel718"  // 35
 }; // does not separate fin & core material here
 vector<double> targetPS_rOut = {
-    3.15, 3.15, 3.15, 3.15, 3.15, //  5
-    3.15, 3.15, 3.15, 3.15, 3.15, // 10
-    3.15, 3.15, 3.15, 3.15, 3.15, // 15
-    3.15, 3.15, 3.15, 3.15, 3.15, // 20
-    3.15, 3.15, 3.15, 3.15, 3.15, // 25
-    3.15, 3.15, 3.15, 3.15, 3.15, // 30
-    3.15, 3.15, 3.15, 3.15, 3.15  // 35
+  3.15, 3.15, 3.15, 3.15, 3.15, //  5
+  3.15, 3.15, 3.15, 3.15, 3.15, // 10
+  3.15, 3.15, 3.15, 3.15, 3.15, // 15
+  3.15, 3.15, 3.15, 3.15, 3.15, // 20
+  3.15, 3.15, 3.15, 3.15, 3.15, // 25
+  3.15, 3.15, 3.15, 3.15, 3.15, // 30
+  3.15, 3.15, 3.15, 3.15, 3.15  // 35
 }; // in mm, core part radius, one value for each
 int targetPS_nStickmanFins             = 3;                   // since the plates are installed on rods, the number of fins is always the same
 vector<double> targetPS_plateFinAngles = {285.,165.,45.};     // degrees
@@ -59,22 +59,22 @@ double targetPS_plateCenterToLugCenter = 19.6;                // mm, center of p
 double targetPS_plateLugInnerRadius    = 1.525;               // mm, inner radius of the lug
 double targetPS_plateLugOuterRadius    = 3.0;                 // mm, outer radius of the lug
 vector<double> targetPS_plateThickness = {
-    5.0, 5.0, 5.0, 5.0, 5.0, //  5
-    5.0, 5.0, 5.0, 5.0, 5.0, // 10
-    5.0, 5.0, 5.0, 5.0, 5.0, // 15
-    5.0, 5.0, 5.0, 5.0, 5.0, // 20
-    5.0, 5.0, 5.0, 5.0, 5.0, // 25
-    5.0, 5.0, 5.0, 5.0, 5.0, // 30
-    5.0, 5.0, 5.0, 5.0, 5.0  // 35
+  5.0, 5.0, 5.0, 5.0, 5.0, //  5
+  5.0, 5.0, 5.0, 5.0, 5.0, // 10
+  5.0, 5.0, 5.0, 5.0, 5.0, // 15
+  5.0, 5.0, 5.0, 5.0, 5.0, // 20
+  5.0, 5.0, 5.0, 5.0, 5.0, // 25
+  5.0, 5.0, 5.0, 5.0, 5.0, // 30
+  5.0, 5.0, 5.0, 5.0, 5.0  // 35
 }; // in mm, one value for each plate, core and fin thickness
 vector<double> targetPS_plateLugThickness = {
-    6.0, 6.0, 6.0, 6.0, 6.0, //  5
-    6.0, 6.0, 6.0, 6.0, 6.0, // 10
-    6.0, 6.0, 6.0, 6.0, 6.0, // 15
-    6.0, 6.0, 6.0, 6.0, 6.0, // 20
-    6.0, 6.0, 6.0, 6.0, 6.0, // 25
-    6.0, 6.0, 6.0, 6.0, 6.0, // 30
-    6.0, 6.0, 6.0, 6.0, 6.0  // 35
+  6.0, 6.0, 6.0, 6.0, 6.0, //  5
+  6.0, 6.0, 6.0, 6.0, 6.0, // 10
+  6.0, 6.0, 6.0, 6.0, 6.0, // 15
+  6.0, 6.0, 6.0, 6.0, 6.0, // 20
+  6.0, 6.0, 6.0, 6.0, 6.0, // 25
+  6.0, 6.0, 6.0, 6.0, 6.0, // 30
+  6.0, 6.0, 6.0, 6.0, 6.0  // 35
 }; // in mm, one value for each plate, note lugs are flush with the fins on the proton downstream side
 bool targetPS_addFilletToPlateCore = true; // whether to add fillet to the intersection between plate core and fins
 bool targetPS_addFilletToPlateLug  = true; // whether to add fillet to the intersection between fins and lugs
@@ -107,10 +107,10 @@ bool   targetPS_addFilletToSupportRingLug  = true;
 double targetPS_supportRingLugFilletRadius = 1.0;
 bool   targetPS_addCutoutToSupportRing     = true; // the six cylindrical cutouts at an angle
 double targetPS_supportRingCutoutOffset    = 4.78; // mm, distance from the center of the cutout to the side of the end ring closer to the target center.
-                                                   // This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
+// This value is a must-have. If no cutout is added, this determines where the support wire is attached from the inner edge of the end ring.
 int    targetPS_nSupportRingCutouts        = 3;
 vector<double> targetPS_supportRingCutoutAngles = {15., 135., 255.}; // degrees
-                                                  //{-45., 75., 195.}; these have spokes inside so not cutting out
+//{-45., 75., 195.}; these have spokes inside so not cutting out
 double targetPS_supportRingCutoutInnerRadius = 2.06; // mm
 double targetPS_supportRingCutoutTilt        = 20.0; //degrees, angle of the cutout w.r.t the radial direction
 
@@ -129,9 +129,9 @@ vector<double> targetPS.supports.features.rIns   = {158.75, 158.75, 158.75}; //m
 vector<double> targetPS.supports.rods.angles       = {-45., 75., 195.0}; //degrees
 vector<double> targetPS.supports.rods.halfLength   = {70., 70., 70.}; //mm
 vector<double> targetPS.supports.rods.offset       = {-35., -14.80, 38.62}; //mm, changed according to F10122537_A_DWG1
-                                                                            //rod center to the channel centers
+//rod center to the channel centers
 vector<double> targetPS.supports.rods.pinOffset    = {3.81, 3.81, 3.81};    //mm, according to F10121763_A_DWG1, pinholes used to fix
-                                                                            //the rods are off-center, need to add pinOffset/cos(rotY) to offset above
+//the rods are off-center, need to add pinOffset/cos(rotY) to offset above
 vector<double> targetPS.supports.rods.radius       = {9., 9., 9.}; //mm
 vector<double> targetPS.supports.rods.radialOffset = {177.8, 177.8, 177.8}; //mm
 vector<double> targetPS.supports.rods.wireOffset.downstream = {13., 13., 13.}; //mm, on the surface

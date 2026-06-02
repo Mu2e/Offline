@@ -400,27 +400,32 @@ namespace mu2e {
     // Check to the left of the peak bin
     int bincheck = max_bin;
     while(_hist1.GetBinContent(bincheck) >=_threshold) {
-      //if(_debug>3) std::cout<<"bincontent = "<<_hist1.GetBinContent(bincheck)<<" bincheck = "<<bincheck<<"   "<<_hist1.GetBinCenter(bincheck)<<std::endl;
-      if (bincheck > _threshold) bincheck--;
+      if (bincheck > 1) bincheck--;
       else bincheck = nbx;
       nsteps++;
       if (nsteps >= nbx) {
         cluphimin = 0;
         cluphimax = 2*M_PI;
-        if (_debug>2) printf("Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
+        if (_debug>2) printf("Hit maximum steps --> Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
         return;
       }
     }
     // Check to the right of the highest bin
+    nsteps = 0;
     int bincheckr=max_bin;
     while(_hist1.GetBinContent(bincheckr)>=_threshold){
-      //if(_debug>3) std::cout<<"Rbincontent = "<<_hist1.GetBinContent(bincheckr)<<" bincheck = "<<bincheckr<<"  "<<_hist1.GetBinCenter(bincheckr)<<std::endl;
       if(bincheckr<nbx) bincheckr++;
       else bincheckr = 1;
+      nsteps++;
+      if (nsteps >= nbx) {
+        cluphimin = 0;
+        cluphimax = 2*M_PI;
+        if (_debug>2) printf("Hit maximum steps --> Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
+        return;
+      }
     }
     cluphimax = _hist1.GetXaxis()->GetBinCenter(bincheckr)+bin/2;
     cluphimin = _hist1.GetXaxis()->GetBinCenter(bincheck )-bin/2;
-    //std::cout<<"bincheck = "<<_hist1.GetXaxis()->GetBinCenter(bincheck)<<" r bincheck = "<<_hist1.GetXaxis()->GetBinCenter(bincheckr)<<std::endl;
     if (_debug>3) printf("Phi min = %10.3f max : %10.3f\n",cluphimin,cluphimax);
   }
 
