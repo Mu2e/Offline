@@ -5,7 +5,7 @@
 #define MCDataProducts_inc_SpectrumConfig_hh
 
 #include <limits>
-#include <vector>
+#include <map>
 #include <string>
 
 namespace mu2e {
@@ -54,7 +54,7 @@ namespace mu2e {
     }
 
     // Check if provided variables pass the selection
-    bool accepted(const std::map<std::string, double>& vars) {
+    bool accepted(const std::map<std::string, double>& vars) const {
       for(const auto& [name, value] : vars) {
         // check if this name is defined
         if(!vars_.contains(name)) {
@@ -63,7 +63,7 @@ namespace mu2e {
           return false;
         }
         // Check if it's accepted
-        if(!vars_[name].accepted(value)) return false;
+        if(!vars_.at(name).accepted(value)) return false;
       }
 
       // Passes all selections
