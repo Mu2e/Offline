@@ -297,9 +297,9 @@ namespace mu2e {
   //================================================================
   void RPCGun::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., spectrum_.getXMin(), spectrum_.getXMax()));
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
-    config->type_ = flatSpectrum_ ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., spectrum_.getXMin(), spectrum_.getXMax(),
+                                                  flatSpectrum_ ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
     sr.put(std::move(config), art::fullSubRun());
   }
 

@@ -16,6 +16,7 @@
 #include <string>
 #include <cmath>
 #include <memory>
+#include <limits>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -154,7 +155,10 @@ namespace mu2e {
 
   void GammaConvFlat::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
-    config->type_ = SpectrumConfig::Type::kFlat;
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1.,
+                                                  std::numeric_limits<double>::lowest(),
+                                                  std::numeric_limits<double>::max(),
+                                                  SpectrumConfig::Type::kFlat));
     sr.put(std::move(config), art::fullSubRun());
   }
 

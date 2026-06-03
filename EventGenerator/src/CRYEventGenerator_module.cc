@@ -87,7 +87,6 @@ namespace mu2e {
     subrun.put(std::move(livetime), art::fullSubRun());
 
     auto config = std::make_unique<SpectrumConfig>();
-    config->type_ = SpectrumConfig::Type::kOther;
     subrun.put(std::move(config), art::fullSubRun());
   }
 

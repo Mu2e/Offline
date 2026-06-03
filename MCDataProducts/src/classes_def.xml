@@ -38,8 +38,8 @@
  <class name="art::Wrapper<mu2e::SpectrumConfig>"/>
  <class name="mu2e::SpectrumConfig::RestrictedVar"/>
  <class name="art::Wrapper<mu2e::SpectrumConfig::RestrictedVar>"/>
- <class name="std::vector<mu2e::SpectrumConfig::RestrictedVar>"/>
- <class name="art::Wrapper<std::vector<mu2e::SpectrumConfig::RestrictedVar>>"/>
+ <class name="std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>"/>
+ <class name="art::Wrapper<std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>>"/>
 
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>

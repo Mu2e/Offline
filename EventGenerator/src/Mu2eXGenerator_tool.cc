@@ -123,8 +123,8 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> Mu2eXGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", _energy_fraction, _emin, _emax));
-    config->type_ = _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    config->add_var(SpectrumConfig::RestrictedVar("energy", _energy_fraction, _emin, _emax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     return config;
   }
 

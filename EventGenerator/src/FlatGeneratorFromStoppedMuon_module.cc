@@ -149,9 +149,8 @@ namespace mu2e {
   //================================================================
   void FlatGeneratorFromStoppedMuon::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("momentum", 1., startMom_, endMom_));
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (czMax_ - czMin_)/2., czMin_, czMax_));
-    config->type_ = SpectrumConfig::Type::kFlat;
+    config->add_var(SpectrumConfig::RestrictedVar("momentum", 1., startMom_, endMom_, SpectrumConfig::Type::kFlat));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (czMax_ - czMin_)/2., czMin_, czMax_));
     sr.put(std::move(config), art::fullSubRun());
   }
 

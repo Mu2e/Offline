@@ -215,7 +215,14 @@ namespace mu2e {
 
   void StoppedParticleReactionGun::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
-    config->type_ = (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    std::string varName("energy");
+    switch(spectrumVariable_) {
+      case KINETIC_ENERY: varName = "kineticEnergy"; break;
+      case MOMENTUM:      varName = "momentum";      break;
+      default:            varName = "energy";        break;
+    }
+    config->add_var(SpectrumConfig::RestrictedVar(varName, 1., spectrum_.getXMin(), spectrum_.getXMax(),
+                                                  (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     sr.put(std::move(config), art::fullSubRun());
   }
 

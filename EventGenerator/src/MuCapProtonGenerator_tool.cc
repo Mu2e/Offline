@@ -121,9 +121,9 @@ namespace mu2e {
       default:            spectrumVarName = "energy";        break;
     }
 
-    config->vars_.push_back(SpectrumConfig::RestrictedVar(spectrumVarName, 1., _spectrumXMin, _spectrumXMax));
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
-    config->type_ = _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    config->add_var(SpectrumConfig::RestrictedVar(spectrumVarName, 1., _spectrumXMin, _spectrumXMax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
     return config;
   }
 

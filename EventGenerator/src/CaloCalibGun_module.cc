@@ -239,7 +239,6 @@ namespace mu2e {
 
   void CaloCalibGun::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
-    config->type_ = SpectrumConfig::Type::kOther;
     sr.put(std::move(config), art::fullSubRun());
   }
 

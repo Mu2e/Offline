@@ -210,9 +210,9 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> RMCGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax));
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (_czmax - _czmin)/2., _czmin, _czmax));
-    config->type_ = _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical;
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czmax - _czmin)/2., _czmin, _czmax));
     return config;
   }
 

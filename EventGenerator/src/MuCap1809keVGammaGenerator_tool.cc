@@ -87,9 +87,8 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> MuCap1809keVGammaGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("energy", 1., _energy, _energy));
-    config->vars_.push_back(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
-    config->type_ = SpectrumConfig::Type::kPhysical;
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., _energy, _energy));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
     return config;
   }
 
