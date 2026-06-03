@@ -1,4 +1,4 @@
-// Module for training and using score-based diffusion model
+// Module for training and using (variance preserving) score-based diffusion model
 // Added by Yongyi Wu
 // Mar. 2026
 
@@ -44,7 +44,8 @@ namespace mu2e{
         // Enumeration for noise schedule selection
         enum class NoiseScheduleType {
             LINEAR,  // Linear noise schedule
-            COSINE   // Cosine noise schedule
+            COSINE,  // Cosine noise schedule
+            LOGSIG   // Log-sigma (pure exponential) noise schedule: sigma(t) = sigMin*exp(k*t), k=ln(sigMax/sigMin)
         };
 
         // Constructor: Initialize diffusion model with CLHEP random distributions.
@@ -60,10 +61,13 @@ namespace mu2e{
         //   adamBeta1               - Adam optimizer beta1 parameter (default: 0.9)
         //   adamBeta2               - Adam optimizer beta2 parameter (default: 0.999)
         //   adamEps                 - Adam optimizer epsilon parameter (default: 1e-8)
-        //   scheduleType            - Type of noise schedule (LINEAR or COSINE, default: COSINE)
+        //   scheduleType            - Type of noise schedule (LINEAR, COSINE, or LOGSIG, default: COSINE)
         //   betaMin                 - Minimum noise schedule parameter (for LINEAR schedule, default: 1e-4)
         //   betaMax                 - Maximum noise schedule parameter (for LINEAR schedule, default: 0.02)
         //   cosineOffset            - Offset parameter (for cosine schedule, default: 0.008)
+        //   logSigMin               - Minimum sigma for LOGSIG schedule (default: 1e-5)
+        //   logSigMax               - Maximum sigma for LOGSIG schedule (default: 1.0)
+        //   epsPrediction           - If true, network predicts noise epsilon instead of the score (default: false)
         //   lossWeightPower         - Power for weighting the loss function (default: 2.0 for quadratic weighting)
         //   batchSize               - Batch size for training (default: 32)
         //   gradientClipThreshold   - Threshold for gradient clipping (default: 1.0)
@@ -89,6 +93,9 @@ namespace mu2e{
             double betaMin = 1e-4,
             double betaMax = 0.02,
             double cosineOffset = 0.008,
+            double logSigMin = 1e-5,
+            double logSigMax = 1.0,
+            bool epsPrediction = false,
             // Training configuration
             double lossWeightPower = 2.0,
             int batchSize = 32,
@@ -277,12 +284,21 @@ namespace mu2e{
 
         // Cumulative perturbation standard deviation of noise sigma(t) at diffusion time [0,1].
         // Related to the noise schedule via sigma(t) = sqrt(1 - alpha_bar(t)).
+        // For LOGSIG: sigma(t) = logSigMin_ * exp(k*t), k = ln(logSigMax_/logSigMin_).
         //
         // Parameters:
         //   t - Diffusion time parameter in [0,1]
         //
         // Returns: Noise standard deviation at time t
         double sigma(double t) const;
+
+        // Time derivative dσ/dt. Used by beta() for the LOGSIG schedule.
+        //
+        // Parameters:
+        //   t - Diffusion time parameter in [0,1]
+        //
+        // Returns: dσ/dt at time t
+        double dSigmadt(double t) const;
 
         // Add Gaussian noise to a state vector at diffusion time t.
         // Uses external engine (randGaussQ_) for reproducible noise generation.
@@ -293,7 +309,7 @@ namespace mu2e{
         //   t   - Diffusion time parameter in [0,1]
         //   eps - Output: Gaussian noise vector used for perturbation (size = dim_)
         //
-        // Returns: Noisy state = x + sigma(t) * eps
+        // Returns: Noisy state = sqrt(alpha_bar(t)) * x + sigma(t) * eps
         std::vector<double> addNoise(
             const std::vector<double>& x,
             double t,
@@ -349,7 +365,7 @@ namespace mu2e{
         double adamEps_;    // Small constant for numerical stability (default: 1e-8)
 
         // Noise schedule configuration
-        NoiseScheduleType noiseScheduleType_;  // Type of noise schedule (LINEAR or COSINE)
+        NoiseScheduleType noiseScheduleType_;  // Type of noise schedule (LINEAR, COSINE, or LOGSIG)
 
         // Linear noise schedule parameters (beta(t) = betaMin + t*(betaMax - betaMin))
         // default betaMin = 1e-4, betaMax = 0.02 are typical values used in diffusion models, but can be tuned for specific applications.
@@ -358,6 +374,14 @@ namespace mu2e{
 
         // Cosine noise schedule parameter (offset to avoid singularity at t=0 in cosine schedule, default: 0.008)
         double cosineOffset_;
+
+        // Log-sigma noise schedule parameters: sigma(t) = logSigMin_ * exp(k*t), k = ln(logSigMax_/logSigMin_)
+        double logSigMin_;  // sigma at t=0 (default: 1e-5)
+        double logSigMax_;  // sigma at t=1 (default: 1.0)
+
+        // If true, network predicts noise epsilon instead of the score s = -eps/sigma.
+        // Prevents value explosion from 1/sigma at small t.
+        bool epsPrediction_;
 
         // Training configuration
         double lossWeightPower_; // Power of the loss function weighting (default: 2.0)

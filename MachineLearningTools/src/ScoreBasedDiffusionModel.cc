@@ -28,6 +28,17 @@ namespace mu2e {
             double beta = (M_PI / (1.0 + cosineOffset_)) * std::tan(f * M_PI * 0.5); // beta(t) = pi / (1+offset) * tan(pi*f/2)
             // Cap beta to prevent numerical issues at t close to 1
             return std::min(beta, 10.0); // cap beta to a large value
+        } else if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            // LOGSIG: beta(t) = 2*sigma*dSigmadt / (1 - sigma^2)
+            // Beta diverges as sigma->1 (t->1). For default sigMin=1e-5, k~11.5:
+            //   beta=100 is first reached at sigma~0.90 (t~0.97).
+            // Capping at 100 keeps beta*dt <= 0.5 for 200 diffusion steps,
+            // analogous to the cap=10 used for COSINE (where k is ~7x smaller).
+            double s  = sigma(t);
+            double sd = dSigmadt(t);
+            double denom = 1.0 - s * s;
+            if (denom < 1e-12) return 100.0;
+            return std::min(2.0 * s * sd / denom, 100.0);
         } else {
             // Linear interpolation of beta(t) between betaMin_ and betaMax_.
             return betaMin_ + t * (betaMax_ - betaMin_);
@@ -42,6 +53,10 @@ namespace mu2e {
             double alpha_bar = std::cos(f * M_PI * 0.5);
             alpha_bar *= alpha_bar; // alpha_bar(t) = cos^2(pi*f/2)
             return alpha_bar;
+        } else if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            // LOGSIG: alphabar(t) = 1 - sigma^2(t), clamped to [0,1]
+            double s = sigma(t);
+            return std::max(0.0, 1.0 - s * s);
         } else {
             // Linear noise schedule
             double integral = betaMin_ * t + 0.5 * (betaMax_ - betaMin_) * t * t;
@@ -51,7 +66,22 @@ namespace mu2e {
 
     // Cumulative perturbation stddev (noise level)
     double ScoreBasedDiffusionModel::sigma(double t) const {
+        if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            // Direct formula; computed here (not via alphabar) to avoid circular dependency
+            double k = std::log(logSigMax_ / logSigMin_);
+            return logSigMin_ * std::exp(k * t);
+        }
         return std::sqrt(1.0 - alphabar(t)); // sigma(t) = sqrt(1 - alpha_bar(t))
+    }
+
+    // Time derivative dσ/dt — only defined for LOGSIG
+    double ScoreBasedDiffusionModel::dSigmadt(double t) const {
+        if (noiseScheduleType_ != NoiseScheduleType::LOGSIG) {
+            throw cet::exception("ScoreBasedDiffusionModel::dSigmadt")
+                << "dSigmadt() is only defined for the LOGSIG noise schedule";
+        }
+        double k = std::log(logSigMax_ / logSigMin_);
+        return k * sigma(t);
     }
 
 
@@ -70,6 +100,9 @@ namespace mu2e {
         double betaMin,
         double betaMax,
         double cosineOffset,
+        double logSigMin,
+        double logSigMax,
+        bool epsPrediction,
         double lossWeightPower,
         int batchSize,
         double gradientClipThreshold,
@@ -82,6 +115,7 @@ namespace mu2e {
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
+        logSigMin_(logSigMin), logSigMax_(logSigMax), epsPrediction_(epsPrediction),
         lossWeightPower_(lossWeightPower), batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         diffusionSteps_(diffusionSteps),
         runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_(),
@@ -184,15 +218,21 @@ namespace mu2e {
                 << "      |- AdamBeta2=" << adamBeta2_ << "\n"
                 << "      |- AdamEps=" << adamEps_ << "\n";
         }
-        oss << "  Noise schedule configuration:\n"
-            << "    | NoiseSchedule=" << (noiseScheduleType_ == NoiseScheduleType::COSINE ? "Cosine" : "Linear") << "\n";
+        oss << "  Noise schedule configuration:\n";
         if (noiseScheduleType_ == NoiseScheduleType::COSINE) {
-            oss << "      |- CosineOffset=" << cosineOffset_ << "\n";
+            oss << "    | NoiseSchedule=Cosine\n"
+                << "      |- CosineOffset=" << cosineOffset_ << "\n";
+        } else if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            oss << "    | NoiseSchedule=LogSig\n"
+                << "      |- LogSigMin=" << logSigMin_ << "\n"
+                << "      |- LogSigMax=" << logSigMax_ << "\n";
         } else {
-            oss << "      |- BetaMin=" << betaMin_ << "\n"
+            oss << "    | NoiseSchedule=Linear\n"
+                << "      |- BetaMin=" << betaMin_ << "\n"
                 << "      |- BetaMax=" << betaMax_ << "\n";
         }
         oss << "  Training configuration:\n"
+            << "    | EpsPrediction=" << (epsPrediction_ ? "true" : "false") << "\n"
             << "    | LossWeightPower=" << lossWeightPower_ << "\n"
             << "    | BatchSize=" << batchSize_ << "\n"
             << "    | GradientClipThreshold=" << gradientClipThreshold_ << "\n"
@@ -537,8 +577,14 @@ namespace mu2e {
                 << ", expected " << dim_;
         }
 
-        double alpha_bar = alphabar(t);
-        double s = std::sqrt(1.0 - alpha_bar); // i.e. sigma(t), avoid recalculating alpha_bar inside the function for efficiency
+        double alpha_bar, s;
+        if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            s= sigma(t);
+            alpha_bar = 1.0 - s * s; // directly compute alpha_bar from sigma for efficiency
+        } else {
+            alpha_bar = alphabar(t);
+            s = std::sqrt(1.0 - alpha_bar); // i.e. sigma(t), avoid recalculating alpha_bar inside the function for efficiency
+        }
 
         // Generate Gaussian noise vector eps of dimension dim_ using the external random engine.
         eps.resize(dim_);
@@ -702,10 +748,11 @@ namespace mu2e {
                 double s = std::max(sigma(t), eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
                 double weight = std::pow(s, lossWeightPower_); // sigma(t)^power as the weight. Quadratic power good for convergence but missing details
 
-                // The target score is the negative of the noise scaled by the noise standard deviation, i.e., -eps/sigma(t).
+                // Target: either the noise epsilon (epsPrediction_=true) or the score -eps/sigma(t).
+                // Epsilon prediction prevents 1/sigma blow-up at small t.
                 std::vector<double> target(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    target[i] = -eps[i] / s;
+                    target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
                 }
 
                 // Prepare input vector for the network by concatenating the noisy sample xt with the diffusion time t.
@@ -820,11 +867,18 @@ namespace mu2e {
         out << "adamBeta2," << adamBeta2_ << "\n";
         out << "adamEps," << adamEps_ << "\n";
         // Noise schedule configuration
-        out << "noiseScheduleType," << (noiseScheduleType_ == NoiseScheduleType::COSINE ? "COSINE" : "LINEAR") << "\n";
+        std::string schedName;
+        if (noiseScheduleType_ == NoiseScheduleType::COSINE) schedName = "COSINE";
+        else if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) schedName = "LOGSIG";
+        else schedName = "LINEAR";
+        out << "noiseScheduleType," << schedName << "\n";
         out << "betaMin," << betaMin_ << "\n";
         out << "betaMax," << betaMax_ << "\n";
         out << "cosineOffset," << cosineOffset_ << "\n";
+        out << "logSigMin," << logSigMin_ << "\n";
+        out << "logSigMax," << logSigMax_ << "\n";
         // Training configuration
+        out << "epsPrediction," << (epsPrediction_ ? "1" : "0") << "\n";
         out << "lossWeightPower," << lossWeightPower_ << "\n";
         out << "batchSize," << batchSize_ << "\n";
         out << "gradientClipThreshold," << gradientClipThreshold_ << "\n";
@@ -923,6 +977,8 @@ namespace mu2e {
         double adamBeta1 = 0.0, adamBeta2 = 0.0, adamEps = 0.0;
         NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
         double betaMin = 0.0, betaMax = 0.0, cosineOffset = 0.0;
+        double logSigMin = 1e-5, logSigMax = 1.0;
+        bool epsPrediction = false;
         double lossWeightPower = 2.0;
         int batchSize = 1, diffusionSteps = 1;
         double gradientClipThreshold = 0.0, learningRate = 0.0;
@@ -985,11 +1041,17 @@ namespace mu2e {
                 else if (key == "adamBeta1") adamBeta1 = std::stod(val);
                 else if (key == "adamBeta2") adamBeta2 = std::stod(val);
                 else if (key == "adamEps") adamEps = std::stod(val);
-                else if (key == "noiseScheduleType")
-                    scheduleType = (val == "COSINE") ? NoiseScheduleType::COSINE : NoiseScheduleType::LINEAR;
+                else if (key == "noiseScheduleType") {
+                    if (val == "COSINE") scheduleType = NoiseScheduleType::COSINE;
+                    else if (val == "LOGSIG") scheduleType = NoiseScheduleType::LOGSIG;
+                    else scheduleType = NoiseScheduleType::LINEAR;
+                }
                 else if (key == "betaMin") betaMin = std::stod(val);
                 else if (key == "betaMax") betaMax = std::stod(val);
                 else if (key == "cosineOffset") cosineOffset = std::stod(val);
+                else if (key == "logSigMin") logSigMin = std::stod(val);
+                else if (key == "logSigMax") logSigMax = std::stod(val);
+                else if (key == "epsPrediction") epsPrediction = (val == "1");
                 else if (key == "lossWeightPower") lossWeightPower = std::stod(val);
                 else if (key == "batchSize") batchSize = std::stoi(val);
                 else if (key == "gradientClipThreshold") gradientClipThreshold = std::stod(val);
@@ -1200,6 +1262,9 @@ namespace mu2e {
             betaMin,
             betaMax,
             cosineOffset,
+            logSigMin,
+            logSigMax,
+            epsPrediction,
             lossWeightPower,
             batchSize,
             gradientClipThreshold,
@@ -1270,6 +1335,8 @@ namespace mu2e {
                 << ", expected " << conditionDim_;
         }
 
+        double sigma_safe = 1e-12; // small constant to prevent division by zero in case of very small sigma
+
         // Use provided diffusionSteps if positive, otherwise use the model's configured value
         int steps = (diffusionSteps > 0) ? diffusionSteps : diffusionSteps_;
 
@@ -1294,6 +1361,10 @@ namespace mu2e {
                 input.push_back(t);
 
                 auto score = forward(input);
+                if (epsPrediction_) {
+                    double s = std::max(sigma(t), sigma_safe);
+                    for (int i = 0; i < dim_; ++i) score[i] = -score[i] / s;
+                }
 
                 for (int i = 0; i < dim_; ++i) {
                     if (useSDE) {
@@ -1322,6 +1393,10 @@ namespace mu2e {
                 input.insert(input.end(), condition.begin(), condition.end());
                 input.push_back(t);
                 auto score_k1 = forward(input);
+                if (epsPrediction_) {
+                    double s = std::max(sigma(t), sigma_safe);
+                    for (int i = 0; i < dim_; ++i) score_k1[i] = -score_k1[i] / s;
+                }
 
                 std::vector<double> k1(dim_);
                 for (int i = 0; i < dim_; ++i) {
@@ -1352,6 +1427,10 @@ namespace mu2e {
                 input_next.insert(input_next.end(), condition.begin(), condition.end());
                 input_next.push_back(t_next);
                 auto score_k2 = forward(input_next);
+                if (epsPrediction_) {
+                    double s_next = std::max(sigma(t_next), sigma_safe);
+                    for (int i = 0; i < dim_; ++i) score_k2[i] = -score_k2[i] / s_next;
+                }
 
                 std::vector<double> k2(dim_);
                 for (int i = 0; i < dim_; ++i) {

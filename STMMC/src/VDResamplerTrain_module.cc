@@ -74,10 +74,13 @@ namespace mu2e {
         fhicl::Atom<double> SBDMadamBeta1{            Name("SBDMadamBeta1"),           Comment("Adam optimizer beta1 parameter"),                                0.9};
         fhicl::Atom<double> SBDMadamBeta2{            Name("SBDMadamBeta2"),           Comment("Adam optimizer beta2 parameter"),                                0.999};
         fhicl::Atom<double> SBDMadamEps{              Name("SBDMadamEps"),             Comment("Adam optimizer epsilon parameter"),                              1e-8};
-        fhicl::Atom<std::string> SBDMnoiseSchedule{   Name("SBDMnoiseSchedule"),       Comment("Noise schedule for the SBDM (LINEAR or COSINE)"),                "COSINE"};
+        fhicl::Atom<std::string> SBDMnoiseSchedule{   Name("SBDMnoiseSchedule"),       Comment("Noise schedule for the SBDM (LINEAR or COSINE or LOGSIG)"),      "COSINE"};
         fhicl::Atom<double> SBDMbetaMin{              Name("SBDMbetaMin"),             Comment("Minimum noise schedule parameter (for LINEAR schedule)") ,       1e-4};
         fhicl::Atom<double> SBDMbetaMax{              Name("SBDMbetaMax"),             Comment("Maximum noise schedule parameter (for LINEAR schedule)"),        0.02};
-        fhicl::Atom<double> SBDMcosineOffset{         Name("SBDMcosineOffset"),        Comment("Offset parameter (for cosine schedule)"),                        0.008};
+        fhicl::Atom<double> SBDMcosineOffset{         Name("SBDMcosineOffset"),        Comment("Offset parameter (for COSINE schedule)"),                        0.008};
+        fhicl::Atom<double> SBDMlogSigMin{            Name("SBDMlogSigMin"),           Comment("Minimum noise schedule parameter (for LOGSIG schedule)"),        1e-5};
+        fhicl::Atom<double> SBDMlogSigMax{            Name("SBDMlogSigMax"),           Comment("Maximum noise schedule parameter (for LOGSIG schedule)"),        1.0};
+        fhicl::Atom<bool> SBDMepsPrediction{          Name("SBDMepsPrediction"),       Comment("Whether predict eps (true) or the score (false)"),               false};
         fhicl::Atom<double> SBDMlossWeightPower{      Name("SBDMlossWeightPower"),     Comment("Power for weighting the loss function"),                         2.0};
         fhicl::Atom<int> SBDMbatchSize{               Name("SBDMbatchSize"),           Comment("Batch size for training the SBDM"),                              32};
         fhicl::Atom<double> SBDMgradientClip{         Name("SBDMgradientClip"),        Comment("Gradient clipping threshold for training the SBDM"),             1.0};
@@ -261,6 +264,8 @@ namespace mu2e {
     ScoreBasedDiffusionModel::NoiseScheduleType sched;
     if (conf().SBDMnoiseSchedule() == "LINEAR") {
         sched = ScoreBasedDiffusionModel::NoiseScheduleType::LINEAR;
+    } else if (conf().SBDMnoiseSchedule() == "LOGSIG") {
+        sched = ScoreBasedDiffusionModel::NoiseScheduleType::LOGSIG;
     } else {
         if (conf().SBDMnoiseSchedule() != "COSINE") {
             mf::LogWarning("VDResamplerTrain")
@@ -287,6 +292,9 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          conf().SBDMlogSigMin(),
+          conf().SBDMlogSigMax(),
+          conf().SBDMepsPrediction(),
           nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
           nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
@@ -310,6 +318,9 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          conf().SBDMlogSigMin(),
+          conf().SBDMlogSigMax(),
+          conf().SBDMepsPrediction(),
           nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
           nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
@@ -340,6 +351,9 @@ namespace mu2e {
           conf().SBDMbetaMin(),
           conf().SBDMbetaMax(),
           conf().SBDMcosineOffset(),
+          conf().SBDMlogSigMin(),
+          conf().SBDMlogSigMax(),
+          conf().SBDMepsPrediction(),
           nPhase > 1 ? trainingCurriculumLossWeightPower[0] : conf().SBDMlossWeightPower(),
           conf().SBDMbatchSize(),
           nPhase > 1 ? trainingCurriculumGradientClip[0] : conf().SBDMgradientClip(),
