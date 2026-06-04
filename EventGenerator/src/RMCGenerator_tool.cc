@@ -210,6 +210,7 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> RMCGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
+    // FIXME: calculate the spectrum fraction simulated
     config->add_var(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax,
                                                   _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czmax - _czmin)/2., _czmin, _czmax));

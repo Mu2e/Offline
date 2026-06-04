@@ -233,9 +233,11 @@ namespace mu2e {
   //================================================================
   void RMCGun::endSubRun(art::SubRun& sr) {
     auto config = std::make_unique<SpectrumConfig>();
+    // FIXME: calculate the spectrum fraction simulated
     config->add_var(SpectrumConfig::RestrictedVar("energy", 1., spectrum_.getXMin(), spectrum_.getXMax(),
                                                   (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     config->add_var(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
+    config->add_var(SpectrumConfig::RestrictedVar("phi", (phimax_ - phimin_)/CLHEP::twopi, phimin_, phimax_));
     sr.put(std::move(config), art::fullSubRun());
   }
 

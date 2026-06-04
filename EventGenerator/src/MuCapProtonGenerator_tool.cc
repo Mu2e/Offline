@@ -121,6 +121,7 @@ namespace mu2e {
       default:            spectrumVarName = "energy";        break;
     }
 
+    // FIXME: calculate the spectrum fraction simulated
     config->add_var(SpectrumConfig::RestrictedVar(spectrumVarName, 1., _spectrumXMin, _spectrumXMax,
                                                   _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
