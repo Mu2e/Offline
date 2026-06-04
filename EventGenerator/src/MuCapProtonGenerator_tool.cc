@@ -85,7 +85,7 @@ namespace mu2e {
 
       switch(_spectrumVariable) {
       case TOTAL_ENERGY  : break;
-      case KINETIC_ENERY : energy += _mass; break;
+      case KINETIC_ENERGY : energy += _mass; break;
       case MOMENTUM      : energy = sqrt(energy*energy+_mass*_mass); break;
       }
 
@@ -116,7 +116,7 @@ namespace mu2e {
 
     std::string spectrumVarName("energy");
     switch(_spectrumVariable) {
-      case KINETIC_ENERY: spectrumVarName = "kineticEnergy"; break;
+      case KINETIC_ENERGY: spectrumVarName = "kineticEnergy"; break;
       case MOMENTUM:      spectrumVarName = "momentum";      break;
       default:            spectrumVarName = "energy";        break;
     }

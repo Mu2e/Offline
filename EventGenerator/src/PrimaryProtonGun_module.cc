@@ -69,7 +69,7 @@ namespace mu2e {
         _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
         produces<GenParticleCollection>();
-      produces<SpectrumConfig, art::InSubRun>();
+        produces<SpectrumConfig, art::InSubRun>();
     }
 
     void PrimaryProtonGun::beginRun(art::Run& run ){
