@@ -72,6 +72,10 @@ namespace mu2e{
         //   batchSize               - Batch size for training (default: 32)
         //   gradientClipThreshold   - Threshold for gradient clipping (default: 1.0)
         //   learningRate            - Learning rate for training (default: 1e-3)
+        //   useDimWeightController  - If true, enables adaptive per-dimension gradient weighting (default: false)
+        //   dimWeightEMADecay       - EMA decay rate for per-dimension loss tracking (default: 0.99)
+        //   useEMANetwork           - If true, maintains a slow-moving EMA copy of network weights for inference (default: true)
+        //   emaNetworkDecay         - Decay rate for EMA network update per optimizer step (default: 0.9999)
         //   diffusionSteps          - Number of steps in the diffusion process (default: 200)
         //   initializeRandomWeights - If true, initialize network weights from random Gaussian draws.
         //                             Set false when constructing (loading) from a saved model.
@@ -90,17 +94,28 @@ namespace mu2e{
             double adamEps = 1e-8,
             // Noise schedule configuration
             NoiseScheduleType scheduleType = NoiseScheduleType::COSINE,
+            // -- linear schedule parameters
             double betaMin = 1e-4,
             double betaMax = 0.02,
+            // -- cosine schedule parameters
             double cosineOffset = 0.008,
+            // -- log-sigma schedule parameters
             double logSigMin = 1e-5,
             double logSigMax = 1.0,
-            bool epsPrediction = false,
             // Training configuration
+            // -- Training target
+            bool epsPrediction = false,
+            // -- Training configuration
             double lossWeightPower = 2.0,
             int batchSize = 32,
             double gradientClipThreshold = 1.0,
             double learningRate = 1e-3,
+            // -- Adaptive dimensional weight controller
+            bool useDimWeightController = false,
+            double dimWeightEMADecay = 0.99,
+            // EMA copy of network parameters for inference
+            bool useEMANetwork = true,
+            double emaNetworkDecay = 0.9999,
             // Diffusion process configuration
             int diffusionSteps = 200,
             bool initializeRandomWeights = true
@@ -138,6 +153,8 @@ namespace mu2e{
             learningRate_ = value;
             return learningRate_;
         }
+
+        const std::vector<double>& getDimWeights() const { return dimWeights_; }
 
         // Train the score network on a batch of samples.
         // Uses random sampling and noise injection via the external engine.
@@ -227,18 +244,19 @@ namespace mu2e{
         std::vector<std::vector<double>> activations_;
         std::vector<std::vector<double>> preactivations_;
 
-        // Forward pass through the network.
-        // Computes the score function.
-        // input actually contains the state vector, optional condition vector, and the time embedding.
-        // dimension hence is dim_ + conditionDim_ + 1.
-        //
-        // Parameters:
-        //   x - Input vector of dimension dim_ + conditionDim_ + 1
-        //
-        // Returns: Output vector (dimension depends on network architecture)
+        // Forward pass through the network (training path).
+        // Caches activations and pre-activations for the backward pass.
+        // input contains state vector, optional condition vector, and diffusion time t.
         std::vector<double> forward(
             const std::vector<double>& x
         );
+
+        // Const forward pass through an arbitrary network (inference path).
+        // Does not write to activations_/preactivations_, safe to call during generateSample().
+        std::vector<double> forwardInference(
+            const std::vector<double>& input,
+            const std::vector<Layer>& net
+        ) const;
 
         // Backward pass for gradient computation.
         // Computes gradients w.r.t. network parameters via chain rule.
@@ -346,6 +364,10 @@ namespace mu2e{
         //             gradients are scaled down to have norm equal to maxNorm.
         void clipGradients(double maxNorm);
 
+        // Apply one EMA step: emaNetwork_ = decay * emaNetwork_ + (1 - decay) * network_.
+        // Called after each optimizer step during training.
+        void updateEMANetwork();
+
         // ----- internal vars -----
 
         // The random engine is NOT owned by this class. It is injected externally
@@ -396,6 +418,17 @@ namespace mu2e{
         double gradientClipThreshold_;  // Gradient clipping threshold (default: 1.0)
         double learningRate_; // Learning rate for training (default: 1e-3)
 
+        // Adaptive dimensional weight controller ---
+        bool   useDimWeightController_; // if true, per-dimension gradient weights are applied during training
+        double dimWeightEMADecay_;       // EMA decay rate for per-dimension loss tracking
+        std::vector<double> dimLossEMA_; // per-dim raw MSE EMA (size dim_), updated every epoch
+        std::vector<double> dimWeights_; // normalized gradient weights (size dim_), init 1.0
+
+        // EMA copy of network parameters for inference ---
+        bool   useEMANetwork_;      // if true, generateSample() uses emaNetwork_ instead of network_
+        double emaNetworkDecay_;    // decay rate applied per optimizer step (e.g. 0.9999)
+        std::vector<Layer> emaNetwork_; // slow-moving EMA copy, only W and b are used
+
         // Diffusion process discretization
         int diffusionSteps_;  // Number of time steps to generate a sample (default: 200)
 
@@ -419,6 +452,5 @@ namespace mu2e{
         // Min and max of normalized data (for possible clamping or rescaling)
         std::vector<double> normMin_;
         std::vector<double> normMax_;
-
     };
 }

@@ -107,6 +107,10 @@ namespace mu2e {
         int batchSize,
         double gradientClipThreshold,
         double learningRate,
+        bool useDimWeightController,
+        double dimWeightEMADecay,
+        bool useEMANetwork,
+        double emaNetworkDecay,
         int diffusionSteps,
         bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
@@ -117,6 +121,9 @@ namespace mu2e {
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
         logSigMin_(logSigMin), logSigMax_(logSigMax), epsPrediction_(epsPrediction),
         lossWeightPower_(lossWeightPower), batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
+        useDimWeightController_(useDimWeightController), dimWeightEMADecay_(dimWeightEMADecay),
+        dimLossEMA_(dim, 0.0), dimWeights_(dim, 1.0),
+        useEMANetwork_(useEMANetwork), emaNetworkDecay_(emaNetworkDecay),
         diffusionSteps_(diffusionSteps),
         runningLoss_(0.0), adamStep_(0), trainingSampleSize_(0), epochLosses_(),
         clipCount_(0), totalClipChecks_(0), clipScaleAccum_(0.0),
@@ -202,6 +209,13 @@ namespace mu2e {
             in = out;
         }
 
+        // Initialize emaNetwork_ with the same W/b as network_ so it starts from the same point
+        emaNetwork_.resize(network_.size());
+        for (size_t l = 0; l < network_.size(); ++l) {
+            emaNetwork_[l].W = network_[l].W;
+            emaNetwork_[l].b = network_[l].b;
+        }
+
         // Print layer and model configuration
         std::ostringstream oss;
         oss << "ScoreBasedDiffusionModel initialized\n"
@@ -237,6 +251,15 @@ namespace mu2e {
             << "    | BatchSize=" << batchSize_ << "\n"
             << "    | GradientClipThreshold=" << gradientClipThreshold_ << "\n"
             << "    | LearningRate=" << learningRate_ << "\n"
+            << "    | DimWeightController=" << (useDimWeightController_ ? "enabled" : "disabled");
+        if (useDimWeightController_)
+            oss << " (EMADecay=" << dimWeightEMADecay_ << ")";
+        oss << "\n"
+            << "  EMA network:\n"
+            << "    | EMANetwork=" << (useEMANetwork_ ? "enabled" : "disabled");
+        if (useEMANetwork_)
+            oss << " (decay=" << emaNetworkDecay_ << ")";
+        oss << "\n"
             << "  Diffusion process configuration:\n"
             << "    | DiffusionSteps=" << diffusionSteps_ << "\n";
         mf::LogInfo("ScoreBasedDiffusionModel::initialize") << oss.str();
@@ -414,6 +437,43 @@ namespace mu2e {
             x = y;
         }
 
+        return x;
+    }
+
+    // Const forward pass for inference — does not cache activations or preactivations.
+    // Used by generateSample() so it can use either network_ or emaNetwork_ without
+    // corrupting the activations needed by the training backward pass.
+    std::vector<double> ScoreBasedDiffusionModel::forwardInference(
+        const std::vector<double>& input,
+        const std::vector<Layer>& net
+    ) const
+    {
+        if (net.empty() || net[0].W.empty() || net[0].W[0].empty()) {
+            throw cet::exception("ScoreBasedDiffusionModel::forwardInference")
+                << "Network is not properly initialized";
+        }
+        if (input.size() != net[0].W[0].size()) {
+            throw cet::exception("ScoreBasedDiffusionModel::forwardInference")
+                << "Input dimension mismatch: got " << input.size()
+                << ", expected " << net[0].W[0].size();
+        }
+
+        std::vector<double> x = input;
+        for (size_t l = 0; l < net.size(); ++l) {
+            const auto& layer = net[l];
+            std::vector<double> z(layer.W.size());
+            for (size_t i = 0; i < layer.W.size(); ++i) {
+                double v = layer.b[i];
+                for (size_t j = 0; j < layer.W[i].size(); ++j)
+                    v += layer.W[i][j] * x[j];
+                z[i] = v;
+            }
+            if (l != net.size() - 1) {
+                for (size_t i = 0; i < z.size(); ++i)
+                    z[i] = silu(z[i]);
+            }
+            x = z;
+        }
         return x;
     }
 
@@ -672,6 +732,19 @@ namespace mu2e {
     // For a data sample of 5M 6-dimensional vectors of double precision (8 Byte), total memory for the data is 5M*6*8 = 240 MB,
     // which is manageable for in-memory training.
     // Much larger datasets may require streaming from disk or using mini-batches that do not fit entirely in memory.
+    void ScoreBasedDiffusionModel::updateEMANetwork()
+    {
+        for (size_t l = 0; l < network_.size(); ++l) {
+            for (size_t i = 0; i < network_[l].W.size(); ++i) {
+                for (size_t j = 0; j < network_[l].W[i].size(); ++j)
+                    emaNetwork_[l].W[i][j] = emaNetworkDecay_ * emaNetwork_[l].W[i][j]
+                                           + (1.0 - emaNetworkDecay_) * network_[l].W[i][j];
+                emaNetwork_[l].b[i] = emaNetworkDecay_ * emaNetwork_[l].b[i]
+                                    + (1.0 - emaNetworkDecay_) * network_[l].b[i];
+            }
+        }
+    }
+
     void ScoreBasedDiffusionModel::train(
         const std::vector<DiffusionTrainingSample>& data,
         int epochs,
@@ -743,6 +816,7 @@ namespace mu2e {
 
             int batchCounter = 0;
             double epochLoss = 0.0;
+            std::vector<double> epochDimLoss(dim_, 0.0);
 
             // iterate over the shuffled data samples (subset if trainSubsetDataSize was specified)
             for (size_t idx = 0; idx < activeN; ++idx)
@@ -795,11 +869,15 @@ namespace mu2e {
                 // Compute the loss (Mean Squared Error) per dimension between the predicted score and the target score.
                 double loss = computeLoss(score, target, weight);
 
-                // Compute the gradient of the loss w.r.t. the predicted score
-                // Gradient of the loss w.r.t. the predicted score is 2*(score-target)/dim_ (the division by dim_ is for averaging the loss per dimension).
+                // Compute the gradient of the loss w.r.t. the predicted score.
+                // dimWeights_[i] rescales each dimension's gradient; normalized to mean=1 so overall
+                // gradient scale is preserved. Accumulate raw squared residuals for the controller EMA.
                 std::vector<double> grad(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    grad[i] = 2.0 * weight * (score[i] - target[i]) / dim_;
+                    double residual = score[i] - target[i];
+                    if (useDimWeightController_)
+                        epochDimLoss[i] += residual * residual;
+                    grad[i] = 2.0 * weight * dimWeights_[i] * residual / dim_;
                 }
 
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
@@ -827,6 +905,7 @@ namespace mu2e {
                     } else {
                         updateWeights(learningRate_);
                     }
+                    if (useEMANetwork_) updateEMANetwork();
                     batchCounter = 0;
                 }
 
@@ -853,6 +932,30 @@ namespace mu2e {
                 } else {
                     updateWeights(learningRate_);
                 }
+                if (useEMANetwork_) updateEMANetwork();
+            }
+
+            // Update per-dimension EMA loss and recompute gradient weights
+            if (useDimWeightController_ && n > 0) {
+                double emaSum = 0.0;
+                for (int i = 0; i < dim_; ++i) {
+                    dimLossEMA_[i] = dimWeightEMADecay_ * dimLossEMA_[i]
+                                   + (1.0 - dimWeightEMADecay_) * (epochDimLoss[i] / n);
+                    emaSum += dimLossEMA_[i];
+                }
+                double emaMean = emaSum / dim_;
+                if (emaMean > 0.0) {
+                    for (int i = 0; i < dim_; ++i)
+                        dimWeights_[i] = dimLossEMA_[i] / emaMean;
+                }
+                std::ostringstream woss;
+                woss << "Epoch " << e << " dimWeights: [";
+                for (int i = 0; i < dim_; ++i) {
+                    woss << dimWeights_[i];
+                    if (i < dim_ - 1) woss << ", ";
+                }
+                woss << "]";
+                mf::LogInfo("ScoreBasedDiffusionModel::train") << woss.str();
             }
 
             epochLoss /= n;
@@ -905,6 +1008,12 @@ namespace mu2e {
         out << "batchSize," << batchSize_ << "\n";
         out << "gradientClipThreshold," << gradientClipThreshold_ << "\n";
         out << "learningRate," << learningRate_ << "\n";
+        // Dimensional weight controller
+        out << "useDimWeightController," << (useDimWeightController_ ? "1" : "0") << "\n";
+        out << "dimWeightEMADecay," << dimWeightEMADecay_ << "\n";
+        // EMA network
+        out << "useEMANetwork," << (useEMANetwork_ ? "1" : "0") << "\n";
+        out << "emaNetworkDecay," << emaNetworkDecay_ << "\n";
         // Diffusion process configuration
         out << "diffusionSteps," << diffusionSteps_ << "\n";
 
@@ -1015,6 +1124,47 @@ namespace mu2e {
             }
             out << "\n";
         }
+
+        // Dim weight controller state
+        out << "dimLossEMA\n";
+        for (int i = 0; i < dim_; ++i) {
+            out << dimLossEMA_[i];
+            if (i < dim_ - 1) out << ",";
+        }
+        out << "\n";
+        out << "dimWeights\n";
+        for (int i = 0; i < dim_; ++i) {
+            out << dimWeights_[i];
+            if (i < dim_ - 1) out << ",";
+        }
+        out << "\n";
+
+        // EMA network weights (used for inference)
+        if (useEMANetwork_) {
+            out << "\n[EMA_NETWORK]\n";
+            out << "numLayers," << emaNetwork_.size() << "\n";
+            for (size_t layerIdx = 0; layerIdx < emaNetwork_.size(); ++layerIdx) {
+                auto& layer = emaNetwork_[layerIdx];
+                out << "\nLayer" << layerIdx << "_OutSize," << layer.W.size() << "\n";
+                out << "Layer" << layerIdx << "_InSize," << layer.W[0].size() << "\n";
+
+                out << "Layer" << layerIdx << "_Weights\n";
+                for (const auto& row : layer.W) {
+                    for (size_t j = 0; j < row.size(); ++j) {
+                        out << row[j];
+                        if (j < row.size() - 1) out << ",";
+                    }
+                    out << "\n";
+                }
+
+                out << "Layer" << layerIdx << "_Biases\n";
+                for (size_t j = 0; j < layer.b.size(); ++j) {
+                    out << layer.b[j];
+                    if (j < layer.b.size() - 1) out << ",";
+                }
+                out << "\n";
+            }
+        }
     }
 
     ScoreBasedDiffusionModel ScoreBasedDiffusionModel::loadModel(
@@ -1054,6 +1204,17 @@ namespace mu2e {
         bool optimizerStateLoaded = false;
         std::vector<std::vector<std::vector<double>>> loadedMW, loadedVW;
         std::vector<std::vector<double>> loadedMb, loadedVb;
+        std::vector<double> loadedDimLossEMA, loadedDimWeights;
+
+        // New controller / EMA network parameters (default to constructor defaults if absent)
+        bool useDimWeightController = false;
+        double dimWeightEMADecay = 0.99;
+        bool useEMANetwork = true;
+        double emaNetworkDecay = 0.9999;
+
+        // EMA network weights (optional)
+        std::vector<Layer> loadedEmaNetwork;
+        bool emaNetworkLoaded = false;
 
         // Helper lambda to split CSV
         auto split = [](const std::string& s) {
@@ -1123,6 +1284,10 @@ namespace mu2e {
                 else if (key == "batchSize") batchSize = std::stoi(val);
                 else if (key == "gradientClipThreshold") gradientClipThreshold = std::stod(val);
                 else if (key == "learningRate") learningRate = std::stod(val);
+                else if (key == "useDimWeightController") useDimWeightController = (val == "1");
+                else if (key == "dimWeightEMADecay") dimWeightEMADecay = std::stod(val);
+                else if (key == "useEMANetwork") useEMANetwork = (val == "1");
+                else if (key == "emaNetworkDecay") emaNetworkDecay = std::stod(val);
                 else if (key == "diffusionSteps") diffusionSteps = std::stoi(val);
             }
 
@@ -1345,6 +1510,59 @@ namespace mu2e {
                     loadedVb[layerIdx].resize(vals.size());
                     for (size_t j = 0; j < vals.size(); ++j) loadedVb[layerIdx][j] = std::stod(vals[j]);
                 }
+                else if (line == "dimLossEMA") {
+                    if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading dimLossEMA";
+                    auto vals = split(line);
+                    loadedDimLossEMA.resize(vals.size());
+                    for (size_t j = 0; j < vals.size(); ++j) loadedDimLossEMA[j] = std::stod(vals[j]);
+                }
+                else if (line == "dimWeights") {
+                    if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading dimWeights";
+                    auto vals = split(line);
+                    loadedDimWeights.resize(vals.size());
+                    for (size_t j = 0; j < vals.size(); ++j) loadedDimWeights[j] = std::stod(vals[j]);
+                }
+            }
+
+            // EMA NETWORK
+            else if (section == "[EMA_NETWORK]") {
+                if (line.rfind("numLayers", 0) == 0) {
+                    int numLayers = std::stoi(split(line)[1]);
+                    loadedEmaNetwork.resize(numLayers);
+                    emaNetworkLoaded = true;
+                    continue;
+                }
+                if (line.find("_OutSize") != std::string::npos) {
+                    auto tokens = split(line);
+                    int outSize = std::stoi(tokens[1]);
+                    int layerIdx = getLayerIdx(tokens[0]);
+                    loadedEmaNetwork[layerIdx].W.resize(outSize);
+                    loadedEmaNetwork[layerIdx].b.resize(outSize);
+                }
+                else if (line.find("_InSize") != std::string::npos) {
+                    auto tokens = split(line);
+                    int inSize = std::stoi(tokens[1]);
+                    int layerIdx = getLayerIdx(tokens[0]);
+                    if (loadedEmaNetwork[layerIdx].W.empty())
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "EMA InSize before OutSize for layer " << layerIdx;
+                    for (auto& row : loadedEmaNetwork[layerIdx].W) row.resize(inSize);
+                }
+                else if (line.find("_Weights") != std::string::npos) {
+                    int layerIdx = getLayerIdx(line);
+                    for (auto& row : loadedEmaNetwork[layerIdx].W) {
+                        if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading EMA weights";
+                        auto vals = split(line);
+                        if (vals.size() != row.size()) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "EMA weight row size mismatch layer " << layerIdx;
+                        for (size_t j = 0; j < vals.size(); ++j) row[j] = std::stod(vals[j]);
+                    }
+                }
+                else if (line.find("_Biases") != std::string::npos) {
+                    int layerIdx = getLayerIdx(line);
+                    if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading EMA biases";
+                    auto vals = split(line);
+                    if (vals.size() != loadedEmaNetwork[layerIdx].b.size()) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "EMA bias size mismatch layer " << layerIdx;
+                    for (size_t j = 0; j < vals.size(); ++j) loadedEmaNetwork[layerIdx].b[j] = std::stod(vals[j]);
+                }
             }
         }
 
@@ -1370,10 +1588,16 @@ namespace mu2e {
         std::ostringstream logMsg;
         logMsg << "Model loaded successfully from " << filename << "\n";
         if (optimizerStateLoaded) {
-            logMsg << "Optimizer state (Adam moments, step=" << loadedAdamStep << ") restored — training can be resumed from this checkpoint.";
+            logMsg << "  Optimizer state (Adam moments, step=" << loadedAdamStep << ") restored — training can be resumed.\n";
         } else {
-            logMsg << "No optimizer state found in file. Model is suitable for inference or retraining with a fresh optimizer state.";
+            logMsg << "  No optimizer state found — fresh optimizer state will be used.\n";
         }
+        logMsg << "  DimWeightController: " << (useDimWeightController ? "enabled" : "disabled");
+        if (useDimWeightController) logMsg << " (EMADecay=" << dimWeightEMADecay << ")";
+        logMsg << "\n";
+        logMsg << "  EMANetwork: " << (useEMANetwork ? "enabled" : "disabled");
+        if (useEMANetwork) logMsg << " (decay=" << emaNetworkDecay << ", " << (emaNetworkLoaded ? "weights from checkpoint" : "initialized from network") << ")";
+        logMsg << "\n";
         mf::LogInfo("ScoreBasedDiffusionModel::loadModel") << logMsg.str();
 
         // Reconstruct model without random weight initialization
@@ -1399,8 +1623,12 @@ namespace mu2e {
             batchSize,
             gradientClipThreshold,
             learningRate,
+            useDimWeightController,
+            dimWeightEMADecay,
+            useEMANetwork,
+            emaNetworkDecay,
             diffusionSteps,
-            false
+            false // initializeRandomWeights
         );
 
         // Validate loaded network shape and dimensions match the initialized model before overwriting.
@@ -1485,6 +1713,49 @@ namespace mu2e {
                     << "Optimizer state dimensions do not match the reconstructed model — "
                     << "falling back to fresh optimizer state. Training can continue but will not resume from the saved checkpoint.";
             }
+
+            // Restore dim weight controller state
+            if (loadedDimLossEMA.size() == static_cast<size_t>(dim) &&
+                loadedDimWeights.size() == static_cast<size_t>(dim)) {
+                model.dimLossEMA_ = loadedDimLossEMA;
+                model.dimWeights_ = loadedDimWeights;
+            } else if (!loadedDimLossEMA.empty()) {
+                mf::LogWarning("ScoreBasedDiffusionModel::loadModel")
+                    << "Dim weight controller state size mismatch — resetting to defaults (all-zeros EMA, all-ones weights).";
+            }
+        }
+
+        // Restore EMA network weights
+        if (emaNetworkLoaded && useEMANetwork) {
+            bool emaOk = (loadedEmaNetwork.size() == model.emaNetwork_.size());
+            for (size_t l = 0; l < loadedEmaNetwork.size() && emaOk; ++l) {
+                if (loadedEmaNetwork[l].W.size() != model.emaNetwork_[l].W.size() ||
+                    (!loadedEmaNetwork[l].W.empty() && loadedEmaNetwork[l].W[0].size() != model.emaNetwork_[l].W[0].size()) ||
+                    loadedEmaNetwork[l].b.size() != model.emaNetwork_[l].b.size())
+                    emaOk = false;
+            }
+            if (emaOk) {
+                for (size_t l = 0; l < model.emaNetwork_.size(); ++l) {
+                    model.emaNetwork_[l].W = loadedEmaNetwork[l].W;
+                    model.emaNetwork_[l].b = loadedEmaNetwork[l].b;
+                }
+                mf::LogInfo("ScoreBasedDiffusionModel::loadModel") << "EMA network weights restored from checkpoint.";
+            } else {
+                mf::LogWarning("ScoreBasedDiffusionModel::loadModel")
+                    << "EMA network dimensions mismatch — re-initializing EMA from loaded network weights.";
+                for (size_t l = 0; l < model.emaNetwork_.size(); ++l) {
+                    model.emaNetwork_[l].W = model.network_[l].W;
+                    model.emaNetwork_[l].b = model.network_[l].b;
+                }
+            }
+        } else if (useEMANetwork) {
+            // Old checkpoint without [EMA_NETWORK] — seed EMA from the loaded network weights
+            for (size_t l = 0; l < model.emaNetwork_.size(); ++l) {
+                model.emaNetwork_[l].W = model.network_[l].W;
+                model.emaNetwork_[l].b = model.network_[l].b;
+            }
+            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                << "No [EMA_NETWORK] section found — EMA network initialized from loaded network weights.";
         }
 
         return model;
@@ -1522,13 +1793,14 @@ namespace mu2e {
             double dt = 1.0/steps;
             double beta_val = beta(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
 
+            const auto& inferNet = useEMANetwork_ ? emaNetwork_ : network_;
             if (!useHeun) {
                 // Euler method (1st order)
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
                 input.push_back(t);
 
-                auto score = forward(input);
+                auto score = forwardInference(input, inferNet);
                 if (epsPrediction_) {
                     double s = std::max(sigma(t), sigma_safe);
                     for (int i = 0; i < dim_; ++i) score[i] = -score[i] / s;
@@ -1560,7 +1832,7 @@ namespace mu2e {
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
                 input.push_back(t);
-                auto score_k1 = forward(input);
+                auto score_k1 = forwardInference(input, inferNet);
                 if (epsPrediction_) {
                     double s = std::max(sigma(t), sigma_safe);
                     for (int i = 0; i < dim_; ++i) score_k1[i] = -score_k1[i] / s;
@@ -1594,7 +1866,7 @@ namespace mu2e {
                 std::vector<double> input_next = x_pred;
                 input_next.insert(input_next.end(), condition.begin(), condition.end());
                 input_next.push_back(t_next);
-                auto score_k2 = forward(input_next);
+                auto score_k2 = forwardInference(input_next, inferNet);
                 if (epsPrediction_) {
                     double s_next = std::max(sigma(t_next), sigma_safe);
                     for (int i = 0; i < dim_; ++i) score_k2[i] = -score_k2[i] / s_next;
