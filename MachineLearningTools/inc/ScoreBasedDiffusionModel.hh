@@ -148,9 +148,15 @@ namespace mu2e{
         // Parameters:
         //   data         - Training samples (transformed state vectors)
         //   epochs       - Number of training epochs to perform
+        //   trainSubsetDataSize - If > 0, randomly samples this many data points from the full dataset for each epoch (default: 0, uses all data)
+        //   biasLowSigma  - If true, biases the sampling of diffusion time t towards smaller values (smaller sigma) by sampling t^2 instead of t (default: false)
+        //   tLowBound     - If > 0, enforces a lower bound on the sampled diffusion time t to focus training on larger sigma values (default: 0.0, no lower bound)
         void train(
             const std::vector<DiffusionTrainingSample>& data,
-            int epochs
+            int epochs,
+            int trainSubsetDataSize = 0,
+            bool biasLowSigma = false,
+            double tLowBound = 0.0
         );
 
         // Generate a new sample from the diffusion model via reverse process.
@@ -178,8 +184,9 @@ namespace mu2e{
         void saveModel(const std::string& filename = "DiffusionModel.csv");
 
         // Load model parameters from a file to restore a previously trained model.
-        // Note that as the adam optimizer state is not saved, it is not possible to resume training from a loaded
-        // model and pick up the training process where it left off. The loaded model can only be used for sampling.
+        // If the file contains an [OPTIMIZER_STATE] section (saved by a current saveModel call),
+        // the Adam moments and step counter are restored so training can resume seamlessly.
+        // Files saved without that section (e.g. older checkpoints) load cleanly with a fresh optimizer state.
         //
         // Parameters:
         //   randFlat / RandGaussQ - CLHEP random number generator wrappers being passed

@@ -674,13 +674,21 @@ namespace mu2e {
     // Much larger datasets may require streaming from disk or using mini-batches that do not fit entirely in memory.
     void ScoreBasedDiffusionModel::train(
         const std::vector<DiffusionTrainingSample>& data,
-        int epochs
+        int epochs,
+        int trainSubsetDataSize, 
+        bool biasLowSigma,
+        double tLowBound
     )
     {
         // Check that the network is properly initialized before training.
         if (network_.empty() || network_[0].W.empty() || network_[0].W[0].empty()) {
             throw cet::exception("ScoreBasedDiffusionModel::train")
                 << "Network is not properly initialized";
+        }
+
+        if (tLowBound >= 1.0 || tLowBound < 0.0) {
+            throw cet::exception("ScoreBasedDiffusionModel::train")
+                << "Invalid tLowBound: must be in [0,1)";
         }
 
         const double eps_safe = 1e-12;
@@ -707,6 +715,11 @@ namespace mu2e {
             }
         }
 
+        // Determine how many samples to use per epoch after shuffling
+        const size_t activeN = (trainSubsetDataSize > 0 && static_cast<size_t>(trainSubsetDataSize) < N)
+                               ? static_cast<size_t>(trainSubsetDataSize)
+                               : N;
+
         // Create index vector once
         std::vector<size_t> indices(N);
         for (size_t i = 0; i < N; ++i)
@@ -731,16 +744,25 @@ namespace mu2e {
             int batchCounter = 0;
             double epochLoss = 0.0;
 
-            // iterate over the shuffled data samples
-            for (size_t idx = 0; idx < N; ++idx)
+            // iterate over the shuffled data samples (subset if trainSubsetDataSize was specified)
+            for (size_t idx = 0; idx < activeN; ++idx)
             {
                 const auto& sample = data[indices[idx]];
 
-                // Sample diffusion time
-                // if really need to focus on small peaks, can scale towards smaller t by doing:
-                // //double u = randFlat_.fire();
-                // //double t = u*u;
+                // Sample diffusion time. If tLowBound is set, we scale the uniform random number to be in 
+                // [tLowBound, 1] instead of [0,1] to focus training on later diffusion steps with higher 
+                // noise levels, which can improve stability and convergence in some cases. If biasLowSigma 
+                // is true, we apply a quadratic transformation to the sampled time to bias it towards smaller 
+                // values (less noise), which can help the model learn the score function more accurately at 
+                // early diffusion steps where the signal is stronger. Not meant to be used together.
+
                 double t = randFlat_.fire();
+                if (tLowBound > 0.0) {
+                    t = tLowBound + (1.0 - tLowBound) * t; // scale t to [tLowBound, 1]
+                }
+                if (biasLowSigma) {
+                    t = t * t; // focus on smaller t value (smaller sigma)
+                }
                 // container for noise vector eps
                 std::vector<double> eps;
 
@@ -954,6 +976,45 @@ namespace mu2e {
         for (size_t i = 0; i < epochLosses_.size(); ++i) {
             out << i << "," << epochLosses_[i] << "\n";
         }
+
+        // Write Adam optimizer state so training can be resumed from this checkpoint
+        out << "\n[OPTIMIZER_STATE]\n";
+        out << "adamStep," << adamStep_ << "\n";
+        for (size_t layerIdx = 0; layerIdx < network_.size(); ++layerIdx) {
+            auto& layer = network_[layerIdx];
+
+            out << "\nLayer" << layerIdx << "_mW\n";
+            for (const auto& row : layer.mW) {
+                for (size_t j = 0; j < row.size(); ++j) {
+                    out << row[j];
+                    if (j < row.size() - 1) out << ",";
+                }
+                out << "\n";
+            }
+
+            out << "Layer" << layerIdx << "_vW\n";
+            for (const auto& row : layer.vW) {
+                for (size_t j = 0; j < row.size(); ++j) {
+                    out << row[j];
+                    if (j < row.size() - 1) out << ",";
+                }
+                out << "\n";
+            }
+
+            out << "Layer" << layerIdx << "_mb\n";
+            for (size_t j = 0; j < layer.mb.size(); ++j) {
+                out << layer.mb[j];
+                if (j < layer.mb.size() - 1) out << ",";
+            }
+            out << "\n";
+
+            out << "Layer" << layerIdx << "_vb\n";
+            for (size_t j = 0; j < layer.vb.size(); ++j) {
+                out << layer.vb[j];
+                if (j < layer.vb.size() - 1) out << ",";
+            }
+            out << "\n";
+        }
     }
 
     ScoreBasedDiffusionModel ScoreBasedDiffusionModel::loadModel(
@@ -987,6 +1048,12 @@ namespace mu2e {
 
         std::vector<Layer> loadedNetwork;
         std::vector<double> epochLosses;
+
+        // Optimizer state (optional — absent in files saved before this feature was added)
+        int loadedAdamStep = 0;
+        bool optimizerStateLoaded = false;
+        std::vector<std::vector<std::vector<double>>> loadedMW, loadedVW;
+        std::vector<std::vector<double>> loadedMb, loadedVb;
 
         // Helper lambda to split CSV
         auto split = [](const std::string& s) {
@@ -1218,6 +1285,67 @@ namespace mu2e {
                     }
                 }
             }
+
+            // OPTIMIZER STATE
+            else if (section == "[OPTIMIZER_STATE]") {
+                if (line.rfind("adamStep,", 0) == 0) {
+                    loadedAdamStep = std::stoi(split(line)[1]);
+                    optimizerStateLoaded = true;
+                    continue;
+                }
+                if (line.find("_mW") != std::string::npos && line.rfind("Layer", 0) == 0) {
+                    int layerIdx = getLayerIdx(line);
+                    if (layerIdx >= (int)loadedNetwork.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "mW layer index out of range: " << layerIdx;
+                    }
+                    if (layerIdx >= (int)loadedMW.size()) loadedMW.resize(layerIdx + 1);
+                    auto& outRows = loadedMW[layerIdx];
+                    outRows.resize(loadedNetwork[layerIdx].W.size());
+                    for (auto& row : outRows) {
+                        if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading mW";
+                        auto vals = split(line);
+                        row.resize(vals.size());
+                        for (size_t j = 0; j < vals.size(); ++j) row[j] = std::stod(vals[j]);
+                    }
+                }
+                else if (line.find("_vW") != std::string::npos && line.rfind("Layer", 0) == 0) {
+                    int layerIdx = getLayerIdx(line);
+                    if (layerIdx >= (int)loadedNetwork.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "vW layer index out of range: " << layerIdx;
+                    }
+                    if (layerIdx >= (int)loadedVW.size()) loadedVW.resize(layerIdx + 1);
+                    auto& outRows = loadedVW[layerIdx];
+                    outRows.resize(loadedNetwork[layerIdx].W.size());
+                    for (auto& row : outRows) {
+                        if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading vW";
+                        auto vals = split(line);
+                        row.resize(vals.size());
+                        for (size_t j = 0; j < vals.size(); ++j) row[j] = std::stod(vals[j]);
+                    }
+                }
+                else if (line.find("_mb") != std::string::npos && line.rfind("Layer", 0) == 0) {
+                    int layerIdx = getLayerIdx(line);
+                    if (layerIdx >= (int)loadedNetwork.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "mb layer index out of range: " << layerIdx;
+                    }
+                    if (layerIdx >= (int)loadedMb.size()) loadedMb.resize(layerIdx + 1);
+                    if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading mb";
+                    auto vals = split(line);
+                    loadedMb[layerIdx].resize(vals.size());
+                    for (size_t j = 0; j < vals.size(); ++j) loadedMb[layerIdx][j] = std::stod(vals[j]);
+                }
+                else if (line.find("_vb") != std::string::npos && line.rfind("Layer", 0) == 0) {
+                    int layerIdx = getLayerIdx(line);
+                    if (layerIdx >= (int)loadedNetwork.size()) {
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "vb layer index out of range: " << layerIdx;
+                    }
+                    if (layerIdx >= (int)loadedVb.size()) loadedVb.resize(layerIdx + 1);
+                    if (!std::getline(in, line)) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Unexpected EOF reading vb";
+                    auto vals = split(line);
+                    loadedVb[layerIdx].resize(vals.size());
+                    for (size_t j = 0; j < vals.size(); ++j) loadedVb[layerIdx][j] = std::stod(vals[j]);
+                }
+            }
         }
 
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
@@ -1240,10 +1368,12 @@ namespace mu2e {
         }
 
         std::ostringstream logMsg;
-        logMsg << "Model parameters loaded successfully from " << filename << "\n"
-               << "Warning: optimizer state (e.g., Adam moments) is not saved/loaded.\n"
-               << "The loaded model is suitable for inference, or for retraining with a fresh optimizer state,\n"
-               << "but does NOT resume training from the original state.";
+        logMsg << "Model loaded successfully from " << filename << "\n";
+        if (optimizerStateLoaded) {
+            logMsg << "Optimizer state (Adam moments, step=" << loadedAdamStep << ") restored — training can be resumed from this checkpoint.";
+        } else {
+            logMsg << "No optimizer state found in file. Model is suitable for inference or retraining with a fresh optimizer state.";
+        }
         mf::LogInfo("ScoreBasedDiffusionModel::loadModel") << logMsg.str();
 
         // Reconstruct model without random weight initialization
@@ -1308,7 +1438,7 @@ namespace mu2e {
             throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Normalization parameter size mismatch";
         } // dataStdev, normMin, normMax have same dimensions
 
-        // Allocate weights with loaded values
+        // Restore network weights
         for (size_t l = 0; l < model.network_.size(); ++l) {
             model.network_[l].W = loadedNetwork[l].W;
             model.network_[l].b = loadedNetwork[l].b;
@@ -1318,6 +1448,44 @@ namespace mu2e {
         model.normMin_ = normMin;
         model.normMax_ = normMax;
         model.epochLosses_ = epochLosses;
+
+        // Restore Adam optimizer state if present, enabling seamless training resumption
+        if (optimizerStateLoaded) {
+            bool momentSizeOk = (loadedMW.size() == model.network_.size() &&
+                                 loadedVW.size() == model.network_.size() &&
+                                 loadedMb.size() == model.network_.size() &&
+                                 loadedVb.size() == model.network_.size());
+            if (momentSizeOk) {
+                for (size_t l = 0; l < model.network_.size() && momentSizeOk; ++l) {
+                    if (loadedMW[l].size() != model.network_[l].mW.size() ||
+                        loadedVW[l].size() != model.network_[l].vW.size() ||
+                        loadedMb[l].size() != model.network_[l].mb.size() ||
+                        loadedVb[l].size() != model.network_[l].vb.size()) {
+                        momentSizeOk = false;
+                        break;
+                    }
+                    for (size_t i = 0; i < loadedMW[l].size() && momentSizeOk; ++i) {
+                        if (loadedMW[l][i].size() != model.network_[l].mW[i].size() ||
+                            loadedVW[l][i].size() != model.network_[l].vW[i].size()) {
+                            momentSizeOk = false;
+                        }
+                    }
+                }
+            }
+            if (momentSizeOk) {
+                model.adamStep_ = loadedAdamStep;
+                for (size_t l = 0; l < model.network_.size(); ++l) {
+                    model.network_[l].mW = loadedMW[l];
+                    model.network_[l].vW = loadedVW[l];
+                    model.network_[l].mb = loadedMb[l];
+                    model.network_[l].vb = loadedVb[l];
+                }
+            } else {
+                mf::LogWarning("ScoreBasedDiffusionModel::loadModel")
+                    << "Optimizer state dimensions do not match the reconstructed model — "
+                    << "falling back to fresh optimizer state. Training can continue but will not resume from the saved checkpoint.";
+            }
+        }
 
         return model;
     }
