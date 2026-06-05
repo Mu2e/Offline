@@ -55,6 +55,9 @@ namespace mu2e{
         //   randGaussQ              - Reference to CLHEP RandGaussQ for Gaussian noise (externally managed)
         //   dim                     - Dimensionality of the state space
         //   conditionDim            - Dimensionality of the optional conditioning vector (default: 0 for unconditional model)
+        //   timeEmbeddingDim        - Dimensionality of the sinusoidal time embedding applied to the diffusion time t in [0,1].
+        //                             0 = raw scalar t (default, backward-compatible).
+        //                             Even integer >= 2 = sinusoidal embedding: pairs [sin(2π·2^i·t), cos(2π·2^i·t)] for i=0..k/2-1.
         //   hidden                  - Size of hidden layers in the neural network
         //   layers                  - Number of layers in the network
         //   optimizerType           - Type of optimizer to use (SGD or ADAM, default: ADAM)
@@ -85,8 +88,9 @@ namespace mu2e{
             CLHEP::RandGaussQ& randGaussQ,
             int dim,
             int conditionDim,
-            int hidden,
-            int layers,
+            int timeEmbeddingDim = 0,
+            int hidden = 128,
+            int layers = 4,
             // Optimizer configuration
             OptimizerType optimizerType = OptimizerType::ADAM,
             double adamBeta1 = 0.9,
@@ -244,6 +248,11 @@ namespace mu2e{
         std::vector<std::vector<double>> activations_;
         std::vector<std::vector<double>> preactivations_;
 
+        // Construct the time input vector to be appended to the network input.
+        // Always includes raw t; if timeEmbeddingDim_ > 0 also appends sinusoidal features
+        // [sin(2π·2^i·t), cos(2π·2^i·t)] for i = 0..timeEmbeddingDim_/2-1.
+        std::vector<double> timeEmbed(double t) const;
+
         // Forward pass through the network (training path).
         // Caches activations and pre-activations for the backward pass.
         // input contains state vector, optional condition vector, and diffusion time t.
@@ -380,10 +389,11 @@ namespace mu2e{
         CLHEP::RandGaussQ& randGaussQ_;   // Used for Gaussian noise in diffusion process
 
         // Model hyperparameters
-        int dim_;           // Dimensionality of state space
-        int conditionDim_;  // Dimensionality of the optional conditioning vector
-        int hidden_;        // Hidden layer size
-        int layers_;        // Number of network layers
+        int dim_;               // Dimensionality of state space
+        int conditionDim_;      // Dimensionality of the optional conditioning vector
+        int timeEmbeddingDim_;  // Sinusoidal time embedding dimensions (0 = raw scalar only)
+        int hidden_;            // Hidden layer size
+        int layers_;            // Number of network layers
 
         // Optimizer configuration
         OptimizerType optimizerType_;  // Type of optimizer to use (SGD or ADAM)

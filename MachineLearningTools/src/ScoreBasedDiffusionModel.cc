@@ -85,11 +85,24 @@ namespace mu2e {
     }
 
 
+    std::vector<double> ScoreBasedDiffusionModel::timeEmbed(double t) const {
+        std::vector<double> emb;
+        emb.reserve(1 + timeEmbeddingDim_);
+        emb.push_back(t);
+        for (int i = 0; i < timeEmbeddingDim_ / 2; ++i) {
+            double freq = 2.0 * M_PI * std::pow(2.0, i);
+            emb.push_back(std::sin(freq * t));
+            emb.push_back(std::cos(freq * t));
+        }
+        return emb;
+    }
+
     ScoreBasedDiffusionModel::ScoreBasedDiffusionModel(
         CLHEP::RandFlat& randFlat,
         CLHEP::RandGaussQ& randGaussQ,
         int dim,
         int conditionDim,
+        int timeEmbeddingDim,
         int hidden,
         int layers,
         OptimizerType optimizerType,
@@ -114,7 +127,7 @@ namespace mu2e {
         int diffusionSteps,
         bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
-        dim_(dim), conditionDim_(conditionDim), hidden_(hidden), layers_(layers),
+        dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim), hidden_(hidden), layers_(layers),
         optimizerType_(optimizerType),
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
@@ -134,6 +147,10 @@ namespace mu2e {
         if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid model dimensions";
         }
+        if (timeEmbeddingDim_ != 0 && (timeEmbeddingDim_ < 2 || timeEmbeddingDim_ % 2 != 0)) {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                << "timeEmbeddingDim must be 0 (raw scalar) or an even integer >= 2";
+        }
         if (batchSize <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid batchSize";
         }
@@ -148,7 +165,7 @@ namespace mu2e {
         // (+1 because diffusion time t is appended to the input vector)
         // ------------------------------------------------------------
 
-        int inputSize = dim_ + conditionDim_ + 1;
+        int inputSize = dim_ + conditionDim_ + 1 + timeEmbeddingDim_;
         int in = inputSize;
 
         // Weight initialization scale (local constant so it can be tuned easily)
@@ -223,6 +240,7 @@ namespace mu2e {
             << "  Network architecture:\n"
             << "    | dim=" << dim_ << "\n"
             << "    | conditionDim=" << conditionDim_ << "\n"
+            << "    | timeEmbeddingDim=" << timeEmbeddingDim_ << (timeEmbeddingDim_ == 0 ? " (raw scalar)" : " (sinusoidal)") << "\n"
             << "    | hidden=" << hidden_ << "\n"
             << "    | layers=" << layers_ << "\n"
             << "  Optimizer configuration:\n"
@@ -851,10 +869,11 @@ namespace mu2e {
                     target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
                 }
 
-                // Prepare input vector for the network by concatenating the noisy sample xt with the diffusion time t.
+                // Prepare input vector for the network by concatenating the noisy sample xt with the time embedding.
                 std::vector<double> input = xt;
                 input.insert(input.end(), sample.cond.begin(), sample.cond.end());
-                input.push_back(t);
+                auto tEmb = timeEmbed(t);
+                input.insert(input.end(), tEmb.begin(), tEmb.end());
 
                 // Check that input dimension matches expected dimension (dim_ + conditionDim_ + 1)
                 if (input.size() != network_[0].W[0].size()) {
@@ -984,6 +1003,7 @@ namespace mu2e {
         // Model architecture
         out << "dim," << dim_ << "\n";
         out << "conditionDim," << conditionDim_ << "\n";
+        out << "timeEmbeddingDim," << timeEmbeddingDim_ << "\n";
         out << "hidden," << hidden_ << "\n";
         out << "layers," << layers_ << "\n";
         // Optimizer configuration
@@ -1183,7 +1203,7 @@ namespace mu2e {
         std::string line;
 
         // Temporary storage
-        int dim = 0, conditionDim = 0, hidden = 0, layers = 0;
+        int dim = 0, conditionDim = 0, timeEmbeddingDim = 0, hidden = 0, layers = 0;
         OptimizerType optimizerType = OptimizerType::ADAM;
         double adamBeta1 = 0.0, adamBeta2 = 0.0, adamEps = 0.0;
         NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
@@ -1262,6 +1282,7 @@ namespace mu2e {
 
                 if (key == "dim") dim = std::stoi(val);
                 else if (key == "conditionDim") conditionDim = std::stoi(val);
+                else if (key == "timeEmbeddingDim") timeEmbeddingDim = std::stoi(val);
                 else if (key == "hidden") hidden = std::stoi(val);
                 else if (key == "layers") layers = std::stoi(val);
                 else if (key == "optimizerType")
@@ -1315,10 +1336,10 @@ namespace mu2e {
                     auto tokens = split(line);
                     int inSize = std::stoi(tokens[1]);
                     int layerIdx = getLayerIdx(tokens[0]);
-                    if (layerIdx == 0 && inSize != dim + conditionDim + 1) {
+                    if (layerIdx == 0 && inSize != dim + conditionDim + 1 + timeEmbeddingDim) {
                         throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                             << "Input layer input size mismatch (expected "
-                            << (dim + conditionDim + 1) << ", got " << inSize << ")";
+                            << (dim + conditionDim + 1 + timeEmbeddingDim) << ", got " << inSize << ")";
                     }
                     if (loadedNetwork[layerIdx].W.empty()) {
                         throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "InSize encountered before OutSize for layer " << layerIdx;
@@ -1606,6 +1627,7 @@ namespace mu2e {
             randGaussQ,
             dim,
             conditionDim,
+            timeEmbeddingDim,
             hidden,
             layers,
             optimizerType,
@@ -1798,7 +1820,7 @@ namespace mu2e {
                 // Euler method (1st order)
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
-                input.push_back(t);
+                { auto tEmb = timeEmbed(t); input.insert(input.end(), tEmb.begin(), tEmb.end()); }
 
                 auto score = forwardInference(input, inferNet);
                 if (epsPrediction_) {
@@ -1831,7 +1853,7 @@ namespace mu2e {
                 // k1 = f(x,t)
                 std::vector<double> input = x;
                 input.insert(input.end(), condition.begin(), condition.end());
-                input.push_back(t);
+                { auto tEmb = timeEmbed(t); input.insert(input.end(), tEmb.begin(), tEmb.end()); }
                 auto score_k1 = forwardInference(input, inferNet);
                 if (epsPrediction_) {
                     double s = std::max(sigma(t), sigma_safe);
@@ -1865,7 +1887,7 @@ namespace mu2e {
                 // k2 = f(x_pred,t_next)
                 std::vector<double> input_next = x_pred;
                 input_next.insert(input_next.end(), condition.begin(), condition.end());
-                input_next.push_back(t_next);
+                { auto tEmb = timeEmbed(t_next); input_next.insert(input_next.end(), tEmb.begin(), tEmb.end()); }
                 auto score_k2 = forwardInference(input_next, inferNet);
                 if (epsPrediction_) {
                     double s_next = std::max(sigma(t_next), sigma_safe);
