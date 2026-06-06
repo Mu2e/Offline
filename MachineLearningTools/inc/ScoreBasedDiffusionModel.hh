@@ -185,6 +185,8 @@ namespace mu2e{
         //
         // Parameters:
         //   condition       - Optional conditioning vector (must match conditionDim_ when enabled)
+        //   useEMANetworkIfAvailable - If true (default), uses the EMA network when available (i.e. when the model was
+        //                     configured with useEMANetwork=true). Pass false to force the base score network.
         //   useHeun         - If true, uses Heun's method (2nd order, default). If false, uses Euler's method (1st order)
         //   useSDE          - If true, uses SDE (Stochastic Differential Equation) method. If false, uses the deterministic reverse process
         //   diffusionSteps  - Number of diffusion steps for sampling (default: -1 uses the model's configured diffusionSteps_)
@@ -192,6 +194,7 @@ namespace mu2e{
         // Returns: Two generated sample vectors, zscore and value of dimensions dim_
         SBDMGeneratedSample generateSample(
             const std::vector<double>& condition = {},
+            bool useEMANetworkIfAvailable = true,
             bool useHeun = true,
             bool useSDE = true,
             int diffusionSteps = -1

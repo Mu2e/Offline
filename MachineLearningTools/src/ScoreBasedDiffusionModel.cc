@@ -1785,6 +1785,7 @@ namespace mu2e {
 
     SBDMGeneratedSample ScoreBasedDiffusionModel::generateSample(
         const std::vector<double>& condition,
+        bool useEMANetworkIfAvailable,
         bool useHeun,
         bool useSDE,
         int diffusionSteps
@@ -1815,7 +1816,7 @@ namespace mu2e {
             double dt = 1.0/steps;
             double beta_val = beta(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
 
-            const auto& inferNet = useEMANetwork_ ? emaNetwork_ : network_;
+            const auto& inferNet = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
             if (!useHeun) {
                 // Euler method (1st order)
                 std::vector<double> input = x;

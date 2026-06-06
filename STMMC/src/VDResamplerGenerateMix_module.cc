@@ -117,6 +117,11 @@ namespace mu2e {
           Comment("If true, use SDE solver. Otherwise use ODE solver."),
           true
         };
+        fhicl::Atom<bool> useEMANetworkIfAvailable{
+          Name("useEMANetworkIfAvailable"),
+          Comment("If true, use the EMA network for inference when available. Pass false to force the base score network."),
+          true
+        };
         fhicl::Atom<int> diffusionSteps{
           Name("diffusionSteps"),
           Comment("Number of diffusion steps for sampling"),
@@ -169,6 +174,7 @@ namespace mu2e {
       int virtualDetectorID_ = 0;
       bool useHeun_ = true;
       bool useSDE_ = true;
+      bool useEMANetworkIfAvailable_ = true;
       int diffusionSteps_ = 0;
       double VDz0_ = 0.0;
       double VDr_ = 0.0;
@@ -219,6 +225,7 @@ namespace mu2e {
       virtualDetectorID_(conf().VirtualDetectorID()),
       useHeun_(conf().useHeun()),
       useSDE_(conf().useSDE()),
+      useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
       VDz0_(conf().VDz0()),
       VDr_(conf().VDr()),
@@ -380,7 +387,7 @@ namespace mu2e {
     double& pzTrans
   ) const {
     if (modelSet.useTwoStageModel) {
-      const SBDMGeneratedSample stage1Sample = modelSet.stage1Model->generateSample({}, useHeun_, useSDE_, diffusionSteps_);
+      const SBDMGeneratedSample stage1Sample = modelSet.stage1Model->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
       if (stage1Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateMix")
           << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
@@ -394,7 +401,7 @@ namespace mu2e {
       double y_zscore = stage1Sample.zscore[2];
 
       const std::vector<double> condition = {t_zscore, x_zscore, y_zscore};
-      const SBDMGeneratedSample stage2Sample = modelSet.stage2Model->generateSample(condition, useHeun_, useSDE_, diffusionSteps_);
+      const SBDMGeneratedSample stage2Sample = modelSet.stage2Model->generateSample(condition, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
       if (stage2Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateMix")
           << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
@@ -404,7 +411,7 @@ namespace mu2e {
       pphiTrans = stage2Sample.value[1];
       pzTrans = stage2Sample.value[2];
     } else {
-      const SBDMGeneratedSample sample = modelSet.allAtOnceModel->generateSample({}, useHeun_, diffusionSteps_);
+      const SBDMGeneratedSample sample = modelSet.allAtOnceModel->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
       if (sample.zscore.size() != 6u) {
         throw cet::exception("VDResamplerGenerateMix")
           << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";
