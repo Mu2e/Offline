@@ -393,6 +393,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     }
                 }
             }
+            mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
             model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound);
             if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end())
                 model.saveModel(base + ".epoch" + std::to_string(e) + ".csv");
