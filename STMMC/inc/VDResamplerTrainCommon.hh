@@ -369,7 +369,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         }
         mf::LogInfo(moduleName)
             << "Initial training settings: biasLowSigma=" << s.currentBiasLowSigma
-            << ", tLowBound=" << s.currentTLowBound;
+            << ", tLowBound=" << s.currentTLowBound
+            << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
         const std::string base = stripCsv(outFile);
         for (int e = 1; e <= s.trainingEpochs; ++e) {
             if (s.nPhase > 1) {
@@ -386,7 +387,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                             << ", gradientClipThreshold=" << gc
                             << ", learningRate=" << lr
                             << ", biasLowSigma=" << s.currentBiasLowSigma
-                            << ", tLowBound=" << s.currentTLowBound;
+                            << ", tLowBound=" << s.currentTLowBound
+                            << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
                         model.updateLossWeightPower(lwp);
                         model.updateGradientClipThreshold(gc);
                         model.updateLearningRate(lr);
