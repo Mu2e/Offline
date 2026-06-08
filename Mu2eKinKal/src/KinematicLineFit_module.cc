@@ -79,6 +79,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
@@ -155,6 +158,7 @@ namespace mu2e {
     KKFIT kkfit_; // fit helper
     DMAT seedcov_; // seed covariance matrix
     std::array<double,KinKal::NParams()> paramconstraints_;
+    bool constraining_;
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
@@ -198,13 +202,17 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
+      constraining_ = false;
       auto const& tempconstraints = settings().modSettings().paramconstraints();
       if (tempconstraints.size() == 0){
         for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
           paramconstraints_[ipar] = 0.0;
       }else if (tempconstraints.size() == KinKal::NParams()){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
           paramconstraints_[ipar] = tempconstraints[ipar];
+          if (tempconstraints[ipar] > 0)
+            constraining_ = true;
+        }
       }else{
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
@@ -288,12 +296,34 @@ namespace mu2e {
           }
           // set the seed range given the hit TPOCA values
           seedtraj.range() = kkfit_.range(strawhits,calohits, strawxings);
+
+          // create parameter constraint, use seedtrajectory parameters
+          PARAMHITCOL paramhits;
+          if (constraining_){
+            std::array<bool,KinKal::NParams()> mask = {false};
+            KinKal::Parameters cparams = seedtraj.params();
+            for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+              for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
+                cparams.covariance()[ipar][jpar] = 0.0;
+              }
+            }
+            for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
+              if (paramconstraints_[ipar] > 0){
+                mask[ipar] = true;
+                cparams.covariance()[ipar][ipar] = paramconstraints_[ipar]*paramconstraints_[ipar];
+              }else{
+                cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
+              }
+            }
+            paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+          }
+
           if(print_ > 0){
             //std::cout << "Seed line parameters " << hseed.track() << std::endl;
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *kktrk );

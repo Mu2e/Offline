@@ -91,6 +91,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
@@ -173,6 +176,7 @@ namespace mu2e {
       SurfaceIdCollection ssids_;
       KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
       std::array<double,KinKal::NParams()> paramconstraints_;
+      bool constraining_;
   };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -208,9 +212,13 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
+      constraining_ = false;
       auto const& parerrors = settings().modSettings().parconst();
-      for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
+      for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
         paramconstraints_[ipar] = parerrors[ipar];
+        if (parerrors[ipar] > 0)
+          constraining_ = true;
+      }
 
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
       double bz(0.0);
@@ -330,8 +338,29 @@ namespace mu2e {
 
         try {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+          // create parameter constraint, use seedtrajectory parameters
+          PARAMHITCOL paramhits;
+          if (constraining_){
+            std::array<bool,KinKal::NParams()> mask = {false};
+            KinKal::Parameters cparams = seedtraj.params();
+            for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+              for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
+                cparams.covariance()[ipar][jpar] = 0.0;
+              }
+            }
+            for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
+              if (paramconstraints_[ipar] > 0){
+                mask[ipar] = true;
+                cparams.covariance()[ipar][ipar] = paramconstraints_[ipar]*paramconstraints_[ipar];
+              }else{
+                cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
+              }
+            }
+            paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+          }
+
           // create and fit the track
-          auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
           // Check the fit
           auto goodfit = goodFit(*ktrk);
           // if we have an extension schedule, extend.
