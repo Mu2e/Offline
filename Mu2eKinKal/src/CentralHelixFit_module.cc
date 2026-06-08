@@ -116,7 +116,7 @@ namespace mu2e {
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
     fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge MAGNITUDE, in electron charge units") };
-    fhicl::Sequence<float> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
+    fhicl::Sequence<double> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
@@ -168,6 +168,7 @@ namespace mu2e {
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
+      std::vector<double> paramconstraints_;
       double intertol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
@@ -175,7 +176,6 @@ namespace mu2e {
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceIdCollection ssids_;
       KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
-      std::array<double,KinKal::NParams()> paramconstraints_;
       bool constraining_;
   };
 
@@ -193,6 +193,7 @@ namespace mu2e {
     fixedfield_(false),
     seedMom_(settings().modSettings().seedMom()),
     seedCharge_(settings().modSettings().seedCharge()),
+    paramconstraints_(settings().modSettings().parconst()),
     intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     useFitCharge_(settings().modSettings().useFitCharge()),
@@ -213,11 +214,13 @@ namespace mu2e {
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
       constraining_ = false;
-      auto const& parerrors = settings().modSettings().parconst();
-      for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
-        paramconstraints_[ipar] = parerrors[ipar];
-        if (parerrors[ipar] > 0)
-          constraining_ = true;
+      if (paramconstraints_.size() == KinKal::NParams()){
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+          if (paramconstraints_[ipar] > 0)
+            constraining_ = true;
+        }
+      }else if (paramconstraints_.size() > 0){
+        throw cet::exception("RECO")<<"mu2e::CentralHelixFit: Parameter constraint configuration error"<< endl;
       }
 
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
@@ -341,22 +344,7 @@ namespace mu2e {
           // create parameter constraint, use seedtrajectory parameters
           PARAMHITCOL paramhits;
           if (constraining_){
-            std::array<bool,KinKal::NParams()> mask = {false};
-            KinKal::Parameters cparams = seedtraj.params();
-            for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
-              for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
-                cparams.covariance()[ipar][jpar] = 0.0;
-              }
-            }
-            for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
-              if (paramconstraints_[ipar] > 0){
-                mask[ipar] = true;
-                cparams.covariance()[ipar][ipar] = paramconstraints_[ipar]*paramconstraints_[ipar];
-              }else{
-                cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
-              }
-            }
-            paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+            kkfit_.makeSeedParamHit(seedtraj,paramconstraints_,paramhits);
           }
 
           // create and fit the track

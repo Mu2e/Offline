@@ -102,6 +102,7 @@ namespace mu2e {
       bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
+      void makeSeedParamHit(KTRAJ const& seedtraj, std::vector<double> const& paramconstraints, PARAMHITCOL& paramhits) const;
       // regrow KKTrack components from a KalSeed
       bool regrowComponents(KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
           Tracker const& tracker,Calorimeter const& calo, StrawResponse const& strawresponse,BFieldMap const& kkbf,
@@ -255,6 +256,23 @@ namespace mu2e {
     return ngood >= minNStrawHits_;
   }
 
+  template <class KTRAJ> void KKFit<KTRAJ>::makeSeedParamHit(KTRAJ const& seedtraj, std::vector<double> const& paramconstraints, PARAMHITCOL& paramhits) const {
+    std::array<bool,KinKal::NParams()> mask = {false};
+    KinKal::Parameters cparams = seedtraj.params();
+    for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+      for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
+        cparams.covariance()[ipar][jpar] = 0.0;
+      }
+      if (paramconstraints[ipar] > 0){
+        mask[ipar] = true;
+        cparams.covariance()[ipar][ipar] = paramconstraints[ipar]*paramconstraints[ipar];
+      }else{
+        cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
+      }
+    }
+    paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+  }
+
   template <class KTRAJ> bool KKFit<KTRAJ>::regrowComponents(KalSeed const& kseed, // primary event input
       ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap, // ancillary event input
       Tracker const& tracker,Calorimeter const& calo, // geometries
@@ -367,7 +385,6 @@ namespace mu2e {
     KKSTRAWHITCOL addstrawhits;
     KKCALOHITCOL addcalohits;
     KKSTRAWXINGCOL addstrawxings;
-    PARAMHITCOL addparamhits;
     if(addhits_)addStrawHits(tracker, strawresponse, kkbf, kktrk, chcol, addstrawhits, addstrawxings );
     if(matcorr_ && addmat_)addStraws(tracker, kktrk, addstrawxings);
     if(addhits_ && usecalo_ && kktrk.caloHits().size()==0)addCaloHit(calo, kktrk, cchandle, addcalohits);
@@ -377,7 +394,7 @@ namespace mu2e {
         << addcalohits.size() << " CaloHits and "
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
-    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits,addparamhits);
+    kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,

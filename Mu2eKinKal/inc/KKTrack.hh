@@ -121,7 +121,7 @@ namespace mu2e {
 
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
-          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, PARAMHITCOL const& paramhits );
+          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits);
       // extend the track to cover a new set of material Xings.  This will reuse the existing config object
       void extendTrack(EXINGCOL const& xings);
       // add IPA Xing
@@ -259,8 +259,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::extendTrack(Config const& config,
-      KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits,
-      PARAMHITCOL const& paramhits) {
+      KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits) {
     // convert the hits and Xings to generic types and extend the track
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
@@ -280,16 +279,15 @@ namespace mu2e {
       }
       if(nhit != strawhits_.size()+strawhits.size()) std::cout << "cluster hit sum doesn't match " << nhit << " " << strawhits_.size() << std::endl;
     }
+    PARAMHITCOL paramhits;
     convertTypes(strawhits,strawxings,calohits,paramhits,hits,exings);
     this->extend(config,hits,exings);
     // store the new hits
     strawhits_.reserve(strawhits_.size()+strawhits.size());
     calohits_.reserve(calohits_.size()+calohits.size());
-    paramhits_.reserve(paramhits_.size()+paramhits.size());
     strawxings_.reserve(strawxings_.size()+strawxings.size());
     for(auto const& strawhit : strawhits)strawhits_.emplace_back(strawhit);
     for(auto const& calohit : calohits)calohits_.emplace_back(calohit);
-    for(auto const& paramhit : paramhits)paramhits_.emplace_back(paramhit);
     for(auto const& strawxing : strawxings)strawxings_.emplace_back(strawxing);
   }
 

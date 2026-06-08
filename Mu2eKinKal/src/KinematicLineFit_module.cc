@@ -114,7 +114,7 @@ namespace mu2e {
     struct KKLineModuleConfig : public KKModuleConfig {
       fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
       fhicl::Atom<float> seedmom { Name("SeedMomentum"), Comment("Initial momentum value")};
-      fhicl::Sequence<float> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
+      fhicl::Sequence<double> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
       fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
@@ -153,11 +153,11 @@ namespace mu2e {
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
+    std::vector<double> paramconstraints_;
     PDGCode::type fpart_;
     TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
     DMAT seedcov_; // seed covariance matrix
-    std::array<double,KinKal::NParams()> paramconstraints_;
     bool constraining_;
     double mass_; // particle mass
     int charge_; // particle charge
@@ -179,6 +179,7 @@ namespace mu2e {
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
     seedmom_(settings().modSettings().seedmom()),
+    paramconstraints_(settings().modSettings().paramconstraints()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
     intertol_(settings().modSettings().interTol()),
@@ -203,17 +204,12 @@ namespace mu2e {
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
       constraining_ = false;
-      auto const& tempconstraints = settings().modSettings().paramconstraints();
-      if (tempconstraints.size() == 0){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-          paramconstraints_[ipar] = 0.0;
-      }else if (tempconstraints.size() == KinKal::NParams()){
+      if (paramconstraints_.size() == KinKal::NParams()){
         for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
-          paramconstraints_[ipar] = tempconstraints[ipar];
-          if (tempconstraints[ipar] > 0)
+          if (paramconstraints_[ipar] > 0)
             constraining_ = true;
         }
-      }else{
+      }else if (paramconstraints_.size() > 0){
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
@@ -300,22 +296,7 @@ namespace mu2e {
           // create parameter constraint, use seedtrajectory parameters
           PARAMHITCOL paramhits;
           if (constraining_){
-            std::array<bool,KinKal::NParams()> mask = {false};
-            KinKal::Parameters cparams = seedtraj.params();
-            for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
-              for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
-                cparams.covariance()[ipar][jpar] = 0.0;
-              }
-            }
-            for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
-              if (paramconstraints_[ipar] > 0){
-                mask[ipar] = true;
-                cparams.covariance()[ipar][ipar] = paramconstraints_[ipar]*paramconstraints_[ipar];
-              }else{
-                cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
-              }
-            }
-            paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+            kkfit_.makeSeedParamHit(seedtraj,paramconstraints_,paramhits);
           }
 
           if(print_ > 0){
