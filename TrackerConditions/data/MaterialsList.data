@@ -1,5 +1,5 @@
 #
-# This is an exhaustive list of materials for entry into the Conditions DB
+# This is an exhaustive list of materials used in Mu2e KinKal
 #
 # Do not remove the following line it's a tag !
 #Materials_list
@@ -29,4 +29,10 @@ cathode       5.2 0.   0.   +2    86.4e-2    Copper 0 13.6e-2 straw-wall 1   -10
 # effective straw wall + gas material, assuming uniform mass distribution
 straw_15um 1.927e-2 0.0 0.0 +2 91.3e-2 straw-wall 1 8.7e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
 straw_25um 3.068e-2 0.0 0.0 +2 94.6e-2 straw-wall 1 5.4e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
-
+# DS materials
+NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0.35 Titanium  0    -10     -20     -30     20.0    1.0    solid
+DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0.33 NbTi  0    -10     -20     -30     20.0    1.0    solid
+DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0.187 NbTi  0    -10     -20     -30     20.0    1.0    solid
+DSSStainless 8.02 0.0 0.0 +5 0.02 Manganese 0.01 Silicon 0.19 Chromium 0.1 Nickel 0.68 Iron 0    -10     -20     -30     20.0    1.0    solid
+# CRV materials: module = scintilator bars + aluminum absorber (temporarily pure aluminum)
+CRVModule 2.700000    0.   0.   +1    100.0e-2    Aluminum   0   24.01000   106.40000    -30     20.0    1.0    solid

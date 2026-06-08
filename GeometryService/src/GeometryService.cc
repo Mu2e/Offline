@@ -26,6 +26,7 @@
 #include "Offline/GeometryService/inc/Mu2eHallMaker.hh"
 #include "Offline/GeometryService/inc/TSdAMaker.hh"
 #include "Offline/GeometryService/inc/TrackerMaker.hh"
+#include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
 #include "Offline/GeometryService/inc/WorldG4.hh"
 #include "Offline/GeometryService/inc/WorldG4Maker.hh"
 #include "Offline/GeometryService/src/DetectorSystemMaker.hh"
@@ -59,6 +60,8 @@
 #include "Offline/GeometryService/inc/ElectronicRackMaker.hh"
 #include "Offline/BeamlineGeom/inc/TSdA.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -94,7 +97,7 @@ using namespace std;
 namespace mu2e {
 
   GeometryService::GeometryService( const Parameters& pars,
-                                    art::ActivityRegistry&iRegistry) :
+      art::ActivityRegistry&iRegistry) :
     _inputfile(            pars().inputFile()),
     _bFieldFile(           pars().bFieldFile()),
     _allowReplacement(     pars().allowReplacement()),
@@ -103,8 +106,10 @@ namespace mu2e {
     _configStatsVerbosity( pars().configStatsVerbosity()),
     _printConfig(          pars().printConfig()),
     _printTopLevel(        pars().printConfigTopLevel()),
+    _debugLevel(           pars().debugLevel()),
     _config(nullptr),
     _simulatedDetector(    pars.get_PSet().get<fhicl::ParameterSet>("simulatedDetector")),
+    _kkMat(                pars().matSettings()),
     _standardMu2eDetector( _simulatedDetector.get<std::string>("tool_type") == "Mu2e"),
     _detectors()
   {
@@ -118,242 +123,249 @@ namespace mu2e {
   // This template can be defined here because this is a private method which is only
   // used by the code below in the same file.
   template <typename DET>
-  void GeometryService::addDetector(std::unique_ptr<DET> d)
-  {
-    if(_detectors.find(typeid(DET).name())!=_detectors.end()) {
-      throw cet::exception("GEOM") << "failed to install detector with type name "
-                                   << typeid(DET).name() << "\n";
-    }
+    void GeometryService::addDetector(std::unique_ptr<DET> d)
+    {
+      if(_detectors.find(typeid(DET).name())!=_detectors.end()) {
+        throw cet::exception("GEOM") << "failed to install detector with type name "
+          << typeid(DET).name() << "\n";
+      }
 
       DetectorPtr ptr(d.release());
       _detectors[typeid(DET).name()] = ptr;
-  }
+    }
 
   template <typename DETALIAS, typename DET>
-  void GeometryService::addDetectorAliasToBaseClass(std::unique_ptr<DET> d)
-  {
+    void GeometryService::addDetectorAliasToBaseClass(std::unique_ptr<DET> d)
+    {
 
-        std::string OriginalName = typeid(DET).name();
-        DetMap::iterator it(_detectors.find(OriginalName));
+      std::string OriginalName = typeid(DET).name();
+      DetMap::iterator it(_detectors.find(OriginalName));
 
-        if(it==_detectors.end())
-          throw cet::exception("GEOM")
-            << "Can not alias an inexistant detector, detector " << OriginalName << "\n";
+      if(it==_detectors.end())
+        throw cet::exception("GEOM")
+          << "Can not alias an inexistant detector, detector " << OriginalName << "\n";
 
-        std::string detectorName= typeid(DETALIAS).name() ;
-        _detectors[detectorName] = it->second;
-  }
+      std::string detectorName= typeid(DETALIAS).name() ;
+      _detectors[detectorName] = it->second;
+    }
 
   void
-  GeometryService::preBeginRun(art::Run const &) {
+    GeometryService::preBeginRun(art::Run const &) {
 
-    if(++_run_count > 1) {
-      return;
-    }
-
-    _config = unique_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
-                                                      _allowReplacement,
-                                                      _messageOnReplacement,
-                                                      _messageOnDefault ));
-    _config->printOpen(cout,"Geometry");
-
-    _bfConfig = unique_ptr<SimpleConfig>(new SimpleConfig(_bFieldFile,
-                                                          _allowReplacement,
-                                                          _messageOnReplacement,
-                                                          _messageOnDefault ));
-    _bfConfig->printOpen(cout,"BField");
-
-
-    if(_printTopLevel) {
-      //print the top level geometry file contents
-      //the top level often contains a single named config file or a list of specific version files
-      ConfigFileLookupPolicy configFile;
-      std::string file = configFile(_inputfile);
-      std::ifstream in(file.c_str());
-      if ( !in ) {
-        // No conf file for this test.
-        throw cet::exception("Geom")
-          << "GeometryService: Cannot open input file: "
-          << file
-          << endl;
+      if(++_run_count > 1) {
+        return;
       }
-      std::cout << "GeometryService: printing top level geometry file:\n";
-      std::string line;
-      while ( in ){
-        std::getline(in,line);
-        if ( !in ){
-          break;
+
+      _config = unique_ptr<SimpleConfig>(new SimpleConfig(_inputfile,
+            _allowReplacement,
+            _messageOnReplacement,
+            _messageOnDefault ));
+      _config->printOpen(cout,"Geometry");
+
+      _bfConfig = unique_ptr<SimpleConfig>(new SimpleConfig(_bFieldFile,
+            _allowReplacement,
+            _messageOnReplacement,
+            _messageOnDefault ));
+      _bfConfig->printOpen(cout,"BField");
+
+
+      if(_printTopLevel) {
+        //print the top level geometry file contents
+        //the top level often contains a single named config file or a list of specific version files
+        ConfigFileLookupPolicy configFile;
+        std::string file = configFile(_inputfile);
+        std::ifstream in(file.c_str());
+        if ( !in ) {
+          // No conf file for this test.
+          throw cet::exception("Geom")
+            << "GeometryService: Cannot open input file: "
+            << file
+            << endl;
         }
+        std::cout << "GeometryService: printing top level geometry file:\n";
+        std::string line;
+        while ( in ){
+          std::getline(in,line);
+          if ( !in ){
+            break;
+          }
 
-        std::cout << line.c_str() << std::endl;
+          std::cout << line.c_str() << std::endl;
+        }
+        std::cout << "GeometryService: finished printing top level geometry file.\n";
       }
-      std::cout << "GeometryService: finished printing top level geometry file.\n";
-    }
-    // Print final state of file after all substitutions.
-    if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
+      // Print final state of file after all substitutions.
+      if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
 
-    // 2019-03-24 P.M. : *not needed* decide if this is standard Mu2e detector or something else ...
+      // 2019-03-24 P.M. : *not needed* decide if this is standard Mu2e detector or something else ...
 
-    if (!isStandardMu2eDetector() ||
-        !_config->getBool("mu2e.standardDetector",true)) {
-      cout  << "Non-standard mu2e configuration, assuming it is intentional" << endl;
-      return;
-    }
+      if (!isStandardMu2eDetector() ||
+          !_config->getBool("mu2e.standardDetector",true)) {
+        cout  << "Non-standard mu2e configuration, assuming it is intentional" << endl;
+        return;
+      }
 
-    // Initialize geometry options
-    _g4GeomOptions = unique_ptr<G4GeometryOptions>( new G4GeometryOptions( *_config ) );
+      // Initialize geometry options
+      _g4GeomOptions = unique_ptr<G4GeometryOptions>( new G4GeometryOptions( *_config ) );
 
-    // Throw if the configuration is not self consistent.
-    checkConfig();
+      // Throw if the configuration is not self consistent.
+      checkConfig();
 
-    // This must be the first detector added since other makers may wish to use it.
-    std::unique_ptr<DetectorSystem> tmpDetSys(DetectorSystemMaker::make(*_config));
-    const DetectorSystem& detSys = *tmpDetSys.get();
-    addDetector(std::move(tmpDetSys));
+      // This must be the first detector added since other makers may wish to use it.
+      std::unique_ptr<DetectorSystem> tmpDetSys(DetectorSystemMaker::make(*_config));
+      const DetectorSystem& detSys = *tmpDetSys.get();
+      addDetector(std::move(tmpDetSys));
 
-    // Make a detector for every component present in the configuration.
+      // Make a detector for every component present in the configuration.
 
-    std::unique_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
-    const Beamline& beamline = *tmpBeamline.get();
-    addDetector(std::move(tmpBeamline));
+      std::unique_ptr<Beamline> tmpBeamline(BeamlineMaker::make(*_config));
+      const Beamline& beamline = *tmpBeamline.get();
+      addDetector(std::move(tmpBeamline));
 
-    std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
-    const ProductionTarget& prodTarget = *tmpProdTgt.get();
-    addDetector(std::move(tmpProdTgt));
+      std::unique_ptr<ProductionTarget> tmpProdTgt(ProductionTargetMaker::make(*_config, beamline.solenoidOffset()));
+      const ProductionTarget& prodTarget = *tmpProdTgt.get();
+      addDetector(std::move(tmpProdTgt));
 
-    std::unique_ptr<ProductionSolenoid>
-      tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
+      std::unique_ptr<ProductionSolenoid>
+        tmpProductionSolenoid(ProductionSolenoidMaker(*_config, beamline.solenoidOffset()).getProductionSolenoidPtr());
 
-    const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
-    addDetector(std::move(tmpProductionSolenoid));
+      const ProductionSolenoid& ps = *tmpProductionSolenoid.get();
+      addDetector(std::move(tmpProductionSolenoid));
 
-    std::unique_ptr<PSEnclosure>
-      tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
-    const PSEnclosure& pse = *tmpPSE.get();
-    addDetector(std::move(tmpPSE));
+      std::unique_ptr<PSEnclosure>
+        tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
+      const PSEnclosure& pse = *tmpPSE.get();
+      addDetector(std::move(tmpPSE));
 
-    // The Z coordinate of the boundary between PS and TS vacua
-    StraightSection const * ts1vac = beamline.getTS().getTSVacuum<StraightSection>( TransportSolenoid::TSRegion::TS1 );
-    const double vacPS_TS_z = ts1vac->getGlobal().z() - ts1vac->getHalfLength();
+      // The Z coordinate of the boundary between PS and TS vacua
+      StraightSection const * ts1vac = beamline.getTS().getTSVacuum<StraightSection>( TransportSolenoid::TSRegion::TS1 );
+      const double vacPS_TS_z = ts1vac->getGlobal().z() - ts1vac->getHalfLength();
 
-    addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
+      addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    // Use ProductionTarget's built-in method to get the correct position based on model type
-    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.targetPositionByVersion()));
+      // Use ProductionTarget's built-in method to get the correct position based on model type
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.targetPositionByVersion()));
 
+      // Construct building solids
+      std::unique_ptr<Mu2eHall> tmphall(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
+      const Mu2eHall& hall = *tmphall.get();
 
+      // Determine Mu2e envelope from building solids
+      std::unique_ptr<Mu2eEnvelope> mu2eEnv (new Mu2eEnvelope(hall,*_config));
 
+      // Make dirt based on Mu2e envelope
+      Mu2eHallMaker::makeDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
+      Mu2eHallMaker::makeRotated( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
+      Mu2eHallMaker::makeTrapDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
 
+      addDetector(std::move( tmphall ) );
+      addDetector(std::move( mu2eEnv ) );
 
+      std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, hall));
+      const ProtonBeamDump& dump = *tmpDump.get();
+      addDetector(std::move(tmpDump));
 
-    // Construct building solids
-    std::unique_ptr<Mu2eHall> tmphall(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
-    const Mu2eHall& hall = *tmphall.get();
+      // beamline info used to position DS
+      std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
+      const DetectorSolenoid& ds = *tmpDS.get();
+      addDetector(std::move(tmpDS));
 
-    // Determine Mu2e envelope from building solids
-    std::unique_ptr<Mu2eEnvelope> mu2eEnv (new Mu2eEnvelope(hall,*_config));
+      // DS info used to position DS downstream shielding
+      addDetector( DetectorSolenoidShieldingMaker::make( *_config, ds ) );
 
-    // Make dirt based on Mu2e envelope
-    Mu2eHallMaker::makeDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
-    Mu2eHallMaker::makeRotated( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
-    Mu2eHallMaker::makeTrapDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
+      std::unique_ptr<StoppingTarget> tmptgt(StoppingTargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
+      const StoppingTarget& target = *tmptgt.get();
+      addDetector(std::move(tmptgt));
 
-    addDetector(std::move( tmphall ) );
-    addDetector(std::move( mu2eEnv ) );
+      if (_config->getBool("hasTracker",false)){
+        TrackerMaker ttm( *_config );
+        addDetector( ttm.getTrackerPtr() );
+      }
 
-    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, hall));
-    const ProtonBeamDump& dump = *tmpDump.get();
-    addDetector(std::move(tmpDump));
-
-    // beamline info used to position DS
-    std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
-    const DetectorSolenoid& ds = *tmpDS.get();
-    addDetector(std::move(tmpDS));
-
-    // DS info used to position DS downstream shielding
-    addDetector( DetectorSolenoidShieldingMaker::make( *_config, ds ) );
-
-    std::unique_ptr<StoppingTarget> tmptgt(StoppingTargetMaker(detSys.getOrigin(), *_config).getTargetPtr());
-    const StoppingTarget& target = *tmptgt.get();
-    addDetector(std::move(tmptgt));
-
-    if (_config->getBool("hasTracker",false)){
-      TrackerMaker ttm( *_config );
-      addDetector( ttm.getTrackerPtr() );
-    }
-
-    if(_config->getBool("hasMBS",false)){
-      MBSMaker mbs( *_config, beamline.solenoidOffset() );
-      addDetector( mbs.getMBSPtr() );
-    }
+      if(_config->getBool("hasMBS",false)){
+        MBSMaker mbs( *_config, beamline.solenoidOffset() );
+        addDetector( mbs.getMBSPtr() );
+      }
 
 
-    if(_config->getBool("hasDiskCalorimeter",false)){
-      DiskCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
-      addDetector( calorm.calorimeterPtr() );
-      addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
-    }
+      if(_config->getBool("hasDiskCalorimeter",false)){
+        DiskCalorimeterMaker calorm( *_config, beamline.solenoidOffset() );
+        addDetector( calorm.calorimeterPtr() );
+        addDetectorAliasToBaseClass<Calorimeter>( calorm.calorimeterPtr() );  //add an alias to detector list
+      }
 
-    if(_config->getBool("hasCosmicRayShield",false)){
-      CosmicRayShieldMaker crs( *_config, beamline.solenoidOffset() );
-      addDetector( crs.getCosmicRayShieldPtr() );
-    }
+      if(_config->getBool("hasCosmicRayShield",false)){
+        CosmicRayShieldMaker crs( *_config, beamline.solenoidOffset() );
+        addDetector( crs.getCosmicRayShieldPtr() );
+      }
 
-    if(_config->getBool("hasTSdA",false)){
-      addDetector( TSdAMaker::make(*_config,ds) );
-    }
+      if(_config->getBool("hasTSdA",false)){
+        addDetector( TSdAMaker::make(*_config,ds) );
+      }
 
-    if(_config->getBool("hasExternalShielding",false)) {
-      addDetector( ExtShieldUpstreamMaker::make(*_config)  );
-      addDetector( ExtShieldDownstreamMaker::make(*_config));
-      addDetector( SaddleMaker::make(*_config));
-      addDetector( PipeMaker::make(*_config));
-      addDetector( ElectronicRackMaker::make(*_config));
-    }
+      if(_config->getBool("hasExternalShielding",false)) {
+        addDetector( ExtShieldUpstreamMaker::make(*_config)  );
+        addDetector( ExtShieldDownstreamMaker::make(*_config));
+        addDetector( SaddleMaker::make(*_config));
+        addDetector( PipeMaker::make(*_config));
+        addDetector( ElectronicRackMaker::make(*_config));
+      }
 
 
 
-    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
-    const ExtMonFNALBuilding& emfb = *tmpemb.get();
-    addDetector(std::move(tmpemb));
-    if(_config->getBool("hasExtMonFNAL",false)){
-      addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
-    }
+      std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
+      const ExtMonFNALBuilding& emfb = *tmpemb.get();
+      addDetector(std::move(tmpemb));
+      if(_config->getBool("hasExtMonFNAL",false)){
+        addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
+      }
 
 
-    if (_config->getBool("hasPTM",false) ){
-      std::unique_ptr<PTM> ptmon(PTMMaker::make(*_config));
-      addDetector(std::move(ptmon));
-    }
+      if (_config->getBool("hasPTM",false) ){
+        std::unique_ptr<PTM> ptmon(PTMMaker::make(*_config));
+        addDetector(std::move(ptmon));
+      }
 
-    if(_config->getBool("hasSTM",false)){
-      STMMaker stm( *_config, beamline.solenoidOffset() );
-      addDetector( stm.getSTMPtr() );
-    }
+      if(_config->getBool("hasSTM",false)){
+        STMMaker stm( *_config, beamline.solenoidOffset() );
+        addDetector( stm.getSTMPtr() );
+      }
 
-    if(_config->getBool("hasVirtualDetector",false)){
-      addDetector(VirtualDetectorMaker::make(*_config));
-    }
-
-
-    if(_bfConfig->getBool("hasBFieldManager",false)){
-      std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_bfConfig, beamline).getBFieldConfig() );
-      BFieldManagerMaker bfmgr(*bfc);
-      addDetector(std::move(bfc));
-      addDetector(bfmgr.getBFieldManager());
-    }
+      if(_config->getBool("hasVirtualDetector",false)){
+        addDetector(VirtualDetectorMaker::make(*_config));
+      }
 
 
-    if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
-      MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
-      addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
-    }
+      if(_bfConfig->getBool("hasBFieldManager",false)){
+        std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_bfConfig, beamline).getBFieldConfig() );
+        BFieldManagerMaker bfmgr(*bfc);
+        addDetector(std::move(bfc));
+        addDetector(bfmgr.getBFieldManager());
+      }
 
-    // This class has a default c'tor with all available information internally.
-    std::unique_ptr<DUSAFMu2eConverter> dusafMu2e{ std::make_unique<DUSAFMu2eConverter>() };
-    addDetector( std::move(dusafMu2e) );
 
-  } // preBeginRun()
+      if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
+        MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
+        addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
+      }
+
+      // This class has a default c'tor with all available information internally.
+      std::unique_ptr<DUSAFMu2eConverter> dusafMu2e{ std::make_unique<DUSAFMu2eConverter>() };
+      addDetector( std::move(dusafMu2e) );
+
+      // build KinKalGeom, used in track reconstruction and extrapolation
+      KinKalGeomMaker kkgm(_debugLevel);
+      addDetector( std::move(kkgm.makeKKG()) );
+      // directly build KKMaterial; it's constructor does everything
+      auto trkptr =  getElement<Tracker>();
+      if(trkptr){
+        Tracker const& tracker = *trkptr;
+        addDetector( std::make_unique<KKMaterial>(_kkMat,tracker));
+        return;
+      } else
+        throw cet::exception("GEOM") << "No Tracker found! " << "\n";
+
+    } // preBeginRun()
 
   // Check that the configuration is self consistent.
   void GeometryService::checkConfig(){

@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 namespace mu2e {
-  namespace KinKalGeom {
+  namespace KKGeom {
     class DetectorSolenoid {
       public:
         using CylPtr = std::shared_ptr<KinKal::Cylinder>;
@@ -19,7 +19,13 @@ namespace mu2e {
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
         using AnnPtr = std::shared_ptr<KinKal::Annulus>;
         // default constructor with nominal geometry
-        DetectorSolenoid();
+        DetectorSolenoid( CylPtr inner, CylPtr outer, DiskPtr front, DiskPtr back,
+            CylPtr ipa, DiskPtr ipafront, DiskPtr ipaback,
+            FruPtr opa, AnnPtr tsda) :
+          inner_(inner) , outer_(outer), front_(front), back_(back),
+          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda)
+      {}
+
         // accessors
         // return by reference
         auto const& outer() const { return *outer_; }
@@ -42,8 +48,8 @@ namespace mu2e {
         auto const& outerProtonAbsorberPtr() const { return opa_; }
         auto const& upstreamAbsorberPtr() const { return tsda_; }
       private:
-        CylPtr inner_; //  inner cryostat cylinder
-        CylPtr outer_; // outer cryostat cylinder
+        CylPtr inner_; //  inner cryostat cylinder boundary
+        CylPtr outer_; // outer cryostat cylinder boundary
         DiskPtr front_; // front (upstream) and back (downstream) of DS
         DiskPtr back_;
         CylPtr ipa_; // inner proton absorber

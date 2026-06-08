@@ -45,7 +45,7 @@ std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
 {
   double x,y;
   _photonMap->GetRandom2(x,y);
-  return std::pair<int,int>(x,y);
+  return std::pair<int,int>(lrint(x),lrint(y));
 }
 
 bool MakeCrvSiPMCharges::IsInactivePixelId(const std::pair<int,int> &pixelId)

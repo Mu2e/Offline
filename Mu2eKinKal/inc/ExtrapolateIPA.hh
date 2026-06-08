@@ -6,6 +6,7 @@
 #include "KinKal/General/TimeDir.hh"
 #include "KinKal/General/TimeRange.hh"
 #include "KinKal/Geometry/Intersection.hh"
+#include "KinKal/Geometry/Cylinder.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include <limits>
 #include "cetlib_except/exception.h"
@@ -16,16 +17,14 @@ namespace mu2e {
   class ExtrapolateIPA {
     public:
       using CylPtr = std::shared_ptr<KinKal::Cylinder>;
-      ExtrapolateIPA() : maxDt_(-1.0), dptol_(1e10), intertol_(1e10),
-      zmin_(std::numeric_limits<double>::max()),
-      zmax_(std::numeric_limits<double>::lowest()),debug_(0) {}
 
-      ExtrapolateIPA(double maxdt, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
-        maxDt_(maxdt), dptol_(dptol), intertol_(intertol), ipa_(ipa),
+      ExtrapolateIPA(double maxdt, double maxdtstep, double dptol,double intertol, CylPtr const& ipa, int debug=0) :
+        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol), ipa_(ipa),
         zmin_( (ipa_->center() - ipa_->axis()*ipa_->halfLength()).Z()),
         zmax_( (ipa_->center() + ipa_->axis()*ipa_->halfLength()).Z()), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; }
+      double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
       double interTolerance() const { return intertol_; }
       CylPtr const& IPACylinder() const { return ipa_; }
@@ -38,19 +37,22 @@ namespace mu2e {
       // reset between tracks
       void reset() const { inter_ = Intersection(); }
     private:
-      double maxDt_; // maximum extrapolation time
-      double dptol_; // fractional momentum tolerance
-      double intertol_; // intersection tolerance (mm)
+      double maxDt_ = -1; // maximum extrapolation time
+      double maxDtStep_ = -1; // maximum extrapolation time step in a single iteration
+      double dptol_ = 1e10; // fractional momentum tolerance
+      double intertol_ = 1e10; // intersection tolerance (mm)
       CylPtr ipa_; // IPA cylinder
       mutable Intersection inter_; // cache of most recent intersection
       // cache of IPA front and back Z positions
-      double zmin_, zmax_;
-      int debug_; // debug level
+      double zmin_ = std::numeric_limits<double>::max();
+      double zmax_ = std::numeric_limits<double>::lowest();
+      int debug_ = 0; // debug level
   };
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
     // we are answering the question: did the segment last added to this extrapolated track hit the IPA or not?
     // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
+    reset(); // clear any cache
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small step to avoid re-intersecting
@@ -64,13 +66,11 @@ namespace mu2e {
     if(debug_ > 2)std::cout << "IPA extrap start time " << stime << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << std::endl;
     // stop if the particle is heading away from the IPA
     if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
-      reset(); // clear any cache
       if(debug_ > 1)std::cout << "Heading away from IPA: done" << std::endl;
       return false;
     }
     // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
     if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
-      reset();
       if(debug_ > 2)std::cout << "Heading towards IPA, z " << spos.Z()<< std::endl;
       return true;
     }
@@ -85,7 +85,6 @@ namespace mu2e {
       return false;
     } else {
       // no more intersections: keep extending in Z till we clear the IPA
-      reset();
       if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << spos.Z() << std::endl;
       if(zvel > 0.0)
         return spos.Z() < zmax_;

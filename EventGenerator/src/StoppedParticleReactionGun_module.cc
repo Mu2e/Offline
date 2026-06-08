@@ -18,6 +18,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -29,6 +30,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/CzarneckiSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/ConversionSpectrum.hh"
@@ -51,7 +53,7 @@ namespace mu2e {
     PDGCode::type       pdgId_;
     double              mass_;
 
-    enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
+    enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERGY, MOMENTUM };
     SpectrumVar       spectrumVariable_;
 
     BinnedSpectrum    spectrum_;
@@ -84,6 +86,7 @@ namespace mu2e {
     explicit StoppedParticleReactionGun(const fhicl::ParameterSet& pset);
 
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -105,6 +108,7 @@ namespace mu2e {
     , reseeder_(eng_,seed_,verbosityLevel_)
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if(genId_ == GenId::enum_type::unknown) {
       throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown genId "
@@ -149,7 +153,7 @@ namespace mu2e {
   //================================================================
   StoppedParticleReactionGun::SpectrumVar StoppedParticleReactionGun::parseSpectrumVar(const std::string& name) {
     if (name == "totalEnergy"  )  return TOTAL_ENERGY;
-    if (name == "kineticEnergy")  return KINETIC_ENERY;
+    if (name == "kineticEnergy")  return KINETIC_ENERGY;
     if (name == "momentum"     )  return MOMENTUM;
     throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGun: unknown spectrum variable "<<name<<"\n";
   }
@@ -203,10 +207,23 @@ namespace mu2e {
 
     switch(spectrumVariable_) {
     case TOTAL_ENERGY  : break;
-    case KINETIC_ENERY : res += mass_; break;
+    case KINETIC_ENERGY : res += mass_; break;
     case MOMENTUM      : res = sqrt(res*res+mass_*mass_); break;
     }
     return res;
+  }
+
+  void StoppedParticleReactionGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    std::string varName("energy");
+    switch(spectrumVariable_) {
+      case KINETIC_ENERGY: varName = "kineticEnergy"; break;
+      case MOMENTUM:      varName = "momentum";      break;
+      default:            varName = "energy";        break;
+    }
+    config->add_var(SpectrumConfig::RestrictedVar(varName, 1., spectrum_.getXMin(), spectrum_.getXMax(),
+                                                  (psphys_.get<std::string>("spectrumShape", "") == "flat") ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

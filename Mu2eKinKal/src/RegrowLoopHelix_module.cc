@@ -20,7 +20,7 @@
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
-#include "Offline/KinKalGeom/inc/SurfaceMap.hh"
+#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
@@ -54,7 +54,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -79,7 +78,6 @@ namespace mu2e {
   using Mu2eKinKal::KKFinalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
-  using KKMaterialConfig = KKMaterial::Config;
   using SDIS = std::set<StrawDigiIndex>;
 
   using Name    = fhicl::Name;
@@ -92,7 +90,6 @@ namespace mu2e {
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::OptionalAtom<art::InputTag> kalSeedMCAssns {Name("KalSeedMCAssns"), Comment("Association to KalSeedMC. If set, regrown KalSeeds will be associated with the same KalSeedMC as the original") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
-    fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
     fhicl::Atom<bool> extend {Name("Extend"), Comment("Extend the fit") };
 
@@ -133,8 +130,6 @@ namespace mu2e {
       using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
       using DOMAINCOL = std::set<DOMAINPTR>;
 
-      using KKMaterialConfig = KKMaterial::Config;
-
       explicit RegrowLoopHelix(const Parameters& settings);
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
@@ -146,7 +141,6 @@ namespace mu2e {
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // refit configuration object, containing the fit schedule
       KKFIT kkfit_;
-      KKMaterial kkmat_;
       art::ProductToken<KalSeedCollection> kseedcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<CaloClusterCollection> cccol_T_;
@@ -161,7 +155,6 @@ namespace mu2e {
   debug_(settings().debug()),
   config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
-  kkmat_(settings().matSettings()),
   kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
   chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
   cccol_T_(mayConsume<CaloClusterCollection>(settings().caloClusterCollection())),
@@ -171,7 +164,7 @@ namespace mu2e {
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
-    if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings(),kkmat_);
+    if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
     if( fillMCAssns_){
       consumes<KalSeedMCAssns>(ksmca_T_);
       produces <KalSeedMCAssns>();
@@ -226,7 +219,7 @@ namespace mu2e {
       DOMAINCOL domains;
       // create the trajectory. This is done here to be strongly typed
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
-          *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
+          *tracker,*calo_h,*strawresponse,*kkbf_,
           trajptr, strawhits, calohits, strawxings, domains);
       if(debug_ > 1){
         std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
@@ -245,7 +238,7 @@ namespace mu2e {
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
-          if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H , *ktrk );
+          if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H , *ktrk );
           if(ktrk->fitStatus().usable()){
             // extrapolate as requested
             if(extrap_)extrap_->extrapolate(*ktrk);

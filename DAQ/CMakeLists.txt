@@ -121,8 +121,26 @@ cet_build_plugin(PrefetchDAQData art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(STMWaveformDigisFromFragments art::module
-  REG_SOURCE src/STMWaveformDigisFromFragments_module.cc
+cet_build_plugin(STMDigisFromFragments art::module
+  REG_SOURCE src/STMDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
+cet_build_plugin(STMBinaryDigisFromFragments art::module
+  REG_SOURCE src/STMBinaryDigisFromFragments_module.cc
+  LIBRARIES REG
+  Offline::DAQ
+  Offline::ProditionsService
+  Offline::DataProducts
+  Offline::RecoDataProducts
+)
+
+cet_build_plugin(STMPrintFragments art::module
+  REG_SOURCE src/STMPrintFragments_module.cc
   LIBRARIES REG
   Offline::DAQ
   Offline::ProditionsService
@@ -197,7 +215,9 @@ cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc
   LIBRARIES REG
     Offline::DAQ
+    Offline::CRVConditions
     Offline::DataProducts
+    Offline::ProditionsService
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Overlays
@@ -207,7 +227,9 @@ cet_build_plugin(CrvDigisFromArtdaqFragmentsFEBII art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragmentsFEBII_module.cc
   LIBRARIES REG
     Offline::DAQ
+    Offline::CRVConditions
     Offline::DataProducts
+    Offline::ProditionsService
     Offline::RecoDataProducts
     artdaq-core-mu2e::Data
     artdaq-core-mu2e::Data_dict
@@ -225,6 +247,25 @@ cet_build_plugin(CrvGRdataFromArtdaqFragments art::module
     artdaq-core-mu2e::Overlays
 )
 
+cet_build_plugin(CrvDigisToFragments art::module
+    REG_SOURCE src/CrvDigisToFragments_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::CRVConditions
+      Offline::DataProducts
+      Offline::ProditionsService
+      Offline::RecoDataProducts
+      artdaq-core-mu2e::Data
+      artdaq-core-mu2e::Data_dict
+)
+
+cet_build_plugin(CrvDigiCollectionsComparator art::module
+    REG_SOURCE src/CrvDigiCollectionsComparator_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+      Offline::DataProducts
+)
+
 cet_build_plugin(MSDHitsFromDTCEvents art::module
     REG_SOURCE src/MSDHitsFromDTCEvents_module.cc
     LIBRARIES REG
@@ -232,6 +273,8 @@ cet_build_plugin(MSDHitsFromDTCEvents art::module
       Offline::RecoDataProducts
 )
 
+install(DIRECTORY test DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/DAQ)
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/DAQ/fcl)
+install_fhicl(SUBDIRS test GLOB SUBDIRNAME Offline/DAQ/test)

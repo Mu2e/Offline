@@ -21,6 +21,7 @@
 #include "fhiclcpp/types/Table.h"
 #include "cetlib_except/exception.h"
 
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 #include "boost/shared_ptr.hpp"
@@ -48,6 +49,7 @@ public:
       fhicl::Atom<std::string> tool_type{Name("tool_type"),"Mu2e"};
     };
 
+    using KKMaterialConfig = KKMaterial::Config;
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -59,7 +61,9 @@ public:
       fhicl::Atom<int>    configStatsVerbosity{Name("configStatsVerbosity"),false};
       fhicl::Atom<bool>   printConfig{Name("printConfig"),false};
       fhicl::Atom<bool>   printConfigTopLevel{Name("printConfigTopLevel"),false};
+      fhicl::Atom<int>    debugLevel{Name("debugLevel"),0};
       fhicl::Table<SimulatedDetector> simulatedDetector{Name("simulatedDetector")};
+      fhicl::Table<KKMaterialConfig> matSettings{Name("KinKalMaterial")};
     };
 
     using Parameters= art::ServiceTable<Config>;
@@ -123,12 +127,14 @@ private:
     // Print final config file after all replacements.  These affect both SimpleConfig objects.
     bool _printConfig;
     bool _printTopLevel;
+    int _debugLevel;
 
     // The objects that parse the run-time configuration files.
     std::unique_ptr<SimpleConfig> _config;
     std::unique_ptr<SimpleConfig> _bfConfig;
 
     const fhicl::ParameterSet       _simulatedDetector;
+    const KKMaterialConfig          _kkMat;
 
     // Load G4 geometry options
     std::unique_ptr<G4GeometryOptions> _g4GeomOptions;
