@@ -47,6 +47,7 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMloadCheckPointAllAtOnceModelFile{ Name("SBDMloadCheckPointAllAtOnceModelFile"), Comment("Load checkpoint CSV for all-at-once model"), "" };
         fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Load checkpoint CSV for stage-1 model"),    "" };
         fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Load checkpoint CSV for stage-2 model"),    "" };
+        fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
         fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"),    116 };
         fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector"),      37700.39 };
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
@@ -87,6 +88,7 @@ namespace mu2e {
         fhicl::Sequence<bool>   SBDMtrainingCurriculumBiasLowSigma{       Name("SBDMtrainingCurriculumBiasLowSigma"),       Comment("BiasLowSigma per curriculum phase"),          std::vector<bool>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTLowBound{          Name("SBDMtrainingCurriculumTLowBound"),          Comment("tLowBound per curriculum phase"),             std::vector<double>() };
         fhicl::Sequence<int>    SBDMtrainingCurriculumBatchSize{          Name("SBDMtrainingCurriculumBatchSize"),          Comment("Batch size per curriculum phase"),            std::vector<int>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumPromoteEMA{         Name("SBDMtrainingCurriculumPromoteEMA"),         Comment("If true, promote EMA to network when entering this curriculum phase"),               std::vector<bool>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrain(const Parameters& conf);
@@ -133,6 +135,8 @@ namespace mu2e {
     state_.curriculumBiasLowSigma        = conf().SBDMtrainingCurriculumBiasLowSigma();
     state_.curriculumTLowBound           = conf().SBDMtrainingCurriculumTLowBound();
     state_.curriculumBatchSize           = conf().SBDMtrainingCurriculumBatchSize();
+    state_.promoteEMAOnStart             = conf().SBDMpromoteEMA();
+    state_.curriculumPromoteEMA          = conf().SBDMtrainingCurriculumPromoteEMA();
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrain");
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",

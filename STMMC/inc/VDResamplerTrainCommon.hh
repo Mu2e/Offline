@@ -72,6 +72,8 @@ struct TrainState {
     std::vector<bool>   curriculumBiasLowSigma;
     std::vector<double> curriculumTLowBound;
     std::vector<int>    curriculumBatchSize;
+    std::vector<bool>   curriculumPromoteEMA;
+    bool   promoteEMAOnStart   = false;
     bool   currentBiasLowSigma = false;
     double currentTLowBound    = 0.0;
     std::vector<int> phaseBoundaries;
@@ -158,7 +160,8 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
 // ---------------------------------------------------------------------------
 inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleName,
     double defaultLossWeightPower, double defaultGradientClip, double defaultLearningRate,
-    bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize)
+    bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
+    bool defaultPromoteEMA = false)
 {
     if (!s.curriculumEpochs.empty()) {
         s.nPhase = static_cast<int>(s.curriculumEpochs.size());
@@ -181,6 +184,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumBiasLowSigma,    defaultBiasLowSigma,    "SBDMtrainingCurriculumBiasLowSigma");
             fill(s.curriculumTLowBound,       defaultTLowBound,       "SBDMtrainingCurriculumTLowBound");
             fill(s.curriculumBatchSize,       defaultBatchSize,       "SBDMtrainingCurriculumBatchSize");
+            fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
 
             s.phaseBoundaries.clear();
             int epochSum = 0;
@@ -194,7 +198,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(20) << "Learning Rate"
                << std::setw(15) << "BiasLowSigma"
                << std::setw(15) << "TLowBound"
-               << std::setw(15) << "BatchSize" << "\n";
+               << std::setw(15) << "BatchSize"
+               << std::setw(15) << "PromoteEMA" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -202,7 +207,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(20) << s.curriculumLearningRate[i]
                    << std::setw(15) << s.curriculumBiasLowSigma[i]
                    << std::setw(15) << s.curriculumTLowBound[i]
-                   << std::setw(15) << s.curriculumBatchSize[i] << "\n";
+                   << std::setw(15) << s.curriculumBatchSize[i]
+                   << std::setw(15) << s.curriculumPromoteEMA[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -219,6 +225,15 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                         CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg,
                         const std::string& moduleName)
 {
+    // Validate EMA promotion requests against useEMANetwork
+    bool anyPromotion = s.promoteEMAOnStart ||
+        std::any_of(s.curriculumPromoteEMA.begin(), s.curriculumPromoteEMA.end(),
+                    [](bool v){ return v; });
+    if (anyPromotion && !p.useEMANetwork)
+        throw cet::exception(moduleName)
+            << "EMA promotion requested (SBDMpromoteEMA or SBDMtrainingCurriculumPromoteEMA) "
+            << "but SBDMuseEMANetwork is false. Enable the EMA network to use this feature.";
+
     // Helper: build a fresh SBDM with phase-0 (or singleton) hyperparams
     auto makeSBDM = [&](int dim, int condDim) {
         double initLWP = s.nPhase > 1 ? s.curriculumLossWeightPower[0] : p.lossWeightPower;
@@ -371,6 +386,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentBiasLowSigma = s.nPhase > 1 ? s.curriculumBiasLowSigma[0] : s.currentBiasLowSigma;
             s.currentTLowBound    = s.nPhase > 1 ? s.curriculumTLowBound[0]    : s.currentTLowBound;
         }
+        if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
+            model.promoteEMAToNetwork();
         mf::LogInfo(moduleName)
             << "Initial training settings: biasLowSigma=" << s.currentBiasLowSigma
             << ", tLowBound=" << s.currentTLowBound
@@ -399,6 +416,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         model.updateGradientClipThreshold(gc);
                         model.updateLearningRate(lr);
                         model.updateBatchSize(bs);
+                        if (s.curriculumPromoteEMA[ph + 1])
+                            model.promoteEMAToNetwork();
                     }
                 }
             }

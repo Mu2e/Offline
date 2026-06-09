@@ -165,6 +165,25 @@ namespace mu2e{
             return batchSize_;
         }
 
+        void promoteEMAToNetwork() {
+            if (!useEMANetwork_) {
+                mf::LogWarning("ScoreBasedDiffusionModel")
+                    << "promoteEMAToNetwork called but EMA network is disabled — no-op.";
+                return;
+            }
+            for (size_t l = 0; l < network_.size(); ++l) {
+                network_[l].W = emaNetwork_[l].W;
+                network_[l].b = emaNetwork_[l].b;
+                for (auto& row : network_[l].mW) std::fill(row.begin(), row.end(), 0.0);
+                for (auto& row : network_[l].vW) std::fill(row.begin(), row.end(), 0.0);
+                std::fill(network_[l].mb.begin(), network_[l].mb.end(), 0.0);
+                std::fill(network_[l].vb.begin(), network_[l].vb.end(), 0.0);
+            }
+            adamStep_ = 0;
+            mf::LogInfo("ScoreBasedDiffusionModel::promoteEMAToNetwork")
+                << "EMA weights promoted to network. Adam optimizer state reset.";
+        }
+
         const std::vector<double>& getDimWeights() const { return dimWeights_; }
 
         // Train the score network on a batch of samples.
