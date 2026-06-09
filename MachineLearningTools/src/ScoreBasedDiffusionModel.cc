@@ -1788,7 +1788,8 @@ namespace mu2e {
         bool useEMANetworkIfAvailable,
         bool useHeun,
         bool useSDE,
-        int diffusionSteps
+        int diffusionSteps,
+        double sdeToOdeSigmaThreshold
     )
     {
         if (condition.size() != static_cast<size_t>(conditionDim_)) {
@@ -1815,6 +1816,8 @@ namespace mu2e {
             double t = ((double)step + 1.0)/steps;
             double dt = 1.0/steps;
             double beta_val = beta(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
+            bool effectiveSDE = useSDE &&
+                (sdeToOdeSigmaThreshold < 0.0 || sigma(t) >= sdeToOdeSigmaThreshold);
 
             const auto& inferNet = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
             if (!useHeun) {
@@ -1830,7 +1833,7 @@ namespace mu2e {
                 }
 
                 for (int i = 0; i < dim_; ++i) {
-                    if (useSDE) {
+                    if (effectiveSDE) {
                         // SDE solver:
                         double drift = 0.5 * beta_val * x[i] + beta_val * score[i];
                         double noise = std::sqrt(beta_val * dt) * randGaussQ_.fire();
@@ -1863,7 +1866,7 @@ namespace mu2e {
 
                 std::vector<double> k1(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    if (useSDE) {
+                    if (effectiveSDE) {
                         // SDE solver:
                         k1[i] = 0.5 * beta_val * x[i] + beta_val * score_k1[i];
                     } else {
@@ -1876,7 +1879,7 @@ namespace mu2e {
                 std::vector<double> x_pred(dim_);
                 for (int i = 0; i < dim_; ++i) {
                     x_pred[i] = x[i] + k1[i] * dt;
-                    if (useSDE) {
+                    if (effectiveSDE) {
                         x_pred[i] += dw[i]; // add noise
                     }
                 }
@@ -1897,7 +1900,7 @@ namespace mu2e {
 
                 std::vector<double> k2(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    if (useSDE) {
+                    if (effectiveSDE) {
                         // SDE solver:
                         k2[i] = 0.5 * b_next * x_pred[i] + b_next * score_k2[i];
                     } else {
@@ -1909,7 +1912,7 @@ namespace mu2e {
                 // trapezoidal update
                 for (int i = 0; i < dim_; ++i) {
                     x[i] += 0.5 * (k1[i] + k2[i]) * dt;
-                    if (useSDE) {
+                    if (effectiveSDE) {
                         x[i] += dw[i]; // add noise
                     }
                 }

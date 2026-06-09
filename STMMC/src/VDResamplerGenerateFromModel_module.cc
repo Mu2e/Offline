@@ -125,6 +125,11 @@ namespace mu2e {
           Comment("Number of reverse-diffusion steps used for sampling"),
           200
         };
+        fhicl::Atom<double> sdeToOdeSigmaThreshold{
+          Name("sdeToOdeSigmaThreshold"),
+          Comment("Switch from SDE to ODE when sigma falls below this threshold (-1 = always use useSDE setting)"),
+          -1.0
+        };
         fhicl::Atom<double> VDz0{
           Name("VDz0"),
           Comment("Nominal z coordinate of the virtual detector"),
@@ -159,6 +164,7 @@ namespace mu2e {
       bool useSDE_;
       bool useEMANetworkIfAvailable_;
       int diffusionSteps_;
+      double sdeToOdeSigmaThreshold_;
       double VDz0_;
       double VDr_;
       bool doROOTDump_;
@@ -203,6 +209,7 @@ namespace mu2e {
       useSDE_(conf().useSDE()),
       useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
+      sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
       VDz0_(conf().VDz0()),
       VDr_(conf().VDr()),
       doROOTDump_(conf().doROOTDump()) {
@@ -274,7 +281,7 @@ namespace mu2e {
     // Generate a new sample using the loaded model(s)
     // note the values here are transformed and need to be inverted back to the original coordinates after sampling.
     if (useTwoStageModel_) {
-      const SBDMGeneratedSample stage1Sample = stage1Model_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
+      const SBDMGeneratedSample stage1Sample = stage1Model_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
       if (stage1Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateFromModel")
           << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
@@ -290,7 +297,7 @@ namespace mu2e {
       double y_zscore = stage1Sample.zscore[2];
 
       const std::vector<double> stage2Condition = {t_zscore, x_zscore, y_zscore};
-      const SBDMGeneratedSample stage2Sample = stage2Model_->generateSample(stage2Condition, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
+      const SBDMGeneratedSample stage2Sample = stage2Model_->generateSample(stage2Condition, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
       if (stage2Sample.zscore.size() != 3u) {
         throw cet::exception("VDResamplerGenerateFromModel")
           << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
@@ -300,7 +307,7 @@ namespace mu2e {
       pphi_t = stage2Sample.value[1];
       pz_t = stage2Sample.value[2];
     } else {
-      const SBDMGeneratedSample sample = allAtOnceModel_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_);
+      const SBDMGeneratedSample sample = allAtOnceModel_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
       if (sample.zscore.size() != 6u) {
         throw cet::exception("VDResamplerGenerateFromModel")
           << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";

@@ -204,7 +204,8 @@ namespace mu2e{
             bool useEMANetworkIfAvailable = true,
             bool useHeun = true,
             bool useSDE = true,
-            int diffusionSteps = -1
+            int diffusionSteps = -1,
+            double sdeToOdeSigmaThreshold = -1.0
         );
 
         // Save the model parameters to a CSV file with annotations for later use.
