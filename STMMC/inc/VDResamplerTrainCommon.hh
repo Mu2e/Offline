@@ -71,6 +71,7 @@ struct TrainState {
     std::vector<double> curriculumLearningRate;
     std::vector<bool>   curriculumBiasLowSigma;
     std::vector<double> curriculumTLowBound;
+    std::vector<int>    curriculumBatchSize;
     bool   currentBiasLowSigma = false;
     double currentTLowBound    = 0.0;
     std::vector<int> phaseBoundaries;
@@ -157,7 +158,7 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
 // ---------------------------------------------------------------------------
 inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleName,
     double defaultLossWeightPower, double defaultGradientClip, double defaultLearningRate,
-    bool defaultBiasLowSigma, double defaultTLowBound)
+    bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize)
 {
     if (!s.curriculumEpochs.empty()) {
         s.nPhase = static_cast<int>(s.curriculumEpochs.size());
@@ -179,6 +180,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumLearningRate,    defaultLearningRate,    "SBDMtrainingCurriculumLearningRate");
             fill(s.curriculumBiasLowSigma,    defaultBiasLowSigma,    "SBDMtrainingCurriculumBiasLowSigma");
             fill(s.curriculumTLowBound,       defaultTLowBound,       "SBDMtrainingCurriculumTLowBound");
+            fill(s.curriculumBatchSize,       defaultBatchSize,       "SBDMtrainingCurriculumBatchSize");
 
             s.phaseBoundaries.clear();
             int epochSum = 0;
@@ -191,14 +193,16 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(20) << "Gradient Clip"
                << std::setw(20) << "Learning Rate"
                << std::setw(15) << "BiasLowSigma"
-               << std::setw(15) << "TLowBound" << "\n";
+               << std::setw(15) << "TLowBound"
+               << std::setw(15) << "BatchSize" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
                    << std::setw(20) << s.curriculumGradientClip[i]
                    << std::setw(20) << s.curriculumLearningRate[i]
                    << std::setw(15) << s.curriculumBiasLowSigma[i]
-                   << std::setw(15) << s.curriculumTLowBound[i] << "\n";
+                   << std::setw(15) << s.curriculumTLowBound[i]
+                   << std::setw(15) << s.curriculumBatchSize[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -379,6 +383,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         double lwp = s.curriculumLossWeightPower[ph + 1];
                         double gc  = s.curriculumGradientClip   [ph + 1];
                         double lr  = s.curriculumLearningRate   [ph + 1];
+                        int    bs  = s.curriculumBatchSize      [ph + 1];
                         s.currentBiasLowSigma = s.curriculumBiasLowSigma[ph + 1];
                         s.currentTLowBound    = s.curriculumTLowBound   [ph + 1];
                         mf::LogInfo(moduleName)
@@ -386,12 +391,14 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                             << ": lossWeightPower=" << lwp
                             << ", gradientClipThreshold=" << gc
                             << ", learningRate=" << lr
+                            << ", batchSize=" << bs
                             << ", biasLowSigma=" << s.currentBiasLowSigma
                             << ", tLowBound=" << s.currentTLowBound
                             << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
                         model.updateLossWeightPower(lwp);
                         model.updateGradientClipThreshold(gc);
                         model.updateLearningRate(lr);
+                        model.updateBatchSize(bs);
                     }
                 }
             }

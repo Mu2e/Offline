@@ -158,6 +158,13 @@ namespace mu2e{
             return learningRate_;
         }
 
+        int updateBatchSize(
+            int value
+        ){
+            batchSize_ = value;
+            return batchSize_;
+        }
+
         const std::vector<double>& getDimWeights() const { return dimWeights_; }
 
         // Train the score network on a batch of samples.

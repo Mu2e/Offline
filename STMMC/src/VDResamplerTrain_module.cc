@@ -86,6 +86,7 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumLearningRate{       Name("SBDMtrainingCurriculumLearningRate"),       Comment("Learning rate per curriculum phase"),         std::vector<double>() };
         fhicl::Sequence<bool>   SBDMtrainingCurriculumBiasLowSigma{       Name("SBDMtrainingCurriculumBiasLowSigma"),       Comment("BiasLowSigma per curriculum phase"),          std::vector<bool>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTLowBound{          Name("SBDMtrainingCurriculumTLowBound"),          Comment("tLowBound per curriculum phase"),             std::vector<double>() };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumBatchSize{          Name("SBDMtrainingCurriculumBatchSize"),          Comment("Batch size per curriculum phase"),            std::vector<int>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrain(const Parameters& conf);
@@ -131,11 +132,12 @@ namespace mu2e {
     state_.curriculumLearningRate        = conf().SBDMtrainingCurriculumLearningRate();
     state_.curriculumBiasLowSigma        = conf().SBDMtrainingCurriculumBiasLowSigma();
     state_.curriculumTLowBound           = conf().SBDMtrainingCurriculumTLowBound();
+    state_.curriculumBatchSize           = conf().SBDMtrainingCurriculumBatchSize();
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrain");
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
-        conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound());
+        conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize());
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
