@@ -9,6 +9,7 @@ namespace mu2e {
   namespace STMUtils {
     // Function to get the STMChannel from the art::InputTag
     // (we will keep data from HPGe and LaBr in separate collections)
+    /*
     STMChannel getChannel(art::InputTag const& tag) {
       if (tag.instance() != "") {
         // If we use instance name, it will only contain the channel name
@@ -18,6 +19,22 @@ namespace mu2e {
         std::string label = tag.label();
         // Look at last four characeters of module label to decide channel
         return STMChannel(STMChannel::findByName(label.substr(label.length()-4,4)));
+      }
+      }
+    */
+    STMChannel getChannel(art::InputTag const& tag){
+      std::string name = tag.instance();
+      if (name.empty()){
+        name = tag.label();
+      }
+      if (name.find("HPGe") != std::string::npos){
+        return STMChannel::findByName("HPGe");
+      }
+      else if (name.find("LaBr") != std::string::npos){
+        return STMChannel::findByName("LaBr");
+      }
+      else {
+        return STMChannel::findByName("Unknown");
       }
     }
 
