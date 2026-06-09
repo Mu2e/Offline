@@ -12,7 +12,6 @@ DAQ : {
             saveWaveforms                           : false
             missingDTCHeaders                       : false                  ## true for runs <= 107246
             keyOnMnid                               : false                  ##
-            geography                               : []                     ## for now, a real job should include a real map
             allowOfflineFallbackWhenPanelMapMissing : false
             forceOfflineAddressing                  : false
         }

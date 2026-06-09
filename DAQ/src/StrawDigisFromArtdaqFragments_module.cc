@@ -79,51 +79,6 @@ public:
       fhicl::Name("forceOfflineAddressing"),
       fhicl::Comment("Ignore TrackerPanelMap/mnid and decode StrawId directly as (dtc,link,straw)")};
 
-  //   // individual tuple specifying a minnesota label, e.g. MN123,
-  //   // with geographic plane/panel numbers, i.e. from DocDB-#888
-  //   struct GeographicTuple{
-  //     fhicl::Atom<std::string> minnesota{
-  //       fhicl::Name("minnesota"),
-  //       fhicl::Comment("Minnesota # label")
-  //     };
-  //     fhicl::Atom<uint16_t> plane{
-  //       fhicl::Name("plane"),
-  //       fhicl::Comment("Geographic plane [DocDB-888]")
-  //     };
-  //     fhicl::Atom<uint16_t> panel{
-  //       fhicl::Name("panel"),
-  //       fhicl::Comment("Geographic panel [DocDB-888]")
-  //     };
-  //   };
-  //   // mandatory listing of geographic entries, to enable translation
-  //   // of panel-labelings in the data to Offline StrawIds
-  //   fhicl::Sequence< fhicl::Table<GeographicTuple> > geography{
-  //     fhicl::Name("geography"),
-  //     fhicl::Comment("Mapping of Minnesota numbers to geographic planes and panels")
-  //   };
-
-  //   // individual tuple specifying a minnesota label, e.g. MN123,
-  //   // with logical channeling, i.e. DTC ID and associated Link #
-  //   struct LogicalTuple{
-  //     fhicl::Atom<uint16_t> dtc{
-  //       fhicl::Name("dtc"),
-  //       fhicl::Comment("DTC ID")
-  //     };
-  //     fhicl::Atom<uint16_t> link{
-  //       fhicl::Name("link"),
-  //       fhicl::Comment("Link #")
-  //     };
-  //     fhicl::Atom<std::string> minnesota{
-  //       fhicl::Name("minnesota"),
-  //       fhicl::Comment("Minnesota # label")
-  //     };
-  //   };
-  //   // optional listing of logical entries, to provide a backup
-  //   // translation in case of invalid labeling in the data
-  //   fhicl::OptionalSequence< fhicl::Table<LogicalTuple> > channeling{
-  //     fhicl::Name("channeling"),
-  //     fhicl::Comment("Logical channeling of panels (optional)")
-  //   };
   };
 
   // --- C'tor/d'tor:
@@ -168,11 +123,7 @@ private:
   ProditionsHandle<TrackerPanelMap> _tpm_h;
   const TrackerPanelMap*            _trackerPanelMap;
 
-  // // less than 300 panels physically exist and are enumeratively labeled
-  // // hence, the max allowed word can act be used as a sentinel
-  // const static uint16_t invalid_minnesota_ = static_cast<uint16_t>(-1);
-  // uint16_t parse_minnesota_label(std::string label);
-};
+  };
 
 // ======================================================================
 mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config) :
@@ -269,11 +220,6 @@ void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment*
 
 //-----------------------------------------------------------------------------
 void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
-  // if (_last_run != (int)ArtRun.run()) {
-  //   art::EventID eid(ArtRun.run(),1,1); // art id of the first event of the new run
-  //   _last_run    = ArtRun.run();
-  // }
-
 }
 
 // ----------------------------------------------------------------------
@@ -326,11 +272,11 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // loop over them
 //-----------------------------------------------------------------------------
       int n_fragments = handle->size();
-      
+
       if (debugMode_) {
         print_(std::format("-- next fragment collection with n_fragments:{}",n_fragments));
       }
-      
+
       for (int ifrag=0; ifrag<n_fragments; ifrag++) {
         const artdaq::Fragment* frag = &handle->at(ifrag);
 
@@ -405,7 +351,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
               if (h0->NumADCPackets == 0) {
                 print_(std::format("ERROR: dtc_id:{} link_id:{} N(ADC packets) = 0, skip ROC data",
                                    dtc_id,(int) rdh->linkID));
-                
+
                 roc_data += (rdh->packetCount+1)*packet_size;
                 continue;
               }
@@ -417,13 +363,13 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             nhits            = rdh->packetCount/(nADCPackets_+1);
 //-----------------------------------------------------------------------------
 // there should not be more than 255 hits per ROC, if nhits>=255 it is a corruption,
-// stop processing of the event 
+// stop processing of the event
 //-----------------------------------------------------------------------------
             if (nhits > 255) {
               print_(std::format("ERROR: nhits:{}, skip event",nhits));
               break;
             }
-            
+
             const TrkPanelMap::Row* tpm(nullptr);
             if (!forceOfflineAddressing_ && not keyOnMnid_) {
               tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
@@ -625,24 +571,6 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
   if (debugMode_) print_("-- END");
 }
-
-
-// //-----------------------------------------------------------------------------
-// uint16_t mu2e::StrawDigisFromArtdaqFragments::parse_minnesota_label(std::string label){
-//     if ((label.size() != 5) || (label[0] != 'M') || (label[1] != 'N')){
-//         std::string msg = "invalid minnesota label: " + label;
-//         throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-//     }
-//     std::string substr = label.substr(2, 3);
-//     unsigned int parsed;
-//     int scanned = sscanf(substr.c_str(), "%u", &parsed);
-//     if (scanned != 1){
-//       std::string msg = "failed to parse minnesota label: " + label;
-//       throw cet::exception("StrawDigisFromArtdaqFragments") << msg << std::endl;
-//     }
-//     uint16_t rv = static_cast<uint16_t>(parsed);
-//     return rv;
-// }
 
 // ======================================================================
 
