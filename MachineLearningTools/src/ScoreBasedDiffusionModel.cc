@@ -990,10 +990,109 @@ namespace mu2e {
         const std::string& filename
     )
     {
+        // Write binary
+        std::ofstream out(filename, std::ios::binary);
+        if (!out) {
+            throw cet::exception("ScoreBasedDiffusionModel::saveModel")
+                << "Cannot open file " << filename;
+        }
+
+        auto wI32 = [&](int32_t  v){ out.write(reinterpret_cast<const char*>(&v), 4); };
+        auto wU32 = [&](uint32_t v){ out.write(reinterpret_cast<const char*>(&v), 4); };
+        auto wU64 = [&](uint64_t v){ out.write(reinterpret_cast<const char*>(&v), 8); };
+        auto wF64 = [&](double   v){ out.write(reinterpret_cast<const char*>(&v), 8); };
+        auto wVec = [&](const std::vector<double>& v){
+            wU64(static_cast<uint64_t>(v.size()));
+            if (!v.empty()) out.write(reinterpret_cast<const char*>(v.data()),
+                                      static_cast<std::streamsize>(v.size() * sizeof(double)));
+        };
+        auto wMat = [&](const std::vector<std::vector<double>>& m){
+            // Writes a matrix as outSize rows, each row preceded by its column count.
+            // Row dimensions may differ (though in practice they don't).
+            wU64(static_cast<uint64_t>(m.size()));
+            for (const auto& row : m) wVec(row);
+        };
+
+        // Magic + version
+        out.write("SBDM", 4);
+        wU32(1u);
+
+        // Model architecture & hyper-parameters
+        wI32(static_cast<int32_t>(dim_));
+        wI32(static_cast<int32_t>(conditionDim_));
+        wI32(static_cast<int32_t>(timeEmbeddingDim_));
+        wI32(static_cast<int32_t>(hidden_));
+        wI32(static_cast<int32_t>(layers_));
+        wI32(optimizerType_ == OptimizerType::ADAM ? 0 : 1);
+        wF64(adamBeta1_); wF64(adamBeta2_); wF64(adamEps_);
+        int32_t schedIdx = (noiseScheduleType_ == NoiseScheduleType::LINEAR) ? 0
+                         : (noiseScheduleType_ == NoiseScheduleType::COSINE)  ? 1 : 2;
+        wI32(schedIdx);
+        wF64(betaMin_); wF64(betaMax_); wF64(cosineOffset_);
+        wF64(logSigMin_); wF64(logSigMax_);
+        wI32(epsPrediction_ ? 1 : 0);
+        wF64(lossWeightPower_);
+        wI32(static_cast<int32_t>(batchSize_));
+        wF64(gradientClipThreshold_);
+        wF64(learningRate_);
+        wI32(useDimWeightController_ ? 1 : 0);
+        wF64(dimWeightEMADecay_);
+        wI32(useEMANetwork_ ? 1 : 0);
+        wF64(emaNetworkDecay_);
+        wI32(static_cast<int32_t>(diffusionSteps_));
+
+        // Network weights
+        wU32(static_cast<uint32_t>(network_.size()));
+        for (const auto& layer : network_) {
+            wU32(static_cast<uint32_t>(layer.W.size()));
+            wU32(static_cast<uint32_t>(layer.W[0].size()));
+            for (const auto& row : layer.W)
+                out.write(reinterpret_cast<const char*>(row.data()),
+                          static_cast<std::streamsize>(row.size() * sizeof(double)));
+            out.write(reinterpret_cast<const char*>(layer.b.data()),
+                      static_cast<std::streamsize>(layer.b.size() * sizeof(double)));
+        }
+
+        // Data normalisation
+        wVec(dataMean_); wVec(dataStdev_); wVec(normMin_); wVec(normMax_);
+
+        // Training history
+        wU64(static_cast<uint64_t>(epochLosses_.size()));
+        wU64(static_cast<uint64_t>(trainingSampleSize_));
+        for (double v : epochLosses_) wF64(v);
+
+        // Optimizer state
+        wI32(static_cast<int32_t>(adamStep_));
+        for (const auto& layer : network_) {
+            wMat(layer.mW); wMat(layer.vW);
+            wVec(layer.mb); wVec(layer.vb);
+        }
+        wVec(dimLossEMA_); wVec(dimWeights_);
+
+        // EMA network (optional section flagged by a boolean)
+        wI32(useEMANetwork_ ? 1 : 0);
+        if (useEMANetwork_) {
+            wU32(static_cast<uint32_t>(emaNetwork_.size()));
+            for (const auto& layer : emaNetwork_) {
+                wU32(static_cast<uint32_t>(layer.W.size()));
+                wU32(static_cast<uint32_t>(layer.W[0].size()));
+                for (const auto& row : layer.W)
+                    out.write(reinterpret_cast<const char*>(row.data()),
+                              static_cast<std::streamsize>(row.size() * sizeof(double)));
+                out.write(reinterpret_cast<const char*>(layer.b.data()),
+                          static_cast<std::streamsize>(layer.b.size() * sizeof(double)));
+            }
+        }
+    }
+
+    void ScoreBasedDiffusionModel::saveModelCsv(
+        const std::string& filename
+    )
+    {
         std::ofstream out(filename);
 
         if (!out) {
-            throw cet::exception("ScoreBasedDiffusionModel::saveModel")
+            throw cet::exception("ScoreBasedDiffusionModel::saveModelCsv")
                 << "Cannot open file " << filename;
         }
 
@@ -1193,6 +1292,214 @@ namespace mu2e {
         const std::string& filename
     )
     {
+        // Dispatch to binary loader if the extension is ".bin"
+        bool isBin = filename.size() >= 4 &&
+                     filename.compare(filename.size() - 4, 4, ".bin") == 0;
+        if (isBin) {
+            std::ifstream bin(filename, std::ios::binary);
+            if (!bin) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Cannot open binary file " << filename;
+            }
+
+            auto rI32 = [&]() -> int32_t  { int32_t  v; bin.read(reinterpret_cast<char*>(&v), 4); return v; };
+            auto rU32 = [&]() -> uint32_t { uint32_t v; bin.read(reinterpret_cast<char*>(&v), 4); return v; };
+            auto rU64 = [&]() -> uint64_t { uint64_t v; bin.read(reinterpret_cast<char*>(&v), 8); return v; };
+            auto rF64 = [&]() -> double   { double   v; bin.read(reinterpret_cast<char*>(&v), 8); return v; };
+            auto rVec = [&](size_t n) -> std::vector<double> {
+                uint64_t stored = rU64();
+                if (stored != n)
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Binary vector size mismatch: expected " << n << ", got " << stored;
+                std::vector<double> v(n);
+                if (n) bin.read(reinterpret_cast<char*>(v.data()), static_cast<std::streamsize>(n * sizeof(double)));
+                return v;
+            };
+            auto rMat = [&](size_t rows, size_t cols) -> std::vector<std::vector<double>> {
+                uint64_t storedRows = rU64();
+                if (storedRows != rows)
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Binary matrix row count mismatch: expected " << rows << ", got " << storedRows;
+                std::vector<std::vector<double>> m(rows);
+                for (auto& row : m) {
+                    uint64_t storedCols = rU64();
+                    if (storedCols != cols)
+                        throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                            << "Binary matrix col count mismatch: expected " << cols << ", got " << storedCols;
+                    row.resize(cols);
+                    bin.read(reinterpret_cast<char*>(row.data()), static_cast<std::streamsize>(cols * sizeof(double)));
+                }
+                return m;
+            };
+
+            // Magic + version
+            char magic[4]; bin.read(magic, 4);
+            if (std::string(magic, 4) != "SBDM")
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Invalid magic bytes in binary file " << filename;
+            uint32_t version = rU32();
+            if (version != 1)
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Unsupported binary file version " << version;
+
+            // Model parameters
+            int dim            = rI32();
+            int conditionDim   = rI32();
+            int timeEmbeddingDim = rI32();
+            int hidden         = rI32();
+            int layers         = rI32();
+            int optType        = rI32();
+            OptimizerType optimizerType = (optType == 0) ? OptimizerType::ADAM : OptimizerType::SGD;
+            double adamBeta1   = rF64(), adamBeta2 = rF64(), adamEps = rF64();
+            int schedIdx       = rI32();
+            NoiseScheduleType scheduleType = (schedIdx == 0) ? NoiseScheduleType::LINEAR
+                                           : (schedIdx == 1) ? NoiseScheduleType::COSINE
+                                                             : NoiseScheduleType::LOGSIG;
+            double betaMin     = rF64(), betaMax = rF64(), cosineOffset = rF64();
+            double logSigMin   = rF64(), logSigMax = rF64();
+            bool epsPrediction = (rI32() != 0);
+            double lossWeightPower = rF64();
+            int batchSize      = rI32();
+            double gradientClipThreshold = rF64();
+            double learningRate = rF64();
+            bool useDimWeightController = (rI32() != 0);
+            double dimWeightEMADecay = rF64();
+            bool useEMANetwork = (rI32() != 0);
+            double emaNetworkDecay = rF64();
+            int diffusionSteps = rI32();
+
+            // Network weights
+            uint32_t numLayers = rU32();
+            std::vector<Layer> loadedNetwork(numLayers);
+            for (auto& layer : loadedNetwork) {
+                uint32_t outSize = rU32();
+                uint32_t inSize  = rU32();
+                layer.W.resize(outSize, std::vector<double>(inSize));
+                for (auto& row : layer.W)
+                    bin.read(reinterpret_cast<char*>(row.data()),
+                             static_cast<std::streamsize>(inSize * sizeof(double)));
+                layer.b.resize(outSize);
+                bin.read(reinterpret_cast<char*>(layer.b.data()),
+                         static_cast<std::streamsize>(outSize * sizeof(double)));
+            }
+
+            // Data normalisation
+            uint64_t normDim = rU64();
+            std::vector<double> dataMean(normDim), dataStdev(normDim), normMin(normDim), normMax(normDim);
+            bin.read(reinterpret_cast<char*>(dataMean.data()),  static_cast<std::streamsize>(normDim * sizeof(double)));
+            bin.read(reinterpret_cast<char*>(dataStdev.data()), static_cast<std::streamsize>(normDim * sizeof(double)));
+            bin.read(reinterpret_cast<char*>(normMin.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
+            bin.read(reinterpret_cast<char*>(normMax.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
+
+            // Training history
+            uint64_t numEpochs        = rU64();
+            uint64_t trainingSampleSz = rU64();
+            std::vector<double> epochLosses(numEpochs);
+            for (auto& v : epochLosses) v = rF64();
+
+            // Optimizer state
+            int loadedAdamStep = rI32();
+            std::vector<std::vector<std::vector<double>>> loadedMW(numLayers), loadedVW(numLayers);
+            std::vector<std::vector<double>> loadedMb(numLayers), loadedVb(numLayers);
+            for (size_t l = 0; l < numLayers; ++l) {
+                size_t outSize = loadedNetwork[l].W.size();
+                size_t inSize  = loadedNetwork[l].W[0].size();
+                loadedMW[l] = rMat(outSize, inSize);
+                loadedVW[l] = rMat(outSize, inSize);
+                loadedMb[l] = rVec(outSize);
+                loadedVb[l] = rVec(outSize);
+            }
+            std::vector<double> loadedDimLossEMA = rVec(static_cast<size_t>(dim));
+            std::vector<double> loadedDimWeights  = rVec(static_cast<size_t>(dim));
+
+            // EMA network
+            bool hasEMA = (rI32() != 0);
+            std::vector<Layer> loadedEmaNetwork;
+            if (hasEMA) {
+                uint32_t emaLayers = rU32();
+                loadedEmaNetwork.resize(emaLayers);
+                for (auto& layer : loadedEmaNetwork) {
+                    uint32_t outSize = rU32();
+                    uint32_t inSize  = rU32();
+                    layer.W.resize(outSize, std::vector<double>(inSize));
+                    for (auto& row : layer.W)
+                        bin.read(reinterpret_cast<char*>(row.data()),
+                                 static_cast<std::streamsize>(inSize * sizeof(double)));
+                    layer.b.resize(outSize);
+                    bin.read(reinterpret_cast<char*>(layer.b.data()),
+                             static_cast<std::streamsize>(outSize * sizeof(double)));
+                }
+            }
+
+            if (!bin) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Read error or unexpected EOF in binary file " << filename;
+            }
+
+            // Validate
+            if (dim <= 0 || conditionDim < 0 || hidden <= 0 || layers <= 0)
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Invalid model parameters in binary file";
+            if ((int)normDim != dim + conditionDim)
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Normalisation dimension mismatch in binary file";
+
+            // Reconstruct model
+            ScoreBasedDiffusionModel model(
+                randFlat, randGaussQ, dim, conditionDim, timeEmbeddingDim, hidden, layers,
+                optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
+                betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
+                epsPrediction, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
+                useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecay,
+                diffusionSteps, false
+            );
+
+            for (size_t l = 0; l < model.network_.size(); ++l) {
+                model.network_[l].W = loadedNetwork[l].W;
+                model.network_[l].b = loadedNetwork[l].b;
+            }
+            model.dataMean_  = dataMean;
+            model.dataStdev_ = dataStdev;
+            model.normMin_   = normMin;
+            model.normMax_   = normMax;
+            model.epochLosses_       = epochLosses;
+            model.trainingSampleSize_ = static_cast<size_t>(trainingSampleSz);
+
+            // Restore optimizer state
+            model.adamStep_ = loadedAdamStep;
+            for (size_t l = 0; l < model.network_.size(); ++l) {
+                model.network_[l].mW = loadedMW[l];
+                model.network_[l].vW = loadedVW[l];
+                model.network_[l].mb = loadedMb[l];
+                model.network_[l].vb = loadedVb[l];
+            }
+            model.dimLossEMA_ = loadedDimLossEMA;
+            model.dimWeights_ = loadedDimWeights;
+
+            // Restore EMA network
+            if (hasEMA && useEMANetwork) {
+                for (size_t l = 0; l < model.emaNetwork_.size(); ++l) {
+                    model.emaNetwork_[l].W = loadedEmaNetwork[l].W;
+                    model.emaNetwork_[l].b = loadedEmaNetwork[l].b;
+                }
+                mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                    << "EMA network weights restored from binary checkpoint.";
+            } else if (useEMANetwork) {
+                for (size_t l = 0; l < model.emaNetwork_.size(); ++l) {
+                    model.emaNetwork_[l].W = model.network_[l].W;
+                    model.emaNetwork_[l].b = model.network_[l].b;
+                }
+                mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                    << "No EMA network in binary checkpoint — initialized from network weights.";
+            }
+
+            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                << "Binary model loaded from " << filename
+                << " (adamStep=" << loadedAdamStep << ", epochs=" << numEpochs << ")";
+            return model;
+        } // end binary branch
+
+        // --- CSV branch ---
         std::ifstream in(filename);
 
         if (!in) {

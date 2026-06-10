@@ -227,17 +227,23 @@ namespace mu2e{
             double sdeToOdeSigmaThreshold = -1.0
         );
 
-        // Save the model parameters to a CSV file with annotations for later use.
-        // Uses a default filename of "DiffusionModel.csv" if not specified.
+        // Save the model to a binary file (.bin) preserving full double precision.
+        // This is the default save format. Use saveModelCsv for human-readable output.
         //
         // Parameters:
-        //   filename - Path to the CSV file where model parameters will be saved (default: "DiffusionModel.csv")
-        void saveModel(const std::string& filename = "DiffusionModel.csv");
+        //   filename - Path to the binary file (default: "DiffusionModel.bin")
+        void saveModel(const std::string& filename = "DiffusionModel.bin");
+
+        // Save the model parameters to a CSV file with annotations for human inspection.
+        //
+        // Parameters:
+        //   filename - Path to the CSV file (default: "DiffusionModel.csv")
+        void saveModelCsv(const std::string& filename = "DiffusionModel.csv");
 
         // Load model parameters from a file to restore a previously trained model.
-        // If the file contains an [OPTIMIZER_STATE] section (saved by a current saveModel call),
-        // the Adam moments and step counter are restored so training can resume seamlessly.
-        // Files saved without that section (e.g. older checkpoints) load cleanly with a fresh optimizer state.
+        // Auto-detects format by extension: ".bin" loads binary, anything else loads CSV.
+        // If optimizer state is present, Adam moments and step counter are restored so
+        // training can resume seamlessly.
         //
         // Parameters:
         //   randFlat / RandGaussQ - CLHEP random number generator wrappers being passed

@@ -62,6 +62,7 @@ struct TrainState {
     int trainingSize                = -1;
     int trainingSubsetSizePerEpoch  = 0;
     std::vector<int> saveEpochs;
+    bool saveAlsoCsv                = false; // if true, also write a CSV alongside every binary save
 
     // Curriculum
     int nPhase = 1;
@@ -370,9 +371,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         return;
     }
 
-    // Strip trailing ".csv" for checkpoint naming
-    auto stripCsv = [](const std::string& f) -> std::string {
-        return (f.size() > 4 && f.substr(f.size() - 4) == ".csv") ? f.substr(0, f.size() - 4) : f;
+    // Strip trailing ".csv" or ".bin" for checkpoint naming
+    auto stripExt = [](const std::string& f) -> std::string {
+        if (f.size() > 4 && (f.substr(f.size() - 4) == ".csv" || f.substr(f.size() - 4) == ".bin"))
+            return f.substr(0, f.size() - 4);
+        return f;
     };
 
     // Per-epoch training loop shared by all three model paths.
@@ -392,7 +395,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << "Initial training settings: biasLowSigma=" << s.currentBiasLowSigma
             << ", tLowBound=" << s.currentTLowBound
             << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
-        const std::string base = stripCsv(outFile);
+        const std::string base = stripExt(outFile);
         for (int e = 1; e <= s.trainingEpochs; ++e) {
             if (s.nPhase > 1) {
                 for (int ph = 0; ph < s.nPhase - 1; ++ph) {
@@ -423,10 +426,15 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             }
             mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
             model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound);
-            if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end())
-                model.saveModel(base + ".epoch" + std::to_string(e) + ".csv");
+            if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
+                model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
+                if (s.saveAlsoCsv)
+                    model.saveModelCsv(base + ".epoch" + std::to_string(e) + ".csv");
+            }
         }
         model.saveModel(outFile);
+        if (s.saveAlsoCsv)
+            model.saveModelCsv(base + ".csv");
         mf::LogInfo(moduleName) << "Training completed, saved to " << outFile;
     };
 
