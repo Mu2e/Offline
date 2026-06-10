@@ -92,7 +92,6 @@ public:
 
     // --- overloaded functions of the art producer
   virtual void produce (art::Event& ArtEvent) override;
-  virtual void beginRun(art::Run&   ArtRun  ) override;
 
   enum {kNDebugBits = 100};
 
@@ -113,13 +112,8 @@ private:
   int       nSamples_   {-1};           // N(ADC samples per hit)
   int       np_per_hit_ {-1};           // N(data packets per hits)
 
-  std::map<uint16_t, uint16_t> minnesota_map_; // mapping from minnesota number to upper bits of StrawId
-  uint16_t channel_map_[36][6] ; // mapping from DTC link number to minnesota number
-
   const art::Event*        event_;
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
-  int _last_run;
-
   ProditionsHandle<TrackerPanelMap> _tpm_h;
   const TrackerPanelMap*            _trackerPanelMap;
 
@@ -159,9 +153,6 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
 
     print_(std::format("StrawDigisFromArtdaqFragments: bit={:4d} is set to {}",index,debugBit_[index]));
   }
-
-  _last_run = -1;
-
 }
 
 
@@ -218,10 +209,6 @@ void mu2e::StrawDigisFromArtdaqFragments::print_fragment(const artdaq::Fragment*
   if (loc != 0) printf("\n");
 }
 
-//-----------------------------------------------------------------------------
-void mu2e::StrawDigisFromArtdaqFragments::beginRun(art::Run&  ArtRun) {
-}
-
 // ----------------------------------------------------------------------
 // runs on tracker Artdaq fragments
 //-----------------------------------------------------------------------------
@@ -249,7 +236,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   auto fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   if (debugMode_ > 0) {
-    std::string msg = std::format("n_fragment_collections):{}",fragmentHandles.size());
+    std::string msg = std::format("n_fragment_collections:{}",fragmentHandles.size());
     print_(msg);
   }
 
@@ -342,6 +329,11 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // was a reliable number
 // 2026-03-20: don't store waveforms if only one packet per hit
 //-----------------------------------------------------------------------------
+              if (roc_data+packet_size >= last_address) {
+                print_(std::format("ERROR: dtc_id:{} roc_data:{} last_address:{} , SKIPPING",
+                                   dtc_id, (void*) roc_data, (void*) last_address));
+                break;
+              }
               mu2e::TrackerDataDecoder::TrackerDataPacket* h0;
               h0           = (mu2e::TrackerDataDecoder::TrackerDataPacket*) (roc_data+packet_size);
 //-----------------------------------------------------------------------------
@@ -362,11 +354,11 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             uint32_t link_id = rdh->linkID;
             nhits            = rdh->packetCount/(nADCPackets_+1);
 //-----------------------------------------------------------------------------
-// there should not be more than 255 hits per ROC, if nhits>=255 it is a corruption,
+// there should not be more than 255 hits per ROC, if nhits>255 it is a corruption,
 // stop processing of the event
 //-----------------------------------------------------------------------------
             if (nhits > 255) {
-              print_(std::format("ERROR: nhits:{}, skip event",nhits));
+              print_(std::format("ERROR: nhits:{}, skip DTC",nhits));
               break;
             }
 
