@@ -58,6 +58,16 @@ namespace mu2e{
         //   timeEmbeddingDim        - Dimensionality of the sinusoidal time embedding applied to the diffusion time t in [0,1].
         //                             0 = raw scalar t (default, backward-compatible).
         //                             Even integer >= 2 = sinusoidal embedding: pairs [sin(2π·2^i·t), cos(2π·2^i·t)] for i=0..k/2-1.
+        //   inputEmbeddingDim       - Dimensionality of the sinusoidal (Fourier) embedding applied to EACH of the dim state
+        //                             coordinates (not the condition vector). 0 = raw coordinates only (default, backward-compatible).
+        //                             Even integer >= 2 = per-coordinate pairs [sin(π·2^i·x_j), cos(π·2^i·x_j)] for i=0..k/2-1.
+        //                             Counteracts MLP spectral bias so the score network can represent structure much finer
+        //                             than O(1) in the normalized coordinates (e.g. narrow spectral lines). To resolve features
+        //                             of normalized width w, the top frequency π·2^(k/2-1) should be ≳ 2π/w (k=24 reaches w~1e-3).
+        //   conditionEmbeddingDim   - Same per-coordinate Fourier embedding, applied to EACH of the conditionDim condition
+        //                             coordinates. 0 = raw condition values only (default). Only useful when the conditional
+        //                             distribution changes sharply as a function of the condition; smooth dependence does not
+        //                             need it.
         //   hidden                  - Size of hidden layers in the neural network
         //   layers                  - Number of layers in the network
         //   optimizerType           - Type of optimizer to use (SGD or ADAM, default: ADAM)
@@ -89,6 +99,8 @@ namespace mu2e{
             int dim,
             int conditionDim,
             int timeEmbeddingDim = 0,
+            int inputEmbeddingDim = 0,
+            int conditionEmbeddingDim = 0,
             int hidden = 128,
             int layers = 4,
             // Optimizer configuration
@@ -205,12 +217,22 @@ namespace mu2e{
         //   trainSubsetDataSize - If > 0, randomly samples this many data points from the full dataset for each epoch (default: 0, uses all data)
         //   biasLowSigma  - If true, biases the sampling of diffusion time t towards smaller values (smaller sigma) by sampling t^2 instead of t (default: false)
         //   tLowBound     - If > 0, enforces a lower bound on the sampled diffusion time t to focus training on larger sigma values (default: 0.0, no lower bound)
+        //   tFocusLow/tFocusHigh/tFocusFraction
+        //                 - If tFocusFraction > 0, each training sample draws t uniformly from the window
+        //                   [tFocusLow, tFocusHigh] with probability tFocusFraction, and from the regular
+        //                   tLowBound/biasLowSigma logic otherwise. Concentrates gradient steps on a target
+        //                   sigma band (e.g. the band matching a narrow spectral feature) while keeping full
+        //                   [0,1] coverage. The t-sampling distribution only reweights the loss; it does not
+        //                   bias the learned data distribution. (defaults: 0.0, 0.0, 0.0 = disabled)
         void train(
             const std::vector<DiffusionTrainingSample>& data,
             int epochs,
             int trainSubsetDataSize = 0,
             bool biasLowSigma = false,
-            double tLowBound = 0.0
+            double tLowBound = 0.0,
+            double tFocusLow = 0.0,
+            double tFocusHigh = 0.0,
+            double tFocusFraction = 0.0
         );
 
         // Generate a new sample from the diffusion model via reverse process.
@@ -232,6 +254,29 @@ namespace mu2e{
             bool useSDE = true,
             int diffusionSteps = -1,
             double sdeToOdeSigmaThreshold = -1.0
+        );
+
+        // One-step denoising diagnostic: perturb a normalized data sample at a fixed diffusion
+        // time t, run a single network forward pass, and reconstruct the denoised estimate
+        //   x0_hat = (x_t - sigma(t) * eps_hat) / sqrt(alphabar(t)).
+        // Comparing the x0_hat distribution against truth separates "the score network never
+        // learned a feature" (absent here) from "the reverse-process sampler destroys it"
+        // (present here but absent in generated samples).
+        //
+        // Parameters:
+        //   xNorm     - Normalized (z-scored) state vector of size dim_, e.g. a training sample
+        //               after normalizeData()
+        //   condition - Normalized conditioning vector (must match conditionDim_)
+        //   t         - Fixed diffusion time in (0,1); choose sigma(t) comparable to the feature
+        //               width under study
+        //   useEMANetworkIfAvailable - If true (default), uses the EMA network when available
+        //
+        // Returns: zscore = x0_hat (normalized space), value = de-normalized x0_hat
+        SBDMGeneratedSample denoiseOneStep(
+            const std::vector<double>& xNorm,
+            const std::vector<double>& condition,
+            double t,
+            bool useEMANetworkIfAvailable = true
         );
 
         // Save the model to a binary file (.bin) preserving full double precision.
@@ -295,6 +340,20 @@ namespace mu2e{
         // Always includes raw t; if timeEmbeddingDim_ > 0 also appends sinusoidal features
         // [sin(2π·2^i·t), cos(2π·2^i·t)] for i = 0..timeEmbeddingDim_/2-1.
         std::vector<double> timeEmbed(double t) const;
+
+        // Assemble the full network input vector from a (noisy) state vector, the optional
+        // conditioning vector, and the diffusion time t. Layout:
+        //   [x (dim_), Fourier(x) (dim_*inputEmbeddingDim_),
+        //    cond (conditionDim_), Fourier(cond) (conditionDim_*conditionEmbeddingDim_),
+        //    t (+ time embedding)]
+        // Fourier features per coordinate: [sin(π·2^i·v), cos(π·2^i·v)] for
+        // i = 0..embeddingDim/2-1 (skipped entirely when the respective embeddingDim == 0).
+        // The embedding has no trainable parameters, so back-propagation is unaffected.
+        std::vector<double> buildNetworkInput(
+            const std::vector<double>& x,
+            const std::vector<double>& cond,
+            double t
+        ) const;
 
         // Forward pass through the network (training path).
         // Caches activations and pre-activations for the backward pass.
@@ -435,6 +494,8 @@ namespace mu2e{
         int dim_;               // Dimensionality of state space
         int conditionDim_;      // Dimensionality of the optional conditioning vector
         int timeEmbeddingDim_;  // Sinusoidal time embedding dimensions (0 = raw scalar only)
+        int inputEmbeddingDim_; // Per-coordinate Fourier embedding dimensions for the state vector (0 = raw coordinates only)
+        int conditionEmbeddingDim_; // Per-coordinate Fourier embedding dimensions for the condition vector (0 = raw values only)
         int hidden_;            // Hidden layer size
         int layers_;            // Number of network layers
 

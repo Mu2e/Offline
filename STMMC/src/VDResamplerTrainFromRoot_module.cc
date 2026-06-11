@@ -49,6 +49,8 @@ namespace mu2e {
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
         fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("PDG ID to select"),                          22 };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
+        fhicl::Atom<int>    SBDMinputEmbeddingDim{     Name("SBDMinputEmbeddingDim"),     Comment("Fourier embedding dims per state coordinate (0 = raw)"),     0 };
+        fhicl::Atom<int>    SBDMconditionEmbeddingDim{ Name("SBDMconditionEmbeddingDim"), Comment("Fourier embedding dims per condition coordinate (0 = raw)"), 0 };
         fhicl::Atom<int>    SBDMhidden{        Name("SBDMhidden"),        Comment("Hidden layer size"),                         128 };
         fhicl::Atom<int>    SBDMlayers{        Name("SBDMlayers"),        Comment("Number of layers"),                          4 };
         fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"),   Comment("Optimizer (SGD/ADAM)"),                      "ADAM" };
@@ -68,6 +70,9 @@ namespace mu2e {
         fhicl::Atom<double> SBDMlearningRate{  Name("SBDMlearningRate"),  Comment("Learning rate"),                             1e-3 };
         fhicl::Atom<bool>   SBDMbiasLowSigma{  Name("SBDMbiasLowSigma"), Comment("Bias training samples towards low-sigma"),   false };
         fhicl::Atom<double> SBDMtLowBound{     Name("SBDMtLowBound"),     Comment("Lower bound clamp on t for training"),       0.0 };
+        fhicl::Atom<double> SBDMtFocusLow{      Name("SBDMtFocusLow"),      Comment("Low edge of t focus window"),                                  0.0 };
+        fhicl::Atom<double> SBDMtFocusHigh{     Name("SBDMtFocusHigh"),     Comment("High edge of t focus window"),                                 0.0 };
+        fhicl::Atom<double> SBDMtFocusFraction{ Name("SBDMtFocusFraction"), Comment("Fraction of training samples drawn from t focus window (0 = disabled)"), 0.0 };
         fhicl::Atom<bool>   SBDMuseDimWeightController{      Name("SBDMuseDimWeightController"),      Comment("Use adaptive per-dimension gradient weighting"), false };
         fhicl::Atom<double> SBDMdimWeightControllerEMADecay{ Name("SBDMdimWeightControllerEMADecay"), Comment("EMA decay for dimension weight controller"),     0.99 };
         fhicl::Atom<bool>   SBDMuseEMANetwork{      Name("SBDMuseEMANetwork"),      Comment("Maintain EMA copy of network for inference"), false };
@@ -85,6 +90,11 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTLowBound{          Name("SBDMtrainingCurriculumTLowBound"),          Comment("tLowBound per curriculum phase"),             std::vector<double>() };
         fhicl::Sequence<int>    SBDMtrainingCurriculumBatchSize{          Name("SBDMtrainingCurriculumBatchSize"),          Comment("Batch size per curriculum phase"),            std::vector<int>() };
         fhicl::Sequence<bool>   SBDMtrainingCurriculumPromoteEMA{         Name("SBDMtrainingCurriculumPromoteEMA"),         Comment("If true, promote EMA to network when entering this curriculum phase"),               std::vector<bool>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("t focus window fraction per curriculum phase"),       std::vector<double>() };
+        fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
+        fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrainFromRoot(const Parameters& conf);
@@ -133,14 +143,22 @@ namespace mu2e {
     state_.curriculumBatchSize           = conf().SBDMtrainingCurriculumBatchSize();
     state_.promoteEMAOnStart             = conf().SBDMpromoteEMA();
     state_.curriculumPromoteEMA          = conf().SBDMtrainingCurriculumPromoteEMA();
+    state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
+    state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
+    state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
+    state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
+    state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrainFromRoot");
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrainFromRoot",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
-        conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize());
+        conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
+        conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction());
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
+    p.inputEmbeddingDim          = conf().SBDMinputEmbeddingDim();
+    p.conditionEmbeddingDim      = conf().SBDMconditionEmbeddingDim();
     p.hidden                     = conf().SBDMhidden();
     p.layers                     = conf().SBDMlayers();
     p.optimizer                  = VDResampler::parseOptimizer(conf().SBDMoptimizer(), "VDResamplerTrainFromRoot");

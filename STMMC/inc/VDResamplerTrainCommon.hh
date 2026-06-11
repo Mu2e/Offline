@@ -19,6 +19,9 @@
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "TFile.h"
+#include "TTree.h"
+
 namespace mu2e {
 namespace VDResampler {
 
@@ -74,10 +77,21 @@ struct TrainState {
     std::vector<double> curriculumTLowBound;
     std::vector<int>    curriculumBatchSize;
     std::vector<bool>   curriculumPromoteEMA;
+    std::vector<double> curriculumTFocusLow;
+    std::vector<double> curriculumTFocusHigh;
+    std::vector<double> curriculumTFocusFraction;
     bool   promoteEMAOnStart   = false;
     bool   currentBiasLowSigma = false;
     double currentTLowBound    = 0.0;
+    double currentTFocusLow      = 0.0;
+    double currentTFocusHigh     = 0.0;
+    double currentTFocusFraction = 0.0;
     std::vector<int> phaseBoundaries;
+
+    // One-step denoising diagnostic. When denoiseDiagnosticTs is non-empty, runTraining()
+    // writes a denoising-diagnostic ROOT file for each active model INSTEAD of training it.
+    std::vector<double> denoiseDiagnosticTs;
+    int denoiseDiagnosticSamples = 100000; // samples per t value
 
     // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
     double t_mean=0,    t_M2=0,    t_stdev=0;
@@ -94,6 +108,8 @@ struct TrainState {
 // ---------------------------------------------------------------------------
 struct ModelBuildParams {
     int    timeEmbeddingDim = 0;
+    int    inputEmbeddingDim = 0;
+    int    conditionEmbeddingDim = 0;
     int    hidden           = 128;
     int    layers           = 4;
     ScoreBasedDiffusionModel::OptimizerType     optimizer;
@@ -181,6 +197,7 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
 inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleName,
     double defaultLossWeightPower, double defaultGradientClip, double defaultLearningRate,
     bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
+    double defaultTFocusLow = 0.0, double defaultTFocusHigh = 0.0, double defaultTFocusFraction = 0.0,
     bool defaultPromoteEMA = false)
 {
     if (!s.curriculumEpochs.empty()) {
@@ -205,6 +222,26 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumTLowBound,       defaultTLowBound,       "SBDMtrainingCurriculumTLowBound");
             fill(s.curriculumBatchSize,       defaultBatchSize,       "SBDMtrainingCurriculumBatchSize");
             fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
+            fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
+            fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
+            fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
+
+            // Validate focus-window values for every phase up front, so a bad late-phase
+            // value fails at job start rather than at the phase boundary mid-run.
+            for (int i = 0; i < s.nPhase; ++i) {
+                double frac = s.curriculumTFocusFraction[i];
+                if (frac < 0.0 || frac > 1.0)
+                    throw cet::exception(moduleName)
+                        << "SBDMtrainingCurriculumTFocusFraction[" << i << "] = " << frac
+                        << " must be in [0,1]";
+                if (frac > 0.0 &&
+                    (s.curriculumTFocusLow[i] < 0.0 || s.curriculumTFocusHigh[i] > 1.0 ||
+                     s.curriculumTFocusLow[i] >= s.curriculumTFocusHigh[i]))
+                    throw cet::exception(moduleName)
+                        << "Invalid t focus window in curriculum phase " << i
+                        << ": require 0 <= low < high <= 1 (got ["
+                        << s.curriculumTFocusLow[i] << ", " << s.curriculumTFocusHigh[i] << "])";
+            }
 
             s.phaseBoundaries.clear();
             int epochSum = 0;
@@ -219,7 +256,10 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "BiasLowSigma"
                << std::setw(15) << "TLowBound"
                << std::setw(15) << "BatchSize"
-               << std::setw(15) << "PromoteEMA" << "\n";
+               << std::setw(15) << "PromoteEMA"
+               << std::setw(15) << "TFocusLow"
+               << std::setw(15) << "TFocusHigh"
+               << std::setw(15) << "TFocusFrac" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -228,13 +268,19 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumBiasLowSigma[i]
                    << std::setw(15) << s.curriculumTLowBound[i]
                    << std::setw(15) << s.curriculumBatchSize[i]
-                   << std::setw(15) << s.curriculumPromoteEMA[i] << "\n";
+                   << std::setw(15) << s.curriculumPromoteEMA[i]
+                   << std::setw(15) << s.curriculumTFocusLow[i]
+                   << std::setw(15) << s.curriculumTFocusHigh[i]
+                   << std::setw(15) << s.curriculumTFocusFraction[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
     }
-    s.currentBiasLowSigma = s.nPhase > 1 ? s.curriculumBiasLowSigma[0] : defaultBiasLowSigma;
-    s.currentTLowBound    = s.nPhase > 1 ? s.curriculumTLowBound[0]    : defaultTLowBound;
+    s.currentBiasLowSigma    = s.nPhase > 1 ? s.curriculumBiasLowSigma[0]    : defaultBiasLowSigma;
+    s.currentTLowBound       = s.nPhase > 1 ? s.curriculumTLowBound[0]       : defaultTLowBound;
+    s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : defaultTFocusLow;
+    s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : defaultTFocusHigh;
+    s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : defaultTFocusFraction;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,7 +314,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         double initGC  = s.nPhase > 1 ? s.curriculumGradientClip[0]    : p.gradientClip;
         double initLR  = s.nPhase > 1 ? s.curriculumLearningRate[0]    : p.learningRate;
         return std::make_unique<ScoreBasedDiffusionModel>(
-            rf, rg, dim, condDim, p.timeEmbeddingDim, p.hidden, p.layers, p.optimizer,
+            rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDim, p.conditionEmbeddingDim,
+            p.hidden, p.layers, p.optimizer,
             p.adamBeta1, p.adamBeta2, p.adamEps, p.noiseSchedule,
             p.betaMin, p.betaMax, p.cosineOffset, p.logSigMin, p.logSigMax,
             p.epsPrediction, initLWP, p.batchSize, initGC, initLR,
@@ -369,9 +416,82 @@ inline void collectSample(TrainState& s, double t_trans, double x_trans, double 
 }
 
 // ---------------------------------------------------------------------------
+// runDenoiseDiagnostic — one-step denoising check of a (typically checkpoint-
+//   loaded) model. For each requested diffusion time t, strides through the
+//   normalized training data, noises each sample at t, runs a single forward
+//   pass, and writes truth vs denoised values (in transformed, pre-z-score
+//   units) to a ROOT file, one TTree per t value (named diag_t<value> with
+//   '.' replaced by 'p', e.g. diag_t0p4). If a fine feature is present in the
+//   denoised histogram but missing from generated samples, the reverse-process
+//   sampler is the problem; if it is missing here too, the score network never
+//   learned it. Branches: t, then per dimension i: true_dim<i>, denoised_dim<i>,
+//   in the model's dimension order (all-at-once: t,x,y,pr,pphi,pz; stage 2:
+//   pr,pphi,pz).
+// ---------------------------------------------------------------------------
+inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
+                                 const std::vector<DiffusionTrainingSample>& data, // already normalized
+                                 const std::vector<double>& mean,
+                                 const std::vector<double>& stdev,
+                                 const TrainState& s,
+                                 const std::string& outFile,
+                                 const std::string& moduleName)
+{
+    TFile fout(outFile.c_str(), "RECREATE");
+    if (fout.IsZombie())
+        throw cet::exception(moduleName) << "Cannot open denoise diagnostic output file " << outFile;
+
+    constexpr int kMaxDiagDims = 16;
+    const int dim = static_cast<int>(data.front().x.size());
+    if (dim > kMaxDiagDims)
+        throw cet::exception(moduleName)
+            << "Denoise diagnostic supports at most " << kMaxDiagDims << " dimensions (got " << dim << ")";
+
+    const size_t nUse = (s.denoiseDiagnosticSamples > 0)
+        ? std::min(data.size(), static_cast<size_t>(s.denoiseDiagnosticSamples))
+        : data.size();
+    const size_t stride = std::max<size_t>(1, data.size() / nUse);
+
+    for (double t : s.denoiseDiagnosticTs) {
+        std::ostringstream nm;
+        nm << "diag_t" << t;
+        std::string treeName = nm.str();
+        std::replace(treeName.begin(), treeName.end(), '.', 'p');
+        std::ostringstream title;
+        title << "One-step denoising diagnostic at t=" << t;
+        TTree* tree = new TTree(treeName.c_str(), title.str().c_str());
+
+        double tBranch = t;
+        double trueD[kMaxDiagDims]     = {0.0};
+        double denoisedD[kMaxDiagDims] = {0.0};
+        tree->Branch("t", &tBranch);
+        for (int i = 0; i < dim; ++i) {
+            tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
+            tree->Branch(("denoised_dim" + std::to_string(i)).c_str(), &denoisedD[i]);
+        }
+
+        size_t written = 0;
+        for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
+            const auto& sample = data[k];
+            auto res = model.denoiseOneStep(sample.x, sample.cond, t);
+            for (int i = 0; i < dim; ++i) {
+                trueD[i]     = sample.x[i] * stdev[i] + mean[i];
+                denoisedD[i] = res.value[i];
+            }
+            tree->Fill();
+        }
+        tree->Write();
+    }
+    fout.Close();
+    mf::LogInfo(moduleName)
+        << "Denoise diagnostic written to " << outFile
+        << " (" << nUse << " samples per t, " << s.denoiseDiagnosticTs.size() << " t values)";
+}
+
+// ---------------------------------------------------------------------------
 // runTraining — finalise normalisation, then run the full per-epoch training
 //               loop (with curriculum phase transitions and epoch checkpointing)
-//               for each active model path.
+//               for each active model path. If denoiseDiagnosticTs is set, the
+//               one-step denoising diagnostic replaces training entirely.
 // ---------------------------------------------------------------------------
 inline void runTraining(TrainState& s, const std::string& moduleName) {
     // Finalise Welford stdevs
@@ -413,14 +533,19 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                          const std::string& outFile,
                          bool resetPhase0) {
         if (resetPhase0) {
-            s.currentBiasLowSigma = s.nPhase > 1 ? s.curriculumBiasLowSigma[0] : s.currentBiasLowSigma;
-            s.currentTLowBound    = s.nPhase > 1 ? s.curriculumTLowBound[0]    : s.currentTLowBound;
+            s.currentBiasLowSigma    = s.nPhase > 1 ? s.curriculumBiasLowSigma[0]    : s.currentBiasLowSigma;
+            s.currentTLowBound       = s.nPhase > 1 ? s.curriculumTLowBound[0]       : s.currentTLowBound;
+            s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : s.currentTFocusLow;
+            s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : s.currentTFocusHigh;
+            s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : s.currentTFocusFraction;
         }
         if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
             model.promoteEMAToNetwork();
         mf::LogInfo(moduleName)
             << "Initial training settings: biasLowSigma=" << s.currentBiasLowSigma
             << ", tLowBound=" << s.currentTLowBound
+            << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
+            << "] (fraction=" << s.currentTFocusFraction << ")"
             << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
         const std::string base = stripExt(outFile);
         for (int e = 1; e <= s.trainingEpochs; ++e) {
@@ -431,8 +556,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         double gc  = s.curriculumGradientClip   [ph + 1];
                         double lr  = s.curriculumLearningRate   [ph + 1];
                         int    bs  = s.curriculumBatchSize      [ph + 1];
-                        s.currentBiasLowSigma = s.curriculumBiasLowSigma[ph + 1];
-                        s.currentTLowBound    = s.curriculumTLowBound   [ph + 1];
+                        s.currentBiasLowSigma    = s.curriculumBiasLowSigma   [ph + 1];
+                        s.currentTLowBound       = s.curriculumTLowBound      [ph + 1];
+                        s.currentTFocusLow       = s.curriculumTFocusLow      [ph + 1];
+                        s.currentTFocusHigh      = s.curriculumTFocusHigh     [ph + 1];
+                        s.currentTFocusFraction  = s.curriculumTFocusFraction [ph + 1];
                         mf::LogInfo(moduleName)
                             << "Switching to phase " << (ph + 2)
                             << ": lossWeightPower=" << lwp
@@ -441,6 +569,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                             << ", batchSize=" << bs
                             << ", biasLowSigma=" << s.currentBiasLowSigma
                             << ", tLowBound=" << s.currentTLowBound
+                            << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
+                            << "] (fraction=" << s.currentTFocusFraction << ")"
                             << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
                         model.updateLossWeightPower(lwp);
                         model.updateGradientClipThreshold(gc);
@@ -452,7 +582,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 }
             }
             mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
-            model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound);
+            model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                        s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
             if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
                 model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
                 if (s.saveAlsoCsv)
@@ -473,10 +604,17 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 {s.t_mean, s.x_mean, s.y_mean},
                 {s.t_stdev, s.x_stdev, s.y_stdev},
                 s.stage1TrainingData);
-            mf::LogInfo(moduleName)
-                << "Training stage-1 diffusion model with " << s.stage1TrainingData.size()
-                << " samples and " << s.trainingEpochs << " epochs...";
-            trainLoop(*s.stage1Model, s.stage1TrainingData, s.stage1ModelFile, false);
+            if (!s.denoiseDiagnosticTs.empty()) {
+                runDenoiseDiagnostic(*s.stage1Model, s.stage1TrainingData,
+                    {s.t_mean, s.x_mean, s.y_mean},
+                    {s.t_stdev, s.x_stdev, s.y_stdev},
+                    s, stripExt(s.stage1ModelFile) + "_DenoisingDiag.root", moduleName);
+            } else {
+                mf::LogInfo(moduleName)
+                    << "Training stage-1 diffusion model with " << s.stage1TrainingData.size()
+                    << " samples and " << s.trainingEpochs << " epochs...";
+                trainLoop(*s.stage1Model, s.stage1TrainingData, s.stage1ModelFile, false);
+            }
         }
         if (s.trainStage2) {
             if (s.trainingSize > 0 && (int)s.stage2TrainingData.size() > s.trainingSize)
@@ -485,10 +623,17 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
                 {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
                 s.stage2TrainingData);
-            mf::LogInfo(moduleName)
-                << "Training stage-2 diffusion model with " << s.stage2TrainingData.size()
-                << " samples and " << s.trainingEpochs << " epochs...";
-            trainLoop(*s.stage2Model, s.stage2TrainingData, s.stage2ModelFile, true);
+            if (!s.denoiseDiagnosticTs.empty()) {
+                runDenoiseDiagnostic(*s.stage2Model, s.stage2TrainingData,
+                    {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
+                    {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
+                    s, stripExt(s.stage2ModelFile) + "_DenoisingDiag.root", moduleName);
+            } else {
+                mf::LogInfo(moduleName)
+                    << "Training stage-2 diffusion model with " << s.stage2TrainingData.size()
+                    << " samples and " << s.trainingEpochs << " epochs...";
+                trainLoop(*s.stage2Model, s.stage2TrainingData, s.stage2ModelFile, true);
+            }
         }
     } else {
         if (s.allAtOnceModelFile.empty())
@@ -499,10 +644,17 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
             {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
             s.allAtOnceTrainingData);
-        mf::LogInfo(moduleName)
-            << "Training all-at-once diffusion model with " << s.allAtOnceTrainingData.size()
-            << " samples and " << s.trainingEpochs << " epochs...";
-        trainLoop(*s.allAtOnceModel, s.allAtOnceTrainingData, s.allAtOnceModelFile, false);
+        if (!s.denoiseDiagnosticTs.empty()) {
+            runDenoiseDiagnostic(*s.allAtOnceModel, s.allAtOnceTrainingData,
+                {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
+                {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
+                s, stripExt(s.allAtOnceModelFile) + "_DenoisingDiag.root", moduleName);
+        } else {
+            mf::LogInfo(moduleName)
+                << "Training all-at-once diffusion model with " << s.allAtOnceTrainingData.size()
+                << " samples and " << s.trainingEpochs << " epochs...";
+            trainLoop(*s.allAtOnceModel, s.allAtOnceTrainingData, s.allAtOnceModelFile, false);
+        }
     }
 }
 

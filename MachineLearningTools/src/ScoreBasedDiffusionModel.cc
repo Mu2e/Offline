@@ -97,12 +97,46 @@ namespace mu2e {
         return emb;
     }
 
+    // Assemble the full network input: raw state coordinates, optional per-coordinate Fourier
+    // features, conditioning vector, then the time input (raw t + optional time embedding).
+    // The Fourier features give the MLP access to high-frequency structure in the state
+    // coordinates (e.g. narrow spectral lines), which a plain MLP is biased against learning.
+    std::vector<double> ScoreBasedDiffusionModel::buildNetworkInput(
+        const std::vector<double>& x,
+        const std::vector<double>& cond,
+        double t
+    ) const {
+        std::vector<double> input;
+        input.reserve(dim_ + dim_ * inputEmbeddingDim_
+                      + conditionDim_ + conditionDim_ * conditionEmbeddingDim_
+                      + 1 + timeEmbeddingDim_);
+        // Per-coordinate Fourier features: [sin(π·2^i·v), cos(π·2^i·v)] for i = 0..embDim/2-1
+        auto appendFourier = [&input](const std::vector<double>& v, int embDim) {
+            for (double vj : v) {
+                for (int i = 0; i < embDim / 2; ++i) {
+                    double freq = M_PI * std::pow(2.0, i);
+                    input.push_back(std::sin(freq * vj));
+                    input.push_back(std::cos(freq * vj));
+                }
+            }
+        };
+        input.insert(input.end(), x.begin(), x.end());
+        if (inputEmbeddingDim_ > 0) appendFourier(x, inputEmbeddingDim_);
+        input.insert(input.end(), cond.begin(), cond.end());
+        if (conditionEmbeddingDim_ > 0) appendFourier(cond, conditionEmbeddingDim_);
+        auto tEmb = timeEmbed(t);
+        input.insert(input.end(), tEmb.begin(), tEmb.end());
+        return input;
+    }
+
     ScoreBasedDiffusionModel::ScoreBasedDiffusionModel(
         CLHEP::RandFlat& randFlat,
         CLHEP::RandGaussQ& randGaussQ,
         int dim,
         int conditionDim,
         int timeEmbeddingDim,
+        int inputEmbeddingDim,
+        int conditionEmbeddingDim,
         int hidden,
         int layers,
         OptimizerType optimizerType,
@@ -127,7 +161,7 @@ namespace mu2e {
         int diffusionSteps,
         bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
-        dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim), hidden_(hidden), layers_(layers),
+        dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim), inputEmbeddingDim_(inputEmbeddingDim), conditionEmbeddingDim_(conditionEmbeddingDim), hidden_(hidden), layers_(layers),
         optimizerType_(optimizerType),
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
@@ -152,6 +186,18 @@ namespace mu2e {
             throw cet::exception("ScoreBasedDiffusionModel::initialization")
                 << "timeEmbeddingDim must be 0 (raw scalar) or an even integer >= 2";
         }
+        if (inputEmbeddingDim_ != 0 && (inputEmbeddingDim_ < 2 || inputEmbeddingDim_ % 2 != 0)) {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                << "inputEmbeddingDim must be 0 (raw coordinates) or an even integer >= 2";
+        }
+        if (conditionEmbeddingDim_ != 0 && (conditionEmbeddingDim_ < 2 || conditionEmbeddingDim_ % 2 != 0)) {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                << "conditionEmbeddingDim must be 0 (raw values) or an even integer >= 2";
+        }
+        if (conditionEmbeddingDim_ > 0 && conditionDim_ == 0) {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                << "conditionEmbeddingDim > 0 requires conditionDim > 0";
+        }
         if (batchSize <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid batchSize";
         }
@@ -162,11 +208,13 @@ namespace mu2e {
         // ------------------------------------------------------------
         // Network architecture
         //
-        // Input dimension = dim_ + conditionDim_ + 1
+        // Input dimension = dim_ (+ per-coordinate Fourier features) + conditionDim_ + 1
         // (+1 because diffusion time t is appended to the input vector)
         // ------------------------------------------------------------
 
-        int inputSize = dim_ + conditionDim_ + 1 + timeEmbeddingDim_;
+        int inputSize = dim_ + dim_ * inputEmbeddingDim_
+                      + conditionDim_ + conditionDim_ * conditionEmbeddingDim_
+                      + 1 + timeEmbeddingDim_;
         int in = inputSize;
 
         // Weight initialization scale (local constant so it can be tuned easily)
@@ -242,6 +290,8 @@ namespace mu2e {
             << "    | dim=" << dim_ << "\n"
             << "    | conditionDim=" << conditionDim_ << "\n"
             << "    | timeEmbeddingDim=" << timeEmbeddingDim_ << (timeEmbeddingDim_ == 0 ? " (raw scalar)" : " (sinusoidal)") << "\n"
+            << "    | inputEmbeddingDim=" << inputEmbeddingDim_ << (inputEmbeddingDim_ == 0 ? " (raw coordinates)" : " (Fourier features per state coordinate)") << "\n"
+            << "    | conditionEmbeddingDim=" << conditionEmbeddingDim_ << (conditionEmbeddingDim_ == 0 ? " (raw values)" : " (Fourier features per condition coordinate)") << "\n"
             << "    | hidden=" << hidden_ << "\n"
             << "    | layers=" << layers_ << "\n"
             << "  Optimizer configuration:\n"
@@ -767,9 +817,12 @@ namespace mu2e {
     void ScoreBasedDiffusionModel::train(
         const std::vector<DiffusionTrainingSample>& data,
         int epochs,
-        int trainSubsetDataSize, 
+        int trainSubsetDataSize,
         bool biasLowSigma,
-        double tLowBound
+        double tLowBound,
+        double tFocusLow,
+        double tFocusHigh,
+        double tFocusFraction
     )
     {
         // Check that the network is properly initialized before training.
@@ -781,6 +834,17 @@ namespace mu2e {
         if (tLowBound >= 1.0 || tLowBound < 0.0) {
             throw cet::exception("ScoreBasedDiffusionModel::train")
                 << "Invalid tLowBound: must be in [0,1)";
+        }
+
+        if (tFocusFraction < 0.0 || tFocusFraction > 1.0) {
+            throw cet::exception("ScoreBasedDiffusionModel::train")
+                << "Invalid tFocusFraction: must be in [0,1]";
+        }
+        if (tFocusFraction > 0.0 &&
+            (tFocusLow < 0.0 || tFocusHigh > 1.0 || tFocusLow >= tFocusHigh)) {
+            throw cet::exception("ScoreBasedDiffusionModel::train")
+                << "Invalid t focus window: require 0 <= tFocusLow < tFocusHigh <= 1 (got ["
+                << tFocusLow << ", " << tFocusHigh << "])";
         }
 
         const double eps_safe = 1e-12;
@@ -842,19 +906,26 @@ namespace mu2e {
             {
                 const auto& sample = data[indices[idx]];
 
-                // Sample diffusion time. If tLowBound is set, we scale the uniform random number to be in 
-                // [tLowBound, 1] instead of [0,1] to focus training on later diffusion steps with higher 
-                // noise levels, which can improve stability and convergence in some cases. If biasLowSigma 
-                // is true, we apply a quadratic transformation to the sampled time to bias it towards smaller 
-                // values (less noise), which can help the model learn the score function more accurately at 
+                // Sample diffusion time. If tFocusFraction > 0, this sample draws t uniformly from the
+                // focus window [tFocusLow, tFocusHigh] with probability tFocusFraction, concentrating
+                // gradient steps on a target sigma band while the remaining samples keep full coverage.
+                // Otherwise: if tLowBound is set, we scale the uniform random number to be in
+                // [tLowBound, 1] instead of [0,1] to focus training on later diffusion steps with higher
+                // noise levels, which can improve stability and convergence in some cases. If biasLowSigma
+                // is true, we apply a quadratic transformation to the sampled time to bias it towards smaller
+                // values (less noise), which can help the model learn the score function more accurately at
                 // early diffusion steps where the signal is stronger. Not meant to be used together.
 
                 double t = randFlat_.fire();
-                if (tLowBound > 0.0) {
-                    t = tLowBound + (1.0 - tLowBound) * t; // scale t to [tLowBound, 1]
-                }
-                if (biasLowSigma) {
-                    t = t * t; // focus on smaller t value (smaller sigma)
+                if (tFocusFraction > 0.0 && randFlat_.fire() < tFocusFraction) {
+                    t = tFocusLow + (tFocusHigh - tFocusLow) * t; // scale t to the focus window
+                } else {
+                    if (tLowBound > 0.0) {
+                        t = tLowBound + (1.0 - tLowBound) * t; // scale t to [tLowBound, 1]
+                    }
+                    if (biasLowSigma) {
+                        t = t * t; // focus on smaller t value (smaller sigma)
+                    }
                 }
                 // container for noise vector eps
                 std::vector<double> eps;
@@ -870,13 +941,10 @@ namespace mu2e {
                     target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
                 }
 
-                // Prepare input vector for the network by concatenating the noisy sample xt with the time embedding.
-                std::vector<double> input = xt;
-                input.insert(input.end(), sample.cond.begin(), sample.cond.end());
-                auto tEmb = timeEmbed(t);
-                input.insert(input.end(), tEmb.begin(), tEmb.end());
+                // Prepare input vector for the network from the noisy sample xt, condition, and time.
+                auto input = buildNetworkInput(xt, sample.cond, t);
 
-                // Check that input dimension matches expected dimension (dim_ + conditionDim_ + 1)
+                // Check that input dimension matches the network's expected input dimension
                 if (input.size() != network_[0].W[0].size()) {
                     throw cet::exception("ScoreBasedDiffusionModel::train")
                         << "Training input dimension mismatch: got " << input.size()
@@ -1015,13 +1083,17 @@ namespace mu2e {
         };
 
         // Magic + version
+        // Version history: 1 = original format; 2 = adds inputEmbeddingDim and
+        // conditionEmbeddingDim after timeEmbeddingDim.
         out.write("SBDM", 4);
-        wU32(1u);
+        wU32(2u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
         wI32(static_cast<int32_t>(conditionDim_));
         wI32(static_cast<int32_t>(timeEmbeddingDim_));
+        wI32(static_cast<int32_t>(inputEmbeddingDim_));
+        wI32(static_cast<int32_t>(conditionEmbeddingDim_));
         wI32(static_cast<int32_t>(hidden_));
         wI32(static_cast<int32_t>(layers_));
         wI32(optimizerType_ == OptimizerType::ADAM ? 0 : 1);
@@ -1104,6 +1176,8 @@ namespace mu2e {
         out << "dim," << dim_ << "\n";
         out << "conditionDim," << conditionDim_ << "\n";
         out << "timeEmbeddingDim," << timeEmbeddingDim_ << "\n";
+        out << "inputEmbeddingDim," << inputEmbeddingDim_ << "\n";
+        out << "conditionEmbeddingDim," << conditionEmbeddingDim_ << "\n";
         out << "hidden," << hidden_ << "\n";
         out << "layers," << layers_ << "\n";
         // Optimizer configuration
@@ -1341,7 +1415,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version != 1)
+            if (version != 1 && version != 2)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -1349,6 +1423,9 @@ namespace mu2e {
             int dim            = rI32();
             int conditionDim   = rI32();
             int timeEmbeddingDim = rI32();
+            // Version 2 adds the Fourier input embeddings; version-1 files predate them
+            int inputEmbeddingDim     = (version >= 2) ? rI32() : 0;
+            int conditionEmbeddingDim = (version >= 2) ? rI32() : 0;
             int hidden         = rI32();
             int layers         = rI32();
             int optType        = rI32();
@@ -1449,7 +1526,8 @@ namespace mu2e {
 
             // Reconstruct model
             ScoreBasedDiffusionModel model(
-                randFlat, randGaussQ, dim, conditionDim, timeEmbeddingDim, hidden, layers,
+                randFlat, randGaussQ, dim, conditionDim, timeEmbeddingDim,
+                inputEmbeddingDim, conditionEmbeddingDim, hidden, layers,
                 optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
                 betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
                 epsPrediction, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
@@ -1513,6 +1591,7 @@ namespace mu2e {
 
             // Temporary storage
             int dim = 0, conditionDim = 0, timeEmbeddingDim = 0, hidden = 0, layers = 0;
+            int inputEmbeddingDim = 0, conditionEmbeddingDim = 0; // absent in files saved before the Fourier input embedding
             OptimizerType optimizerType = OptimizerType::ADAM;
             double adamBeta1 = 0.0, adamBeta2 = 0.0, adamEps = 0.0;
             NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
@@ -1592,6 +1671,8 @@ namespace mu2e {
                     if (key == "dim") dim = std::stoi(val);
                     else if (key == "conditionDim") conditionDim = std::stoi(val);
                     else if (key == "timeEmbeddingDim") timeEmbeddingDim = std::stoi(val);
+                    else if (key == "inputEmbeddingDim") inputEmbeddingDim = std::stoi(val);
+                    else if (key == "conditionEmbeddingDim") conditionEmbeddingDim = std::stoi(val);
                     else if (key == "hidden") hidden = std::stoi(val);
                     else if (key == "layers") layers = std::stoi(val);
                     else if (key == "optimizerType")
@@ -1645,10 +1726,13 @@ namespace mu2e {
                         auto tokens = split(line);
                         int inSize = std::stoi(tokens[1]);
                         int layerIdx = getLayerIdx(tokens[0]);
-                        if (layerIdx == 0 && inSize != dim + conditionDim + 1 + timeEmbeddingDim) {
+                        int expectedInSize = dim + dim * inputEmbeddingDim
+                                           + conditionDim + conditionDim * conditionEmbeddingDim
+                                           + 1 + timeEmbeddingDim;
+                        if (layerIdx == 0 && inSize != expectedInSize) {
                             throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                                 << "Input layer input size mismatch (expected "
-                                << (dim + conditionDim + 1 + timeEmbeddingDim) << ", got " << inSize << ")";
+                                << expectedInSize << ", got " << inSize << ")";
                         }
                         if (loadedNetwork[layerIdx].W.empty()) {
                             throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "InSize encountered before OutSize for layer " << layerIdx;
@@ -1937,6 +2021,8 @@ namespace mu2e {
                 dim,
                 conditionDim,
                 timeEmbeddingDim,
+                inputEmbeddingDim,
+                conditionEmbeddingDim,
                 hidden,
                 layers,
                 optimizerType,
@@ -2136,9 +2222,7 @@ namespace mu2e {
             const auto& inferNet = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
             if (!useHeun) {
                 // Euler method (1st order)
-                std::vector<double> input = x;
-                input.insert(input.end(), condition.begin(), condition.end());
-                { auto tEmb = timeEmbed(t); input.insert(input.end(), tEmb.begin(), tEmb.end()); }
+                auto input = buildNetworkInput(x, condition, t);
 
                 auto score = forwardInference(input, inferNet);
                 if (epsPrediction_) {
@@ -2169,9 +2253,7 @@ namespace mu2e {
                 }
 
                 // k1 = f(x,t)
-                std::vector<double> input = x;
-                input.insert(input.end(), condition.begin(), condition.end());
-                { auto tEmb = timeEmbed(t); input.insert(input.end(), tEmb.begin(), tEmb.end()); }
+                auto input = buildNetworkInput(x, condition, t);
                 auto score_k1 = forwardInference(input, inferNet);
                 if (epsPrediction_) {
                     double s = std::max(sigma(t), sigma_safe);
@@ -2203,9 +2285,7 @@ namespace mu2e {
                 double b_next = beta(t_next);
 
                 // k2 = f(x_pred,t_next)
-                std::vector<double> input_next = x_pred;
-                input_next.insert(input_next.end(), condition.begin(), condition.end());
-                { auto tEmb = timeEmbed(t_next); input_next.insert(input_next.end(), tEmb.begin(), tEmb.end()); }
+                auto input_next = buildNetworkInput(x_pred, condition, t_next);
                 auto score_k2 = forwardInference(input_next, inferNet);
                 if (epsPrediction_) {
                     double s_next = std::max(sigma(t_next), sigma_safe);
@@ -2241,6 +2321,58 @@ namespace mu2e {
             // note the order in the stdev and mean is always x then cond
         }
         return generatedSample;
+    }
+
+    // One-step denoising diagnostic: noise a normalized sample at fixed t, run one forward
+    // pass, and reconstruct x0_hat via Tweedie's formula for the VP forward process
+    //   x_t = sqrt(alphabar(t)) * x0 + sigma(t) * eps  =>  x0_hat = (x_t - sigma * eps_hat) / sqrt(alphabar)
+    SBDMGeneratedSample ScoreBasedDiffusionModel::denoiseOneStep(
+        const std::vector<double>& xNorm,
+        const std::vector<double>& condition,
+        double t,
+        bool useEMANetworkIfAvailable
+    )
+    {
+        if (xNorm.size() != static_cast<size_t>(dim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::denoiseOneStep")
+                << "State dimension mismatch: got " << xNorm.size() << ", expected " << dim_;
+        }
+        if (condition.size() != static_cast<size_t>(conditionDim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::denoiseOneStep")
+                << "Conditioning dimension mismatch: got " << condition.size()
+                << ", expected " << conditionDim_;
+        }
+        if (t <= 0.0 || t >= 1.0) {
+            throw cet::exception("ScoreBasedDiffusionModel::denoiseOneStep")
+                << "Invalid diffusion time t=" << t << ": must be in (0,1)";
+        }
+
+        const double eps_safe = 1e-12;
+
+        std::vector<double> eps;
+        auto xt = addNoise(xNorm, t, eps);
+        double s  = std::max(sigma(t), eps_safe);
+        double ab = std::sqrt(std::max(alphabar(t), eps_safe));
+
+        auto input = buildNetworkInput(xt, condition, t);
+        const auto& inferNet = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
+        auto out = forwardInference(input, inferNet);
+
+        // Recover eps_hat from the network output: the network predicts either eps directly
+        // or the score = -eps/sigma.
+        std::vector<double> x0hat(dim_);
+        for (int i = 0; i < dim_; ++i) {
+            double epsHat = epsPrediction_ ? out[i] : -out[i] * s;
+            x0hat[i] = (xt[i] - s * epsHat) / ab;
+        }
+
+        SBDMGeneratedSample result;
+        result.zscore = x0hat;
+        result.value.resize(dim_);
+        for (int i = 0; i < dim_; ++i) {
+            result.value[i] = x0hat[i] * dataStdev_[i] + dataMean_[i];
+        }
+        return result;
     }
 
 } // namespace mu2e
