@@ -142,6 +142,25 @@ parseNoiseSchedule(const std::string& sched, const std::string& moduleName) {
 }
 
 // ---------------------------------------------------------------------------
+// ensureBinExtension — warn and fix a model file path that doesn't end in .bin
+// ---------------------------------------------------------------------------
+inline std::string ensureBinExtension(const std::string& path, const std::string& fieldName,
+                                       const std::string& moduleName)
+{
+    if (path.empty()) return path;
+    if (path.size() >= 4 && path.substr(path.size() - 4) == ".bin") return path;
+    std::string fixed = path;
+    if (fixed.size() >= 4 && fixed.substr(fixed.size() - 4) == ".csv")
+        fixed = fixed.substr(0, fixed.size() - 4) + ".bin";
+    else
+        fixed += ".bin";
+    mf::LogWarning(moduleName)
+        << fieldName << " does not end with \".bin\" (got \"" << path
+        << "\"); correcting to \"" << fixed << "\".";
+    return fixed;
+}
+
+// ---------------------------------------------------------------------------
 // validateGeometry — throw if VDr or VDz0 are geometrically invalid
 // ---------------------------------------------------------------------------
 inline void validateGeometry(double VDr, double VDz0, const std::string& moduleName) {
@@ -226,6 +245,14 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                         CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg,
                         const std::string& moduleName)
 {
+    // Ensure all model file paths end with .bin
+    s.allAtOnceModelFile = ensureBinExtension(s.allAtOnceModelFile, "SBDMallAtOnceModelFile",  moduleName);
+    s.stage1ModelFile    = ensureBinExtension(s.stage1ModelFile,    "SBDMstage1ModelFile",     moduleName);
+    s.stage2ModelFile    = ensureBinExtension(s.stage2ModelFile,    "SBDMstage2ModelFile",     moduleName);
+    s.ckptAllAtOnceFile  = ensureBinExtension(s.ckptAllAtOnceFile,  "SBDMckptAllAtOnceFile",   moduleName);
+    s.ckptStage1File     = ensureBinExtension(s.ckptStage1File,     "SBDMckptStage1File",      moduleName);
+    s.ckptStage2File     = ensureBinExtension(s.ckptStage2File,     "SBDMckptStage2File",      moduleName);
+
     // Validate EMA promotion requests against useEMANetwork
     bool anyPromotion = s.promoteEMAOnStart ||
         std::any_of(s.curriculumPromoteEMA.begin(), s.curriculumPromoteEMA.end(),
