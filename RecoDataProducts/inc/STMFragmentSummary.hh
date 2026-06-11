@@ -1,8 +1,8 @@
 #ifndef RecoDataProducts_STMFragmentSummary_hh
 #define RecoDataProducts_STMFragmentSummary_hh
 //
-// Data prodcuts that represent the container and inner frag counts
-// This is used for the unpacking module,
+// Data products containing STM  container and inner fragment counts
+// This is used for the unpacking module
 //
 
 // C++ includes
@@ -34,19 +34,15 @@ namespace mu2e {
 
     size_t nContainerFrags() const { return _nContainerFrags; }
     size_t nInnerFrags() const { return _nInnerFrags; }
-    //size_t nRawHPGeInnerFrags() const { return _nRawHPGeInnerFrags; }
-    //size_t nRawLaBrInnerFrags() const { return _nRawLaBrInnerFrags; }
-    //size_t nZSHPGeInnerFrags() const { return _nZSHPGeInnerFrags; }
-    //size_t nZSLaBrInnerFrags() const { return _nZSLaBrInnerFrags; }
-    //size_t nPHHPGeInnerFrags() const { return _nPHHPGeInnerFrags; }
-    //size_t nPHLaBrInnerFrags() const { return _nPHLaBrInnerFrags; }
 
     size_t nGoodRawFrags() const { return _nGoodRawFrags; }
     size_t nGoodZSFrags() const { return _nGoodZSFrags; }
     size_t nGoodPHFrags() const { return _nGoodPHFrags; }
+
     size_t nZeroRawFrags() const { return _nZeroRawFrags; }
     size_t nZeroZSFrags() const { return _nZeroZSFrags; }
     size_t nZeroPHFrags() const { return _nZeroPHFrags; }
+
     size_t nEmptyRawFrags() const { return _nEmptyRawFrags; }
     size_t nEmptyZSFrags() const { return _nEmptyZSFrags; }
     size_t nEmptyPHFrags() const { return _nEmptyPHFrags; }
@@ -55,19 +51,15 @@ namespace mu2e {
   private:
     size_t _nContainerFrags{};
     size_t _nInnerFrags{};
-    //size_t _nRawHPGeInnerFrags{};
-    //size_t _nRawLaBrInnerFrags{};
-    //size_t _nZSHPGeInnerFrags{};
-    //size_t _nZSLaBrInnerFrags{};
-    //size_t _nPHHPGeInnerFrags{};
-    //size_t _nPHLaBrInnerFrags{};
-    //rethink
+
     size_t _nGoodRawFrags{};
     size_t _nGoodZSFrags{};
     size_t _nGoodPHFrags{};
+
     size_t _nZeroRawFrags{};
     size_t _nZeroZSFrags{};
     size_t _nZeroPHFrags{};
+
     size_t _nEmptyRawFrags{};
     size_t _nEmptyZSFrags{};
     size_t _nEmptyPHFrags{};

@@ -70,6 +70,5 @@ outputs : {
       module_type : RootOutput
       fileName : "dig.stm.art"
       outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
-#      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
    }
 }
