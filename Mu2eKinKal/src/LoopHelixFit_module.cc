@@ -84,6 +84,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
@@ -338,10 +341,11 @@ namespace mu2e {
     if (kkfit_.useCalo() && hseed.caloCluster().isNonnull()) {
       kkfit_.makeCaloHit(hseed.caloCluster(),*calo_h, pseedtraj, calohits);
     }
+    PARAMHITCOL paramhits;
     // set the seed range given the hits and xings
     seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
     // create and fit the track
-    auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits);
+    auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
     if(!ktrk) // check that the track exists
       throw cet::exception("RECO")<<"mu2e::LoopHelixFit: Track fit was performed but no track is found\n";
 

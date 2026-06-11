@@ -79,6 +79,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
@@ -111,7 +114,7 @@ namespace mu2e {
     struct KKLineModuleConfig : public KKModuleConfig {
       fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
       fhicl::Atom<float> seedmom { Name("SeedMomentum"), Comment("Initial momentum value")};
-      fhicl::Sequence<float> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
+      fhicl::Sequence<double> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
       fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
@@ -150,11 +153,12 @@ namespace mu2e {
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
+    std::vector<double> paramconstraints_;
     PDGCode::type fpart_;
     TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
     DMAT seedcov_; // seed covariance matrix
-    std::array<double,KinKal::NParams()> paramconstraints_;
+    bool constraining_;
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
@@ -175,6 +179,7 @@ namespace mu2e {
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
     seedmom_(settings().modSettings().seedmom()),
+    paramconstraints_(settings().modSettings().paramconstraints()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
     intertol_(settings().modSettings().interTol()),
@@ -198,14 +203,13 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
-      auto const& tempconstraints = settings().modSettings().paramconstraints();
-      if (tempconstraints.size() == 0){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-          paramconstraints_[ipar] = 0.0;
-      }else if (tempconstraints.size() == KinKal::NParams()){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-          paramconstraints_[ipar] = tempconstraints[ipar];
-      }else{
+      constraining_ = false;
+      if (paramconstraints_.size() == KinKal::NParams()){
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+          if (paramconstraints_[ipar] > 0)
+            constraining_ = true;
+        }
+      }else if (paramconstraints_.size() > 0){
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
@@ -288,12 +292,19 @@ namespace mu2e {
           }
           // set the seed range given the hit TPOCA values
           seedtraj.range() = kkfit_.range(strawhits,calohits, strawxings);
+
+          // create parameter constraint, use seedtrajectory parameters
+          PARAMHITCOL paramhits;
+          if (constraining_){
+            kkfit_.makeSeedParamHit(seedtraj,paramconstraints_,paramhits);
+          }
+
           if(print_ > 0){
             //std::cout << "Seed line parameters " << hseed.track() << std::endl;
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *kktrk );
