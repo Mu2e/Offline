@@ -29,7 +29,7 @@ namespace mu2e {
       void flagCrossTalk(std::unique_ptr<StrawHitCollection> const& shCol,
           std::unique_ptr<ComboHitCollection> const& chCol) const;
 
-      bool createComboHit(EventWindowMarker const& ewm, size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
+      bool createComboHit(uint32_t event, EventWindowMarker const& ewm, size_t isd, std::unique_ptr<ComboHitCollection> const& chCol,
           std::unique_ptr<StrawHitCollection> const& shCol,
           const CaloClusterCollection *caloClusters,
           double pbtOffset,

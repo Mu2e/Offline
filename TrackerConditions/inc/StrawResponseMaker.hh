@@ -8,7 +8,7 @@
 
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
 #include "Offline/TrackerConfig/inc/StrawResponseConfig.hh"
-
+#include "Offline/DbTables/inc/TrkTOTCalib.hh"
 
 namespace mu2e {
 
@@ -18,7 +18,10 @@ namespace mu2e {
       StrawResponse::ptr_t fromFcl(StrawDrift::cptr_t strawDrift,
           StrawElectronics::cptr_t strawElectronics,
           StrawPhysics::cptr_t strawPhysics);
-      StrawResponse::ptr_t fromDb( /* db tables will go here*/ );
+      StrawResponse::ptr_t fromDb(StrawDrift::cptr_t strawDrift,
+          StrawElectronics::cptr_t strawElectronics,
+          StrawPhysics::cptr_t strawPhysics,
+          TrkTOTCalib::cptr_t ttc);
 
     private:
 

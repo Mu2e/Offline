@@ -17,6 +17,9 @@ namespace mu2e {
         _strawDrift_p = std::make_unique<ProditionsHandle<StrawDrift> >();
         _strawElectronics_p = std::make_unique<ProditionsHandle<StrawElectronics> >();
         _strawPhysics_p = std::make_unique<ProditionsHandle<StrawPhysics> >();
+        if (_useDb) {
+          _ttc_p = std::make_unique<DbHandle<TrkTOTCalib>>();
+        }
       }
       set_t makeSet(art::EventID const& eid) {
         auto sd = _strawDrift_p->get(eid);
@@ -25,6 +28,12 @@ namespace mu2e {
         auto ss = sd.getCids();
         ss.merge(set_t(se.getCids()));
         ss.merge(set_t(sp.getCids()));
+        if (_useDb){
+          // get the tables up to date
+          _ttc_p->get(eid);
+          // save which data goes into this instance of the service
+          ss.insert(_ttc_p->cid());
+        }
         return ss;
       }
       DbIoV makeIov(art::EventID const& eid) {
@@ -34,13 +43,21 @@ namespace mu2e {
         auto iov = _strawDrift_p->iov();
         iov.overlap(_strawElectronics_p->iov());
         iov.overlap(_strawPhysics_p->iov());
+        if(_useDb) {
+          _ttc_p->get(eid);
+          iov.overlap(_ttc_p->iov());
+        }
         return iov;
       }
       ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
         auto sd = _strawDrift_p->getPtr(eid);
         auto se = _strawElectronics_p->getPtr(eid);
         auto sp = _strawPhysics_p->getPtr(eid);
-        return _maker.fromFcl(sd,se,sp);
+        if (_useDb){
+          return _maker.fromDb(sd,se,sp,_ttc_p->getPtr(eid));
+        }else{
+          return _maker.fromFcl(sd,se,sp);
+        }
       }
 
     private:
@@ -52,6 +69,7 @@ namespace mu2e {
       std::unique_ptr<ProditionsHandle<StrawDrift> > _strawDrift_p;
       std::unique_ptr<ProditionsHandle<StrawElectronics> > _strawElectronics_p;
       std::unique_ptr<ProditionsHandle<StrawPhysics> > _strawPhysics_p;
+      std::unique_ptr<DbHandle<TrkTOTCalib>> _ttc_p;
   };
 }
 

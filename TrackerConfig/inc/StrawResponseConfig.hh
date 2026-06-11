@@ -45,9 +45,9 @@ namespace mu2e {
       Name("totEBins"), Comment("TOT drift time e bins")};
     fhicl::Atom<double> totEBinWidth {
       Name("totEBinWidth"), Comment("TOT drift time e bin width")};
-    fhicl::Sequence<double>  totDriftTime {
+    fhicl::Sequence<float>  totDriftTime {
       Name("totDriftTime"), Comment(" totDriftTime ")};
-    fhicl::Sequence<double>  totDriftError {
+    fhicl::Sequence<float>  totDriftError {
       Name("totDriftError"), Comment(" totDriftError ")};
     fhicl::Sequence<double> llDriftTimeOffBins {
       Name("llDriftTimeOffBins"), Comment("Drift time Offset Bin edges for likelihood fit (mm)")};

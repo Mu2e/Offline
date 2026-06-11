@@ -34,12 +34,12 @@ namespace mu2e {
           StrawElectronics::cptr_t strawElectronics,
           StrawPhysics::cptr_t strawPhysics,
           int eBins, double eBinWidth,
-          std::vector<double> edep, std::vector<double> halfvpscale,
+          std::vector<double> edep, std::vector<double> halfpvscale,
           double central, std::vector<double> centres,
           std::vector<double> resslope, bool truncateLongitudinal,
           bool rmsLongErrors, int totTBins, double totTBinWidth,
-          int totEBins, double totEBinWidth, std::vector<double> totdtime,
-          std::vector<double> totderror,
+          int totEBins, double totEBinWidth, std::vector<float> totdtime,
+          std::vector<float> totderror,
           std::vector<double> llDriftTimeOffBins, std::vector<double> llDriftTimeOffset,
           std::vector<double> llDriftTimeRMSBins, std::vector<double> llDriftTimeRMS,
           std::vector<double> driftOffBins, std::vector<double> driftOffset,
@@ -59,7 +59,7 @@ namespace mu2e {
         _strawElectronics(strawElectronics),
         _strawPhysics(strawPhysics),
         _eBins(eBins), _eBinWidth(eBinWidth),
-        _edep(edep), _halfvpscale(halfvpscale), _central(central), _centres(centres),
+        _edep(edep), _halfpvscale(halfpvscale), _central(central), _centres(centres),
         _resslope(resslope), _truncateLongitudinal(truncateLongitudinal),
         _rmsLongErrors(rmsLongErrors), _totTBins(totTBins), _totTBinWidth(totTBinWidth),
         _totEBins(totEBins), _totEBinWidth(totEBinWidth),
@@ -101,11 +101,20 @@ namespace mu2e {
 
       // this is used to update values from the database
       void setOffsets( std::array<double, StrawId::_nupanels> timeOffsetPanel,
-          std::array<double, StrawId::_nustraws> timeOffsetStrawHV,
-          std::array<double, StrawId::_nustraws> timeOffsetStrawCal ) {
+          std::array<double, StrawId::_nustraws> const& timeOffsetStrawHV,
+          std::array<double, StrawId::_nustraws> const& timeOffsetStrawCal ) {
         _timeOffsetPanel = timeOffsetPanel;
         _timeOffsetStrawHV = timeOffsetStrawHV;
         _timeOffsetStrawCal = timeOffsetStrawCal;
+      }
+      void setTOTCalib(size_t tottbins, double tottbinwidth, size_t totebins, double totebinwidth,
+          std::vector<float> totdtime, std::vector<float> totderror){
+        _totTBins = tottbins;
+        _totTBinWidth = tottbinwidth;
+        _totEBins = totebins;
+        _totEBinWidth = totebinwidth;
+        _totdtime = std::move(totdtime);
+        _totderror = std::move(totderror);
       }
 
       DriftInfo driftInfo(StrawId strawId, double dtime, double phi) const;
@@ -129,8 +138,9 @@ namespace mu2e {
       double TOTdriftTimeError(Straw const& straw, double tot, double edep) const;
 
       void print(std::ostream& os) const;
+      template<typename T>
       void printVector(std::ostream& os, std::string const& name,
-          std::vector<double> const& a) const;
+          std::vector<T> const& a) const;
 
       template<typename T, size_t SIZE>
         void printArray(std::ostream& os, std::string const& name,
@@ -170,7 +180,7 @@ namespace mu2e {
       int _eBins;
       double _eBinWidth;
       std::vector<double> _edep; // energy deposit boundaries
-      std::vector<double> _halfvpscale; // scaling of effective 1/2 propagation velocity by edep
+      std::vector<double> _halfpvscale; // scaling of effective 1/2 propagation velocity by edep
       double _central; // max wire distance for central wire region
       std::vector<double> _centres; // wire center resolution by edep
       std::vector<double> _resslope; // resolution slope vs position by edep
@@ -180,8 +190,8 @@ namespace mu2e {
       double _totTBinWidth;
       size_t _totEBins;
       double _totEBinWidth;
-      std::vector<double> _totdtime;
-      std::vector<double> _totderror;
+      std::vector<float> _totdtime;
+      std::vector<float> _totderror;
       std::vector<double> _llDriftTimeOffBins;
       std::vector<double> _llDriftTimeOffset;
       std::vector<double> _llDriftTimeRMSBins;

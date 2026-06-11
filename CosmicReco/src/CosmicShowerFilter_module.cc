@@ -145,7 +145,7 @@ namespace mu2e {
                 int gap = 0;
                 for (size_t k=straws[i][j-1]+2;k<straws[i][j];k+=2){
                   StrawId sid(i/6,i%6,k);
-                  if (!trackerStatus.noSignal(sid) && !trackerStatus.suppress(sid)) {
+                  if (!trackerStatus.noSignal(sid,event.event()) && !trackerStatus.suppress(sid)) {
                     gap += 1;
                   }
                 }
@@ -164,7 +164,7 @@ namespace mu2e {
                   int gap = 0;
                   for (size_t k=straws[i][j-1]+1;k<straws[i][j];k++){
                     StrawId sid(i/6,i%6,k);
-                    if (!trackerStatus.noSignal(sid) && !trackerStatus.suppress(sid)) {
+                    if (!trackerStatus.noSignal(sid,event.event()) && !trackerStatus.suppress(sid)) {
                       gap += 1;
                     }
                   }
