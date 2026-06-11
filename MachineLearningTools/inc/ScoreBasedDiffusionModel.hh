@@ -162,6 +162,13 @@ namespace mu2e{
             int value
         ){
             batchSize_ = value;
+            if (useEMANetwork_) {
+                emaNetworkDecay_ = std::pow(emaNetworkDecayBase_,
+                                           (double)batchSize_ / kEMABatchSizeRef_);
+                mf::LogInfo("ScoreBasedDiffusionModel")
+                    << "Batch size updated to " << batchSize_
+                    << "; EMA decay rescaled to " << emaNetworkDecay_;
+            }
             return batchSize_;
         }
 
@@ -471,8 +478,10 @@ namespace mu2e{
         std::vector<double> dimWeights_; // normalized gradient weights (size dim_), init 1.0
 
         // EMA copy of network parameters for inference ---
-        bool   useEMANetwork_;      // if true, generateSample() uses emaNetwork_ instead of network_
-        double emaNetworkDecay_;    // decay rate applied per optimizer step (e.g. 0.9999)
+        static constexpr int kEMABatchSizeRef_ = 32; // canonical reference batch size for emaNetworkDecay interpretation
+        bool   useEMANetwork_;          // if true, generateSample() uses emaNetwork_ instead of network_
+        double emaNetworkDecay_;        // effective decay per optimizer step (rescaled from emaNetworkDecayBase_)
+        double emaNetworkDecayBase_;    // user-configured decay at kEMABatchSizeRef_=32 samples/step
         std::vector<Layer> emaNetwork_; // slow-moving EMA copy, only W and b are used
 
         // Diffusion process discretization
