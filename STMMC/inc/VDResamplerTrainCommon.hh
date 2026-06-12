@@ -291,13 +291,12 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                         CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg,
                         const std::string& moduleName)
 {
-    // Ensure all model file paths end with .bin
+    // Ensure all model output file paths end with .bin.  Checkpoint *load* paths
+    // (ckpt*File) are left untouched: loadModel() auto-detects the format by
+    // extension, so legacy .csv checkpoints must keep their original names.
     s.allAtOnceModelFile = ensureBinExtension(s.allAtOnceModelFile, "SBDMallAtOnceModelFile",  moduleName);
     s.stage1ModelFile    = ensureBinExtension(s.stage1ModelFile,    "SBDMstage1ModelFile",     moduleName);
     s.stage2ModelFile    = ensureBinExtension(s.stage2ModelFile,    "SBDMstage2ModelFile",     moduleName);
-    s.ckptAllAtOnceFile  = ensureBinExtension(s.ckptAllAtOnceFile,  "SBDMckptAllAtOnceFile",   moduleName);
-    s.ckptStage1File     = ensureBinExtension(s.ckptStage1File,     "SBDMckptStage1File",      moduleName);
-    s.ckptStage2File     = ensureBinExtension(s.ckptStage2File,     "SBDMckptStage2File",      moduleName);
 
     // Validate EMA promotion requests against useEMANetwork
     bool anyPromotion = s.promoteEMAOnStart ||
