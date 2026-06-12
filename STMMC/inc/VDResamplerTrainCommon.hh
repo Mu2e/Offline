@@ -92,6 +92,19 @@ struct TrainState {
     // writes a denoising-diagnostic ROOT file for each active model INSTEAD of training it.
     std::vector<double> denoiseDiagnosticTs;
     int denoiseDiagnosticSamples = 100000; // samples per t value
+    bool denoiseDiagnosticUseEMA = true;   // network choice for BOTH diagnostics; match the
+                                           // generation config's useEMANetworkIfAvailable
+
+    // Partial-reverse diagnostic. When partialReverseT0s is non-empty, runTraining() noises
+    // data samples to each t0 and runs the full reverse sampler from there INSTEAD of
+    // training. Much more expensive than the one-step diagnostic: one full reverse loop
+    // (~t0*steps forward passes) per sample per t0.
+    std::vector<double> partialReverseT0s;
+    int    partialReverseSamples = 20000;       // samples per t0 value
+    bool   partialReverseUseHeun = true;
+    bool   partialReverseUseSDE  = true;
+    int    partialReverseDiffusionSteps = -1;   // -1 = model's configured value
+    double partialReverseSdeToOdeSigmaThreshold = -1.0;
 
     // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
     double t_mean=0,    t_M2=0,    t_stdev=0;
@@ -471,7 +484,7 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
         size_t written = 0;
         for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
             const auto& sample = data[k];
-            auto res = model.denoiseOneStep(sample.x, sample.cond, t);
+            auto res = model.denoiseOneStep(sample.x, sample.cond, t, s.denoiseDiagnosticUseEMA);
             for (int i = 0; i < dim; ++i) {
                 trueD[i]     = sample.x[i] * stdev[i] + mean[i];
                 denoisedD[i] = res.value[i];
@@ -484,6 +497,82 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
     mf::LogInfo(moduleName)
         << "Denoise diagnostic written to " << outFile
         << " (" << nUse << " samples per t, " << s.denoiseDiagnosticTs.size() << " t values)";
+}
+
+// ---------------------------------------------------------------------------
+// runPartialReverseDiagnostic — multi-step reverse-sampler check of a (typically
+//   checkpoint-loaded) model. For each requested start time t0, strides through
+//   the normalized training data, noises each sample to t0, and runs the FULL
+//   reverse sampler from t0 down to 0 (same integrator as generateSample).
+//   Writes truth vs sampled values (transformed, pre-z-score units) to a ROOT
+//   file, one TTree per t0 (named prev_t<value> with '.' replaced by 'p').
+//   Scanning t0 localizes where generation loses a feature: if it survives a
+//   start at t0 but not full generation, the t>t0 phase delivers a wrong
+//   marginal; if it is already lost at t0, the score or its integration below
+//   t0 is responsible. Branches: t0, then per dimension i: true_dim<i>,
+//   sampled_dim<i>, in the model's dimension order.
+// ---------------------------------------------------------------------------
+inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
+                                        const std::vector<DiffusionTrainingSample>& data, // already normalized
+                                        const std::vector<double>& mean,
+                                        const std::vector<double>& stdev,
+                                        const TrainState& s,
+                                        const std::string& outFile,
+                                        const std::string& moduleName)
+{
+    TFile fout(outFile.c_str(), "RECREATE");
+    if (fout.IsZombie())
+        throw cet::exception(moduleName) << "Cannot open partial-reverse diagnostic output file " << outFile;
+
+    constexpr int kMaxDiagDims = 16;
+    const int dim = static_cast<int>(data.front().x.size());
+    if (dim > kMaxDiagDims)
+        throw cet::exception(moduleName)
+            << "Partial-reverse diagnostic supports at most " << kMaxDiagDims << " dimensions (got " << dim << ")";
+
+    const size_t nUse = (s.partialReverseSamples > 0)
+        ? std::min(data.size(), static_cast<size_t>(s.partialReverseSamples))
+        : data.size();
+    const size_t stride = std::max<size_t>(1, data.size() / nUse);
+
+    for (double t0 : s.partialReverseT0s) {
+        std::ostringstream nm;
+        nm << "prev_t" << t0;
+        std::string treeName = nm.str();
+        std::replace(treeName.begin(), treeName.end(), '.', 'p');
+        std::ostringstream title;
+        title << "Partial-reverse sampling diagnostic from t0=" << t0;
+        TTree* tree = new TTree(treeName.c_str(), title.str().c_str());
+
+        double t0Branch = t0;
+        double trueD[kMaxDiagDims]    = {0.0};
+        double sampledD[kMaxDiagDims] = {0.0};
+        tree->Branch("t0", &t0Branch);
+        for (int i = 0; i < dim; ++i) {
+            tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
+            tree->Branch(("sampled_dim" + std::to_string(i)).c_str(), &sampledD[i]);
+        }
+
+        size_t written = 0;
+        for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
+            const auto& sample = data[k];
+            auto res = model.partialReverseSample(sample.x, sample.cond, t0,
+                s.denoiseDiagnosticUseEMA, s.partialReverseUseHeun, s.partialReverseUseSDE,
+                s.partialReverseDiffusionSteps, s.partialReverseSdeToOdeSigmaThreshold);
+            for (int i = 0; i < dim; ++i) {
+                trueD[i]    = sample.x[i] * stdev[i] + mean[i];
+                sampledD[i] = res.value[i];
+            }
+            tree->Fill();
+        }
+        tree->Write();
+        mf::LogInfo(moduleName)
+            << "Partial-reverse diagnostic tree " << treeName << " filled (" << written << " samples)";
+    }
+    fout.Close();
+    mf::LogInfo(moduleName)
+        << "Partial-reverse diagnostic written to " << outFile
+        << " (" << nUse << " samples per t0, " << s.partialReverseT0s.size() << " t0 values)";
 }
 
 // ---------------------------------------------------------------------------
@@ -522,6 +611,22 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         if (f.size() > 4 && (f.substr(f.size() - 4) == ".csv" || f.substr(f.size() - 4) == ".bin"))
             return f.substr(0, f.size() - 4);
         return f;
+    };
+
+    // Diagnostic mode: when either diagnostic is requested it REPLACES training for
+    // every active model path. Shared by all three paths below.
+    const bool diagnosticMode = !s.denoiseDiagnosticTs.empty() || !s.partialReverseT0s.empty();
+    auto runDiagnostics = [&](ScoreBasedDiffusionModel& model,
+                              const std::vector<DiffusionTrainingSample>& data,
+                              const std::vector<double>& mean,
+                              const std::vector<double>& stdevs,
+                              const std::string& modelFile) {
+        if (!s.denoiseDiagnosticTs.empty())
+            runDenoiseDiagnostic(model, data, mean, stdevs, s,
+                stripExt(modelFile) + "_DenoisingDiag.root", moduleName);
+        if (!s.partialReverseT0s.empty())
+            runPartialReverseDiagnostic(model, data, mean, stdevs, s,
+                stripExt(modelFile) + "_PartialReverseDiag.root", moduleName);
     };
 
     // Per-epoch training loop shared by all three model paths.
@@ -603,11 +708,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 {s.t_mean, s.x_mean, s.y_mean},
                 {s.t_stdev, s.x_stdev, s.y_stdev},
                 s.stage1TrainingData);
-            if (!s.denoiseDiagnosticTs.empty()) {
-                runDenoiseDiagnostic(*s.stage1Model, s.stage1TrainingData,
+            if (diagnosticMode) {
+                runDiagnostics(*s.stage1Model, s.stage1TrainingData,
                     {s.t_mean, s.x_mean, s.y_mean},
                     {s.t_stdev, s.x_stdev, s.y_stdev},
-                    s, stripExt(s.stage1ModelFile) + "_DenoisingDiag.root", moduleName);
+                    s.stage1ModelFile);
             } else {
                 mf::LogInfo(moduleName)
                     << "Training stage-1 diffusion model with " << s.stage1TrainingData.size()
@@ -622,11 +727,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
                 {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
                 s.stage2TrainingData);
-            if (!s.denoiseDiagnosticTs.empty()) {
-                runDenoiseDiagnostic(*s.stage2Model, s.stage2TrainingData,
+            if (diagnosticMode) {
+                runDiagnostics(*s.stage2Model, s.stage2TrainingData,
                     {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
                     {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
-                    s, stripExt(s.stage2ModelFile) + "_DenoisingDiag.root", moduleName);
+                    s.stage2ModelFile);
             } else {
                 mf::LogInfo(moduleName)
                     << "Training stage-2 diffusion model with " << s.stage2TrainingData.size()
@@ -643,11 +748,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
             {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
             s.allAtOnceTrainingData);
-        if (!s.denoiseDiagnosticTs.empty()) {
-            runDenoiseDiagnostic(*s.allAtOnceModel, s.allAtOnceTrainingData,
+        if (diagnosticMode) {
+            runDiagnostics(*s.allAtOnceModel, s.allAtOnceTrainingData,
                 {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
                 {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
-                s, stripExt(s.allAtOnceModelFile) + "_DenoisingDiag.root", moduleName);
+                s.allAtOnceModelFile);
         } else {
             mf::LogInfo(moduleName)
                 << "Training all-at-once diffusion model with " << s.allAtOnceTrainingData.size()

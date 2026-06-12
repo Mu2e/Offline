@@ -279,6 +279,33 @@ namespace mu2e{
             bool useEMANetworkIfAvailable = true
         );
 
+        // Partial-reverse diagnostic: perturb a normalized data sample at diffusion time t0,
+        // then run the full multi-step reverse sampler from t0 down to 0 (instead of starting
+        // from pure noise at t=1). Scanning t0 localizes where the sampler loses a feature:
+        // if the feature survives a start at t0 but not a full generation, the t>t0 phase
+        // delivers a wrong marginal; if it is already lost starting at t0, the score or its
+        // integration below t0 is responsible. t0=1.0 degenerates to full generation.
+        //
+        // Parameters:
+        //   xNorm     - Normalized (z-scored) state vector of size dim_
+        //   condition - Normalized conditioning vector (must match conditionDim_)
+        //   t0        - Diffusion time in (0,1] to noise the sample to; snapped to the
+        //               sampler's discrete time grid (round(t0*steps)/steps)
+        //   useEMANetworkIfAvailable / useHeun / useSDE / diffusionSteps /
+        //   sdeToOdeSigmaThreshold - identical to generateSample()
+        //
+        // Returns: zscore = sampled state (normalized space), value = de-normalized state
+        SBDMGeneratedSample partialReverseSample(
+            const std::vector<double>& xNorm,
+            const std::vector<double>& condition,
+            double t0,
+            bool useEMANetworkIfAvailable = true,
+            bool useHeun = true,
+            bool useSDE = true,
+            int diffusionSteps = -1,
+            double sdeToOdeSigmaThreshold = -1.0
+        );
+
         // Save the model to a binary file (.bin) preserving full double precision.
         // This is the default save format. Use saveModelCsv for human-readable output.
         //
@@ -378,6 +405,32 @@ namespace mu2e{
         // Returns: Gradient of loss w.r.t. network parameters (gradW and gradb for each layer)
         void backward(
             const std::vector<double>& gradOutput
+        );
+
+        // Shared reverse-diffusion integrator behind generateSample() and
+        // partialReverseSample(): starting from state x at grid time stepStart/steps,
+        // iterates the Euler/Heun SDE/ODE updates down to t=0 and returns the
+        // de-normalized sample. generateSample() passes stepStart = steps (t=1).
+        //
+        // Parameters:
+        //   x         - Initial normalized state at time stepStart/steps (consumed)
+        //   condition - Normalized conditioning vector
+        //   stepStart - First reverse step index in [1, steps]; integration covers
+        //               t = stepStart/steps, ..., 1/steps
+        //   useEMANetworkIfAvailable / useHeun / useSDE / sdeToOdeSigmaThreshold -
+        //               identical to generateSample()
+        //   steps     - Total number of grid steps (defines dt = 1/steps)
+        //
+        // Returns: zscore = final state (normalized space), value = de-normalized state
+        SBDMGeneratedSample reverseDiffuseFrom(
+            std::vector<double> x,
+            const std::vector<double>& condition,
+            int stepStart,
+            bool useEMANetworkIfAvailable,
+            bool useHeun,
+            bool useSDE,
+            int steps,
+            double sdeToOdeSigmaThreshold
         );
 
         // Update network weights using computed gradients (Stochastic Gradient Descent SGD).

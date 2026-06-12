@@ -99,6 +99,13 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("t focus window fraction per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
         fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
+        fhicl::Atom<bool>       SBDMdenoiseDiagnosticUseEMA{ Name("SBDMdenoiseDiagnosticUseEMA"), Comment("Network used by the diagnostics: true = EMA network when available, false = base network. Match the generation config's useEMANetworkIfAvailable"), true };
+        fhicl::Sequence<double> SBDMpartialReverseT0s{ Name("SBDMpartialReverseT0s"), Comment("If non-empty, run the partial-reverse sampling diagnostic from these t0 values INSTEAD of training"), std::vector<double>() };
+        fhicl::Atom<int>        SBDMpartialReverseSamples{ Name("SBDMpartialReverseSamples"), Comment("Samples per t0 value for the partial-reverse diagnostic"), 20000 };
+        fhicl::Atom<bool>       SBDMpartialReverseUseHeun{ Name("SBDMpartialReverseUseHeun"), Comment("Use Heun's method in the partial-reverse diagnostic sampler"), true };
+        fhicl::Atom<bool>       SBDMpartialReverseUseSDE{ Name("SBDMpartialReverseUseSDE"), Comment("Use the SDE solver in the partial-reverse diagnostic sampler"), true };
+        fhicl::Atom<int>        SBDMpartialReverseDiffusionSteps{ Name("SBDMpartialReverseDiffusionSteps"), Comment("Diffusion steps for the partial-reverse diagnostic sampler (-1 = model's configured value)"), -1 };
+        fhicl::Atom<double>     SBDMpartialReverseSdeToOdeSigmaThreshold{ Name("SBDMpartialReverseSdeToOdeSigmaThreshold"), Comment("Switch from SDE to ODE when sigma falls below this threshold in the partial-reverse diagnostic sampler (-1 = always use SBDMpartialReverseUseSDE setting)"), -1.0 };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrain(const Parameters& conf);
@@ -152,6 +159,13 @@ namespace mu2e {
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
     state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
     state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
+    state_.denoiseDiagnosticUseEMA       = conf().SBDMdenoiseDiagnosticUseEMA();
+    state_.partialReverseT0s             = conf().SBDMpartialReverseT0s();
+    state_.partialReverseSamples         = conf().SBDMpartialReverseSamples();
+    state_.partialReverseUseHeun         = conf().SBDMpartialReverseUseHeun();
+    state_.partialReverseUseSDE          = conf().SBDMpartialReverseUseSDE();
+    state_.partialReverseDiffusionSteps  = conf().SBDMpartialReverseDiffusionSteps();
+    state_.partialReverseSdeToOdeSigmaThreshold = conf().SBDMpartialReverseSdeToOdeSigmaThreshold();
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrain");
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",

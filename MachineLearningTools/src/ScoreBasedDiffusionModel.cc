@@ -2198,8 +2198,6 @@ namespace mu2e {
                 << ", expected " << conditionDim_;
         }
 
-        double sigma_safe = 1e-12; // small constant to prevent division by zero in case of very small sigma
-
         // Use provided diffusionSteps if positive, otherwise use the model's configured value
         int steps = (diffusionSteps > 0) ? diffusionSteps : diffusionSteps_;
 
@@ -2210,8 +2208,26 @@ namespace mu2e {
             x[i] = randGaussQ_.fire();
         }
 
+        return reverseDiffuseFrom(std::move(x), condition, steps,
+                                  useEMANetworkIfAvailable, useHeun, useSDE,
+                                  steps, sdeToOdeSigmaThreshold);
+    }
+
+    SBDMGeneratedSample ScoreBasedDiffusionModel::reverseDiffuseFrom(
+        std::vector<double> x,
+        const std::vector<double>& condition,
+        int stepStart,
+        bool useEMANetworkIfAvailable,
+        bool useHeun,
+        bool useSDE,
+        int steps,
+        double sdeToOdeSigmaThreshold
+    )
+    {
+        double sigma_safe = 1e-12; // small constant to prevent division by zero in case of very small sigma
+
         // Reverse diffusion process
-        for (int step = steps - 1; step >= 0; --step) {
+        for (int step = stepStart - 1; step >= 0; --step) {
 
             double t = ((double)step + 1.0)/steps;
             double dt = 1.0/steps;
@@ -2321,6 +2337,50 @@ namespace mu2e {
             // note the order in the stdev and mean is always x then cond
         }
         return generatedSample;
+    }
+
+    // Partial-reverse diagnostic: noise a normalized data sample at t0 (snapped to the
+    // sampler's time grid so the first network evaluation matches the noising time), then
+    // integrate the same reverse process generateSample() uses from t0 down to 0.
+    SBDMGeneratedSample ScoreBasedDiffusionModel::partialReverseSample(
+        const std::vector<double>& xNorm,
+        const std::vector<double>& condition,
+        double t0,
+        bool useEMANetworkIfAvailable,
+        bool useHeun,
+        bool useSDE,
+        int diffusionSteps,
+        double sdeToOdeSigmaThreshold
+    )
+    {
+        if (xNorm.size() != static_cast<size_t>(dim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::partialReverseSample")
+                << "State dimension mismatch: got " << xNorm.size() << ", expected " << dim_;
+        }
+        if (condition.size() != static_cast<size_t>(conditionDim_)) {
+            throw cet::exception("ScoreBasedDiffusionModel::partialReverseSample")
+                << "Conditioning dimension mismatch: got " << condition.size()
+                << ", expected " << conditionDim_;
+        }
+        if (t0 <= 0.0 || t0 > 1.0) {
+            throw cet::exception("ScoreBasedDiffusionModel::partialReverseSample")
+                << "Invalid diffusion time t0=" << t0 << ": must be in (0,1]";
+        }
+
+        // Use provided diffusionSteps if positive, otherwise use the model's configured value
+        int steps = (diffusionSteps > 0) ? diffusionSteps : diffusionSteps_;
+
+        // Snap t0 to the sampler's grid t = stepStart/steps; the reverse loop's first
+        // evaluation is at exactly that time, so the noised state sits on the grid.
+        int stepStart = std::min(steps, std::max(1, static_cast<int>(std::lround(t0 * steps))));
+        double tGrid = static_cast<double>(stepStart) / steps;
+
+        std::vector<double> eps;
+        auto x = addNoise(xNorm, tGrid, eps);
+
+        return reverseDiffuseFrom(std::move(x), condition, stepStart,
+                                  useEMANetworkIfAvailable, useHeun, useSDE,
+                                  steps, sdeToOdeSigmaThreshold);
     }
 
     // One-step denoising diagnostic: noise a normalized sample at fixed t, run one forward
