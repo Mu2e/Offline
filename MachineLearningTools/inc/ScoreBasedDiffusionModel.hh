@@ -541,8 +541,8 @@ namespace mu2e{
         // EMA copy of network parameters for inference ---
         static constexpr int kEMABatchSizeRef_ = 32; // canonical reference batch size for emaNetworkDecay interpretation
         bool   useEMANetwork_;          // if true, generateSample() uses emaNetwork_ instead of network_
-        double emaNetworkDecay_;        // effective decay per optimizer step (rescaled from emaNetworkDecayBase_)
         double emaNetworkDecayBase_;    // user-configured decay at kEMABatchSizeRef_=32 samples/step
+        double emaNetworkDecay_;        // effective decay per optimizer step (rescaled from emaNetworkDecayBase_)
         std::vector<Layer> emaNetwork_; // slow-moving EMA copy, only W and b are used
 
         // Diffusion process discretization
