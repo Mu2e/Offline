@@ -19,16 +19,16 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-	 verbosityLevel : 1
-	 saveRawWithHeaderWaveform_HPGe: false
-	 saveRawWaveform_HPGe: false
-	 saveZSWaveform_HPGe: true
-	 
-	 saveRawWithHeaderWaveform_LaBr: false
-	 saveRawWaveform_LaBr: false
-	 saveZSWaveform_LaBr: true
+         verbosityLevel : 1
+         saveSTMFragSummary : true
+         saveRawWithHeaderWaveform_HPGe: false
+         saveRawWaveform_HPGe: true
+         saveZSWaveform_HPGe: true
+         saveRawWithHeaderWaveform_LaBr: false
+         saveRawWaveform_LaBr: true
+         saveZSWaveform_LaBr: true
 	}
-         
+
        makeSTMBinary : { 
       	 module_type : STMBinaryDigisFromFragments
          stmTag : "daq:ContainerSTM"
@@ -38,12 +38,12 @@ physics : {
 	 phFile : "ph.bin"
 	 rawHeaderFile : "rawWithHeader.bin"
 	 eventFile : "event.bin"
-      }  
+      }
    }
 
 
    analyzers  : {
-   
+
     stmPrint : {
       module_type : STMPrintFragments
       stmTag : "daq:ContainerSTM"
@@ -70,6 +70,5 @@ outputs : {
       module_type : RootOutput
       fileName : "dig.stm.art"
       outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
-#      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
    }
 }

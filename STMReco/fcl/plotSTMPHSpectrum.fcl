@@ -19,16 +19,16 @@ physics: {
   analyzers : {
     plotHPGePHSpectrum : {
       module_type : PlotSTMPHSpectrum
-      stmPHDigisTag : "phHPGe"
+      stmPHDigisTag : "makeSTMDigis:phHPGe"
     }
     plotLaBrPHSpectrum : {
       module_type : PlotSTMPHSpectrum
-      stmPHDigisTag : "makeSTMDigis:phHPGe"
+      stmPHDigisTag : "makeSTMDigis:phLaBr"
     }
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotLaBrPHSpectrum ]
+  anaPath : [ plotHPGePHSpectrum, plotLaBrPHSpectrum ]
   end_paths: [anaPath]
 }
 
