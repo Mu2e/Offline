@@ -7,13 +7,14 @@
 #include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
 #include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
 #include "Offline/CRVConditions/inc/CRVStatusCache.hh"
-#include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
+#include "Offline/CaloConditions/inc/CalDAQMapCache.hh"
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/DbService/inc/DbService.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsService.hh"
 
-#include "Offline/CaloConditions/inc/CaloDAQMapCache.hh"
+#include "Offline/CaloConditions/inc/CalSimCrystalCache.hh"
+#include "Offline/CaloConditions/inc/CalDAQMapCache.hh"
 #include "Offline/CaloConditions/inc/CalCalibCache.hh"
 
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
@@ -86,7 +87,7 @@ ProditionsService::ProditionsService(Parameters const& sTable,
     std::make_shared<mu2e::AlignedTrackerCacheSim>(_config.alignedTrackerSim());
   _caches[atcs->name()+"Sim"] = atcs;
   auto cdc =
-      std::make_shared<mu2e::CaloDAQMapCache>(_config.caloDAQConditions());
+      std::make_shared<mu2e::CalDAQMapCache>(_config.calDAQConditions());
   _caches[cdc->name()] = cdc;
 //  auto tqc =
 //      std::make_shared<mu2e::TrkQualCatalogCache>(_config.trkQualCatalog());
@@ -97,6 +98,9 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto cec =
       std::make_shared<mu2e::CalCalibCache>(_config.calCalib());
   _caches[cec->name()] = cec;
+  auto cmc =
+      std::make_shared<mu2e::CalSimCrystalCache>(_config.calSimCrystal());
+  _caches[cmc->name()] = cmc;
   if (_config.verbose() > 0) {
     cout << "Proditions built caches:" << endl;
     for (auto const& cc : _caches) {

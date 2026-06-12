@@ -1,16 +1,23 @@
 BEGIN_PROLOG
 
-calCalib : {
+CalCalib : {
   verbose: 0
   useDb: false
   ADC2MeV: 0.0625
   timeoffset: 0.0
 }
 
-CaloDAQConditions : {
+CalDAQConditions : {
     fileSpec : "Offline/CaloConditions/data/nominal.txt"
     verbose : 0
     useDb : false
 }
+
+CalSimCrystal : {
+    fileName : "Offline/CaloConditions/data/Sim_crystal.txt"
+    verbose : 0
+    useDb : false
+}
+
 
 END_PROLOG

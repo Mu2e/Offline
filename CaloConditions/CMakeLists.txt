@@ -2,8 +2,10 @@ cet_make_library(
     SOURCE
       src/CalCalib.cc
       src/CalCalibMaker.cc
-      src/CaloDAQMap.cc
-      src/CaloDAQMapMaker.cc
+      src/CalSimCrystal.cc
+      src/CalSimCrystalMaker.cc
+      src/CalDAQMap.cc
+      src/CalDAQMapMaker.cc
     LIBRARIES PUBLIC
       
       Offline::CaloConfig
@@ -18,6 +20,7 @@ cet_make_library(
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/nominal.txt ${CURRENT_BINARY_DIR} data/nominal.txt)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/caloDMAP_nominal.dat ${CURRENT_BINARY_DIR} data/caloDMAP_nominal.dat)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/Sim_crystal.dat ${CURRENT_BINARY_DIR} data/Sim_crystal.dat)
 
 install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloConditions)
 
