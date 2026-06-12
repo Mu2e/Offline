@@ -1,0 +1,51 @@
+# Production-style FCL that runs both BFS clustering (existing) and
+# GNN clustering (new) on MCS art-format input. Demonstrates the
+# `CaloClusterGNN` prolog pattern from
+# Offline/CaloCluster/fcl/prolog.fcl -- production-reco FCLs include
+# both the BFS sequence and the GNN sequence to emit two
+# CaloClusterCollections side by side.
+#
+# Usage (working_dir, with u092):
+#   mu2e -c Offline/CaloCluster/fcl/from_mcs-gnn-prod.fcl \
+#        -s <mcs.art>  -T mcs.gnn.art  -n 100
+#
+# The output art file carries:
+#   * caloClusterMaker       :: CaloClusterCollection ("")     -- BFS, untouched
+#   * caloClusterMakerGNN    :: CaloClusterCollection ("GNN")  -- GNN
+#
+# Task 16h (production FHiCL wiring).
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+
+process_name : GnnProd
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics : {
+  producers : {
+    caloHitGraphMakerGNN : @local::CaloClusterGNN.caloHitGraphMakerGNN
+    caloClusterMakerGNN  : @local::CaloClusterGNN.caloClusterMakerGNN
+  }
+
+  GnnPath : [ @sequence::CaloClusterGNN.Reco ]
+  OutPath : [ out ]
+
+  trigger_paths : [ GnnPath ]
+  end_paths     : [ OutPath ]
+}
+
+outputs : {
+  out : {
+    module_type    : RootOutput
+    fileName       : "mcs.gnn.art"
+    # CaloHitGraphCollection is a transient data product (no ROOT
+    # dictionary by design -- see Offline/RecoDataProducts/inc/CaloHitGraph.hh
+    # and offline_integration.md 2.2). Drop it from the output art file.
+    outputCommands : [ "keep *",
+                       "drop *_caloHitGraphMakerGNN_*_*" ]
+  }
+}

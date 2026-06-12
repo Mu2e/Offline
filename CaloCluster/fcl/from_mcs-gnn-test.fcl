@@ -1,0 +1,72 @@
+# Smoke + parity test for the GNN clustering split design.
+#
+# Reads MCS art files (which carry CaloHitCollection produced by
+# CaloHitMaker in the Reconstruct process), runs the two new
+# EDProducers, and dumps the GNN cluster assignments per
+# event-disk to a flat TTree for byte-comparison against the
+# Python pipeline.
+#
+# Usage (build node, with u092):
+#   mu2e -c Offline/CaloCluster/fcl/from_mcs-gnn-test.fcl \
+#        <slim.art>  -T parity_dump.root  -n 100
+#
+# Companion Python script:
+#   calorimeter/GNN/scripts/compare_parity_dump.py
+#
+# Task 16g, Stage 3.
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : GnnTest
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics : {
+
+  producers : {
+
+    caloHitGraphMakerGNN : {
+      module_type        : "CaloHitGraphMaker"
+      caloHitCollection  : "CaloHitMaker"
+      normSidecar        : "Offline/CaloCluster/data/calo_cluster_net_v2_stage1.norm.json"
+      rMax               : 210.0
+      dtMax              :  25.0
+      kMin               :   3
+      kMax               :  20
+    }
+
+    caloClusterMakerGNN : {
+      module_type            : "CaloClusterMakerGNN"
+      caloHitGraphCollection : "caloHitGraphMakerGNN"
+      modelPath              : "Offline/CaloCluster/data/calo_cluster_net_v2_stage1.onnx"
+      expectedModelVersion   : "calo-cluster-net-v2-stage1"
+      expectedNodeFeatures   : ["log_e","t","x","y","r","e_rel"]
+      expectedEdgeFeatures   : ["dx","dy","d","dt","dlog_e","asym_e","logsum_e","dr"]
+      tauEdge                : 0.20
+      bfsExpandCut           : 10.0
+      minHits                : 2
+      minEnergyMeV           : 10.0
+      outputInstance         : "GNN"
+    }
+  }
+
+  analyzers : {
+
+    parityDump : {
+      module_type           : "CaloHitGraphParityDump"
+      caloHitCollection     : "CaloHitMaker"
+      caloClusterCollection : "caloClusterMakerGNN:GNN"
+    }
+  }
+
+  GnnPath : [ caloHitGraphMakerGNN, caloClusterMakerGNN ]
+  DumpPath: [ parityDump ]
+
+  trigger_paths : [ GnnPath ]
+  end_paths     : [ DumpPath ]
+}
+
+services.TFileService.fileName : "parity_dump.root"
