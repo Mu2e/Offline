@@ -38,7 +38,29 @@ namespace mu2e {
     // separate IDs for each CRV sector
     std::make_pair(SurfaceIdEnum::CRV_EX, "CRV_EX"),
     std::make_pair(SurfaceIdEnum::CRV_T1, "CRV_T1"),
-    std::make_pair(SurfaceIdEnum::CRV_T2, "CRV_T2")
+    std::make_pair(SurfaceIdEnum::CRV_T2, "CRV_T2"),
+    // Run 2 CRV sectors
+    std::make_pair(SurfaceIdEnum::CRV_R1, "CRV_R1"),
+    std::make_pair(SurfaceIdEnum::CRV_R2, "CRV_R2"),
+    std::make_pair(SurfaceIdEnum::CRV_R3, "CRV_R3"),
+    std::make_pair(SurfaceIdEnum::CRV_R4, "CRV_R4"),
+    std::make_pair(SurfaceIdEnum::CRV_R5, "CRV_R5"),
+    std::make_pair(SurfaceIdEnum::CRV_R6, "CRV_R6"),
+    std::make_pair(SurfaceIdEnum::CRV_L1, "CRV_L1"),
+    std::make_pair(SurfaceIdEnum::CRV_L2, "CRV_L2"),
+    std::make_pair(SurfaceIdEnum::CRV_L3, "CRV_L3"),
+    std::make_pair(SurfaceIdEnum::CRV_T3, "CRV_T3"),
+    std::make_pair(SurfaceIdEnum::CRV_T4, "CRV_T4"),
+    std::make_pair(SurfaceIdEnum::CRV_T5, "CRV_T5"),
+    std::make_pair(SurfaceIdEnum::CRV_E1, "CRV_E1"),
+    std::make_pair(SurfaceIdEnum::CRV_E2, "CRV_E2"),
+    std::make_pair(SurfaceIdEnum::CRV_U,  "CRV_U"),
+    std::make_pair(SurfaceIdEnum::CRV_D1, "CRV_D1"),
+    std::make_pair(SurfaceIdEnum::CRV_D2, "CRV_D2"),
+    std::make_pair(SurfaceIdEnum::CRV_D3, "CRV_D3"),
+    std::make_pair(SurfaceIdEnum::CRV_D4, "CRV_D4"),
+    std::make_pair(SurfaceIdEnum::CRV_C1, "CRV_C1"),
+    std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2")
   };
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;
