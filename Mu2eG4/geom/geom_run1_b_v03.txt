@@ -1,0 +1,68 @@
+// constructVirtualDetectors.cc places TT_MidInner in DS2Vacuum (isDumbbell=false).
+// With v03's default ds2.halfLength=2080, DS2Vacuum only reaches z~8339 mm,
+// but the tracker center at nominal position is z=10171 mm -> overlap crash.
+//
+// Fix strategy: extend DS2Vacuum to contain the tracker, landing the DS2/DS3 split
+// in the narrow gap between the tracker mother end and the calorimeter face:
+//
+//   DS2/DS3 split = rTorus + 2*TS5_halfLength + 2*ds2.halfLength
+//                 = 2929   + 2*625            + 2*3825
+//                 = 11829 mm
+//
+//   DS2Vacuum spans [4179, 11829] mm:
+//     - StoppingTargetMother at z=4185 mm      (inside DS2 - correct)
+//     - TT_MidInner at z=10171 mm              (inside DS2 - fixes crash)
+//     - Tracker mother end at z=11811 mm       (inside DS2 - 18 mm margin)
+//
+//   DS3Vacuum starts at 11829 mm:
+//     - Calorimeter face at z=11842 mm         (inside DS3 - 13 mm margin)
+//     - DS3 rail center at z=12440 mm          (inside DS3 - correct)
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+//-------------------------------------------
+// Run1B specific overrides (from geom_run1_b_v03.txt)
+//-------------------------------------------
+
+// Disable proton absorber, STM, and TSdA for Run1B
+bool hasProtonAbsorber  = false;
+bool hasSTM             = false;
+bool hasTSdA            = false;
+
+// Virtual detector option (set to false to disable)
+bool hasVirtualDetector = true;
+
+// Stopping target configuration
+bool stoppingTarget.foilTarget_supportStructure = false;
+vector<double> stoppingTarget.halfThicknesses = { 3.175 };
+vector<double> stoppingTarget.radii  =  {600.00};
+double stoppingTarget.holeRadius = 0.001;
+double stoppingTarget.z0InMu2e = 4185;
+
+// Coll5 material override - set to vacuum
+string ts.coll5.material1Name = "DSVacuum";
+
+// Disable rails completely for Run1B (use very small value to avoid zero-length solid errors)
+double ds.lengthRail2   = 0.1;
+double ds.lengthRail3   = 0.1;
+
+//-------------------------------------------
+// Run1B v04 fixes
+//-------------------------------------------
+
+// Place tracker in DS2Vacuum (keeps TT_MidInner VD within DS2Vacuum bounds)
+bool tracker.inDS2Vacuum = true;
+
+// Extend DS2Vacuum to contain the tracker at nominal position z=10171 mm.
+// Split lands at 11829 mm, between tracker mother end (11811) and calo face (11842).
+double ds2.halfLength = 3825;
+
+// Disable DS3 service pipes: their upstream face is at z~11480 mm, which falls
+// inside the extended DS2Vacuum (DS3 now starts at 11829 mm), causing extrusion
+// overlaps. geom_run1_b_v01.txt uses the same flag for the same reason.
+bool ds.hasServicePipes = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

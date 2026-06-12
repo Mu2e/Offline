@@ -170,7 +170,7 @@ namespace mu2e {
       vd->addVirtualDetector( VirtualDetectorId::Coll5_Out,
                                ts5pos, ts5rot, coll5pos+deltaZ5);
 
-      // VD ST_In, ST_Out are placed inside DS2, just before and after
+      // VD ST_In, and ST_Out are placed inside DS2, just before and after
       // stopping target
 
       GeomHandle<StoppingTarget> target;
@@ -185,15 +185,33 @@ namespace mu2e {
       vd->addVirtualDetector( VirtualDetectorId::ST_Out,
                                ds2centerInMu2e, 0, targetOffset+shift);
 
+      // VD EMC_Source is placed inside DS2 in front of the tracker
+      const double zVDcenterInMu2e = c.getDouble("zEMCSourceInMu2e",5300.);
+      Hep3Vector posEMCSource(0., 0., zVDcenterInMu2e-ds2centerInMu2e.z());
+      vd->addVirtualDetector( VirtualDetectorId::EMC_Source,
+                               ds2centerInMu2e, 0, posEMCSource);
+      // VD EMC_Source is placed inside DS2 where the magnetic field starts to be flat
+      const double zVD2centerInMu2e = c.getDouble("zEMCSource2InMu2e",4800.);
+      Hep3Vector posEMCSource2(0., 0., zVD2centerInMu2e-ds2centerInMu2e.z());
+      vd->addVirtualDetector( VirtualDetectorId::EMC_Source2,
+                               ds2centerInMu2e, 0, posEMCSource2);
+      // VD EMC_0_Front is placed in front of EMC Disk 0
+      const double zVDEMC0Front = c.getDouble("zEMC0Front",5830.);
+      Hep3Vector posEMC0Front(0., 0., zVDEMC0Front-ds2centerInMu2e.z());
+      vd->addVirtualDetector( VirtualDetectorId::EMC_0_Front,
+                               ds2centerInMu2e, 0, posEMC0Front);
 
       /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
 
       if ( verbosityLevel > 0 ) {
         std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
       }
+      /*
       const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
       vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
                               ds2centerInMu2e,0,STMOffset);
+
+      */
 
 
 
@@ -227,7 +245,7 @@ namespace mu2e {
                                  ttOffset, 0, vdTTMidOffset);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
-                                 ttOffset, 0, vdTTMidOffset);
+                                ttOffset, 0, vdTTMidOffset);
 
         //       if (verbosityLevel >0) {
         //         for ( int vdId=11; vdId<=12; ++vdId) {
@@ -236,6 +254,31 @@ namespace mu2e {
         //             vd->getGlobal(vdId) << endl;
         //         }
         //       }
+
+        //
+        if ( c.getBool("TrackerHasBrassRings",false) ){
+          TubsParams planeEnvelope = tracker.g4Tracker()->getPlaneEnvelopeParams();
+          double dzplane= planeEnvelope.zHalfLength();
+          for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
+            Hep3Vector vdTracker_FEB_offset(0.,0.,0.);
+            double zplane;
+            double z_Tracker_FEB;
+            if (ipln < StrawId::_nplanes){
+              zplane = tracker.getPlane(ipln).origin().z();
+              z_Tracker_FEB=zplane-dzplane-vdHL;
+            }
+            else{
+              zplane = -tracker.getPlane(0).origin().z();
+              z_Tracker_FEB=zplane+dzplane+vdHL;
+            }
+            vdTracker_FEB_offset.setZ(z_Tracker_FEB);
+            cout << "z_Tracker_FEB_" << ipln/2 << "=" << z_Tracker_FEB << " zplane=" << zplane << " dzplane=" << dzplane <<  endl;
+
+            int vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
+            vd->addVirtualDetector( vdId, ttOffset, 0,vdTracker_FEB_offset);
+            //
+          }
+        }
 
         // Global position is in Mu2e coordinates; local position in the detector system.
         double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;

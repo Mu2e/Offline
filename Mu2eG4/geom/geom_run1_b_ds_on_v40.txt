@@ -1,0 +1,10 @@
+// Run1B v40: 1.75 cm thick mobile target, 1.75 cm thick Al TS5 endcap plate with 135 mm hole added, otherwise a normal Run 1A config
+// Run 1A version with mobile target moved out of the beam for DS-on running
+#include "Offline/Mu2eG4/geom/geom_run1_b_v40.txt"
+
+double degrader.rotation = 120.0; // out of the beam
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

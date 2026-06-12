@@ -1,0 +1,22 @@
+// Based off geom_run1_b_v01.txt
+// Version 2: Stopping target in TS5Vacuum, enable poly (neutron) absorber (TSdA)
+
+#include "Offline/Mu2eG4/geom/geom_run1_b_v01.txt"
+
+//-------------------------------------------
+// Run1B v02 overrides (relative to v01)
+//-------------------------------------------
+
+// Stopping target in TS5Vacuum with reduced radius to fit
+string stoppingTarget.motherVolumeName = "TS5Vacuum";
+vector<double> stoppingTarget.radii  =  {246.8};
+
+// Enable TSdA (polyethylene neutron absorber)
+bool hasTSdA            = true;
+double tsda.z0          = 4220.4;  // upstream face at 4195 mm (10 mm gap from target center 4185)
+double tsda.rin         = 0.001;    // effectively solid (no hole)
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
