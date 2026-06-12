@@ -22,13 +22,13 @@ namespace mu2e {
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200, CRV_EX, CRV_T1, CRV_T2, // CRV test planes (deprecated); EX/T1/T2 reused for extracted geometry
         // Run 2 CRV sectors (from crv_counters_v10.txt, prefixed CRV_ by CosmicRayShieldMaker)
-        CRV_R1=204, CRV_R2, CRV_R3, CRV_R4, CRV_R5, CRV_R6,   // CRV-Right
-        CRV_L1=210, CRV_L2, CRV_L3,                              // CRV-Left
-        CRV_T3=213, CRV_T4, CRV_T5,                              // CRV-Top (T1/T2 above)
-        CRV_E1=216, CRV_E2,                                       // CRV-TS Extension
-        CRV_U=218,                                                 // CRV-Upstream
-        CRV_D1=219, CRV_D2, CRV_D3, CRV_D4,                     // CRV-Downstream
-        CRV_C1=223, CRV_C2                                        // CRV-Cryo-Outer
+        CRV_T3=204, CRV_T4, CRV_T5,                           // CRV-Top (T1/T2 above)
+        CRV_R1=210, CRV_R2, CRV_R3, CRV_R4, CRV_R5, CRV_R6,   // CRV-Right
+        CRV_L1=220, CRV_L2, CRV_L3,                           // CRV-Left
+        CRV_E1=230, CRV_E2,                                   // CRV-TS Extension
+        CRV_U =240,                                           // CRV-Upstream
+        CRV_D1=250, CRV_D2, CRV_D3, CRV_D4,                   // CRV-Downstream
+        CRV_C1=260, CRV_C2                                    // CRV-Cryo-Outer
       };
 
     static std::string const& typeName();
