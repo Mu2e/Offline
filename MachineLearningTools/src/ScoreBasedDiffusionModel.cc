@@ -1491,14 +1491,25 @@ namespace mu2e {
                 if (!bin) fail("network biases");
             }
 
-            // Data normalisation
-            uint64_t normDim = checkCount(rU64(), "normalisation dimension");
-            std::vector<double> dataMean(normDim), dataStdev(normDim), normMin(normDim), normMax(normDim);
-            bin.read(reinterpret_cast<char*>(dataMean.data()),  static_cast<std::streamsize>(normDim * sizeof(double)));
-            bin.read(reinterpret_cast<char*>(dataStdev.data()), static_cast<std::streamsize>(normDim * sizeof(double)));
-            bin.read(reinterpret_cast<char*>(normMin.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
-            bin.read(reinterpret_cast<char*>(normMax.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
-            if (!bin) fail("normalisation arrays");
+            // Data normalisation. saveModel writes each of the four vectors with its own
+            // u64 size prefix (wVec), so they must be read back symmetrically — one size +
+            // payload per vector. (An earlier reader read a single size then four raw
+            // payloads, swallowing the intervening size prefixes and desynchronising the
+            // stream for every field that followed.)
+            auto readNorm = [&](const char* ctx) -> std::vector<double> {
+                uint64_t n = checkCount(rU64(), ctx);
+                std::vector<double> v(n);
+                if (n) {
+                    bin.read(reinterpret_cast<char*>(v.data()), static_cast<std::streamsize>(n * sizeof(double)));
+                    if (!bin) fail(ctx);
+                }
+                return v;
+            };
+            std::vector<double> dataMean  = readNorm("dataMean");
+            std::vector<double> dataStdev = readNorm("dataStdev");
+            std::vector<double> normMin   = readNorm("normMin");
+            std::vector<double> normMax   = readNorm("normMax");
+            uint64_t normDim = dataMean.size();
 
             // Training history
             uint64_t numEpochs        = checkCount(rU64(), "epoch-loss");
