@@ -1379,17 +1379,41 @@ namespace mu2e {
                     << "Cannot open binary file " << filename;
             }
 
-            auto rI32 = [&]() -> int32_t  { int32_t  v; bin.read(reinterpret_cast<char*>(&v), 4); return v; };
-            auto rU32 = [&]() -> uint32_t { uint32_t v; bin.read(reinterpret_cast<char*>(&v), 4); return v; };
-            auto rU64 = [&]() -> uint64_t { uint64_t v; bin.read(reinterpret_cast<char*>(&v), 8); return v; };
-            auto rF64 = [&]() -> double   { double   v; bin.read(reinterpret_cast<char*>(&v), 8); return v; };
+            // Fail with an attributable message on a short read, instead of letting
+            // an uninitialized/garbage value propagate into a vector allocation (which
+            // surfaces as an opaque std::length_error / std::bad_alloc).
+            auto fail = [&](const char* ctx) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Truncated or corrupt binary checkpoint " << filename
+                    << ": unexpected EOF or read error while reading " << ctx << ".";
+            };
+            auto rI32 = [&]() -> int32_t  { int32_t  v = 0; bin.read(reinterpret_cast<char*>(&v), 4); if (!bin) fail("int32");  return v; };
+            auto rU32 = [&]() -> uint32_t { uint32_t v = 0; bin.read(reinterpret_cast<char*>(&v), 4); if (!bin) fail("uint32"); return v; };
+            auto rU64 = [&]() -> uint64_t { uint64_t v = 0; bin.read(reinterpret_cast<char*>(&v), 8); if (!bin) fail("uint64"); return v; };
+            auto rF64 = [&]() -> double   { double   v = 0; bin.read(reinterpret_cast<char*>(&v), 8); if (!bin) fail("double"); return v; };
+            // Sanity-bound a size/count field read from the file BEFORE it is used to size
+            // a container. A misaligned-but-not-yet-EOF stream yields a self-consistent
+            // header followed by garbage counts; bounding them here converts that into a
+            // clear error rather than an allocation that throws length_error.
+            constexpr uint64_t kMaxBinElems = 100000000ull; // 1e8 doubles (~800 MB) per dimension
+            auto checkCount = [&](uint64_t v, const char* ctx) -> uint64_t {
+                if (v > kMaxBinElems)
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Corrupt binary checkpoint " << filename << ": implausible " << ctx
+                        << " count " << v << " (max " << kMaxBinElems
+                        << "). File is likely truncated or damaged.";
+                return v;
+            };
             auto rVec = [&](size_t n) -> std::vector<double> {
                 uint64_t stored = rU64();
                 if (stored != n)
                     throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                         << "Binary vector size mismatch: expected " << n << ", got " << stored;
                 std::vector<double> v(n);
-                if (n) bin.read(reinterpret_cast<char*>(v.data()), static_cast<std::streamsize>(n * sizeof(double)));
+                if (n) {
+                    bin.read(reinterpret_cast<char*>(v.data()), static_cast<std::streamsize>(n * sizeof(double)));
+                    if (!bin) fail("vector payload");
+                }
                 return v;
             };
             auto rMat = [&](size_t rows, size_t cols) -> std::vector<std::vector<double>> {
@@ -1405,6 +1429,7 @@ namespace mu2e {
                             << "Binary matrix col count mismatch: expected " << cols << ", got " << storedCols;
                     row.resize(cols);
                     bin.read(reinterpret_cast<char*>(row.data()), static_cast<std::streamsize>(cols * sizeof(double)));
+                    if (!bin) fail("matrix payload");
                 }
                 return m;
             };
@@ -1449,30 +1474,34 @@ namespace mu2e {
             int diffusionSteps = rI32();
 
             // Network weights
-            uint32_t numLayers = rU32();
+            uint32_t numLayers = static_cast<uint32_t>(checkCount(rU32(), "network layer"));
             std::vector<Layer> loadedNetwork(numLayers);
             for (auto& layer : loadedNetwork) {
-                uint32_t outSize = rU32();
-                uint32_t inSize  = rU32();
+                uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "layer outSize"));
+                uint32_t inSize  = static_cast<uint32_t>(checkCount(rU32(), "layer inSize"));
                 layer.W.resize(outSize, std::vector<double>(inSize));
-                for (auto& row : layer.W)
+                for (auto& row : layer.W) {
                     bin.read(reinterpret_cast<char*>(row.data()),
                              static_cast<std::streamsize>(inSize * sizeof(double)));
+                    if (!bin) fail("network weight row");
+                }
                 layer.b.resize(outSize);
                 bin.read(reinterpret_cast<char*>(layer.b.data()),
                          static_cast<std::streamsize>(outSize * sizeof(double)));
+                if (!bin) fail("network biases");
             }
 
             // Data normalisation
-            uint64_t normDim = rU64();
+            uint64_t normDim = checkCount(rU64(), "normalisation dimension");
             std::vector<double> dataMean(normDim), dataStdev(normDim), normMin(normDim), normMax(normDim);
             bin.read(reinterpret_cast<char*>(dataMean.data()),  static_cast<std::streamsize>(normDim * sizeof(double)));
             bin.read(reinterpret_cast<char*>(dataStdev.data()), static_cast<std::streamsize>(normDim * sizeof(double)));
             bin.read(reinterpret_cast<char*>(normMin.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
             bin.read(reinterpret_cast<char*>(normMax.data()),   static_cast<std::streamsize>(normDim * sizeof(double)));
+            if (!bin) fail("normalisation arrays");
 
             // Training history
-            uint64_t numEpochs        = rU64();
+            uint64_t numEpochs        = checkCount(rU64(), "epoch-loss");
             uint64_t trainingSampleSz = rU64();
             std::vector<double> epochLosses(numEpochs);
             for (auto& v : epochLosses) v = rF64();
@@ -1496,18 +1525,21 @@ namespace mu2e {
             bool hasEMA = (rI32() != 0);
             std::vector<Layer> loadedEmaNetwork;
             if (hasEMA) {
-                uint32_t emaLayers = rU32();
+                uint32_t emaLayers = static_cast<uint32_t>(checkCount(rU32(), "EMA layer"));
                 loadedEmaNetwork.resize(emaLayers);
                 for (auto& layer : loadedEmaNetwork) {
-                    uint32_t outSize = rU32();
-                    uint32_t inSize  = rU32();
+                    uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "EMA layer outSize"));
+                    uint32_t inSize  = static_cast<uint32_t>(checkCount(rU32(), "EMA layer inSize"));
                     layer.W.resize(outSize, std::vector<double>(inSize));
-                    for (auto& row : layer.W)
+                    for (auto& row : layer.W) {
                         bin.read(reinterpret_cast<char*>(row.data()),
                                  static_cast<std::streamsize>(inSize * sizeof(double)));
+                        if (!bin) fail("EMA weight row");
+                    }
                     layer.b.resize(outSize);
                     bin.read(reinterpret_cast<char*>(layer.b.data()),
                              static_cast<std::streamsize>(outSize * sizeof(double)));
+                    if (!bin) fail("EMA biases");
                 }
             }
 
