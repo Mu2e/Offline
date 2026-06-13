@@ -1084,9 +1084,10 @@ namespace mu2e {
 
         // Magic + version
         // Version history: 1 = original format; 2 = adds inputEmbeddingDim and
-        // conditionEmbeddingDim after timeEmbeddingDim.
+        // conditionEmbeddingDim after timeEmbeddingDim; 3 = appends a 4-byte "ENDM"
+        // end-of-stream sentinel that the loader verifies to detect truncation.
         out.write("SBDM", 4);
-        wU32(2u);
+        wU32(3u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1156,6 +1157,11 @@ namespace mu2e {
                           static_cast<std::streamsize>(layer.b.size() * sizeof(double)));
             }
         }
+
+        // End-of-stream sentinel (format version >= 3). A complete file ends in "ENDM";
+        // the loader reads and verifies it, so a file truncated after otherwise-plausible
+        // contents is rejected instead of silently loading partial data.
+        out.write("ENDM", 4);
     }
 
     void ScoreBasedDiffusionModel::saveModelCsv(
@@ -1440,7 +1446,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version != 1 && version != 2)
+            if (version != 1 && version != 2 && version != 3)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -1557,6 +1563,19 @@ namespace mu2e {
             if (!bin) {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Read error or unexpected EOF in binary file " << filename;
+            }
+
+            // End-of-stream sentinel (version >= 3 only; versions 1-2 predate it, so they
+            // are accepted without it for back-compatibility). A complete version-3 file
+            // ends in "ENDM"; its absence means the file was truncated after otherwise-
+            // plausible contents.
+            if (version >= 3) {
+                char endTag[4] = {0};
+                bin.read(endTag, 4);
+                if (!bin || std::string(endTag, 4) != "ENDM")
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Missing or invalid end-of-stream sentinel in binary file " << filename
+                        << "; the file is truncated or corrupt.";
             }
 
             // Validate
