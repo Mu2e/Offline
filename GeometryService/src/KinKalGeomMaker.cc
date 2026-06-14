@@ -241,6 +241,7 @@ namespace mu2e {
       auto flaypos = VEC3(det->toDetector(firstmod.getLayer(0).getPosition()));
       auto llaypos = VEC3(det->toDetector(firstmod.getLayer(firstmod.nLayers()-1).getPosition()));
       double wpos = 0.5*(flaypos+llaypos).Dot(wdir);
+      // wdir can point opposite the layer-stacking order, depending on the sector.
       double whw = 0.5*std::abs((llaypos-flaypos).Dot(wdir)) + firstbar.getHalfThickness();
       // include the layer stagger when computing the position and width perp to the bars
       auto nlay = firstmod.nLayers();
