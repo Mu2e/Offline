@@ -4,6 +4,7 @@
 //
 #ifndef DataProducts_SurfaceId_hh
 #define DataProducts_SurfaceId_hh
+#include <cstddef>
 #include <map>
 #include <vector>
 #include <string>
@@ -20,9 +21,11 @@ namespace mu2e {
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
-        TCRV=200, CRV_EX, CRV_T1, CRV_T2, // CRV test planes (deprecated); EX/T1/T2 reused for extracted geometry
+        TCRV=200, // CRV test plane (deprecated)
+        CRV_EX=201, CRV_T1, CRV_T2, // keep values 201-203 for extracted geometry compatibility
+        // CRV_T1 and CRV_T2 are Run 2 CRV-TS sectors 9 and 10 in crv_counters_v10.txt.
         // Run 2 CRV sectors (from crv_counters_v10.txt, prefixed CRV_ by CosmicRayShieldMaker)
-        CRV_T3=204, CRV_T4, CRV_T5,                           // CRV-Top (T1/T2 above)
+        CRV_T3=204, CRV_T4, CRV_T5,                           // CRV-Top
         CRV_R1=210, CRV_R2, CRV_R3, CRV_R4, CRV_R5, CRV_R6,   // CRV-Right
         CRV_L1=220, CRV_L2, CRV_L3,                           // CRV-Left
         CRV_E1=230, CRV_E2,                                   // CRV-TS Extension
@@ -30,6 +33,9 @@ namespace mu2e {
         CRV_D1=250, CRV_D2, CRV_D3, CRV_D4,                   // CRV-Downstream
         CRV_C1=260, CRV_C2                                    // CRV-Cryo-Outer
       };
+
+    // Update this counter whenever you add/remove surface IDs from the enum above.
+    static constexpr std::size_t nSurfaceIds = 47;
 
     static std::string const& typeName();
     static std::map<enum_type,std::string> const& names();

@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <type_traits>
 #include <utility>
 
@@ -12,7 +13,10 @@ namespace mu2e {
     return type;
   }
 
-  static const std::map<SurfaceIdEnum::enum_type,std::string> nam{
+  namespace {
+    using SurfaceIdName = std::pair<SurfaceIdEnum::enum_type, char const*>;
+
+    constexpr SurfaceIdName surfaceIdNames[] = {
     std::make_pair(SurfaceIdEnum::unknown,   "unknown"  ),
     std::make_pair(SurfaceIdEnum::TT_Front, "TT_Front"),
     std::make_pair(SurfaceIdEnum::TT_Mid, "TT_Mid"),
@@ -34,12 +38,14 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::ST_Inner, "ST_Inner"),
     std::make_pair(SurfaceIdEnum::ST_Outer, "ST_Outer"),
     std::make_pair(SurfaceIdEnum::ST_Foils, "ST_Foils"),
+    std::make_pair(SurfaceIdEnum::ST_Wires, "ST_Wires"),
     std::make_pair(SurfaceIdEnum::TCRV, "TCRV"),
-    // separate IDs for each CRV sector
     std::make_pair(SurfaceIdEnum::CRV_EX, "CRV_EX"),
     std::make_pair(SurfaceIdEnum::CRV_T1, "CRV_T1"),
     std::make_pair(SurfaceIdEnum::CRV_T2, "CRV_T2"),
-    // Run 2 CRV sectors
+    std::make_pair(SurfaceIdEnum::CRV_T3, "CRV_T3"),
+    std::make_pair(SurfaceIdEnum::CRV_T4, "CRV_T4"),
+    std::make_pair(SurfaceIdEnum::CRV_T5, "CRV_T5"),
     std::make_pair(SurfaceIdEnum::CRV_R1, "CRV_R1"),
     std::make_pair(SurfaceIdEnum::CRV_R2, "CRV_R2"),
     std::make_pair(SurfaceIdEnum::CRV_R3, "CRV_R3"),
@@ -49,9 +55,6 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_L1, "CRV_L1"),
     std::make_pair(SurfaceIdEnum::CRV_L2, "CRV_L2"),
     std::make_pair(SurfaceIdEnum::CRV_L3, "CRV_L3"),
-    std::make_pair(SurfaceIdEnum::CRV_T3, "CRV_T3"),
-    std::make_pair(SurfaceIdEnum::CRV_T4, "CRV_T4"),
-    std::make_pair(SurfaceIdEnum::CRV_T5, "CRV_T5"),
     std::make_pair(SurfaceIdEnum::CRV_E1, "CRV_E1"),
     std::make_pair(SurfaceIdEnum::CRV_E2, "CRV_E2"),
     std::make_pair(SurfaceIdEnum::CRV_U,  "CRV_U"),
@@ -61,7 +64,16 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_D4, "CRV_D4"),
     std::make_pair(SurfaceIdEnum::CRV_C1, "CRV_C1"),
     std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2")
-  };
+    };
+
+    constexpr std::size_t nSurfaceIdNames = sizeof(surfaceIdNames)/sizeof(surfaceIdNames[0]);
+    static_assert(nSurfaceIdNames == SurfaceIdDetail::nSurfaceIds,
+        "SurfaceId enum and name map must stay in sync");
+  }
+
+  static const std::map<SurfaceIdEnum::enum_type,std::string> nam(
+      surfaceIdNames, surfaceIdNames + nSurfaceIdNames);
+
   std::map<SurfaceIdEnum::enum_type,std::string> const& SurfaceIdDetail::names(){
     return nam;
   }
