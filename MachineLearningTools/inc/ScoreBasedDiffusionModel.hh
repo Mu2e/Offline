@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <string>
 #include <iomanip>
 #include <fstream>
@@ -355,6 +356,18 @@ namespace mu2e{
             CLHEP::RandGaussQ& randGaussQ,
             const std::string& filename
         );
+
+        // Most recent per-epoch average loss (last entry appended by train()); NaN if
+        // epochLosses_ is empty. Each train(..., epochs=1, ...) call appends exactly one
+        // entry, so this returns that epoch's loss WHEN CALLED IMMEDIATELY AFTER train().
+        // Note: a checkpoint loaded via loadModel() pre-fills epochLosses_ with its saved
+        // history, so back() is meaningful as "the current run's latest epoch" only when
+        // read right after a fresh train() call (which is how the curriculum planner in
+        // VDResamplerTrainCommon uses it).
+        double getLastEpochLoss() const {
+            return epochLosses_.empty() ? std::numeric_limits<double>::quiet_NaN()
+                                        : epochLosses_.back();
+        }
 
     private:
 

@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <deque>
 #include <iomanip>
+#include <limits>
 #include <memory>
 #include <numeric>
 #include <sstream>
@@ -67,6 +69,16 @@ struct TrainState {
     std::vector<int> saveEpochs;
     bool saveAlsoCsv                = false; // if true, also write a CSV alongside every binary save
 
+    // Automatic curriculum planner. When autoPlanner is true, each curriculum phase
+    // trains until its (smoothed) loss converges instead of for a fixed epoch count;
+    // see ConvergenceTracker and the planner branch of runTraining()'s trainLoop.
+    bool   autoPlanner              = false;
+    int    plannerSmoothWindow      = 10;    // trailing moving-average window W
+    double plannerMinDelta          = 0.005; // relative improvement threshold (0.5%)
+    int    plannerPatience          = 20;    // no-improvement epochs => converged
+    int    plannerMinEpochsPerPhase = 30;    // floor; auto-raised to >= window+patience
+    int    plannerMaxEpochsPerPhase = 100;   // hard cap; hitting it aborts with a warning
+
     // Curriculum
     int nPhase = 1;
     std::vector<int>    curriculumEpochs;
@@ -115,6 +127,60 @@ struct TrainState {
     double pphi_mean=0, pphi_M2=0, pphi_stdev=0;
     double pz_mean=0,   pz_M2=0,   pz_stdev=0;
     int nNorm = 0;
+};
+
+// ---------------------------------------------------------------------------
+// ConvergenceTracker — detects "stable loss" within a curriculum phase.
+//
+// Strategy: patience on a smoothed loss. Per-epoch diffusion loss is noisy
+// (stochastic t sampling + per-epoch subset sampling), so we smooth it with a
+// trailing moving average over `window` epochs and watch the best smoothed value.
+// A new smoothed value counts as an improvement only if it beats the best by a
+// RELATIVE margin `minDelta`; after `patience` consecutive non-improving epochs
+// (and at least `minEpochs` epochs into the phase) the phase is declared converged.
+// reset() is called at every phase entry, so its state is independent of any epoch
+// history a loaded checkpoint may carry in the model.
+// ---------------------------------------------------------------------------
+struct ConvergenceTracker {
+    int    window;
+    double minDelta;
+    int    patience;
+    int    minEpochs;
+
+    std::deque<double> recent;  // last `window` raw losses
+    double bestSmoothed = std::numeric_limits<double>::infinity();
+    double bestRawLoss  = std::numeric_limits<double>::infinity();
+    int    bestEpoch    = -1;   // base-1 epoch index (within phase) of bestRawLoss
+    int    sinceImprove = 0;
+    int    epochsThisPhase = 0;
+
+    void reset() {
+        recent.clear();
+        bestSmoothed = std::numeric_limits<double>::infinity();
+        bestRawLoss  = std::numeric_limits<double>::infinity();
+        bestEpoch    = -1;
+        sinceImprove = 0;
+        epochsThisPhase = 0;
+    }
+
+    // Push one epoch's loss; returns true when the phase is considered converged.
+    bool update(double loss) {
+        ++epochsThisPhase;
+        if (loss < bestRawLoss) { bestRawLoss = loss; bestEpoch = epochsThisPhase; }
+
+        recent.push_back(loss);
+        if (static_cast<int>(recent.size()) > window) recent.pop_front();
+        double smoothed = std::accumulate(recent.begin(), recent.end(), 0.0)
+                          / static_cast<double>(recent.size());
+
+        if (smoothed < bestSmoothed * (1.0 - minDelta)) {
+            bestSmoothed = smoothed;
+            sinceImprove = 0;
+        } else {
+            ++sinceImprove;
+        }
+        return epochsThisPhase >= minEpochs && sinceImprove >= patience;
+    }
 };
 
 // ---------------------------------------------------------------------------
@@ -298,6 +364,51 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : defaultTFocusLow;
     s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : defaultTFocusHigh;
     s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : defaultTFocusFraction;
+
+    // Auto curriculum planner sanity checks. The min-epochs floor must cover both the
+    // time for the moving average to fill (window) AND a full no-improvement streak
+    // (patience) on top of it, otherwise convergence could fire spuriously early.
+    if (s.autoPlanner) {
+        if (s.plannerSmoothWindow < 1)
+            throw cet::exception(moduleName)
+                << "SBDMplannerSmoothWindow must be >= 1 (got " << s.plannerSmoothWindow << ")";
+        if (s.plannerPatience < 1)
+            throw cet::exception(moduleName)
+                << "SBDMplannerPatience must be >= 1 (got " << s.plannerPatience << ")";
+        if (s.plannerMaxEpochsPerPhase < 1)
+            throw cet::exception(moduleName)
+                << "SBDMplannerMaxEpochsPerPhase must be >= 1 (got " << s.plannerMaxEpochsPerPhase << ")";
+        int minFloor = s.plannerSmoothWindow + s.plannerPatience;
+        if (s.plannerMinEpochsPerPhase < minFloor) {
+            mf::LogWarning(moduleName)
+                << "SBDMplannerMinEpochsPerPhase (" << s.plannerMinEpochsPerPhase
+                << ") raised to " << minFloor << " to cover smoothWindow+patience.";
+            s.plannerMinEpochsPerPhase = minFloor;
+        }
+        if (s.plannerMaxEpochsPerPhase < s.plannerMinEpochsPerPhase)
+            throw cet::exception(moduleName)
+                << "SBDMplannerMaxEpochsPerPhase (" << s.plannerMaxEpochsPerPhase
+                << ") must be >= effective minEpochsPerPhase (" << s.plannerMinEpochsPerPhase << ")";
+
+        // In planner mode each non-zero curriculum phase uses its configured epoch count
+        // as that phase's max-epoch cap (overriding the global SBDMplannerMaxEpochsPerPhase).
+        // A 0-epoch phase is a skipped "setup-only" phase. Any non-zero cap must leave
+        // room to reach the convergence floor, else the phase could never converge and
+        // would always abort.
+        if (s.nPhase > 1) {
+            for (int i = 0; i < s.nPhase; ++i) {
+                if (s.curriculumEpochs[i] > 0 && s.curriculumEpochs[i] < s.plannerMinEpochsPerPhase)
+                    throw cet::exception(moduleName)
+                        << "Auto planner: SBDMtrainingCurriculumEpochs[" << i << "] = "
+                        << s.curriculumEpochs[i] << " is used as that phase's max-epoch cap "
+                        << "but is below the effective minEpochsPerPhase ("
+                        << s.plannerMinEpochsPerPhase << "); the phase could never converge. "
+                        << "Raise this phase's epochs to >= " << s.plannerMinEpochsPerPhase
+                        << ", or lower SBDMplannerMinEpochsPerPhase / SBDMplannerSmoothWindow / "
+                        << "SBDMplannerPatience.";
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -667,57 +778,167 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << "] (fraction=" << s.currentTFocusFraction << ")"
             << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
         const std::string base = stripExt(outFile);
-        for (int e = 1; e <= s.trainingEpochs; ++e) {
-            if (s.nPhase > 1) {
-                for (int ph = 0; ph < s.nPhase - 1; ++ph) {
-                    if (e == s.phaseBoundaries[ph] + 1) {
-                        double lwp = s.curriculumLossWeightPower[ph + 1];
-                        double gc  = s.curriculumGradientClip   [ph + 1];
-                        double lr  = s.curriculumLearningRate   [ph + 1];
-                        int    bs  = s.curriculumBatchSize      [ph + 1];
-                        bool   udwc= s.curriculumUseDimWeightController[ph + 1];
-                        s.currentBiasLowSigma    = s.curriculumBiasLowSigma   [ph + 1];
-                        s.currentTLowBound       = s.curriculumTLowBound      [ph + 1];
-                        s.currentTFocusLow       = s.curriculumTFocusLow      [ph + 1];
-                        s.currentTFocusHigh      = s.curriculumTFocusHigh     [ph + 1];
-                        s.currentTFocusFraction  = s.curriculumTFocusFraction [ph + 1];
-                        mf::LogInfo(moduleName)
-                            << "Switching to phase " << (ph + 2)
-                            << ": lossWeightPower=" << lwp
-                            << ", gradientClipThreshold=" << gc
-                            << ", learningRate=" << lr
-                            << ", batchSize=" << bs
-                            << ", useDimWeightController=" << udwc
-                            << ", biasLowSigma=" << s.currentBiasLowSigma
-                            << ", tLowBound=" << s.currentTLowBound
-                            << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
-                            << "] (fraction=" << s.currentTFocusFraction << ")"
-                            << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
-                        model.updateLossWeightPower(lwp);
-                        model.updateGradientClipThreshold(gc);
-                        model.updateLearningRate(lr);
-                        model.updateBatchSize(bs);
-                        // Apply before promoteEMA so the frozen-weights log (if the controller
-                        // turns off here) reflects the pre-promotion state.
-                        model.updateUseDimWeightController(udwc);
-                        if (s.curriculumPromoteEMA[ph + 1])
-                            model.promoteEMAToNetwork();
-                    }
+
+        // Apply curriculum phase `k`'s hyperparameters (k is 0-based; only meaningful
+        // for k>=1 — phase 0 keeps the constructed-model defaults, as in legacy mode).
+        // Logs "Switching to phase k+1" to match the existing 1-based phase numbering.
+        auto enterPhase = [&](int k) {
+            double lwp = s.curriculumLossWeightPower[k];
+            double gc  = s.curriculumGradientClip   [k];
+            double lr  = s.curriculumLearningRate   [k];
+            int    bs  = s.curriculumBatchSize      [k];
+            bool   udwc= s.curriculumUseDimWeightController[k];
+            s.currentBiasLowSigma    = s.curriculumBiasLowSigma   [k];
+            s.currentTLowBound       = s.curriculumTLowBound      [k];
+            s.currentTFocusLow       = s.curriculumTFocusLow      [k];
+            s.currentTFocusHigh      = s.curriculumTFocusHigh     [k];
+            s.currentTFocusFraction  = s.curriculumTFocusFraction [k];
+            mf::LogInfo(moduleName)
+                << "Switching to phase " << (k + 1)
+                << ": lossWeightPower=" << lwp
+                << ", gradientClipThreshold=" << gc
+                << ", learningRate=" << lr
+                << ", batchSize=" << bs
+                << ", useDimWeightController=" << udwc
+                << ", biasLowSigma=" << s.currentBiasLowSigma
+                << ", tLowBound=" << s.currentTLowBound
+                << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
+                << "] (fraction=" << s.currentTFocusFraction << ")"
+                << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
+            model.updateLossWeightPower(lwp);
+            model.updateGradientClipThreshold(gc);
+            model.updateLearningRate(lr);
+            model.updateBatchSize(bs);
+            // Apply before promoteEMA so the frozen-weights log (if the controller
+            // turns off here) reflects the pre-promotion state.
+            model.updateUseDimWeightController(udwc);
+            if (s.curriculumPromoteEMA[k])
+                model.promoteEMAToNetwork();
+        };
+
+        if (!s.autoPlanner) {
+            // ----- Legacy fixed-epoch schedule (unchanged behavior) -----
+            for (int e = 1; e <= s.trainingEpochs; ++e) {
+                if (s.nPhase > 1) {
+                    for (int ph = 0; ph < s.nPhase - 1; ++ph)
+                        if (e == s.phaseBoundaries[ph] + 1) enterPhase(ph + 1);
+                }
+                mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
+                model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
+                if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
+                    model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
+                    if (s.saveAlsoCsv)
+                        model.saveModelCsv(base + ".epoch" + std::to_string(e) + ".csv");
                 }
             }
-            mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
-            model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
-                        s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
-            if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
-                model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
+            model.saveModel(outFile);
+            if (s.saveAlsoCsv)
+                model.saveModelCsv(base + ".csv");
+            mf::LogInfo(moduleName) << "Training completed, saved to " << outFile;
+            return;
+        }
+
+        // ----- Automatic curriculum planner: train each phase until converged -----
+        std::string capDesc;
+        if (s.nPhase > 1) {
+            std::ostringstream oss;
+            oss << "SBDMtrainingCurriculumEpochs=[";
+            for (int i = 0; i < s.nPhase; ++i) oss << (i ? ", " : "") << s.curriculumEpochs[i];
+            oss << "] (0 = skipped phase)";
+            capDesc = oss.str();
+        } else {
+            capDesc = "SBDMplannerMaxEpochsPerPhase=" + std::to_string(s.plannerMaxEpochsPerPhase);
+        }
+        mf::LogInfo(moduleName)
+            << "Auto curriculum planner enabled: smoothWindow=" << s.plannerSmoothWindow
+            << ", minDelta=" << s.plannerMinDelta << ", patience=" << s.plannerPatience
+            << ", minEpochsPerPhase=" << s.plannerMinEpochsPerPhase
+            << ", max-epoch cap per phase=" << capDesc;
+        ConvergenceTracker tracker{s.plannerSmoothWindow, s.plannerMinDelta,
+                                   s.plannerPatience, s.plannerMinEpochsPerPhase};
+        int globalEpoch = 0;
+        for (int ph = 0; ph < s.nPhase; ++ph) {
+            const int phaseNum = ph + 1; // base-1 for logs and filenames
+            // A phase configured with 0 epochs is a "setup-only" phase: apply its
+            // hyperparameters (for ph>=1) and advance without training. This preserves
+            // the resume idiom SBDMtrainingCurriculumEpochs=[0, N], where phase 0 exists
+            // only to push the real phase-1 settings (lr, clip, promoteEMA, ...) onto a
+            // model loaded from an old checkpoint before any new training happens.
+            if (s.nPhase > 1 && s.curriculumEpochs[ph] == 0) {
+                if (ph >= 1) enterPhase(ph);
+                mf::LogInfo(moduleName)
+                    << "Phase " << phaseNum << " configured with 0 epochs; applied its "
+                    << "settings and skipped (no training).";
+                continue;
+            }
+            if (ph >= 1) enterPhase(ph);
+            tracker.reset();
+            // Per-phase max-epoch cap: a curriculum phase's configured epoch count
+            // (guaranteed > 0 here, since 0-epoch phases were skipped above); for a
+            // single-phase / no-curriculum run, the global planner cap. Validated in
+            // validateAndBuildCurriculum to be >= the convergence floor.
+            const int maxEpochs = (s.nPhase > 1) ? s.curriculumEpochs[ph]
+                                                 : s.plannerMaxEpochsPerPhase;
+            double phaseBestLoss = std::numeric_limits<double>::infinity();
+            const std::string phaseTag = base + ".phase" + std::to_string(phaseNum);
+            bool converged = false;
+            int  epochInPhase = 0;
+            while (true) {
+                ++epochInPhase;
+                ++globalEpoch;
+                mf::LogInfo(moduleName)
+                    << "Phase " << phaseNum << " epoch " << epochInPhase
+                    << " (global epoch " << globalEpoch << ")";
+                model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
+                double loss = model.getLastEpochLoss(); // read immediately after train()
+
+                // Best-in-phase checkpoint: overwrite whenever a new minimum is seen.
+                if (loss < phaseBestLoss) {
+                    phaseBestLoss = loss;
+                    model.saveModel(phaseTag + ".best.bin");
+                    if (s.saveAlsoCsv)
+                        model.saveModelCsv(phaseTag + ".best.csv");
+                }
+                // Honor explicit checkpoint epochs (indexed by global epoch count).
+                if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), globalEpoch) != s.saveEpochs.end()) {
+                    model.saveModel(base + ".epoch" + std::to_string(globalEpoch) + ".bin");
+                    if (s.saveAlsoCsv)
+                        model.saveModelCsv(base + ".epoch" + std::to_string(globalEpoch) + ".csv");
+                }
+
+                if (tracker.update(loss)) { converged = true; break; }
+                if (epochInPhase >= maxEpochs) break;
+            }
+
+            // Phase-final snapshot (state at the moment the phase ended).
+            model.saveModel(phaseTag + ".final.bin");
+            if (s.saveAlsoCsv)
+                model.saveModelCsv(phaseTag + ".final.csv");
+
+            if (converged) {
+                mf::LogInfo(moduleName)
+                    << "Phase " << phaseNum << " converged after " << epochInPhase
+                    << " epochs; best epoch=" << tracker.bestEpoch
+                    << " (loss=" << tracker.bestRawLoss << ").";
+            } else {
+                mf::LogWarning(moduleName)
+                    << "Phase " << phaseNum << " did NOT converge within its max-epoch cap="
+                    << maxEpochs << " epochs (best epoch=" << tracker.bestEpoch
+                    << ", loss=" << tracker.bestRawLoss
+                    << "). Adjust the training plan — e.g. raise the cap, change the learning "
+                    << "rate, or revisit the phase hyperparameters. Stopping training.";
+                model.saveModel(outFile);
                 if (s.saveAlsoCsv)
-                    model.saveModelCsv(base + ".epoch" + std::to_string(e) + ".csv");
+                    model.saveModelCsv(base + ".csv");
+                return; // abort: surface the bad plan instead of advancing
             }
         }
         model.saveModel(outFile);
         if (s.saveAlsoCsv)
             model.saveModelCsv(base + ".csv");
-        mf::LogInfo(moduleName) << "Training completed, saved to " << outFile;
+        mf::LogInfo(moduleName) << "Training completed (auto planner), saved to " << outFile;
     };
 
     if (s.useTwoStageTraining) {

@@ -86,6 +86,12 @@ namespace mu2e {
         fhicl::Atom<int>    SBDMtrainingSubsetSizePerEpoch{ Name("SBDMtrainingSubsetSizePerEpoch"), Comment("Subset size per epoch (0 = full set)"), 0 };
         fhicl::Atom<int>    SBDMtrainingEpochs{     Name("SBDMtrainingEpochs"),     Comment("Number of training epochs"),                  10 };
         fhicl::Sequence<int> SaveEpochs{ Name("SaveEpochs"), Comment("Epochs at which to save checkpoint models"), std::vector<int>() };
+        fhicl::Atom<bool>   SBDMautoCurriculumPlanner{ Name("SBDMautoCurriculumPlanner"), Comment("Train each curriculum phase until loss converges instead of for a fixed epoch count"), false };
+        fhicl::Atom<int>    SBDMplannerSmoothWindow{    Name("SBDMplannerSmoothWindow"),    Comment("Planner: trailing moving-average window for smoothing per-epoch loss"), 10 };
+        fhicl::Atom<double> SBDMplannerMinDelta{        Name("SBDMplannerMinDelta"),        Comment("Planner: relative improvement of smoothed loss counted as progress"), 0.005 };
+        fhicl::Atom<int>    SBDMplannerPatience{        Name("SBDMplannerPatience"),        Comment("Planner: consecutive non-improving epochs to declare convergence"), 20 };
+        fhicl::Atom<int>    SBDMplannerMinEpochsPerPhase{ Name("SBDMplannerMinEpochsPerPhase"), Comment("Planner: minimum epochs per phase before convergence can fire (auto-raised to >= smoothWindow+patience)"), 30 };
+        fhicl::Atom<int>    SBDMplannerMaxEpochsPerPhase{ Name("SBDMplannerMaxEpochsPerPhase"), Comment("Planner: hard cap per phase; hitting it aborts training with a warning"), 100 };
         fhicl::Sequence<int>    SBDMtrainingCurriculumEpochs{             Name("SBDMtrainingCurriculumEpochs"),             Comment("Epochs per curriculum phase"),                std::vector<int>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumLossWeightPower{    Name("SBDMtrainingCurriculumLossWeightPower"),    Comment("Loss weight power per curriculum phase"),     std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumGradientClip{       Name("SBDMtrainingCurriculumGradientClip"),       Comment("Gradient clip per curriculum phase"),         std::vector<double>() };
@@ -146,6 +152,12 @@ namespace mu2e {
     state_.trainingSize        = conf().SBDMtrainingSize();
     state_.trainingSubsetSizePerEpoch = conf().SBDMtrainingSubsetSizePerEpoch();
     state_.saveEpochs          = conf().SaveEpochs();
+    state_.autoPlanner              = conf().SBDMautoCurriculumPlanner();
+    state_.plannerSmoothWindow      = conf().SBDMplannerSmoothWindow();
+    state_.plannerMinDelta          = conf().SBDMplannerMinDelta();
+    state_.plannerPatience          = conf().SBDMplannerPatience();
+    state_.plannerMinEpochsPerPhase = conf().SBDMplannerMinEpochsPerPhase();
+    state_.plannerMaxEpochsPerPhase = conf().SBDMplannerMaxEpochsPerPhase();
     state_.curriculumEpochs              = conf().SBDMtrainingCurriculumEpochs();
     state_.curriculumLossWeightPower     = conf().SBDMtrainingCurriculumLossWeightPower();
     state_.curriculumGradientClip        = conf().SBDMtrainingCurriculumGradientClip();
