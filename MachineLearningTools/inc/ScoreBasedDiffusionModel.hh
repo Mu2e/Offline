@@ -184,6 +184,29 @@ namespace mu2e{
             return batchSize_;
         }
 
+        // Enable/disable the adaptive per-dimension gradient weight controller mid-run
+        // (e.g. as a curriculum-phase change, or as an explicit override after loading a
+        // checkpoint that was trained with it on). Turning it OFF does NOT reset
+        // dimWeights_: train() keeps multiplying each dimension's gradient by the frozen
+        // weight, it merely stops adapting them. The frozen values are logged so the
+        // override is auditable. Returns the resulting flag state.
+        bool updateUseDimWeightController(
+            bool enabled
+        ){
+            if (useDimWeightController_ && !enabled) {
+                std::ostringstream woss;
+                woss << "Dimensional weight controller turned OFF; freezing dimWeights at [";
+                for (int i = 0; i < dim_; ++i) {
+                    woss << dimWeights_[i];
+                    if (i < dim_ - 1) woss << ", ";
+                }
+                woss << "] (still applied to gradients, but no longer adapting).";
+                mf::LogInfo("ScoreBasedDiffusionModel::updateUseDimWeightController") << woss.str();
+            }
+            useDimWeightController_ = enabled;
+            return useDimWeightController_;
+        }
+
         void promoteEMAToNetwork() {
             if (!useEMANetwork_) {
                 mf::LogWarning("ScoreBasedDiffusionModel")

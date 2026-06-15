@@ -77,6 +77,7 @@ struct TrainState {
     std::vector<double> curriculumTLowBound;
     std::vector<int>    curriculumBatchSize;
     std::vector<bool>   curriculumPromoteEMA;
+    std::vector<bool>   curriculumUseDimWeightController;
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
@@ -211,7 +212,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     double defaultLossWeightPower, double defaultGradientClip, double defaultLearningRate,
     bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
     double defaultTFocusLow = 0.0, double defaultTFocusHigh = 0.0, double defaultTFocusFraction = 0.0,
-    bool defaultPromoteEMA = false)
+    bool defaultPromoteEMA = false, bool defaultUseDimWeightController = false)
 {
     if (!s.curriculumEpochs.empty()) {
         s.nPhase = static_cast<int>(s.curriculumEpochs.size());
@@ -235,6 +236,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumTLowBound,       defaultTLowBound,       "SBDMtrainingCurriculumTLowBound");
             fill(s.curriculumBatchSize,       defaultBatchSize,       "SBDMtrainingCurriculumBatchSize");
             fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
+            fill(s.curriculumUseDimWeightController, defaultUseDimWeightController, "SBDMtrainingCurriculumUseDimWeightController");
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
@@ -270,6 +272,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "TLowBound"
                << std::setw(15) << "BatchSize"
                << std::setw(15) << "PromoteEMA"
+               << std::setw(15) << "DimWeightCtl"
                << std::setw(15) << "TFocusLow"
                << std::setw(15) << "TFocusHigh"
                << std::setw(15) << "TFocusFrac" << "\n";
@@ -282,6 +285,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumTLowBound[i]
                    << std::setw(15) << s.curriculumBatchSize[i]
                    << std::setw(15) << s.curriculumPromoteEMA[i]
+                   << std::setw(15) << s.curriculumUseDimWeightController[i]
                    << std::setw(15) << s.curriculumTFocusLow[i]
                    << std::setw(15) << s.curriculumTFocusHigh[i]
                    << std::setw(15) << s.curriculumTFocusFraction[i] << "\n";
@@ -325,16 +329,24 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         double initLWP = s.nPhase > 1 ? s.curriculumLossWeightPower[0] : p.lossWeightPower;
         double initGC  = s.nPhase > 1 ? s.curriculumGradientClip[0]    : p.gradientClip;
         double initLR  = s.nPhase > 1 ? s.curriculumLearningRate[0]    : p.learningRate;
+        bool   initUDWC= s.nPhase > 1 ? s.curriculumUseDimWeightController[0] : p.useDimWeightController;
         return std::make_unique<ScoreBasedDiffusionModel>(
             rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDim, p.conditionEmbeddingDim,
             p.hidden, p.layers, p.optimizer,
             p.adamBeta1, p.adamBeta2, p.adamEps, p.noiseSchedule,
             p.betaMin, p.betaMax, p.cosineOffset, p.logSigMin, p.logSigMax,
             p.epsPrediction, initLWP, p.batchSize, initGC, initLR,
-            p.useDimWeightController, p.dimWeightControllerEMADecay,
+            initUDWC, p.dimWeightControllerEMADecay,
             p.useEMANetwork, p.emaNetworkDecay, p.diffusionSteps
         );
     };
+
+    // Phase-0 dim-weight-controller setting that should govern *this run*, regardless of
+    // what a loaded checkpoint baked in. Applied as an explicit override after loadModel
+    // (which otherwise restores the checkpoint's flag); updateUseDimWeightController logs
+    // the frozen dimWeights when this turns the controller off.
+    bool phase0UseDimWeightController =
+        s.nPhase > 1 ? s.curriculumUseDimWeightController[0] : p.useDimWeightController;
 
     if (s.useTwoStageTraining) {
         if (s.stage1ModelFile.empty() && s.stage2ModelFile.empty())
@@ -347,6 +359,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             if (!s.ckptStage1File.empty()) {
                 s.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
                     ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptStage1File));
+                s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
             } else {
@@ -359,6 +372,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             if (!s.ckptStage2File.empty()) {
                 s.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
                     ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptStage2File));
+                s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
             } else {
@@ -371,6 +385,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         if (!s.ckptAllAtOnceFile.empty()) {
             s.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
                 ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptAllAtOnceFile));
+            s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
         } else {
@@ -660,6 +675,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         double gc  = s.curriculumGradientClip   [ph + 1];
                         double lr  = s.curriculumLearningRate   [ph + 1];
                         int    bs  = s.curriculumBatchSize      [ph + 1];
+                        bool   udwc= s.curriculumUseDimWeightController[ph + 1];
                         s.currentBiasLowSigma    = s.curriculumBiasLowSigma   [ph + 1];
                         s.currentTLowBound       = s.curriculumTLowBound      [ph + 1];
                         s.currentTFocusLow       = s.curriculumTFocusLow      [ph + 1];
@@ -671,6 +687,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                             << ", gradientClipThreshold=" << gc
                             << ", learningRate=" << lr
                             << ", batchSize=" << bs
+                            << ", useDimWeightController=" << udwc
                             << ", biasLowSigma=" << s.currentBiasLowSigma
                             << ", tLowBound=" << s.currentTLowBound
                             << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
@@ -680,6 +697,9 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         model.updateGradientClipThreshold(gc);
                         model.updateLearningRate(lr);
                         model.updateBatchSize(bs);
+                        // Apply before promoteEMA so the frozen-weights log (if the controller
+                        // turns off here) reflects the pre-promotion state.
+                        model.updateUseDimWeightController(udwc);
                         if (s.curriculumPromoteEMA[ph + 1])
                             model.promoteEMAToNetwork();
                     }

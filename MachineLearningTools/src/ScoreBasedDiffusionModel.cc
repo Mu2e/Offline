@@ -1085,9 +1085,14 @@ namespace mu2e {
         // Magic + version
         // Version history: 1 = original format; 2 = adds inputEmbeddingDim and
         // conditionEmbeddingDim after timeEmbeddingDim; 3 = appends a 4-byte "ENDM"
-        // end-of-stream sentinel that the loader verifies to detect truncation.
+        // end-of-stream sentinel that the loader verifies to detect truncation;
+        // 4 = stores the batch-size-independent EMA decay *base* (emaNetworkDecayBase_)
+        // in the emaNetworkDecay field instead of the already-rescaled per-step
+        // effective value. Versions 1-3 stored the effective value, which the loader
+        // re-rescaled on construction, compounding the batch-size exponent on every
+        // round-trip and driving the decay toward zero.
         out.write("SBDM", 4);
-        wU32(3u);
+        wU32(4u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1112,7 +1117,10 @@ namespace mu2e {
         wI32(useDimWeightController_ ? 1 : 0);
         wF64(dimWeightEMADecay_);
         wI32(useEMANetwork_ ? 1 : 0);
-        wF64(emaNetworkDecay_);
+        // Store the batch-size-independent base (see version-4 note above), NOT the
+        // rescaled per-step effective decay. loadModel re-applies the batch-size
+        // rescaling exactly once when it reconstructs the model.
+        wF64(emaNetworkDecayBase_);
         wI32(static_cast<int32_t>(diffusionSteps_));
 
         // Network weights
@@ -1213,7 +1221,8 @@ namespace mu2e {
         out << "dimWeightEMADecay," << dimWeightEMADecay_ << "\n";
         // EMA network
         out << "useEMANetwork," << (useEMANetwork_ ? "1" : "0") << "\n";
-        out << "emaNetworkDecay," << emaNetworkDecay_ << "\n";
+        out << "emaNetworkDecayBase," << emaNetworkDecayBase_ << "\n"; // batch-size-independent base
+        out << "emaNetworkDecay," << emaNetworkDecay_ << "\n";         // per-step effective (base^(batchSize/ref))
         // Diffusion process configuration
         out << "diffusionSteps," << diffusionSteps_ << "\n";
 
@@ -1446,7 +1455,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version != 1 && version != 2 && version != 3)
+            if (version < 1 || version > 4)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -1476,7 +1485,12 @@ namespace mu2e {
             bool useDimWeightController = (rI32() != 0);
             double dimWeightEMADecay = rF64();
             bool useEMANetwork = (rI32() != 0);
-            double emaNetworkDecay = rF64();
+            // Version 4 stores the batch-size-independent EMA decay base; versions 1-3
+            // stored the already-rescaled per-step effective value. The constructor
+            // below treats this as the base and rescales it by batchSize/kEMABatchSizeRef_,
+            // which is correct for version >= 4 but a spurious second rescaling for
+            // version <= 3 (corrected after construction).
+            double emaNetworkDecayStored = rF64();
             int diffusionSteps = rI32();
 
             // Network weights
@@ -1593,9 +1607,24 @@ namespace mu2e {
                 optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
                 betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
                 epsPrediction, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
-                useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecay,
+                useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecayStored,
                 diffusionSteps, false
             );
+
+            // EMA decay semantics fix-up. The constructor rescaled emaNetworkDecayStored
+            // as if it were the batch-size-independent base. That is correct for version-4
+            // checkpoints. Versions 1-3, however, stored the already-rescaled per-step
+            // effective decay, so the constructor applied the batch-size exponent a second
+            // time. Undo that here: treat the stored value as the effective per-step decay
+            // and back out a consistent base for subsequent saves.
+            if (useEMANetwork && version <= 3) {
+                model.emaNetworkDecay_ = emaNetworkDecayStored;
+                model.emaNetworkDecayBase_ =
+                    (batchSize > 0)
+                        ? std::pow(emaNetworkDecayStored,
+                                   (double)kEMABatchSizeRef_ / batchSize)
+                        : emaNetworkDecayStored;
+            }
 
             for (size_t l = 0; l < model.network_.size(); ++l) {
                 model.network_[l].W = loadedNetwork[l].W;
@@ -1680,7 +1709,9 @@ namespace mu2e {
             bool useDimWeightController = false;
             double dimWeightEMADecay = 0.99;
             bool useEMANetwork = true;
-            double emaNetworkDecay = 0.9999;
+            double emaNetworkDecay = 0.9999;     // legacy field: per-step effective decay
+            double emaNetworkDecayBase = 0.9999; // batch-size-independent base
+            bool emaNetworkDecayBasePresent = false;
 
             // EMA network weights (optional)
             std::vector<Layer> loadedEmaNetwork;
@@ -1760,6 +1791,7 @@ namespace mu2e {
                     else if (key == "useDimWeightController") useDimWeightController = (val == "1");
                     else if (key == "dimWeightEMADecay") dimWeightEMADecay = std::stod(val);
                     else if (key == "useEMANetwork") useEMANetwork = (val == "1");
+                    else if (key == "emaNetworkDecayBase") { emaNetworkDecayBase = std::stod(val); emaNetworkDecayBasePresent = true; }
                     else if (key == "emaNetworkDecay") emaNetworkDecay = std::stod(val);
                     else if (key == "diffusionSteps") diffusionSteps = std::stoi(val);
                 }
@@ -2105,10 +2137,25 @@ namespace mu2e {
                 useDimWeightController,
                 dimWeightEMADecay,
                 useEMANetwork,
-                emaNetworkDecay,
+                // Newer CSVs carry the batch-size-independent base, which the constructor
+                // rescales correctly. Older CSVs only have the effective decay; pass it as
+                // a placeholder base and fix it up below.
+                emaNetworkDecayBasePresent ? emaNetworkDecayBase : emaNetworkDecay,
                 diffusionSteps,
                 false // initializeRandomWeights
             );
+
+            // Legacy-CSV EMA decay fix-up (mirrors the binary version <= 3 path). When the
+            // file predates emaNetworkDecayBase, the stored emaNetworkDecay is the per-step
+            // effective value; adopt it directly and back out a consistent base so future
+            // saves and any later batch-size change behave correctly.
+            if (useEMANetwork && !emaNetworkDecayBasePresent) {
+                model.emaNetworkDecay_ = emaNetworkDecay;
+                model.emaNetworkDecayBase_ =
+                    (batchSize > 0)
+                        ? std::pow(emaNetworkDecay, (double)kEMABatchSizeRef_ / batchSize)
+                        : emaNetworkDecay;
+            }
 
             // Validate loaded network shape and dimensions match the initialized model before overwriting.
             if (loadedNetwork.size() != model.network_.size()) {

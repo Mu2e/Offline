@@ -94,6 +94,7 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTLowBound{          Name("SBDMtrainingCurriculumTLowBound"),          Comment("tLowBound per curriculum phase"),             std::vector<double>() };
         fhicl::Sequence<int>    SBDMtrainingCurriculumBatchSize{          Name("SBDMtrainingCurriculumBatchSize"),          Comment("Batch size per curriculum phase"),            std::vector<int>() };
         fhicl::Sequence<bool>   SBDMtrainingCurriculumPromoteEMA{         Name("SBDMtrainingCurriculumPromoteEMA"),         Comment("If true, promote EMA to network when entering this curriculum phase"),               std::vector<bool>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumUseDimWeightController{ Name("SBDMtrainingCurriculumUseDimWeightController"), Comment("Enable per-dimension gradient weight controller per curriculum phase"), std::vector<bool>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("t focus window fraction per curriculum phase"),       std::vector<double>() };
@@ -154,6 +155,7 @@ namespace mu2e {
     state_.curriculumBatchSize           = conf().SBDMtrainingCurriculumBatchSize();
     state_.promoteEMAOnStart             = conf().SBDMpromoteEMA();
     state_.curriculumPromoteEMA          = conf().SBDMtrainingCurriculumPromoteEMA();
+    state_.curriculumUseDimWeightController = conf().SBDMtrainingCurriculumUseDimWeightController();
     state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
     state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
@@ -171,7 +173,8 @@ namespace mu2e {
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
         conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
-        conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction());
+        conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
+        /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController());
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
