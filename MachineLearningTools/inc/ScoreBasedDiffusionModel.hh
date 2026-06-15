@@ -229,6 +229,38 @@ namespace mu2e{
 
         const std::vector<double>& getDimWeights() const { return dimWeights_; }
 
+        // In-memory snapshot of the trainable state (network weights, EMA copy, and Adam
+        // step counter). Used by the auto curriculum planner to capture the smoothed-best
+        // point within a phase and restore it before advancing — the substitute for EMA
+        // promotion when that is disabled. Capturing the full Layer (incl. Adam moments)
+        // keeps optimizer continuity if training resumes from the restored point. The
+        // model cannot be reassigned in place (reference members delete operator=), so a
+        // value-copy snapshot is used instead of a loadModel() round-trip.
+        void snapshotNetwork() {
+            networkSnapshot_    = network_;
+            emaNetworkSnapshot_ = emaNetwork_;
+            adamStepSnapshot_   = adamStep_;
+            hasSnapshot_        = true;
+        }
+        void restoreNetwork() {
+            if (!hasSnapshot_) {
+                mf::LogWarning("ScoreBasedDiffusionModel")
+                    << "restoreNetwork called with no snapshot — no-op.";
+                return;
+            }
+            network_    = networkSnapshot_;
+            emaNetwork_ = emaNetworkSnapshot_;
+            adamStep_   = adamStepSnapshot_;
+            mf::LogInfo("ScoreBasedDiffusionModel::restoreNetwork")
+                << "Restored network weights from in-memory snapshot.";
+        }
+        bool hasNetworkSnapshot() const { return hasSnapshot_; }
+        void clearNetworkSnapshot() {
+            networkSnapshot_.clear();
+            emaNetworkSnapshot_.clear();
+            hasSnapshot_ = false;
+        }
+
         // Train the score network on a batch of samples.
         // Uses random sampling and noise injection via the external engine.
         // Note that training needs to occur on all data samples. Training on multiple small subsets
@@ -633,6 +665,13 @@ namespace mu2e{
         double emaNetworkDecayBase_;    // user-configured decay at kEMABatchSizeRef_=32 samples/step
         double emaNetworkDecay_;        // effective decay per optimizer step (rescaled from emaNetworkDecayBase_)
         std::vector<Layer> emaNetwork_; // slow-moving EMA copy, only W and b are used
+
+        // In-memory snapshot buffers for the curriculum planner's resume-from-best
+        // (see snapshotNetwork()/restoreNetwork()). Not serialized.
+        std::vector<Layer> networkSnapshot_;
+        std::vector<Layer> emaNetworkSnapshot_;
+        int   adamStepSnapshot_ = 0;
+        bool  hasSnapshot_      = false;
 
         // Diffusion process discretization
         int diffusionSteps_;  // Number of time steps to generate a sample (default: 200)

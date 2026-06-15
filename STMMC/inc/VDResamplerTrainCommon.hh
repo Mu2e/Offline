@@ -150,23 +150,33 @@ struct ConvergenceTracker {
     std::deque<double> recent;  // last `window` raw losses
     double bestSmoothed = std::numeric_limits<double>::infinity();
     double bestRawLoss  = std::numeric_limits<double>::infinity();
-    int    bestEpoch    = -1;   // base-1 epoch index (within phase) of bestRawLoss
+    int    bestRawEpoch      = -1; // base-1 epoch index (within phase) of bestRawLoss
+    int    bestSmoothedEpoch = -1; // base-1 epoch index (within phase) of bestSmoothed
     int    sinceImprove = 0;
     int    epochsThisPhase = 0;
+    // Flags describing the most recent update() call; the planner uses them to decide
+    // when to write the raw/smoothed best checkpoints and snapshot the network.
+    bool   rawImproved      = false;
+    bool   smoothedImproved = false;
 
     void reset() {
         recent.clear();
         bestSmoothed = std::numeric_limits<double>::infinity();
         bestRawLoss  = std::numeric_limits<double>::infinity();
-        bestEpoch    = -1;
+        bestRawEpoch      = -1;
+        bestSmoothedEpoch = -1;
         sinceImprove = 0;
         epochsThisPhase = 0;
+        rawImproved      = false;
+        smoothedImproved = false;
     }
 
     // Push one epoch's loss; returns true when the phase is considered converged.
     bool update(double loss) {
         ++epochsThisPhase;
-        if (loss < bestRawLoss) { bestRawLoss = loss; bestEpoch = epochsThisPhase; }
+        rawImproved      = false;
+        smoothedImproved = false;
+        if (loss < bestRawLoss) { bestRawLoss = loss; bestRawEpoch = epochsThisPhase; rawImproved = true; }
 
         recent.push_back(loss);
         if (static_cast<int>(recent.size()) > window) recent.pop_front();
@@ -175,7 +185,9 @@ struct ConvergenceTracker {
 
         if (smoothed < bestSmoothed * (1.0 - minDelta)) {
             bestSmoothed = smoothed;
+            bestSmoothedEpoch = epochsThisPhase;
             sinceImprove = 0;
+            smoothedImproved = true;
         } else {
             ++sinceImprove;
         }
@@ -874,13 +886,13 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             }
             if (ph >= 1) enterPhase(ph);
             tracker.reset();
+            model.clearNetworkSnapshot(); // best-of-phase snapshot is per-phase
             // Per-phase max-epoch cap: a curriculum phase's configured epoch count
             // (guaranteed > 0 here, since 0-epoch phases were skipped above); for a
             // single-phase / no-curriculum run, the global planner cap. Validated in
             // validateAndBuildCurriculum to be >= the convergence floor.
             const int maxEpochs = (s.nPhase > 1) ? s.curriculumEpochs[ph]
                                                  : s.plannerMaxEpochsPerPhase;
-            double phaseBestLoss = std::numeric_limits<double>::infinity();
             const std::string phaseTag = base + ".phase" + std::to_string(phaseNum);
             bool converged = false;
             int  epochInPhase = 0;
@@ -893,13 +905,21 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 double loss = model.getLastEpochLoss(); // read immediately after train()
+                const bool conv = tracker.update(loss);
 
-                // Best-in-phase checkpoint: overwrite whenever a new minimum is seen.
-                if (loss < phaseBestLoss) {
-                    phaseBestLoss = loss;
-                    model.saveModel(phaseTag + ".best.bin");
+                // Best-in-phase checkpoints. Raw = the single lowest-loss epoch;
+                // smoothed = lowest moving-average loss (robust to per-epoch noise).
+                if (tracker.rawImproved) {
+                    model.saveModel(phaseTag + ".bestRaw.bin");
                     if (s.saveAlsoCsv)
-                        model.saveModelCsv(phaseTag + ".best.csv");
+                        model.saveModelCsv(phaseTag + ".bestRaw.csv");
+                }
+                if (tracker.smoothedImproved) {
+                    // Capture the smoothed-best in memory for resume-from-best, and on disk.
+                    model.snapshotNetwork();
+                    model.saveModel(phaseTag + ".bestSmoothed.bin");
+                    if (s.saveAlsoCsv)
+                        model.saveModelCsv(phaseTag + ".bestSmoothed.csv");
                 }
                 // Honor explicit checkpoint epochs (indexed by global epoch count).
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), globalEpoch) != s.saveEpochs.end()) {
@@ -908,25 +928,46 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         model.saveModelCsv(base + ".epoch" + std::to_string(globalEpoch) + ".csv");
                 }
 
-                if (tracker.update(loss)) { converged = true; break; }
+                if (conv) { converged = true; break; }
                 if (epochInPhase >= maxEpochs) break;
             }
 
-            // Phase-final snapshot (state at the moment the phase ended).
+            // Phase-final snapshot: the literal final-epoch state, saved BEFORE any
+            // resume-from-best restore so ".final" always means "last epoch trained".
             model.saveModel(phaseTag + ".final.bin");
             if (s.saveAlsoCsv)
                 model.saveModelCsv(phaseTag + ".final.csv");
 
+            // Resume-from-best: when the upcoming phase boundary does NOT promote EMA
+            // (and for the final phase, which has no successor), restore the smoothed-best
+            // weights so the next phase — or the global-final model — continues from the
+            // best point rather than the patience-drifted final epoch. When the next phase
+            // promotes EMA, promoteEMAToNetwork() supplies the weights instead, so skip.
+            const bool promoteNext = (ph + 1 < s.nPhase) ? s.curriculumPromoteEMA[ph + 1] : false;
+            if (!promoteNext && model.hasNetworkSnapshot()) {
+                model.restoreNetwork();
+                mf::LogInfo(moduleName)
+                    << "Phase " << phaseNum << ": restored smoothed-best weights (epoch "
+                    << tracker.bestSmoothedEpoch << ", smoothed loss " << tracker.bestSmoothed
+                    << ") as the starting point for "
+                    << (ph + 1 < s.nPhase ? "the next phase." : "the final model.");
+            }
+
+            auto bestSummary = [&]() {
+                std::stringstream ss;
+                ss << "raw-best epoch=" << tracker.bestRawEpoch << " (loss=" << tracker.bestRawLoss
+                   << "), smoothed-best epoch=" << tracker.bestSmoothedEpoch
+                   << " (smoothed loss=" << tracker.bestSmoothed << ")";
+                return ss.str();
+            };
             if (converged) {
                 mf::LogInfo(moduleName)
                     << "Phase " << phaseNum << " converged after " << epochInPhase
-                    << " epochs; best epoch=" << tracker.bestEpoch
-                    << " (loss=" << tracker.bestRawLoss << ").";
+                    << " epochs; " << bestSummary() << ".";
             } else {
                 mf::LogWarning(moduleName)
                     << "Phase " << phaseNum << " did NOT converge within its max-epoch cap="
-                    << maxEpochs << " epochs (best epoch=" << tracker.bestEpoch
-                    << ", loss=" << tracker.bestRawLoss
+                    << maxEpochs << " epochs (" << bestSummary()
                     << "). Adjust the training plan — e.g. raise the cap, change the learning "
                     << "rate, or revisit the phase hyperparameters. Stopping training.";
                 model.saveModel(outFile);
