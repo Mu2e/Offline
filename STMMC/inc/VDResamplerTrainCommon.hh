@@ -159,6 +159,9 @@ struct ConvergenceTracker {
     // when to write the raw/smoothed best checkpoints and snapshot the network.
     bool   rawImproved      = false;
     bool   smoothedImproved = false;
+    // Diagnostics from the most recent update(), for per-epoch planner logging.
+    double lastSmoothed = std::numeric_limits<double>::quiet_NaN(); // current smoothed loss
+    double lastDelta    = std::numeric_limits<double>::quiet_NaN(); // relative improvement vs prior best (>0 = better)
 
     void reset() {
         recent.clear();
@@ -170,6 +173,8 @@ struct ConvergenceTracker {
         epochsThisPhase = 0;
         rawImproved      = false;
         smoothedImproved = false;
+        lastSmoothed = std::numeric_limits<double>::quiet_NaN();
+        lastDelta    = std::numeric_limits<double>::quiet_NaN();
     }
 
     // Push one epoch's loss; returns true when the phase is considered converged.
@@ -183,6 +188,13 @@ struct ConvergenceTracker {
         if (static_cast<int>(recent.size()) > window) recent.pop_front();
         double smoothed = std::accumulate(recent.begin(), recent.end(), 0.0)
                           / static_cast<double>(recent.size());
+
+        // Relative improvement of the smoothed loss vs the best seen so far (before this
+        // update). Positive = improvement; NaN on the first epoch (no prior best yet).
+        const double prevBest = bestSmoothed;
+        lastSmoothed = smoothed;
+        lastDelta    = std::isfinite(prevBest) ? (prevBest - smoothed) / prevBest
+                                               : std::numeric_limits<double>::quiet_NaN();
 
         if (smoothed < bestSmoothed * (1.0 - minDelta)) {
             bestSmoothed = smoothed;
@@ -914,6 +926,25 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 double loss = model.getLastEpochLoss(); // read immediately after train()
                 const bool conv = tracker.update(loss);
+
+                // Per-epoch planner diagnostics: smoothed loss, its relative improvement
+                // vs the running best (the "delta" compared against minDelta), and the
+                // no-improvement streak toward convergence. Makes convergence behavior
+                // readable from the log instead of reverse-engineered from raw Loss.
+                {
+                    std::ostringstream pss;
+                    pss << "Phase " << phaseNum << " planner: rawLoss=" << loss
+                        << " smoothed=" << tracker.lastSmoothed;
+                    if (std::isfinite(tracker.lastDelta))
+                        pss << " delta=" << (tracker.lastDelta * 100.0) << "% (minDelta="
+                            << (s.plannerMinDelta * 100.0) << "%)";
+                    else
+                        pss << " delta=n/a";
+                    pss << " sinceImprove=" << tracker.sinceImprove << "/" << s.plannerPatience
+                        << " bestSmoothed=" << tracker.bestSmoothed
+                        << " @epoch " << tracker.bestSmoothedEpoch;
+                    mf::LogInfo(moduleName) << pss.str();
+                }
 
                 // Best-in-phase checkpoints. Raw = the single lowest-loss epoch;
                 // smoothed = lowest moving-average loss (robust to per-epoch noise).
