@@ -917,8 +917,18 @@ namespace mu2e {
                 // early diffusion steps where the signal is stronger. Not meant to be used together.
 
                 double t = randFlat_.fire();
-                if (tFocusFraction > 0.0 && randFlat_.fire() < tFocusFraction) {
-                    t = tFocusLow + (tFocusHigh - tFocusLow) * t; // scale t to the focus window
+                if (tFocusFraction > 0.0) {
+                    // Focus mode: exactly tFocusFraction of samples land in [tFocusLow, tFocusHigh);
+                    // the remainder are drawn uniformly from the COMPLEMENT [0,tFocusLow) U [tFocusHigh,1)
+                    // so the realized in-window fraction equals tFocusFraction independent of window width.
+                    // (tLowBound / biasLowSigma are the non-focus sampling modes and do not apply here.)
+                    if (randFlat_.fire() < tFocusFraction) {
+                        t = tFocusLow + (tFocusHigh - tFocusLow) * t; // uniform inside the window
+                    } else {
+                        double comp = 1.0 - (tFocusHigh - tFocusLow);            // length of the complement
+                        double u    = t * comp;                                  // uniform in [0, comp)
+                        t = (u < tFocusLow) ? u : u + (tFocusHigh - tFocusLow);  // skip over the window
+                    }
                 } else {
                     if (tLowBound > 0.0) {
                         t = tLowBound + (1.0 - tLowBound) * t; // scale t to [tLowBound, 1]

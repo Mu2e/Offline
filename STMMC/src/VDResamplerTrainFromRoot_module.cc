@@ -72,7 +72,7 @@ namespace mu2e {
         fhicl::Atom<double> SBDMtLowBound{     Name("SBDMtLowBound"),     Comment("Lower bound clamp on t for training"),       0.0 };
         fhicl::Atom<double> SBDMtFocusLow{      Name("SBDMtFocusLow"),      Comment("Low edge of t focus window"),                                  0.0 };
         fhicl::Atom<double> SBDMtFocusHigh{     Name("SBDMtFocusHigh"),     Comment("High edge of t focus window"),                                 0.0 };
-        fhicl::Atom<double> SBDMtFocusFraction{ Name("SBDMtFocusFraction"), Comment("Fraction of training samples drawn from t focus window (0 = disabled)"), 0.0 };
+        fhicl::Atom<double> SBDMtFocusFraction{ Name("SBDMtFocusFraction"), Comment("Realized fraction of training samples inside the t focus window; the rest are drawn from its complement (0 = disabled)"), 0.0 };
         fhicl::Atom<bool>   SBDMuseDimWeightController{      Name("SBDMuseDimWeightController"),      Comment("Use adaptive per-dimension gradient weighting"), false };
         fhicl::Atom<double> SBDMdimWeightControllerEMADecay{ Name("SBDMdimWeightControllerEMADecay"), Comment("EMA decay for dimension weight controller"),     0.99 };
         fhicl::Atom<bool>   SBDMuseEMANetwork{      Name("SBDMuseEMANetwork"),      Comment("Maintain EMA copy of network for inference"), false };
@@ -99,7 +99,7 @@ namespace mu2e {
         fhicl::Sequence<bool>   SBDMtrainingCurriculumUseDimWeightController{ Name("SBDMtrainingCurriculumUseDimWeightController"), Comment("Enable per-dimension gradient weight controller per curriculum phase"), std::vector<bool>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
-        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("t focus window fraction per curriculum phase"),       std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("Realized in-window t focus fraction per curriculum phase (rest drawn from complement)"),       std::vector<double>() };
         fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
         fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
         fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
