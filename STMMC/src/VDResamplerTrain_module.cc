@@ -104,6 +104,7 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("t focus window fraction per curriculum phase"),       std::vector<double>() };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
         fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
         fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
         fhicl::Atom<bool>       SBDMdenoiseDiagnosticUseEMA{ Name("SBDMdenoiseDiagnosticUseEMA"), Comment("Network used by the diagnostics: true = EMA network when available, false = base network. Match the generation config's useEMANetworkIfAvailable"), true };
@@ -150,7 +151,6 @@ namespace mu2e {
     state_.pdgID               = conf().pdgID();
     state_.trainingEpochs      = conf().SBDMtrainingEpochs();
     state_.trainingSize        = conf().SBDMtrainingSize();
-    state_.trainingSubsetSizePerEpoch = conf().SBDMtrainingSubsetSizePerEpoch();
     state_.saveEpochs          = conf().SaveEpochs();
     state_.autoPlanner              = conf().SBDMautoCurriculumPlanner();
     state_.plannerSmoothWindow      = conf().SBDMplannerSmoothWindow();
@@ -171,6 +171,7 @@ namespace mu2e {
     state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
     state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
+    state_.curriculumSubsetSizePerEpoch  = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
     state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
     state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
     state_.denoiseDiagnosticUseEMA       = conf().SBDMdenoiseDiagnosticUseEMA();
@@ -186,7 +187,8 @@ namespace mu2e {
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
         conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
         conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
-        /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController());
+        /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController(),
+        conf().SBDMtrainingSubsetSizePerEpoch());
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();

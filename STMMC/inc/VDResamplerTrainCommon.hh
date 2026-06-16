@@ -65,7 +65,6 @@ struct TrainState {
     // Training control
     int trainingEpochs              = 0;
     int trainingSize                = -1;
-    int trainingSubsetSizePerEpoch  = 0;
     std::vector<int> saveEpochs;
     bool saveAlsoCsv                = false; // if true, also write a CSV alongside every binary save
 
@@ -93,12 +92,14 @@ struct TrainState {
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
+    std::vector<int>    curriculumSubsetSizePerEpoch;
     bool   promoteEMAOnStart   = false;
     bool   currentBiasLowSigma = false;
     double currentTLowBound    = 0.0;
     double currentTFocusLow      = 0.0;
     double currentTFocusHigh     = 0.0;
     double currentTFocusFraction = 0.0;
+    int    currentSubsetSizePerEpoch = 0; // live trainingSubsetSizePerEpoch (per-phase under curriculum)
     std::vector<int> phaseBoundaries;
 
     // One-step denoising diagnostic. When denoiseDiagnosticTs is non-empty, runTraining()
@@ -290,7 +291,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     double defaultLossWeightPower, double defaultGradientClip, double defaultLearningRate,
     bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
     double defaultTFocusLow = 0.0, double defaultTFocusHigh = 0.0, double defaultTFocusFraction = 0.0,
-    bool defaultPromoteEMA = false, bool defaultUseDimWeightController = false)
+    bool defaultPromoteEMA = false, bool defaultUseDimWeightController = false,
+    int defaultSubsetSizePerEpoch = 0)
 {
     if (!s.curriculumEpochs.empty()) {
         s.nPhase = static_cast<int>(s.curriculumEpochs.size());
@@ -318,6 +320,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
+            fill(s.curriculumSubsetSizePerEpoch, defaultSubsetSizePerEpoch, "SBDMtrainingCurriculumSubsetSizePerEpoch");
 
             // Validate focus-window values for every phase up front, so a bad late-phase
             // value fails at job start rather than at the phase boundary mid-run.
@@ -353,7 +356,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "DimWeightCtl"
                << std::setw(15) << "TFocusLow"
                << std::setw(15) << "TFocusHigh"
-               << std::setw(15) << "TFocusFrac" << "\n";
+               << std::setw(15) << "TFocusFrac"
+               << std::setw(15) << "SubsetSize" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -366,7 +370,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumUseDimWeightController[i]
                    << std::setw(15) << s.curriculumTFocusLow[i]
                    << std::setw(15) << s.curriculumTFocusHigh[i]
-                   << std::setw(15) << s.curriculumTFocusFraction[i] << "\n";
+                   << std::setw(15) << s.curriculumTFocusFraction[i]
+                   << std::setw(15) << s.curriculumSubsetSizePerEpoch[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -376,6 +381,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : defaultTFocusLow;
     s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : defaultTFocusHigh;
     s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : defaultTFocusFraction;
+    s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : defaultSubsetSizePerEpoch;
 
     // Auto curriculum planner sanity checks. The min-epochs floor must cover both the
     // time for the moving average to fill (window) AND a full no-improvement streak
@@ -780,6 +786,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : s.currentTFocusLow;
             s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : s.currentTFocusHigh;
             s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : s.currentTFocusFraction;
+            s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : s.currentSubsetSizePerEpoch;
         }
         if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
             model.promoteEMAToNetwork();
@@ -788,7 +795,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << ", tLowBound=" << s.currentTLowBound
             << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
             << "] (fraction=" << s.currentTFocusFraction << ")"
-            << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
+            << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch;
         const std::string base = stripExt(outFile);
 
         // Apply curriculum phase `k`'s hyperparameters (k is 0-based; only meaningful
@@ -805,6 +812,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusLow       = s.curriculumTFocusLow      [k];
             s.currentTFocusHigh      = s.curriculumTFocusHigh     [k];
             s.currentTFocusFraction  = s.curriculumTFocusFraction [k];
+            s.currentSubsetSizePerEpoch = s.curriculumSubsetSizePerEpoch[k];
             mf::LogInfo(moduleName)
                 << "Switching to phase " << (k + 1)
                 << ": lossWeightPower=" << lwp
@@ -816,7 +824,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 << ", tLowBound=" << s.currentTLowBound
                 << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
                 << "] (fraction=" << s.currentTFocusFraction << ")"
-                << ", trainingSubsetSizePerEpoch=" << s.trainingSubsetSizePerEpoch;
+                << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch;
             model.updateLossWeightPower(lwp);
             model.updateGradientClipThreshold(gc);
             model.updateLearningRate(lr);
@@ -836,7 +844,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         if (e == s.phaseBoundaries[ph] + 1) enterPhase(ph + 1);
                 }
                 mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
-                model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
                     model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
@@ -902,7 +910,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 mf::LogInfo(moduleName)
                     << "Phase " << phaseNum << " epoch " << epochInPhase
                     << " (global epoch " << globalEpoch << ")";
-                model.train(data, 1, s.trainingSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 double loss = model.getLastEpochLoss(); // read immediately after train()
                 const bool conv = tracker.update(loss);
