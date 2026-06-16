@@ -70,7 +70,7 @@ struct TrainState {
 
     // Automatic curriculum planner. When autoPlanner is true, each curriculum phase
     // trains until its (smoothed) loss converges instead of for a fixed epoch count;
-    // see ConvergenceTracker and the planner branch of runTraining()'s trainLoop.
+    // see ConvergenceTracer and the planner branch of runTraining()'s trainLoop.
     bool   autoPlanner              = false;
     int    plannerSmoothWindow      = 10;    // trailing moving-average window W
     double plannerMinDelta          = 0.005; // relative improvement threshold (0.5%)
@@ -93,6 +93,7 @@ struct TrainState {
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
     std::vector<int>    curriculumSubsetSizePerEpoch;
+    std::vector<double> curriculumMinDelta; // per-phase planner minDelta (auto planner only)
     bool   promoteEMAOnStart   = false;
     bool   currentBiasLowSigma = false;
     double currentTLowBound    = 0.0;
@@ -131,7 +132,7 @@ struct TrainState {
 };
 
 // ---------------------------------------------------------------------------
-// ConvergenceTracker — detects "stable loss" within a curriculum phase.
+// ConvergenceTracer — detects "stable loss" within a curriculum phase.
 //
 // Strategy: patience on a smoothed loss. Per-epoch diffusion loss is noisy
 // (stochastic t sampling + per-epoch subset sampling), so we smooth it with a
@@ -142,7 +143,7 @@ struct TrainState {
 // reset() is called at every phase entry, so its state is independent of any epoch
 // history a loaded checkpoint may carry in the model.
 // ---------------------------------------------------------------------------
-struct ConvergenceTracker {
+struct ConvergenceTracer {
     int    window;
     double minDelta;
     int    patience;
@@ -333,6 +334,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
             fill(s.curriculumSubsetSizePerEpoch, defaultSubsetSizePerEpoch, "SBDMtrainingCurriculumSubsetSizePerEpoch");
+            fill(s.curriculumMinDelta,        s.plannerMinDelta,      "SBDMtrainingCurriculumMinDelta");
 
             // Validate focus-window values for every phase up front, so a bad late-phase
             // value fails at job start rather than at the phase boundary mid-run.
@@ -369,7 +371,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "TFocusLow"
                << std::setw(15) << "TFocusHigh"
                << std::setw(15) << "TFocusFrac"
-               << std::setw(15) << "SubsetSize" << "\n";
+               << std::setw(15) << "SubsetSize"
+               << std::setw(15) << "MinDelta" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -383,7 +386,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumTFocusLow[i]
                    << std::setw(15) << s.curriculumTFocusHigh[i]
                    << std::setw(15) << s.curriculumTFocusFraction[i]
-                   << std::setw(15) << s.curriculumSubsetSizePerEpoch[i] << "\n";
+                   << std::setw(15) << s.curriculumSubsetSizePerEpoch[i]
+                   << std::setw(15) << s.curriculumMinDelta[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -408,6 +412,16 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
         if (s.plannerMaxEpochsPerPhase < 1)
             throw cet::exception(moduleName)
                 << "SBDMplannerMaxEpochsPerPhase must be >= 1 (got " << s.plannerMaxEpochsPerPhase << ")";
+        if (s.plannerMinDelta < 0.0 || s.plannerMinDelta >= 1.0)
+            throw cet::exception(moduleName)
+                << "SBDMplannerMinDelta must be in [0,1) (got " << s.plannerMinDelta << ")";
+        if (s.nPhase > 1) {
+            for (int i = 0; i < s.nPhase; ++i)
+                if (s.curriculumMinDelta[i] < 0.0 || s.curriculumMinDelta[i] >= 1.0)
+                    throw cet::exception(moduleName)
+                        << "SBDMtrainingCurriculumMinDelta[" << i << "] = " << s.curriculumMinDelta[i]
+                        << " must be in [0,1)";
+        }
         int minFloor = s.plannerSmoothWindow + s.plannerPatience;
         if (s.plannerMinEpochsPerPhase < minFloor) {
             mf::LogWarning(moduleName)
@@ -882,12 +896,22 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         } else {
             capDesc = "SBDMplannerMaxEpochsPerPhase=" + std::to_string(s.plannerMaxEpochsPerPhase);
         }
+        std::string minDeltaDesc;
+        if (s.nPhase > 1) {
+            std::ostringstream oss;
+            oss << "SBDMtrainingCurriculumMinDelta=[";
+            for (int i = 0; i < s.nPhase; ++i) oss << (i ? ", " : "") << s.curriculumMinDelta[i];
+            oss << "]";
+            minDeltaDesc = oss.str();
+        } else {
+            minDeltaDesc = std::to_string(s.plannerMinDelta);
+        }
         mf::LogInfo(moduleName)
             << "Auto curriculum planner enabled: smoothWindow=" << s.plannerSmoothWindow
-            << ", minDelta=" << s.plannerMinDelta << ", patience=" << s.plannerPatience
+            << ", minDelta=" << minDeltaDesc << ", patience=" << s.plannerPatience
             << ", minEpochsPerPhase=" << s.plannerMinEpochsPerPhase
             << ", max-epoch cap per phase=" << capDesc;
-        ConvergenceTracker tracker{s.plannerSmoothWindow, s.plannerMinDelta,
+        ConvergenceTracer tracer{s.plannerSmoothWindow, s.plannerMinDelta,
                                    s.plannerPatience, s.plannerMinEpochsPerPhase};
         int globalEpoch = 0;
         for (int ph = 0; ph < s.nPhase; ++ph) {
@@ -905,7 +929,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 continue;
             }
             if (ph >= 1) enterPhase(ph);
-            tracker.reset();
+            tracer.reset();
+            tracer.minDelta = (s.nPhase > 1) ? s.curriculumMinDelta[ph] : s.plannerMinDelta;
             model.clearNetworkSnapshot(); // best-of-phase snapshot is per-phase
             // Per-phase max-epoch cap: a curriculum phase's configured epoch count
             // (guaranteed > 0 here, since 0-epoch phases were skipped above); for a
@@ -925,7 +950,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 double loss = model.getLastEpochLoss(); // read immediately after train()
-                const bool conv = tracker.update(loss);
+                const bool conv = tracer.update(loss);
 
                 // Per-epoch planner diagnostics: smoothed loss, its relative improvement
                 // vs the running best (the "delta" compared against minDelta), and the
@@ -934,26 +959,26 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 {
                     std::ostringstream pss;
                     pss << "Phase " << phaseNum << " planner: rawLoss=" << loss
-                        << " smoothed=" << tracker.lastSmoothed;
-                    if (std::isfinite(tracker.lastDelta))
-                        pss << " delta=" << (tracker.lastDelta * 100.0) << "% (minDelta="
-                            << (s.plannerMinDelta * 100.0) << "%)";
+                        << " smoothed=" << tracer.lastSmoothed;
+                    if (std::isfinite(tracer.lastDelta))
+                        pss << " delta=" << (tracer.lastDelta * 100.0) << "% (minDelta="
+                            << (tracer.minDelta * 100.0) << "%)";
                     else
                         pss << " delta=n/a";
-                    pss << " sinceImprove=" << tracker.sinceImprove << "/" << s.plannerPatience
-                        << " bestSmoothed=" << tracker.bestSmoothed
-                        << " @epoch " << tracker.bestSmoothedEpoch;
+                    pss << " sinceImprove=" << tracer.sinceImprove << "/" << s.plannerPatience
+                        << " bestSmoothed=" << tracer.bestSmoothed
+                        << " @epoch " << tracer.bestSmoothedEpoch;
                     mf::LogInfo(moduleName) << pss.str();
                 }
 
                 // Best-in-phase checkpoints. Raw = the single lowest-loss epoch;
                 // smoothed = lowest moving-average loss (robust to per-epoch noise).
-                if (tracker.rawImproved) {
+                if (tracer.rawImproved) {
                     model.saveModel(phaseTag + ".bestRaw.bin");
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(phaseTag + ".bestRaw.csv");
                 }
-                if (tracker.smoothedImproved) {
+                if (tracer.smoothedImproved) {
                     // Capture the smoothed-best in memory for resume-from-best, and on disk.
                     model.snapshotNetwork();
                     model.saveModel(phaseTag + ".bestSmoothed.bin");
@@ -987,16 +1012,16 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 model.restoreNetwork();
                 mf::LogInfo(moduleName)
                     << "Phase " << phaseNum << ": restored smoothed-best weights (epoch "
-                    << tracker.bestSmoothedEpoch << ", smoothed loss " << tracker.bestSmoothed
+                    << tracer.bestSmoothedEpoch << ", smoothed loss " << tracer.bestSmoothed
                     << ") as the starting point for "
                     << (ph + 1 < s.nPhase ? "the next phase." : "the final model.");
             }
 
             auto bestSummary = [&]() {
                 std::stringstream ss;
-                ss << "raw-best epoch=" << tracker.bestRawEpoch << " (loss=" << tracker.bestRawLoss
-                   << "), smoothed-best epoch=" << tracker.bestSmoothedEpoch
-                   << " (smoothed loss=" << tracker.bestSmoothed << ")";
+                ss << "raw-best epoch=" << tracer.bestRawEpoch << " (loss=" << tracer.bestRawLoss
+                   << "), smoothed-best epoch=" << tracer.bestSmoothedEpoch
+                   << " (smoothed loss=" << tracer.bestSmoothed << ")";
                 return ss.str();
             };
             if (converged) {

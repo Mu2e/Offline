@@ -369,7 +369,7 @@ namespace mu2e {
         std::vector<double> normStdev(totalDim, 0.0);
         // containers to track the sum of squares of the normalized data
         std::vector<double> M2(totalDim, 0.0);
-        // reset min/max trackers
+        // reset min/max tracers
         normMin_.assign(totalDim, std::numeric_limits<double>::max());
         normMax_.assign(totalDim, std::numeric_limits<double>::lowest());
 

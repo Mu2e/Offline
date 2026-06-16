@@ -101,6 +101,7 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("Realized in-window t focus fraction per curriculum phase (rest drawn from complement)"),       std::vector<double>() };
         fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumMinDelta{ Name("SBDMtrainingCurriculumMinDelta"), Comment("Auto-planner minDelta per curriculum phase (relative smoothed-loss improvement threshold; empty = use SBDMplannerMinDelta)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
         fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
         fhicl::Atom<bool>       SBDMdenoiseDiagnosticUseEMA{ Name("SBDMdenoiseDiagnosticUseEMA"), Comment("Network used by the diagnostics: true = EMA network when available, false = base network. Match the generation config's useEMANetworkIfAvailable"), true };
@@ -168,6 +169,7 @@ namespace mu2e {
     state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
     state_.curriculumSubsetSizePerEpoch  = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
+    state_.curriculumMinDelta            = conf().SBDMtrainingCurriculumMinDelta();
     state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
     state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
     state_.denoiseDiagnosticUseEMA       = conf().SBDMdenoiseDiagnosticUseEMA();
