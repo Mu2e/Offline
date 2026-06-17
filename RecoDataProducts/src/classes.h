@@ -8,6 +8,7 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 

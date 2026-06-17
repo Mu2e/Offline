@@ -440,6 +440,7 @@
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
+ <class name="art::Ptr<mu2e::STMWaveformDigi>"/>
  <class name="mu2e::STMPHDigi"/>
  <class name="mu2e::STMPHDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMPHDigiCollection>"/>

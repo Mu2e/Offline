@@ -42,12 +42,12 @@ namespace mu2e {
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMWaveformDigis(const Parameters& conf);
-     
+
     private:
     void beginJob() override;//For _hist
     void endJob() override; //For printing counter
     void analyze(const art::Event& e) override;
-    
+
     TH1F* _hist; //Hist for WaveLength
     int _zeroLengthCount = 0;
     art::InputTag _stmWaveformDigisTag;
@@ -75,11 +75,11 @@ namespace mu2e {
   void PlotSTMWaveformDigis::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
-    std::string X = std::string(_stmWaveformDigisTag.instance()); //Gets instance name fromf fcl
+    std::string X = std::string(_stmWaveformDigisTag.instance()); //Gets instance name from fcl
     std::transform(X.begin(),X.end(),X.begin(), toupper); //Raises uppercase of DigiTag
     std::string hWaveLength_title = "Waveform Lengths for " + X + " Pulses"; //Builds title
     _hist = tfs->make<TH1F>("hWaveLength", hWaveLength_title.c_str() ,1000,0,1000); //makes the histogram hWaveLength
-    
+
     }
 
   void PlotSTMWaveformDigis::endJob(){
@@ -96,7 +96,7 @@ namespace mu2e {
 
     if (!plotZSOffsetWaveforms){
       if (_verbosityLevel >1){ std::cout << "Instance : " << instance << " , not ZS ==> No Offset Waveform will be created" << std::endl;} }
-    
+
     art::ServiceHandle<art::TFileService> tfs;
     auto waveformsHandle = event.getValidHandle(_stmWaveformDigisToken);
     std::stringstream histname, histtitle;
@@ -109,7 +109,7 @@ namespace mu2e {
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
     if (_verbosityLevel > 1){ std::cout<<"size = "<<waveformsHandle->size()<<std::endl; }
-    
+
     for (const auto& waveform : *waveformsHandle) {
 
       histname.str("");
@@ -118,49 +118,60 @@ namespace mu2e {
       histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
 
       if (waveform.adcs().size() == 0){
-	++_zeroLengthCount;
+        ++_zeroLengthCount;
       } else {
-	//None empty waveforms go in here
-	_hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
-	
+        //None empty waveforms go in here
+        _hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
+
         Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
         TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
-	TH1F* hWaveformOffset = nullptr; // Standby
-	
-	hWaveform->GetYaxis()->SetTitle("ADCs");
-	hWaveform->GetXaxis()->SetTitle("Sample Number");
+        TH1F* hWaveformOffset = nullptr; // Standby
 
-	if (plotZSOffsetWaveforms){
-	  //For offset waveforms -> Better organize this area                                                                                                                                                                                              
-          const auto zs_offset = waveform.trigTimeOffset(); //Grabs stored offset                                                                                                                                                                          
+        hWaveform->GetYaxis()->SetTitle("ADCs");
+        hWaveform->GetXaxis()->SetTitle("Sample Number");
+
+        if (plotZSOffsetWaveforms){
+          //For offset waveforms -> Better organize this area
+          const auto zs_offset = waveform.trigTimeOffset(); //Grabs stored offset
           std::stringstream histname2;//New histogram to include the offset waveform from trigTimeOffset
-	  std::stringstream histtitle2;
+          std::stringstream histtitle2;
           histname2 << histname.str() << "_offset" << zs_offset;
-	  histtitle2 << histtitle2.str() << instance << " , offset : " << zs_offset;
+          histtitle2 << instance << "ZS waveform";
+          if (waveform.hasParent()){
+            histtitle2 << ", parent raw index: " << waveform.parent().key();
+            histname2 << "_parentRaw: " << waveform.parent().key();
+          } else {
+            histtitle2 << ", no parent raw waveform";
+            histname2 << "_noParentIndex";
+          }
+          histtitle2 << ", offset: " << zs_offset;
 
-          hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset                                      
+          //histtitle2 << histtitle2.str() << instance << " , offset : " << zs_offset;
+
+          hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
           hWaveformOffset->GetYaxis()->SetTitle("ADCs");
           hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + trigtimeOffset");
-	  // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform                                                                                                                                                      
-          //double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform                                                                                                                                                             
-          //double xmax = hWaveformOffset->GetXaxis()->GetXmax();//gets xman from waveform                                                                                         
-          //hWaveformOffset->SetBins(n_bins, xmin + zs_offset, xmax + zs_offset);// shifts the xmin and xmax by offset, keeps numbers of bins                                                                                                             
-        }//PlotZSOffset                                                                                                                                                                                                                                    
-	
-	for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
+          // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform
+          //double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform
+          //double xmax = hWaveformOffset->GetXaxis()->GetXmax();//gets xman from waveform
+          //hWaveformOffset->SetBins(n_bins, xmin + zs_offset, xmax + zs_offset);// shifts the xmin and xmax by offset, keeps numbers of bins
+        }//PlotZSOffset
+
+        for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
+
 
           const auto adc = waveform.adcs().at(i_adc);
-	  auto content = adc;
-	  if (_subtractPedestal) {
-	    content -= pedestal;
-	  }
-	  
-	  hWaveform->SetBinContent(i_adc+1,content);
-	  if ( plotZSOffsetWaveforms) { hWaveformOffset->SetBinContent(i_adc+1,content);}
-	  
-	}
+          auto content = adc;
+          if (_subtractPedestal) {
+            content -= pedestal;
+          }
+
+          hWaveform->SetBinContent(i_adc+1,content);
+          if ( plotZSOffsetWaveforms) { hWaveformOffset->SetBinContent(i_adc+1,content);}
+
+        }
       }//else
-      ++count;  
+      ++count;
     }//for
   }//analyzer
 }
