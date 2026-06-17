@@ -229,17 +229,22 @@ namespace mu2e{
 
         const std::vector<double>& getDimWeights() const { return dimWeights_; }
 
-        // In-memory snapshot of the trainable state (network weights, EMA copy, and Adam
-        // step counter). Used by the auto curriculum planner to capture the smoothed-best
-        // point within a phase and restore it before advancing — the substitute for EMA
-        // promotion when that is disabled. Capturing the full Layer (incl. Adam moments)
-        // keeps optimizer continuity if training resumes from the restored point. The
-        // model cannot be reassigned in place (reference members delete operator=), so a
+        // In-memory snapshot of the trainable state. Used by the auto curriculum planner to
+        // capture the smoothed-best point within a phase and restore it before advancing —
+        // the substitute for EMA promotion when that is disabled. The snapshot captures the
+        // SAME mutable state that loadModel() round-trips, so an in-memory restore is
+        // equivalent to reloading the checkpoint: network weights + Adam moments (full
+        // Layer), the EMA copy, adamStep_, AND the dimension-weight controller state
+        // (dimWeights_ / dimLossEMA_). Omitting the controller state previously left a
+        // skewed dimWeights_ in force after a restore, which destabilised the next phase.
+        // The model cannot be reassigned in place (reference members delete operator=), so a
         // value-copy snapshot is used instead of a loadModel() round-trip.
         void snapshotNetwork() {
             networkSnapshot_    = network_;
             emaNetworkSnapshot_ = emaNetwork_;
             adamStepSnapshot_   = adamStep_;
+            dimWeightsSnapshot_ = dimWeights_;
+            dimLossEMASnapshot_ = dimLossEMA_;
             hasSnapshot_        = true;
         }
         void restoreNetwork() {
@@ -251,13 +256,17 @@ namespace mu2e{
             network_    = networkSnapshot_;
             emaNetwork_ = emaNetworkSnapshot_;
             adamStep_   = adamStepSnapshot_;
+            dimWeights_ = dimWeightsSnapshot_;
+            dimLossEMA_ = dimLossEMASnapshot_;
             mf::LogInfo("ScoreBasedDiffusionModel::restoreNetwork")
-                << "Restored network weights from in-memory snapshot.";
+                << "Restored network weights, optimizer, and dim-weight controller from in-memory snapshot.";
         }
         bool hasNetworkSnapshot() const { return hasSnapshot_; }
         void clearNetworkSnapshot() {
             networkSnapshot_.clear();
             emaNetworkSnapshot_.clear();
+            dimWeightsSnapshot_.clear();
+            dimLossEMASnapshot_.clear();
             hasSnapshot_ = false;
         }
 
@@ -284,6 +293,23 @@ namespace mu2e{
             const std::vector<DiffusionTrainingSample>& data,
             int epochs,
             int trainSubsetDataSize = 0,
+            bool biasLowSigma = false,
+            double tLowBound = 0.0,
+            double tFocusLow = 0.0,
+            double tFocusHigh = 0.0,
+            double tFocusFraction = 0.0
+        );
+
+        // Diagnostic: average per-sample loss at the CURRENT weights with NO optimizer step.
+        // Replicates train()'s per-sample loss (same t sampling / focus / bias, addNoise,
+        // forward, computeLoss with sigma^lossWeightPower weighting) over a subset, but does
+        // NOT backprop, step the optimizer, update the EMA network, touch dimLossEMA_, or
+        // increment adamStep_. Used to read the loss of weights as just installed by
+        // restoreNetwork()/promoteEMAToNetwork(), isolating weight quality from the
+        // destabilising effect of the first training step. Draws from the RNG (t + noise).
+        double evaluateAverageLoss(
+            const std::vector<DiffusionTrainingSample>& data,
+            int subsetSize = 0,
             bool biasLowSigma = false,
             double tLowBound = 0.0,
             double tFocusLow = 0.0,
@@ -670,6 +696,8 @@ namespace mu2e{
         // (see snapshotNetwork()/restoreNetwork()). Not serialized.
         std::vector<Layer> networkSnapshot_;
         std::vector<Layer> emaNetworkSnapshot_;
+        std::vector<double> dimWeightsSnapshot_;
+        std::vector<double> dimLossEMASnapshot_;
         int   adamStepSnapshot_ = 0;
         bool  hasSnapshot_      = false;
 

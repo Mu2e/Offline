@@ -1065,6 +1065,66 @@ namespace mu2e {
         }
     }
 
+    double ScoreBasedDiffusionModel::evaluateAverageLoss(
+        const std::vector<DiffusionTrainingSample>& data,
+        int subsetSize,
+        bool biasLowSigma,
+        double tLowBound,
+        double tFocusLow,
+        double tFocusHigh,
+        double tFocusFraction)
+    {
+        const size_t N = data.size();
+        if (N == 0) return std::numeric_limits<double>::quiet_NaN();
+
+        // Evaluate over a subset (first `subsetSize` after a shuffle) or the full set.
+        const size_t activeN = (subsetSize > 0 && static_cast<size_t>(subsetSize) < N)
+                               ? static_cast<size_t>(subsetSize) : N;
+        std::vector<size_t> indices(N);
+        for (size_t i = 0; i < N; ++i) indices[i] = i;
+        for (size_t i = N - 1; i > 0; --i) {
+            size_t j = static_cast<size_t>(randFlat_.fire() * (i + 1));
+            j = std::min(j, i);
+            std::swap(indices[i], indices[j]);
+        }
+
+        const double eps_safe = 1e-12;
+        double sumLoss = 0.0;
+        int n = 0;
+        for (size_t idx = 0; idx < activeN; ++idx) {
+            const auto& sample = data[indices[idx]];
+            // Same t sampling as train() (focus window / complement, or tLowBound / biasLowSigma).
+            double t = randFlat_.fire();
+            if (tFocusFraction > 0.0) {
+                if (randFlat_.fire() < tFocusFraction) {
+                    t = tFocusLow + (tFocusHigh - tFocusLow) * t;
+                } else {
+                    double comp = 1.0 - (tFocusHigh - tFocusLow);
+                    double u    = t * comp;
+                    t = (u < tFocusLow) ? u : u + (tFocusHigh - tFocusLow);
+                }
+            } else {
+                if (tLowBound > 0.0) t = tLowBound + (1.0 - tLowBound) * t;
+                if (biasLowSigma)   t = t * t;
+            }
+
+            std::vector<double> eps;
+            auto xt = addNoise(sample.x, t, eps);
+            double s = std::max(sigma(t), eps_safe);
+            double weight = std::pow(s, lossWeightPower_);
+
+            std::vector<double> target(dim_);
+            for (int i = 0; i < dim_; ++i)
+                target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
+
+            auto input = buildNetworkInput(xt, sample.cond, t);
+            auto score = forward(input);          // forward only — no backward / optimizer / EMA / dimLossEMA
+            sumLoss += computeLoss(score, target, weight);
+            ++n;
+        }
+        return (n > 0) ? sumLoss / n : std::numeric_limits<double>::quiet_NaN();
+    }
+
     void ScoreBasedDiffusionModel::saveModel(
         const std::string& filename
     )

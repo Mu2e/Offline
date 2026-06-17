@@ -939,6 +939,20 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             const int maxEpochs = (s.nPhase > 1) ? s.curriculumEpochs[ph]
                                                  : s.plannerMaxEpochsPerPhase;
             const std::string phaseTag = base + ".phase" + std::to_string(phaseNum);
+
+            // Diagnostic: loss at the weights as just installed by the prior phase's
+            // restoreNetwork() and/or this phase's enterPhase() promote — BEFORE any
+            // optimizer step. A sane value here with an exploding epoch-1 training loss
+            // means the weights are fine and the first step is to blame; a huge value
+            // means the installed weights themselves are bad.
+            {
+                double evalLoss = model.evaluateAverageLoss(
+                    data, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                    s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
+                mf::LogInfo(moduleName)
+                    << "Phase " << phaseNum << " pre-train eval loss (no optimizer step) = " << evalLoss;
+            }
+
             bool converged = false;
             int  epochInPhase = 0;
             while (true) {
@@ -1002,19 +1016,23 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             if (s.saveAlsoCsv)
                 model.saveModelCsv(phaseTag + ".final.csv");
 
-            // Resume-from-best: when the upcoming phase boundary does NOT promote EMA
-            // (and for the final phase, which has no successor), restore the smoothed-best
-            // weights so the next phase — or the global-final model — continues from the
-            // best point rather than the patience-drifted final epoch. When the next phase
-            // promotes EMA, promoteEMAToNetwork() supplies the weights instead, so skip.
-            const bool promoteNext = (ph + 1 < s.nPhase) ? s.curriculumPromoteEMA[ph + 1] : false;
-            if (!promoteNext && model.hasNetworkSnapshot()) {
+            // Resume-from-best: ALWAYS rewind to this phase's smoothed-best before advancing.
+            // The best point is the consistent reference for the whole training state — base
+            // network + Adam moments, the EMA copy, and the dim-weight controller. Doing this
+            // unconditionally (not just when the next phase skips EMA promotion) ensures that:
+            //  - a non-promoting next phase / the global-final model continues from the best
+            //    base weights (not the patience-drifted final epoch), and
+            //  - a promoting next phase promotes the best-time EMA (restored here) with the
+            //    best-time controller state, instead of the drifted phase-end EMA/dimWeights.
+            if (model.hasNetworkSnapshot()) {
                 model.restoreNetwork();
+                const bool promoteNext = (ph + 1 < s.nPhase) ? s.curriculumPromoteEMA[ph + 1] : false;
                 mf::LogInfo(moduleName)
-                    << "Phase " << phaseNum << ": restored smoothed-best weights (epoch "
-                    << tracer.bestSmoothedEpoch << ", smoothed loss " << tracer.bestSmoothed
-                    << ") as the starting point for "
-                    << (ph + 1 < s.nPhase ? "the next phase." : "the final model.");
+                    << "Phase " << phaseNum << ": restored smoothed-best state (epoch "
+                    << tracer.bestSmoothedEpoch << ", smoothed loss " << tracer.bestSmoothed << ")"
+                    << (promoteNext ? " — next phase will promote the restored (best-time) EMA."
+                                    : (ph + 1 < s.nPhase ? " as the next phase's starting point."
+                                                         : " as the final model."));
             }
 
             auto bestSummary = [&]() {
