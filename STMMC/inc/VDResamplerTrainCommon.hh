@@ -214,8 +214,8 @@ struct ConvergenceTracer {
 // ---------------------------------------------------------------------------
 struct ModelBuildParams {
     int    timeEmbeddingDim = 0;
-    int    inputEmbeddingDim = 0;
-    int    conditionEmbeddingDim = 0;
+    std::vector<int> inputEmbeddingDims;     // per-state-dim Fourier depth ({} / {k} / length-dim)
+    std::vector<int> conditionEmbeddingDims; // per-condition-dim Fourier depth ({} / {k} / length-condDim)
     int    hidden           = 128;
     int    layers           = 4;
     ScoreBasedDiffusionModel::OptimizerType     optimizer;
@@ -486,7 +486,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         double initLR  = s.nPhase > 1 ? s.curriculumLearningRate[0]    : p.learningRate;
         bool   initUDWC= s.nPhase > 1 ? s.curriculumUseDimWeightController[0] : p.useDimWeightController;
         return std::make_unique<ScoreBasedDiffusionModel>(
-            rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDim, p.conditionEmbeddingDim,
+            rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDims, p.conditionEmbeddingDims,
             p.hidden, p.layers, p.optimizer,
             p.adamBeta1, p.adamBeta2, p.adamEps, p.noiseSchedule,
             p.betaMin, p.betaMax, p.cosineOffset, p.logSigMin, p.logSigMax,

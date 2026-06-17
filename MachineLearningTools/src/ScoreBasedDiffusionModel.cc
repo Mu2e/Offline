@@ -107,26 +107,82 @@ namespace mu2e {
         double t
     ) const {
         std::vector<double> input;
-        input.reserve(dim_ + dim_ * inputEmbeddingDim_
-                      + conditionDim_ + conditionDim_ * conditionEmbeddingDim_
-                      + 1 + timeEmbeddingDim_);
-        // Per-coordinate Fourier features: [sin(π·2^i·v), cos(π·2^i·v)] for i = 0..embDim/2-1
-        auto appendFourier = [&input](const std::vector<double>& v, int embDim) {
-            for (double vj : v) {
-                for (int i = 0; i < embDim / 2; ++i) {
+        int sumInputEmb = 0; for (int e : inputEmbeddingDims_)     sumInputEmb += e;
+        int sumCondEmb  = 0; for (int e : conditionEmbeddingDims_) sumCondEmb  += e;
+        input.reserve(dim_ + sumInputEmb + conditionDim_ + sumCondEmb + 1 + timeEmbeddingDim_);
+        // Per-coordinate Fourier features with a per-coordinate depth: for coordinate j,
+        // [sin(π·2^i·v_j), cos(π·2^i·v_j)] for i = 0..dims[j]/2-1 (none when dims[j] == 0).
+        auto appendFourier = [&input](const std::vector<double>& v, const std::vector<int>& dims) {
+            for (size_t j = 0; j < v.size(); ++j) {
+                for (int i = 0; i < dims[j] / 2; ++i) {
                     double freq = M_PI * std::pow(2.0, i);
-                    input.push_back(std::sin(freq * vj));
-                    input.push_back(std::cos(freq * vj));
+                    input.push_back(std::sin(freq * v[j]));
+                    input.push_back(std::cos(freq * v[j]));
                 }
             }
         };
         input.insert(input.end(), x.begin(), x.end());
-        if (inputEmbeddingDim_ > 0) appendFourier(x, inputEmbeddingDim_);
+        if (sumInputEmb > 0) appendFourier(x, inputEmbeddingDims_);
         input.insert(input.end(), cond.begin(), cond.end());
-        if (conditionEmbeddingDim_ > 0) appendFourier(cond, conditionEmbeddingDim_);
+        if (sumCondEmb > 0) appendFourier(cond, conditionEmbeddingDims_);
         auto tEmb = timeEmbed(t);
         input.insert(input.end(), tEmb.begin(), tEmb.end());
         return input;
+    }
+
+    // Format an int vector as "[a, b, c]" for human-readable LOG output only. The CSV wire
+    // format writes bare comma-separated values (see saveModelCsv) so the existing CSV
+    // splitter parses them; do not use this bracketed form there.
+    static std::string embDimsToString(const std::vector<int>& v) {
+        std::ostringstream oss;
+        oss << "[";
+        for (size_t i = 0; i < v.size(); ++i) { oss << v[i]; if (i + 1 < v.size()) oss << ", "; }
+        oss << "]";
+        return oss.str();
+    }
+
+    // Resolve a user-supplied per-coordinate Fourier embedding spec into a length-nDim vector
+    // and validate it. Accepts {} (all zeros), {k} (broadcast k to every dim), or a length-nDim
+    // vector. Each resolved depth must be 0 or an even integer >= 2 (an odd depth would emit an
+    // unpaired sin/cos and silently corrupt the input layout, so it is a hard error, not a clamp).
+    // Used both at construction (from fcl) and on the load path (from a checkpoint), so a
+    // malformed vector is rejected rather than mis-shaping the network.
+    static std::vector<int> resolveEmbeddingDims(
+        const std::vector<int>& in, int nDim, const char* name)
+    {
+        // A non-positive target dimension carries no embedding. nDim==0 is legitimate
+        // (e.g. conditionEmbeddingDims with conditionDim==0); nDim<0 only arises from a corrupt
+        // checkpoint and is reported by the constructor's dim>0 check right after this runs —
+        // return empty here to avoid a negative-size allocation in the broadcast path below.
+        if (nDim <= 0) {
+            for (int e : in)
+                if (e != 0)
+                    throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                        << name << " requests depth " << e << " but the corresponding dimension is " << nDim;
+            return {};
+        }
+
+        std::vector<int> out;
+        if (in.empty()) {
+            out.assign(nDim, 0);
+        } else if (in.size() == 1) {
+            out.assign(nDim, in[0]);
+        } else if (static_cast<int>(in.size()) == nDim) {
+            out = in;
+        } else {
+            throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                << name << " must have length 0 (none), 1 (broadcast), or " << nDim
+                << " (per dimension); got " << in.size();
+        }
+
+        for (int i = 0; i < nDim; ++i) {
+            int e = out[i];
+            if (!(e == 0 || (e >= 2 && e % 2 == 0)))
+                throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                    << name << "[" << i << "] = " << e
+                    << " must be 0 (raw) or an even integer >= 2";
+        }
+        return out;
     }
 
     ScoreBasedDiffusionModel::ScoreBasedDiffusionModel(
@@ -135,8 +191,8 @@ namespace mu2e {
         int dim,
         int conditionDim,
         int timeEmbeddingDim,
-        int inputEmbeddingDim,
-        int conditionEmbeddingDim,
+        std::vector<int> inputEmbeddingDims,
+        std::vector<int> conditionEmbeddingDims,
         int hidden,
         int layers,
         OptimizerType optimizerType,
@@ -161,7 +217,10 @@ namespace mu2e {
         int diffusionSteps,
         bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
-        dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim), inputEmbeddingDim_(inputEmbeddingDim), conditionEmbeddingDim_(conditionEmbeddingDim), hidden_(hidden), layers_(layers),
+        dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim),
+        inputEmbeddingDims_(resolveEmbeddingDims(inputEmbeddingDims, dim, "inputEmbeddingDims")),
+        conditionEmbeddingDims_(resolveEmbeddingDims(conditionEmbeddingDims, conditionDim, "conditionEmbeddingDims")),
+        hidden_(hidden), layers_(layers),
         optimizerType_(optimizerType),
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
@@ -186,18 +245,8 @@ namespace mu2e {
             throw cet::exception("ScoreBasedDiffusionModel::initialization")
                 << "timeEmbeddingDim must be 0 (raw scalar) or an even integer >= 2";
         }
-        if (inputEmbeddingDim_ != 0 && (inputEmbeddingDim_ < 2 || inputEmbeddingDim_ % 2 != 0)) {
-            throw cet::exception("ScoreBasedDiffusionModel::initialization")
-                << "inputEmbeddingDim must be 0 (raw coordinates) or an even integer >= 2";
-        }
-        if (conditionEmbeddingDim_ != 0 && (conditionEmbeddingDim_ < 2 || conditionEmbeddingDim_ % 2 != 0)) {
-            throw cet::exception("ScoreBasedDiffusionModel::initialization")
-                << "conditionEmbeddingDim must be 0 (raw values) or an even integer >= 2";
-        }
-        if (conditionEmbeddingDim_ > 0 && conditionDim_ == 0) {
-            throw cet::exception("ScoreBasedDiffusionModel::initialization")
-                << "conditionEmbeddingDim > 0 requires conditionDim > 0";
-        }
+        // inputEmbeddingDims_ / conditionEmbeddingDims_ were resolved and validated by
+        // resolveEmbeddingDims() in the member-initializer list.
         if (batchSize <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid batchSize";
         }
@@ -212,8 +261,10 @@ namespace mu2e {
         // (+1 because diffusion time t is appended to the input vector)
         // ------------------------------------------------------------
 
-        int inputSize = dim_ + dim_ * inputEmbeddingDim_
-                      + conditionDim_ + conditionDim_ * conditionEmbeddingDim_
+        int sumInputEmb = 0; for (int e : inputEmbeddingDims_)     sumInputEmb += e;
+        int sumCondEmb  = 0; for (int e : conditionEmbeddingDims_) sumCondEmb  += e;
+        int inputSize = dim_ + sumInputEmb
+                      + conditionDim_ + sumCondEmb
                       + 1 + timeEmbeddingDim_;
         int in = inputSize;
 
@@ -290,8 +341,8 @@ namespace mu2e {
             << "    | dim=" << dim_ << "\n"
             << "    | conditionDim=" << conditionDim_ << "\n"
             << "    | timeEmbeddingDim=" << timeEmbeddingDim_ << (timeEmbeddingDim_ == 0 ? " (raw scalar)" : " (sinusoidal)") << "\n"
-            << "    | inputEmbeddingDim=" << inputEmbeddingDim_ << (inputEmbeddingDim_ == 0 ? " (raw coordinates)" : " (Fourier features per state coordinate)") << "\n"
-            << "    | conditionEmbeddingDim=" << conditionEmbeddingDim_ << (conditionEmbeddingDim_ == 0 ? " (raw values)" : " (Fourier features per condition coordinate)") << "\n"
+            << "    | inputEmbeddingDims=" << embDimsToString(inputEmbeddingDims_) << " (per-state-coordinate Fourier depth; 0 = raw)\n"
+            << "    | conditionEmbeddingDims=" << embDimsToString(conditionEmbeddingDims_) << " (per-condition-coordinate Fourier depth; 0 = raw)\n"
             << "    | hidden=" << hidden_ << "\n"
             << "    | layers=" << layers_ << "\n"
             << "  Optimizer configuration:\n"
@@ -1160,16 +1211,22 @@ namespace mu2e {
         // in the emaNetworkDecay field instead of the already-rescaled per-step
         // effective value. Versions 1-3 stored the effective value, which the loader
         // re-rescaled on construction, compounding the batch-size exponent on every
-        // round-trip and driving the decay toward zero.
+        // round-trip and driving the decay toward zero;
+        // 5 = replaces the two scalar embedding fields with count-prefixed per-dimension
+        // vectors (inputEmbeddingDims_ of length dim_, conditionEmbeddingDims_ of length
+        // conditionDim_). Versions 2-4 stored a single scalar broadcast to all dims.
         out.write("SBDM", 4);
-        wU32(4u);
+        wU32(5u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
         wI32(static_cast<int32_t>(conditionDim_));
         wI32(static_cast<int32_t>(timeEmbeddingDim_));
-        wI32(static_cast<int32_t>(inputEmbeddingDim_));
-        wI32(static_cast<int32_t>(conditionEmbeddingDim_));
+        // Per-dimension Fourier embedding depths, each count-prefixed (version >= 5).
+        wI32(static_cast<int32_t>(inputEmbeddingDims_.size()));
+        for (int e : inputEmbeddingDims_)     wI32(static_cast<int32_t>(e));
+        wI32(static_cast<int32_t>(conditionEmbeddingDims_.size()));
+        for (int e : conditionEmbeddingDims_) wI32(static_cast<int32_t>(e));
         wI32(static_cast<int32_t>(hidden_));
         wI32(static_cast<int32_t>(layers_));
         wI32(optimizerType_ == OptimizerType::ADAM ? 0 : 1);
@@ -1260,8 +1317,10 @@ namespace mu2e {
         out << "dim," << dim_ << "\n";
         out << "conditionDim," << conditionDim_ << "\n";
         out << "timeEmbeddingDim," << timeEmbeddingDim_ << "\n";
-        out << "inputEmbeddingDim," << inputEmbeddingDim_ << "\n";
-        out << "conditionEmbeddingDim," << conditionEmbeddingDim_ << "\n";
+        // Per-dimension Fourier depths as bare comma-separated values (no brackets) so the CSV
+        // splitter parses them; an empty vector writes just the key with no values.
+        out << "inputEmbeddingDims";     for (int e : inputEmbeddingDims_)     out << "," << e; out << "\n";
+        out << "conditionEmbeddingDims"; for (int e : conditionEmbeddingDims_) out << "," << e; out << "\n";
         out << "hidden," << hidden_ << "\n";
         out << "layers," << layers_ << "\n";
         // Optimizer configuration
@@ -1525,7 +1584,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version < 1 || version > 4)
+            if (version < 1 || version > 5)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -1533,9 +1592,20 @@ namespace mu2e {
             int dim            = rI32();
             int conditionDim   = rI32();
             int timeEmbeddingDim = rI32();
-            // Version 2 adds the Fourier input embeddings; version-1 files predate them
-            int inputEmbeddingDim     = (version >= 2) ? rI32() : 0;
-            int conditionEmbeddingDim = (version >= 2) ? rI32() : 0;
+            // Fourier embedding depths. Version 1 predates them (none). Versions 2-4 store a
+            // single scalar each, broadcast to all dims. Version 5+ stores count-prefixed
+            // per-dimension vectors. resolveEmbeddingDims (in the constructor) maps {} / {k} /
+            // full-length the same way, so we hand it the raw form read here.
+            std::vector<int> inputEmbeddingDims, conditionEmbeddingDims;
+            if (version >= 5) {
+                int nIn = rI32();
+                for (int i = 0; i < nIn; ++i) inputEmbeddingDims.push_back(rI32());
+                int nCond = rI32();
+                for (int i = 0; i < nCond; ++i) conditionEmbeddingDims.push_back(rI32());
+            } else if (version >= 2) {
+                inputEmbeddingDims     = { rI32() }; // single scalar -> broadcast
+                conditionEmbeddingDims = { rI32() };
+            } // version 1: leave empty -> no embedding
             int hidden         = rI32();
             int layers         = rI32();
             int optType        = rI32();
@@ -1673,7 +1743,7 @@ namespace mu2e {
             // Reconstruct model
             ScoreBasedDiffusionModel model(
                 randFlat, randGaussQ, dim, conditionDim, timeEmbeddingDim,
-                inputEmbeddingDim, conditionEmbeddingDim, hidden, layers,
+                inputEmbeddingDims, conditionEmbeddingDims, hidden, layers,
                 optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
                 betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
                 epsPrediction, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
@@ -1752,7 +1822,10 @@ namespace mu2e {
 
             // Temporary storage
             int dim = 0, conditionDim = 0, timeEmbeddingDim = 0, hidden = 0, layers = 0;
-            int inputEmbeddingDim = 0, conditionEmbeddingDim = 0; // absent in files saved before the Fourier input embedding
+            // Raw Fourier embedding specs as read from the file: {} (legacy files predating the
+            // feature, or an empty list), {k} (legacy singular key, broadcast), or a full per-dim
+            // list (plural key). resolveEmbeddingDims() normalizes all three at construction.
+            std::vector<int> inputEmbeddingDims, conditionEmbeddingDims;
             OptimizerType optimizerType = OptimizerType::ADAM;
             double adamBeta1 = 0.0, adamBeta2 = 0.0, adamEps = 0.0;
             NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
@@ -1826,6 +1899,22 @@ namespace mu2e {
                     if (line == "Parameter,Value") continue;
 
                     auto tokens = split(line);
+                    if (tokens.empty()) continue;
+
+                    // Fourier embedding depths are variable-length, so handle them before the
+                    // strict 2-token check. Accept the plural keys (per-dim comma list, possibly
+                    // empty) and the legacy singular keys (single scalar, broadcast at construction).
+                    if (tokens[0] == "inputEmbeddingDims" || tokens[0] == "inputEmbeddingDim") {
+                        inputEmbeddingDims.clear();
+                        for (size_t i = 1; i < tokens.size(); ++i) inputEmbeddingDims.push_back(std::stoi(tokens[i]));
+                        continue;
+                    }
+                    if (tokens[0] == "conditionEmbeddingDims" || tokens[0] == "conditionEmbeddingDim") {
+                        conditionEmbeddingDims.clear();
+                        for (size_t i = 1; i < tokens.size(); ++i) conditionEmbeddingDims.push_back(std::stoi(tokens[i]));
+                        continue;
+                    }
+
                     if (tokens.size() != 2) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "ScoreBasedDiffusionModel::loadModel: invalid line in [MODEL_PARAMETERS] section: " << line;
 
                     const std::string& key = tokens[0];
@@ -1834,8 +1923,6 @@ namespace mu2e {
                     if (key == "dim") dim = std::stoi(val);
                     else if (key == "conditionDim") conditionDim = std::stoi(val);
                     else if (key == "timeEmbeddingDim") timeEmbeddingDim = std::stoi(val);
-                    else if (key == "inputEmbeddingDim") inputEmbeddingDim = std::stoi(val);
-                    else if (key == "conditionEmbeddingDim") conditionEmbeddingDim = std::stoi(val);
                     else if (key == "hidden") hidden = std::stoi(val);
                     else if (key == "layers") layers = std::stoi(val);
                     else if (key == "optimizerType")
@@ -1890,9 +1977,13 @@ namespace mu2e {
                         auto tokens = split(line);
                         int inSize = std::stoi(tokens[1]);
                         int layerIdx = getLayerIdx(tokens[0]);
-                        int expectedInSize = dim + dim * inputEmbeddingDim
-                                           + conditionDim + conditionDim * conditionEmbeddingDim
-                                           + 1 + timeEmbeddingDim;
+                        // Resolve the raw embedding specs to full per-dim vectors (same rules as
+                        // the constructor) so the expected input width uses their summed depths.
+                        auto resIn   = resolveEmbeddingDims(inputEmbeddingDims, dim, "inputEmbeddingDims");
+                        auto resCond = resolveEmbeddingDims(conditionEmbeddingDims, conditionDim, "conditionEmbeddingDims");
+                        int sumIn = 0; for (int e : resIn)   sumIn += e;
+                        int sumCo = 0; for (int e : resCond) sumCo += e;
+                        int expectedInSize = dim + sumIn + conditionDim + sumCo + 1 + timeEmbeddingDim;
                         if (layerIdx == 0 && inSize != expectedInSize) {
                             throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                                 << "Input layer input size mismatch (expected "
@@ -2185,8 +2276,8 @@ namespace mu2e {
                 dim,
                 conditionDim,
                 timeEmbeddingDim,
-                inputEmbeddingDim,
-                conditionEmbeddingDim,
+                inputEmbeddingDims,
+                conditionEmbeddingDims,
                 hidden,
                 layers,
                 optimizerType,

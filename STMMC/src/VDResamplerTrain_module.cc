@@ -53,8 +53,8 @@ namespace mu2e {
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
         fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on"),         22 };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
-        fhicl::Atom<int>    SBDMinputEmbeddingDim{     Name("SBDMinputEmbeddingDim"),     Comment("Fourier embedding dims per state coordinate (0 = raw)"),     0 };
-        fhicl::Atom<int>    SBDMconditionEmbeddingDim{ Name("SBDMconditionEmbeddingDim"), Comment("Fourier embedding dims per condition coordinate (0 = raw)"), 0 };
+        fhicl::Sequence<int> SBDMinputEmbeddingDims{     Name("SBDMinputEmbeddingDims"),     Comment("Per-state-dim Fourier depth: [] none, [k] broadcast, or length-dim list; each 0 or even >= 2"),     std::vector<int>() };
+        fhicl::Sequence<int> SBDMconditionEmbeddingDims{ Name("SBDMconditionEmbeddingDims"), Comment("Per-condition-dim Fourier depth: [] none, [k] broadcast, or length-condDim list; each 0 or even >= 2"), std::vector<int>() };
         fhicl::Atom<int>    SBDMhidden{        Name("SBDMhidden"),        Comment("Size of hidden layers"),                     128 };
         fhicl::Atom<int>    SBDMlayers{        Name("SBDMlayers"),        Comment("Number of layers"),                          4 };
         fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"),   Comment("Optimizer (SGD or ADAM)"),                   "ADAM" };
@@ -194,8 +194,8 @@ namespace mu2e {
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
-    p.inputEmbeddingDim          = conf().SBDMinputEmbeddingDim();
-    p.conditionEmbeddingDim      = conf().SBDMconditionEmbeddingDim();
+    p.inputEmbeddingDims         = conf().SBDMinputEmbeddingDims();
+    p.conditionEmbeddingDims     = conf().SBDMconditionEmbeddingDims();
     p.hidden                     = conf().SBDMhidden();
     p.layers                     = conf().SBDMlayers();
     p.optimizer                  = VDResampler::parseOptimizer(conf().SBDMoptimizer(), "VDResamplerTrain");

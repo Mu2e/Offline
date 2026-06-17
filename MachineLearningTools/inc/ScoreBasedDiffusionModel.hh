@@ -59,16 +59,19 @@ namespace mu2e{
         //   timeEmbeddingDim        - Dimensionality of the sinusoidal time embedding applied to the diffusion time t in [0,1].
         //                             0 = raw scalar t (default, backward-compatible).
         //                             Even integer >= 2 = sinusoidal embedding: pairs [sin(2π·2^i·t), cos(2π·2^i·t)] for i=0..k/2-1.
-        //   inputEmbeddingDim       - Dimensionality of the sinusoidal (Fourier) embedding applied to EACH of the dim state
-        //                             coordinates (not the condition vector). 0 = raw coordinates only (default, backward-compatible).
-        //                             Even integer >= 2 = per-coordinate pairs [sin(π·2^i·x_j), cos(π·2^i·x_j)] for i=0..k/2-1.
+        //   inputEmbeddingDims      - Per-coordinate depth of the sinusoidal (Fourier) embedding applied to the dim state
+        //                             coordinates. One entry per state dimension. Accepts {} (no embedding on any dim),
+        //                             {k} (broadcast depth k to every dim), or a length-dim vector (per-dim depth).
+        //                             Each depth is 0 (raw coordinate only) or an even integer >= 2, emitting pairs
+        //                             [sin(π·2^i·x_j), cos(π·2^i·x_j)] for i=0..k/2-1 on that coordinate.
         //                             Counteracts MLP spectral bias so the score network can represent structure much finer
-        //                             than O(1) in the normalized coordinates (e.g. narrow spectral lines). To resolve features
-        //                             of normalized width w, the top frequency π·2^(k/2-1) should be ≳ 2π/w (k=24 reaches w~1e-3).
-        //   conditionEmbeddingDim   - Same per-coordinate Fourier embedding, applied to EACH of the conditionDim condition
-        //                             coordinates. 0 = raw condition values only (default). Only useful when the conditional
-        //                             distribution changes sharply as a function of the condition; smooth dependence does not
-        //                             need it.
+        //                             than O(1) in the normalized coordinates (e.g. a narrow peak). To resolve a feature of
+        //                             normalized width w, the top frequency π·2^(k/2-1) should be ≳ 2π/w (k=24 reaches w~1e-3).
+        //                             Use per-dim depth to give a structured coordinate (e.g. pz) a deep embedding while
+        //                             smooth coordinates get 0, avoiding injecting noise features on dims that don't need them.
+        //   conditionEmbeddingDims  - Same per-coordinate Fourier embedding, applied to the conditionDim condition
+        //                             coordinates ({} / {k} / length-conditionDim). 0 on every dim unless the conditional
+        //                             distribution changes sharply with that condition coordinate. Must be empty when conditionDim==0.
         //   hidden                  - Size of hidden layers in the neural network
         //   layers                  - Number of layers in the network
         //   optimizerType           - Type of optimizer to use (SGD or ADAM, default: ADAM)
@@ -100,8 +103,8 @@ namespace mu2e{
             int dim,
             int conditionDim,
             int timeEmbeddingDim = 0,
-            int inputEmbeddingDim = 0,
-            int conditionEmbeddingDim = 0,
+            std::vector<int> inputEmbeddingDims = {},
+            std::vector<int> conditionEmbeddingDims = {},
             int hidden = 128,
             int layers = 4,
             // Optimizer configuration
@@ -464,11 +467,11 @@ namespace mu2e{
 
         // Assemble the full network input vector from a (noisy) state vector, the optional
         // conditioning vector, and the diffusion time t. Layout:
-        //   [x (dim_), Fourier(x) (dim_*inputEmbeddingDim_),
-        //    cond (conditionDim_), Fourier(cond) (conditionDim_*conditionEmbeddingDim_),
+        //   [x (dim_), Fourier(x) (Sigma of inputEmbeddingDims_),
+        //    cond (conditionDim_), Fourier(cond) (Sigma of conditionEmbeddingDims_),
         //    t (+ time embedding)]
-        // Fourier features per coordinate: [sin(π·2^i·v), cos(π·2^i·v)] for
-        // i = 0..embeddingDim/2-1 (skipped entirely when the respective embeddingDim == 0).
+        // Fourier features for coordinate j: [sin(π·2^i·v_j), cos(π·2^i·v_j)] for
+        // i = 0..dims[j]/2-1 (none when dims[j] == 0). Depths are per-coordinate.
         // The embedding has no trainable parameters, so back-propagation is unaffected.
         std::vector<double> buildNetworkInput(
             const std::vector<double>& x,
@@ -641,8 +644,8 @@ namespace mu2e{
         int dim_;               // Dimensionality of state space
         int conditionDim_;      // Dimensionality of the optional conditioning vector
         int timeEmbeddingDim_;  // Sinusoidal time embedding dimensions (0 = raw scalar only)
-        int inputEmbeddingDim_; // Per-coordinate Fourier embedding dimensions for the state vector (0 = raw coordinates only)
-        int conditionEmbeddingDim_; // Per-coordinate Fourier embedding dimensions for the condition vector (0 = raw values only)
+        std::vector<int> inputEmbeddingDims_;     // Per-coordinate Fourier embedding depth for each state dim (size dim_; 0 = raw only)
+        std::vector<int> conditionEmbeddingDims_; // Per-coordinate Fourier embedding depth for each condition dim (size conditionDim_; 0 = raw only)
         int hidden_;            // Hidden layer size
         int layers_;            // Number of network layers
 
