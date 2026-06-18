@@ -34,5 +34,11 @@ NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0.35 Titanium  0    -10     -20     -30     20.
 DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0.33 NbTi  0    -10     -20     -30     20.0    1.0    solid
 DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0.187 NbTi  0    -10     -20     -30     20.0    1.0    solid
 DSSStainless 8.02 0.0 0.0 +5 0.02 Manganese 0.01 Silicon 0.19 Chromium 0.1 Nickel 0.68 Iron 0    -10     -20     -30     20.0    1.0    solid
-# CRV materials: module = scintilator bars + aluminum absorber (temporarily pure aluminum)
-CRVModule 2.700000    0.   0.   +1    100.0e-2    Aluminum   0   24.01000   106.40000    -30     20.0    1.0    solid
+# CRV active module stack from crv_parameters.xlsx (DocDB 862 https://mu2e-docdb.fnal.gov/cgi-bin/sso/ShowDocument?docid=862):
+# 4 scintillator layers (4*19.80 mm) + 3 aluminum absorbers (3*9.525 mm)
+# + aluminum strongback (12.7 mm) + thin aluminum cover (3.175 mm),
+# represented as one effective material over the KinKal CRV thickness.
+# Multiply density by (full module width)/(KinKal CRV thickness) = 123.65 / 107.775
+# CRVModule density is computed from this areal density and rounded to 6 decimal places.
+Polystyrene 1.060000 0. 0. -2 8 Carbon 0 8 Hydrogen 0 -10 -20 -30 20.0 1.0 solid
+CRVModule 1.892526 0. 0. +2 41.2e-2 Polystyrene 1 58.8e-2 Aluminum 0 -10 -20 -30 20.0 1.0 solid
