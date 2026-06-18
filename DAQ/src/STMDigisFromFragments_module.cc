@@ -164,8 +164,6 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
 
 void STMDigisFromFragments::produce(Event& event)
 {
-  int lastRawIndexHPGe{-1}; //sets variable to -1
-  int lastRawIndexLaBr{-1};
 
   art::Ptr<mu2e::STMWaveformDigi> lastRawHPGePtr;
   art::Ptr<mu2e::STMWaveformDigi> lastRawLaBrPtr;
@@ -182,8 +180,6 @@ void STMDigisFromFragments::produce(Event& event)
   std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryLaBr(new mu2e::STMFragmentSummaryCollection);
   //HPGe
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //add if statemnets to guard
-
   std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_HPGe_waveform_digis(new mu2e::STMWaveformDigiCollection);
   std::unique_ptr<mu2e::STMPHDigiCollection> ph_HPGe_digis(new mu2e::STMPHDigiCollection);
   std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_HPGe_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
@@ -386,8 +382,6 @@ void STMDigisFromFragments::produce(Event& event)
               lastRawHPGePtr = art::Ptr<mu2e::STMWaveformDigi>(rawHPGeProductID,parentRawWfmIdx,
                                                          event.productGetter(rawHPGeProductID));
               haveLastRawHPGePtr = true;
-
-              lastRawIndexHPGe = static_cast<int>(raw_HPGe_waveform_digis->size()) -1;
             }
 
           } else if ( stm_frag.isLaBr() ){
@@ -407,12 +401,10 @@ void STMDigisFromFragments::produce(Event& event)
             if(_saveRawWaveform_LaBr){
               stm_waveform.set_data(payloadWords, payloadPtr);
               raw_LaBr_waveform_digis->emplace_back(stm_waveform);
-              size_t parentRawWfmIdx = raw_HPGe_waveform_digis->size()-1;
+              size_t parentRawWfmIdx = raw_LaBr_waveform_digis->size()-1;
               lastRawLaBrPtr = art::Ptr<mu2e::STMWaveformDigi>(rawLaBrProductID,parentRawWfmIdx,
                                                          event.productGetter(rawLaBrProductID));
               haveLastRawLaBrPtr = true;
-
-              lastRawIndexLaBr = static_cast<int>(raw_LaBr_waveform_digis->size()) -1;
 
             }
 
@@ -509,8 +501,7 @@ void STMDigisFromFragments::produce(Event& event)
               break;
 
             uint32_t trigTimeOffset = current_zs_location;
-            //std::vector<int16_t> segADCS(adc, adc +  current_zs_size); //1D array, contains adcs to this_zs_Size - 1
-            //mu2e::STMWaveformDigi stm_waveform(trigTimeOffset, segADCS); //New constructore use
+
             //emplacing
             if ( stm_frag.isHPGe() && _saveZSWaveform_HPGe){
               std::vector<int16_t> segADCS(adc, adc + current_zs_size); //1D array, contains adcs to this_zs_size - 1
@@ -526,14 +517,8 @@ void STMDigisFromFragments::produce(Event& event)
                           << zsDigi.parent().key()
                           << "with offset "
                           << zsDigi.trigTimeOffset()
-                          << "/n";
+                          << "\n";
               }
-
-
-              if (readZSinfoFromRawHeader){
-                zsToRawIndexHPGe.push_back(lastRawIndexHPGe);// Keeps track which raw waveform it belongs to
-              } else { zsToRawIndexHPGe.push_back(-1);}
-
             }
             else if ( stm_frag.isLaBr() && _saveZSWaveform_LaBr){
               std::vector<int16_t> segADCS(adc, adc + current_zs_size);
@@ -545,10 +530,7 @@ void STMDigisFromFragments::produce(Event& event)
 
               zs_LaBr_waveform_digis->emplace_back(zsDigi);
 
-              if (readZSinfoFromRawHeader){
-                zsToRawIndexLaBr.push_back(lastRawIndexLaBr);
-              } else { zsToRawIndexLaBr.push_back(-1);}
-            }
+              }
 
             if (_verbosityLevel >=6){
 
@@ -594,8 +576,6 @@ void STMDigisFromFragments::produce(Event& event)
                 << "Encountered at event : " << _totalEvents << "\n"      ;
             }
           }
-
-          //Record parent waveform
 
           //Increment counter after checking if there is a match
           if ( stm_frag.isHPGe()){ ++_totalGoodZSHPGe; ++goodZSHPGeFrags; }
@@ -701,27 +681,6 @@ void STMDigisFromFragments::produce(Event& event)
                                      emptyRawLaBrFrags, emptyZSLaBrFrags, emptyPHLaBrFrags);
 
   }
-
-  if (_verbosityLevel >= 4) {
-    std::cout << "\n--- HPGe Raw-ZS links ---\n";
-
-    for (size_t i = 0; i < zsToRawIndexHPGe.size(); ++i) {
-      std::cout << "ZS HPGe index " << i
-                << " belongs to Raw HPGe index "
-                << zsToRawIndexHPGe[i] << "\n";
-    }
-
-    std::cout << "\n--- LaBr Raw-ZS links ---\n";
-
-    for (size_t i = 0; i < zsToRawIndexLaBr.size(); ++i) {
-      std::cout << "ZS LaBr index " << i
-                << " belongs to Raw LaBr index "
-                << zsToRawIndexLaBr[i] << "\n";
-    }
-
-  }
-
-
   if (_verbosityLevel >= 2 ){
     //Event Summary -> tells us what happens per art event
     std::cout << "\n========== STM EVENT SUMMARY - (Unpacking Module) ==========\n";
