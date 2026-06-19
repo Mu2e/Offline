@@ -111,6 +111,17 @@ namespace mu2e {
         fhicl::Atom<bool>       SBDMpartialReverseUseSDE{ Name("SBDMpartialReverseUseSDE"), Comment("Use the SDE solver in the partial-reverse diagnostic sampler"), true };
         fhicl::Atom<int>        SBDMpartialReverseDiffusionSteps{ Name("SBDMpartialReverseDiffusionSteps"), Comment("Diffusion steps for the partial-reverse diagnostic sampler (-1 = model's configured value)"), -1 };
         fhicl::Atom<double>     SBDMpartialReverseSdeToOdeSigmaThreshold{ Name("SBDMpartialReverseSdeToOdeSigmaThreshold"), Comment("Switch from SDE to ODE when sigma falls below this threshold in the partial-reverse diagnostic sampler (-1 = always use SBDMpartialReverseUseSDE setting)"), -1.0 };
+        fhicl::Atom<bool>       SBDMcondLossDiagnostic{ Name("SBDMcondLossDiagnostic"), Comment("If true, write the conditional eps-loss-vs-sigma diagnostic (split by SBDMpeakWindow*) INSTEAD of training"), false };
+        fhicl::Atom<int>        SBDMcondLossDiagnosticSamples{ Name("SBDMcondLossDiagnosticSamples"), Comment("Samples for the conditional-loss diagnostic"), 200000 };
+        fhicl::Atom<bool>       SBDMfeatureBlockDiagnostic{ Name("SBDMfeatureBlockDiagnostic"), Comment("If true, write the first-layer feature-block weight/grad magnitude diagnostic INSTEAD of training"), false };
+        fhicl::Atom<int>        SBDMfeatureBlockDiagnosticSamples{ Name("SBDMfeatureBlockDiagnosticSamples"), Comment("Draws used to accumulate the gradient for the feature-block diagnostic"), 50000 };
+        // Peak importance sampling: parallel sequences, one entry per window (all same length; empty = disabled).
+        fhicl::Sequence<int>    SBDMpeakWindowDims{  Name("SBDMpeakWindowDims"),  Comment("Per-window normalized state-coordinate index (e.g. pz = 5 all-at-once, 2 stage-2)"), std::vector<int>() };
+        fhicl::Sequence<double> SBDMpeakWindowLows{  Name("SBDMpeakWindowLows"),  Comment("Per-window lower edge (z-score units), inclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakWindowHighs{ Name("SBDMpeakWindowHighs"), Comment("Per-window upper edge (z-score units), exclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakGMaxes{      Name("SBDMpeakGMaxes"),      Comment("Per-window sampling-fraction ceiling at low sigma (0<gMax<1; sum<1)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakSigma0s{     Name("SBDMpeakSigma0s"),     Comment("Per-window Gaussian sigma-taper scale (~ feature width)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakAlphas{      Name("SBDMpeakAlphas"),      Comment("Per-window 1=unbiased, <1=up-weight"), std::vector<double>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrainFromRoot(const Parameters& conf);
@@ -179,6 +190,13 @@ namespace mu2e {
     state_.partialReverseUseSDE          = conf().SBDMpartialReverseUseSDE();
     state_.partialReverseDiffusionSteps  = conf().SBDMpartialReverseDiffusionSteps();
     state_.partialReverseSdeToOdeSigmaThreshold = conf().SBDMpartialReverseSdeToOdeSigmaThreshold();
+    state_.condLossDiagnostic            = conf().SBDMcondLossDiagnostic();
+    state_.condLossDiagnosticSamples     = conf().SBDMcondLossDiagnosticSamples();
+    state_.featureBlockDiagnostic        = conf().SBDMfeatureBlockDiagnostic();
+    state_.featureBlockDiagnosticSamples = conf().SBDMfeatureBlockDiagnosticSamples();
+    VDResampler::assemblePeakWindows(state_,
+        conf().SBDMpeakWindowDims(), conf().SBDMpeakWindowLows(), conf().SBDMpeakWindowHighs(),
+        conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrainFromRoot");
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrainFromRoot");
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrainFromRoot",

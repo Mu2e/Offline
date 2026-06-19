@@ -873,7 +873,8 @@ namespace mu2e {
         double tLowBound,
         double tFocusLow,
         double tFocusHigh,
-        double tFocusFraction
+        double tFocusFraction,
+        const std::vector<PeakWindow>& peakWindows
     )
     {
         // Check that the network is properly initialized before training.
@@ -896,6 +897,36 @@ namespace mu2e {
             throw cet::exception("ScoreBasedDiffusionModel::train")
                 << "Invalid t focus window: require 0 <= tFocusLow < tFocusHigh <= 1 (got ["
                 << tFocusLow << ", " << tFocusHigh << "])";
+        }
+
+        // Peak importance sampling is enabled by a non-empty window list; validate up front.
+        const bool peakRequested = !peakWindows.empty();
+        if (peakRequested) {
+            double sumGMax = 0.0;
+            for (size_t k = 0; k < peakWindows.size(); ++k) {
+                const PeakWindow& pw = peakWindows[k];
+                if (pw.dim < 0 || pw.dim >= dim_)
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Invalid peakWindows[" << k << "].dim " << pw.dim << ": must be in [0, " << dim_ << ")";
+                if (pw.high <= pw.low)
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Invalid peakWindows[" << k << "] window: require low < high (got ["
+                        << pw.low << ", " << pw.high << "])";
+                if (pw.gMax <= 0.0 || pw.gMax >= 1.0)
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Invalid peakWindows[" << k << "].gMax " << pw.gMax << ": must be in (0, 1)";
+                if (pw.sigma0 <= 0.0)
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Invalid peakWindows[" << k << "].sigma0 " << pw.sigma0 << ": must be > 0";
+                if (pw.alpha < 0.0 || pw.alpha > 1.0)
+                    throw cet::exception("ScoreBasedDiffusionModel::train")
+                        << "Invalid peakWindows[" << k << "].alpha " << pw.alpha << ": must be in [0, 1]";
+                sumGMax += pw.gMax;
+            }
+            if (sumGMax >= 1.0)
+                throw cet::exception("ScoreBasedDiffusionModel::train")
+                    << "Sum of peak gMax (" << sumGMax << ") must be < 1 to leave sampling probability "
+                    << "for the out-of-window pool.";
         }
 
         const double eps_safe = 1e-12;
@@ -932,16 +963,87 @@ namespace mu2e {
         for (size_t i = 0; i < N; ++i)
             indices[i] = i;
 
+        // Fisher–Yates shuffle of an index vector using RandFlat (reproducible via the seed service).
+        auto shuffleVec = [this](std::vector<size_t>& v) {
+            for (size_t i = v.size(); i > 1; --i) {
+                size_t j = static_cast<size_t>(randFlat_.fire() * i);
+                j = std::min(j, i - 1);
+                std::swap(v[i - 1], v[j]);
+            }
+        };
+
+        // Peak importance sampling: partition the FULL data set once into per-window in-window pools
+        // P[k] and a single out-of-window pool Q, assigning each event to the FIRST window it matches
+        // (so overlapping windows stay disjoint), and record each empirical in-window fraction f[k].
+        // Windows whose pool is empty are dropped. Each pool is reshuffled per epoch and drawn without
+        // replacement via a cursor (reshuffled again if the cursor wraps within an epoch). The number
+        // of in-window draws per epoch is ~ (mean g_eff_k) * activeN, which for small g and a large
+        // rare pool is LESS than |P[k]| — so not every in-window event is seen each epoch; the
+        // per-epoch reshuffle makes coverage even in expectation across epochs. Disabled if no peak
+        // pool survives or Q is empty (windows cover everything).
+        bool peakSampling = peakRequested;
+        std::vector<PeakWindow> pk;            // surviving (non-empty) windows
+        std::vector<std::vector<size_t>> P;    // in-window pools, aligned with pk
+        std::vector<double> f;                 // in-window fractions, aligned with pk
+        std::vector<size_t> pP;                // per-pool cursors, aligned with pk
+        std::vector<size_t> Q;                 // out-of-window pool
+        size_t pQ = 0;
+        double sumF = 0.0;                     // total in-window fraction
+        if (peakSampling) {
+            const size_t K = peakWindows.size();
+            std::vector<std::vector<size_t>> P0(K);
+            for (size_t i = 0; i < N; ++i) {
+                int which = -1;
+                for (size_t k = 0; k < K; ++k) {
+                    double v = data[i].x[peakWindows[k].dim];
+                    if (v >= peakWindows[k].low && v < peakWindows[k].high) { which = static_cast<int>(k); break; }
+                }
+                if (which >= 0) P0[which].push_back(i);
+                else            Q.push_back(i);
+            }
+            for (size_t k = 0; k < K; ++k) {
+                if (P0[k].empty()) {
+                    mf::LogWarning("ScoreBasedDiffusionModel::train")
+                        << "Peak window " << k << " [" << peakWindows[k].low << ", " << peakWindows[k].high
+                        << ") on dim " << peakWindows[k].dim << " matched 0 events; dropping it.";
+                    continue;
+                }
+                pk.push_back(peakWindows[k]);
+                f.push_back(static_cast<double>(P0[k].size()) / static_cast<double>(N));
+                P.push_back(std::move(P0[k]));
+            }
+            if (pk.empty() || Q.empty()) {
+                mf::LogWarning("ScoreBasedDiffusionModel::train")
+                    << "Peak importance sampling disabled: " << pk.size() << " surviving window(s), "
+                    << "out-of-window pool size " << Q.size() << " (need both non-empty).";
+                peakSampling = false;
+            } else {
+                pP.assign(pk.size(), 0);
+                for (double fk : f) sumF += fk;
+                std::ostringstream oss;
+                oss << "Peak importance sampling enabled: " << pk.size()
+                    << " window(s), total in-window fraction " << sumF
+                    << ". Per window [dim, low, high, f, gMax, sigma0, alpha]:";
+                for (size_t k = 0; k < pk.size(); ++k)
+                    oss << "\n  [" << pk[k].dim << ", " << pk[k].low << ", " << pk[k].high << ", " << f[k]
+                        << ", " << pk[k].gMax << ", " << pk[k].sigma0 << ", " << pk[k].alpha << "]";
+                mf::LogInfo("ScoreBasedDiffusionModel::train") << oss.str();
+            }
+        }
+        std::vector<double> geff(pk.size(), 0.0); // reusable per-draw g_eff buffer
+
         // Data shuffling and batching is performed at the epoch level to ensure that each epoch sees the data
         // in a different order, which can improve training convergence.
         for (int e = 0; e < epochs; ++e)
         {
-            // Shuffle indices using Fisher–Yates and RandFlat for reproducibility
-            for (size_t i = N - 1; i > 0; --i)
-            {
-                size_t j = static_cast<size_t>(randFlat_.fire() * (i + 1));
-                j = std::min(j, i); // Ensure j is within bounds
-                std::swap(indices[i], indices[j]);
+            // Reshuffle the sampling pool(s) each epoch. Peak sampling cycles each in-window pool and
+            // the out-of-window pool (cursors reset to 0); otherwise the single full-data index list
+            // is shuffled.
+            if (peakSampling) {
+                for (size_t k = 0; k < P.size(); ++k) { shuffleVec(P[k]); pP[k] = 0; }
+                shuffleVec(Q); pQ = 0;
+            } else {
+                shuffleVec(indices);
             }
 
             // Counter for number of samples processed in the epoch (used for averaging loss). Avoid using N directly to
@@ -955,8 +1057,6 @@ namespace mu2e {
             // iterate over the shuffled data samples (subset if trainSubsetDataSize was specified)
             for (size_t idx = 0; idx < activeN; ++idx)
             {
-                const auto& sample = data[indices[idx]];
-
                 // Sample diffusion time. If tFocusFraction > 0, this sample draws t uniformly from the
                 // focus window [tFocusLow, tFocusHigh] with probability tFocusFraction, concentrating
                 // gradient steps on a target sigma band while the remaining samples keep full coverage.
@@ -988,6 +1088,44 @@ namespace mu2e {
                         t = t * t; // focus on smaller t value (smaller sigma)
                     }
                 }
+
+                // Select the training example for this draw and compute its importance weight.
+                // Default: the next entry from the per-epoch shuffled full-data index list (wIS=1).
+                // Peak sampling: per-window draw probability g_eff_k(sigma(t)); one cumulative draw
+                // selects a window pool or the out-of-window pool, each via a without-replacement
+                // cursor. wIS reweights the loss so each window is unbiased at alpha_k=1 and a
+                // deliberate up-weight for alpha_k<1, with the continuum (Q) kept unbiased.
+                double wIS = 1.0;
+                size_t chosenIdx;
+                if (peakSampling) {
+                    double s_t = sigma(t);
+                    double sumGeff = 0.0;
+                    for (size_t k = 0; k < pk.size(); ++k) {
+                        geff[k] = std::max(f[k], pk[k].gMax * std::exp(-(s_t * s_t) / (2.0 * pk[k].sigma0 * pk[k].sigma0)));
+                        sumGeff += geff[k];
+                    }
+                    double u = randFlat_.fire();
+                    int sel = -1;       // -1 = out-of-window pool Q
+                    double cum = 0.0;
+                    for (size_t k = 0; k < pk.size(); ++k) {
+                        cum += geff[k];
+                        if (u < cum) { sel = static_cast<int>(k); break; }
+                    }
+                    if (sel >= 0) {
+                        chosenIdx = P[sel][pP[sel]++];
+                        if (pP[sel] >= P[sel].size()) { shuffleVec(P[sel]); pP[sel] = 0; }
+                        wIS = std::pow(f[sel] / geff[sel], pk[sel].alpha);
+                    } else {
+                        // Out-of-window pool (reachable because sum gMax_k < 1 keeps 1 - sumGeff > 0).
+                        chosenIdx = Q[pQ++];
+                        if (pQ >= Q.size()) { shuffleVec(Q); pQ = 0; }
+                        wIS = (1.0 - sumF) / (1.0 - sumGeff); // alpha = 1: unbiased continuum
+                    }
+                } else {
+                    chosenIdx = indices[idx];
+                }
+                const auto& sample = data[chosenIdx];
+
                 // container for noise vector eps
                 std::vector<double> eps;
 
@@ -1021,12 +1159,15 @@ namespace mu2e {
                 // Compute the gradient of the loss w.r.t. the predicted score.
                 // dimWeights_[i] rescales each dimension's gradient; normalized to mean=1 so overall
                 // gradient scale is preserved. Accumulate raw squared residuals for the controller EMA.
+                // wIS (peak importance weight, 1.0 when peak sampling is off) reweights this
+                // sample's gradient. The per-dim controller accumulates the RAW squared residual
+                // (unweighted) so it still balances dimensions by their intrinsic difficulty.
                 std::vector<double> grad(dim_);
                 for (int i = 0; i < dim_; ++i) {
                     double residual = score[i] - target[i];
                     if (useDimWeightController_)
                         epochDimLoss[i] += residual * residual;
-                    grad[i] = 2.0 * weight * dimWeights_[i] * residual / dim_;
+                    grad[i] = 2.0 * weight * wIS * dimWeights_[i] * residual / dim_;
                 }
 
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
@@ -1058,7 +1199,7 @@ namespace mu2e {
                     batchCounter = 0;
                 }
 
-                epochLoss += loss; // Accumulate loss for monitoring.
+                epochLoss += loss * wIS; // Accumulate importance-weighted loss for monitoring (unbiased population loss at alpha=1).
                 n++;
             }
 
@@ -1174,6 +1315,140 @@ namespace mu2e {
             ++n;
         }
         return (n > 0) ? sumLoss / n : std::numeric_limits<double>::quiet_NaN();
+    }
+
+    SBDMEpsLossSample ScoreBasedDiffusionModel::evalEpsLossSample(
+        const std::vector<double>& xNorm,
+        const std::vector<double>& condition,
+        bool useEMANetworkIfAvailable)
+    {
+        if (xNorm.size() != static_cast<size_t>(dim_))
+            throw cet::exception("ScoreBasedDiffusionModel::evalEpsLossSample")
+                << "State dimension mismatch: got " << xNorm.size() << ", expected " << dim_;
+        if (condition.size() != static_cast<size_t>(conditionDim_))
+            throw cet::exception("ScoreBasedDiffusionModel::evalEpsLossSample")
+                << "Conditioning dimension mismatch: got " << condition.size() << ", expected " << conditionDim_;
+
+        const double eps_safe = 1e-12;
+        // Draw t uniformly, clamped away from the endpoints (sigma is ill-conditioned at t->0,1).
+        double t = std::min(1.0 - 1e-3, std::max(1e-3, randFlat_.fire()));
+        double s = std::max(sigma(t), eps_safe);
+
+        std::vector<double> eps;
+        auto xt = addNoise(xNorm, t, eps);
+        auto input = buildNetworkInput(xt, condition, t);
+        const auto& net = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
+        auto out = forwardInference(input, net);
+
+        SBDMEpsLossSample res;
+        res.t = t;
+        res.sigma = s;
+        res.perDimLoss.resize(dim_);
+        for (int i = 0; i < dim_; ++i) {
+            double epsHat = epsPrediction_ ? out[i] : -out[i] * s; // recover eps_hat in both modes
+            double d = epsHat - eps[i];
+            res.perDimLoss[i] = d * d;
+        }
+        return res;
+    }
+
+    std::vector<SBDMFeatureBlockMagnitude> ScoreBasedDiffusionModel::firstLayerBlockMagnitudes(
+        const std::vector<DiffusionTrainingSample>& data,
+        int nSamples,
+        std::vector<double>& perDimLossOut)
+    {
+        // Build the input-feature-block layout, matching buildNetworkInput's column order:
+        //   [raw x (dim_ cols, 1 per coord)] [Fourier(x): per coord j, inputEmbeddingDims_[j] cols]
+        //   [raw cond (conditionDim_ cols)]  [Fourier(cond): per coord j, conditionEmbeddingDims_[j] cols]
+        //   [time: 1 + timeEmbeddingDim_ cols]
+        std::vector<SBDMFeatureBlockMagnitude> blocks;
+        std::vector<int> blockStart; // input column where each block begins (parallel to blocks)
+        int col = 0;
+        auto pushBlock = [&](const std::string& name, int kind, int coord, int nCols) {
+            if (nCols <= 0) return; // skip dims with no Fourier columns / empty blocks
+            SBDMFeatureBlockMagnitude b;
+            b.name = name; b.kind = kind; b.coord = coord; b.nCols = nCols;
+            blocks.push_back(b);
+            blockStart.push_back(col);
+            col += nCols;
+        };
+        for (int j = 0; j < dim_; ++j) pushBlock("raw_state[" + std::to_string(j) + "]", 0, j, 1);
+        for (int j = 0; j < dim_; ++j) pushBlock("fourier_state[" + std::to_string(j) + "]", 1, j, inputEmbeddingDims_[j]);
+        for (int j = 0; j < conditionDim_; ++j) pushBlock("raw_cond[" + std::to_string(j) + "]", 2, j, 1);
+        for (int j = 0; j < conditionDim_; ++j) pushBlock("fourier_cond[" + std::to_string(j) + "]", 3, j, conditionEmbeddingDims_[j]);
+        // timeEmbed() emits raw t (1 col) followed by timeEmbeddingDim_ sin/cos features; split them
+        // into separate blocks so the time Fourier embedding magnitude is visible on its own.
+        pushBlock("raw_time", 4, -1, 1);
+        pushBlock("fourier_time", 5, -1, timeEmbeddingDim_);
+
+        const int inputSize = static_cast<int>(network_[0].W[0].size());
+        if (col != inputSize)
+            throw cet::exception("ScoreBasedDiffusionModel::firstLayerBlockMagnitudes")
+                << "Feature-block layout (" << col << " cols) does not match first-layer input size ("
+                << inputSize << ")";
+
+        // Weight L2 per block (over all output rows of the first layer).
+        const auto& W0 = network_[0].W;
+        for (size_t b = 0; b < blocks.size(); ++b) {
+            double sw = 0.0;
+            for (const auto& row : W0)
+                for (int c = blockStart[b]; c < blockStart[b] + blocks[b].nCols; ++c)
+                    sw += row[c] * row[c];
+            blocks[b].weightL2 = std::sqrt(sw);
+        }
+
+        // Accumulate the training gradient over nSamples draws with NO optimizer step.
+        for (auto& layer : network_) {
+            for (auto& row : layer.gradW) std::fill(row.begin(), row.end(), 0.0);
+            std::fill(layer.gradb.begin(), layer.gradb.end(), 0.0);
+        }
+        perDimLossOut.assign(dim_, 0.0);
+
+        const size_t N = data.size();
+        const double eps_safe = 1e-12;
+        const size_t nUse = (nSamples > 0 && static_cast<size_t>(nSamples) < N)
+                            ? static_cast<size_t>(nSamples) : N;
+        const size_t stride = std::max<size_t>(1, N / std::max<size_t>(1, nUse));
+        size_t used = 0;
+        for (size_t k = 0; k < N && used < nUse; k += stride, ++used) {
+            const auto& sample = data[k];
+            double t = std::min(1.0 - 1e-3, std::max(1e-3, randFlat_.fire()));
+            double s = std::max(sigma(t), eps_safe);
+            double weight = std::pow(s, lossWeightPower_);
+
+            std::vector<double> eps;
+            auto xt = addNoise(sample.x, t, eps);
+            std::vector<double> target(dim_);
+            for (int i = 0; i < dim_; ++i)
+                target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
+
+            auto input = buildNetworkInput(xt, sample.cond, t);
+            auto score = forward(input);
+            std::vector<double> grad(dim_);
+            for (int i = 0; i < dim_; ++i) {
+                double residual = score[i] - target[i];
+                perDimLossOut[i] += residual * residual; // fresh, unweighted per-output-dim loss
+                grad[i] = 2.0 * weight * dimWeights_[i] * residual / dim_; // same gradient train() would form
+            }
+            backward(grad);
+        }
+        const double invUsed = (used > 0) ? 1.0 / static_cast<double>(used) : 0.0;
+        for (int i = 0; i < dim_; ++i) perDimLossOut[i] *= invUsed;
+
+        // Gradient L2 per block (mean per sample), then leave the gradient buffers zeroed.
+        const auto& G0 = network_[0].gradW;
+        for (size_t b = 0; b < blocks.size(); ++b) {
+            double sg = 0.0;
+            for (const auto& row : G0)
+                for (int c = blockStart[b]; c < blockStart[b] + blocks[b].nCols; ++c)
+                    sg += row[c] * row[c];
+            blocks[b].gradL2 = std::sqrt(sg) * invUsed;
+        }
+        for (auto& layer : network_) {
+            for (auto& row : layer.gradW) std::fill(row.begin(), row.end(), 0.0);
+            std::fill(layer.gradb.begin(), layer.gradb.end(), 0.0);
+        }
+        return blocks;
     }
 
     void ScoreBasedDiffusionModel::saveModel(

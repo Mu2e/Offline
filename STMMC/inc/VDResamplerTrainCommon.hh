@@ -23,6 +23,8 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TH1D.h"
+#include "TProfile.h"
 
 namespace mu2e {
 namespace VDResampler {
@@ -120,6 +122,20 @@ struct TrainState {
     bool   partialReverseUseSDE  = true;
     int    partialReverseDiffusionSteps = -1;   // -1 = model's configured value
     double partialReverseSdeToOdeSigmaThreshold = -1.0;
+
+    // Conditional-loss diagnostic (L_P(sigma) vs L_Q(sigma)). When true, runTraining() writes the
+    // per-sample eps-loss-vs-sigma ROOT file (split by peak window) INSTEAD of training.
+    bool   condLossDiagnostic        = false;
+    int    condLossDiagnosticSamples = 200000;
+    // Feature-block diagnostic (first-layer weight/grad L2 by input block + per-output-dim loss).
+    bool   featureBlockDiagnostic        = false;
+    int    featureBlockDiagnosticSamples = 50000; // draws used to accumulate the gradient
+
+    // Peak importance sampling windows (see ScoreBasedDiffusionModel::train). Assembled by the
+    // train module from parallel fcl sequences; held constant across the whole job (all curriculum
+    // phases). Empty => disabled. Window edges are in NORMALIZED (z-scored) units of the model
+    // being trained: all-at-once {t,x,y,pr,pphi,pz} -> pz=5; stage-2 state {pr,pphi,pz} -> pz=2.
+    std::vector<PeakWindow> peakWindows;
 
     // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
     double t_mean=0,    t_M2=0,    t_stdev=0;
@@ -292,6 +308,42 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
             << "rho = r/VDr would produce inf/NaN in training data.";
     if (!std::isfinite(VDz0))
         throw cet::exception(moduleName) << "VDz0 must be finite (got " << VDz0 << ").";
+}
+
+// ---------------------------------------------------------------------------
+// assemblePeakWindows — build s.peakWindows from the six parallel fcl sequences
+//   (SBDMpeakWindowDims / Lows / Highs / GMaxes / Sigma0s / Alphas). All must have the same
+//   length K (the number of windows); empty => peak sampling disabled. Per-element value
+//   validation (dim range, gMax in (0,1), sum gMax < 1, ...) is performed by
+//   ScoreBasedDiffusionModel::train(); here we only enforce equal lengths and copy into structs.
+// ---------------------------------------------------------------------------
+inline void assemblePeakWindows(TrainState& s,
+    const std::vector<int>& dims, const std::vector<double>& lows, const std::vector<double>& highs,
+    const std::vector<double>& gmaxes, const std::vector<double>& sigma0s, const std::vector<double>& alphas,
+    const std::string& moduleName)
+{
+    const size_t K = dims.size();
+    auto checkLen = [&](size_t n, const char* name) {
+        if (n != K)
+            throw cet::exception(moduleName)
+                << "Peak window sequence length mismatch: " << name << " has " << n << ", expected "
+                << K << " (all SBDMpeak* sequences must match SBDMpeakWindowDims).";
+    };
+    checkLen(lows.size(),    "SBDMpeakWindowLows");
+    checkLen(highs.size(),   "SBDMpeakWindowHighs");
+    checkLen(gmaxes.size(),  "SBDMpeakGMaxes");
+    checkLen(sigma0s.size(), "SBDMpeakSigma0s");
+    checkLen(alphas.size(),  "SBDMpeakAlphas");
+
+    s.peakWindows.clear();
+    for (size_t k = 0; k < K; ++k) {
+        PeakWindow pw;
+        pw.dim = dims[k]; pw.low = lows[k]; pw.high = highs[k];
+        pw.gMax = gmaxes[k]; pw.sigma0 = sigma0s[k]; pw.alpha = alphas[k];
+        s.peakWindows.push_back(pw);
+    }
+    if (K > 0)
+        mf::LogInfo(moduleName) << "Configured " << K << " peak importance-sampling window(s).";
 }
 
 // ---------------------------------------------------------------------------
@@ -598,6 +650,33 @@ inline void collectSample(TrainState& s, double t_trans, double x_trans, double 
 }
 
 // ---------------------------------------------------------------------------
+// diagnosticTrueValueRanges — per-dimension [lo, hi] range (de-normalized, transformed units)
+//   of the strided diagnostic sample set, padded, for histogram axes. Deterministic from the
+//   data (independent of t/t0), so true and reconstructed values share one binning and overlay.
+// ---------------------------------------------------------------------------
+inline std::vector<std::pair<double,double>> diagnosticTrueValueRanges(
+    const std::vector<DiffusionTrainingSample>& data, const std::vector<double>& mean,
+    const std::vector<double>& stdev, int dim, size_t stride, size_t nUse)
+{
+    std::vector<std::pair<double,double>> r(dim, { std::numeric_limits<double>::max(),
+                                                   std::numeric_limits<double>::lowest() });
+    size_t used = 0;
+    for (size_t k = 0; k < data.size() && used < nUse; k += stride, ++used)
+        for (int i = 0; i < dim; ++i) {
+            double v = data[k].x[i] * stdev[i] + mean[i];
+            r[i].first  = std::min(r[i].first, v);
+            r[i].second = std::max(r[i].second, v);
+        }
+    for (int i = 0; i < dim; ++i) {
+        double lo = r[i].first, hi = r[i].second;
+        if (!(hi > lo)) { lo -= 1.0; hi += 1.0; }       // guard against a degenerate (constant) dim
+        double pad = 0.02 * (hi - lo);
+        r[i] = { lo - pad, hi + pad };
+    }
+    return r;
+}
+
+// ---------------------------------------------------------------------------
 // runDenoiseDiagnostic — one-step denoising check of a (typically checkpoint-
 //   loaded) model. For each requested diffusion time t, strides through the
 //   normalized training data, noises each sample at t, runs a single forward
@@ -632,6 +711,8 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
         ? std::min(data.size(), static_cast<size_t>(s.denoiseDiagnosticSamples))
         : data.size();
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
+    const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
+    constexpr int kNValBins = 200;
 
     for (double t : s.denoiseDiagnosticTs) {
         std::ostringstream nm;
@@ -650,6 +731,16 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("denoised_dim" + std::to_string(i)).c_str(), &denoisedD[i]);
         }
+        // Overlay histograms: truth vs one-step denoised, shared binning per dim.
+        std::vector<TH1D*> hTrue(dim), hDen(dim);
+        for (int i = 0; i < dim; ++i) {
+            hTrue[i] = new TH1D((treeName + "_h_true_dim" + std::to_string(i)).c_str(),
+                ("truth dim" + std::to_string(i) + " at t=" + std::to_string(t) + ";value;count").c_str(),
+                kNValBins, ranges[i].first, ranges[i].second);
+            hDen[i] = new TH1D((treeName + "_h_denoised_dim" + std::to_string(i)).c_str(),
+                ("one-step denoised dim" + std::to_string(i) + " at t=" + std::to_string(t) + ";value;count").c_str(),
+                kNValBins, ranges[i].first, ranges[i].second);
+        }
 
         size_t written = 0;
         for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
@@ -658,10 +749,13 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
             for (int i = 0; i < dim; ++i) {
                 trueD[i]     = sample.x[i] * stdev[i] + mean[i];
                 denoisedD[i] = res.value[i];
+                hTrue[i]->Fill(trueD[i]);
+                hDen[i]->Fill(denoisedD[i]);
             }
             tree->Fill();
         }
         tree->Write();
+        for (int i = 0; i < dim; ++i) { hTrue[i]->Write(); hDen[i]->Write(); }
     }
     fout.Close();
     mf::LogInfo(moduleName)
@@ -704,6 +798,8 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
         ? std::min(data.size(), static_cast<size_t>(s.partialReverseSamples))
         : data.size();
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
+    const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
+    constexpr int kNValBins = 200;
 
     for (double t0 : s.partialReverseT0s) {
         std::ostringstream nm;
@@ -722,6 +818,16 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("sampled_dim" + std::to_string(i)).c_str(), &sampledD[i]);
         }
+        // Overlay histograms: truth vs partial-reverse sampled, shared binning per dim.
+        std::vector<TH1D*> hTrue(dim), hSamp(dim);
+        for (int i = 0; i < dim; ++i) {
+            hTrue[i] = new TH1D((treeName + "_h_true_dim" + std::to_string(i)).c_str(),
+                ("truth dim" + std::to_string(i) + " at t0=" + std::to_string(t0) + ";value;count").c_str(),
+                kNValBins, ranges[i].first, ranges[i].second);
+            hSamp[i] = new TH1D((treeName + "_h_sampled_dim" + std::to_string(i)).c_str(),
+                ("partial-reverse sampled dim" + std::to_string(i) + " at t0=" + std::to_string(t0) + ";value;count").c_str(),
+                kNValBins, ranges[i].first, ranges[i].second);
+        }
 
         size_t written = 0;
         for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
@@ -732,10 +838,13 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
             for (int i = 0; i < dim; ++i) {
                 trueD[i]    = sample.x[i] * stdev[i] + mean[i];
                 sampledD[i] = res.value[i];
+                hTrue[i]->Fill(trueD[i]);
+                hSamp[i]->Fill(sampledD[i]);
             }
             tree->Fill();
         }
         tree->Write();
+        for (int i = 0; i < dim; ++i) { hTrue[i]->Write(); hSamp[i]->Write(); }
         mf::LogInfo(moduleName)
             << "Partial-reverse diagnostic tree " << treeName << " filled (" << written << " samples)";
     }
@@ -743,6 +852,176 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
     mf::LogInfo(moduleName)
         << "Partial-reverse diagnostic written to " << outFile
         << " (" << nUse << " samples per t0, " << s.partialReverseT0s.size() << " t0 values)";
+}
+
+// ---------------------------------------------------------------------------
+// runConditionalLossDiagnostic — profiles the eps-prediction loss vs sigma, split by whether each
+//   sample lies inside a peak window. Writes one TTree "cond_loss" with per-sample rows: t, sigma,
+//   logSigma, windowIndex (the first peak window the sample falls in, or -1), lossTotal (mean over
+//   dims), and loss_dim<i>. Make a TProfile of lossTotal (or loss_dim<pz>) vs logSigma split by
+//   windowIndex>=0 to read L_P(sigma) vs L_Q(sigma): an underfit (L_P >> L_Q) only at low sigma
+//   indicates a sampling/under-weighting problem (tune gMax/alpha); at all sigma it points to model
+//   capacity / Fourier resolution.
+// ---------------------------------------------------------------------------
+inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
+                                         const std::vector<DiffusionTrainingSample>& data, // normalized
+                                         const TrainState& s,
+                                         const std::string& outFile,
+                                         const std::string& moduleName)
+{
+    TFile fout(outFile.c_str(), "RECREATE");
+    if (fout.IsZombie())
+        throw cet::exception(moduleName) << "Cannot open conditional-loss diagnostic output file " << outFile;
+
+    constexpr int kMaxDiagDims = 16;
+    const int dim = static_cast<int>(data.front().x.size());
+    if (dim > kMaxDiagDims)
+        throw cet::exception(moduleName)
+            << "Conditional-loss diagnostic supports at most " << kMaxDiagDims << " dimensions (got " << dim << ")";
+    if (s.peakWindows.empty())
+        mf::LogWarning(moduleName)
+            << "Conditional-loss diagnostic: no peak windows configured; every row gets windowIndex=-1 "
+            << "(L(sigma) over all data, no in/out-of-window split).";
+
+    TTree* tree = new TTree("cond_loss", "Conditional eps-loss vs sigma, split by feature window");
+    double t = 0.0, sigma = 0.0, logSigma = 0.0, lossTotal = 0.0;
+    int windowIndex = -1;
+    double lossD[kMaxDiagDims] = {0.0};
+    tree->Branch("t", &t);
+    tree->Branch("sigma", &sigma);
+    tree->Branch("logSigma", &logSigma);
+    tree->Branch("windowIndex", &windowIndex);
+    tree->Branch("lossTotal", &lossTotal);
+    for (int i = 0; i < dim; ++i)
+        tree->Branch(("loss_dim" + std::to_string(i)).c_str(), &lossD[i]);
+
+    // TProfiles of loss vs log(sigma), split into in-window (P) and out-of-window (Q). The log-sigma
+    // axis spans the schedule's sigma range (t clamped away from the endpoints, as in evalEpsLossSample).
+    constexpr int kNSigBins = 60;
+    const double logSigLo = std::log(model.diffusionSigma(1e-3));
+    const double logSigHi = std::log(model.diffusionSigma(1.0 - 1e-3));
+    auto makeProf = [&](const std::string& nm, const std::string& ti) {
+        return new TProfile(nm.c_str(), ti.c_str(), kNSigBins, logSigLo, logSigHi);
+    };
+    TProfile* profLPtotal = makeProf("prof_LP_total", "L_P (in-window) mean loss vs log#sigma;log #sigma;mean loss");
+    TProfile* profLQtotal = makeProf("prof_LQ_total", "L_Q (out-of-window) mean loss vs log#sigma;log #sigma;mean loss");
+    std::vector<TProfile*> profLPdim(dim), profLQdim(dim);
+    for (int i = 0; i < dim; ++i) {
+        profLPdim[i] = makeProf("prof_LP_dim" + std::to_string(i),
+            "L_P dim" + std::to_string(i) + " vs log#sigma;log #sigma;mean loss");
+        profLQdim[i] = makeProf("prof_LQ_dim" + std::to_string(i),
+            "L_Q dim" + std::to_string(i) + " vs log#sigma;log #sigma;mean loss");
+    }
+
+    const size_t nUse = (s.condLossDiagnosticSamples > 0)
+        ? std::min(data.size(), static_cast<size_t>(s.condLossDiagnosticSamples))
+        : data.size();
+    const size_t stride = std::max<size_t>(1, data.size() / nUse);
+    size_t written = 0;
+    for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
+        const auto& sample = data[k];
+        windowIndex = -1;
+        for (size_t w = 0; w < s.peakWindows.size(); ++w) {
+            const auto& pw = s.peakWindows[w];
+            double v = sample.x[pw.dim];
+            if (v >= pw.low && v < pw.high) { windowIndex = static_cast<int>(w); break; }
+        }
+        auto res = model.evalEpsLossSample(sample.x, sample.cond, s.denoiseDiagnosticUseEMA);
+        t = res.t; sigma = res.sigma; logSigma = std::log(res.sigma);
+        lossTotal = 0.0;
+        for (int i = 0; i < dim; ++i) { lossD[i] = res.perDimLoss[i]; lossTotal += res.perDimLoss[i]; }
+        lossTotal /= dim;
+        tree->Fill();
+
+        const bool inWindow = (windowIndex >= 0);
+        (inWindow ? profLPtotal : profLQtotal)->Fill(logSigma, lossTotal);
+        for (int i = 0; i < dim; ++i)
+            (inWindow ? profLPdim[i] : profLQdim[i])->Fill(logSigma, lossD[i]);
+    }
+    tree->Write();
+    profLPtotal->Write();
+    profLQtotal->Write();
+    for (int i = 0; i < dim; ++i) { profLPdim[i]->Write(); profLQdim[i]->Write(); }
+    fout.Close();
+    mf::LogInfo(moduleName)
+        << "Conditional-loss diagnostic written to " << outFile << " (" << written << " samples, "
+        << s.peakWindows.size() << " window(s)).";
+}
+
+// ---------------------------------------------------------------------------
+// runFeatureBlockDiagnostic — first-layer input-feature-block weight/grad L2 magnitudes plus a
+//   fresh per-output-dimension loss. Writes TTree "feature_blocks" (one row per block: blockIndex,
+//   kind, coord, nCols, weightL2, gradL2, name) and TTree "output_dim_loss" (dim, loss), and logs a
+//   readable table. Near-zero gradL2 / init-scale weightL2 on a block (e.g. fourier_state[pz]) means
+//   that feature is not being used or driven — distinguishing a representation problem from a
+//   sampling one.
+// ---------------------------------------------------------------------------
+inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
+                                      const std::vector<DiffusionTrainingSample>& data, // normalized
+                                      const TrainState& s,
+                                      const std::string& outFile,
+                                      const std::string& moduleName)
+{
+    std::vector<double> perDimLoss;
+    auto blocks = model.firstLayerBlockMagnitudes(data, s.featureBlockDiagnosticSamples, perDimLoss);
+
+    TFile fout(outFile.c_str(), "RECREATE");
+    if (fout.IsZombie())
+        throw cet::exception(moduleName) << "Cannot open feature-block diagnostic output file " << outFile;
+
+    TTree* bt = new TTree("feature_blocks", "First-layer input-feature-block weight/grad L2");
+    int blockIndex = 0, kind = 0, coord = 0, nCols = 0;
+    double weightL2 = 0.0, gradL2 = 0.0;
+    std::string name;
+    bt->Branch("blockIndex", &blockIndex);
+    bt->Branch("kind", &kind);
+    bt->Branch("coord", &coord);
+    bt->Branch("nCols", &nCols);
+    bt->Branch("weightL2", &weightL2);
+    bt->Branch("gradL2", &gradL2);
+    bt->Branch("name", &name);
+
+    // Per-block bar charts (bin label = block name) so the file is self-contained.
+    const int nb = static_cast<int>(blocks.size());
+    TH1D* hWeight = new TH1D("h_weightL2", "First-layer weight L2 per input-feature block;;weight L2", nb, 0, nb);
+    TH1D* hGrad   = new TH1D("h_gradL2",   "First-layer mean-gradient L2 per input-feature block;;grad L2", nb, 0, nb);
+    std::ostringstream tbl;
+    tbl << "First-layer feature-block magnitudes "
+        << "(kind: 0 raw-state 1 fourier-state 2 raw-cond 3 fourier-cond 4 raw-time 5 fourier-time):";
+    for (size_t b = 0; b < blocks.size(); ++b) {
+        blockIndex = static_cast<int>(b);
+        kind = blocks[b].kind; coord = blocks[b].coord; nCols = blocks[b].nCols;
+        weightL2 = blocks[b].weightL2; gradL2 = blocks[b].gradL2; name = blocks[b].name;
+        bt->Fill();
+        hWeight->SetBinContent(static_cast<int>(b) + 1, blocks[b].weightL2);
+        hWeight->GetXaxis()->SetBinLabel(static_cast<int>(b) + 1, blocks[b].name.c_str());
+        hGrad->SetBinContent(static_cast<int>(b) + 1, blocks[b].gradL2);
+        hGrad->GetXaxis()->SetBinLabel(static_cast<int>(b) + 1, blocks[b].name.c_str());
+        tbl << "\n  " << name << "  nCols=" << nCols << "  weightL2=" << weightL2 << "  gradL2=" << gradL2;
+    }
+    bt->Write();
+    hWeight->Write();
+    hGrad->Write();
+    mf::LogInfo(moduleName) << tbl.str();
+
+    TTree* dt = new TTree("output_dim_loss", "Fresh mean per-output-dimension squared residual");
+    int dimIndex = 0; double dimLoss = 0.0;
+    dt->Branch("dim", &dimIndex);
+    dt->Branch("loss", &dimLoss);
+    const int nd = static_cast<int>(perDimLoss.size());
+    TH1D* hDimLoss = new TH1D("h_output_dim_loss", "Per-output-dimension mean squared residual;dimension;mean loss", nd, 0, nd);
+    std::ostringstream dloss; dloss << "Per-output-dimension mean squared residual:";
+    for (size_t i = 0; i < perDimLoss.size(); ++i) {
+        dimIndex = static_cast<int>(i); dimLoss = perDimLoss[i];
+        dt->Fill();
+        hDimLoss->SetBinContent(static_cast<int>(i) + 1, perDimLoss[i]);
+        dloss << "\n  dim" << i << " = " << perDimLoss[i];
+    }
+    dt->Write();
+    hDimLoss->Write();
+    fout.Close();
+    mf::LogInfo(moduleName) << dloss.str();
+    mf::LogInfo(moduleName) << "Feature-block diagnostic written to " << outFile;
 }
 
 // ---------------------------------------------------------------------------
@@ -785,7 +1064,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
 
     // Diagnostic mode: when either diagnostic is requested it REPLACES training for
     // every active model path. Shared by all three paths below.
-    const bool diagnosticMode = !s.denoiseDiagnosticTs.empty() || !s.partialReverseT0s.empty();
+    const bool diagnosticMode = !s.denoiseDiagnosticTs.empty() || !s.partialReverseT0s.empty()
+                                || s.condLossDiagnostic || s.featureBlockDiagnostic;
     auto runDiagnostics = [&](ScoreBasedDiffusionModel& model,
                               const std::vector<DiffusionTrainingSample>& data,
                               const std::vector<double>& mean,
@@ -797,6 +1077,12 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         if (!s.partialReverseT0s.empty())
             runPartialReverseDiagnostic(model, data, mean, stdevs, s,
                 stripExt(modelFile) + "_PartialReverseDiag.root", moduleName);
+        if (s.condLossDiagnostic)
+            runConditionalLossDiagnostic(model, data, s,
+                stripExt(modelFile) + "_CondLossDiag.root", moduleName);
+        if (s.featureBlockDiagnostic)
+            runFeatureBlockDiagnostic(model, data, s,
+                stripExt(modelFile) + "_FeatureBlockDiag.root", moduleName);
     };
 
     // Per-epoch training loop shared by all three model paths.
@@ -871,7 +1157,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 }
                 mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
-                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.peakWindows);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
                     model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
                     if (s.saveAlsoCsv)
@@ -962,7 +1248,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << "Phase " << phaseNum << " epoch " << epochInPhase
                     << " (global epoch " << globalEpoch << ")";
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
-                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.peakWindows);
                 double loss = model.getLastEpochLoss(); // read immediately after train()
                 const bool conv = tracer.update(loss);
 

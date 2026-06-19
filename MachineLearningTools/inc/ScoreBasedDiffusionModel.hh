@@ -34,6 +34,40 @@ namespace mu2e{
         std::vector<double> value;  // unnormalized data
     };
 
+    // One peak-importance-sampling window (see ScoreBasedDiffusionModel::train). Oversamples
+    // training examples whose NORMALIZED coordinate `dim` lies in [low, high) to fix the
+    // under-weighting of a rare but important localized feature. Multiple windows may be
+    // supplied; they should be disjoint (a sample is assigned to the first window it matches).
+    struct PeakWindow {
+        int    dim    = -1;   // normalized state-coordinate index this window is defined on
+        double low    = 0.0;  // window lower edge (z-score units), inclusive
+        double high   = 0.0;  // window upper edge (z-score units), exclusive
+        double gMax   = 0.0;  // peak sampling-fraction ceiling at low sigma (0 < gMax < 1; sum over windows < 1)
+        double sigma0 = 0.0;  // Gaussian sigma-taper scale (~ feature width); oversampling decays for sigma >> sigma0
+        double alpha  = 1.0;  // 1 = unbiased (variance reduction only), <1 = deliberate up-weight
+    };
+
+    // One conditional-loss diagnostic sample: the per-dimension epsilon-prediction squared error
+    // for one data point at a freshly drawn diffusion time t. Used to profile L(sigma) inside vs
+    // outside a feature window (see ScoreBasedDiffusionModel::evalEpsLossSample).
+    struct SBDMEpsLossSample {
+        double t = 0.0;                 // drawn diffusion time
+        double sigma = 0.0;             // sigma(t)
+        std::vector<double> perDimLoss; // (eps_hat - eps)^2 per state dimension (size dim)
+    };
+
+    // First-layer input-feature-block magnitude (see ScoreBasedDiffusionModel::firstLayerBlockMagnitudes).
+    // Reports, for one contiguous block of the network input, the L2 norm of the first layer's
+    // weight columns and of the (training-gradient) gradient columns over that block.
+    struct SBDMFeatureBlockMagnitude {
+        std::string name;     // human-readable block label, e.g. "fourier_state[5]"
+        int    kind  = 0;     // 0 raw-state, 1 fourier-state, 2 raw-cond, 3 fourier-cond, 4 raw-time, 5 fourier-time
+        int    coord = -1;    // state/condition coordinate index this block belongs to (-1 for time)
+        int    nCols = 0;     // number of input columns in the block
+        double weightL2 = 0.0;
+        double gradL2   = 0.0;
+    };
+
     class ScoreBasedDiffusionModel {
     public:
         // Enumeration for optimizer selection
@@ -292,6 +326,20 @@ namespace mu2e{
         //                   sigma band (e.g. the band matching a narrow spectral feature) while keeping full
         //                   [0,1] coverage. The t-sampling distribution only reweights the loss; it does not
         //                   bias the learned data distribution. (defaults: 0.0, 0.0, 0.0 = disabled)
+        //   peakWindows   - Peak importance sampling (disabled when empty). A list of disjoint windows
+        //                   (see PeakWindow); each oversamples training examples whose NORMALIZED
+        //                   coordinate `dim` lies in [low, high) to fix the under-weighting of rare but
+        //                   physically important features (e.g. narrow pz peaks holding a tiny data
+        //                   fraction). Per draw, t is sampled first; window k is drawn with probability
+        //                   g_eff_k(t) = max(f_k, gMax_k * exp(-sigma(t)^2 / (2 sigma0_k^2))), where f_k is
+        //                   the empirical in-window fraction — so oversampling concentrates at
+        //                   sigma <~ sigma0_k (set ~ the feature width) and decays to the natural rate at
+        //                   high sigma. A single cumulative draw selects window k or the out-of-window
+        //                   pool. The loss is reweighted by (f_k/g_eff_k)^alpha_k in window k (alpha_k = 1
+        //                   exactly unbiased / variance reduction only; alpha_k < 1 a deliberate up-weight),
+        //                   and by (f_Q/(1-Sum g_eff)) out (unbiased continuum), with f_Q = 1 - Sum f_k.
+        //                   Requires Sum gMax_k < 1 (leaves probability for the out-of-window pool). Each
+        //                   pool is drawn without replacement via a per-epoch reshuffled cursor.
         void train(
             const std::vector<DiffusionTrainingSample>& data,
             int epochs,
@@ -300,7 +348,8 @@ namespace mu2e{
             double tLowBound = 0.0,
             double tFocusLow = 0.0,
             double tFocusHigh = 0.0,
-            double tFocusFraction = 0.0
+            double tFocusFraction = 0.0,
+            const std::vector<PeakWindow>& peakWindows = {}
         );
 
         // Diagnostic: average per-sample loss at the CURRENT weights with NO optimizer step.
@@ -319,6 +368,37 @@ namespace mu2e{
             double tFocusHigh = 0.0,
             double tFocusFraction = 0.0
         );
+
+        // Public accessor for the noise level sigma(t) (pure function of the schedule), so
+        // diagnostics can set a log-sigma axis without duplicating the schedule.
+        double diffusionSigma(double t) const { return sigma(t); }
+
+        // Diagnostic (conditional-loss profile): draw a uniform diffusion time t and fresh noise,
+        // run one forward pass, and return the per-dimension epsilon-prediction squared error
+        // (eps_hat - eps)^2 along with t and sigma(t). eps_hat is recovered from the network output
+        // regardless of epsPrediction_ mode, so the error is comparable across sigma. Binning these
+        // by log sigma, split by whether the sample lies inside a feature window, gives L_P(sigma)
+        // vs L_Q(sigma): an underfit only at low sigma points to sampling/under-weighting, an
+        // underfit at all sigma to model capacity / Fourier resolution. Draws from the RNG; no step.
+        SBDMEpsLossSample evalEpsLossSample(
+            const std::vector<double>& xNorm,
+            const std::vector<double>& condition,
+            bool useEMANetworkIfAvailable = true);
+
+        // Diagnostic (first-layer feature-block magnitudes): for each contiguous block of the
+        // network input (each raw state coord, each state coord's Fourier columns, each raw
+        // condition coord, each condition coord's Fourier columns, and the time block), return the
+        // L2 norm of the first layer's weight columns and of the gradient accumulated over nSamples
+        // training-like draws (uniform t, addNoise, the configured weighted eps/score loss,
+        // backward) with NO optimizer step. Near-zero gradL2 (or weightL2 stuck at init scale) on a
+        // block means that input feature is not being used/driven — e.g. dead pz Fourier columns.
+        // perDimLossOut is filled with the FRESH mean per-output-dimension squared residual measured
+        // over the same sweep (a live alternative to the checkpoint's stale dimLossEMA_). Operates
+        // on the base network_ and leaves the gradient buffers zeroed.
+        std::vector<SBDMFeatureBlockMagnitude> firstLayerBlockMagnitudes(
+            const std::vector<DiffusionTrainingSample>& data,
+            int nSamples,
+            std::vector<double>& perDimLossOut);
 
         // Generate a new sample from the diffusion model via reverse process.
         // Uses the external random engine for noise generation during sampling.
