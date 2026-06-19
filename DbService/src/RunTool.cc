@@ -1,9 +1,13 @@
 #include "Offline/DbService/inc/RunTool.hh"
+
 #include "Offline/DbService/inc/DbIdList.hh"
 #include "Offline/GeneralUtilities/inc/TimeUtility.hh"
 #include "Offline/GeneralUtilities/inc/splitString.hh"
+
 #include "cetlib_except/exception.h"
+
 #include <algorithm>
+#include <iomanip>
 
 using namespace mu2e;
 
@@ -25,11 +29,9 @@ std::map<int, std::string> RunTool::flags(FlagType ftype) {
 
   select = "";
   if (ftype == FlagType::run) {
-    table = "production.run_type";
+    table = "online.run_type";
   } else if (ftype == FlagType::transition) {
-    table = "production.transition_type";
-  } else if (ftype == FlagType::cause) {
-    table = "production.cause_type";
+    table = "online.run_transition_type";
   }
   // where.push_back("name:eq:" + name);
   rc = _reader.query(tcsv, select, table, where, order);
@@ -41,23 +43,29 @@ std::map<int, std::string> RunTool::flags(FlagType ftype) {
   StringVec rows = splitString(tcsv, "\n", "\"", "\\", true, false);
   for (auto const& csv : rows) {
     StringVec sv = splitString(csv);
-    flags.insert({std::stoi(sv[0]), sv[1]});
+    // Table columns are: id, description, name
+    // We want the "name" column (index 2) for transitions, not description
+    // (index 1)
+    if (sv.size() >= 3) {
+      flags.insert({std::stoi(sv[0]), sv[2]});  // Use name column
+    } else if (sv.size() >= 2) {
+      flags.insert({std::stoi(sv[0]),
+                    sv[1]});  // Fallback to description if name not available
+    }
   }
   return flags;
 }
 
 //**************************************************
-RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool conditions,
-                                  bool transitions) {
+RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
+                                  bool transitions, bool subruns) {
   RunInfo::RunVec runv;
   std::string tcsv, select, table, order;
   StringVec where;
-  std::string conditionss, transitionss;
 
-  // fetch the list of all runs
-
+  // fetch the list of all runs from the run table
   select = "";
-  table = "production.run_configuration";
+  table = "online.run";
   order = "-run_number";
   int rc = _reader.query(tcsv, select, table, where, order);
   if (rc != 0 || tcsv.empty()) {
@@ -66,13 +74,9 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool conditions,
   }
 
   StringVec rows = splitString(tcsv, "\n", "\"", "\\", true, false);
-  // if (rows.size() > 0) {
-  //  std::cout << "HEADERS"<<rows[0] <<std::endl;
-  //  // header = rows[0];  The first row is column names
-  //  rows.erase(rows.begin());
-  //}
 
-  // apply the selection and fetch conditions and transitions if requested
+  // apply the selection and fetch configs, transitions, and subruns if
+  // requested
 
   // setup run cuts
   std::string rr = runsel.run();
@@ -119,73 +123,237 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool conditions,
   if (runsel.days() > 0) {
     dtime = std::time(0) - runsel.days() * 24 * 60 * 60;
   }
+
   // loop over all runs, starting with highest run number
   for (auto const& csv : rows) {
     // apply cuts on this run
     bool pass = true;
-    // use this temp RunInfo to parse the csv
-    RunInfo ri(csv, std::string(), std::string());
-    int run = ri.runNumber();
+
+    // Parse the run table row: run_number,comment,create_time,run_type_id
+    StringVec sv = splitString(csv);
+    if (sv.size() < 3) continue;  // skip malformed rows
+
+    int run = std::stoi(sv[0]);
+    std::string comment = (sv.size() > 1) ? sv[1] : "";
+    std::string create_time = (sv.size() > 2) ? sv[2] : "";
+    int run_type_id = 0;
+    if (sv.size() > 3 && !sv[3].empty() && sv[3] != "None") {
+      run_type_id = std::stoi(sv[3]);
+    }
+
     // limit on the range
     if (run < rmin || run > rmax) pass = false;
     // limit on the number of runs
     if (runsel.last() > 0 && runv.size() >= size_t(runsel.last())) pass = false;
-    std::string srtime = ri.commitTime();
+
     std::time_t rtime;
-    rc = TimeUtility::parseTimeTZ(srtime, rtime);
+    rc = TimeUtility::parseTimeTZ(create_time, rtime);
     if (rc != 0) {
       throw cet::exception("RUNTOOL_BAD_TIME")
-          << " RunTool::listRuns can't parse time" << srtime << " \n";
+          << " RunTool::listRuns can't parse time" << create_time << " \n";
     }
     // limit on time range
     if (rtime < tmin || rtime > tmax) pass = false;
-    // limt on daysage
+    // limit on daysage
     if (rtime < dtime) pass = false;
     // limits on run types
     if (itypes.size() > 0) {
-      int type = ri.runType();
-      if (std::find(itypes.begin(), itypes.end(), type) == itypes.end())
+      if (std::find(itypes.begin(), itypes.end(), run_type_id) == itypes.end())
         pass = false;
     }
 
     if (pass) {
-      if (conditions) {
-        tcsv.clear();
-        select = "condition";
-        table = "production.run_condition";
-        where.clear();
-        std::string ww =
-            std::string("condition_id:eq:") + std::to_string(ri.conditionId());
-        where.emplace_back(ww);
-        order.clear();
-        int rc = _reader.query(tcsv, select, table, where, order);
-        if (rc != 0) {
-          throw cet::exception("RUNTOOL_BAD_CONDITIONS_QUERY")
-              << " RunTool::listRuns failed to retrieve conditions \n";
-        }
-        conditionss = tcsv;
-      }  // end conditions
+      RunInfo runInfo;
 
-      if (transitions) {
-        StringVec sv = splitString(csv);
+      // Set the main run record
+      RunRecord runRecord;
+      runRecord.setRunNumber(run);
+      runRecord.setComment(comment);
+      runRecord.setCreateTime(create_time);
+      runRecord.setRunTypeId(run_type_id);
+      runInfo.setRunRecord(runRecord);
+
+      // Fetch config records if requested
+      if (configs) {
         tcsv.clear();
-        select = "transition_type,cause_type,transition_time";
-        table = "production.run_transition";
+        select = "";
+        table = "online.config";
         where.clear();
-        std::string ww =
-            std::string("run_number:eq:") + std::to_string(ri.runNumber());
+        std::string ww = std::string("run_number:eq:") + std::to_string(run);
+        where.emplace_back(ww);
+        order = "subsystem";
+        rc = _reader.query(tcsv, select, table, where, order);
+        if (rc != 0) {
+          throw cet::exception("RUNTOOL_BAD_CONFIG_QUERY")
+              << " RunTool::listRuns failed to retrieve configs for run " << run
+              << "\n";
+        }
+
+        if (!tcsv.empty()) {
+          // Split by newlines only, don't try to parse escape sequences in
+          // JSONB
+          size_t start = 0;
+          size_t end = tcsv.find('\n');
+
+          while (start < tcsv.length()) {
+            std::string configCsv;
+            if (end == std::string::npos) {
+              configCsv = tcsv.substr(start);
+              start = tcsv.length();
+            } else {
+              configCsv = tcsv.substr(start, end - start);
+              start = end + 1;
+              end = tcsv.find('\n', start);
+            }
+
+            if (configCsv.empty()) continue;
+
+            // For config table, the settings field is JSONB which may contain
+            // complex escapes. Parse carefully - don't use splitString.
+            // Expected format:
+            // run_number,subsystem,settings,create_time,version
+
+            // Find the first two commas to extract run_number, subsystem
+            size_t pos1 = configCsv.find(',');
+            if (pos1 == std::string::npos) continue;
+
+            size_t pos2 = configCsv.find(',', pos1 + 1);
+            if (pos2 == std::string::npos) continue;
+
+            // The rest after pos2 is: settings,create_time,version
+            // The settings field is the third field, wrapped in quotes
+            std::string run_num_str = configCsv.substr(0, pos1);
+            std::string subsystem = configCsv.substr(pos1 + 1, pos2 - pos1 - 1);
+            std::string remainder = configCsv.substr(pos2 + 1);
+
+            // Extract just the settings field (third field in CSV)
+            // It starts with a quote, so find the matching closing quote
+            std::string settings;
+            if (!remainder.empty() && remainder[0] == '"') {
+              // Find the closing quote (accounting for escaped quotes "")
+              size_t i = 1;
+              while (i < remainder.length()) {
+                if (remainder[i] == '"') {
+                  // Check if it's an escaped quote
+                  if (i + 1 < remainder.length() && remainder[i + 1] == '"') {
+                    // Escaped quote, skip both
+                    i += 2;
+                  } else {
+                    // Found the closing quote
+                    settings = remainder.substr(1, i - 1);
+                    break;
+                  }
+                } else {
+                  i++;
+                }
+              }
+
+              // Now unescape the double-quotes
+              size_t pos = 0;
+              while ((pos = settings.find("\"\"", pos)) != std::string::npos) {
+                settings.replace(pos, 2, "\"");
+                pos += 1;
+              }
+            } else {
+              // No quotes, just use the remainder
+              settings = remainder;
+            }
+
+            RunConfig config;
+            if (!run_num_str.empty())
+              config.setRunNumber(std::stoi(run_num_str));
+            config.setSubsystem(subsystem);
+            config.setSettings(settings);
+            runInfo.addConfig(config);
+          }
+        }
+      }  // end configs
+
+      // Fetch transition records if requested
+      if (transitions) {
+        tcsv.clear();
+        select = "";
+        table = "online.run_transition";
+        where.clear();
+        std::string ww = std::string("run_number:eq:") + std::to_string(run);
         where.emplace_back(ww);
         order = "transition_time";
-        int rc = _reader.query(tcsv, select, table, where, order);
+        rc = _reader.query(tcsv, select, table, where, order);
         if (rc != 0) {
           throw cet::exception("RUNTOOL_BAD_TRANSITION_QUERY")
               << " RunTool::listRuns failed to retrieve transitions for run "
-              << sv[0] << "\n";
+              << run << "\n";
         }
-        transitionss = tcsv;
+
+        if (!tcsv.empty()) {
+          StringVec transRows =
+              splitString(tcsv, "\n", "\"", "\\", true, false);
+          for (auto const& transCsv : transRows) {
+            StringVec transSv = splitString(transCsv);
+            if (transSv.size() >= 3) {
+              RunTransition trans;
+              trans.setRunNumber(std::stoi(transSv[0]));
+              trans.setTypeId(std::stoi(transSv[1]));
+              trans.setCauseId((transSv.size() > 2 && transSv[2] != "None")
+                                   ? std::stoi(transSv[2])
+                                   : 0);
+              if (transSv.size() > 3) trans.setTransitionTime(transSv[3]);
+              runInfo.addTransition(trans);
+            }
+          }
+        }
       }  // end transitions
 
-      runv.emplace_back(csv, conditionss, transitionss);
+      // Fetch subrun records if requested
+      if (subruns) {
+        tcsv.clear();
+        select = "";
+        table = "online.subrun";
+        where.clear();
+        std::string ww = std::string("run_number:eq:") + std::to_string(run);
+        where.emplace_back(ww);
+        order = "subrun_number";
+        rc = _reader.query(tcsv, select, table, where, order);
+        if (rc != 0) {
+          throw cet::exception("RUNTOOL_BAD_SUBRUN_QUERY")
+              << " RunTool::listRuns failed to retrieve subruns for run " << run
+              << "\n";
+        }
+
+        if (!tcsv.empty()) {
+          StringVec subrunRows =
+              splitString(tcsv, "\n", "\"", "\\", true, false);
+          for (auto const& subrunCsv : subrunRows) {
+            StringVec subrunSv = splitString(subrunCsv);
+            if (subrunSv.size() >= 2) {
+              RunSubRun subrun;
+              subrun.setRunNumber(std::stoi(subrunSv[0]));
+              subrun.setSubrunNumber(std::stoi(subrunSv[1]));
+              if (subrunSv.size() > 2 && subrunSv[2] != "None")
+                subrun.setNEvents(std::stol(subrunSv[2]));
+              if (subrunSv.size() > 3 && subrunSv[3] != "None")
+                subrun.setNOnSpill(std::stol(subrunSv[3]));
+              if (subrunSv.size() > 4 && subrunSv[4] != "None")
+                subrun.setNOffSpill(std::stol(subrunSv[4]));
+              if (subrunSv.size() > 5 && subrunSv[5] != "None")
+                subrun.setMinEwt(std::stol(subrunSv[5]));
+              if (subrunSv.size() > 6 && subrunSv[6] != "None")
+                subrun.setMaxEwt(std::stol(subrunSv[6]));
+              if (subrunSv.size() > 7 && subrunSv[7] != "None")
+                subrun.setStartTimeUnix(std::stoi(subrunSv[7]));
+              if (subrunSv.size() > 8 && subrunSv[8] != "None")
+                subrun.setStopTimeUnix(std::stoi(subrunSv[8]));
+              if (subrunSv.size() > 9) subrun.setEventModeCounts(subrunSv[9]);
+              if (subrunSv.size() > 10) subrun.setCreatedAt(subrunSv[10]);
+              if (subrunSv.size() > 11 && subrunSv[11] != "None")
+                subrun.setNNull(std::stol(subrunSv[11]));
+              runInfo.addSubrun(subrun);
+            }
+          }
+        }
+      }  // end subruns
+
+      runv.emplace_back(runInfo);
     }  // end if pass
   }
 
@@ -193,210 +361,74 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool conditions,
 }
 
 //**************************************************
-void RunTool::printRun(const RunInfo& info, bool longp) {
-  std::string committ = info.commitTime().substr(0, size_t(19));
-  if (longp) {
-    std::cout << "\n";
-    std::cout << "runNumber             : " << info.runNumber() << "\n";
-    std::cout << "runType               : " << info.runType() << "\n";
-    std::cout << "commitTime            : " << committ << "\n";
-    std::cout << "conditionId           : " << info.conditionId() << "\n";
-    std::cout << "artdaqPartition       : " << info.artdaqPartition() << "\n";
-    std::cout << "hostName              : " << info.hostName() << "\n";
-    std::cout << "configurationName     : " << info.configurationName() << "\n";
-    std::cout << "configurationVersion  : " << info.configurationVersion()
-              << "\n";
-    std::cout << "contextName           : " << info.contextName() << "\n";
-    std::cout << "contextVersion        : " << info.contextVersion() << "\n";
-    std::cout << "triggerTableName      : " << info.triggerTableName() << "\n";
-    std::cout << "triggerTableVersion   : " << info.triggerTableVersion()
-              << "\n";
-    std::cout << "onlineSoftwareVersion : " << info.onlineSoftwareVersion()
-              << "\n";
-    std::cout << "shifterNote           : " << info.shifterNote() << "\n";
-  } else {
-    std::cout << std::setw(8) << info.runNumber();
-    std::cout << std::setw(5) << info.runType();
-    std::cout << std::setw(23) << committ;
-    std::cout << "\n";
+void RunTool::printRun(const RunInfo& info) {
+  const RunRecord& runRecord = info.runRecord();
+  std::string create_time = runRecord.createTime();
+  if (create_time.size() > 19) {
+    create_time = create_time.substr(0, 19);
   }
 
-  if (info.conditions().size() > 0) {
-    std::cout << "conditions:\n" << info.conditions() << "\n";
+  // Print basic run info
+  std::cout << std::setw(8) << runRecord.runNumber();
+  std::cout << std::setw(5) << runRecord.runTypeId();
+  std::cout << std::setw(23) << create_time;
+  std::cout << "\n";
+
+  // Print configs if present
+  if (info.configs().size() > 0) {
+    std::cout << "  configs (" << info.configs().size() << "):\n";
+    for (const auto& config : info.configs()) {
+      std::cout << "    subsystem: " << config.subsystem()
+                << ", version: " << config.version() << "\n";
+    }
   }
+
+  // Print transitions if present with column headers
   if (info.transitions().size() > 0) {
-    std::cout << "transitions:\n" << info.transitions();
-  }
-  // std::cout << " : " << info. << "\n";
+    // Get transition type names
+    std::map<int, std::string> transitionTypes = flags(FlagType::transition);
 
-  //  const std::string& conditions() const { return _conditions; }
-  // const std::string& transitions() const { return _transitions; }
-}
-/*
-EpicsVar::EpicsVec RunTool::get(std::string const& name,
-                                  std::string const& time, float daysAgo) {
-  EpicsVar::EpicsVec ev;
-
-  // run query url, answer returned in csv
-  int rc;
-  std::string tcsv, select, table, order;
-  StringVec where;
-
-  select = "channel_id";
-  table = "channel";
-  where.push_back("name:eq:" + name);
-  rc = _reader.query(tcsv, select, table, where, order);
-  if (rc != 0 || tcsv.empty()) {
-    throw cet::exception("EPICSTOOL_BAD_CHANNEL")
-        << " RunTool::get failed to find channel number for name\n";
-  }
-
-  std::string id = tcsv;
-  size_t inl = id.find('\n');
-  if (inl != std::string::npos) {
-    id.erase(inl, 1);
-  }
-
-  select.clear();
-  table = "sample";
-  where.clear();
-  where.push_back("channel_id:eq:" + id);
-  order = "smpl_time";
-  tcsv.clear();
-  rc = _reader.query(tcsv, select, table, where, order);
-
-  if (rc != 0) {
-    throw cet::exception("EPICSTOOL_BAD_SAMPLE")
-        << "RunTool::get could not lookup data for channel id " << id << "\n";
-  }
-
-  // the table is delivered with rows separated by \n, split them
-  StringVec rows = splitString(tcsv, "\n", "\"", "\\", true, false);
-
-  for (auto const& csv : rows) {
-    // Example csv:
-    //
-channel_id,smpl_time,nanosecs,severity_id,status_id,num_val,float_val,str_val,datatype
-    // 642,2022-05-05 14:10:02.089404-05:00,89404264,5,9,None,55.0,None, ,None
-
-    // split on commas
-    StringVec sv = splitString(csv);
-
-    if (sv.size() != 10) {
-      throw cet::exception("EPICSTOOL_BAD_CSV")
-          << " RunTool::get number of csv fields !=10, csv: \n"
-          << csv << " \n";
-    }
-
-    int64_t channel_id = std::stoll(sv[0]);
-    std::time_t smpl_time_t;
-    if (TimeUtility::parseTimeTZ(sv[1], smpl_time_t)) {
-      throw cet::exception("EPICSTOOL_BAD_TIME")
-          << " RunTool::get could not parse time " << sv[1] << " \n";
-    }
-    int64_t nanosecs = std::stoll(sv[2]);
-    int64_t severity_id = std::stoll(sv[3]);
-    int64_t status_id = std::stoll(sv[4]);
-    EpicsVar::variVar value;
-    if (sv[6] == "None" && sv[7] == "None") {
-      value = std::stoi(sv[5]);
-    } else if (sv[5] == "None" && sv[7] == "None") {
-      value = std::stod(sv[6]);
-    } else if (sv[5] == "None" && sv[6] == "None") {
-      value = sv[7];
-    } else {
-      throw cet::exception("EPICSTOOL_BAD_CSV_ROW")
-          << " RunTool::get could not parse csv row:\n"
-          << csv << " \n";
-    }
-
-    ev.emplace_back(csv, channel_id, sv[1], smpl_time_t, nanosecs, severity_id,
-                    status_id, value);
-
-  }  // loop over db sample rows
-
-  if (ev.empty()) {
-    return ev;
-  }
-
-  // if no constraints, return the whole list
-  if ( time.empty() && daysAgo<=0.0 ) {
-    return ev;
-  }
-
-  EpicsVar::EpicsVec evt;
-  if (time.find('/') != std::string::npos) {
-    // time interval
-    size_t idiv = time.find('/');
-    std::string st1 = time.substr(0, idiv);
-    std::string st2 = time.substr(idiv + 1, std::string::npos);
-    std::time_t t1;
-    if (TimeUtility::parseTimeTZ(st1, t1)) {
-      throw cet::exception("EPICSTOOL_BAD_TIME")
-          << " RunTool::get could not parse time " << st1 << " \n";
-    }
-    std::time_t t2;
-    if (TimeUtility::parseTimeTZ(st2, t2)) {
-      throw cet::exception("EPICSTOOL_BAD_TIME")
-          << " RunTool::get could not parse time " << st2 << " \n";
-    }
-    for (auto& e : ev) {
-      if (e.ttime() >= t1 && e.ttime() <= t2) {
-        evt.push_back(e);
+    std::cout << "  transitions (" << info.transitions().size() << "):\n";
+    std::cout << "    " << std::setw(8) << "type_id" << std::setw(20)
+              << "type_name"
+              << "  transition_time\n";
+    for (const auto& trans : info.transitions()) {
+      std::string type_name = "";
+      auto it = transitionTypes.find(trans.typeId());
+      if (it != transitionTypes.end()) {
+        type_name = it->second;
       }
+
+      std::cout << "    " << std::setw(8) << trans.typeId() << std::setw(20)
+                << type_name << "  " << trans.transitionTime() << "\n";
     }
-  } else if (time.find('-') != std::string::npos) {
-    // single time, find nearest entry before
-    std::time_t tt;
-    if (TimeUtility::parseTimeTZ(time, tt)) {
-      throw cet::exception("EPICSTOOL_BAD_TIME")
-          << " RunTool::get could not parse time " << time << " \n";
-    }
-    size_t i = ev.size() - 1;
-    while (i > 0 && ev[i].ttime() > tt) {
-      i--;
-    }
-    evt.push_back(ev[i]);
-  } else if (daysAgo > 0.0) {
-    // integer or float back n days
-    std::time_t now = std::time(nullptr);
-    std::time_t delta = std::time_t(daysAgo * 86400.0);
-    std::time_t tmin = now - delta;
-    for (auto& e : ev) {
-      if (e.ttime() > tmin) {
-        evt.push_back(e);
-      }
-    }
-  } else {
-    throw cet::exception("EPICSTOOL_BAD_ARGS")
-        << " RunTool::get could not parse arguments "
-        << " \n";
   }
 
-  return evt;
-}
+  // Print subruns if present with column headers
+  if (info.subruns().size() > 0) {
+    std::cout << "  subruns (" << info.subruns().size() << "):\n";
+    std::cout << "    " << std::setw(8) << "subrun" << std::setw(12) << "events"
+              << std::setw(15) << "min_ewt" << std::setw(15) << "max_ewt"
+              << "  start_time                stop_time\n";
+    for (const auto& subrun : info.subruns()) {
+      // Convert Unix timestamps to ISO8601 format in Central US time
+      std::time_t start_t = subrun.startTimeUnix();
+      std::time_t stop_t = subrun.stopTimeUnix();
+      char start_buf[32], stop_buf[32];
 
-// **************************************************
+      // Set timezone to Central US (America/Chicago)
+      setenv("TZ", "America/Chicago", 1);
+      tzset();
 
-int RunTool::names(StringVec& names) {
-  // run query url, answer returned in csv
-  int rc;
-  std::string csv, select, table, order;
-  StringVec where;
+      std::strftime(start_buf, sizeof(start_buf), "%Y-%m-%d %H:%M:%S",
+                    std::localtime(&start_t));
+      std::strftime(stop_buf, sizeof(stop_buf), "%Y-%m-%d %H:%M:%S",
+                    std::localtime(&stop_t));
 
-  names.clear();
-
-  select = "name";
-  table = "channel";
-  order = "name";
-  rc = _reader.query(csv, select, table, where, order);
-  if (rc != 0 || csv.empty()) {
-    std::cout << "Error - RunTool could not list names" << std::endl;
-    return 1;
+      std::cout << "    " << std::setw(8) << subrun.subrunNumber()
+                << std::setw(12) << subrun.nEvents() << std::setw(15)
+                << subrun.minEwt() << std::setw(15) << subrun.maxEwt() << "  "
+                << start_buf << "  " << stop_buf << "\n";
+    }
   }
-
-  names = splitString(csv, "\n", "\"", "\\", true, false);
-
-  return 0;
 }
-*/
