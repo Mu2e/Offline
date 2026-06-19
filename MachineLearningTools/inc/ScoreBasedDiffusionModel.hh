@@ -39,9 +39,9 @@ namespace mu2e{
     // under-weighting of a rare but important localized feature. Multiple windows may be
     // supplied; they should be disjoint (a sample is assigned to the first window it matches).
     struct PeakWindow {
-        int    dim    = -1;   // normalized state-coordinate index this window is defined on
-        double low    = 0.0;  // window lower edge (z-score units), inclusive
-        double high   = 0.0;  // window upper edge (z-score units), exclusive
+        int    dim    = -1;   // state-coordinate index this window is defined on
+        double low    = 0.0;  // window lower edge in TRANSFORMED (pre-z-score) units, inclusive (e.g. pz_t = log(pz/p0))
+        double high   = 0.0;  // window upper edge in TRANSFORMED (pre-z-score) units, exclusive
         double gMax   = 0.0;  // peak sampling-fraction ceiling at low sigma (0 < gMax < 1; sum over windows < 1)
         double sigma0 = 0.0;  // Gaussian sigma-taper scale (~ feature width); oversampling decays for sigma >> sigma0
         double alpha  = 1.0;  // 1 = unbiased (variance reduction only), <1 = deliberate up-weight
@@ -327,8 +327,9 @@ namespace mu2e{
         //                   [0,1] coverage. The t-sampling distribution only reweights the loss; it does not
         //                   bias the learned data distribution. (defaults: 0.0, 0.0, 0.0 = disabled)
         //   peakWindows   - Peak importance sampling (disabled when empty). A list of disjoint windows
-        //                   (see PeakWindow); each oversamples training examples whose NORMALIZED
-        //                   coordinate `dim` lies in [low, high) to fix the under-weighting of rare but
+        //                   (see PeakWindow); each oversamples training examples whose coordinate `dim`
+        //                   lies in [low, high) — low/high given in TRANSFORMED (pre-z-score) units and
+        //                   converted to z-score internally via normalizeCoord — to fix under-weighting of rare but
         //                   physically important features (e.g. narrow pz peaks holding a tiny data
         //                   fraction). Per draw, t is sampled first; window k is drawn with probability
         //                   g_eff_k(t) = max(f_k, gMax_k * exp(-sigma(t)^2 / (2 sigma0_k^2))), where f_k is
@@ -372,6 +373,17 @@ namespace mu2e{
         // Public accessor for the noise level sigma(t) (pure function of the schedule), so
         // diagnostics can set a log-sigma axis without duplicating the schedule.
         double diffusionSigma(double t) const { return sigma(t); }
+
+        // Convert a raw (transformed, pre-z-score) value on state dimension `dim` into the model's
+        // normalized (z-score) space using the stored per-dimension mean/stdev, so feature windows
+        // can be specified in physical transformed units (e.g. log(pz/p0)) instead of z-scores.
+        // Requires normalizeData() to have run (or a loaded checkpoint); identity if it has not.
+        double normalizeCoord(int dim, double rawValue) const {
+            if (dim < 0 || dim >= dim_)
+                throw cet::exception("ScoreBasedDiffusionModel::normalizeCoord")
+                    << "dim " << dim << " out of range [0, " << dim_ << ")";
+            return (rawValue - dataMean_[dim]) / dataStdev_[dim];
+        }
 
         // Diagnostic (conditional-loss profile): draw a uniform diffusion time t and fresh noise,
         // run one forward pass, and return the per-dimension epsilon-prediction squared error

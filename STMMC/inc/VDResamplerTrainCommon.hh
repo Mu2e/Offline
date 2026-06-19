@@ -133,8 +133,9 @@ struct TrainState {
 
     // Peak importance sampling windows (see ScoreBasedDiffusionModel::train). Assembled by the
     // train module from parallel fcl sequences; held constant across the whole job (all curriculum
-    // phases). Empty => disabled. Window edges are in NORMALIZED (z-scored) units of the model
-    // being trained: all-at-once {t,x,y,pr,pphi,pz} -> pz=5; stage-2 state {pr,pphi,pz} -> pz=2.
+    // phases). Empty => disabled. Window edges are in TRANSFORMED (pre-z-score) units (e.g.
+    // pz_t = log(pz/p0)); the model converts them to z-score via normalizeCoord. Dim is the state
+    // coordinate index: all-at-once {t,x,y,pr,pphi,pz} -> pz=5; stage-2 state {pr,pphi,pz} -> pz=2.
     std::vector<PeakWindow> peakWindows;
 
     // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
@@ -913,6 +914,14 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
             "L_Q dim" + std::to_string(i) + " vs log#sigma;log #sigma;mean loss");
     }
 
+    // Window edges are in transformed (pre-z-score) units; convert to z-score once (the data is
+    // z-scored) using the model's stored per-dimension mean/stdev.
+    std::vector<double> zLow(s.peakWindows.size()), zHigh(s.peakWindows.size());
+    for (size_t w = 0; w < s.peakWindows.size(); ++w) {
+        zLow[w]  = model.normalizeCoord(s.peakWindows[w].dim, s.peakWindows[w].low);
+        zHigh[w] = model.normalizeCoord(s.peakWindows[w].dim, s.peakWindows[w].high);
+    }
+
     const size_t nUse = (s.condLossDiagnosticSamples > 0)
         ? std::min(data.size(), static_cast<size_t>(s.condLossDiagnosticSamples))
         : data.size();
@@ -922,9 +931,8 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
         const auto& sample = data[k];
         windowIndex = -1;
         for (size_t w = 0; w < s.peakWindows.size(); ++w) {
-            const auto& pw = s.peakWindows[w];
-            double v = sample.x[pw.dim];
-            if (v >= pw.low && v < pw.high) { windowIndex = static_cast<int>(w); break; }
+            double v = sample.x[s.peakWindows[w].dim];
+            if (v >= zLow[w] && v < zHigh[w]) { windowIndex = static_cast<int>(w); break; }
         }
         auto res = model.evalEpsLossSample(sample.x, sample.cond, s.denoiseDiagnosticUseEMA);
         t = res.t; sigma = res.sigma; logSigma = std::log(res.sigma);

@@ -991,12 +991,19 @@ namespace mu2e {
         double sumF = 0.0;                     // total in-window fraction
         if (peakSampling) {
             const size_t K = peakWindows.size();
+            // Window edges are given in transformed (pre-z-score) units; convert to the z-scored
+            // space the data lives in, once, using the stored per-dimension mean/stdev.
+            std::vector<double> zLow(K), zHigh(K);
+            for (size_t k = 0; k < K; ++k) {
+                zLow[k]  = normalizeCoord(peakWindows[k].dim, peakWindows[k].low);
+                zHigh[k] = normalizeCoord(peakWindows[k].dim, peakWindows[k].high);
+            }
             std::vector<std::vector<size_t>> P0(K);
             for (size_t i = 0; i < N; ++i) {
                 int which = -1;
                 for (size_t k = 0; k < K; ++k) {
                     double v = data[i].x[peakWindows[k].dim];
-                    if (v >= peakWindows[k].low && v < peakWindows[k].high) { which = static_cast<int>(k); break; }
+                    if (v >= zLow[k] && v < zHigh[k]) { which = static_cast<int>(k); break; }
                 }
                 if (which >= 0) P0[which].push_back(i);
                 else            Q.push_back(i);
@@ -1023,10 +1030,11 @@ namespace mu2e {
                 std::ostringstream oss;
                 oss << "Peak importance sampling enabled: " << pk.size()
                     << " window(s), total in-window fraction " << sumF
-                    << ". Per window [dim, low, high, f, gMax, sigma0, alpha]:";
+                    << ". Per window [dim, low, high (transformed); [zLow, zHigh] (z-score); f, gMax, sigma0, alpha]:";
                 for (size_t k = 0; k < pk.size(); ++k)
-                    oss << "\n  [" << pk[k].dim << ", " << pk[k].low << ", " << pk[k].high << ", " << f[k]
-                        << ", " << pk[k].gMax << ", " << pk[k].sigma0 << ", " << pk[k].alpha << "]";
+                    oss << "\n  [" << pk[k].dim << ", " << pk[k].low << ", " << pk[k].high
+                        << "; [" << normalizeCoord(pk[k].dim, pk[k].low) << ", " << normalizeCoord(pk[k].dim, pk[k].high)
+                        << "]; " << f[k] << ", " << pk[k].gMax << ", " << pk[k].sigma0 << ", " << pk[k].alpha << "]";
                 mf::LogInfo("ScoreBasedDiffusionModel::train") << oss.str();
             }
         }

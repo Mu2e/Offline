@@ -117,8 +117,8 @@ namespace mu2e {
         fhicl::Atom<int>        SBDMfeatureBlockDiagnosticSamples{ Name("SBDMfeatureBlockDiagnosticSamples"), Comment("Draws used to accumulate the gradient for the feature-block diagnostic"), 50000 };
         // Peak importance sampling: parallel sequences, one entry per window (all same length; empty = disabled).
         fhicl::Sequence<int>    SBDMpeakWindowDims{  Name("SBDMpeakWindowDims"),  Comment("Per-window normalized state-coordinate index (e.g. pz = 5 all-at-once, 2 stage-2)"), std::vector<int>() };
-        fhicl::Sequence<double> SBDMpeakWindowLows{  Name("SBDMpeakWindowLows"),  Comment("Per-window lower edge (z-score units), inclusive"), std::vector<double>() };
-        fhicl::Sequence<double> SBDMpeakWindowHighs{ Name("SBDMpeakWindowHighs"), Comment("Per-window upper edge (z-score units), exclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakWindowLows{  Name("SBDMpeakWindowLows"),  Comment("Per-window lower edge in TRANSFORMED (pre-z-score) units, e.g. log(pz/p0), inclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakWindowHighs{ Name("SBDMpeakWindowHighs"), Comment("Per-window upper edge in TRANSFORMED (pre-z-score) units, exclusive"), std::vector<double>() };
         fhicl::Sequence<double> SBDMpeakGMaxes{      Name("SBDMpeakGMaxes"),      Comment("Per-window sampling-fraction ceiling at low sigma (0<gMax<1; sum<1)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMpeakSigma0s{     Name("SBDMpeakSigma0s"),     Comment("Per-window Gaussian sigma-taper scale (~ feature width)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMpeakAlphas{      Name("SBDMpeakAlphas"),      Comment("Per-window 1=unbiased, <1=up-weight"), std::vector<double>() };
