@@ -21,13 +21,13 @@ namespace mu2e {
                         return static_cast<char>( std::tolower(c));
                       });
       if (name.find("hpge") != std::string::npos){
-        return STMChannel::findByName("HPGe");
+        return STMChannel(STMChannel::HPGe);
       }
       else if (name.find("labr") != std::string::npos){
-        return STMChannel::findByName("LaBr");
+        return STMChannel(STMChannel::LaBr);
       }
       else {
-        return STMChannel::findByName("Unknown");
+        return STMChannel(STMChannel::unknown);
       }
     }
 

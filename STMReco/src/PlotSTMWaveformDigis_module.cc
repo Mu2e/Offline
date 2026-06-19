@@ -67,7 +67,6 @@ namespace mu2e {
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
-    //_channel(STMChannel::findByName("HPGe"))
     _channel(STMUtils::getChannel(config().stmWaveformDigisTag()))
 
   { }
@@ -138,17 +137,15 @@ namespace mu2e {
           histname2 << histname.str() << "_offset" << zs_offset;
           histtitle2 << instance << "ZS waveform";
           if (waveform.hasParent()){
-            histtitle2 << ", parent raw index: " << waveform.parent().key();
-            histname2 << "_parentRaw: " << waveform.parent().key();
+            histtitle2 << ", parent raw index:" << waveform.parent().key();
           } else {
             histtitle2 << ", no parent raw waveform";
-            histname2 << "_noParentIndex";
           }
           histtitle2 << ", offset: " << zs_offset;
 
           //histtitle2 << histtitle2.str() << instance << " , offset : " << zs_offset;
 
-          hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
+          hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle2.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
           hWaveformOffset->GetYaxis()->SetTitle("ADCs");
           hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + trigtimeOffset");
           // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform

@@ -18,7 +18,6 @@
 #include <artdaq-core/Data/ContainerFragment.hh>
 #include <artdaq-core/Data/Fragment.hh>
 #include "canvas/Persistency/Common/Ptr.h"
-//#include "canvas/Persistency/Common/Assns.h"
 
 #include <string>
 #include <memory>
@@ -694,7 +693,7 @@ void STMDigisFromFragments::produce(Event& event)
     std::cout << "Extracted PH  LaBr digis         : " << ph_LaBr_digis->size() <<"\n";
 
 
-    std::cout << "\n--- Frags Seen ---\n"; // Counts all HPGe and LaBr frags, no fiklter
+    std::cout << "\n--- Frags Seen ---\n"; // Counts all HPGe and LaBr frags, no filter
     std::cout << "Raw HPGe frags seen    : " << totalRawHPGeFrags << "\n";
     std::cout << "ZS  HPGe frags seen    : " << totalZSHPGeFrags << "\n";
     std::cout << "PH  HPGe frags seen    : " << totalPHHPGeFrags << "\n";
