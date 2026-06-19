@@ -2900,7 +2900,7 @@ int mu2e::DbTool::help() {
                  "    --addGroup : after adding IOV's, also create a new group "
                  "(requires --addIOV)\n"
                  "    --dry-run : do everything except final database commit\n"
-                 "    --verify : only read fle and summarize with hash\n"
+                 "    --verify : only read file and summarize with hash\n"
               << std::endl;
   } else if (_action == "commit-iov") {
     std::cout
