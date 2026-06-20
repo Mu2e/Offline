@@ -1,6 +1,7 @@
 #include "Offline/DbService/inc/RunTool.hh"
 
 #include "Offline/DbService/inc/DbIdList.hh"
+#include "Offline/DbTables/inc/DbUtil.hh"
 #include "Offline/GeneralUtilities/inc/TimeUtility.hh"
 #include "Offline/GeneralUtilities/inc/splitString.hh"
 
@@ -64,7 +65,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
   StringVec where;
 
   // fetch the list of all runs from the run table
-  select = "";
+  select = "run_number,comment,create_time,run_type_id";
   table = "online.run";
   order = "-run_number";
   int rc = _reader.query(tcsv, select, table, where, order);
@@ -131,15 +132,11 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
 
     // Parse the run table row: run_number,comment,create_time,run_type_id
     StringVec sv = splitString(csv);
-    if (sv.size() < 3) continue;  // skip malformed rows
 
     int run = std::stoi(sv[0]);
-    std::string comment = (sv.size() > 1) ? sv[1] : "";
-    std::string create_time = (sv.size() > 2) ? sv[2] : "";
-    int run_type_id = 0;
-    if (sv.size() > 3 && !sv[3].empty() && sv[3] != "None") {
-      run_type_id = std::stoi(sv[3]);
-    }
+    std::string comment = sv[1];
+    std::string create_time = sv[2];
+    int run_type_id = std::stoi(sv[3]);
 
     // limit on the range
     if (run < rmin || run > rmax) pass = false;
@@ -176,7 +173,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
       // Fetch config records if requested
       if (configs) {
         tcsv.clear();
-        select = "";
+        select = "run_number,subsystem,settings,create_time,version";
         table = "online.config";
         where.clear();
         std::string ww = std::string("run_number:eq:") + std::to_string(run);
@@ -190,80 +187,16 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
         }
 
         if (!tcsv.empty()) {
-          // Split by newlines only, don't try to parse escape sequences in
-          // JSONB
-          size_t start = 0;
-          size_t end = tcsv.find('\n');
-
-          while (start < tcsv.length()) {
-            std::string configCsv;
-            if (end == std::string::npos) {
-              configCsv = tcsv.substr(start);
-              start = tcsv.length();
-            } else {
-              configCsv = tcsv.substr(start, end - start);
-              start = end + 1;
-              end = tcsv.find('\n', start);
-            }
-
-            if (configCsv.empty()) continue;
-
-            // For config table, the settings field is JSONB which may contain
-            // complex escapes. Parse carefully - don't use splitString.
-            // Expected format:
-            // run_number,subsystem,settings,create_time,version
-
-            // Find the first two commas to extract run_number, subsystem
-            size_t pos1 = configCsv.find(',');
-            if (pos1 == std::string::npos) continue;
-
-            size_t pos2 = configCsv.find(',', pos1 + 1);
-            if (pos2 == std::string::npos) continue;
-
-            // The rest after pos2 is: settings,create_time,version
-            // The settings field is the third field, wrapped in quotes
-            std::string run_num_str = configCsv.substr(0, pos1);
-            std::string subsystem = configCsv.substr(pos1 + 1, pos2 - pos1 - 1);
-            std::string remainder = configCsv.substr(pos2 + 1);
-
-            // Extract just the settings field (third field in CSV)
-            // It starts with a quote, so find the matching closing quote
-            std::string settings;
-            if (!remainder.empty() && remainder[0] == '"') {
-              // Find the closing quote (accounting for escaped quotes "")
-              size_t i = 1;
-              while (i < remainder.length()) {
-                if (remainder[i] == '"') {
-                  // Check if it's an escaped quote
-                  if (i + 1 < remainder.length() && remainder[i + 1] == '"') {
-                    // Escaped quote, skip both
-                    i += 2;
-                  } else {
-                    // Found the closing quote
-                    settings = remainder.substr(1, i - 1);
-                    break;
-                  }
-                } else {
-                  i++;
-                }
-              }
-
-              // Now unescape the double-quotes
-              size_t pos = 0;
-              while ((pos = settings.find("\"\"", pos)) != std::string::npos) {
-                settings.replace(pos, 2, "\"");
-                pos += 1;
-              }
-            } else {
-              // No quotes, just use the remainder
-              settings = remainder;
-            }
-
+          StringVec crows = splitString(tcsv, "\n", "", "", true, false);
+          for (auto const& crow : crows) {
+            StringVec cfields = DbUtil::splitCsv(crow, true);
             RunConfig config;
-            if (!run_num_str.empty())
-              config.setRunNumber(std::stoi(run_num_str));
-            config.setSubsystem(subsystem);
-            config.setSettings(settings);
+            config.setRunNumber(std::stoi(cfields[0]));
+            config.setSubsystem(cfields[1]);
+            std::string json = DbUtil::simplfyQeString(cfields[2]);
+            config.setSettings(json);
+            config.setCreateTime(cfields[3]);
+            config.setVersion(std::stoi(cfields[4]));
             runInfo.addConfig(config);
           }
         }
@@ -272,7 +205,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
       // Fetch transition records if requested
       if (transitions) {
         tcsv.clear();
-        select = "";
+        select = "run_number,type_id,cause_id,transition_time";
         table = "online.run_transition";
         where.clear();
         std::string ww = std::string("run_number:eq:") + std::to_string(run);
@@ -307,7 +240,10 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
       // Fetch subrun records if requested
       if (subruns) {
         tcsv.clear();
-        select = "";
+        select =
+            "run_number,subrun_number,n_events,n_on_spill,n_off_spill,min_ewt,"
+            "max_ewt,start_time_unix,stop_time_unix,event_mode_counts,created_"
+            "at,n_null";
         table = "online.subrun";
         where.clear();
         std::string ww = std::string("run_number:eq:") + std::to_string(run);
@@ -369,7 +305,7 @@ void RunTool::printRun(const RunInfo& info) {
   }
 
   // Print basic run info
-  std::cout << std::setw(8) << runRecord.runNumber();
+  std::cout << runRecord.runNumber();
   std::cout << std::setw(5) << runRecord.runTypeId();
   std::cout << std::setw(23) << create_time;
   std::cout << "\n";
@@ -378,8 +314,8 @@ void RunTool::printRun(const RunInfo& info) {
   if (info.configs().size() > 0) {
     std::cout << "  configs (" << info.configs().size() << "):\n";
     for (const auto& config : info.configs()) {
-      std::cout << "    subsystem: " << config.subsystem()
-                << ", version: " << config.version() << "\n";
+      std::cout << std::setw(12) << config.subsystem() << std::setw(3)
+                << config.version() << "   " << config.createTime() << "\n";
     }
   }
 
@@ -410,15 +346,20 @@ void RunTool::printRun(const RunInfo& info) {
     std::cout << "    " << std::setw(8) << "subrun" << std::setw(12) << "events"
               << std::setw(15) << "min_ewt" << std::setw(15) << "max_ewt"
               << "  start_time                stop_time\n";
+
+    // Save current TZ environment variable to restore later
+    const char* old_tz = std::getenv("TZ");
+    std::string saved_tz = old_tz ? old_tz : "";
+
+    // Set timezone to Central US (America/Chicago) once before the loop
+    setenv("TZ", "America/Chicago", 1);
+    tzset();
+
     for (const auto& subrun : info.subruns()) {
       // Convert Unix timestamps to ISO8601 format in Central US time
       std::time_t start_t = subrun.startTimeUnix();
       std::time_t stop_t = subrun.stopTimeUnix();
       char start_buf[32], stop_buf[32];
-
-      // Set timezone to Central US (America/Chicago)
-      setenv("TZ", "America/Chicago", 1);
-      tzset();
 
       std::strftime(start_buf, sizeof(start_buf), "%Y-%m-%d %H:%M:%S",
                     std::localtime(&start_t));
@@ -430,5 +371,13 @@ void RunTool::printRun(const RunInfo& info) {
                 << subrun.minEwt() << std::setw(15) << subrun.maxEwt() << "  "
                 << start_buf << "  " << stop_buf << "\n";
     }
+
+    // Restore original TZ environment variable
+    if (!saved_tz.empty()) {
+      setenv("TZ", saved_tz.c_str(), 1);
+    } else {
+      unsetenv("TZ");
+    }
+    tzset();
   }
 }

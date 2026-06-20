@@ -14,11 +14,15 @@ class DbUtil {
   // split a csv string into lines on \n
   static std::vector<std::string> splitCsvLines(std::string const& csv);
   // split a line of csv into columns
-  static std::vector<std::string> splitCsv(std::string const& line);
+  static std::vector<std::string> splitCsv(std::string const& line,
+                                           bool qemode = false);
   // clean up a csv row for SQL insert
   static std::string sqlLine(std::string const& line);
   // provide the current local time as a string
   static std::string timeString();
+  // usually for json fields, change | " { ""abc"": "" comment \""OK\"" ""}"|
+  // -> |{ "abc": " comment \"OK\" "}|
+  static std::string simplfyQeString(std::string const& ss);
 };
 
 }  // namespace mu2e

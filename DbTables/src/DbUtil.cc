@@ -191,7 +191,8 @@ std::vector<std::string> mu2e::DbUtil::splitCsvLines(const std::string& csv) {
 // ****************************************************************
 // split a line by csv rules, including quotes
 // assumes comment lines have been removed
-std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line) {
+std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line,
+                                                bool qemode) {
   std::vector<std::string> columns;  // columns of a line of csv
 
   std::size_t i, j;
@@ -202,9 +203,9 @@ std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line) {
       if (!quote) {
         quote = true;
         j++;
-      } else {                      // could be embedded quote
-        if (line[j - 1] == '\\') {  // has form \"
-          j++;                      // just continue, slash already processed
+      } else {                                 // could be embedded quote
+        if (!qemode && line[j - 1] == '\\') {  // has form \"
+          j++;  // just continue, slash already processed
         } else if (j < line.size() - 1 && line[j + 1] == '"') {  // has form ""
           j = j + 2;  // just continue, skip second quote
         } else {      // must be end quote
@@ -289,4 +290,25 @@ std::string mu2e::DbUtil::timeString() {
      << mtm->tm_year % 100 << " " << std::setw(2) << mtm->tm_hour << ":"
      << std::setw(2) << mtm->tm_min << ":" << std::setw(2) << mtm->tm_sec;
   return ss.str();
+}
+
+// ****************************************************************
+std::string mu2e::DbUtil::simplfyQeString(std::string const& ss) {
+  std::string cc = ss;
+  boost::trim(cc);
+  if (cc.size() <= 1) return cc;
+  if (cc.front() == '"' && cc.back() == '"') {
+    cc = cc.substr(1,cc.size()-2);
+    boost::trim(cc);
+  }
+  if (cc.empty()) return cc;
+  std::string from("\"\""),to("\"");
+  size_t start_pos = 0;
+  while ((start_pos = cc.find(from, start_pos)) != std::string::npos) {
+    cc.replace(start_pos, from.length(), to);
+    // Advance start_pos past the replaced substring to avoid infinite loops
+    // if 'to' contains 'from'
+    start_pos += to.length();
+  }
+  return cc;
 }
