@@ -24,7 +24,11 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TProfile.h"
+#include "TCanvas.h"
+#include "TLegend.h"
+#include "TROOT.h"
 
 namespace mu2e {
 namespace VDResampler {
@@ -688,7 +692,9 @@ inline std::vector<std::pair<double,double>> diagnosticTrueValueRanges(
 //   sampler is the problem; if it is missing here too, the score network never
 //   learned it. Branches: t, then per dimension i: true_dim<i>, denoised_dim<i>,
 //   in the model's dimension order (all-at-once: t,x,y,pr,pphi,pz; stage 2:
-//   pr,pphi,pz).
+//   pr,pphi,pz). Per t and dim it also writes histograms: truth/denoised 1-D overlays
+//   (*_h_true_dim<i>, *_h_denoised_dim<i>), a residual *_h_residual_dim<i> (denoised-truth,
+//   auto-ranged), and a 2-D *_h2_true_vs_denoised_dim<i> (diagonal = perfect reconstruction).
 // ---------------------------------------------------------------------------
 inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
                                  const std::vector<DiffusionTrainingSample>& data, // already normalized
@@ -714,6 +720,11 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
     const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
     constexpr int kNValBins = 200;
+    constexpr int kN2DBins  = 120;
+    // Auto-range the residual histograms (created with empty limits) via the buffer mechanism;
+    // their scale varies with t. Restored before returning.
+    const Int_t prevBufSize = TH1::GetDefaultBufferSize();
+    TH1::SetDefaultBufferSize(50000);
 
     for (double t : s.denoiseDiagnosticTs) {
         std::ostringstream nm;
@@ -732,15 +743,25 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("denoised_dim" + std::to_string(i)).c_str(), &denoisedD[i]);
         }
-        // Overlay histograms: truth vs one-step denoised, shared binning per dim.
-        std::vector<TH1D*> hTrue(dim), hDen(dim);
+        // Per-dim histograms: truth/denoised overlay (shared binning), residual (denoised-truth,
+        // auto-ranged), and a 2-D truth-vs-denoised (perfect reconstruction lies on the diagonal).
+        std::vector<TH1D*> hTrue(dim), hDen(dim), hResid(dim);
+        std::vector<TH2D*> h2(dim);
+        const std::string ts = std::to_string(t);
         for (int i = 0; i < dim; ++i) {
-            hTrue[i] = new TH1D((treeName + "_h_true_dim" + std::to_string(i)).c_str(),
-                ("truth dim" + std::to_string(i) + " at t=" + std::to_string(t) + ";value;count").c_str(),
+            const std::string di = std::to_string(i);
+            hTrue[i] = new TH1D((treeName + "_h_true_dim" + di).c_str(),
+                ("truth dim" + di + " at t=" + ts + ";value;count").c_str(),
                 kNValBins, ranges[i].first, ranges[i].second);
-            hDen[i] = new TH1D((treeName + "_h_denoised_dim" + std::to_string(i)).c_str(),
-                ("one-step denoised dim" + std::to_string(i) + " at t=" + std::to_string(t) + ";value;count").c_str(),
+            hDen[i] = new TH1D((treeName + "_h_denoised_dim" + di).c_str(),
+                ("one-step denoised dim" + di + " at t=" + ts + ";value;count").c_str(),
                 kNValBins, ranges[i].first, ranges[i].second);
+            hResid[i] = new TH1D((treeName + "_h_residual_dim" + di).c_str(),
+                ("residual (denoised-truth) dim" + di + " at t=" + ts + ";denoised - truth;count").c_str(),
+                kNValBins, 0.0, 0.0); // auto-ranged via buffer
+            h2[i] = new TH2D((treeName + "_h2_true_vs_denoised_dim" + di).c_str(),
+                ("truth vs denoised dim" + di + " at t=" + ts + ";truth;denoised").c_str(),
+                kN2DBins, ranges[i].first, ranges[i].second, kN2DBins, ranges[i].first, ranges[i].second);
         }
 
         size_t written = 0;
@@ -752,12 +773,20 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
                 denoisedD[i] = res.value[i];
                 hTrue[i]->Fill(trueD[i]);
                 hDen[i]->Fill(denoisedD[i]);
+                hResid[i]->Fill(denoisedD[i] - trueD[i]);
+                h2[i]->Fill(trueD[i], denoisedD[i]);
             }
             tree->Fill();
         }
         tree->Write();
-        for (int i = 0; i < dim; ++i) { hTrue[i]->Write(); hDen[i]->Write(); }
+        for (int i = 0; i < dim; ++i) {
+            hTrue[i]->Write(); hDen[i]->Write();
+            hResid[i]->BufferEmpty(); // flush buffer so the auto-range is computed before writing
+            hResid[i]->Write();
+            h2[i]->Write();
+        }
     }
+    TH1::SetDefaultBufferSize(prevBufSize);
     fout.Close();
     mf::LogInfo(moduleName)
         << "Denoise diagnostic written to " << outFile
@@ -775,7 +804,10 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
 //   start at t0 but not full generation, the t>t0 phase delivers a wrong
 //   marginal; if it is already lost at t0, the score or its integration below
 //   t0 is responsible. Branches: t0, then per dimension i: true_dim<i>,
-//   sampled_dim<i>, in the model's dimension order.
+//   sampled_dim<i>, in the model's dimension order. Per t0 and dim it also writes histograms:
+//   truth/sampled 1-D overlays (*_h_true_dim<i>, *_h_sampled_dim<i>), a residual
+//   *_h_residual_dim<i> (sampled-truth, auto-ranged), and a 2-D *_h2_true_vs_sampled_dim<i>
+//   (diagonal = perfect reproduction).
 // ---------------------------------------------------------------------------
 inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
                                         const std::vector<DiffusionTrainingSample>& data, // already normalized
@@ -801,6 +833,11 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
     const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
     constexpr int kNValBins = 200;
+    constexpr int kN2DBins  = 120;
+    // Auto-range the residual histograms (created with empty limits) via the buffer mechanism;
+    // their scale varies with t0. Restored before returning.
+    const Int_t prevBufSize = TH1::GetDefaultBufferSize();
+    TH1::SetDefaultBufferSize(50000);
 
     for (double t0 : s.partialReverseT0s) {
         std::ostringstream nm;
@@ -819,15 +856,25 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("sampled_dim" + std::to_string(i)).c_str(), &sampledD[i]);
         }
-        // Overlay histograms: truth vs partial-reverse sampled, shared binning per dim.
-        std::vector<TH1D*> hTrue(dim), hSamp(dim);
+        // Per-dim histograms: truth/sampled overlay (shared binning), residual (sampled-truth,
+        // auto-ranged), and a 2-D truth-vs-sampled (perfect reproduction lies on the diagonal).
+        std::vector<TH1D*> hTrue(dim), hSamp(dim), hResid(dim);
+        std::vector<TH2D*> h2(dim);
+        const std::string ts = std::to_string(t0);
         for (int i = 0; i < dim; ++i) {
-            hTrue[i] = new TH1D((treeName + "_h_true_dim" + std::to_string(i)).c_str(),
-                ("truth dim" + std::to_string(i) + " at t0=" + std::to_string(t0) + ";value;count").c_str(),
+            const std::string di = std::to_string(i);
+            hTrue[i] = new TH1D((treeName + "_h_true_dim" + di).c_str(),
+                ("truth dim" + di + " at t0=" + ts + ";value;count").c_str(),
                 kNValBins, ranges[i].first, ranges[i].second);
-            hSamp[i] = new TH1D((treeName + "_h_sampled_dim" + std::to_string(i)).c_str(),
-                ("partial-reverse sampled dim" + std::to_string(i) + " at t0=" + std::to_string(t0) + ";value;count").c_str(),
+            hSamp[i] = new TH1D((treeName + "_h_sampled_dim" + di).c_str(),
+                ("partial-reverse sampled dim" + di + " at t0=" + ts + ";value;count").c_str(),
                 kNValBins, ranges[i].first, ranges[i].second);
+            hResid[i] = new TH1D((treeName + "_h_residual_dim" + di).c_str(),
+                ("residual (sampled-truth) dim" + di + " at t0=" + ts + ";sampled - truth;count").c_str(),
+                kNValBins, 0.0, 0.0); // auto-ranged via buffer
+            h2[i] = new TH2D((treeName + "_h2_true_vs_sampled_dim" + di).c_str(),
+                ("truth vs sampled dim" + di + " at t0=" + ts + ";truth;sampled").c_str(),
+                kN2DBins, ranges[i].first, ranges[i].second, kN2DBins, ranges[i].first, ranges[i].second);
         }
 
         size_t written = 0;
@@ -841,14 +888,22 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
                 sampledD[i] = res.value[i];
                 hTrue[i]->Fill(trueD[i]);
                 hSamp[i]->Fill(sampledD[i]);
+                hResid[i]->Fill(sampledD[i] - trueD[i]);
+                h2[i]->Fill(trueD[i], sampledD[i]);
             }
             tree->Fill();
         }
         tree->Write();
-        for (int i = 0; i < dim; ++i) { hTrue[i]->Write(); hSamp[i]->Write(); }
+        for (int i = 0; i < dim; ++i) {
+            hTrue[i]->Write(); hSamp[i]->Write();
+            hResid[i]->BufferEmpty(); // flush buffer so the auto-range is computed before writing
+            hResid[i]->Write();
+            h2[i]->Write();
+        }
         mf::LogInfo(moduleName)
             << "Partial-reverse diagnostic tree " << treeName << " filled (" << written << " samples)";
     }
+    TH1::SetDefaultBufferSize(prevBufSize);
     fout.Close();
     mf::LogInfo(moduleName)
         << "Partial-reverse diagnostic written to " << outFile
@@ -858,11 +913,12 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
 // ---------------------------------------------------------------------------
 // runConditionalLossDiagnostic — profiles the eps-prediction loss vs sigma, split by whether each
 //   sample lies inside a peak window. Writes one TTree "cond_loss" with per-sample rows: t, sigma,
-//   logSigma, windowIndex (the first peak window the sample falls in, or -1), lossTotal (mean over
-//   dims), and loss_dim<i>. Make a TProfile of lossTotal (or loss_dim<pz>) vs logSigma split by
-//   windowIndex>=0 to read L_P(sigma) vs L_Q(sigma): an underfit (L_P >> L_Q) only at low sigma
-//   indicates a sampling/under-weighting problem (tune gMax/alpha); at all sigma it points to model
-//   capacity / Fourier resolution.
+//   log10Sigma, windowIndex (the first peak window the sample falls in, or -1), lossTotal (mean over
+//   dims), and loss_dim<i>. Also writes TProfiles prof_LP_*/prof_LQ_* (loss vs log10 sigma) and a
+//   ready-to-view overlay TCanvas per pair (c_LPLQ_total, c_LPLQ_dim<i>) with L_P (red) and L_Q
+//   (blue) drawn together + legend. Read L_P(sigma) vs L_Q(sigma): an underfit (L_P >> L_Q) only at
+//   low sigma indicates a sampling/under-weighting problem (tune gMax/alpha); at all sigma it points
+//   to model capacity / Fourier resolution.
 // ---------------------------------------------------------------------------
 inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
                                          const std::vector<DiffusionTrainingSample>& data, // normalized
@@ -885,33 +941,34 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
             << "(L(sigma) over all data, no in/out-of-window split).";
 
     TTree* tree = new TTree("cond_loss", "Conditional eps-loss vs sigma, split by feature window");
-    double t = 0.0, sigma = 0.0, logSigma = 0.0, lossTotal = 0.0;
+    double t = 0.0, sigma = 0.0, log10Sigma = 0.0, lossTotal = 0.0;
     int windowIndex = -1;
     double lossD[kMaxDiagDims] = {0.0};
     tree->Branch("t", &t);
     tree->Branch("sigma", &sigma);
-    tree->Branch("logSigma", &logSigma);
+    tree->Branch("log10Sigma", &log10Sigma);
     tree->Branch("windowIndex", &windowIndex);
     tree->Branch("lossTotal", &lossTotal);
     for (int i = 0; i < dim; ++i)
         tree->Branch(("loss_dim" + std::to_string(i)).c_str(), &lossD[i]);
 
-    // TProfiles of loss vs log(sigma), split into in-window (P) and out-of-window (Q). The log-sigma
-    // axis spans the schedule's sigma range (t clamped away from the endpoints, as in evalEpsLossSample).
+    // TProfiles of loss vs log10(sigma), split into in-window (P) and out-of-window (Q). The
+    // log10-sigma axis spans the schedule's sigma range (t clamped away from the endpoints, as in
+    // evalEpsLossSample).
     constexpr int kNSigBins = 60;
-    const double logSigLo = std::log(model.diffusionSigma(1e-3));
-    const double logSigHi = std::log(model.diffusionSigma(1.0 - 1e-3));
+    const double logSigLo = std::log10(model.diffusionSigma(1e-3));
+    const double logSigHi = std::log10(model.diffusionSigma(1.0 - 1e-3));
     auto makeProf = [&](const std::string& nm, const std::string& ti) {
         return new TProfile(nm.c_str(), ti.c_str(), kNSigBins, logSigLo, logSigHi);
     };
-    TProfile* profLPtotal = makeProf("prof_LP_total", "L_P (in-window) mean loss vs log#sigma;log #sigma;mean loss");
-    TProfile* profLQtotal = makeProf("prof_LQ_total", "L_Q (out-of-window) mean loss vs log#sigma;log #sigma;mean loss");
+    TProfile* profLPtotal = makeProf("prof_LP_total", "L_P (in-window) mean loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    TProfile* profLQtotal = makeProf("prof_LQ_total", "L_Q (out-of-window) mean loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
     std::vector<TProfile*> profLPdim(dim), profLQdim(dim);
     for (int i = 0; i < dim; ++i) {
         profLPdim[i] = makeProf("prof_LP_dim" + std::to_string(i),
-            "L_P dim" + std::to_string(i) + " vs log#sigma;log #sigma;mean loss");
+            "L_P dim" + std::to_string(i) + " vs log_{10}#sigma;log_{10} #sigma;mean loss");
         profLQdim[i] = makeProf("prof_LQ_dim" + std::to_string(i),
-            "L_Q dim" + std::to_string(i) + " vs log#sigma;log #sigma;mean loss");
+            "L_Q dim" + std::to_string(i) + " vs log_{10}#sigma;log_{10} #sigma;mean loss");
     }
 
     // Window edges are in transformed (pre-z-score) units; convert to z-score once (the data is
@@ -935,21 +992,46 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
             if (v >= zLow[w] && v < zHigh[w]) { windowIndex = static_cast<int>(w); break; }
         }
         auto res = model.evalEpsLossSample(sample.x, sample.cond, s.denoiseDiagnosticUseEMA);
-        t = res.t; sigma = res.sigma; logSigma = std::log(res.sigma);
+        t = res.t; sigma = res.sigma; log10Sigma = std::log10(res.sigma);
         lossTotal = 0.0;
         for (int i = 0; i < dim; ++i) { lossD[i] = res.perDimLoss[i]; lossTotal += res.perDimLoss[i]; }
         lossTotal /= dim;
         tree->Fill();
 
         const bool inWindow = (windowIndex >= 0);
-        (inWindow ? profLPtotal : profLQtotal)->Fill(logSigma, lossTotal);
+        (inWindow ? profLPtotal : profLQtotal)->Fill(log10Sigma, lossTotal);
         for (int i = 0; i < dim; ++i)
-            (inWindow ? profLPdim[i] : profLQdim[i])->Fill(logSigma, lossD[i]);
+            (inWindow ? profLPdim[i] : profLQdim[i])->Fill(log10Sigma, lossD[i]);
     }
     tree->Write();
     profLPtotal->Write();
     profLQtotal->Write();
     for (int i = 0; i < dim; ++i) { profLPdim[i]->Write(); profLQdim[i]->Write(); }
+
+    // L_P vs L_Q overlay canvas per pair (total and each dim), so the comparison is visible on
+    // opening the file. Force batch mode while building canvases so this is safe on headless nodes.
+    const bool prevBatch = gROOT->IsBatch();
+    gROOT->SetBatch(kTRUE);
+    auto writeOverlay = [&](const std::string& nm, TProfile* lp, TProfile* lq) {
+        lp->SetLineColor(kRed);  lp->SetMarkerColor(kRed);  lp->SetMarkerStyle(20);
+        lq->SetLineColor(kBlue); lq->SetMarkerColor(kBlue); lq->SetMarkerStyle(21);
+        TCanvas c(nm.c_str(), nm.c_str(), 800, 600);
+        const double ymax = std::max(lp->GetMaximum(), lq->GetMaximum());
+        lp->SetMinimum(0.0);
+        lp->SetMaximum(ymax > 0.0 ? 1.1 * ymax : 1.0);
+        lp->Draw();
+        lq->Draw("SAME");
+        TLegend leg(0.66, 0.76, 0.88, 0.88);
+        leg.AddEntry(lp, "L_P (in-window)",     "lep");
+        leg.AddEntry(lq, "L_Q (out-of-window)", "lep");
+        leg.Draw();
+        c.Write();
+    };
+    writeOverlay("c_LPLQ_total", profLPtotal, profLQtotal);
+    for (int i = 0; i < dim; ++i)
+        writeOverlay("c_LPLQ_dim" + std::to_string(i), profLPdim[i], profLQdim[i]);
+    gROOT->SetBatch(prevBatch);
+
     fout.Close();
     mf::LogInfo(moduleName)
         << "Conditional-loss diagnostic written to " << outFile << " (" << written << " samples, "
