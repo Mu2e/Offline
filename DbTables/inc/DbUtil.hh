@@ -19,6 +19,8 @@ class DbUtil {
   static std::string sqlLine(std::string const& line);
   // provide the current local time as a string
   static std::string timeString();
+  // compute the hash of a canonical format of a csv string
+  static std::string hash(const std::string& csv);
 };
 
 }  // namespace mu2e
