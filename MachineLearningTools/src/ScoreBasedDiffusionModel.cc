@@ -760,7 +760,10 @@ namespace mu2e {
         double alpha_bar, s;
         if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
             s= sigma(t);
-            alpha_bar = 1.0 - s * s; // directly compute alpha_bar from sigma for efficiency
+            // Clamp to >= 0 (matching alphabar()): at t=1 sigma(1)=logSigMax can round to 1+eps,
+            // making 1 - s*s a tiny negative, whose sqrt() below would be NaN and poison the
+            // whole sample (e.g. partial-reverse at t0=1.0).
+            alpha_bar = std::max(0.0, 1.0 - s * s);
         } else {
             alpha_bar = alphabar(t);
             s = std::sqrt(1.0 - alpha_bar); // i.e. sigma(t), avoid recalculating alpha_bar inside the function for efficiency
