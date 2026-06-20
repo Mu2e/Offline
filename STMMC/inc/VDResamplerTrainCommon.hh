@@ -682,6 +682,31 @@ inline std::vector<std::pair<double,double>> diagnosticTrueValueRanges(
 }
 
 // ---------------------------------------------------------------------------
+// diagnosticBinCounts — per-dimension 1-D histogram bin count. Default `defaultBins` everywhere,
+//   except dimensions targeted by a peak window: there the binning is made finer than the window's
+//   sigma0 so the feature is resolved. sigma0 is in z-score units, the histogram axis in transformed
+//   units, so the feature width on the axis is sigma0*stdev[dim]; we put kBinsPerSigma0 bins across
+//   it. The smallest sigma0 wins if several windows share a dim. Capped to avoid pathological sizes.
+// ---------------------------------------------------------------------------
+inline std::vector<int> diagnosticBinCounts(
+    int dim, int defaultBins, const std::vector<std::pair<double,double>>& ranges,
+    const std::vector<double>& stdev, const std::vector<PeakWindow>& peakWindows)
+{
+    constexpr int kBinsPerSigma0 = 4;     // >= this many bins across one sigma0 (=> bin width < sigma0/4)
+    constexpr int kMaxBins       = 20000;
+    std::vector<int> nb(dim, defaultBins);
+    for (const auto& pw : peakWindows) {
+        if (pw.dim < 0 || pw.dim >= dim || pw.sigma0 <= 0.0) continue;
+        const double featW = pw.sigma0 * stdev[pw.dim];               // feature width in transformed (axis) units
+        const double span  = ranges[pw.dim].second - ranges[pw.dim].first;
+        if (featW <= 0.0 || span <= 0.0) continue;
+        const int needed = static_cast<int>(std::ceil(kBinsPerSigma0 * span / featW));
+        nb[pw.dim] = std::min(kMaxBins, std::max(nb[pw.dim], needed));
+    }
+    return nb;
+}
+
+// ---------------------------------------------------------------------------
 // runDenoiseDiagnostic — one-step denoising check of a (typically checkpoint-
 //   loaded) model. For each requested diffusion time t, strides through the
 //   normalized training data, noises each sample at t, runs a single forward
@@ -690,11 +715,12 @@ inline std::vector<std::pair<double,double>> diagnosticTrueValueRanges(
 //   '.' replaced by 'p', e.g. diag_t0p4). If a fine feature is present in the
 //   denoised histogram but missing from generated samples, the reverse-process
 //   sampler is the problem; if it is missing here too, the score network never
-//   learned it. Branches: t, then per dimension i: true_dim<i>, denoised_dim<i>,
-//   in the model's dimension order (all-at-once: t,x,y,pr,pphi,pz; stage 2:
-//   pr,pphi,pz). Per t and dim it also writes histograms: truth/denoised 1-D overlays
-//   (*_h_true_dim<i>, *_h_denoised_dim<i>), a residual *_h_residual_dim<i> (denoised-truth,
-//   auto-ranged), and a 2-D *_h2_true_vs_denoised_dim<i> (diagonal = perfect reconstruction).
+//   learned it. Branches: t, then per dimension i: true_dim<i>, denoised_dim<i>, noised_dim<i>
+//   (the noised input the network sees), in the model's dimension order (all-at-once:
+//   t,x,y,pr,pphi,pz; stage 2: pr,pphi,pz). Per t and dim it also writes histograms: truth/denoised/
+//   noised 1-D overlays (*_h_true_dim<i>, *_h_denoised_dim<i>, *_h_noised_dim<i>; binning is finer on
+//   any dim a peak window targets, resolving the window sigma0), a residual *_h_residual_dim<i>
+//   (denoised-truth, auto-ranged), and a 2-D *_h2_true_vs_denoised_dim<i> (diagonal = perfect).
 // ---------------------------------------------------------------------------
 inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
                                  const std::vector<DiffusionTrainingSample>& data, // already normalized
@@ -720,7 +746,8 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
     const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
     constexpr int kNValBins = 200;
-    constexpr int kN2DBins  = 120;
+    constexpr int kN2DCap   = 500; // 2-D histograms are at most this many bins per axis
+    const auto nbins = diagnosticBinCounts(dim, kNValBins, ranges, stdev, s.peakWindows);
     // Auto-range the residual histograms (created with empty limits) via the buffer mechanism;
     // their scale varies with t. Restored before returning.
     const Int_t prevBufSize = TH1::GetDefaultBufferSize();
@@ -738,41 +765,50 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
         double tBranch = t;
         double trueD[kMaxDiagDims]     = {0.0};
         double denoisedD[kMaxDiagDims] = {0.0};
+        double noisedD[kMaxDiagDims]   = {0.0};
         tree->Branch("t", &tBranch);
         for (int i = 0; i < dim; ++i) {
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("denoised_dim" + std::to_string(i)).c_str(), &denoisedD[i]);
+            tree->Branch(("noised_dim" + std::to_string(i)).c_str(), &noisedD[i]);
         }
-        // Per-dim histograms: truth/denoised overlay (shared binning), residual (denoised-truth,
-        // auto-ranged), and a 2-D truth-vs-denoised (perfect reconstruction lies on the diagonal).
-        std::vector<TH1D*> hTrue(dim), hDen(dim), hResid(dim);
+        // Per-dim histograms: truth / noised input / denoised overlay (shared binning, finer on peak
+        // dims), residual (denoised-truth, auto-ranged), and 2-D truth-vs-denoised (diagonal = perfect).
+        std::vector<TH1D*> hTrue(dim), hDen(dim), hNoised(dim), hResid(dim);
         std::vector<TH2D*> h2(dim);
         const std::string ts = std::to_string(t);
         for (int i = 0; i < dim; ++i) {
             const std::string di = std::to_string(i);
+            const int n2d = std::min(kN2DCap, nbins[i]);
             hTrue[i] = new TH1D((treeName + "_h_true_dim" + di).c_str(),
                 ("truth dim" + di + " at t=" + ts + ";value;count").c_str(),
-                kNValBins, ranges[i].first, ranges[i].second);
+                nbins[i], ranges[i].first, ranges[i].second);
             hDen[i] = new TH1D((treeName + "_h_denoised_dim" + di).c_str(),
                 ("one-step denoised dim" + di + " at t=" + ts + ";value;count").c_str(),
-                kNValBins, ranges[i].first, ranges[i].second);
+                nbins[i], ranges[i].first, ranges[i].second);
+            hNoised[i] = new TH1D((treeName + "_h_noised_dim" + di).c_str(),
+                ("noised input dim" + di + " at t=" + ts + ";value;count").c_str(),
+                nbins[i], ranges[i].first, ranges[i].second);
             hResid[i] = new TH1D((treeName + "_h_residual_dim" + di).c_str(),
                 ("residual (denoised-truth) dim" + di + " at t=" + ts + ";denoised - truth;count").c_str(),
-                kNValBins, 0.0, 0.0); // auto-ranged via buffer
+                nbins[i], 0.0, 0.0); // auto-ranged via buffer
             h2[i] = new TH2D((treeName + "_h2_true_vs_denoised_dim" + di).c_str(),
                 ("truth vs denoised dim" + di + " at t=" + ts + ";truth;denoised").c_str(),
-                kN2DBins, ranges[i].first, ranges[i].second, kN2DBins, ranges[i].first, ranges[i].second);
+                n2d, ranges[i].first, ranges[i].second, n2d, ranges[i].first, ranges[i].second);
         }
 
+        std::vector<double> noisedZ;
         size_t written = 0;
         for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
             const auto& sample = data[k];
-            auto res = model.denoiseOneStep(sample.x, sample.cond, t, s.denoiseDiagnosticUseEMA);
+            auto res = model.denoiseOneStep(sample.x, sample.cond, t, s.denoiseDiagnosticUseEMA, &noisedZ);
             for (int i = 0; i < dim; ++i) {
                 trueD[i]     = sample.x[i] * stdev[i] + mean[i];
                 denoisedD[i] = res.value[i];
+                noisedD[i]   = noisedZ[i] * stdev[i] + mean[i];
                 hTrue[i]->Fill(trueD[i]);
                 hDen[i]->Fill(denoisedD[i]);
+                hNoised[i]->Fill(noisedD[i]);
                 hResid[i]->Fill(denoisedD[i] - trueD[i]);
                 h2[i]->Fill(trueD[i], denoisedD[i]);
             }
@@ -780,7 +816,7 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
         }
         tree->Write();
         for (int i = 0; i < dim; ++i) {
-            hTrue[i]->Write(); hDen[i]->Write();
+            hTrue[i]->Write(); hDen[i]->Write(); hNoised[i]->Write();
             hResid[i]->BufferEmpty(); // flush buffer so the auto-range is computed before writing
             hResid[i]->Write();
             h2[i]->Write();
@@ -803,9 +839,10 @@ inline void runDenoiseDiagnostic(ScoreBasedDiffusionModel& model,
 //   Scanning t0 localizes where generation loses a feature: if it survives a
 //   start at t0 but not full generation, the t>t0 phase delivers a wrong
 //   marginal; if it is already lost at t0, the score or its integration below
-//   t0 is responsible. Branches: t0, then per dimension i: true_dim<i>,
-//   sampled_dim<i>, in the model's dimension order. Per t0 and dim it also writes histograms:
-//   truth/sampled 1-D overlays (*_h_true_dim<i>, *_h_sampled_dim<i>), a residual
+//   t0 is responsible. Branches: t0, then per dimension i: true_dim<i>, sampled_dim<i>,
+//   noised_dim<i> (the noised t0 start state), in the model's dimension order. Per t0 and dim it
+//   also writes histograms: truth/sampled/noised 1-D overlays (*_h_true_dim<i>, *_h_sampled_dim<i>,
+//   *_h_noised_dim<i>; binning is finer on any dim a peak window targets), a residual
 //   *_h_residual_dim<i> (sampled-truth, auto-ranged), and a 2-D *_h2_true_vs_sampled_dim<i>
 //   (diagonal = perfect reproduction).
 // ---------------------------------------------------------------------------
@@ -833,7 +870,8 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
     const size_t stride = std::max<size_t>(1, data.size() / nUse);
     const auto ranges = diagnosticTrueValueRanges(data, mean, stdev, dim, stride, nUse);
     constexpr int kNValBins = 200;
-    constexpr int kN2DBins  = 120;
+    constexpr int kN2DCap   = 500; // 2-D histograms are at most this many bins per axis
+    const auto nbins = diagnosticBinCounts(dim, kNValBins, ranges, stdev, s.peakWindows);
     // Auto-range the residual histograms (created with empty limits) via the buffer mechanism;
     // their scale varies with t0. Restored before returning.
     const Int_t prevBufSize = TH1::GetDefaultBufferSize();
@@ -851,43 +889,52 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
         double t0Branch = t0;
         double trueD[kMaxDiagDims]    = {0.0};
         double sampledD[kMaxDiagDims] = {0.0};
+        double noisedD[kMaxDiagDims]  = {0.0};
         tree->Branch("t0", &t0Branch);
         for (int i = 0; i < dim; ++i) {
             tree->Branch(("true_dim" + std::to_string(i)).c_str(), &trueD[i]);
             tree->Branch(("sampled_dim" + std::to_string(i)).c_str(), &sampledD[i]);
+            tree->Branch(("noised_dim" + std::to_string(i)).c_str(), &noisedD[i]);
         }
-        // Per-dim histograms: truth/sampled overlay (shared binning), residual (sampled-truth,
-        // auto-ranged), and a 2-D truth-vs-sampled (perfect reproduction lies on the diagonal).
-        std::vector<TH1D*> hTrue(dim), hSamp(dim), hResid(dim);
+        // Per-dim histograms: truth / noised start / sampled overlay (shared binning, finer on peak
+        // dims), residual (sampled-truth, auto-ranged), and 2-D truth-vs-sampled (diagonal = perfect).
+        std::vector<TH1D*> hTrue(dim), hSamp(dim), hNoised(dim), hResid(dim);
         std::vector<TH2D*> h2(dim);
         const std::string ts = std::to_string(t0);
         for (int i = 0; i < dim; ++i) {
             const std::string di = std::to_string(i);
+            const int n2d = std::min(kN2DCap, nbins[i]);
             hTrue[i] = new TH1D((treeName + "_h_true_dim" + di).c_str(),
                 ("truth dim" + di + " at t0=" + ts + ";value;count").c_str(),
-                kNValBins, ranges[i].first, ranges[i].second);
+                nbins[i], ranges[i].first, ranges[i].second);
             hSamp[i] = new TH1D((treeName + "_h_sampled_dim" + di).c_str(),
                 ("partial-reverse sampled dim" + di + " at t0=" + ts + ";value;count").c_str(),
-                kNValBins, ranges[i].first, ranges[i].second);
+                nbins[i], ranges[i].first, ranges[i].second);
+            hNoised[i] = new TH1D((treeName + "_h_noised_dim" + di).c_str(),
+                ("noised start dim" + di + " at t0=" + ts + ";value;count").c_str(),
+                nbins[i], ranges[i].first, ranges[i].second);
             hResid[i] = new TH1D((treeName + "_h_residual_dim" + di).c_str(),
                 ("residual (sampled-truth) dim" + di + " at t0=" + ts + ";sampled - truth;count").c_str(),
-                kNValBins, 0.0, 0.0); // auto-ranged via buffer
+                nbins[i], 0.0, 0.0); // auto-ranged via buffer
             h2[i] = new TH2D((treeName + "_h2_true_vs_sampled_dim" + di).c_str(),
                 ("truth vs sampled dim" + di + " at t0=" + ts + ";truth;sampled").c_str(),
-                kN2DBins, ranges[i].first, ranges[i].second, kN2DBins, ranges[i].first, ranges[i].second);
+                n2d, ranges[i].first, ranges[i].second, n2d, ranges[i].first, ranges[i].second);
         }
 
+        std::vector<double> noisedZ;
         size_t written = 0;
         for (size_t k = 0; k < data.size() && written < nUse; k += stride, ++written) {
             const auto& sample = data[k];
             auto res = model.partialReverseSample(sample.x, sample.cond, t0,
                 s.denoiseDiagnosticUseEMA, s.partialReverseUseHeun, s.partialReverseUseSDE,
-                s.partialReverseDiffusionSteps, s.partialReverseSdeToOdeSigmaThreshold);
+                s.partialReverseDiffusionSteps, s.partialReverseSdeToOdeSigmaThreshold, &noisedZ);
             for (int i = 0; i < dim; ++i) {
                 trueD[i]    = sample.x[i] * stdev[i] + mean[i];
                 sampledD[i] = res.value[i];
+                noisedD[i]  = noisedZ[i] * stdev[i] + mean[i];
                 hTrue[i]->Fill(trueD[i]);
                 hSamp[i]->Fill(sampledD[i]);
+                hNoised[i]->Fill(noisedD[i]);
                 hResid[i]->Fill(sampledD[i] - trueD[i]);
                 h2[i]->Fill(trueD[i], sampledD[i]);
             }
@@ -895,7 +942,7 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
         }
         tree->Write();
         for (int i = 0; i < dim; ++i) {
-            hTrue[i]->Write(); hSamp[i]->Write();
+            hTrue[i]->Write(); hSamp[i]->Write(); hNoised[i]->Write();
             hResid[i]->BufferEmpty(); // flush buffer so the auto-range is computed before writing
             hResid[i]->Write();
             h2[i]->Write();
@@ -1013,6 +1060,7 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
     const bool prevBatch = gROOT->IsBatch();
     gROOT->SetBatch(kTRUE);
     auto writeOverlay = [&](const std::string& nm, TProfile* lp, TProfile* lq) {
+        lp->SetStats(0); lq->SetStats(0); // no statbox on the overlay
         lp->SetLineColor(kRed);  lp->SetMarkerColor(kRed);  lp->SetMarkerStyle(20);
         lq->SetLineColor(kBlue); lq->SetMarkerColor(kBlue); lq->SetMarkerStyle(21);
         TCanvas c(nm.c_str(), nm.c_str(), 800, 600);
@@ -1075,6 +1123,7 @@ inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
     const int nb = static_cast<int>(blocks.size());
     TH1D* hWeight = new TH1D("h_weightL2", "First-layer weight L2 per input-feature block;;weight L2", nb, 0, nb);
     TH1D* hGrad   = new TH1D("h_gradL2",   "First-layer mean-gradient L2 per input-feature block;;grad L2", nb, 0, nb);
+    hWeight->SetStats(0); hGrad->SetStats(0); // no statbox on the bar charts
     std::ostringstream tbl;
     tbl << "First-layer feature-block magnitudes "
         << "(kind: 0 raw-state 1 fourier-state 2 raw-cond 3 fourier-cond 4 raw-time 5 fourier-time):";
@@ -1100,6 +1149,7 @@ inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
     dt->Branch("loss", &dimLoss);
     const int nd = static_cast<int>(perDimLoss.size());
     TH1D* hDimLoss = new TH1D("h_output_dim_loss", "Per-output-dimension mean squared residual;dimension;mean loss", nd, 0, nd);
+    hDimLoss->SetStats(0); // no statbox
     std::ostringstream dloss; dloss << "Per-output-dimension mean squared residual:";
     for (size_t i = 0; i < perDimLoss.size(); ++i) {
         dimIndex = static_cast<int>(i); dimLoss = perDimLoss[i];

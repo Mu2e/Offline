@@ -449,11 +449,14 @@ namespace mu2e{
         //   useEMANetworkIfAvailable - If true (default), uses the EMA network when available
         //
         // Returns: zscore = x0_hat (normalized space), value = de-normalized x0_hat
+        // If noisedZscoreOut is non-null it receives the noised input x_t (z-score space) the network
+        // sees, so callers can plot the noised data alongside truth and reconstruction.
         SBDMGeneratedSample denoiseOneStep(
             const std::vector<double>& xNorm,
             const std::vector<double>& condition,
             double t,
-            bool useEMANetworkIfAvailable = true
+            bool useEMANetworkIfAvailable = true,
+            std::vector<double>* noisedZscoreOut = nullptr
         );
 
         // Partial-reverse diagnostic: perturb a normalized data sample at diffusion time t0,
@@ -480,7 +483,8 @@ namespace mu2e{
             bool useHeun = true,
             bool useSDE = true,
             int diffusionSteps = -1,
-            double sdeToOdeSigmaThreshold = -1.0
+            double sdeToOdeSigmaThreshold = -1.0,
+            std::vector<double>* noisedZscoreOut = nullptr // receives the noised start state x_t0 (z-score)
         );
 
         // Save the model to a binary file (.bin) preserving full double precision.

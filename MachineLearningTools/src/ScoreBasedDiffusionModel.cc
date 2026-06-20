@@ -2903,7 +2903,8 @@ namespace mu2e {
         bool useHeun,
         bool useSDE,
         int diffusionSteps,
-        double sdeToOdeSigmaThreshold
+        double sdeToOdeSigmaThreshold,
+        std::vector<double>* noisedZscoreOut
     )
     {
         if (xNorm.size() != static_cast<size_t>(dim_)) {
@@ -2930,6 +2931,7 @@ namespace mu2e {
 
         std::vector<double> eps;
         auto x = addNoise(xNorm, tGrid, eps);
+        if (noisedZscoreOut) *noisedZscoreOut = x; // the noised starting state (z-score), before reverse
 
         return reverseDiffuseFrom(std::move(x), condition, stepStart,
                                   useEMANetworkIfAvailable, useHeun, useSDE,
@@ -2943,7 +2945,8 @@ namespace mu2e {
         const std::vector<double>& xNorm,
         const std::vector<double>& condition,
         double t,
-        bool useEMANetworkIfAvailable
+        bool useEMANetworkIfAvailable,
+        std::vector<double>* noisedZscoreOut
     )
     {
         if (xNorm.size() != static_cast<size_t>(dim_)) {
@@ -2964,6 +2967,7 @@ namespace mu2e {
 
         std::vector<double> eps;
         auto xt = addNoise(xNorm, t, eps);
+        if (noisedZscoreOut) *noisedZscoreOut = xt; // the noised input (z-score) the network sees
         double s  = std::max(sigma(t), eps_safe);
         double ab = std::sqrt(std::max(alphabar(t), eps_safe));
 
