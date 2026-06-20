@@ -314,6 +314,7 @@ std::string mu2e::DbUtil::simplfyQeString(std::string const& ss) {
     start_pos += to.length();
   }
   return cc;
+}
 
 // ****************************************************************
 // return a hash of the csv of a table
