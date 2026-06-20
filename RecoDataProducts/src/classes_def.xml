@@ -442,13 +442,17 @@
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
+ <class name="art::Ptr<mu2e::STMWaveformDigi>"/>
  <class name="mu2e::STMPHDigi"/>
  <class name="mu2e::STMPHDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMPHDigiCollection>"/>
  <class name="mu2e::STMHit"/>
  <class name="mu2e::STMHitCollection"/>
  <class name="art::Wrapper<mu2e::STMHitCollection>"/>
-
+ <class name="mu2e::STMFragmentSummary"/>
+ <class name="mu2e::STMFragmentSummaryCollection"/>
+ <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
+ 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
   <class name="mu2e::MSDHitCollection"/>
