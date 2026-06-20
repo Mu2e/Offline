@@ -2,6 +2,7 @@
 #include "Offline/DbTables/inc/DbIoV.hh"
 #include "Offline/DbTables/inc/DbTableFactory.hh"
 #include "cetlib_except/exception.h"
+#include "cetlib/sha1.h"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -24,7 +25,7 @@
 // # can include comment lines with hash as first char
 mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
                                                bool saveCsv) {
-  if (fn.size() <= 0) {
+  if (fn.empty()) {
     throw cet::exception("DBFILE_NO_FILE_NAME")
         << "DbUtil::read called with no file name\n";
   }
@@ -44,7 +45,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
   while (std::getline(myfile, line)) {
     boost::trim(line);  // remove whitespace
     // line was blank or comment, skip to next
-    if (line.size() <= 0 || line[0] == '#') continue;
+    if (line.empty() || line[0] == '#') continue;
 
     // if this line starts a new table
     if (line.substr(0, 5) == "TABLE") {
@@ -53,6 +54,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
       // then add it to the vector as a DbLiveTable
       if (current.get() != nullptr) {
         current->fill(csv, saveCsv);
+        current->hashCsv();
         for (auto const& ii : iovv) {
           coll.emplace_back(ii, current, -1, -1);
         }
@@ -114,6 +116,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
   // then add it to the vector as a DbLiveTable
   if (current.get() != nullptr) {
     current->fill(csv, saveCsv);
+    current->hashCsv();
     for (auto const& ii : iovv) {
       coll.emplace_back(ii, current, -1, -1);
     }
@@ -128,12 +131,12 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
 // output will respect the input format for easy read-edit-commit
 void mu2e::DbUtil::writeFile(std::string const& fn,
                              DbTableCollection const& coll) {
-  if (fn.size() <= 0) {
+  if (fn.empty()) {
     throw cet::exception("DBFILE_NO_FILE_NAME")
         << "DbUtil::write called with no file name\n";
   }
   // silently succeed if nothing to write
-  if (coll.size() <= 0) return;
+  if (coll.empty()) return;
 
   std::ofstream myfile;
   myfile.open(fn);
@@ -311,4 +314,41 @@ std::string mu2e::DbUtil::simplfyQeString(std::string const& ss) {
     start_pos += to.length();
   }
   return cc;
+
+// ****************************************************************
+// return a hash of the csv of a table
+std::string mu2e::DbUtil::hash(const std::string& csv) {
+  std::string nominal;
+  nominal.reserve(csv.size());
+  std::vector<std::string> lines = mu2e::DbUtil::splitCsvLines(csv);
+  for (auto const& line : lines) {
+    bool qcontent = (!line.empty() && line[0]!='#');
+    bool qtable = (line.size()>=5 && line.substr(0,5)=="TABLE");
+    if(qcontent && ! qtable) {
+      std::vector<std::string> words = splitCsv(line);
+      for(auto const& word : words) {
+        std::string temp = word;
+        boost::trim(temp);
+        if(temp.size()>1) {
+          // in addition to removing surrounding whitespace, also remove
+          // whitespace of quoted string since this happens on commit
+          if(temp[0]=='"' && temp[temp.size()-1]=='"') {
+            temp = temp.substr(1,temp.size()-2);
+            boost::trim(temp);
+          }
+        }
+        // add a comma to avoid rare ambiguity between columns
+        nominal = nominal.append(temp+",");
+      }
+    }
+  }
+  auto sha1 = cet::sha1(nominal);
+  auto digest = sha1.digest();
+  std::stringstream ss;
+  for (u_char byte : digest) {
+    // Force each byte to print as a 2-digit lowercase hexadecimal value
+    ss << std::hex << std::setw(2) << std::setfill('0')
+       << static_cast<int>(byte);
+  }
+  return ss.str().substr(0,16);
 }
