@@ -96,6 +96,7 @@ struct TrainState {
     std::vector<bool>   curriculumPromoteEMA;
     std::vector<bool>   curriculumUseDimWeightController;
     std::vector<bool>   curriculumUsePeakWindowLoss; // per-phase: plateau on peak-window loss (auto planner only)
+    std::vector<double> curriculumPeakAlpha;        // per-phase peak alpha override for ALL windows (<0 = use base)
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
@@ -143,6 +144,10 @@ struct TrainState {
     // pz_t = log(pz/p0)); the model converts them to z-score via normalizeCoord. Dim is the state
     // coordinate index: all-at-once {t,x,y,pr,pphi,pz} -> pz=5; stage-2 state {pr,pphi,pz} -> pz=2.
     std::vector<PeakWindow> peakWindows;
+    // Base (configured) alpha per window, snapshotted by assemblePeakWindows so a per-phase
+    // override (curriculumPeakAlpha) can be applied non-destructively and the sentinel (<0)
+    // can restore the original value. Parallel to peakWindows.
+    std::vector<double> basePeakAlphas;
 
     // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
     double t_mean=0,    t_M2=0,    t_stdev=0;
@@ -343,11 +348,13 @@ inline void assemblePeakWindows(TrainState& s,
     checkLen(alphas.size(),  "SBDMpeakAlphas");
 
     s.peakWindows.clear();
+    s.basePeakAlphas.clear();
     for (size_t k = 0; k < K; ++k) {
         PeakWindow pw;
         pw.dim = dims[k]; pw.low = lows[k]; pw.high = highs[k];
         pw.gMax = gmaxes[k]; pw.sigma0 = sigma0s[k]; pw.alpha = alphas[k];
         s.peakWindows.push_back(pw);
+        s.basePeakAlphas.push_back(alphas[k]); // snapshot for per-phase override restore
     }
     if (K > 0)
         mf::LogInfo(moduleName) << "Configured " << K << " peak importance-sampling window(s).";
@@ -390,6 +397,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
             fill(s.curriculumUseDimWeightController, defaultUseDimWeightController, "SBDMtrainingCurriculumUseDimWeightController");
             fill(s.curriculumUsePeakWindowLoss, false, "SBDMtrainingCurriculumUsePeakWindowLoss");
+            fill(s.curriculumPeakAlpha, -1.0, "SBDMtrainingCurriculumPeakAlpha"); // <0 sentinel => use base alpha
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
@@ -411,7 +419,23 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                         << "Invalid t focus window in curriculum phase " << i
                         << ": require 0 <= low < high <= 1 (got ["
                         << s.curriculumTFocusLow[i] << ", " << s.curriculumTFocusHigh[i] << "])";
+                // Per-phase peak-alpha override: negative = sentinel (use base); any other
+                // value must be a valid alpha in [0,1] (matches train()'s per-window check).
+                const double a = s.curriculumPeakAlpha[i];
+                if (a >= 0.0 && a > 1.0)
+                    throw cet::exception(moduleName)
+                        << "SBDMtrainingCurriculumPeakAlpha[" << i << "] = " << a
+                        << " must be in [0,1] (or negative to use the base SBDMpeakAlphas)";
             }
+            // Warn if any phase requests a peak-alpha override but no windows are configured
+            // (the override would be a no-op). Peak windows are global, so one check suffices.
+            if (s.peakWindows.empty() &&
+                std::any_of(s.curriculumPeakAlpha.begin(), s.curriculumPeakAlpha.end(),
+                            [](double v) { return v >= 0.0; }))
+                mf::LogWarning(moduleName)
+                    << "SBDMtrainingCurriculumPeakAlpha sets an override for one or more phases "
+                    << "but no peak windows are configured (SBDMpeakWindow* empty); the override "
+                    << "has no effect.";
 
             s.phaseBoundaries.clear();
             int epochSum = 0;
@@ -433,7 +457,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "TFocusFrac"
                << std::setw(15) << "SubsetSize"
                << std::setw(15) << "MinDelta"
-               << std::setw(15) << "PeakWinLoss" << "\n";
+               << std::setw(15) << "PeakWinLoss"
+               << std::setw(15) << "PeakAlpha" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -449,7 +474,9 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumTFocusFraction[i]
                    << std::setw(15) << s.curriculumSubsetSizePerEpoch[i]
                    << std::setw(15) << s.curriculumMinDelta[i]
-                   << std::setw(15) << s.curriculumUsePeakWindowLoss[i] << "\n";
+                   << std::setw(15) << s.curriculumUsePeakWindowLoss[i]
+                   << std::setw(15) << (s.curriculumPeakAlpha[i] >= 0.0
+                                        ? std::to_string(s.curriculumPeakAlpha[i]) : std::string("base")) << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -1250,6 +1277,21 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                          std::vector<DiffusionTrainingSample>& data,
                          const std::string& outFile,
                          bool resetPhase0) {
+        // Set every peak window's alpha for curriculum phase k: the per-phase override
+        // (curriculumPeakAlpha[k]) when >= 0, else the window's snapshotted base alpha.
+        // train() re-reads s.peakWindows each epoch, so mutating it here takes effect for
+        // the phase. Returns the effective alpha for logging (or -1 if no windows). No-op
+        // under a non-curriculum run (nPhase <= 1) where windows keep their base alpha.
+        auto applyPeakAlpha = [&](int k) -> double {
+            if (s.nPhase <= 1 || s.peakWindows.empty()) return -1.0;
+            const double aOverride = s.curriculumPeakAlpha[k];
+            double eff = -1.0;
+            for (size_t w = 0; w < s.peakWindows.size(); ++w) {
+                s.peakWindows[w].alpha = (aOverride >= 0.0) ? aOverride : s.basePeakAlphas[w];
+                eff = s.peakWindows[w].alpha;
+            }
+            return eff;
+        };
         if (resetPhase0) {
             s.currentBiasLowSigma    = s.nPhase > 1 ? s.curriculumBiasLowSigma[0]    : s.currentBiasLowSigma;
             s.currentTLowBound       = s.nPhase > 1 ? s.curriculumTLowBound[0]       : s.currentTLowBound;
@@ -1259,6 +1301,10 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : s.currentSubsetSizePerEpoch;
             s.currentUsePeakWindowLoss  = s.nPhase > 1 ? s.curriculumUsePeakWindowLoss[0]  : s.currentUsePeakWindowLoss;
         }
+        // Apply phase-0 peak alpha unconditionally (override or base): enterPhase is only
+        // called for k>=1, and resetPhase0 may be false on the primary all-at-once/stage-1
+        // paths, so phase 0's override would otherwise never take effect.
+        applyPeakAlpha(0);
         if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
             model.promoteEMAToNetwork();
         mf::LogInfo(moduleName)
@@ -1285,6 +1331,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusFraction  = s.curriculumTFocusFraction [k];
             s.currentSubsetSizePerEpoch = s.curriculumSubsetSizePerEpoch[k];
             s.currentUsePeakWindowLoss  = s.curriculumUsePeakWindowLoss[k];
+            const double effAlpha = applyPeakAlpha(k); // mutate s.peakWindows alpha for this phase
             mf::LogInfo(moduleName)
                 << "Switching to phase " << (k + 1)
                 << ": lossWeightPower=" << lwp
@@ -1297,7 +1344,9 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
                 << "] (fraction=" << s.currentTFocusFraction << ")"
                 << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch
-                << ", usePeakWindowLoss=" << s.currentUsePeakWindowLoss;
+                << ", usePeakWindowLoss=" << s.currentUsePeakWindowLoss
+                << ", peakAlpha=" << (s.curriculumPeakAlpha[k] >= 0.0 ? effAlpha : -1.0)
+                << (s.curriculumPeakAlpha[k] >= 0.0 ? " (override)" : " (base)");
             model.updateLossWeightPower(lwp);
             model.updateGradientClipThreshold(gc);
             model.updateLearningRate(lr);

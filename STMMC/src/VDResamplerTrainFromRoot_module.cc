@@ -98,6 +98,7 @@ namespace mu2e {
         fhicl::Sequence<bool>   SBDMtrainingCurriculumPromoteEMA{         Name("SBDMtrainingCurriculumPromoteEMA"),         Comment("If true, promote EMA to network when entering this curriculum phase"),               std::vector<bool>() };
         fhicl::Sequence<bool>   SBDMtrainingCurriculumUseDimWeightController{ Name("SBDMtrainingCurriculumUseDimWeightController"), Comment("Enable per-dimension gradient weight controller per curriculum phase"), std::vector<bool>() };
         fhicl::Sequence<bool>   SBDMtrainingCurriculumUsePeakWindowLoss{ Name("SBDMtrainingCurriculumUsePeakWindowLoss"), Comment("Auto-planner: plateau on the peak-window (feature-region) loss instead of the aggregate loss, per curriculum phase (requires SBDMpeakWindow* configured)"), std::vector<bool>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumPeakAlpha{ Name("SBDMtrainingCurriculumPeakAlpha"), Comment("Per-phase override of peak importance-sampling alpha for ALL windows (1=unbiased, <1=up-weight feature); negative = use base SBDMpeakAlphas. Empty = no override."), std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("Realized in-window t focus fraction per curriculum phase (rest drawn from complement)"),       std::vector<double>() };
@@ -178,6 +179,7 @@ namespace mu2e {
     state_.curriculumPromoteEMA          = conf().SBDMtrainingCurriculumPromoteEMA();
     state_.curriculumUseDimWeightController = conf().SBDMtrainingCurriculumUseDimWeightController();
     state_.curriculumUsePeakWindowLoss   = conf().SBDMtrainingCurriculumUsePeakWindowLoss();
+    state_.curriculumPeakAlpha           = conf().SBDMtrainingCurriculumPeakAlpha();
     state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
     state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
