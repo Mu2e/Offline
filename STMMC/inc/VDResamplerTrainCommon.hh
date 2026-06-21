@@ -95,6 +95,7 @@ struct TrainState {
     std::vector<int>    curriculumBatchSize;
     std::vector<bool>   curriculumPromoteEMA;
     std::vector<bool>   curriculumUseDimWeightController;
+    std::vector<bool>   curriculumUsePeakWindowLoss; // per-phase: plateau on peak-window loss (auto planner only)
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
@@ -107,6 +108,7 @@ struct TrainState {
     double currentTFocusHigh     = 0.0;
     double currentTFocusFraction = 0.0;
     int    currentSubsetSizePerEpoch = 0; // live trainingSubsetSizePerEpoch (per-phase under curriculum)
+    bool   currentUsePeakWindowLoss = false; // live: track peak-window loss this phase (auto planner)
     std::vector<int> phaseBoundaries;
 
     // One-step denoising diagnostic. When denoiseDiagnosticTs is non-empty, runTraining()
@@ -387,6 +389,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumBatchSize,       defaultBatchSize,       "SBDMtrainingCurriculumBatchSize");
             fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
             fill(s.curriculumUseDimWeightController, defaultUseDimWeightController, "SBDMtrainingCurriculumUseDimWeightController");
+            fill(s.curriculumUsePeakWindowLoss, false, "SBDMtrainingCurriculumUsePeakWindowLoss");
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
@@ -429,7 +432,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                << std::setw(15) << "TFocusHigh"
                << std::setw(15) << "TFocusFrac"
                << std::setw(15) << "SubsetSize"
-               << std::setw(15) << "MinDelta" << "\n";
+               << std::setw(15) << "MinDelta"
+               << std::setw(15) << "PeakWinLoss" << "\n";
             for (int i = 0; i < s.nPhase; ++i)
                 ss << std::setw(10) << s.curriculumEpochs[i]
                    << std::setw(20) << s.curriculumLossWeightPower[i]
@@ -444,7 +448,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumTFocusHigh[i]
                    << std::setw(15) << s.curriculumTFocusFraction[i]
                    << std::setw(15) << s.curriculumSubsetSizePerEpoch[i]
-                   << std::setw(15) << s.curriculumMinDelta[i] << "\n";
+                   << std::setw(15) << s.curriculumMinDelta[i]
+                   << std::setw(15) << s.curriculumUsePeakWindowLoss[i] << "\n";
             ss << "[End of Curriculum Training Schema]";
             mf::LogInfo(moduleName) << ss.str();
         }
@@ -455,6 +460,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : defaultTFocusHigh;
     s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : defaultTFocusFraction;
     s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : defaultSubsetSizePerEpoch;
+    s.currentUsePeakWindowLoss  = s.nPhase > 1 ? s.curriculumUsePeakWindowLoss[0]  : false;
 
     // Auto curriculum planner sanity checks. The min-epochs floor must cover both the
     // time for the moving average to fill (window) AND a full no-improvement streak
@@ -509,6 +515,18 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                         << "SBDMplannerPatience.";
             }
         }
+
+        // Peak-window plateau metric needs configured peak windows to produce a non-NaN
+        // value. If any phase requests it but no windows exist, those phases silently fall
+        // back to the aggregate loss every epoch — warn so the misconfig is visible at job
+        // start. (Peak windows are global, so one check covers all phases.)
+        if (s.peakWindows.empty() &&
+            std::any_of(s.curriculumUsePeakWindowLoss.begin(), s.curriculumUsePeakWindowLoss.end(),
+                        [](bool b) { return b; }))
+            mf::LogWarning(moduleName)
+                << "SBDMtrainingCurriculumUsePeakWindowLoss is true for one or more phases but no "
+                << "peak windows are configured (SBDMpeakWindow* empty); those phases will fall "
+                << "back to the aggregate loss (peak-window metric is NaN every epoch).";
     }
 }
 
@@ -1239,6 +1257,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : s.currentTFocusHigh;
             s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : s.currentTFocusFraction;
             s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : s.currentSubsetSizePerEpoch;
+            s.currentUsePeakWindowLoss  = s.nPhase > 1 ? s.curriculumUsePeakWindowLoss[0]  : s.currentUsePeakWindowLoss;
         }
         if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
             model.promoteEMAToNetwork();
@@ -1265,6 +1284,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusHigh      = s.curriculumTFocusHigh     [k];
             s.currentTFocusFraction  = s.curriculumTFocusFraction [k];
             s.currentSubsetSizePerEpoch = s.curriculumSubsetSizePerEpoch[k];
+            s.currentUsePeakWindowLoss  = s.curriculumUsePeakWindowLoss[k];
             mf::LogInfo(moduleName)
                 << "Switching to phase " << (k + 1)
                 << ": lossWeightPower=" << lwp
@@ -1276,7 +1296,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 << ", tLowBound=" << s.currentTLowBound
                 << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
                 << "] (fraction=" << s.currentTFocusFraction << ")"
-                << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch;
+                << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch
+                << ", usePeakWindowLoss=" << s.currentUsePeakWindowLoss;
             model.updateLossWeightPower(lwp);
             model.updateGradientClipThreshold(gc);
             model.updateLearningRate(lr);
@@ -1389,7 +1410,15 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << " (global epoch " << globalEpoch << ")";
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.peakWindows);
-                double loss = model.getLastEpochLoss(); // read immediately after train()
+                const double aggLoss = model.getLastEpochLoss(); // read immediately after train()
+                // Metric selection: in a phase flagged usePeakWindowLoss, plateau on the
+                // peak-window (feature-region) loss when it is available; fall back to the
+                // aggregate loss on any epoch with no in-window draws (metric NaN).
+                const double peakLoss  = model.getLastEpochPeakLoss();
+                const long   peakCount = model.getLastEpochPeakCount();
+                const bool   usePeak   = s.currentUsePeakWindowLoss
+                                       && std::isfinite(peakLoss) && peakCount > 0;
+                const double loss      = usePeak ? peakLoss : aggLoss; // scalar fed to the tracer
                 const bool conv = tracer.update(loss);
 
                 // Per-epoch planner diagnostics: smoothed loss, its relative improvement
@@ -1398,7 +1427,11 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 // readable from the log instead of reverse-engineered from raw Loss.
                 {
                     std::ostringstream pss;
-                    pss << "Phase " << phaseNum << " planner: rawLoss=" << loss
+                    pss << "Phase " << phaseNum << " planner: tracking="
+                        << (usePeak ? "peakWindowLoss" : "aggregateLoss")
+                        << " aggLoss=" << aggLoss
+                        << " peakLoss=" << peakLoss << " peakCount=" << peakCount
+                        << " rawLoss=" << loss
                         << " smoothed=" << tracer.lastSmoothed;
                     if (std::isfinite(tracer.lastDelta))
                         pss << " delta=" << (tracer.lastDelta * 100.0) << "% (minDelta="

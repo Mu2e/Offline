@@ -1064,6 +1064,12 @@ namespace mu2e {
             int batchCounter = 0;
             double epochLoss = 0.0;
             std::vector<double> epochDimLoss(dim_, 0.0);
+            // Peak-window loss accumulators: mean unweighted per-event squared residual over
+            // draws that landed in any peak window this epoch. Surfaced via getLastEpochPeakLoss()
+            // so the curriculum planner can plateau on the feature-region fit instead of the
+            // aggregate loss. Accumulated regardless of useDimWeightController_.
+            double epochPeakLoss = 0.0;
+            long   epochPeakCount = 0;
 
             // iterate over the shuffled data samples (subset if trainSubsetDataSize was specified)
             for (size_t idx = 0; idx < activeN; ++idx)
@@ -1108,6 +1114,7 @@ namespace mu2e {
                 // deliberate up-weight for alpha_k<1, with the continuum (Q) kept unbiased.
                 double wIS = 1.0;
                 size_t chosenIdx;
+                bool   inPeak = false; // true if this draw landed in a peak window (peak-window loss metric)
                 if (peakSampling) {
                     double s_t = sigma(t);
                     double sumGeff = 0.0;
@@ -1123,6 +1130,7 @@ namespace mu2e {
                         if (u < cum) { sel = static_cast<int>(k); break; }
                     }
                     if (sel >= 0) {
+                        inPeak = true;
                         chosenIdx = P[sel][pP[sel]++];
                         if (pP[sel] >= P[sel].size()) { shuffleVec(P[sel]); pP[sel] = 0; }
                         wIS = std::pow(f[sel] / geff[sel], pk[sel].alpha);
@@ -1174,11 +1182,19 @@ namespace mu2e {
                 // sample's gradient. The per-dim controller accumulates the RAW squared residual
                 // (unweighted) so it still balances dimensions by their intrinsic difficulty.
                 std::vector<double> grad(dim_);
+                double sampleSqResid = 0.0; // sum_i residual_i^2 for this sample (peak-window metric)
                 for (int i = 0; i < dim_; ++i) {
                     double residual = score[i] - target[i];
                     if (useDimWeightController_)
                         epochDimLoss[i] += residual * residual;
+                    sampleSqResid += residual * residual;
                     grad[i] = 2.0 * weight * wIS * dimWeights_[i] * residual / dim_;
+                }
+                // Peak-window loss: accumulate the UNWEIGHTED mean squared residual (ignore wIS)
+                // for in-window draws, so the planner can track raw fit quality in the feature region.
+                if (inPeak) {
+                    epochPeakLoss += sampleSqResid / dim_;
+                    ++epochPeakCount;
                 }
 
                 // Backward pass to compute gradients of the loss w.r.t. network parameters using the computed gradient of the loss w.r.t. the predicted score.
@@ -1263,7 +1279,16 @@ namespace mu2e {
             double clipRatio = (totalClipChecks_ > 0) ? double(clipCount_) / totalClipChecks_ : 0.0;
             double avgClipScale = (totalClipChecks_ > 0) ? clipScaleAccum_ / totalClipChecks_ : 1.0;
 
-            mf::LogInfo("ScoreBasedDiffusionModel::train") << "Epoch " << e << "  Loss=" << epochLoss << "  ClipRatio=" << clipRatio << "  AvgClipScale=" << avgClipScale;
+            // Finalize the peak-window loss for this epoch (NaN if no in-window draws occurred,
+            // e.g. peak sampling disabled). Transient per-run state read by the curriculum planner.
+            lastEpochPeakCount_ = epochPeakCount;
+            lastEpochPeakLoss_  = (epochPeakCount > 0)
+                                ? epochPeakLoss / static_cast<double>(epochPeakCount)
+                                : std::numeric_limits<double>::quiet_NaN();
+
+            mf::LogInfo("ScoreBasedDiffusionModel::train") << "Epoch " << e << "  Loss=" << epochLoss
+                << "  ClipRatio=" << clipRatio << "  AvgClipScale=" << avgClipScale
+                << "  PeakLoss=" << lastEpochPeakLoss_ << "  PeakCount=" << lastEpochPeakCount_;
             epochLosses_.push_back(epochLoss);
         }
     }

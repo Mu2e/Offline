@@ -526,6 +526,15 @@ namespace mu2e{
                                         : epochLosses_.back();
         }
 
+        // Mean unweighted per-event squared residual over the most recent epoch's draws that
+        // landed in a peak window (NaN if peak sampling was disabled or no in-window draw
+        // occurred). Like getLastEpochLoss(), meaningful only when read right after a fresh
+        // train() call; transient per-run state, not serialized. Used by the curriculum
+        // planner to plateau on the feature-region fit. getLastEpochPeakCount() returns the
+        // number of in-window draws that fed that average (0 => loss is NaN).
+        double getLastEpochPeakLoss()  const { return lastEpochPeakLoss_; }
+        long   getLastEpochPeakCount() const { return lastEpochPeakCount_; }
+
     private:
 
         // ----- network -----
@@ -810,6 +819,12 @@ namespace mu2e{
 
         // Container for tracking training loss over epochs
         std::vector<double> epochLosses_;
+
+        // Most recent epoch's peak-window loss (mean unweighted squared residual over in-window
+        // draws) and the in-window draw count that produced it. Transient per-run; NOT serialized.
+        // Read by the curriculum planner immediately after train(); see getLastEpochPeakLoss().
+        double lastEpochPeakLoss_  = std::numeric_limits<double>::quiet_NaN();
+        long   lastEpochPeakCount_ = 0;
 
         // Variables to track gradient clipping statistics for monitoring
         size_t clipCount_;
