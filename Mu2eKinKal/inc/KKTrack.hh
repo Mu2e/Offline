@@ -36,6 +36,9 @@ namespace mu2e {
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
       using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+      using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+      using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+      using PARAMHITCOL = std::vector<PARAMHITPTR>;
       using MEAS = KinKal::Hit<KTRAJ>;
       using MEASPTR = std::shared_ptr<MEAS>;
       using MEASCOL = std::vector<MEASPTR>;
@@ -60,10 +63,10 @@ namespace mu2e {
       using DOMAINCOL = std::set<DOMAINPTR>;
       // construct from configuration, fit environment, and hits and materials
       KKTrack(Config const& config, BFieldMap const& bfield, KTRAJ const& seedtraj, PDGCode::type tpart, KKSTRAWHITCLUSTERER const& shclusterer,
-          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, std::array<double, KinKal::NParams()> constraints = {0});
+          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits, PARAMHITCOL const& paramhits);
       // construct from regrown constituants
       KKTrack(Config const& config, BFieldMap const& bfield, PDGCode::type tpart,
-          PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains);
+          PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, PARAMHITCOL const& paramhits, DOMAINCOL& domains);
       // copy constructor
       KKTrack(KKTrack<KTRAJ> const& rhs, CloneContext& context): KinKal::Track<KTRAJ>(rhs, context),
           tpart_(rhs.fitParticle()),
@@ -118,7 +121,7 @@ namespace mu2e {
 
       // extend the track according to new configuration, hits, and/or exings
       void extendTrack(Config const& config,
-          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits );
+          KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings, KKCALOHITCOL const& calohits);
       // extend the track to cover a new set of material Xings.  This will reuse the existing config object
       void extendTrack(EXINGCOL const& xings);
       // add IPA Xing
@@ -135,6 +138,7 @@ namespace mu2e {
       KKSTRAWHITCOL const& strawHits() const { return strawhits_; }
       KKSTRAWHITCLUSTERCOL const& strawHitClusters() const { return strawhitclusters_; }
       KKSTRAWXINGCOL const& strawXings() const { return strawxings_; }
+      PARAMHITCOL const& paramHits() const { return paramhits_; }
       KKIPAXINGCOL const& IPAXings() const { return ipaxings_; }
       KKSTXINGCOL const& STXings() const { return stxings_; }
       KKCRVXINGCOL const& CRVXings() const { return crvxings_; }
@@ -153,13 +157,14 @@ namespace mu2e {
       KKSTRAWHITCOL strawhits_;  // straw hits used in this fit
       KKSTRAWXINGCOL strawxings_;  // straw material crossings used in this fit
       KKCALOHITCOL calohits_;  // calo hits used in this fit
+      PARAMHITCOL paramhits_;
       KKIPAXINGCOL ipaxings_;  // ipa material crossings used in extrapolation
       KKSTXINGCOL stxings_;  // stopping target material crossings used in extrapolation
       KKCRVXINGCOL crvxings_; // crv crossings using in extrapolation
       KKINTERCOL inters_; // other recorded intersections
       KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
       // utility function to convert to generic types
-      void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits,
+      void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits, PARAMHITCOL const& paramhits,
           MEASCOL& hits, EXINGCOL& exings);
       // add hits to clusters
       void addHitClusters(KKSTRAWHITCOL const& strawhits,KKSTRAWXINGCOL const& strawxings, MEASCOL& hits);
@@ -170,9 +175,9 @@ namespace mu2e {
       KKSTRAWHITCOL const& strawhits,
       KKSTRAWXINGCOL const& strawxings,
       KKCALOHITCOL const& calohits,
-      std::array<double, KinKal::NParams()> constraints) :
+      PARAMHITCOL const& paramhits) :
     KinKal::Track<KTRAJ>(config,bfield), tpart_(tpart), shclusterer_(shclusterer),
-    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits) {
+    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits), paramhits_(paramhits) {
       MEASCOL hits; // polymorphic container of hits
       EXINGCOL exings; // polymorphic container of detector element crossings
       // add the hits to clusters, as required
@@ -183,44 +188,22 @@ namespace mu2e {
           shcluster->print(std::cout,this->config().plevel_);
         }
       }
-      convertTypes(strawhits_, strawxings_, calohits_,  hits, exings);
+      convertTypes(strawhits_, strawxings_, calohits_, paramhits_, hits, exings);
 
-      std::array<bool,KinKal::NParams()> mask = {false};
-      bool constraining = false;
-      for (size_t i=0;i<KinKal::NParams();i++){
-        if (constraints[i] > 0){
-          mask[i] = true;
-          constraining = true;
-        }
-      }
-      if (constraining){
-        KinKal::Parameters cparams = seedtraj.params();
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
-          for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
-            cparams.covariance()[ipar][jpar] = 0.0;
-          }
-        }
-        for(size_t ipar=0; ipar < KinKal::NParams(); ipar++){
-          if (mask[ipar])
-            cparams.covariance()[ipar][ipar] = constraints[ipar]*constraints[ipar];
-          else
-            cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
-        }
-        hits.push_back(std::make_shared<KinKal::ParameterHit<KTRAJ>>(seedtraj.range().mid(),seedtraj,cparams,mask));
-      }
       // now fit these
       this->fit(hits, exings, seedtraj);
     }
 
 
   template <class KTRAJ> KKTrack<KTRAJ>::KKTrack(Config const& config, BFieldMap const& bfield, PDGCode::type tpart,
-      PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits, DOMAINCOL& domains) :
+      PKTRAJPTR& fittraj, KKSTRAWHITCOL& strawhits, KKSTRAWXINGCOL& strawxings, KKCALOHITCOL& calohits,
+      PARAMHITCOL const& paramhits, DOMAINCOL& domains) :
     KinKal::Track<KTRAJ>(config,bfield), tpart_(tpart),shclusterer_(StrawIdMask::none,0,0.0),
-    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits) {
+    strawhits_(strawhits), strawxings_(strawxings), calohits_(calohits), paramhits_(paramhits) {
     // convert types
     MEASCOL hits; // polymorphic container of hits
     EXINGCOL exings; // polymorphic container of detector element crossings
-    convertTypes(strawhits_, strawxings_, calohits_,  hits, exings);
+    convertTypes(strawhits_, strawxings_, calohits_, paramhits_, hits, exings);
     this->fit(hits,exings,domains,fittraj);
     // add ParameterHit, intersect, extrapolate, ... TODO
   }
@@ -265,11 +248,13 @@ namespace mu2e {
       KKSTRAWHITCOL const& strawhits,
       KKSTRAWXINGCOL const& strawxings,
       KKCALOHITCOL const& calohits,
+      PARAMHITCOL const& paramhits,
       MEASCOL& hits, EXINGCOL& exings) {
-    hits.reserve(strawhits_.size() + calohits_.size());
+    hits.reserve(strawhits_.size() + calohits_.size()+paramhits_.size());
     exings.reserve(strawxings_.size());
     for(auto const& strawhit : strawhits)hits.emplace_back(std::static_pointer_cast<MEAS>(strawhit));
     for(auto const& calohit : calohits)hits.emplace_back(std::static_pointer_cast<MEAS>(calohit));
+    for(auto const& paramhit : paramhits)hits.emplace_back(std::static_pointer_cast<MEAS>(paramhit));
     for(auto const& strawxing : strawxings)exings.emplace_back(std::static_pointer_cast<EXING>(strawxing));
   }
 
@@ -294,7 +279,8 @@ namespace mu2e {
       }
       if(nhit != strawhits_.size()+strawhits.size()) std::cout << "cluster hit sum doesn't match " << nhit << " " << strawhits_.size() << std::endl;
     }
-    convertTypes(strawhits,strawxings,calohits,hits,exings);
+    PARAMHITCOL paramhits;
+    convertTypes(strawhits,strawxings,calohits,paramhits,hits,exings);
     this->extend(config,hits,exings);
     // store the new hits
     strawhits_.reserve(strawhits_.size()+strawhits.size());
