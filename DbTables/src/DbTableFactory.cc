@@ -15,7 +15,7 @@
 #include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalibInfo.hh"
-#include "Offline/DbTables/inc/CalCosmicTineCalib.hh"
+#include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
 #include "Offline/DbTables/inc/CalCombinedEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalEnergyCalibInfo.hh"
 #include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
