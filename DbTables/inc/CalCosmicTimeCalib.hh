@@ -17,7 +17,7 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq, int nev):
+        Row(CaloSiPMId  roid, float T0, float ErrT0, float chisq, int nev):
           _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq),_nev(nev) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
         float     T0()     const { return _T0; }
@@ -35,7 +35,7 @@ namespace mu2e {
 
     constexpr static const char* cxname = "CalCosmicTimeCalib";
 
-    CalCosmicTimeCalib():DbTable(cxname,"calocosmictimecalib",
+    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib",
     "roid,t0,errt0,chisq,nev") {}
 
     const Row& row(CaloSiPMId  roid) const {
@@ -74,7 +74,6 @@ namespace mu2e {
 
     private:
       std::vector<Row> _rows;
-      //std::map<int,std::size_t> _chanIndex;
   };
 
 }
