@@ -256,7 +256,8 @@ struct ModelBuildParams {
     double cosineOffset     = 0.008;
     double logSigMin        = 1e-5;
     double logSigMax        = 1.0;
-    bool   epsPrediction    = false;
+    ScoreBasedDiffusionModel::PredictionTarget predictionTarget =
+        ScoreBasedDiffusionModel::PredictionTarget::SCORE;
     double lossWeightPower  = 2.0;
     int    batchSize        = 32;
     double gradientClip     = 1.0;
@@ -320,6 +321,31 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
             << "rho = r/VDr would produce inf/NaN in training data.";
     if (!std::isfinite(VDz0))
         throw cet::exception(moduleName) << "VDz0 must be finite (got " << VDz0 << ").";
+}
+
+// ---------------------------------------------------------------------------
+// resolvePredictionTarget — pick the model's PredictionTarget from the new
+//   SBDMpredictionTarget string and the deprecated optional SBDMepsPrediction bool.
+//   Precedence: if the deprecated bool is set, warn; if BOTH are set, SBDMpredictionTarget
+//   wins (warn on conflict). Otherwise the string (default "SCORE") is used.
+// ---------------------------------------------------------------------------
+inline ScoreBasedDiffusionModel::PredictionTarget resolvePredictionTarget(
+    const std::string& targetStr, bool epsSet, bool epsValue, const std::string& moduleName)
+{
+    auto fromStr = ScoreBasedDiffusionModel::predictionTargetFromName(targetStr); // throws on bad string
+    if (epsSet) {
+        auto fromEps = epsValue ? ScoreBasedDiffusionModel::PredictionTarget::EPS
+                                : ScoreBasedDiffusionModel::PredictionTarget::SCORE;
+        if (fromStr != fromEps)
+            mf::LogWarning(moduleName)
+                << "Both SBDMpredictionTarget (" << targetStr << ") and the deprecated "
+                << "SBDMepsPrediction (" << (epsValue ? "true" : "false")
+                << ") are set and disagree; using SBDMpredictionTarget.";
+        else
+            mf::LogWarning(moduleName)
+                << "SBDMepsPrediction is deprecated; use SBDMpredictionTarget instead.";
+    }
+    return fromStr;
 }
 
 // ---------------------------------------------------------------------------
@@ -592,7 +618,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             p.hidden, p.layers, p.optimizer,
             p.adamBeta1, p.adamBeta2, p.adamEps, p.noiseSchedule,
             p.betaMin, p.betaMax, p.cosineOffset, p.logSigMin, p.logSigMax,
-            p.epsPrediction, initLWP, p.batchSize, initGC, initLR,
+            p.predictionTarget, initLWP, p.batchSize, initGC, initLR,
             initUDWC, p.dimWeightControllerEMADecay,
             p.useEMANetwork, p.emaNetworkDecay, p.diffusionSteps
         );

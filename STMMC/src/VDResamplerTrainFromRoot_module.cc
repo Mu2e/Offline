@@ -22,6 +22,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -63,7 +64,9 @@ namespace mu2e {
         fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Cosine offset"),                             0.008 };
         fhicl::Atom<double> SBDMlogSigMin{     Name("SBDMlogSigMin"),     Comment("Min sigma (LOGSIG schedule)"),               1e-5 };
         fhicl::Atom<double> SBDMlogSigMax{     Name("SBDMlogSigMax"),     Comment("Max sigma (LOGSIG schedule)"),               1.0 };
-        fhicl::Atom<bool>   SBDMepsPrediction{ Name("SBDMepsPrediction"), Comment("Predict eps (true) or score (false)"),       false };
+        fhicl::Atom<std::string> SBDMpredictionTarget{ Name("SBDMpredictionTarget"), Comment("Network regression target: SCORE, EPS, or V (v-prediction)"), "SCORE" };
+        // Deprecated: superseded by SBDMpredictionTarget. If set, true->EPS, false->SCORE.
+        fhicl::OptionalAtom<bool> SBDMepsPrediction{ Name("SBDMepsPrediction"), Comment("DEPRECATED: use SBDMpredictionTarget. true->EPS, false->SCORE") };
         fhicl::Atom<double> SBDMlossWeightPower{ Name("SBDMlossWeightPower"), Comment("Loss weight power"),                     2.0 };
         fhicl::Atom<int>    SBDMbatchSize{     Name("SBDMbatchSize"),     Comment("Batch size"),                                32 };
         fhicl::Atom<double> SBDMgradientClip{  Name("SBDMgradientClip"),  Comment("Gradient clip threshold"),                   1.0 };
@@ -226,7 +229,12 @@ namespace mu2e {
     p.cosineOffset               = conf().SBDMcosineOffset();
     p.logSigMin                  = conf().SBDMlogSigMin();
     p.logSigMax                  = conf().SBDMlogSigMax();
-    p.epsPrediction              = conf().SBDMepsPrediction();
+    {
+        bool epsValue = false;
+        bool epsSet = conf().SBDMepsPrediction(epsValue); // OptionalAtom: true if present
+        p.predictionTarget = VDResampler::resolvePredictionTarget(
+            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrainFromRoot");
+    }
     p.lossWeightPower            = conf().SBDMlossWeightPower();
     p.batchSize                  = conf().SBDMbatchSize();
     p.gradientClip               = conf().SBDMgradientClip();

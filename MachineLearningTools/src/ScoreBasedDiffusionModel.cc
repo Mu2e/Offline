@@ -84,6 +84,66 @@ namespace mu2e {
         return k * sigma(t);
     }
 
+    // ---- PredictionTarget helpers -------------------------------------------------------
+
+    std::string ScoreBasedDiffusionModel::predictionTargetName(PredictionTarget t) {
+        switch (t) {
+            case PredictionTarget::SCORE: return "SCORE";
+            case PredictionTarget::EPS:   return "EPS";
+            case PredictionTarget::V:     return "V";
+        }
+        throw cet::exception("ScoreBasedDiffusionModel::predictionTargetName")
+            << "Unknown PredictionTarget value " << static_cast<int>(t);
+    }
+
+    ScoreBasedDiffusionModel::PredictionTarget
+    ScoreBasedDiffusionModel::predictionTargetFromName(const std::string& s) {
+        if (s == "SCORE") return PredictionTarget::SCORE;
+        if (s == "EPS")   return PredictionTarget::EPS;
+        if (s == "V")     return PredictionTarget::V;
+        throw cet::exception("ScoreBasedDiffusionModel::predictionTargetFromName")
+            << "Unknown prediction target '" << s << "' (expected SCORE, EPS, or V)";
+    }
+
+    // Regression target for one dimension. s = sigma(t), a = sqrt(max(0,alphabar(t))).
+    double ScoreBasedDiffusionModel::trainingTargetComponent(
+        double eps_i, double x0_i, double s, double a) const {
+        switch (predictionTarget_) {
+            case PredictionTarget::SCORE: return -eps_i / s;
+            case PredictionTarget::EPS:   return eps_i;
+            case PredictionTarget::V:     return a * eps_i - s * x0_i;
+        }
+        return eps_i; // unreachable; keeps the compiler happy
+    }
+
+    // Recover eps_hat for one dimension from the network output out_i at noised coordinate
+    // xt_i. For V: xt = a*x0 + s*eps and out = a*eps - s*x0, so (using a^2+s^2=1)
+    // eps_hat = a*out + s*xt. Samplers form score_i = -eps_hat/s.
+    double ScoreBasedDiffusionModel::epsHatFromOutput(
+        double out_i, double xt_i, double s, double a) const {
+        switch (predictionTarget_) {
+            case PredictionTarget::SCORE: return -out_i * s;
+            case PredictionTarget::EPS:   return out_i;
+            case PredictionTarget::V:     return a * out_i + s * xt_i;
+        }
+        return out_i; // unreachable
+    }
+
+    // The score (-eps_hat/sigma) computed DIRECTLY per target, avoiding the redundant
+    // multiply-then-divide-by-sigma that -epsHatFromOutput(...)/s would do:
+    //   SCORE: eps_hat = -out*s, so score = out                    (sigma cancels exactly)
+    //   EPS:   eps_hat = out,     so score = -out/s
+    //   V:     eps_hat = a*out + s*xt, so score = -(a/s)*out - xt   (xt term is exact, no s round-trip)
+    double ScoreBasedDiffusionModel::scoreFromOutput(
+        double out_i, double xt_i, double s, double a) const {
+        switch (predictionTarget_) {
+            case PredictionTarget::SCORE: return out_i;
+            case PredictionTarget::EPS:   return -out_i / s;
+            case PredictionTarget::V:     return -(a / s) * out_i - xt_i;
+        }
+        return out_i; // unreachable
+    }
+
 
     std::vector<double> ScoreBasedDiffusionModel::timeEmbed(double t) const {
         std::vector<double> emb;
@@ -205,7 +265,7 @@ namespace mu2e {
         double cosineOffset,
         double logSigMin,
         double logSigMax,
-        bool epsPrediction,
+        PredictionTarget predictionTarget,
         double lossWeightPower,
         int batchSize,
         double gradientClipThreshold,
@@ -225,7 +285,7 @@ namespace mu2e {
         adamBeta1_(adamBeta1), adamBeta2_(adamBeta2), adamEps_(adamEps),
         noiseScheduleType_(scheduleType),
         betaMin_(betaMin), betaMax_(betaMax), cosineOffset_(cosineOffset),
-        logSigMin_(logSigMin), logSigMax_(logSigMax), epsPrediction_(epsPrediction),
+        logSigMin_(logSigMin), logSigMax_(logSigMax), predictionTarget_(predictionTarget),
         lossWeightPower_(lossWeightPower), batchSize_(batchSize), gradientClipThreshold_(gradientClipThreshold), learningRate_(learningRate),
         useDimWeightController_(useDimWeightController), dimWeightEMADecay_(dimWeightEMADecay),
         dimLossEMA_(dim, 0.0), dimWeights_(dim, 1.0),
@@ -252,6 +312,31 @@ namespace mu2e {
         }
         if (diffusionSteps <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid diffusionSteps";
+        }
+
+        // v-prediction guardrails (must run before any schedule-derived quantity is used and
+        // before serialization, since the coerced values are what get saved).
+        if (predictionTarget_ == PredictionTarget::V) {
+            if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+                if (logSigMax_ != 1.0) {
+                    mf::LogWarning("ScoreBasedDiffusionModel")
+                        << "v-prediction with LOGSIG requires logSigMax=1.0; overriding "
+                        << logSigMax_ << " -> 1.0";
+                    logSigMax_ = 1.0;
+                }
+                if (logSigMin_ > 1e-3) {
+                    mf::LogWarning("ScoreBasedDiffusionModel")
+                        << "v-prediction with LOGSIG: logSigMin=" << logSigMin_
+                        << " > 1e-3; the small-sigma feature band may be under-resolved.";
+                }
+                // Always surface the approximate-VP caveat for LOGSIG (exact only for COSINE).
+                mf::LogWarning("ScoreBasedDiffusionModel")
+                    << "v-prediction on LOGSIG uses the approximate VP relation "
+                    << "alpha=sqrt(max(0,1-sigma^2)) (exact VP holds only for COSINE).";
+            }
+            // The v target already embeds the SNR weighting; force lossWeightPower to 0
+            // (updateLossWeightPower warns if a non-zero value was requested).
+            updateLossWeightPower(lossWeightPower_);
         }
 
         // ------------------------------------------------------------
@@ -366,7 +451,7 @@ namespace mu2e {
                 << "      |- BetaMax=" << betaMax_ << "\n";
         }
         oss << "  Training configuration:\n"
-            << "    | EpsPrediction=" << (epsPrediction_ ? "true" : "false") << "\n"
+            << "    | PredictionTarget=" << predictionTargetName(predictionTarget_) << "\n"
             << "    | LossWeightPower=" << lossWeightPower_ << "\n"
             << "    | BatchSize=" << batchSize_ << "\n"
             << "    | GradientClipThreshold=" << gradientClipThreshold_ << "\n"
@@ -1152,11 +1237,12 @@ namespace mu2e {
                 double s = std::max(sigma(t), eps_safe); // add eps_safe to prevent division by zero in case of very small sigma
                 double weight = std::pow(s, lossWeightPower_); // sigma(t)^power as the weight. Quadratic power good for convergence but missing details
 
-                // Target: either the noise epsilon (epsPrediction_=true) or the score -eps/sigma(t).
-                // Epsilon prediction prevents 1/sigma blow-up at small t.
+                // Target depends on predictionTarget_ (SCORE/EPS/V); see trainingTargetComponent.
+                // Epsilon/v prediction prevents 1/sigma blow-up at small t.
+                double a = std::sqrt(std::max(0.0, alphabar(t))); // signal coeff for v-prediction
                 std::vector<double> target(dim_);
                 for (int i = 0; i < dim_; ++i) {
-                    target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
+                    target[i] = trainingTargetComponent(eps[i], sample.x[i], s, a);
                 }
 
                 // Prepare input vector for the network from the noisy sample xt, condition, and time.
@@ -1341,9 +1427,10 @@ namespace mu2e {
             double s = std::max(sigma(t), eps_safe);
             double weight = std::pow(s, lossWeightPower_);
 
+            double a = std::sqrt(std::max(0.0, alphabar(t)));
             std::vector<double> target(dim_);
             for (int i = 0; i < dim_; ++i)
-                target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
+                target[i] = trainingTargetComponent(eps[i], sample.x[i], s, a);
 
             auto input = buildNetworkInput(xt, sample.cond, t);
             auto score = forward(input);          // forward only — no backward / optimizer / EMA / dimLossEMA
@@ -1380,8 +1467,9 @@ namespace mu2e {
         res.t = t;
         res.sigma = s;
         res.perDimLoss.resize(dim_);
+        double a = std::sqrt(std::max(0.0, alphabar(t)));
         for (int i = 0; i < dim_; ++i) {
-            double epsHat = epsPrediction_ ? out[i] : -out[i] * s; // recover eps_hat in both modes
+            double epsHat = epsHatFromOutput(out[i], xt[i], s, a); // recover eps_hat in all modes
             double d = epsHat - eps[i];
             res.perDimLoss[i] = d * d;
         }
@@ -1454,9 +1542,10 @@ namespace mu2e {
 
             std::vector<double> eps;
             auto xt = addNoise(sample.x, t, eps);
+            double a = std::sqrt(std::max(0.0, alphabar(t)));
             std::vector<double> target(dim_);
             for (int i = 0; i < dim_; ++i)
-                target[i] = epsPrediction_ ? eps[i] : -eps[i] / s;
+                target[i] = trainingTargetComponent(eps[i], sample.x[i], s, a);
 
             auto input = buildNetworkInput(xt, sample.cond, t);
             auto score = forward(input);
@@ -1526,8 +1615,12 @@ namespace mu2e {
         // 5 = replaces the two scalar embedding fields with count-prefixed per-dimension
         // vectors (inputEmbeddingDims_ of length dim_, conditionEmbeddingDims_ of length
         // conditionDim_). Versions 2-4 stored a single scalar broadcast to all dims.
+        // 6 = stores the prediction target as an int32 enum (0=SCORE,1=EPS,2=V) in the
+        // field that versions 1-5 used for the epsPrediction bool (0/1). The enum values
+        // 0=SCORE,1=EPS were chosen to coincide with the old bool false/true, so a v<=6
+        // loader maps the legacy bool directly with no behavior change.
         out.write("SBDM", 4);
-        wU32(5u);
+        wU32(6u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1547,7 +1640,7 @@ namespace mu2e {
         wI32(schedIdx);
         wF64(betaMin_); wF64(betaMax_); wF64(cosineOffset_);
         wF64(logSigMin_); wF64(logSigMax_);
-        wI32(epsPrediction_ ? 1 : 0);
+        wI32(static_cast<int32_t>(predictionTarget_)); // 0=SCORE,1=EPS,2=V (was epsPrediction bool)
         wF64(lossWeightPower_);
         wI32(static_cast<int32_t>(batchSize_));
         wF64(gradientClipThreshold_);
@@ -1651,7 +1744,7 @@ namespace mu2e {
         out << "logSigMin," << logSigMin_ << "\n";
         out << "logSigMax," << logSigMax_ << "\n";
         // Training configuration
-        out << "epsPrediction," << (epsPrediction_ ? "1" : "0") << "\n";
+        out << "predictionTarget," << predictionTargetName(predictionTarget_) << "\n";
         out << "lossWeightPower," << lossWeightPower_ << "\n";
         out << "batchSize," << batchSize_ << "\n";
         out << "gradientClipThreshold," << gradientClipThreshold_ << "\n";
@@ -1895,7 +1988,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version < 1 || version > 5)
+            if (version < 1 || version > 6)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -1928,7 +2021,19 @@ namespace mu2e {
                                                              : NoiseScheduleType::LOGSIG;
             double betaMin     = rF64(), betaMax = rF64(), cosineOffset = rF64();
             double logSigMin   = rF64(), logSigMax = rF64();
-            bool epsPrediction = (rI32() != 0);
+            // Versions 1-5 stored an epsPrediction bool (0/1); version 6+ stores the
+            // PredictionTarget enum (0=SCORE,1=EPS,2=V). The enum reuses 0/1 for SCORE/EPS,
+            // so the legacy bool maps directly with no behavior change.
+            int32_t ptRaw = rI32();
+            PredictionTarget predictionTarget;
+            if (version >= 6) {
+                if (ptRaw < 0 || ptRaw > 2)
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Invalid predictionTarget enum value " << ptRaw << " in " << filename;
+                predictionTarget = static_cast<PredictionTarget>(ptRaw);
+            } else {
+                predictionTarget = (ptRaw != 0) ? PredictionTarget::EPS : PredictionTarget::SCORE;
+            }
             double lossWeightPower = rF64();
             int batchSize      = rI32();
             double gradientClipThreshold = rF64();
@@ -2057,7 +2162,7 @@ namespace mu2e {
                 inputEmbeddingDims, conditionEmbeddingDims, hidden, layers,
                 optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
                 betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
-                epsPrediction, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
+                predictionTarget, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
                 useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecayStored,
                 diffusionSteps, false
             );
@@ -2142,7 +2247,7 @@ namespace mu2e {
             NoiseScheduleType scheduleType = NoiseScheduleType::COSINE;
             double betaMin = 0.0, betaMax = 0.0, cosineOffset = 0.0;
             double logSigMin = 1e-5, logSigMax = 1.0;
-            bool epsPrediction = false;
+            PredictionTarget predictionTarget = PredictionTarget::SCORE;
             double lossWeightPower = 2.0;
             int batchSize = 1, diffusionSteps = 1;
             double gradientClipThreshold = 0.0, learningRate = 0.0;
@@ -2251,7 +2356,12 @@ namespace mu2e {
                     else if (key == "cosineOffset") cosineOffset = std::stod(val);
                     else if (key == "logSigMin") logSigMin = std::stod(val);
                     else if (key == "logSigMax") logSigMax = std::stod(val);
-                    else if (key == "epsPrediction") epsPrediction = (val == "1");
+                    // Legacy CSV key (versions before the enum): map the old bool.
+                    else if (key == "epsPrediction")
+                        predictionTarget = (val == "1") ? PredictionTarget::EPS : PredictionTarget::SCORE;
+                    // New CSV key: SCORE / EPS / V (string, matching the writer).
+                    else if (key == "predictionTarget")
+                        predictionTarget = predictionTargetFromName(val);
                     else if (key == "lossWeightPower") lossWeightPower = std::stod(val);
                     else if (key == "batchSize") batchSize = std::stoi(val);
                     else if (key == "gradientClipThreshold") gradientClipThreshold = std::stod(val);
@@ -2601,7 +2711,7 @@ namespace mu2e {
                 cosineOffset,
                 logSigMin,
                 logSigMax,
-                epsPrediction,
+                predictionTarget,
                 lossWeightPower,
                 batchSize,
                 gradientClipThreshold,
@@ -2822,9 +2932,13 @@ namespace mu2e {
                 auto input = buildNetworkInput(x, condition, t);
 
                 auto score = forwardInference(input, inferNet);
-                if (epsPrediction_) {
+                {
+                    // Convert network output to the score for any prediction target. For SCORE
+                    // this is the identity (epsHat=-out*s -> -epsHat/s = out).
                     double s = std::max(sigma(t), sigma_safe);
-                    for (int i = 0; i < dim_; ++i) score[i] = -score[i] / s;
+                    double a = std::sqrt(std::max(0.0, alphabar(t)));
+                    for (int i = 0; i < dim_; ++i)
+                        score[i] = scoreFromOutput(score[i], x[i], s, a);
                 }
 
                 for (int i = 0; i < dim_; ++i) {
@@ -2852,9 +2966,11 @@ namespace mu2e {
                 // k1 = f(x,t)
                 auto input = buildNetworkInput(x, condition, t);
                 auto score_k1 = forwardInference(input, inferNet);
-                if (epsPrediction_) {
+                {
                     double s = std::max(sigma(t), sigma_safe);
-                    for (int i = 0; i < dim_; ++i) score_k1[i] = -score_k1[i] / s;
+                    double a = std::sqrt(std::max(0.0, alphabar(t)));
+                    for (int i = 0; i < dim_; ++i)
+                        score_k1[i] = scoreFromOutput(score_k1[i], x[i], s, a);
                 }
 
                 std::vector<double> k1(dim_);
@@ -2884,9 +3000,11 @@ namespace mu2e {
                 // k2 = f(x_pred,t_next)
                 auto input_next = buildNetworkInput(x_pred, condition, t_next);
                 auto score_k2 = forwardInference(input_next, inferNet);
-                if (epsPrediction_) {
+                {
                     double s_next = std::max(sigma(t_next), sigma_safe);
-                    for (int i = 0; i < dim_; ++i) score_k2[i] = -score_k2[i] / s_next;
+                    double a_next = std::sqrt(std::max(0.0, alphabar(t_next)));
+                    for (int i = 0; i < dim_; ++i)
+                        score_k2[i] = scoreFromOutput(score_k2[i], x_pred[i], s_next, a_next);
                 }
 
                 std::vector<double> k2(dim_);
@@ -3003,11 +3121,11 @@ namespace mu2e {
         const auto& inferNet = (useEMANetworkIfAvailable && useEMANetwork_) ? emaNetwork_ : network_;
         auto out = forwardInference(input, inferNet);
 
-        // Recover eps_hat from the network output: the network predicts either eps directly
-        // or the score = -eps/sigma.
+        // Recover eps_hat from the network output for any prediction target (SCORE/EPS/V),
+        // then x0_hat = (xt - sigma*eps_hat)/alpha.
         std::vector<double> x0hat(dim_);
         for (int i = 0; i < dim_; ++i) {
-            double epsHat = epsPrediction_ ? out[i] : -out[i] * s;
+            double epsHat = epsHatFromOutput(out[i], xt[i], s, ab);
             x0hat[i] = (xt[i] - s * epsHat) / ab;
         }
 

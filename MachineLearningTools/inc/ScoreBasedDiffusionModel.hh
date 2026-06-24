@@ -83,6 +83,21 @@ namespace mu2e{
             LOGSIG   // Log-sigma (pure exponential) noise schedule: sigma(t) = sigMin*exp(k*t), k=ln(sigMax/sigMin)
         };
 
+        // What the network regresses. Explicit values are chosen so the legacy serialized
+        // bool (epsPrediction: false->0, true->1) maps directly onto SCORE/EPS, keeping old
+        // saved models loadable. V (v-prediction) predicts v = alpha*eps - sigma*x0, which is
+        // well-conditioned at both small and large sigma (eps-like at high sigma, x0-like at
+        // low sigma) so sharp small-sigma structure carries a real gradient.
+        enum class PredictionTarget {
+            SCORE = 0, // network outputs the score -eps/sigma (legacy epsPrediction=false)
+            EPS   = 1, // network outputs the noise eps          (legacy epsPrediction=true)
+            V     = 2  // network outputs v = alpha*eps - sigma*x0 (v-prediction)
+        };
+        // String<->enum mapping shared by CSV serialization and fhicl parsing, so both agree
+        // on spelling. Throws cet::exception on an unknown string.
+        static std::string predictionTargetName(PredictionTarget t);
+        static PredictionTarget predictionTargetFromName(const std::string& s);
+
         // Constructor: Initialize diffusion model with CLHEP random distributions.
         //
         // Parameters:
@@ -118,7 +133,11 @@ namespace mu2e{
         //   cosineOffset            - Offset parameter (for cosine schedule, default: 0.008)
         //   logSigMin               - Minimum sigma for LOGSIG schedule (default: 1e-5)
         //   logSigMax               - Maximum sigma for LOGSIG schedule (default: 1.0)
-        //   epsPrediction           - If true, network predicts noise epsilon instead of the score (default: false)
+        //   predictionTarget        - What the network regresses: SCORE (-eps/sigma, default), EPS (noise eps),
+        //                             or V (v = alpha*eps - sigma*x0). V is well-conditioned at small sigma
+        //                             where eps-prediction degenerates. Under V, lossWeightPower is forced to 0
+        //                             (the v target already embeds the SNR weighting), and for the LOGSIG
+        //                             schedule logSigMax is coerced to 1.0.
         //   lossWeightPower         - Power for weighting the loss function (default: 2.0 for quadratic weighting)
         //   batchSize               - Batch size for training (default: 32)
         //   gradientClipThreshold   - Threshold for gradient clipping (default: 1.0)
@@ -157,8 +176,8 @@ namespace mu2e{
             double logSigMin = 1e-5,
             double logSigMax = 1.0,
             // Training configuration
-            // -- Training target
-            bool epsPrediction = false,
+            // -- Training target (SCORE / EPS / V); replaces the legacy bool epsPrediction
+            PredictionTarget predictionTarget = PredictionTarget::SCORE,
             // -- Training configuration
             double lossWeightPower = 2.0,
             int batchSize = 32,
@@ -190,6 +209,15 @@ namespace mu2e{
         double updateLossWeightPower(
             double value
         ){
+            // v-prediction's target already embeds the SNR (sigma) weighting, so a non-zero
+            // lossWeightPower would double-apply. Force it to 0 and warn (only when a non-zero
+            // value was requested, so already-zero per-phase curriculum calls don't spam).
+            if (predictionTarget_ == PredictionTarget::V && value != 0.0) {
+                mf::LogWarning("ScoreBasedDiffusionModel")
+                    << "lossWeightPower=" << value
+                    << " ignored under v-prediction (target already SNR-weighted); forcing 0.0";
+                value = 0.0;
+            }
             lossWeightPower_ = value;
             return lossWeightPower_;
         }
@@ -388,7 +416,7 @@ namespace mu2e{
         // Diagnostic (conditional-loss profile): draw a uniform diffusion time t and fresh noise,
         // run one forward pass, and return the per-dimension epsilon-prediction squared error
         // (eps_hat - eps)^2 along with t and sigma(t). eps_hat is recovered from the network output
-        // regardless of epsPrediction_ mode, so the error is comparable across sigma. Binning these
+        // regardless of predictionTarget_ mode, so the error is comparable across sigma. Binning these
         // by log sigma, split by whether the sample lies inside a feature window, gives L_P(sigma)
         // vs L_Q(sigma): an underfit only at low sigma points to sampling/under-weighting, an
         // underfit at all sigma to model capacity / Fourier resolution. Draws from the RNG; no step.
@@ -723,6 +751,21 @@ namespace mu2e{
             double weight // use weighted loss to prevent sigma(t) at tiny t from blowing up and dominating the training.
         ) const;
 
+        // Target/output conversions keyed on predictionTarget_, centralizing what used to be
+        // inline `epsPrediction_ ? ... : ...` branches. s = sigma(t), a = sqrt(max(0,alphabar(t))).
+        //   trainingTargetComponent: the regression target for one dimension given the drawn
+        //     noise eps_i and clean coordinate x0_i. SCORE -> -eps_i/s; EPS -> eps_i; V -> a*eps_i - s*x0_i.
+        //   epsHatFromOutput: recover eps_hat for one dimension from the network output out_i at
+        //     noised coordinate xt_i. SCORE -> -out_i*s; EPS -> out_i; V -> a*out_i + s*xt_i.
+        //     Used by the loss/denoise diagnostics that genuinely need eps_hat.
+        //   scoreFromOutput: the score -eps_hat/sigma computed DIRECTLY per target, avoiding
+        //     the multiply-then-divide-by-sigma round-trip the samplers would otherwise incur
+        //     (SCORE -> out_i with no sigma touched; EPS -> -out_i/s; V -> -(a/s)*out_i - xt_i).
+        //     Use this in the reverse sampler instead of -epsHatFromOutput(...)/s.
+        double trainingTargetComponent(double eps_i, double x0_i, double s, double a) const;
+        double epsHatFromOutput(double out_i, double xt_i, double s, double a) const;
+        double scoreFromOutput(double out_i, double xt_i, double s, double a) const;
+
         // Clip gradients to prevent exploding gradients during training.
         //
         // Parameters:
@@ -779,7 +822,7 @@ namespace mu2e{
 
         // If true, network predicts noise epsilon instead of the score s = -eps/sigma.
         // Prevents value explosion from 1/sigma at small t.
-        bool epsPrediction_;
+        PredictionTarget predictionTarget_; // what the network regresses: SCORE / EPS / V
 
         // Training configuration
         double lossWeightPower_; // Power of the loss function weighting (default: 2.0)
