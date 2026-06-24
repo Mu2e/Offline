@@ -397,8 +397,23 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
     double defaultTFocusLow = 0.0, double defaultTFocusHigh = 0.0, double defaultTFocusFraction = 0.0,
     bool defaultPromoteEMA = false, bool defaultUseDimWeightController = false,
-    int defaultSubsetSizePerEpoch = 0)
+    int defaultSubsetSizePerEpoch = 0,
+    ScoreBasedDiffusionModel::PredictionTarget predictionTarget =
+        ScoreBasedDiffusionModel::PredictionTarget::SCORE)
 {
+    // v-prediction's target already embeds the SNR (sigma) weighting, so lossWeightPower is
+    // forced to 0 everywhere under V. Coerce BOTH the scalar broadcast default AND any
+    // explicit per-phase array up front, so the schema table, the fill broadcast, and the
+    // realized lossWeightPower_ all agree on 0.0 (updateLossWeightPower is the runtime backstop).
+    if (predictionTarget == ScoreBasedDiffusionModel::PredictionTarget::V) {
+        bool warned = (defaultLossWeightPower != 0.0);
+        defaultLossWeightPower = 0.0;
+        for (double& v : s.curriculumLossWeightPower) { if (v != 0.0) warned = true; v = 0.0; }
+        if (warned)
+            mf::LogWarning(moduleName)
+                << "v-prediction selected: forcing all lossWeightPower (scalar and per-phase "
+                << "curriculum) to 0.0 (the v target already embeds the SNR weighting).";
+    }
     if (!s.curriculumEpochs.empty()) {
         s.nPhase = static_cast<int>(s.curriculumEpochs.size());
         if (s.nPhase == 1) {

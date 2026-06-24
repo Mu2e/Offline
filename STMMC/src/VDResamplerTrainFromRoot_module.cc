@@ -206,12 +206,22 @@ namespace mu2e {
         conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrainFromRoot");
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrainFromRoot");
+    // Resolve the prediction target up front so the curriculum builder can coerce
+    // lossWeightPower to 0 under V (and so p.predictionTarget reuses the same result).
+    ScoreBasedDiffusionModel::PredictionTarget predictionTarget;
+    {
+        bool epsValue = false;
+        bool epsSet = conf().SBDMepsPrediction(epsValue); // OptionalAtom: true if present
+        predictionTarget = VDResampler::resolvePredictionTarget(
+            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrainFromRoot");
+    }
+
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrainFromRoot",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
         conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
         conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
         /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController(),
-        conf().SBDMtrainingSubsetSizePerEpoch());
+        conf().SBDMtrainingSubsetSizePerEpoch(), predictionTarget);
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
@@ -229,12 +239,7 @@ namespace mu2e {
     p.cosineOffset               = conf().SBDMcosineOffset();
     p.logSigMin                  = conf().SBDMlogSigMin();
     p.logSigMax                  = conf().SBDMlogSigMax();
-    {
-        bool epsValue = false;
-        bool epsSet = conf().SBDMepsPrediction(epsValue); // OptionalAtom: true if present
-        p.predictionTarget = VDResampler::resolvePredictionTarget(
-            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrainFromRoot");
-    }
+    p.predictionTarget           = predictionTarget; // resolved above (before the curriculum build)
     p.lossWeightPower            = conf().SBDMlossWeightPower();
     p.batchSize                  = conf().SBDMbatchSize();
     p.gradientClip               = conf().SBDMgradientClip();

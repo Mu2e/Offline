@@ -329,10 +329,15 @@ namespace mu2e {
                         << "v-prediction with LOGSIG: logSigMin=" << logSigMin_
                         << " > 1e-3; the small-sigma feature band may be under-resolved.";
                 }
-                // Always surface the approximate-VP caveat for LOGSIG (exact only for COSINE).
+                // VP note for LOGSIG: with logSigMax coerced to 1, alpha=sqrt(1-sigma^2)
+                // gives alpha^2+sigma^2=1 EXACTLY (same as LINEAR/COSINE). The only deviation
+                // from ideal VP is at t=0: sigma(0)=logSigMin>0 so alpha(0)<1 rather than
+                // exactly 1. This gap is negligible for small logSigMin and only matters when
+                // logSigMin is large (already warned above).
                 mf::LogWarning("ScoreBasedDiffusionModel")
-                    << "v-prediction on LOGSIG uses the approximate VP relation "
-                    << "alpha=sqrt(max(0,1-sigma^2)) (exact VP holds only for COSINE).";
+                    << "v-prediction on LOGSIG: alpha^2+sigma^2=1 holds exactly "
+                    << "(logSigMax forced to 1); the only VP deviation is alpha(t=0)<1 because "
+                    << "sigma(0)=logSigMin=" << logSigMin_ << " > 0 (matters only if logSigMin is large).";
             }
             // The v target already embeds the SNR weighting; force lossWeightPower to 0
             // (updateLossWeightPower warns if a non-zero value was requested).
