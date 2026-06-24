@@ -1,0 +1,250 @@
+//CRV module geometry in the extracted detector geometry.
+//This version includes the muon taggers
+
+//Comment (1): The nominal gap between two dicounters is 0.366mm according to crv_parameters.xlsx on doc-db.
+//             The smaller value of 0.2mm was found empirically by tests at Wideband.
+
+string crs.name = "extracted_v04"; // to coordinate with conditions
+
+int   crs.nSectors = 11;
+int   crs.nLayers  = 4;
+
+vector<string> crs.sectorNames = {"EX", //0
+                                  "T1", //1  trigger module 1
+                                  "T2", //2  trigger module 2
+                                  "M1", //3  muon tagger 1
+                                  "M2", //4  muon tagger 2
+                                  "M3", //5  muon tagger 3
+                                  "M4", //6  muon tagger 4
+                                  "M5", //7  muon tagger 5
+                                  "M6", //8  muon tagger 6
+                                  "M7", //9  muon tagger 7
+                                  "M8"};//10 muon tagger 8
+
+double          crs.scintillatorBarLengthEX      =  6000; //0   CRV-T modules
+double          crs.scintillatorBarLengthT1      =  2370; //1   CRV-D short modules
+double          crs.scintillatorBarLengthT2      =  3200; //2   CRV-L endcap modules
+double          crs.scintillatorBarLengthM1      =  2200; //3   muon tagger 1
+double          crs.scintillatorBarLengthM2      =  2200; //4   muon tagger 2
+double          crs.scintillatorBarLengthM3      =  2200; //5   muon tagger 3
+double          crs.scintillatorBarLengthM4      =  2200; //6   muon tagger 4
+double          crs.scintillatorBarLengthM5      =  2200; //7   muon tagger 5
+double          crs.scintillatorBarLengthM6      =  2200; //8   muon tagger 6
+double          crs.scintillatorBarLengthM7      =  2200; //9   muon tagger 7
+double          crs.scintillatorBarLengthM8      =  2200; //10  muon tagger 8
+
+double          crs.scintillatorBarThickness     =  19.8; //mm
+double          crs.scintillatorBarWidth         =  51.3; //mm
+double          crs.layerOffset                  =  42;   //mm
+double          crs.gapLarge                     =   0.2;   //mm  //see comment (1) above
+double          crs.gapSmall                     =   0.0;   //mm
+double          crs.gapBetweenModules            =   4.433; //mm
+vector<double>  crs.gapBetweenLayers             =  {9.525, 9.525, 9.525}; //mm
+double          crs.aluminumSheetThickness       =   3.175;  //mm
+double          crs.strongBackThickness          =  12.7;    //mm
+
+int             crs.nModulesEX                   =  4;  //0
+int             crs.nModulesT1                   =  2;  //1
+int             crs.nModulesT2                   =  2;  //2
+int             crs.nModulesM1                   =  1;  //3
+int             crs.nModulesM2                   =  1;  //4
+int             crs.nModulesM3                   =  1;  //5
+int             crs.nModulesM4                   =  1;  //6
+int             crs.nModulesM5                   =  1;  //7
+int             crs.nModulesM6                   =  1;  //8
+int             crs.nModulesM7                   =  1;  //9
+int             crs.nModulesM8                   =  1;  //10
+
+int             crs.nCountersPerModuleEX         = 16;  //0 //per layer
+int             crs.nCountersPerModuleT1         = 16;  //1
+int             crs.nCountersPerModuleT2         = 16;  //2
+int             crs.nCountersPerModuleM1         =  2;  //3
+int             crs.nCountersPerModuleM2         =  2;  //4
+int             crs.nCountersPerModuleM3         =  2;  //5
+int             crs.nCountersPerModuleM4         =  2;  //6
+int             crs.nCountersPerModuleM5         =  2;  //7
+int             crs.nCountersPerModuleM6         =  2;  //8
+int             crs.nCountersPerModuleM7         =  2;  //9
+int             crs.nCountersPerModuleM8         =  2;  //10
+
+vector<double>  crs.firstCounterEX               =  {-3904.00,   4387,  21439.55}; //0 //in mu2e coordinates
+vector<double>  crs.firstCounterT1               =  {-4702.77,   4237,  23064.95}; //1
+vector<double>  crs.firstCounterT2               =  {-3904.00,   4537,  22266.18}; //2
+vector<double>  crs.firstCounterM1               =  {-3509.10,   4649.4,  23102.90}; //3
+vector<double>  crs.firstCounterM2               =  {-3614.60,   4649.4,  23102.90}; //4
+vector<double>  crs.firstCounterM3               =  {-3720.10,   4649.4,  23102.90}; //5
+vector<double>  crs.firstCounterM4               =  {-3825.60,   4649.4,  23102.90}; //6
+vector<double>  crs.firstCounterM5               =  {-3931.10,   4649.4,  23102.90}; //7
+vector<double>  crs.firstCounterM6               =  {-4036.60,   4649.4,  23102.90}; //8
+vector<double>  crs.firstCounterM7               =  {-4142.10,   4649.4,  23102.90}; //9
+vector<double>  crs.firstCounterM8               =  {-4247.60,   4649.4,  23102.90}; //10
+
+string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
+string          crs.absorberMaterialName         = "G4_Al";
+string          crs.aluminumSheetMaterialName    = "G4_Al";
+
+bool   crs.veto.visible    = true;
+bool   crs.veto.solid      = true;
+int    crs.verbosityLevel = 0;
+
+vector<double>  crs.layerDirectionEX  =  {0, 1, 0}; //0
+vector<double>  crs.layerDirectionT1  =  {0, 1, 0}; //1
+vector<double>  crs.layerDirectionT2  =  {0, 1, 0}; //2
+vector<double>  crs.layerDirectionM1  =  {0, 1, 0}; //3
+vector<double>  crs.layerDirectionM2  =  {0, 1, 0}; //4
+vector<double>  crs.layerDirectionM3  =  {0, 1, 0}; //5
+vector<double>  crs.layerDirectionM4  =  {0, 1, 0}; //6
+vector<double>  crs.layerDirectionM5  =  {0, 1, 0}; //7
+vector<double>  crs.layerDirectionM6  =  {0, 1, 0}; //8
+vector<double>  crs.layerDirectionM7  =  {0, 1, 0}; //9
+vector<double>  crs.layerDirectionM8  =  {0, 1, 0}; //10
+
+vector<double>  crs.offsetDirectionEX =  {0, 0, -1}; //0
+vector<double>  crs.offsetDirectionT1 =  {0, 0,  0}; //1  no offset
+vector<double>  crs.offsetDirectionT2 =  {0, 0, -1}; //2
+vector<double>  crs.offsetDirectionM1 =  {0, 0,  0}; //3  no offset
+vector<double>  crs.offsetDirectionM2 =  {0, 0,  0}; //4  no offset
+vector<double>  crs.offsetDirectionM3 =  {0, 0,  0}; //5  no offset
+vector<double>  crs.offsetDirectionM4 =  {0, 0,  0}; //6  no offset
+vector<double>  crs.offsetDirectionM5 =  {0, 0,  0}; //7  no offset
+vector<double>  crs.offsetDirectionM6 =  {0, 0,  0}; //8  no offset
+vector<double>  crs.offsetDirectionM7 =  {0, 0,  0}; //9  no offset
+vector<double>  crs.offsetDirectionM8 =  {0, 0,  0}; //10 no offset
+
+vector<double>  crs.gapDirectionEX    =  {0,  0, 1}; //0
+vector<double>  crs.gapDirectionT1    =  {1,  0, 0}; //1
+vector<double>  crs.gapDirectionT2    =  {0,  0, 1}; //2
+vector<double>  crs.gapDirectionM1    =  {-1, 0, 0}; //3
+vector<double>  crs.gapDirectionM2    =  {-1, 0, 0}; //4
+vector<double>  crs.gapDirectionM3    =  {-1, 0, 0}; //5
+vector<double>  crs.gapDirectionM4    =  {-1, 0, 0}; //6
+vector<double>  crs.gapDirectionM5    =  {-1, 0, 0}; //7
+vector<double>  crs.gapDirectionM6    =  {-1, 0, 0}; //8
+vector<double>  crs.gapDirectionM7    =  {-1, 0, 0}; //9
+vector<double>  crs.gapDirectionM8    =  {-1, 0, 0}; //10
+
+bool            crs.countersOnlyM1    =   true;  //3 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM2    =   true;  //4 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM3    =   true;  //5 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM4    =   true;  //6 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM5    =   true;  //7 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM6    =   true;  //8 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM7    =   true;  //9 no strongbacks or aluminum sheets
+bool            crs.countersOnlyM8    =   true;  //10 no strongbacks or aluminum sheets
+
+// virtual detectors
+bool vd.crv.build = false;
+
+// counter mother boards
+double crs.CMBOffset        = 15.0;
+double crs.CMBHalfThickness =  5.0;
+string crs.CMBMaterialName  = "ElectronicsCMB";
+
+// information about the SiPMs
+double crs.fiberSeparation = 26.0; //mm
+
+// Using CRV-DS modules as bottom trigger modules. They have readouts at one side only.
+// side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
+bool crs.sipmsAtSide0EX  = true;  //0
+bool crs.sipmsAtSide0T1  = false; //1
+bool crs.sipmsAtSide0T2  = true;  //2
+bool crs.sipmsAtSide0M1  = true;  //3
+bool crs.sipmsAtSide0M2  = true;  //4
+bool crs.sipmsAtSide0M3  = true;  //5
+bool crs.sipmsAtSide0M4  = true;  //6
+bool crs.sipmsAtSide0M5  = true;  //7
+bool crs.sipmsAtSide0M6  = true;  //8
+bool crs.sipmsAtSide0M7  = true;  //9
+bool crs.sipmsAtSide0M8  = true;  //10
+
+// side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
+bool crs.sipmsAtSide1EX  = true;  //0
+bool crs.sipmsAtSide1T1  = true;  //1
+bool crs.sipmsAtSide1T2  = true;  //2
+bool crs.sipmsAtSide1M1  = false; //3
+bool crs.sipmsAtSide1M2  = false; //4
+bool crs.sipmsAtSide1M3  = false; //5
+bool crs.sipmsAtSide1M4  = false; //6
+bool crs.sipmsAtSide1M5  = false; //7
+bool crs.sipmsAtSide1M6  = false; //8
+bool crs.sipmsAtSide1M7  = false; //9
+bool crs.sipmsAtSide1M8  = false; //10
+
+// information about the coincidence groups
+int crs.precedingSectorForEX  = -1;  //0   //no preceding sector
+int crs.precedingSectorForT1  = -1;  //1   //no preceding sector
+int crs.precedingSectorForT2  = -1;  //2   //no preceding sector
+int crs.precedingSectorForM1  = -1;  //3   //no preceding sector
+int crs.precedingSectorForM2  =  3;  //4
+int crs.precedingSectorForM3  =  4;  //5
+int crs.precedingSectorForM4  =  5;  //6
+int crs.precedingSectorForM5  =  6;  //7
+int crs.precedingSectorForM6  =  7;  //8
+int crs.precedingSectorForM7  =  8;  //9
+int crs.precedingSectorForM8  =  9;  //10
+
+int crs.sectorTypeEX  = 1;  //0
+int crs.sectorTypeT1  = 2;  //1
+int crs.sectorTypeT2  = 3;  //2
+int crs.sectorTypeM1  = 4;  //3
+int crs.sectorTypeM2  = 4;  //4
+int crs.sectorTypeM3  = 4;  //5
+int crs.sectorTypeM4  = 4;  //6
+int crs.sectorTypeM5  = 4;  //7
+int crs.sectorTypeM6  = 4;  //8
+int crs.sectorTypeM7  = 4;  //9
+int crs.sectorTypeM8  = 4;  //10
+
+//information about the FEBs
+int crs.FEBBoxesAtSide0EX  = 0; //0
+int crs.FEBBoxesAtSide0T1  = 0; //1
+int crs.FEBBoxesAtSide0T2  = 0; //2
+int crs.FEBBoxesAtSide0M1  = 0; //3
+int crs.FEBBoxesAtSide0M2  = 0; //4
+int crs.FEBBoxesAtSide0M3  = 0; //5
+int crs.FEBBoxesAtSide0M4  = 0; //6
+int crs.FEBBoxesAtSide0M5  = 0; //7
+int crs.FEBBoxesAtSide0M6  = 0; //8
+int crs.FEBBoxesAtSide0M7  = 0; //9
+int crs.FEBBoxesAtSide0M8  = 0; //10
+
+int crs.FEBBoxesAtSide1EX  = 0; //0
+int crs.FEBBoxesAtSide1T1  = 0; //1
+int crs.FEBBoxesAtSide1T2  = 0; //2
+int crs.FEBBoxesAtSide1M1  = 0; //3
+int crs.FEBBoxesAtSide1M2  = 0; //4
+int crs.FEBBoxesAtSide1M3  = 0; //5
+int crs.FEBBoxesAtSide1M4  = 0; //6
+int crs.FEBBoxesAtSide1M5  = 0; //7
+int crs.FEBBoxesAtSide1M6  = 0; //8
+int crs.FEBBoxesAtSide1M7  = 0; //9
+int crs.FEBBoxesAtSide1M8  = 0; //10
+
+string         crs.FEBMaterialName     = "ElectronicsFEB";
+double         crs.FEBDistanceToModule =  50;        //between surface of 4th scintillator layer and center of 1st FEB
+double         crs.FEBDistanceToEdge   = 240.0;
+double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other
+vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
+
+//simplified version of the top support structure
+//total area in Offline: 110.38m^2
+//total volume in CAD model: 0.8092m^3
+//--> thickness in Offline: 7.336mm
+int crs.nSupportStructures = 0;                                   //TODO: this is only a place holder so far
+vector<string> crs.supportStructureNames = {};
+// vector<double> crs.supportStructurePosition_CRV_Support_T  = {-3904.0, 2570.0, 10617.2};
+// vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 7924.8};
+// string         crs.supportStructureMaterialName = "G4_Fe";
+
+
+//MARS requires gdml file with unique logical volumes for the CMBs
+bool crs.forMARS = false;
+
+//FIXME: this is temporary until the GDML issue is fixed
+bool crs.hideCRVCMBs = true;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
