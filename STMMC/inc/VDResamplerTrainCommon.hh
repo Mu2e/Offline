@@ -96,6 +96,7 @@ struct TrainState {
     std::vector<bool>   curriculumPromoteEMA;
     std::vector<bool>   curriculumUseDimWeightController;
     std::vector<bool>   curriculumUsePeakWindowLoss; // per-phase: plateau on peak-window loss (auto planner only)
+    std::vector<bool>   curriculumUsePeakSampling;   // per-phase: enable peak emphasis sampling (empty => true all phases)
     std::vector<double> curriculumPeakAlpha;        // per-phase peak alpha override for ALL windows (<0 = use base)
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
@@ -110,6 +111,7 @@ struct TrainState {
     double currentTFocusFraction = 0.0;
     int    currentSubsetSizePerEpoch = 0; // live trainingSubsetSizePerEpoch (per-phase under curriculum)
     bool   currentUsePeakWindowLoss = false; // live: track peak-window loss this phase (auto planner)
+    std::vector<PeakWindow> currentPeakWindows; // live: s.peakWindows if phase enables sampling, else empty
     std::vector<int> phaseBoundaries;
 
     // One-step denoising diagnostic. When denoiseDiagnosticTs is non-empty, runTraining()
@@ -438,6 +440,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumPromoteEMA,      defaultPromoteEMA,      "SBDMtrainingCurriculumPromoteEMA");
             fill(s.curriculumUseDimWeightController, defaultUseDimWeightController, "SBDMtrainingCurriculumUseDimWeightController");
             fill(s.curriculumUsePeakWindowLoss, false, "SBDMtrainingCurriculumUsePeakWindowLoss");
+            fill(s.curriculumUsePeakSampling, true, "SBDMtrainingCurriculumUsePeakSampling"); // default ON
             fill(s.curriculumPeakAlpha, -1.0, "SBDMtrainingCurriculumPeakAlpha"); // <0 sentinel => use base alpha
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
@@ -477,6 +480,15 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                     << "SBDMtrainingCurriculumPeakAlpha sets an override for one or more phases "
                     << "but no peak windows are configured (SBDMpeakWindow* empty); the override "
                     << "has no effect.";
+            // Warn if a phase disables peak sampling while no windows are configured anyway
+            // (the toggle would be a no-op). Peak windows are global, so one check suffices.
+            if (s.peakWindows.empty() &&
+                std::any_of(s.curriculumUsePeakSampling.begin(), s.curriculumUsePeakSampling.end(),
+                            [](bool v) { return !v; }))
+                mf::LogWarning(moduleName)
+                    << "SBDMtrainingCurriculumUsePeakSampling disables peak sampling for one or "
+                    << "more phases but no peak windows are configured (SBDMpeakWindow* empty); "
+                    << "the toggle has no effect.";
 
             s.phaseBoundaries.clear();
             int epochSum = 0;
@@ -1333,6 +1345,13 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             }
             return eff;
         };
+        // Set the live per-phase window list fed to train(): the configured windows when phase k
+        // enables peak sampling, else empty (uniform draws, wIS=1). A non-curriculum run keeps
+        // the windows on. peakAlpha for a sampling-off phase becomes moot (no in-window draws).
+        auto applyPeakSampling = [&](int k) {
+            const bool on = (s.nPhase <= 1) ? true : s.curriculumUsePeakSampling[k];
+            s.currentPeakWindows = on ? s.peakWindows : std::vector<PeakWindow>{};
+        };
         if (resetPhase0) {
             s.currentBiasLowSigma    = s.nPhase > 1 ? s.curriculumBiasLowSigma[0]    : s.currentBiasLowSigma;
             s.currentTLowBound       = s.nPhase > 1 ? s.curriculumTLowBound[0]       : s.currentTLowBound;
@@ -1346,6 +1365,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         // called for k>=1, and resetPhase0 may be false on the primary all-at-once/stage-1
         // paths, so phase 0's override would otherwise never take effect.
         applyPeakAlpha(0);
+        applyPeakSampling(0); // phase-0 peak-sampling on/off (also seeds currentPeakWindows)
         if (s.promoteEMAOnStart || (s.nPhase > 1 && s.curriculumPromoteEMA[0]))
             model.promoteEMAToNetwork();
         mf::LogInfo(moduleName)
@@ -1373,6 +1393,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentSubsetSizePerEpoch = s.curriculumSubsetSizePerEpoch[k];
             s.currentUsePeakWindowLoss  = s.curriculumUsePeakWindowLoss[k];
             const double effAlpha = applyPeakAlpha(k); // mutate s.peakWindows alpha for this phase
+            applyPeakSampling(k); // set currentPeakWindows (windows or empty) for this phase
             mf::LogInfo(moduleName)
                 << "Switching to phase " << (k + 1)
                 << ": lossWeightPower=" << lwp
@@ -1387,7 +1408,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch
                 << ", usePeakWindowLoss=" << s.currentUsePeakWindowLoss
                 << ", peakAlpha=" << (s.curriculumPeakAlpha[k] >= 0.0 ? effAlpha : -1.0)
-                << (s.curriculumPeakAlpha[k] >= 0.0 ? " (override)" : " (base)");
+                << (s.curriculumPeakAlpha[k] >= 0.0 ? " (override)" : " (base)")
+                << ", peakSampling=" << (s.currentPeakWindows.empty() ? "off" : "on");
             model.updateLossWeightPower(lwp);
             model.updateGradientClipThreshold(gc);
             model.updateLearningRate(lr);
@@ -1408,7 +1430,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 }
                 mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
-                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.peakWindows);
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
                     model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
                     if (s.saveAlsoCsv)
@@ -1499,7 +1521,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << "Phase " << phaseNum << " epoch " << epochInPhase
                     << " (global epoch " << globalEpoch << ")";
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
-                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.peakWindows);
+                            s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 const double aggLoss = model.getLastEpochLoss(); // read immediately after train()
                 // Metric selection: in a phase flagged usePeakWindowLoss, plateau on the
                 // peak-window (feature-region) loss when it is available; fall back to the
