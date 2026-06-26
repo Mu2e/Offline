@@ -1472,11 +1472,22 @@ namespace mu2e {
         res.t = t;
         res.sigma = s;
         res.perDimLoss.resize(dim_);
+        res.perDimNativeLoss.resize(dim_);
         double a = std::sqrt(std::max(0.0, alphabar(t)));
         for (int i = 0; i < dim_; ++i) {
-            double epsHat = epsHatFromOutput(out[i], xt[i], s, a); // recover eps_hat in all modes
-            double d = epsHat - eps[i];
-            res.perDimLoss[i] = d * d;
+            // Eps-style loss: recover eps_hat in all modes so the lens is common across targets.
+            double epsHat = epsHatFromOutput(out[i], xt[i], s, a);
+            double dEps = epsHat - eps[i];
+            res.perDimLoss[i] = dEps * dEps;
+            // Native-target loss: prediction vs target on the model's own training target. For SCORE
+            // the prediction is scoreFromOutput (matching how the sampler consumes the output); for
+            // EPS/V the prediction is the raw output. The target reuses trainingTargetComponent, so
+            // EPS's native loss equals the eps-style loss above.
+            double nativePred = (predictionTarget_ == PredictionTarget::SCORE)
+                                ? scoreFromOutput(out[i], xt[i], s, a) : out[i];
+            double nativeTgt  = trainingTargetComponent(eps[i], xNorm[i], s, a);
+            double dNat = nativePred - nativeTgt;
+            res.perDimNativeLoss[i] = dNat * dNat;
         }
         return res;
     }

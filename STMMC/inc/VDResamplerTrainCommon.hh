@@ -1056,14 +1056,19 @@ inline void runPartialReverseDiagnostic(ScoreBasedDiffusionModel& model,
 }
 
 // ---------------------------------------------------------------------------
-// runConditionalLossDiagnostic — profiles the eps-prediction loss vs sigma, split by whether each
-//   sample lies inside a peak window. Writes one TTree "cond_loss" with per-sample rows: t, sigma,
-//   log10Sigma, windowIndex (the first peak window the sample falls in, or -1), lossTotal (mean over
-//   dims), and loss_dim<i>. Also writes TProfiles prof_LP_*/prof_LQ_* (loss vs log10 sigma) and a
-//   ready-to-view overlay TCanvas per pair (c_LPLQ_total, c_LPLQ_dim<i>) with L_P (red) and L_Q
-//   (blue) drawn together + legend. Read L_P(sigma) vs L_Q(sigma): an underfit (L_P >> L_Q) only at
-//   low sigma indicates a sampling/under-weighting problem (tune gMax/alpha); at all sigma it points
-//   to model capacity / Fourier resolution.
+// runConditionalLossDiagnostic — profiles per-dimension loss vs sigma, split by whether each sample
+//   lies inside a peak window, under TWO lenses: the eps-style loss (eps_hat-eps)^2 (all modes) and
+//   the model's NATIVE training-target loss (EPS->eps, V->v, SCORE->score). Writes one TTree
+//   "cond_loss" with per-sample rows: t, sigma, log10Sigma, windowIndex (the first peak window the
+//   sample falls in, or -1), lossTotal + loss_dim<i> (eps-style), and nativeLossTotal +
+//   nativeLoss_dim<i> (native target). Also writes, for each lens, TProfiles prof_LP_*/prof_LQ_* and
+//   prof_LP_native_*/prof_LQ_native_* (loss vs log10 sigma) and ready-to-view overlay TCanvases:
+//   c_LPLQ_* / c_LPLQ_native_* (L_P red vs L_Q blue) and c_epsVsNative_* (eps red vs native green,
+//   out-of-window L_Q). Read L_P(sigma) vs L_Q(sigma): an underfit (L_P >> L_Q) only at low sigma
+//   indicates a sampling/under-weighting problem (tune gMax/alpha); at all sigma it points to model
+//   capacity / Fourier resolution. Under V the eps-style loss saturates ~1 at low sigma (eps is
+//   unobservable there) so judge low-sigma fit by the native v-loss; the SCORE native loss scales
+//   ~1/sigma^2 at low sigma and is not magnitude-comparable across sigma.
 // ---------------------------------------------------------------------------
 inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
                                          const std::vector<DiffusionTrainingSample>& data, // normalized
@@ -1085,17 +1090,21 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
             << "Conditional-loss diagnostic: no peak windows configured; every row gets windowIndex=-1 "
             << "(L(sigma) over all data, no in/out-of-window split).";
 
-    TTree* tree = new TTree("cond_loss", "Conditional eps-loss vs sigma, split by feature window");
-    double t = 0.0, sigma = 0.0, log10Sigma = 0.0, lossTotal = 0.0;
+    TTree* tree = new TTree("cond_loss", "Conditional loss vs sigma (eps-style + native target), split by feature window");
+    double t = 0.0, sigma = 0.0, log10Sigma = 0.0, lossTotal = 0.0, nativeLossTotal = 0.0;
     int windowIndex = -1;
     double lossD[kMaxDiagDims] = {0.0};
+    double nativeLossD[kMaxDiagDims] = {0.0};
     tree->Branch("t", &t);
     tree->Branch("sigma", &sigma);
     tree->Branch("log10Sigma", &log10Sigma);
     tree->Branch("windowIndex", &windowIndex);
-    tree->Branch("lossTotal", &lossTotal);
+    tree->Branch("lossTotal", &lossTotal);             // eps-style mean over dims
+    tree->Branch("nativeLossTotal", &nativeLossTotal); // native-target mean over dims
     for (int i = 0; i < dim; ++i)
         tree->Branch(("loss_dim" + std::to_string(i)).c_str(), &lossD[i]);
+    for (int i = 0; i < dim; ++i)
+        tree->Branch(("nativeLoss_dim" + std::to_string(i)).c_str(), &nativeLossD[i]);
 
     // TProfiles of loss vs log10(sigma), split into in-window (P) and out-of-window (Q). The
     // log10-sigma axis spans the schedule's sigma range (t clamped away from the endpoints, as in
@@ -1106,14 +1115,25 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
     auto makeProf = [&](const std::string& nm, const std::string& ti) {
         return new TProfile(nm.c_str(), ti.c_str(), kNSigBins, logSigLo, logSigHi);
     };
-    TProfile* profLPtotal = makeProf("prof_LP_total", "L_P (in-window) mean loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
-    TProfile* profLQtotal = makeProf("prof_LQ_total", "L_Q (out-of-window) mean loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    TProfile* profLPtotal = makeProf("prof_LP_total", "L_P (in-window) mean eps-loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    TProfile* profLQtotal = makeProf("prof_LQ_total", "L_Q (out-of-window) mean eps-loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
     std::vector<TProfile*> profLPdim(dim), profLQdim(dim);
     for (int i = 0; i < dim; ++i) {
         profLPdim[i] = makeProf("prof_LP_dim" + std::to_string(i),
-            "L_P dim" + std::to_string(i) + " vs log_{10}#sigma;log_{10} #sigma;mean loss");
+            "L_P dim" + std::to_string(i) + " eps-loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
         profLQdim[i] = makeProf("prof_LQ_dim" + std::to_string(i),
-            "L_Q dim" + std::to_string(i) + " vs log_{10}#sigma;log_{10} #sigma;mean loss");
+            "L_Q dim" + std::to_string(i) + " eps-loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    }
+    // Native-target loss profiles (mode-dependent: EPS->eps, V->v, SCORE->score), parallel to the
+    // eps-style ones above so the two lenses can be compared in the overlays below.
+    TProfile* profLPnatTotal = makeProf("prof_LP_native_total", "L_P (in-window) mean native loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    TProfile* profLQnatTotal = makeProf("prof_LQ_native_total", "L_Q (out-of-window) mean native loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+    std::vector<TProfile*> profLPnatDim(dim), profLQnatDim(dim);
+    for (int i = 0; i < dim; ++i) {
+        profLPnatDim[i] = makeProf("prof_LP_native_dim" + std::to_string(i),
+            "L_P dim" + std::to_string(i) + " native loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
+        profLQnatDim[i] = makeProf("prof_LQ_native_dim" + std::to_string(i),
+            "L_Q dim" + std::to_string(i) + " native loss vs log_{10}#sigma;log_{10} #sigma;mean loss");
     }
 
     // Window edges are in transformed (pre-z-score) units; convert to z-score once (the data is
@@ -1138,20 +1158,29 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
         }
         auto res = model.evalEpsLossSample(sample.x, sample.cond, s.denoiseDiagnosticUseEMA);
         t = res.t; sigma = res.sigma; log10Sigma = std::log10(res.sigma);
-        lossTotal = 0.0;
-        for (int i = 0; i < dim; ++i) { lossD[i] = res.perDimLoss[i]; lossTotal += res.perDimLoss[i]; }
-        lossTotal /= dim;
+        lossTotal = 0.0; nativeLossTotal = 0.0;
+        for (int i = 0; i < dim; ++i) {
+            lossD[i]       = res.perDimLoss[i];       lossTotal       += res.perDimLoss[i];
+            nativeLossD[i] = res.perDimNativeLoss[i]; nativeLossTotal += res.perDimNativeLoss[i];
+        }
+        lossTotal /= dim; nativeLossTotal /= dim;
         tree->Fill();
 
         const bool inWindow = (windowIndex >= 0);
         (inWindow ? profLPtotal : profLQtotal)->Fill(log10Sigma, lossTotal);
-        for (int i = 0; i < dim; ++i)
-            (inWindow ? profLPdim[i] : profLQdim[i])->Fill(log10Sigma, lossD[i]);
+        (inWindow ? profLPnatTotal : profLQnatTotal)->Fill(log10Sigma, nativeLossTotal);
+        for (int i = 0; i < dim; ++i) {
+            (inWindow ? profLPdim[i]    : profLQdim[i])   ->Fill(log10Sigma, lossD[i]);
+            (inWindow ? profLPnatDim[i] : profLQnatDim[i])->Fill(log10Sigma, nativeLossD[i]);
+        }
     }
     tree->Write();
     profLPtotal->Write();
     profLQtotal->Write();
     for (int i = 0; i < dim; ++i) { profLPdim[i]->Write(); profLQdim[i]->Write(); }
+    profLPnatTotal->Write();
+    profLQnatTotal->Write();
+    for (int i = 0; i < dim; ++i) { profLPnatDim[i]->Write(); profLQnatDim[i]->Write(); }
 
     // L_P vs L_Q overlay canvas per pair (total and each dim), so the comparison is visible on
     // opening the file. Force batch mode while building canvases so this is safe on headless nodes.
@@ -1176,6 +1205,42 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
     writeOverlay("c_LPLQ_total", profLPtotal, profLQtotal);
     for (int i = 0; i < dim; ++i)
         writeOverlay("c_LPLQ_dim" + std::to_string(i), profLPdim[i], profLQdim[i]);
+    // Native-target L_P vs L_Q overlays, paralleling the eps-style ones above.
+    writeOverlay("c_LPLQ_native_total", profLPnatTotal, profLQnatTotal);
+    for (int i = 0; i < dim; ++i)
+        writeOverlay("c_LPLQ_native_dim" + std::to_string(i), profLPnatDim[i], profLQnatDim[i]);
+
+    // Eps-style vs native-target overlay (out-of-window L_Q lens), so the two loss definitions sit on
+    // one canvas. Under V the eps curve saturates ~1 at low sigma while native (v) stays informative;
+    // under EPS the two coincide. CLONE both profiles before recoloring: the originals are already
+    // referenced by the LP/LQ canvases written above, so mutating their draw attributes here would
+    // retroactively corrupt those canvases on read-back. Clones are owned by (and freed with) the
+    // canvas via kCanDelete.
+    auto writeEpsVsNative = [&](const std::string& nm, TProfile* epsProf, TProfile* natProf) {
+        TCanvas c(nm.c_str(), nm.c_str(), 800, 600);
+        auto* epsC = static_cast<TProfile*>(epsProf->Clone((nm + "_eps").c_str()));
+        auto* natC = static_cast<TProfile*>(natProf->Clone((nm + "_native").c_str()));
+        // Detach from the open TFile (Clone auto-registers) so the canvas is the sole owner; then
+        // hand ownership to the canvas via kCanDelete. Avoids a double-free and stray file objects.
+        epsC->SetDirectory(nullptr); natC->SetDirectory(nullptr);
+        epsC->SetBit(kCanDelete); natC->SetBit(kCanDelete);
+        epsC->SetStats(0); natC->SetStats(0);
+        epsC->SetLineColor(kRed);   epsC->SetMarkerColor(kRed);   epsC->SetMarkerStyle(20);
+        natC->SetLineColor(kGreen + 2); natC->SetMarkerColor(kGreen + 2); natC->SetMarkerStyle(22);
+        const double ymax = std::max(epsC->GetMaximum(), natC->GetMaximum());
+        epsC->SetMinimum(0.0);
+        epsC->SetMaximum(ymax > 0.0 ? 1.1 * ymax : 1.0);
+        epsC->Draw();
+        natC->Draw("SAME");
+        TLegend leg(0.60, 0.76, 0.88, 0.88);
+        leg.AddEntry(epsC, "eps-style loss",   "lep");
+        leg.AddEntry(natC, "native-target loss", "lep");
+        leg.Draw();
+        c.Write();
+    };
+    writeEpsVsNative("c_epsVsNative_total", profLQtotal, profLQnatTotal);
+    for (int i = 0; i < dim; ++i)
+        writeEpsVsNative("c_epsVsNative_dim" + std::to_string(i), profLQdim[i], profLQnatDim[i]);
     gROOT->SetBatch(prevBatch);
 
     fout.Close();

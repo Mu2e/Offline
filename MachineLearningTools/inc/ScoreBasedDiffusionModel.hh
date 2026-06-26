@@ -47,13 +47,20 @@ namespace mu2e{
         double alpha  = 1.0;  // 1 = unbiased (variance reduction only), <1 = deliberate up-weight
     };
 
-    // One conditional-loss diagnostic sample: the per-dimension epsilon-prediction squared error
-    // for one data point at a freshly drawn diffusion time t. Used to profile L(sigma) inside vs
-    // outside a feature window (see ScoreBasedDiffusionModel::evalEpsLossSample).
+    // One conditional-loss diagnostic sample for one data point at a freshly drawn diffusion time t.
+    // Used to profile L(sigma) inside vs outside a feature window (see
+    // ScoreBasedDiffusionModel::evalEpsLossSample). Reports TWO per-dimension losses:
+    //   perDimLoss       — eps-style loss (eps_hat - eps)^2, computed for ALL prediction targets
+    //                      (kept as a common lens for cross-mode comparison).
+    //   perDimNativeLoss — loss on the model's NATIVE training target: EPS -> (out - eps)^2 (equals
+    //                      perDimLoss), V -> (out - v_target)^2, SCORE -> (score_hat - score)^2.
+    //                      The SCORE native loss scales ~ 1/sigma^2 at low sigma (score variance
+    //                      blow-up) and so is not magnitude-comparable across sigma to eps/v loss.
     struct SBDMEpsLossSample {
-        double t = 0.0;                 // drawn diffusion time
-        double sigma = 0.0;             // sigma(t)
-        std::vector<double> perDimLoss; // (eps_hat - eps)^2 per state dimension (size dim)
+        double t = 0.0;                       // drawn diffusion time
+        double sigma = 0.0;                   // sigma(t)
+        std::vector<double> perDimLoss;       // eps-style (eps_hat - eps)^2 per dim (all modes)
+        std::vector<double> perDimNativeLoss; // native-target loss per dim (mode-dependent; see above)
     };
 
     // First-layer input-feature-block magnitude (see ScoreBasedDiffusionModel::firstLayerBlockMagnitudes).
@@ -414,12 +421,15 @@ namespace mu2e{
         }
 
         // Diagnostic (conditional-loss profile): draw a uniform diffusion time t and fresh noise,
-        // run one forward pass, and return the per-dimension epsilon-prediction squared error
-        // (eps_hat - eps)^2 along with t and sigma(t). eps_hat is recovered from the network output
-        // regardless of predictionTarget_ mode, so the error is comparable across sigma. Binning these
-        // by log sigma, split by whether the sample lies inside a feature window, gives L_P(sigma)
-        // vs L_Q(sigma): an underfit only at low sigma points to sampling/under-weighting, an
-        // underfit at all sigma to model capacity / Fourier resolution. Draws from the RNG; no step.
+        // run one forward pass, and return per-dimension losses along with t and sigma(t). TWO losses
+        // are returned (see SBDMEpsLossSample): the eps-style (eps_hat - eps)^2 for ALL modes (eps_hat
+        // recovered from the output so it is comparable across sigma) AND the loss on the model's
+        // native training target (EPS->eps, V->v, SCORE->score). Under V the eps-style loss saturates
+        // near 1 at low sigma (eps is unobservable when x_t ~ a*x0), so the native v-loss is the
+        // honest measure of fit there. Binning these by log sigma, split by whether the sample lies
+        // inside a feature window, gives L_P(sigma) vs L_Q(sigma): an underfit only at low sigma points
+        // to sampling/under-weighting, an underfit at all sigma to capacity / Fourier resolution.
+        // Draws from the RNG; no optimizer step.
         SBDMEpsLossSample evalEpsLossSample(
             const std::vector<double>& xNorm,
             const std::vector<double>& condition,
