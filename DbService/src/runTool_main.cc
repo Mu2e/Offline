@@ -37,6 +37,8 @@ int main(int argc, char** argv) {
   cli.addSwitch("", "subruns", "s", "subruns", false, "also print subruns");
   cli.addSwitch("", "blob", "b", "blob", true,
                 "print formatted JSON blob for specified subsystem");
+  cli.addSwitch("", "dbtables", "q", "dbtables", false,
+                "print the cat 3 DbService tables");
 
   // Parse command line
   int rc = cli.setArgs(argc, argv);
@@ -86,13 +88,29 @@ int main(int argc, char** argv) {
   bool transitions = cli.getBool("", "transitions");
   bool subruns = cli.getBool("", "subruns");
   std::string blob_subsystem = cli.getString("", "blob");
+  bool dbtables = cli.getBool("", "dbtables");
 
-  // If blob subsystem is specified, we need to fetch configs
-  bool need_configs = configs || !blob_subsystem.empty();
+  // If blob subsystem or dbtables is specified, we need to fetch configs
+  bool need_configs = configs || !blob_subsystem.empty() || dbtables;
 
   // Query and print runs
   RunInfo::RunVec runvec =
       tool.listRuns(runsel, need_configs, transitions, subruns);
+
+  // Handle dbtables output: concatenated cat-3 DbService table values
+  // for machine reading.  No labels or adornment - just the values,
+  // looping over every config in every run.
+  if (dbtables) {
+    for (auto const& rr : runvec) {
+      for (const auto& config : rr.configs()) {
+        std::string tables = config.dbTables3(false);
+        if (!tables.empty()) {
+          std::cout << tables << "\n";
+        }
+      }
+    }
+    return 0;
+  }
 
   // Handle JSON blob output for specific subsystem
   if (!blob_subsystem.empty()) {
