@@ -35,14 +35,28 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
     throw cet::exception("DBFILE_OPEN_FAILED")
         << "DbUtil::read failed to open " << fn << "\n";
   }
+  // Read the entire file buffer into the string
+  std::string txt((std::istreambuf_iterator<char>(myfile)),
+                  std::istreambuf_iterator<char>());
+  myfile.close();
+
+  return readString(txt);
+}
+
+// ****************************************************************
+//   read a set of calibration tables from text string
+mu2e::DbTableCollection mu2e::DbUtil::readString(std::string const& txt,
+                                               bool saveCsv) {
 
   mu2e::DbTableCollection coll;
+  std::vector<std::string> lines = splitCsvLines(txt);
+
   mu2e::DbTable::ptr_t current;
   mu2e::DbIoV iov;
   std::vector<mu2e::DbIoV> iovv;
-  std::string line, csv;
+  std::string csv;
   int ncom0 = -1, ncom = 0;
-  while (std::getline(myfile, line)) {
+  for (std::string line : lines) {
     boost::trim(line);  // remove whitespace
     // line was blank or comment, skip to next
     if (line.empty() || line[0] == '#') continue;
@@ -107,9 +121,8 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
               << line << " \n";
         }
       }
-    }
-  }
-  myfile.close();
+    } // endif on TABLE check
+  } // loop over lines
 
   // if there is a table currently being read in, then finish it.
   // first fill the table based on the csv string
