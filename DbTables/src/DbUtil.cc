@@ -56,7 +56,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readString(std::string const& txt,
   std::vector<mu2e::DbIoV> iovv;
   std::string csv;
   int ncom0 = -1, ncom = 0;
-  for (std::string line : lines) {
+  for (auto& line : lines) {
     boost::trim(line);  // remove whitespace
     // line was blank or comment, skip to next
     if (line.empty() || line[0] == '#') continue;
