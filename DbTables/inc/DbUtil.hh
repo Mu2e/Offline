@@ -9,6 +9,7 @@ namespace mu2e {
 class DbUtil {
  public:
   static DbTableCollection readFile(std::string const& fn, bool saveCsv = true);
+  static DbTableCollection readString(std::string const& txt, bool saveCsv = true);
   static void writeFile(std::string const& fn, DbTableCollection const& coll);
 
   // split a csv string into lines on \n
