@@ -39,7 +39,7 @@ namespace mu2e {
     CalEnergyCalib():DbTable(cxname,"cal.energycalib","roid,adc2mev"){}
 
     const Row& row(CaloSiPMId id) const {
-                return _rows.at(rawid.id());
+                return _rows.at(id.id());
     }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
