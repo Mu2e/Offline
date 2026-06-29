@@ -32,7 +32,7 @@ class RunConfig {
   // from every "DBServiceTables" dictionary found at any depth.
   // If json=true  -> returns a JSON object string with all merged pairs.
   // If json=false -> returns one VALUE per line (flat list).
-  std::string dbTables3(bool json = false) const;
+  std::string dbTables3(bool qjson = false) const;
 
  private:
   int _run_number;

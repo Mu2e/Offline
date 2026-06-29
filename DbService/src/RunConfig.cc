@@ -1,10 +1,11 @@
 #include "Offline/DbService/inc/RunConfig.hh"
-
+#include "cetlib_except/exception.h"
+#include "nlohmann/json.hpp"
 #include <string>
 #include <utility>
 #include <vector>
+#include <iostream>
 
-#include "nlohmann/json.hpp"
 
 // ---------------------------------------------------------------------------
 // The _settings field stores a JSONB blob retrieved from PostgreSQL as a
@@ -51,7 +52,7 @@ void walk(const json& node,
 // ---------------------------------------------------------------------------
 // mu2e::RunConfig::dbTables3
 // ---------------------------------------------------------------------------
-std::string mu2e::RunConfig::dbTables3(bool json) const {
+std::string mu2e::RunConfig::dbTables3(bool qjson) const {
   std::vector<std::pair<std::string, std::string>> pairs;
 
   // Parse the settings blob; tolerate malformed/empty content by returning
@@ -63,13 +64,21 @@ std::string mu2e::RunConfig::dbTables3(bool json) const {
 
   std::string result;
 
-  if (json) {
+  if (qjson) {
     // Build a JSON object and let nlohmann serialize it.  dump() correctly
     // escapes any control characters (e.g. newlines become \n in the text),
     // so the result is always valid JSON that json.loads can parse back into
     // values that retain their embedded newlines.
     nlohmann::json out = nlohmann::json::object();
     for (auto const& p : pairs) {
+      // A duplicate key would silently overwrite the earlier value, losing
+      // data, so refuse to continue if one is found.
+      std::cout << "DEB " << p.first << "\n";
+      if (out.contains(p.first)) {
+        throw cet::exception("RUNCONFIG_DUPLICATE_KEY")
+            << " RunConfig::dbTables3 found duplicate DBServiceTables key "
+            << p.first << " which would overwrite an existing value \n";
+      }
       out[p.first] = p.second;
     }
     result = out.dump(1, ' ');
