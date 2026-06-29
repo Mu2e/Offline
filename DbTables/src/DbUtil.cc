@@ -35,14 +35,28 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
     throw cet::exception("DBFILE_OPEN_FAILED")
         << "DbUtil::read failed to open " << fn << "\n";
   }
+  // Read the entire file buffer into the string
+  std::string txt((std::istreambuf_iterator<char>(myfile)),
+                  std::istreambuf_iterator<char>());
+  myfile.close();
+
+  return readString(txt);
+}
+
+// ****************************************************************
+//   read a set of calibration tables from text string
+mu2e::DbTableCollection mu2e::DbUtil::readString(std::string const& txt,
+                                               bool saveCsv) {
 
   mu2e::DbTableCollection coll;
+  std::vector<std::string> lines = splitCsvLines(txt);
+
   mu2e::DbTable::ptr_t current;
   mu2e::DbIoV iov;
   std::vector<mu2e::DbIoV> iovv;
-  std::string line, csv;
+  std::string csv;
   int ncom0 = -1, ncom = 0;
-  while (std::getline(myfile, line)) {
+  for (auto& line : lines) {
     boost::trim(line);  // remove whitespace
     // line was blank or comment, skip to next
     if (line.empty() || line[0] == '#') continue;
@@ -107,9 +121,8 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn,
               << line << " \n";
         }
       }
-    }
-  }
-  myfile.close();
+    } // endif on TABLE check
+  } // loop over lines
 
   // if there is a table currently being read in, then finish it.
   // first fill the table based on the csv string
@@ -194,7 +207,8 @@ std::vector<std::string> mu2e::DbUtil::splitCsvLines(const std::string& csv) {
 // ****************************************************************
 // split a line by csv rules, including quotes
 // assumes comment lines have been removed
-std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line) {
+std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line,
+                                                bool qemode) {
   std::vector<std::string> columns;  // columns of a line of csv
 
   std::size_t i, j;
@@ -205,9 +219,9 @@ std::vector<std::string> mu2e::DbUtil::splitCsv(const std::string& line) {
       if (!quote) {
         quote = true;
         j++;
-      } else {                      // could be embedded quote
-        if (line[j - 1] == '\\') {  // has form \"
-          j++;                      // just continue, slash already processed
+      } else {                                 // could be embedded quote
+        if (!qemode && line[j - 1] == '\\') {  // has form \"
+          j++;  // just continue, slash already processed
         } else if (j < line.size() - 1 && line[j + 1] == '"') {  // has form ""
           j = j + 2;  // just continue, skip second quote
         } else {      // must be end quote
@@ -292,6 +306,27 @@ std::string mu2e::DbUtil::timeString() {
      << mtm->tm_year % 100 << " " << std::setw(2) << mtm->tm_hour << ":"
      << std::setw(2) << mtm->tm_min << ":" << std::setw(2) << mtm->tm_sec;
   return ss.str();
+}
+
+// ****************************************************************
+std::string mu2e::DbUtil::simplfyQeString(std::string const& ss) {
+  std::string cc = ss;
+  boost::trim(cc);
+  if (cc.size() <= 1) return cc;
+  if (cc.front() == '"' && cc.back() == '"') {
+    cc = cc.substr(1,cc.size()-2);
+    boost::trim(cc);
+  }
+  if (cc.empty()) return cc;
+  std::string from("\"\""),to("\"");
+  size_t start_pos = 0;
+  while ((start_pos = cc.find(from, start_pos)) != std::string::npos) {
+    cc.replace(start_pos, from.length(), to);
+    // Advance start_pos past the replaced substring to avoid infinite loops
+    // if 'to' contains 'from'
+    start_pos += to.length();
+  }
+  return cc;
 }
 
 // ****************************************************************
