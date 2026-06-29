@@ -59,18 +59,19 @@ namespace mu2e {
   void PlotSTMPHSpectrum::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     // create histograms
-    _phSpectrum=tfs->make<TH1D>("phSpectrum", "PH Spectrum", 1000, 0, 1e4);
+    _phSpectrum=tfs->make<TH1D>("phSpectrum", "PH Spectrum", 600, -300, 300);
     _twoDhist=tfs->make<TH2F>("twoDhist","Pulse Height vs events;Event Bins; Pulse Height",
-			    1000,0,1000,     // X-axis scale
-			    1000,0,1e5);   // Y-axis scale
+                              1000,-1000,1000,     // X-axis scale
+                              1000,0,1e5);   // Y-axis scale
   }
 
   void PlotSTMPHSpectrum::analyze(const art::Event& event) {
 
     auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
+    const auto& phDigis = *phDigisHandle;
     int binBlock = eventCount/100;
     
-    for (const auto& phDigi : *phDigisHandle) {
+    for (const auto& phDigi : phDigis) {
       auto energy = phDigi.energy();
       _phSpectrum->Fill(energy);
       _twoDhist->Fill(binBlock, energy);

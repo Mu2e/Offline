@@ -19,7 +19,7 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-         verbosityLevel : 2
+         verbosityLevel : 1
          saveSTMFragSummary : true
          saveRawWithHeaderWaveform_HPGe: false
          saveRawWaveform_HPGe: true
@@ -52,12 +52,12 @@ physics : {
    }
 
    t1 : [ makeSTMDigis ]
-   e1 : [ stmOutput ]
+   #e1 : [ stmOutput ]
    #e1 : [ ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
-   end_paths      : [e1]
+   #end_paths      : [e1]
 
 }
 
@@ -68,7 +68,7 @@ services.TimeTracker.printSummary: true
 outputs : {
    stmOutput : {
       module_type : RootOutput
-      fileName : "dig.stm.art"
+      fileName :  "dig.stm.art"
       outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
    }
 }

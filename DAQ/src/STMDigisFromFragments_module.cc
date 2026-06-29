@@ -557,14 +557,18 @@ void STMDigisFromFragments::produce(Event& event)
           }
 
           //Throw out if ZSLengthfromRaw != totalLen, throw out if length mismatch
-          if (readZSinfoFromRawHeader){
+          if (readZSinfoFromRawHeader && stm_frag.zsPrescaled() == 0){
             if (expectedZSLength != totalLen){
               throw cet::exception("STM_UNPACKING")
                 << "\n=== ZS Length count mismatch ===\n"
                 << "ZS length from Raw header : " << expectedZSLength << "\n"
                 << "ZS length calculated from file : " << totalLen << "\n"
                 << "Found at inner frag i : " << i << "\n"
-                << "Encountered at event : " << _totalEvents << "\n"      ;
+                << std::boolalpha //enables text output for booleans below
+                << "Found at HPGe container : " << stm_frag.isHPGe() << "\n"
+                << "Found at LaBr container : " << stm_frag.isLaBr() << "\n"
+                << "Encountered at event : " << _totalEvents << "\n";
+
             }//Also throw out if regions for ZS pulse do not match
             if ( expectedZSRegions != seg){
               throw cet::exception("STM_UNPACKING")
@@ -572,7 +576,8 @@ void STMDigisFromFragments::produce(Event& event)
                 << "ZS Region count from Raw header : " << expectedZSRegions << "\n"
                 << "ZS Regionc count calculated from file : " << seg << "\n"
                 << "Found at inner frag i : " << i << "\n"
-                << "Encountered at event : " << _totalEvents << "\n"      ;
+                << "Encountered at event : " << _totalEvents << "\n";
+
             }
           }
 
