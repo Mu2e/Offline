@@ -9,8 +9,32 @@
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include <algorithm>
+#include <cmath>
 
 namespace mu2e {
+  // Ratio of the unrestricted Bethe ionization mean to KinKal's energyLoss (the restricted/moyal loss), >=1.
+  // We correct the eloss for thick passive materials (ie. concrete blocks) by scaling the crossing path length.
+  // Side-effect: the multiple-scattering variance scales too (~3-8% larger pointing sigma at high p),
+  // which does not touch the |p| residual. f>=1 always (we never reduce the loss).
+  inline double betheCorrectionFactor(MatEnv::DetMaterial const& mat, double mom, double pathlen, double mass) {
+    if(mom <= 0.0 || pathlen == 0.0) return 1.0;
+    static constexpr double me = 0.510998950;               // electron mass [MeV]
+    double const beta2 = mom*mom/(mom*mom + mass*mass);
+    double const bg2   = (mom*mom)/(mass*mass);             // (beta*gamma)^2
+    double const gamma = std::sqrt(mom*mom + mass*mass)/mass;
+    double const xi    = mat.eloss_xi(std::sqrt(beta2), pathlen); // (K/2)(Z/A)*rho*|path|/beta^2  [MeV]
+    double const I     = mat.eexc();                        // mean excitation energy [MeV]
+    double const Tmax  = 2.0*me*bg2/(1.0 + 2.0*gamma*me/mass + (me/mass)*(me/mass));
+    double const delta = mat.densityCorrection(bg2);        // same density-effect KinKal uses
+    // unrestricted Bethe MEAN loss, as a NEGATIVE energy change (DetMaterial::energyLoss is negative for loss)
+    double const meanChange = -xi*( std::log(2.0*me*bg2/I) + std::log(Tmax/I) - 2.0*beta2 - delta );
+    double const el = mat.energyLoss(mom, pathlen, mass);   // moyalmean, negative
+    if(el >= 0.0) return 1.0;
+    double const f = meanChange/el;                         // |mean|/|moyal|, both negative -> positive
+    return f > 1.0 ? f : 1.0;                               // only ever increase the loss
+  }
+
   template <class KTRAJ,class SURF> class KKShellXing : public KinKal::ElementXing<KTRAJ> {
     public:
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
@@ -67,8 +91,11 @@ namespace mu2e {
   {
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      // Scale the crossed path length so the (restricted/moyal) E loss becomes the unrestricted Bethe mean.
+      double const f = betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass());
+      mxings_.emplace_back(mat_, pathlen*f);
     }
   }
 
@@ -90,8 +117,11 @@ namespace mu2e {
     // check if we are on the surface; if so, create the xing
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      // same Bethe-mean path scale as the ctor (keeps the fit-side params consistent with the extrapolation)
+      double const f = betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass());
+      mxings_.emplace_back(mat_, pathlen*f);
       fparams_ = this->parameterChange(varscale_);
     }
   }

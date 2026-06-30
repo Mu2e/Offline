@@ -8,7 +8,9 @@
 #include "KinKal/Geometry/Frustrum.hh"
 #include "KinKal/Geometry/Annulus.hh"
 #include "KinKal/Geometry/Disk.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 #include <memory>
+#include <string>
 #include <vector>
 namespace mu2e {
   namespace KKGeom {
@@ -18,12 +20,22 @@ namespace mu2e {
         using FruPtr = std::shared_ptr<KinKal::Frustrum>;
         using DiskPtr = std::shared_ptr<KinKal::Disk>;
         using AnnPtr = std::shared_ptr<KinKal::Annulus>;
+        struct MaterialCylinder {
+          SurfaceId sid_;
+          CylPtr surface_;
+          std::string material_;
+          double thickness_;
+          MaterialCylinder(SurfaceId const& sid, CylPtr const& surface, std::string const& material, double thickness) :
+              sid_(sid), surface_(surface), material_(material), thickness_(thickness) {}
+        };
+        using MaterialCylinderCollection = std::vector<MaterialCylinder>;
         // default constructor with nominal geometry
         DetectorSolenoid( CylPtr inner, CylPtr outer, DiskPtr front, DiskPtr back,
             CylPtr ipa, DiskPtr ipafront, DiskPtr ipaback,
-            FruPtr opa, AnnPtr tsda) :
+            FruPtr opa, AnnPtr tsda, MaterialCylinderCollection const& materialCylinders = MaterialCylinderCollection()) :
           inner_(inner) , outer_(outer), front_(front), back_(back),
-          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda)
+          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda),
+          materialCylinders_(materialCylinders)
       {}
 
         // accessors
@@ -47,6 +59,7 @@ namespace mu2e {
         auto const& innerProtonAbsorberBackPtr() const { return ipa_back_; }
         auto const& outerProtonAbsorberPtr() const { return opa_; }
         auto const& upstreamAbsorberPtr() const { return tsda_; }
+        auto const& materialCylinders() const { return materialCylinders_; }
       private:
         CylPtr inner_; //  inner cryostat cylinder boundary
         CylPtr outer_; // outer cryostat cylinder boundary
@@ -57,6 +70,7 @@ namespace mu2e {
         DiskPtr ipa_back_;
         FruPtr opa_; // outer proton absorber
         AnnPtr tsda_; // TS downstream absorber
+        MaterialCylinderCollection materialCylinders_; // passive cylindrical material shells
     };
   }
 }

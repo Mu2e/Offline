@@ -30,15 +30,31 @@ cathode       5.2 0.   0.   +2    86.4e-2    Copper 0 13.6e-2 straw-wall 1   -10
 straw_15um 1.927e-2 0.0 0.0 +2 91.3e-2 straw-wall 1 8.7e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
 straw_25um 3.068e-2 0.0 0.0 +2 94.6e-2 straw-wall 1 5.4e-2 straw-gas 1 -10 -20 -30 20.0 1.0 solid
 # DS materials
-NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0.35 Titanium  0    -10     -20     -30     20.0    1.0    solid
-DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0.33 NbTi  0    -10     -20     -30     20.0    1.0    solid
-DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0.187 NbTi  0    -10     -20     -30     20.0    1.0    solid
-DSSStainless 8.02 0.0 0.0 +5 0.02 Manganese 0.01 Silicon 0.19 Chromium 0.1 Nickel 0.68 Iron 0    -10     -20     -30     20.0    1.0    solid
+NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0 0.35 Titanium 0 -10 -20 -30 20.0 1.0 solid
+G4_Al 2.700000 0.0 0.0 +1 100.0e-2 Aluminum 0 24.01000 106.40000 -30 20.0 1.0 solid
+DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0 0.33 NbTi 1 -10 -20 -30 20.0 1.0 solid
+DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0 0.187 NbTi 1 -10 -20 -30 20.0 1.0 solid
+DS1CoilMix 3.35 0.0 0.0 +2 0.67 Aluminum 0 0.33 NbTi 1 -10 -20 -30 20.0 1.0 solid
+DS2CoilMix 3.031 0.0 0.0 +2 0.813 Aluminum 0 0.187 NbTi 1 -10 -20 -30 20.0 1.0 solid
+# DSCoilMix: the 11 DS coils collapsed into ONE effective material for the KinKalGeom long-cylinder
+# coil approximation (individual coils are too short in z to be reliably intersected by the extrapolation).
+# z-coverage-weighted blend of the 8 DS1CoilMix coils (41 mm, 3.35 g/cm3, 67/33 Al/NbTi, z-cover 3128 mm)
+# and the 3 DS2CoilMix coils (20.5 mm, 3.031 g/cm3, 81.3/18.7 Al/NbTi, z-cover 5332.5 mm): z-mass composition
+# 73.23% Al + 26.77% NbTi, areal mass 8.994 g/cm2; density = areal mass / (z-weighted thickness 28.08 mm) =
+# 3.2032, scaled to the geometric thickness as CRVModule is. Reproduces the true z-avg t/X0 = 0.473.
+DSCoilMix 3.203230 0.0 0.0 +2 0.73227 Aluminum 0 0.26773 NbTi 1 -10 -20 -30 20.0 1.0 solid
+DSSStainless 8.02 0.0 0.0 +5 0.02 Manganese 0 0.01 Silicon 0 0.19 Chromium 0 0.1 Nickel 0 0.68 Iron 0 -10 -20 -30 20.0 1.0 solid
+StainlessSteel 8.02 0.0 0.0 +5 0.02 Manganese 0 0.01 Silicon 0 0.19 Chromium 0 0.1 Nickel 0 0.68 Iron 0 -10 -20 -30 20.0 1.0 solid
+# Concrete definitions translated from Mu2eG4/src/ConstructMaterials.cc.
+CONCRETE_MARS 2.35 0.0 0.0 +9 0.006 Hydrogen 0 0.030 Carbon 0 0.500 Oxygen 0 0.010 Sodium 0 0.030 Aluminum 0 0.200 Silicon 0 0.010 Potasium 0 0.200 Calcium 0 0.014 Iron 0 -10 -20 -30 20.0 1.0 solid
+CONCRETE_MASONRY 1.16 0.0 0.0 +9 0.006 Hydrogen 0 0.030 Carbon 0 0.500 Oxygen 0 0.010 Sodium 0 0.030 Aluminum 0 0.200 Silicon 0 0.010 Potasium 0 0.200 Calcium 0 0.014 Iron 0 -10 -20 -30 20.0 1.0 solid
 # CRV active module stack from crv_parameters.xlsx (DocDB 862 https://mu2e-docdb.fnal.gov/cgi-bin/sso/ShowDocument?docid=862):
 # 4 scintillator layers (4*19.80 mm) + 3 aluminum absorbers (3*9.525 mm)
-# + aluminum strongback (12.7 mm) + thin aluminum cover (3.175 mm),
+# + thin aluminum cover (3.175 mm). The aluminum strongback (12.7 mm) is modeled
+# separately as the CRV_StrongBack passive plane, so it is excluded here to avoid
+# double-counting its mass and scattering.
 # represented as one effective material over the KinKal CRV thickness.
-# Multiply density by (full module width)/(KinKal CRV thickness) = 123.65 / 107.775
+# Multiply density by (module width excl. strongback)/(KinKal CRV thickness) = 110.95 / 107.775
 # CRVModule density is computed from this areal density and rounded to 6 decimal places.
 Polystyrene 1.060000 0. 0. -2 8 Carbon 0 8 Hydrogen 0 -10 -20 -30 20.0 1.0 solid
-CRVModule 1.892526 0. 0. +2 41.2e-2 Polystyrene 1 58.8e-2 Aluminum 0 -10 -20 -30 20.0 1.0 solid
+CRVModule 1.574363 0. 0. +2 49.4775e-2 Polystyrene 1 50.5225e-2 Aluminum 0 -10 -20 -30 20.0 1.0 solid

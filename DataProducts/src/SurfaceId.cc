@@ -28,6 +28,11 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::DS_Inner, "DS_Inner"),
     std::make_pair(SurfaceIdEnum::DS_Outer, "DS_Outer"),
     std::make_pair(SurfaceIdEnum::IPA_Legacy, "IPA_Legacy"),
+    std::make_pair(SurfaceIdEnum::DS_CryoInner, "DS_CryoInner"),
+    std::make_pair(SurfaceIdEnum::DS_CryoOuter, "DS_CryoOuter"),
+    std::make_pair(SurfaceIdEnum::DS_ShieldInner, "DS_ShieldInner"),
+    std::make_pair(SurfaceIdEnum::DS_ShieldOuter, "DS_ShieldOuter"),
+    std::make_pair(SurfaceIdEnum::DS_Coil, "DS_Coil"),
     std::make_pair(SurfaceIdEnum::IPA, "IPA"),
     std::make_pair(SurfaceIdEnum::IPA_Front, "IPA_Front"),
     std::make_pair(SurfaceIdEnum::IPA_Back, "IPA_Back"),
@@ -63,7 +68,9 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_D3, "CRV_D3"),
     std::make_pair(SurfaceIdEnum::CRV_D4, "CRV_D4"),
     std::make_pair(SurfaceIdEnum::CRV_C1, "CRV_C1"),
-    std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2")
+    std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2"),
+    std::make_pair(SurfaceIdEnum::CRV_StrongBack, "CRV_StrongBack"),
+    std::make_pair(SurfaceIdEnum::DS_HatchConcrete, "DS_HatchConcrete")
     };
 
     constexpr std::size_t nSurfaceIdNames = sizeof(surfaceIdNames)/sizeof(surfaceIdNames[0]);

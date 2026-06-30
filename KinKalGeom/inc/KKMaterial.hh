@@ -45,6 +45,7 @@ namespace mu2e {
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
       auto CRVMaterial() const { return matdbinfo_->findDetMaterial(crvmatname_); }
+      auto material(std::string const& name) const { return matdbinfo_->findDetMaterial(name); }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;

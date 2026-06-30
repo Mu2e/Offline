@@ -354,7 +354,7 @@ namespace mu2e {
       addDetector( std::move(dusafMu2e) );
 
       // build KinKalGeom, used in track reconstruction and extrapolation
-      KinKalGeomMaker kkgm(_debugLevel);
+      KinKalGeomMaker kkgm(*_config,_debugLevel);
       addDetector( std::move(kkgm.makeKKG()) );
       // directly build KKMaterial; it's constructor does everything
       auto trkptr =  getElement<Tracker>();
