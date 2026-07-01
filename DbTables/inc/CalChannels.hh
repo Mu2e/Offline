@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/CaloRawSiPMId.hh"
 

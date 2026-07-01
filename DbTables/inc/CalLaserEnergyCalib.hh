@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
@@ -65,7 +66,6 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
-    //std::map<int,std::size_t> _chanIndex;
   };
 }
 #endif
