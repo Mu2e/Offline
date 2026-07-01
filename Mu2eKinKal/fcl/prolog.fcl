@@ -595,8 +595,20 @@ Mu2eKinKal.producers.KKCHSeedFitmuM.ModuleSettings.FitParticle : @local::Particl
 Mu2eKinKal.producers.KKCHSeedFitmuP.ModuleSettings.FitParticle : @local::Particle.muplus
 Mu2eKinKal.producers.KKCHmu.ModuleSettings.FitParticle : @local::Particle.muminus # charge floats in the fit, this just determines the mass
 
+# CentralHelixFit can also extrapolate a copy of each fit re-seeded with the true muon state
+# at the tracker, written as a parallel KKCHmu:TruthSeed KalSeedCollection, to isolate the
+# extrapolation error from the fit error. To enable it, set both of:
+# Mu2eKinKal.producers.KKCHmu.ModuleSettings.TruthSeedDiag  : true
+# Mu2eKinKal.producers.KKCHmu.ModuleSettings.MCTrajectories : "compressDigiMCs"
+
 Mu2eKinKal.producers.KLSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKLine.ModuleSettings.FitParticle : @local::Particle.muminus
+
+# KinematicLineFit can also extrapolate a copy of each fit re-seeded with the true muon state
+# (from the tracker VD crossing), written as a parallel KKLine:TruthSeed KalSeedCollection,
+# to isolate the extrapolation error from the fit error. To enable it, set both of:
+# Mu2eKinKal.producers.KKLine.ModuleSettings.TruthSeedDiag  : true
+# Mu2eKinKal.producers.KKLine.ModuleSettings.VDStepPointMCs : "compressDigiMCs:virtualdetector"
 
 Mu2eKinKal.producers.KKDeSeedFit.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDeSeedFit.FitDirection : @local::FitDir.downstream
