@@ -1,7 +1,7 @@
-#ifndef DbTables_CalLaserTimeCalib_hh
-#define DbTables_CalLaserTimeCalib_hh
+#ifndef DbTables_CalCosmicTimeCalib_hh
+#define DbTables_CalCosmicTimeCalib_hh
 
-// calorimater archive table for time study from a laser run
+// calorimater archive table for time study from a cosmic ray run
 
 #include <string>
 #include <iomanip>
@@ -13,7 +13,7 @@
 
 namespace mu2e {
 
-  class CalLaserTimeCalib : public DbTable {
+  class CalCosmicTimeCalib : public DbTable {
     public:
 
       class Row {
@@ -34,9 +34,9 @@ namespace mu2e {
         int   _nev;
     };
 
-    constexpr static const char* cxname = "CalLaserTimeCalib";
+    constexpr static const char* cxname = "CalCosmicTimeCalib";
 
-    CalLaserTimeCalib():DbTable(cxname,"calolasertimecalib",
+    CalCosmicTimeCalib():DbTable(cxname,"cal.cosmictimecalib",
     "roid,t0,errt0,chisq,nev") {}
 
     const Row& row(CaloSiPMId  roid) const {
@@ -50,8 +50,8 @@ namespace mu2e {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
-        throw cet::exception("CalLaserTimeCalib_BAD_INDEX")
-        << "CalLaserTimeTable::addRow found index out of order: "
+        throw cet::exception("CalCosmicTimeCalib_BAD_INDEX")
+        << "CalCosmicTimeTable::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
       }
       _rows.emplace_back(CaloSiPMId(index),
