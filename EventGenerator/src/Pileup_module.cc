@@ -107,9 +107,10 @@ namespace mu2e {
          <<std::endl;
     }
 
-    if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA" ) {
+    if(conf().stoppingTargetMaterial() != "Al" and conf().stoppingTargetMaterial() != "IPA"
+       and conf().stoppingTargetMaterial() != "C") {
       throw   cet::exception("NOT_IMPLEMENTED")
-        <<"Pileup_module: emisson spectra for other than Al target are not impelmented\n";
+        <<"Pileup_module: emisson spectra for other than Al/IPA/C targets are not impelmented\n";
     }
 
     const auto cap_psets = conf().captureProducts.get<std::vector<fhicl::ParameterSet>>();
