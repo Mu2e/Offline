@@ -130,6 +130,13 @@ double physicsParams.Al.capture.RMCInternalRate = 0.0069; //measurement of inter
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
 
+double physicsParams.C.capture.protonRate = 0.33; // Per capture rates, measured with Geant4 on G4_C
+double physicsParams.C.capture.deuteronRate = 0.15;
+double physicsParams.C.capture.neutronRate = 1.77;
+double physicsParams.C.capture.photonRate = 1.73;
+double physicsParams.C.capture.RMCRate = 1.22e-4; //TRIUMF measured 1.67e-5 for E > 57 on Oxygen, full rate taken by dividing by closure fraction above 57 MeV for kmax = 88.4
+double physicsParams.C.capture.RMCInternalRate = 0.0069; //measurement of internal conversion rate for RPC on hydrogen
+
 //Ce+ endpoint energy
 double physicsParams.Al.ePlusEndpointEnergy = 92.32;
 
