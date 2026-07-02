@@ -587,9 +587,12 @@ Mu2eKinKal : {
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"]
       AddHits : false
       SaveDomains : true
-      SaveTrajectory : Detector
+      SaveTrajectory : Full
     }
-    ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP
+    ExtrapolationSettings :{
+      @table::Mu2eKinKal.LHDRIFTXTRAP
+      BackToTracker: true
+    }
     Extend: false
   }
 
@@ -636,5 +639,8 @@ Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
-#
+# propagate upstream fits back to the tracker
+Mu2eKinKal.producers.KKUe.ExtrapolationSettings.BackToTracker : true
+Mu2eKinKal.producers.KKUmu.ExtrapolationSettings.BackToTracker : true
+
 END_PROLOG
