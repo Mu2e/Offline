@@ -1,0 +1,146 @@
+physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
+      [
+        {
+          CRVSector : "EX"
+          PEthreshold : 10  //PEs
+          maxTimeDifferenceAdjacentPulses : 10  //ns
+          maxTimeDifference : 20  //ns
+          minSlope :-6
+          maxSlope : 6  //width direction over thickness direction
+          maxSlopeDifference : 3
+          coincidenceLayers : 2
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "T1"
+          PEthreshold : 10
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 2
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "T2"
+          PEthreshold : 10
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 20
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 2
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M1"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M2"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M4"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M5"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M6"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M7"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        },
+        {
+          CRVSector : "M8"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 4
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        }
+      ]

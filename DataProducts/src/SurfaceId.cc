@@ -63,7 +63,15 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_D3, "CRV_D3"),
     std::make_pair(SurfaceIdEnum::CRV_D4, "CRV_D4"),
     std::make_pair(SurfaceIdEnum::CRV_C1, "CRV_C1"),
-    std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2")
+    std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2"),
+    std::make_pair(SurfaceIdEnum::CRV_M1, "CRV_M1"),
+    std::make_pair(SurfaceIdEnum::CRV_M2, "CRV_M2"),
+    std::make_pair(SurfaceIdEnum::CRV_M3, "CRV_M3"),
+    std::make_pair(SurfaceIdEnum::CRV_M4, "CRV_M4"),
+    std::make_pair(SurfaceIdEnum::CRV_M5, "CRV_M5"),
+    std::make_pair(SurfaceIdEnum::CRV_M6, "CRV_M6"),
+    std::make_pair(SurfaceIdEnum::CRV_M7, "CRV_M7"),
+    std::make_pair(SurfaceIdEnum::CRV_M8, "CRV_M8")
     };
 
     constexpr std::size_t nSurfaceIdNames = sizeof(surfaceIdNames)/sizeof(surfaceIdNames[0]);
