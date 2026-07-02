@@ -55,12 +55,8 @@ BEGIN_PROLOG
                                         //e.g. 0.985 for a leading edge at 50% pulse height
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
-      pulseThreshold            : 0.5   //50% of ADC peak value above pedestal
-                                        //threshold used to determine the pulse time interval for the no-fit option
-      pulseAreaThreshold        : 5     //5 ADC above pedestal
-                                        //threshold used to determine the pulse area for the no-fit option
-      doublePulseSeparation     : 0.25  //25% of both ADC peaks of the double pulse
-                                        //threshold at which double pulses can be separated in the no-fit option
+      samplesBefore             : 4     //samples before the peak included in fit
+      samplesAfter              : 3     //samples after the peak included in fit (less to avoid hidden pulses from reflections)
       useTimeOffsetDB           : true   //applies time offsets from the DB
       timeOffsetScale           : 1.0    //scale factor for the time offsets from the database
                                          //examples:
