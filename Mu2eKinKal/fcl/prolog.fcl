@@ -485,8 +485,8 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
-     SaveDomains : true
-     SaveTrajectory : Detector
+      SaveDomains : true
+      SaveTrajectory : Detector
     }
     FitSettings : {
       @table::Mu2eKinKal.LHSEEDFIT
@@ -573,6 +573,26 @@ Mu2eKinKal : {
 
 Mu2eKinKal : {
   @table::Mu2eKinKal
+
+  RegrowLH : {
+    module_type : RegrowLoopHelix
+    CaloClusterCollection : "CaloClusterMaker"
+    StrawDigiIndexMap : "SelectReco:StrawDigiMap"
+    RefitSettings : {
+      @table::Mu2eKinKal.REGROW
+      BFieldCorrection : true
+    }
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"]
+      AddHits : false
+      SaveDomains : true
+      SaveTrajectory : Detector
+    }
+    ExtrapolationSettings : @local::Mu2eKinKal.LHDRIFTXTRAP
+    Extend: false
+  }
+
   producers : {
     # seed fits: these don't use drift information or BField corrections
     KLSeedFit: @local::Mu2eKinKal.KLSeedFit

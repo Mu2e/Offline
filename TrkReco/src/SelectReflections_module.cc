@@ -129,7 +129,7 @@ namespace mu2e {
       if(matches.size() >0 ){
         ibest = 0;
         if(matches.size()>1){
-          if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
+          if(debug_ > 0) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
           double value = std::numeric_limits<double>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
