@@ -18,6 +18,9 @@ namespace mu2e {
     crvmatname_(matconfig.CRVMaterialName()) {
       MatEnv::DetMaterialConfig dmconf;
       dmconf.elossmode_ = (DetMaterial::energylossmode)matconfig.elossMode();
+      // The KKShellXing Bethe (unrestricted ionization mean) correction is derived assuming KinKal
+      // returns the restricted Moyal mean; only enable it in that mode so the two stay consistent.
+      betheCorrection_ = (dmconf.elossmode_ == DetMaterial::moyalmean);
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();

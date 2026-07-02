@@ -17,6 +17,7 @@ namespace mu2e {
   // We correct the eloss for thick passive materials (ie. concrete blocks) by scaling the crossing path length.
   // Side-effect: the multiple-scattering variance scales too (~3-8% larger pointing sigma at high p),
   // which does not touch the |p| residual. f>=1 always (we never reduce the loss).
+  // Only applied if KinKal is configured with IonizationEnergyLossMode = moyalmean (KKMaterial fcl)
   inline double betheCorrectionFactor(MatEnv::DetMaterial const& mat, double mom, double pathlen, double mass) {
     if(mom <= 0.0 || pathlen == 0.0) return 1.0;
     static constexpr double me = 0.510998950;               // electron mass [MeV]
@@ -43,8 +44,8 @@ namespace mu2e {
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using SURFPTR = std::shared_ptr<SURF>;
-      // construct from a surface, material, intersection, and transverse thickness
-      KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
+      // construct from a surface, material, intersection, and transverse thickness.
+      KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol, bool betheCorr);
       virtual ~KKShellXing() {}
       // clone op for reinstantiation
       KKShellXing(KKShellXing const& rhs) = default;
@@ -80,21 +81,23 @@ namespace mu2e {
       std::vector<KinKal::MaterialXing> mxings_; // material xing
       double thick_; // shell thickness
       double tol_; // tolerance for intersection
+      bool betheCorr_; // apply the unrestricted-Bethe-mean eloss path correction (Moyal-mean mode only)
       double varscale_; // variance scale, for annealing
       KinKal::Parameters fparams_; // 1st-order parameter change for forwards time
   };
 
   template <class KTRAJ,class SURF> KKShellXing<KTRAJ,SURF>::KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter,
-      std::shared_ptr<KTRAJ> reftrajptr, double thickness, double tol) :
+      std::shared_ptr<KTRAJ> reftrajptr, double thickness, double tol, bool betheCorr) :
     surf_(surface), sid_(sid), mat_(mat), inter_(inter), reftrajptr_(reftrajptr), thick_(thickness),tol_(tol),
-    varscale_(1.0)
+    betheCorr_(betheCorr), varscale_(1.0)
   {
     if(inter_.good()){
       // compute the path length
       double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
       double pathlen = thick_/dotprod;
       // Scale the crossed path length so the (restricted/moyal) E loss becomes the unrestricted Bethe mean.
-      double const f = betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass());
+      // Only when the KinKal eloss model is the Moyal mean (betheCorr_); otherwise leave the loss unscaled.
+      double const f = betheCorr_ ? betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass()) : 1.0;
       mxings_.emplace_back(mat_, pathlen*f);
     }
   }
@@ -120,7 +123,7 @@ namespace mu2e {
       double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
       double pathlen = thick_/dotprod;
       // same Bethe-mean path scale as the ctor (keeps the fit-side params consistent with the extrapolation)
-      double const f = betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass());
+      double const f = betheCorr_ ? betheCorrectionFactor(mat_, reftrajptr_->momentum(), pathlen, reftrajptr_->mass()) : 1.0;
       mxings_.emplace_back(mat_, pathlen*f);
       fparams_ = this->parameterChange(varscale_);
     }

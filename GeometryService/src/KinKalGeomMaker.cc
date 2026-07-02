@@ -3,8 +3,13 @@
 // Original author: Dave Brown (LBNL) 4/2026
 //
 #include "Offline/GeometryService/inc/KinKalGeomMaker.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
+#include "Offline/ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
+#include "Offline/Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/KinKalGeom/inc/Tracker.hh"
@@ -14,12 +19,15 @@
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
 #include <cmath>
 #include <algorithm>
 #include <string>
+#include <vector>
+#include <map>
 
 namespace mu2e {
   using KinKal::VEC3;
@@ -242,6 +250,16 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     auto const& shields = CRS->getCRSScintillatorShields();
     std::vector<KKCRVSector> sectors;
+    // Strongback (aluminium support plate) thickness from the CRV geometry
+    double strongBackThickness = 0.0;
+    for(auto const& shield : shields){
+      int const td = shield.getFirstBar().getBarDetail().getThicknessDirection();
+      for(int im = 0; im < shield.nModules(); ++im){
+        auto const& mod = shield.getModule(im);
+        if(mod.nAluminumSheets() > 0){ strongBackThickness = 2.0*mod.getAluminumSheet(0).getHalfLengths().at(td); break; }
+      }
+      if(strongBackThickness != 0.0) break;
+    }
     // loop over the shields (= sectors)
     for (auto const& shield : shields) {
       //
@@ -327,9 +345,9 @@ namespace mu2e {
       sector.sector_ = std::make_shared<KinKal::Rectangle>(wdir,udir,midpoint,uhw,vhw);
       sector.whw_ = whw;
       // Each CRV module carries a ~12.7 mm aluminium strongback (support plate) on the tracker-facing side
-      // of the scintillator stack (crs.strongBackThickness, G4_Al).
-      double const strongBackThickness     = config_.getDouble("crs.strongBackThickness");        // mm
-      std::string const strongBackMaterial = config_.getString("crs.aluminumSheetMaterialName");  // G4_Al
+      // of the scintillator stack. Thickness (strongBackThickness, above) and material now come from the
+      // CRV geometry rather than crs.strongBackThickness / crs.aluminumSheetMaterialName.
+      std::string const strongBackMaterial = shield.getAluminumSheetMaterialName();  // G4_Al
       auto const sbcenter = midpoint - (whw + 0.5*strongBackThickness)*wdir;
       auto const sbplane  = std::make_shared<KinKal::Rectangle>(wdir,udir,sbcenter,uhw,vhw);
       SurfaceId sbsid(SurfaceIdEnum::CRV_StrongBack, static_cast<int>(kkg_->passiveMaterialPlanes_.size()));
@@ -400,17 +418,39 @@ namespace mu2e {
   void KinKalGeomMaker::makePassiveMaterials() {
     GeomHandle<DetectorSystem> det;
     double const invSqrt3 = 1.0/std::sqrt(3.0);
-    // No downstream external shielding in this geometry.
-    if(config_.getInt("ExtShieldDownstream.numberOfBoxTypes", 0) <= 0) return;
-
-    // --- ExtShieldDownstream box dimensions. A box "type" is an extruded U-V
-    // outline of length lengthType{N}; the helpers return its half-extents. The {U,V,W=length} ->
-    // {x,y,z} orientation per region is NOT in the config, so it stays explicit at the call sites.
+    // External shielding (concrete) geometry now comes from the ExtShieldDownstream GeometryService object
+    art::ServiceHandle<GeometryService> geomService;
+    if(!geomService->hasElement<ExtShieldDownstream>()) return;
+    GeomHandle<ExtShieldDownstream> esd;
+    if(esd->getNumberOfBoxTypes() <= 0) return;
+    // Group block indices by their 1-based type number. The type identity is what SimpleConfig
+    // supplied and what outline/material/orientation alone cannot recover (several types share
+    // identical geometry); getBoxTypes() restores it. Vectors below are parallel per block.
+    auto const& esdTypes    = esd->getBoxTypes();
+    auto const& esdOutlines = esd->getOutlines();     // per block: list of {u,v} vertices (mm)
+    auto const& esdLengths  = esd->getLengths();       // per block: HALF length along W (mm)
+    auto const& esdMats     = esd->getMaterialNames();
+    auto const& esdCenters  = esd->getCentersOfBoxes();
+    std::map<int,std::vector<std::size_t>> boxesByType;
+    for(std::size_t i = 0; i < esdTypes.size(); ++i) boxesByType[esdTypes[i]].push_back(i);
+    auto firstBox = [&](int t)->long {
+      auto it = boxesByType.find(t);
+      return (it == boxesByType.end() || it->second.empty()) ? -1L : static_cast<long>(it->second.front());
+    };
+    auto nBoxOf   = [&](int t){ auto it = boxesByType.find(t); return it == boxesByType.end() ? 0 : static_cast<int>(it->second.size()); };
+    auto materialOf = [&](int t){ long const b = firstBox(t); return b >= 0 ? esdMats[b] : std::string(); };
+    // Mu2e-frame center {x,y,z} of the ibox-th (1-based) block of a type (mirrors centerType{t}Box{ibox}).
+    auto centerOf = [&](int t, int ibox)->std::vector<double> {
+      auto const& c = esdCenters[boxesByType[t][ibox-1]];
+      return { c.x(), c.y(), c.z() };
+    };
+    // --- ExtShieldDownstream box dimensions. A box "type" is an extruded U-V outline of half-length
+    // esdLengths; the helpers return its half-extents. The {U,V,W=length} -> {x,y,z} orientation per
+    // region is not carried here, so it stays explicit at the call sites (as before).
     // Helpers return 0 for absent types so an optional region is simply skipped (its nBox guard fires).
-    auto vertsOf = [this](int t, bool uaxis){
-      std::vector<double> v;
-      std::string const key = "ExtShieldDownstream.outlineType" + std::to_string(t) + (uaxis ? "UVerts" : "VVerts");
-      if(config_.hasName(key)) config_.getVectorDouble(key, v);
+    auto vertsOf = [&](int t, bool uaxis){
+      std::vector<double> v; long const b = firstBox(t);
+      if(b >= 0) for(auto const& uv : esdOutlines[b]) v.push_back(uaxis ? uv[0] : uv[1]);
       return v;
     };
     auto maxAbs  = [](std::vector<double> const& v){ double m=0.0; for(double x : v) m=std::max(m,std::fabs(x)); return m; };
@@ -418,10 +458,7 @@ namespace mu2e {
     auto uHalf   = [&](int t){ return maxAbs(vertsOf(t,true)); };    // outline U half-width (max |U|)
     auto vHalf   = [&](int t){ return maxAbs(vertsOf(t,false)); };   // outline V half-height (max |V|)
     auto vSpanH  = [&](int t){ return spanHalf(vertsOf(t,false)); }; // V half-extent (handles 0-based outlines)
-    auto lenHalf = [this](int t){
-      std::string const key = "ExtShieldDownstream.lengthType" + std::to_string(t);
-      return config_.hasName(key) ? 0.5*config_.getDouble(key) : 0.0;
-    };
+    auto lenHalf = [&](int t){ long const b = firstBox(t); return b >= 0 ? esdLengths[b] : 0.0; };  // already half
     // V-weighted mean half-thickness of a T cross-section along its U (thin) axis: used where a
     // T-block is collapsed to a single slab whose normal is U (the side walls), giving the
     // energy-loss-correct mean depth without per-component Gauss planes. Reproduces the run-2 449.7.
@@ -450,17 +487,15 @@ namespace mu2e {
     // Each is modelled with two Gauss-point planes so tracks through the crossbar-
     // only region (the ~2/3 of z-width outside the stem) correctly see half the
     // concrete compared to tracks through the full T height.
-    int const nType2 = config_.getInt("ExtShieldDownstream.nBoxType2", 0);
+    int const nType2 = nBoxOf(2);
     if(nType2 > 0) {
-      std::vector<double> uVerts, vVerts;
-      config_.getVectorDouble("ExtShieldDownstream.outlineType2UVerts", uVerts);
-      config_.getVectorDouble("ExtShieldDownstream.outlineType2VVerts", vVerts);
+      std::vector<double> uVerts = vertsOf(2,true), vVerts = vertsOf(2,false);
       if(uVerts.empty() || vVerts.empty()) return;
 
       auto const uExt = std::minmax_element(uVerts.begin(), uVerts.end());
       auto const vExt = std::minmax_element(vVerts.begin(), vVerts.end());
-      double const xhw       = 0.5*config_.getDouble("ExtShieldDownstream.lengthType2");
-      auto const material    = config_.getString("ExtShieldDownstream.materialType2");
+      double const xhw       = lenHalf(2);
+      auto const material    = materialOf(2);
 
       double const vmin_t    = *vExt.first;   // = -452.2 mm (bottom of crossbar)
       double const vmax_t    = *vExt.second;  // = +452.2 mm (top of stem)
@@ -491,10 +526,7 @@ namespace mu2e {
       double zmin_st = 1.0e9, zmax_st = -1.0e9;
       int nfound = 0;
       for(int ibox = 1; ibox <= nType2; ++ibox) {
-        std::string const key = "ExtShieldDownstream.centerType2Box" + std::to_string(ibox);
-        if(!config_.hasName(key)) continue;
-        std::vector<double> ctr;
-        config_.getVectorDouble(key, ctr);
+        std::vector<double> ctr = centerOf(2, ibox);
         xcenter += ctr[0];
         ycenter += ctr[1];
         zmin_cb = std::min(zmin_cb, ctr[2] - uhw_outer);
@@ -538,15 +570,12 @@ namespace mu2e {
     // axis; 'halfThickness' is supplied by the caller (block depth along normal).
     // Boxes whose center lies far from the region cluster (different sub-region,
     // e.g. the type-1 north vs south wall) are separated by an explicit center cut.
-    auto buildAveragedRegion = [this,&det](int boxType, int normalAxis,
+    auto buildAveragedRegion = [&](int boxType, int normalAxis,
         double halfU_block, double halfV_block, double halfThickness,
         std::function<bool(std::vector<double> const&)> select) {
-      std::string const nkey = "ExtShieldDownstream.nBoxType" + std::to_string(boxType);
-      if(!config_.hasName(nkey)) return;
-      int const nbox = config_.getInt(nkey);
+      int const nbox = nBoxOf(boxType);
       if(nbox <= 0) return;
-      std::string const matkey = "ExtShieldDownstream.materialType" + std::to_string(boxType);
-      auto const material = config_.getString(matkey);
+      auto const material = materialOf(boxType);
       // axis indices orthogonal to the normal, in increasing order
       int a1 = (normalAxis == 0) ? 1 : 0;
       int a2 = (normalAxis == 2) ? 1 : 2;
@@ -555,12 +584,7 @@ namespace mu2e {
       double min2 = 1e9, max2 = -1e9; // in-plane axis 2 center range
       int nfound = 0;
       for(int ibox = 1; ibox <= nbox; ++ibox) {
-        std::string const key = "ExtShieldDownstream.centerType" + std::to_string(boxType)
-                                + "Box" + std::to_string(ibox);
-        if(!config_.hasName(key)) continue;
-        std::vector<double> ctr;
-        config_.getVectorDouble(key, ctr);
-        if(ctr.size() < 3) continue;
+        std::vector<double> ctr = centerOf(boxType, ibox);
         if(select && !select(ctr)) continue;
         nsum += ctr[normalAxis];
         min1 = std::min(min1, ctr[a1]); max1 = std::max(max1, ctr[a1]);
@@ -600,12 +624,9 @@ namespace mu2e {
       // Separate the two symmetric side walls at the DS axis = the mean x of the type-1 box
       // centers (-3904 in run-2), derived from config so it tracks the geometry instead of a literal.
       double splitX = 0.0; int nWall = 0;
-      int const nBox1 = config_.getInt("ExtShieldDownstream.nBoxType1", 0);
+      int const nBox1 = nBoxOf(1);
       for(int ibox = 1; ibox <= nBox1; ++ibox) {
-        std::string const key = "ExtShieldDownstream.centerType1Box" + std::to_string(ibox);
-        if(!config_.hasName(key)) continue;
-        std::vector<double> c; config_.getVectorDouble(key, c);
-        if(c.size() < 3) continue;
+        std::vector<double> c = centerOf(1, ibox);
         splitX += c[0]; ++nWall;
       }
       if(nWall > 0) {
@@ -668,42 +689,42 @@ namespace mu2e {
 
     // Run-1 geometries zero the ExtShieldDownstream concrete T-blocks but retain the building
     // dsAreaHatchBlock concrete (CONCRETE_MARS) between tracker and CRV-T. Extracted geometries
-    // have numberOfBoxTypes=0 and return above before reaching here.
-    if(config_.getInt("ExtShieldDownstream.numberOfBoxTypes", 0) > 0 &&
-       config_.getInt("ExtShieldDownstream.nBoxType2", 0) <= 0) {
+    // have no ExtShieldDownstream object and returned above. Reaching here means the shield is
+    // declared (numberOfBoxTypes>0); the run-1 fallback fires when its roof T-blocks are zeroed.
+    if(nBoxOf(2) <= 0) {
       addBuildingHatchConcrete(*det);
     }
   }
 
   void KinKalGeomMaker::addBuildingHatchConcrete(DetectorSystem const& det) {
-    double const yFloor = config_.getDouble("yOfFloorSurface.below.mu2eOrigin", 0.0);
-    auto spanHalf = [](std::vector<double> const& v) {
-      if(v.empty()) return 0.0;
-      auto e = std::minmax_element(v.begin(), v.end());
-      return 0.5*(*e.second - *e.first);
+    // The dsAreaHatchBlock concrete is a building ExtrudedSolid served by Mu2eHall, replacing the
+    // former building.dsArea.hatchblock.* / yOfFloorSurface SimpleConfig reads. The solid's offset
+    // already folds the floor-surface Y into its Mu2e-origin offset. The 2D outline lies in the
+    // (x, z) plane: vertex x -> Mu2e x, vertex y -> Mu2e z; the slab normal is y (a roof plane).
+    GeomHandle<Mu2eHall> hall;
+    auto const& solids = hall->getBldgSolids();
+    auto spanHalf = [](std::vector<CLHEP::Hep2Vector> const& v, bool xaxis) {
+      double mn = 1e30, mx = -1e30;
+      for(auto const& p : v){ double const c = xaxis ? p.x() : p.y(); mn = std::min(mn,c); mx = std::max(mx,c); }
+      return 0.5*(mx - mn);
     };
-    auto mid = [](std::vector<double> const& v) {
-      if(v.empty()) return 0.0;
-      auto e = std::minmax_element(v.begin(), v.end());
-      return 0.5*(*e.first + *e.second);
+    auto mid = [](std::vector<CLHEP::Hep2Vector> const& v, bool xaxis) {
+      double mn = 1e30, mx = -1e30;
+      for(auto const& p : v){ double const c = xaxis ? p.x() : p.y(); mn = std::min(mn,c); mx = std::max(mx,c); }
+      return 0.5*(mn + mx);
     };
-    auto addSlab = [&](std::string const& pfx) {
-      std::string const base = "building.dsArea.hatchblock" + pfx;
-      std::string const yhtKey = base + ".yHalfThickness";
-      if(!config_.hasName(yhtKey)) return;
-      std::vector<double> xV, zV;
-      config_.getVectorDouble(base + ".xPositions", xV);
-      config_.getVectorDouble(base + ".yPositions", zV); // building polygon "y" is mu2e z
-      if(xV.empty() || zV.empty()) return;
-      double const x0 = config_.getDouble(base + ".offsetFromMu2eOrigin.x");
-      double const z0 = config_.getDouble(base + ".offsetFromMu2eOrigin.z");
-      double const yMu2e = yFloor + config_.getDouble(base + ".offsetFromFloorSurface.y");
-      auto const material = config_.getString(base + ".material");
-      double const halfThick = config_.getDouble(yhtKey);
-      CLHEP::Hep3Vector center(x0 + mid(xV), yMu2e, z0 + mid(zV));
-      addConcretePlane(det, 1, center, spanHalf(xV), spanHalf(zV), halfThick, material);
+    auto addSlab = [&](std::string const& name) {
+      auto const it = solids.find(name);
+      if(it == solids.end()) return;
+      auto const& solid = it->second;
+      auto const& verts = solid.getVertices();
+      if(verts.empty()) return;
+      auto const& off = solid.getOffsetFromMu2eOrigin();
+      CLHEP::Hep3Vector center(off.x() + mid(verts,true), off.y(), off.z() + mid(verts,false));
+      addConcretePlane(det, 1, center, spanHalf(verts,true), spanHalf(verts,false),
+                       solid.getYhalfThickness(), solid.getMaterial());
     };
-    addSlab("");
-    addSlab(".E");
+    addSlab("dsAreaHatchBlock");
+    addSlab("dsAreaHatchBlockE");
   }
 }

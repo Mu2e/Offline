@@ -34,8 +34,6 @@ NbTi 6.5 0.0 0.0 +2 0.65 Niobium 0 0.35 Titanium 0 -10 -20 -30 20.0 1.0 solid
 G4_Al 2.700000 0.0 0.0 +1 100.0e-2 Aluminum 0 24.01000 106.40000 -30 20.0 1.0 solid
 DS1Coil 3.35 0.0 0.0 +2 0.67 Aluminum 0 0.33 NbTi 1 -10 -20 -30 20.0 1.0 solid
 DS2Coil 3.031 0.0 0.0 +2 0.813 Aluminum 0 0.187 NbTi 1 -10 -20 -30 20.0 1.0 solid
-DS1CoilMix 3.35 0.0 0.0 +2 0.67 Aluminum 0 0.33 NbTi 1 -10 -20 -30 20.0 1.0 solid
-DS2CoilMix 3.031 0.0 0.0 +2 0.813 Aluminum 0 0.187 NbTi 1 -10 -20 -30 20.0 1.0 solid
 # DSCoilMix: the 11 DS coils collapsed into ONE effective material for the KinKalGeom long-cylinder
 # coil approximation (individual coils are too short in z to be reliably intersected by the extrapolation).
 # z-coverage-weighted blend of the 8 DS1CoilMix coils (41 mm, 3.35 g/cm3, 67/33 Al/NbTi, z-cover 3128 mm)

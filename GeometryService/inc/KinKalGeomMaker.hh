@@ -9,11 +9,10 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include <string>
 namespace mu2e {
-  class SimpleConfig;
   class DetectorSystem;
   class KinKalGeomMaker {
     public:
-      KinKalGeomMaker(SimpleConfig const& config, int debug) : config_(config), debug_(debug) {}
+      explicit KinKalGeomMaker(int debug) : debug_(debug) {}
       std::unique_ptr<KinKalGeom>& makeKKG();
     private:
       void makeTracker();
@@ -27,7 +26,6 @@ namespace mu2e {
           double halfThickness, std::string const& material);
       // run-1 building hatch concrete when ExtShieldDownstream concrete is zeroed
       void addBuildingHatchConcrete(DetectorSystem const& det);
-      SimpleConfig const& config_;
       std::unique_ptr<KinKalGeom> kkg_;
       int debug_ = 0;
   };
