@@ -1593,7 +1593,8 @@ namespace mu2e {
     }
 
     void ScoreBasedDiffusionModel::saveModel(
-        const std::string& filename
+        const std::string& filename,
+        int basisTag
     )
     {
         // Write binary
@@ -1635,8 +1636,11 @@ namespace mu2e {
         // field that versions 1-5 used for the epsPrediction bool (0/1). The enum values
         // 0=SCORE,1=EPS were chosen to coincide with the old bool false/true, so a v<=6
         // loader maps the legacy bool directly with no behavior change.
+        // 7 = appends an opaque int32 basisTag (after diffusionSteps_, before the network
+        // weights). This class never interprets it; it is an application-level marker
+        // (see saveModel/basisTag()). v<=6 files have no such field and load it as 0.
         out.write("SBDM", 4);
-        wU32(6u);
+        wU32(7u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1669,6 +1673,12 @@ namespace mu2e {
         // rescaling exactly once when it reconstructs the model.
         wF64(emaNetworkDecayBase_);
         wI32(static_cast<int32_t>(diffusionSteps_));
+
+        // Opaque application-level basis tag (format v7+). Persisted verbatim; this
+        // class assigns it no meaning. Also remember it on the in-memory object so a
+        // subsequent basisTag() query is consistent with what was just written.
+        wI32(static_cast<int32_t>(basisTag));
+        basisTag_ = basisTag;
 
         // Network weights
         wU32(static_cast<uint32_t>(network_.size()));
@@ -1774,6 +1784,7 @@ namespace mu2e {
         out << "emaNetworkDecay," << emaNetworkDecay_ << "\n";         // per-step effective (base^(batchSize/ref))
         // Diffusion process configuration
         out << "diffusionSteps," << diffusionSteps_ << "\n";
+        out << "basisTag," << basisTag_ << "\n"; // opaque app-level tag; see saveModel/basisTag()
 
         // Write network architecture header
         out << "\n[NETWORK_PARAMETERS]\n";
@@ -2065,6 +2076,10 @@ namespace mu2e {
             double emaNetworkDecayStored = rF64();
             int diffusionSteps = rI32();
 
+            // Opaque application-level basis tag (format v7+). v<=6 files predate it,
+            // so default to 0. Set on the constructed model below.
+            int basisTag = (version >= 7) ? rI32() : 0;
+
             // Network weights
             uint32_t numLayers = static_cast<uint32_t>(checkCount(rU32(), "network layer"));
             std::vector<Layer> loadedNetwork(numLayers);
@@ -2182,6 +2197,7 @@ namespace mu2e {
                 useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecayStored,
                 diffusionSteps, false
             );
+            model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
 
             // EMA decay semantics fix-up. The constructor rescaled emaNetworkDecayStored
             // as if it were the batch-size-independent base. That is correct for version-4
@@ -2266,6 +2282,7 @@ namespace mu2e {
             PredictionTarget predictionTarget = PredictionTarget::SCORE;
             double lossWeightPower = 2.0;
             int batchSize = 1, diffusionSteps = 1;
+            int basisTag = 0; // opaque app-level tag; absent in CSVs predating the feature
             double gradientClipThreshold = 0.0, learningRate = 0.0;
 
             std::vector<double> dataMean, dataStdev, normMin, normMax;
@@ -2388,6 +2405,7 @@ namespace mu2e {
                     else if (key == "emaNetworkDecayBase") { emaNetworkDecayBase = std::stod(val); emaNetworkDecayBasePresent = true; }
                     else if (key == "emaNetworkDecay") emaNetworkDecay = std::stod(val);
                     else if (key == "diffusionSteps") diffusionSteps = std::stoi(val);
+                    else if (key == "basisTag") basisTag = std::stoi(val);
                 }
 
                 // NETWORK PARAMETERS
@@ -2742,6 +2760,7 @@ namespace mu2e {
                 diffusionSteps,
                 false // initializeRandomWeights
             );
+            model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
 
             // Legacy-CSV EMA decay fix-up (mirrors the binary version <= 3 path). When the
             // file predates emaNetworkDecayBase, the stored emaNetworkDecay is the per-step

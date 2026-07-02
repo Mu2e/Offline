@@ -1,0 +1,36 @@
+# VDResampler training plan (guideline) file.
+#
+# Consumed by VDResamplerConfigure (trainingPlanFile). Specifies per-particle
+# training configuration resolved by (pdgId, dataSourceTag). Today the only field
+# used is stage1Method (the V2 two-stage stage-1 pTotal source); the structure is
+# designed to grow (e.g. curriculum settings) by adding fields to an entry.
+#
+# Lookup order (pdgId is the OUTER axis: a particle usually trains similarly across
+# sources; source is the finer override):
+#   particles.pdg_<id>.<source>  ->  particles.pdg_<id>.default  ->  particles.default.default
+# Negative pdgId keys use an 'm' prefix (e.g. pdg_m11 for the positron), matching the
+# model-file naming convention. <source> is the dataSourceTag passed to Configure.
+#
+# stage1Method one of: DIFFUSION (train a 1-D pTotal model) | INVERSE_CDF | SPLINE_CDF | KDE
+# (the last three are non-diffusion resamplers read from the source ROOT file at generation).
+
+particles: {
+
+  # Fallback for any particle / source not matched below. REQUIRED (the plan file is
+  # mandatory and must supply at least particles.default.default).
+  default: {
+    default: { stage1Method: "DIFFUSION" }
+  }
+
+  # Example: electrons resample pTotal by inverse-CDF for every source, except the
+  # mubeam source which trains a diffusion stage-1 instead.
+  pdg_11: {
+    default: { stage1Method: "INVERSE_CDF" }
+    mubeam:  { stage1Method: "DIFFUSION"   }
+  }
+
+  # Example: positrons use inverse-CDF everywhere.
+  pdg_m11: {
+    default: { stage1Method: "INVERSE_CDF" }
+  }
+}

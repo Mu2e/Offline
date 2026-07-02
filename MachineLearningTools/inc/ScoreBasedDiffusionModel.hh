@@ -420,6 +420,18 @@ namespace mu2e{
             return (rawValue - dataMean_[dim]) / dataStdev_[dim];
         }
 
+        // Z-score a raw CONDITION coordinate. The normalization arrays store data dims
+        // first (0..dim_-1) then condition dims (dim_..dim_+conditionDim_-1); condIdx is
+        // the 0-based index within the conditioning vector. Used to feed an externally
+        // sourced condition (e.g. a resampled pTotal) with the exact training z-score.
+        double normalizeCondition(int condIdx, double rawValue) const {
+            if (condIdx < 0 || condIdx >= conditionDim_)
+                throw cet::exception("ScoreBasedDiffusionModel::normalizeCondition")
+                    << "condIdx " << condIdx << " out of range [0, " << conditionDim_ << ")";
+            const int idx = dim_ + condIdx;
+            return (rawValue - dataMean_[idx]) / dataStdev_[idx];
+        }
+
         // Diagnostic (conditional-loss profile): draw a uniform diffusion time t and fresh noise,
         // run one forward pass, and return per-dimension losses along with t and sigma(t). TWO losses
         // are returned (see SBDMEpsLossSample): the eps-style (eps_hat - eps)^2 for ALL modes (eps_hat
@@ -530,7 +542,17 @@ namespace mu2e{
         //
         // Parameters:
         //   filename - Path to the binary file (default: "DiffusionModel.bin")
-        void saveModel(const std::string& filename = "DiffusionModel.bin");
+        //   basisTag - Opaque application-level integer (default 0) round-tripped
+        //              verbatim through save/load. This class never interprets it;
+        //              callers (e.g. VDResampler) use it to record which momentum
+        //              basis / model layout the file holds. Field introduced in
+        //              binary format version 7; v<=6 files load it as 0.
+        void saveModel(const std::string& filename = "DiffusionModel.bin", int basisTag = 0);
+
+        // Opaque basis tag set on load (or 0 for pre-v7 files / fresh models). The
+        // class assigns no meaning to it; see saveModel.
+        int basisTag() const { return basisTag_; }
+        void setBasisTag(int tag) { basisTag_ = tag; }
 
         // Save the model parameters to a CSV file with annotations for human inspection.
         //
@@ -864,6 +886,10 @@ namespace mu2e{
 
         // Diffusion process discretization
         int diffusionSteps_;  // Number of time steps to generate a sample (default: 200)
+
+        // Opaque application-level tag (default 0). Not interpreted by this class;
+        // round-tripped through save/load (binary format v7+). See saveModel/basisTag().
+        int basisTag_ = 0;
 
         // Training state
         double runningLoss_;  // Accumulated loss for monitoring during training

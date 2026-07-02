@@ -49,6 +49,8 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -107,6 +109,18 @@ namespace mu2e {
           Comment("Virtual detector ID encoded in the model filenames"),
           116
         };
+        fhicl::Atom<std::string> resamplerSourceRootFile{
+          Name("resamplerSourceRootFile"),
+          Comment("Source ROOT file for the pTotal resampler (the VDResamplerConfigure rootdump, "
+                  "containing all particles). Required when any particle's summary row selects a "
+                  "resampler stage-1 method. Each V2 particle's resampler selects its own pdgId."),
+          ""
+        };
+        fhicl::Atom<std::string> resamplerSourceTreeName{
+          Name("resamplerSourceTreeName"),
+          Comment("TTree name in resamplerSourceRootFile."),
+          "ttree"
+        };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
           Comment("Whether to use Heun's method for reverse diffusion"),
@@ -162,6 +176,11 @@ namespace mu2e {
         std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel;
         std::unique_ptr<ScoreBasedDiffusionModel> stage1Model;
         std::unique_ptr<ScoreBasedDiffusionModel> stage2Model;
+        // V2 two-stage stage-1 pTotal source (per particle, from the summary column).
+        // When != DIFFUSION, stage1Model is null and ptotResampler (filtered to this
+        // particle's pdgId) supplies pTotal instead.
+        VDResampler::Stage1Method stage1Method = VDResampler::Stage1Method::DIFFUSION;
+        VDResampler::PtotResampler ptotResampler;
       };
 
       struct SourceSummary {
@@ -177,6 +196,8 @@ namespace mu2e {
       CLHEP::RandGaussQ randGaussQ_;
       std::string modelFileDir_;
       int virtualDetectorID_ = 0;
+      std::string resamplerSourceRootFile_;
+      std::string resamplerSourceTreeName_;
       bool useHeun_ = true;
       bool useSDE_ = true;
       bool useEMANetworkIfAvailable_ = true;
@@ -211,15 +232,6 @@ namespace mu2e {
       double E_gen_ = 0.0;
 
       SourceSummary loadSourceSummary(const std::string& summaryFile, double pots);
-      void generateFromModels(
-        const ParticleModelSet& modelSet,
-        double& xTrans,
-        double& yTrans,
-        double& tTrans,
-        double& prTrans,
-        double& pphiTrans,
-        double& pzTrans
-      ) const;
     };
 
   VDResamplerGenerateMix::VDResamplerGenerateMix(const Parameters& conf)
@@ -229,6 +241,8 @@ namespace mu2e {
       randGaussQ_(engine_),
       modelFileDir_(conf().ModelFileDir()),
       virtualDetectorID_(conf().VirtualDetectorID()),
+      resamplerSourceRootFile_(conf().resamplerSourceRootFile()),
+      resamplerSourceTreeName_(conf().resamplerSourceTreeName()),
       useHeun_(conf().useHeun()),
       useSDE_(conf().useSDE()),
       useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
@@ -350,19 +364,40 @@ namespace mu2e {
           << "Unexpected model mode token '" << modeToken << "' in " << summaryFile;
       }
 
+      // Per-particle stage-1 method (V2 two-stage): a summary column after the stage-mode
+      // token. VDResamplerConfigure emits it (see FIXME there); older summaries without the
+      // column default to DIFFUSION for back-compat.
+      particle.stage1Method = (fields.size() > 3)
+        ? VDResampler::parseStage1Method(fields[3], "VDResamplerGenerateMix")
+        : VDResampler::Stage1Method::DIFFUSION;
+      const bool useResampler = (particle.stage1Method != VDResampler::Stage1Method::DIFFUSION);
+
       const std::string pdgToken = pdgIdToFileToken(pdgId);
       if (particle.useTwoStageModel) {
-        const std::string stage1ModelFile =
-          modelFileDir_ + "/SBDMmodel_stage1_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
         const std::string stage2ModelFile =
           modelFileDir_ + "/SBDMmodel_stage2_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
-
-        particle.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
-          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile)
-        );
         particle.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile)
         );
+
+        if (useResampler) {
+          // No stage-1 diffusion model; build this particle's pTotal resampler from the
+          // shared source ROOT file, selecting its own pdgId.
+          if (resamplerSourceRootFile_.empty())
+            throw cet::exception("VDResamplerGenerateMix")
+              << "Particle pdg " << pdgId << " requests a resampler stage-1 method but "
+              << "resamplerSourceRootFile is not set.";
+          particle.ptotResampler.buildFromRoot(
+            resamplerSourceRootFile_, resamplerSourceTreeName_,
+            static_cast<unsigned long>(virtualDetectorID_), pdgId,
+            particle.stage1Method, "VDResamplerGenerateMix");
+        } else {
+          const std::string stage1ModelFile =
+            modelFileDir_ + "/SBDMmodel_stage1_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
+          particle.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
+            ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile)
+          );
+        }
       } else {
         const std::string modelFile =
           modelFileDir_ + "/SBDMmodel_allAtOnce_VD" + std::to_string(virtualDetectorID_) + "_pdg" + pdgToken + ".csv";
@@ -382,55 +417,6 @@ namespace mu2e {
 
     source.sourceWeight = 0.0;
     return source;
-  }
-
-  void VDResamplerGenerateMix::generateFromModels(
-    const ParticleModelSet& modelSet,
-    double& xTrans,
-    double& yTrans,
-    double& tTrans,
-    double& prTrans,
-    double& pphiTrans,
-    double& pzTrans
-  ) const {
-    if (modelSet.useTwoStageModel) {
-      const SBDMGeneratedSample stage1Sample = modelSet.stage1Model->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (stage1Sample.zscore.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateMix")
-          << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
-      }
-
-      tTrans = stage1Sample.value[0];
-      xTrans = stage1Sample.value[1];
-      yTrans = stage1Sample.value[2];
-      double t_zscore = stage1Sample.zscore[0];
-      double x_zscore = stage1Sample.zscore[1];
-      double y_zscore = stage1Sample.zscore[2];
-
-      const std::vector<double> condition = {t_zscore, x_zscore, y_zscore};
-      const SBDMGeneratedSample stage2Sample = modelSet.stage2Model->generateSample(condition, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (stage2Sample.zscore.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateMix")
-          << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
-      }
-
-      prTrans = stage2Sample.value[0];
-      pphiTrans = stage2Sample.value[1];
-      pzTrans = stage2Sample.value[2];
-    } else {
-      const SBDMGeneratedSample sample = modelSet.allAtOnceModel->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (sample.zscore.size() != 6u) {
-        throw cet::exception("VDResamplerGenerateMix")
-          << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";
-      }
-
-      tTrans = sample.value[0];
-      xTrans = sample.value[1];
-      yTrans = sample.value[2];
-      prTrans = sample.value[3];
-      pphiTrans = sample.value[4];
-      pzTrans = sample.value[5];
-    }
   }
 
   void VDResamplerGenerateMix::produce(art::Event& event) {
@@ -467,36 +453,21 @@ namespace mu2e {
     }
     const ParticleModelSet& modelSet = source.particles[chosenParticleIndex];
 
-    double xTrans = 0.0;
-    double yTrans = 0.0;
-    double tTrans = 0.0;
-    double prTrans = 0.0;
-    double pphiTrans = 0.0;
-    double pzTrans = 0.0;
-    generateFromModels(modelSet, xTrans, yTrans, tTrans, prTrans, pphiTrans, pzTrans);
+    const VDResampler::SamplerSettings settings{
+      useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_};
 
-    VDResampler::invertGeneratedSample(
-      xTrans,
-      yTrans,
-      tTrans,
-      prTrans,
-      pphiTrans,
-      pzTrans,
-      x0_,
-      y0_,
-      t0_,
-      tScale_,
-      p0_,
-      VDr_,
-      VDz0_,
-      x_gen_,
-      y_gen_,
-      z_gen_,
-      t_gen_,
-      px_gen_,
-      py_gen_,
-      pz_gen_
-    );
+    // Generate one transformed sample (shared with VDResamplerGenerateFromModel).
+    VDResampler::GeneratedTransformed g;
+    if (modelSet.useTwoStageModel) {
+      g = VDResampler::generateTwoStage(
+        modelSet.stage1Model.get(), *modelSet.stage2Model, modelSet.stage1Method,
+        modelSet.ptotResampler, randFlat_, randGaussQ_, settings, p0_, "VDResamplerGenerateMix");
+    } else {
+      g = VDResampler::generateAllAtOnce(*modelSet.allAtOnceModel, settings, "VDResamplerGenerateMix");
+    }
+
+    const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+    VDResampler::invertGenerated(g, ip, x_gen_, y_gen_, z_gen_, t_gen_, px_gen_, py_gen_, pz_gen_);
 
     pdgId_ = modelSet.pdgId;
     generationMode_ = modelSet.useTwoStageModel ? 2 : 1;

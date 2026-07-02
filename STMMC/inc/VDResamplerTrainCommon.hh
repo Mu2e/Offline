@@ -18,6 +18,7 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -151,14 +152,26 @@ struct TrainState {
     // can restore the original value. Parallel to peakWindows.
     std::vector<double> basePeakAlphas;
 
-    // Welford normalization accumulators (transformed: t, x, y, pr, pphi, pz)
+    // Welford normalization accumulators for the transformed coordinates. Slots
+    // 0,1,2 are always (t, x, y); slots mom0,mom1,mom2 are the three momentum
+    // values in the active MomentumBasis:
+    //   V1_CylindricalTransformed : mom0=asinh(pr/p0), mom1=asinh(pphi/p0), mom2=log(pz/p0)
+    //   V2_PtotSlopes             : mom0=log(pTotal/p0), mom1=ur,                 mom2=uphi
+    //   V2_PtotSlopesAsinh        : mom0=log(pTotal/p0), mom1=asinh(ur/kSlopeScale), mom2=asinh(uphi/kSlopeScale)
     double t_mean=0,    t_M2=0,    t_stdev=0;
     double x_mean=0,    x_M2=0,    x_stdev=0;
     double y_mean=0,    y_M2=0,    y_stdev=0;
-    double pr_mean=0,   pr_M2=0,   pr_stdev=0;
-    double pphi_mean=0, pphi_M2=0, pphi_stdev=0;
-    double pz_mean=0,   pz_M2=0,   pz_stdev=0;
+    double mom0_mean=0, mom0_M2=0, mom0_stdev=0;
+    double mom1_mean=0, mom1_M2=0, mom1_stdev=0;
+    double mom2_mean=0, mom2_M2=0, mom2_stdev=0;
     int nNorm = 0;
+
+    // Active momentum basis (set from fcl by the train modules; default V2).
+    MomentumBasis momentumBasis = MomentumBasis::V2_PtotSlopes;
+
+    // True for any V2 (pTotal/slopes) basis. V2 changes both the momentum slot
+    // meaning and the two-stage split (stage1 = 1-D pTotal, stage2 = 5-D rest).
+    bool isV2() const { return momentumBasis != MomentumBasis::V1_CylindricalTransformed; }
 };
 
 // ---------------------------------------------------------------------------
@@ -292,6 +305,22 @@ parseNoiseSchedule(const std::string& sched, const std::string& moduleName) {
     if (sched != "COSINE")
         mf::LogWarning(moduleName) << "Unrecognized SBDMnoiseSchedule value \"" << sched << "\"; falling back to COSINE.";
     return ScoreBasedDiffusionModel::NoiseScheduleType::COSINE;
+}
+
+// ---------------------------------------------------------------------------
+// parseMomentumBasis — convert fhicl string to MomentumBasis enum (if-chain, to
+//   match parseOptimizer/parseNoiseSchedule; switch is not valid on std::string).
+//   V1_CYLINDRICAL       : V1_CylindricalTransformed (legacy asinh(pr),asinh(pphi),log(pz))
+//   V2_PTOT_SLOPES       : V2_PtotSlopes (log(pTotal), ur=pr/pz, uphi=pphi/pz) [default]
+//   V2_PTOT_SLOPES_ASINH : V2_PtotSlopesAsinh (slopes wrapped in asinh)
+// ---------------------------------------------------------------------------
+inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string& moduleName) {
+    if (b == "V1_CYLINDRICAL")       return MomentumBasis::V1_CylindricalTransformed;
+    if (b == "V2_PTOT_SLOPES")       return MomentumBasis::V2_PtotSlopes;
+    if (b == "V2_PTOT_SLOPES_ASINH") return MomentumBasis::V2_PtotSlopesAsinh;
+    mf::LogWarning(moduleName) << "Unrecognized SBDMmomentumBasis value \"" << b
+                               << "\"; falling back to V2_PTOT_SLOPES.";
+    return MomentumBasis::V2_PtotSlopes;
 }
 
 // ---------------------------------------------------------------------------
@@ -673,7 +702,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
             } else {
-                s.stage1Model = makeSBDM(3, 0);
+                // V1 two-stage: stage1 = 3-D (t,x,y). V2 two-stage: stage1 = 1-D (pTotal).
+                s.stage1Model = makeSBDM(s.isV2() ? 1 : 3, 0);
             }
             if (s.trainingSize > 0) s.stage1TrainingData.reserve(s.trainingSize);
             else                    s.stage1TrainingData.reserve(1000);
@@ -686,7 +716,9 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
             } else {
-                s.stage2Model = makeSBDM(3, 3);
+                // V1 stage2: 3-D (pr,pphi,pz) cond 3-D (t,x,y).
+                // V2 stage2: 5-D (t,x,y,ur,uphi) cond 1-D (pTotal).
+                s.stage2Model = s.isV2() ? makeSBDM(5, 1) : makeSBDM(3, 3);
             }
             if (s.trainingSize > 0) s.stage2TrainingData.reserve(s.trainingSize);
             else                    s.stage2TrainingData.reserve(1000);
@@ -709,8 +741,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
 // ---------------------------------------------------------------------------
 // accumulateNorm — Welford online update for normalization statistics
 // ---------------------------------------------------------------------------
+// mom0_t/mom1_t/mom2_t are the three transformed momentum values in s.momentumBasis
+// (V1: asinh(pr/p0),asinh(pphi/p0),log(pz/p0); V2: log(pTotal/p0),ur,uphi).
 inline void accumulateNorm(TrainState& s, double t_trans, double x_trans, double y_trans,
-                           double pr_t, double pphi_t, double pz_t)
+                           double mom0_t, double mom1_t, double mom2_t)
 {
     if (s.nNorm >= s.trainingSize && s.trainingSize > 0) return;
     ++s.nNorm;
@@ -722,32 +756,43 @@ inline void accumulateNorm(TrainState& s, double t_trans, double x_trans, double
     update(s.t_mean,    s.t_M2,    t_trans);
     update(s.x_mean,    s.x_M2,    x_trans);
     update(s.y_mean,    s.y_M2,    y_trans);
-    update(s.pr_mean,   s.pr_M2,   pr_t);
-    update(s.pphi_mean, s.pphi_M2, pphi_t);
-    update(s.pz_mean,   s.pz_M2,   pz_t);
+    update(s.mom0_mean, s.mom0_M2, mom0_t);
+    update(s.mom1_mean, s.mom1_M2, mom1_t);
+    update(s.mom2_mean, s.mom2_M2, mom2_t);
 }
 
 // ---------------------------------------------------------------------------
-// collectSample — push a transformed hit into the appropriate training data vector(s)
+// collectSample — push a transformed hit into the appropriate training data vector(s).
+//   The two-stage split is basis-dependent:
+//     V1: stage1 = {t,x,y};               stage2 = {mom0,mom1,mom2} | {t,x,y}
+//     V2: stage1 = {mom0=log(pTotal/p0)}; stage2 = {t,x,y,mom1=ur,mom2=uphi} | {mom0}
+//   (full vector order: V1 (t,x,y,pr,pphi,pz); V2 (t,x,y,pTotal,ur,uphi).)
 // ---------------------------------------------------------------------------
 inline void collectSample(TrainState& s, double t_trans, double x_trans, double y_trans,
-                           double pr_t, double pphi_t, double pz_t)
+                           double mom0_t, double mom1_t, double mom2_t)
 {
     if (s.useTwoStageTraining) {
         if (s.trainStage1) {
             DiffusionTrainingSample s1;
-            s1.x = {t_trans, x_trans, y_trans};
+            // V2 stage1 is the 1-D pTotal model; V1 stage1 is the 3-D (t,x,y) model.
+            if (s.isV2()) s1.x = {mom0_t};
+            else          s1.x = {t_trans, x_trans, y_trans};
             s.stage1TrainingData.push_back(std::move(s1));
         }
         if (s.trainStage2) {
             DiffusionTrainingSample s2;
-            s2.x    = {pr_t, pphi_t, pz_t};
-            s2.cond = {t_trans, x_trans, y_trans};
+            if (s.isV2()) {
+                s2.x    = {t_trans, x_trans, y_trans, mom1_t, mom2_t};
+                s2.cond = {mom0_t};
+            } else {
+                s2.x    = {mom0_t, mom1_t, mom2_t};
+                s2.cond = {t_trans, x_trans, y_trans};
+            }
             s.stage2TrainingData.push_back(std::move(s2));
         }
     } else {
         DiffusionTrainingSample sa;
-        sa.x = {t_trans, x_trans, y_trans, pr_t, pphi_t, pz_t};
+        sa.x = {t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t};
         s.allAtOnceTrainingData.push_back(std::move(sa));
     }
 }
@@ -1339,9 +1384,9 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
     s.t_stdev    = stdev(s.t_M2);
     s.x_stdev    = stdev(s.x_M2);
     s.y_stdev    = stdev(s.y_M2);
-    s.pr_stdev   = stdev(s.pr_M2);
-    s.pphi_stdev = stdev(s.pphi_M2);
-    s.pz_stdev   = stdev(s.pz_M2);
+    s.mom0_stdev = stdev(s.mom0_M2);
+    s.mom1_stdev = stdev(s.mom1_M2);
+    s.mom2_stdev = stdev(s.mom2_M2);
 
     // Guard against empty datasets
     if (s.useTwoStageTraining) {
@@ -1394,7 +1439,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
     auto trainLoop = [&](ScoreBasedDiffusionModel& model,
                          std::vector<DiffusionTrainingSample>& data,
                          const std::string& outFile,
-                         bool resetPhase0) {
+                         bool resetPhase0,
+                         int basisTag) { // opaque tag persisted with every saved checkpoint
         // Set every peak window's alpha for curriculum phase k: the per-phase override
         // (curriculumPeakAlpha[k]) when >= 0, else the window's snapshotted base alpha.
         // train() re-reads s.peakWindows each epoch, so mutating it here takes effect for
@@ -1497,12 +1543,12 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
-                    model.saveModel(base + ".epoch" + std::to_string(e) + ".bin");
+                    model.saveModel(base + ".epoch" + std::to_string(e) + ".bin", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(base + ".epoch" + std::to_string(e) + ".csv");
                 }
             }
-            model.saveModel(outFile);
+            model.saveModel(outFile, basisTag);
             if (s.saveAlsoCsv)
                 model.saveModelCsv(base + ".csv");
             mf::LogInfo(moduleName) << "Training completed, saved to " << outFile;
@@ -1624,20 +1670,20 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 // Best-in-phase checkpoints. Raw = the single lowest-loss epoch;
                 // smoothed = lowest moving-average loss (robust to per-epoch noise).
                 if (tracer.rawImproved) {
-                    model.saveModel(phaseTag + ".bestRaw.bin");
+                    model.saveModel(phaseTag + ".bestRaw.bin", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(phaseTag + ".bestRaw.csv");
                 }
                 if (tracer.smoothedImproved) {
                     // Capture the smoothed-best in memory for resume-from-best, and on disk.
                     model.snapshotNetwork();
-                    model.saveModel(phaseTag + ".bestSmoothed.bin");
+                    model.saveModel(phaseTag + ".bestSmoothed.bin", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(phaseTag + ".bestSmoothed.csv");
                 }
                 // Honor explicit checkpoint epochs (indexed by global epoch count).
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), globalEpoch) != s.saveEpochs.end()) {
-                    model.saveModel(base + ".epoch" + std::to_string(globalEpoch) + ".bin");
+                    model.saveModel(base + ".epoch" + std::to_string(globalEpoch) + ".bin", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(base + ".epoch" + std::to_string(globalEpoch) + ".csv");
                 }
@@ -1648,7 +1694,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
 
             // Phase-final snapshot: the literal final-epoch state, saved BEFORE any
             // resume-from-best restore so ".final" always means "last epoch trained".
-            model.saveModel(phaseTag + ".final.bin");
+            model.saveModel(phaseTag + ".final.bin", basisTag);
             if (s.saveAlsoCsv)
                 model.saveModelCsv(phaseTag + ".final.csv");
 
@@ -1688,55 +1734,65 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << maxEpochs << " epochs (" << bestSummary()
                     << "). Adjust the training plan — e.g. raise the cap, change the learning "
                     << "rate, or revisit the phase hyperparameters. Stopping training.";
-                model.saveModel(outFile);
+                model.saveModel(outFile, basisTag);
                 if (s.saveAlsoCsv)
                     model.saveModelCsv(base + ".csv");
                 return; // abort: surface the bad plan instead of advancing
             }
         }
-        model.saveModel(outFile);
+        model.saveModel(outFile, basisTag);
         if (s.saveAlsoCsv)
             model.saveModelCsv(base + ".csv");
         mf::LogInfo(moduleName) << "Training completed (auto planner), saved to " << outFile;
     };
 
+    // Per-stage normalization mean/stdev orderings MUST match the vectors built in
+    // collectSample for the active basis. V1 keeps the legacy arrangement; V2 puts
+    // pTotal (mom0) alone in stage1 and conditions the 5-D stage2 on it.
+    const bool isV2 = s.isV2();
     if (s.useTwoStageTraining) {
         if (s.trainStage1) {
             if (s.trainingSize > 0 && (int)s.stage1TrainingData.size() > s.trainingSize)
                 s.stage1TrainingData.resize(s.trainingSize);
-            s.stage1Model->normalizeData(
-                {s.t_mean, s.x_mean, s.y_mean},
-                {s.t_stdev, s.x_stdev, s.y_stdev},
-                s.stage1TrainingData);
+            // V2 stage1 = {mom0}; V1 stage1 = {t,x,y}.
+            std::vector<double> mean  = isV2 ? std::vector<double>{s.mom0_mean}
+                                             : std::vector<double>{s.t_mean, s.x_mean, s.y_mean};
+            std::vector<double> sdev  = isV2 ? std::vector<double>{s.mom0_stdev}
+                                             : std::vector<double>{s.t_stdev, s.x_stdev, s.y_stdev};
+            s.stage1Model->normalizeData(mean, sdev, s.stage1TrainingData);
+            const int tag1 = packBasisTag(isV2 ? ModelLayout::TwoStageStage1Ptot1D
+                                               : ModelLayout::AllAtOnce6D, s.momentumBasis);
             if (diagnosticMode) {
-                runDiagnostics(*s.stage1Model, s.stage1TrainingData,
-                    {s.t_mean, s.x_mean, s.y_mean},
-                    {s.t_stdev, s.x_stdev, s.y_stdev},
-                    s.stage1ModelFile);
+                runDiagnostics(*s.stage1Model, s.stage1TrainingData, mean, sdev, s.stage1ModelFile);
             } else {
                 mf::LogInfo(moduleName)
                     << "Training stage-1 diffusion model with " << s.stage1TrainingData.size()
                     << " samples and " << s.trainingEpochs << " epochs...";
-                trainLoop(*s.stage1Model, s.stage1TrainingData, s.stage1ModelFile, false);
+                trainLoop(*s.stage1Model, s.stage1TrainingData, s.stage1ModelFile, false, tag1);
             }
         }
         if (s.trainStage2) {
             if (s.trainingSize > 0 && (int)s.stage2TrainingData.size() > s.trainingSize)
                 s.stage2TrainingData.resize(s.trainingSize);
-            s.stage2Model->normalizeData(
-                {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
-                {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
-                s.stage2TrainingData);
+            // normalizeData order = [data dims..., cond dims...].
+            // V2 stage2 data {t,x,y,mom1,mom2} cond {mom0};
+            // V1 stage2 data {mom0,mom1,mom2} cond {t,x,y}.
+            std::vector<double> mean = isV2
+                ? std::vector<double>{s.t_mean, s.x_mean, s.y_mean, s.mom1_mean, s.mom2_mean, s.mom0_mean}
+                : std::vector<double>{s.mom0_mean, s.mom1_mean, s.mom2_mean, s.t_mean, s.x_mean, s.y_mean};
+            std::vector<double> sdev = isV2
+                ? std::vector<double>{s.t_stdev, s.x_stdev, s.y_stdev, s.mom1_stdev, s.mom2_stdev, s.mom0_stdev}
+                : std::vector<double>{s.mom0_stdev, s.mom1_stdev, s.mom2_stdev, s.t_stdev, s.x_stdev, s.y_stdev};
+            s.stage2Model->normalizeData(mean, sdev, s.stage2TrainingData);
+            const int tag2 = packBasisTag(isV2 ? ModelLayout::TwoStageStage2_5D
+                                               : ModelLayout::AllAtOnce6D, s.momentumBasis);
             if (diagnosticMode) {
-                runDiagnostics(*s.stage2Model, s.stage2TrainingData,
-                    {s.pr_mean, s.pphi_mean, s.pz_mean, s.t_mean, s.x_mean, s.y_mean},
-                    {s.pr_stdev, s.pphi_stdev, s.pz_stdev, s.t_stdev, s.x_stdev, s.y_stdev},
-                    s.stage2ModelFile);
+                runDiagnostics(*s.stage2Model, s.stage2TrainingData, mean, sdev, s.stage2ModelFile);
             } else {
                 mf::LogInfo(moduleName)
                     << "Training stage-2 diffusion model with " << s.stage2TrainingData.size()
                     << " samples and " << s.trainingEpochs << " epochs...";
-                trainLoop(*s.stage2Model, s.stage2TrainingData, s.stage2ModelFile, true);
+                trainLoop(*s.stage2Model, s.stage2TrainingData, s.stage2ModelFile, true, tag2);
             }
         }
     } else {
@@ -1744,20 +1800,18 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             throw cet::exception(moduleName) << "All-at-once training requires SBDMallAtOnceModelFile.";
         if (s.trainingSize > 0 && (int)s.allAtOnceTrainingData.size() > s.trainingSize)
             s.allAtOnceTrainingData.resize(s.trainingSize);
-        s.allAtOnceModel->normalizeData(
-            {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
-            {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
-            s.allAtOnceTrainingData);
+        // All-at-once vector (t,x,y,mom0,mom1,mom2) in either basis.
+        std::vector<double> mean = {s.t_mean, s.x_mean, s.y_mean, s.mom0_mean, s.mom1_mean, s.mom2_mean};
+        std::vector<double> sdev = {s.t_stdev, s.x_stdev, s.y_stdev, s.mom0_stdev, s.mom1_stdev, s.mom2_stdev};
+        s.allAtOnceModel->normalizeData(mean, sdev, s.allAtOnceTrainingData);
+        const int tagA = packBasisTag(ModelLayout::AllAtOnce6D, s.momentumBasis);
         if (diagnosticMode) {
-            runDiagnostics(*s.allAtOnceModel, s.allAtOnceTrainingData,
-                {s.t_mean, s.x_mean, s.y_mean, s.pr_mean, s.pphi_mean, s.pz_mean},
-                {s.t_stdev, s.x_stdev, s.y_stdev, s.pr_stdev, s.pphi_stdev, s.pz_stdev},
-                s.allAtOnceModelFile);
+            runDiagnostics(*s.allAtOnceModel, s.allAtOnceTrainingData, mean, sdev, s.allAtOnceModelFile);
         } else {
             mf::LogInfo(moduleName)
                 << "Training all-at-once diffusion model with " << s.allAtOnceTrainingData.size()
                 << " samples and " << s.trainingEpochs << " epochs...";
-            trainLoop(*s.allAtOnceModel, s.allAtOnceTrainingData, s.allAtOnceModelFile, false);
+            trainLoop(*s.allAtOnceModel, s.allAtOnceTrainingData, s.allAtOnceModelFile, false, tagA);
         }
     }
 }

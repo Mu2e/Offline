@@ -45,6 +45,8 @@
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -105,6 +107,27 @@ namespace mu2e {
           Comment("CSV filename for the all-at-once 6D model parameters"),
           ""
         };
+        fhicl::Atom<std::string> SBDMstage1Method{
+          Name("SBDMstage1Method"),
+          Comment("V2 two-stage stage-1 pTotal source: DIFFUSION (trained 1-D model) "
+                  "or a non-diffusion resampler INVERSE_CDF / SPLINE_CDF / KDE."),
+          "DIFFUSION"
+        };
+        fhicl::Atom<std::string> resamplerSourceRootFile{
+          Name("resamplerSourceRootFile"),
+          Comment("Source ROOT file for the pTotal resampler (required when SBDMstage1Method != DIFFUSION)."),
+          ""
+        };
+        fhicl::Atom<std::string> resamplerSourceTreeName{
+          Name("resamplerSourceTreeName"),
+          Comment("TTree name in resamplerSourceRootFile."),
+          "ttree"
+        };
+        fhicl::Atom<unsigned long> VirtualDetectorID{
+          Name("VirtualDetectorID"),
+          Comment("VD id selection for the resampler source (must match training)."),
+          0
+        };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
           Comment("If true, use Heun's method for reverse diffusion. Otherwise use Euler."),
@@ -153,6 +176,7 @@ namespace mu2e {
       void produce(art::Event& event) override;
 
     private:
+
       art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randFlat_;
       CLHEP::RandGaussQ randGaussQ_;
@@ -173,6 +197,15 @@ namespace mu2e {
       std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel_;
       std::unique_ptr<ScoreBasedDiffusionModel> stage1Model_;
       std::unique_ptr<ScoreBasedDiffusionModel> stage2Model_;
+
+      // Momentum basis + per-model layout, recovered from the loaded model(s)'
+      // opaque basisTag() so the inverse transform auto-selects (no fcl needed).
+      VDResampler::MomentumBasis basis_ = VDResampler::MomentumBasis::V1_CylindricalTransformed;
+
+      // V2 stage-1 pTotal source. When != DIFFUSION the 1-D stage-1 diffusion model is
+      // replaced by ptotResampler_ (built from a required ROOT source file at ctor time).
+      VDResampler::Stage1Method stage1Method_ = VDResampler::Stage1Method::DIFFUSION;
+      VDResampler::PtotResampler ptotResampler_;
 
       int pdgId_ = 0;
 
@@ -226,19 +259,51 @@ namespace mu2e {
         << "VDz0 must be finite (got " << VDz0_ << ").";
     }
 
+    stage1Method_ = VDResampler::parseStage1Method(conf().SBDMstage1Method(), "VDResamplerGenerateFromModel");
+    const bool useResampler = (stage1Method_ != VDResampler::Stage1Method::DIFFUSION);
+
     if (useTwoStageModel_) {
-      if (stage1ModelFile_.empty() || stage2ModelFile_.empty()) {
+      // stage1 may be supplied either by a trained 1-D diffusion model OR by the
+      // pTotal resampler. Stage2 is always required.
+      if (stage2ModelFile_.empty()) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Two-stage generation requires both stage1ModelFile and stage2ModelFile.";
+          << "Two-stage generation requires stage2ModelFile.";
+      }
+      if (!useResampler && stage1ModelFile_.empty()) {
+        throw cet::exception("VDResamplerGenerateFromModel")
+          << "Two-stage generation with SBDMstage1Method=DIFFUSION requires stage1ModelFile.";
       }
 
-      stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
-        ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
-      );
       stage2Model_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile_)
       );
-      pdgId_ = loadPDGIdFromFileName(stage1ModelFile_);
+      basis_ = VDResampler::unpackMomentumBasis(stage2Model_->basisTag());
+      pdgId_ = loadPDGIdFromFileName(stage2ModelFile_);
+
+      if (useResampler) {
+        // Build the pTotal resampler from the required source ROOT file. The basis is
+        // read from stage2 (stage1 has no model). The resampler source selection uses
+        // the fcl VD id and the pdgId derived from the stage2 file name (so source and
+        // model necessarily agree on the particle).
+        const std::string srcFile = conf().resamplerSourceRootFile();
+        if (srcFile.empty())
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "SBDMstage1Method=" << conf().SBDMstage1Method()
+            << " requires resamplerSourceRootFile (the pTotal source).";
+        ptotResampler_.buildFromRoot(srcFile, conf().resamplerSourceTreeName(),
+                                     conf().VirtualDetectorID(), pdgId_,
+                                     stage1Method_, "VDResamplerGenerateFromModel");
+      } else {
+        stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
+          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
+        );
+        // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
+        const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
+        if (stage1Basis != basis_)
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "Stage-1 and stage-2 models disagree on momentum basis (tags "
+            << stage1Model_->basisTag() << " vs " << stage2Model_->basisTag() << ").";
+      }
     } else {
       if (allAtOnceModelFile_.empty()) {
         throw cet::exception("VDResamplerGenerateFromModel")
@@ -248,6 +313,7 @@ namespace mu2e {
       allAtOnceModel_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, allAtOnceModelFile_)
       );
+      basis_ = VDResampler::unpackMomentumBasis(allAtOnceModel_->basisTag());
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
     }
 
@@ -271,78 +337,21 @@ namespace mu2e {
   void VDResamplerGenerateFromModel::produce(art::Event& event) {
     auto output = std::make_unique<GenParticleCollection>();
 
-    double x_trans = 0.0;
-    double y_trans = 0.0;
-    double t_trans = 0.0;
-    double pr_t = 0.0;
-    double pphi_t = 0.0;
-    double pz_t = 0.0;
+    const VDResampler::SamplerSettings settings{
+      useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_};
 
-    // Generate a new sample using the loaded model(s)
-    // note the values here are transformed and need to be inverted back to the original coordinates after sampling.
+    // Generate one transformed sample (shared with VDResamplerGenerateMix).
+    VDResampler::GeneratedTransformed g;
     if (useTwoStageModel_) {
-      const SBDMGeneratedSample stage1Sample = stage1Model_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (stage1Sample.zscore.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-1 model returned " << stage1Sample.zscore.size() << " values, expected 3.";
-      }
-
-      t_trans = stage1Sample.value[0];
-      x_trans = stage1Sample.value[1];
-      y_trans = stage1Sample.value[2];
-
-      // as the models are trained with normalized data, the conditions need to use z-scores
-      double t_zscore = stage1Sample.zscore[0];
-      double x_zscore = stage1Sample.zscore[1];
-      double y_zscore = stage1Sample.zscore[2];
-
-      const std::vector<double> stage2Condition = {t_zscore, x_zscore, y_zscore};
-      const SBDMGeneratedSample stage2Sample = stage2Model_->generateSample(stage2Condition, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (stage2Sample.zscore.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-2 model returned " << stage2Sample.zscore.size() << " values, expected 3.";
-      }
-
-      pr_t = stage2Sample.value[0];
-      pphi_t = stage2Sample.value[1];
-      pz_t = stage2Sample.value[2];
+      g = VDResampler::generateTwoStage(
+        stage1Model_.get(), *stage2Model_, stage1Method_, ptotResampler_,
+        randFlat_, randGaussQ_, settings, p0_, "VDResamplerGenerateFromModel");
     } else {
-      const SBDMGeneratedSample sample = allAtOnceModel_->generateSample({}, useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_);
-      if (sample.zscore.size() != 6u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "All-at-once model returned " << sample.zscore.size() << " values, expected 6.";
-      }
-
-      t_trans = sample.value[0];
-      x_trans = sample.value[1];
-      y_trans = sample.value[2];
-      pr_t = sample.value[3];
-      pphi_t = sample.value[4];
-      pz_t = sample.value[5];
+      g = VDResampler::generateAllAtOnce(*allAtOnceModel_, settings, "VDResamplerGenerateFromModel");
     }
 
-    VDResampler::invertGeneratedSample(
-      x_trans,
-      y_trans,
-      t_trans,
-      pr_t,
-      pphi_t,
-      pz_t,
-      x0_,
-      y0_,
-      t0_,
-      tScale_,
-      p0_,
-      VDr_,
-      VDz0_,
-      x_gen_,
-      y_gen_,
-      z_gen_,
-      t_gen_,
-      px_gen_,
-      py_gen_,
-      pz_gen_
-    );
+    const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+    VDResampler::invertGenerated(g, ip, x_gen_, y_gen_, z_gen_, t_gen_, px_gen_, py_gen_, pz_gen_);
 
     mass_gen_ = pdt_->particle(pdgId_).mass();
     const CLHEP::Hep3Vector momParticle(px_gen_, py_gen_, pz_gen_);

@@ -36,8 +36,12 @@
 // Offline includes
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh" // parseStage1Method (validation)
+
+#include "fhiclcpp/ParameterSet.h"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -48,6 +52,53 @@ typedef unsigned long VolumeId_type;
 namespace mu2e {
   namespace {
     constexpr int kTwoStageTrainingHitThreshold = 100000;
+
+    // fhicl key for a pdgId: negatives can't start with '-', so use 'm<abs>'
+    // (matching the model-file token convention), positives use the bare number.
+    inline std::string pdgPlanKey(int pdgId) {
+      return "pdg_" + std::string(pdgId < 0 ? "m" : "") + std::to_string(std::abs(pdgId));
+    }
+
+    // Resolve a per-particle training entry from the plan ParameterSet. pdgId is the
+    // OUTER axis (a particle usually trains similarly across sources); source is the
+    // finer override. Fallback order:
+    //   particles.<pdg_key>.<source>  ->  particles.<pdg_key>.default  ->
+    //   particles.default.default
+    // Throws if no default chain exists (the plan file is required and must supply at
+    // least particles.default.default).
+    fhicl::ParameterSet resolvePlanEntry(const fhicl::ParameterSet& plan,
+                                         const std::string& source, int pdgId,
+                                         const std::string& moduleName)
+    {
+      const fhicl::ParameterSet particles =
+        plan.get<fhicl::ParameterSet>("particles", fhicl::ParameterSet());
+      const std::string pdgKey = pdgPlanKey(pdgId);
+
+      fhicl::ParameterSet pdgSet;
+      if (particles.has_key(pdgKey))         pdgSet = particles.get<fhicl::ParameterSet>(pdgKey);
+      else if (particles.has_key("default")) pdgSet = particles.get<fhicl::ParameterSet>("default");
+      else
+        throw cet::exception(moduleName)
+          << "trainingPlanFile: 'particles' has neither \"" << pdgKey
+          << "\" nor a 'default' entry.";
+
+      if (pdgSet.has_key(source))            return pdgSet.get<fhicl::ParameterSet>(source);
+      if (pdgSet.has_key("default"))         return pdgSet.get<fhicl::ParameterSet>("default");
+      throw cet::exception(moduleName)
+        << "trainingPlanFile: particle \"" << pdgKey << "\" has neither source \""
+        << source << "\" nor a 'default' entry.";
+    }
+
+    // Per-particle stage-1 method string (validated against the resampler enum).
+    std::string resolveStage1Method(const fhicl::ParameterSet& plan,
+                                    const std::string& source, int pdgId,
+                                    const std::string& moduleName)
+    {
+      const fhicl::ParameterSet entry = resolvePlanEntry(plan, source, pdgId, moduleName);
+      const std::string method = entry.get<std::string>("stage1Method", "DIFFUSION");
+      (void) VDResampler::parseStage1Method(method, moduleName); // validate; throws on typo
+      return method;
+    }
   }
 
   class VDResamplerConfigure : public art::EDAnalyzer {
@@ -62,6 +113,7 @@ namespace mu2e {
         fhicl::Atom<std::string> fclDir{Name("fclDir"), Comment("Directory to store the generated fhicl files"), ""};
         fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files")};
         fhicl::Atom<int> trainingThreshold{Name("trainingThreshold"), Comment("Minimum number of hits for a particle type to be included in the training"), 100};
+        fhicl::Atom<std::string> trainingPlanFile{Name("trainingPlanFile"), Comment("Required fhicl guideline file with per-(source,pdg) training configuration (e.g. stage1Method). See resolveStage1Method for the lookup order.")};
         fhicl::Atom<bool> doROOTDump{Name("doROOTDump"), Comment("Whether to dump the VD hit info into a ROOT file for debugging and analysis"), false};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -76,6 +128,7 @@ namespace mu2e {
       std::string fclDir;
       std::string dataSourceTag;
       int trainingThreshold;
+      std::string trainingPlanFile;
       bool doROOTDump;
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
@@ -95,6 +148,7 @@ namespace mu2e {
     fclDir(conf().fclDir()),
     dataSourceTag(conf().dataSourceTag()),
     trainingThreshold(conf().trainingThreshold()),
+    trainingPlanFile(conf().trainingPlanFile()),
     doROOTDump(conf().doROOTDump()) {
     if (doROOTDump) {
         art::ServiceHandle<art::TFileService> tfs;
@@ -185,6 +239,14 @@ namespace mu2e {
         throw cet::exception("VDResamplerConfigure::endJob") << "Cannot open file " << fclFile;
     }
 
+    // Load the (required) training-plan guideline file. Per-particle training choices
+    // (stage1Method, and later curriculum settings) are resolved from it by (pdgId, source).
+    if (trainingPlanFile.empty())
+        throw cet::exception("VDResamplerConfigure::endJob")
+            << "trainingPlanFile is required but empty.";
+    const fhicl::ParameterSet trainingPlan =
+        ParameterSetFromFile(trainingPlanFile).pSet();
+
     std::string trainingPathNames = "";
     std::vector<std::pair<std::string, std::string>> trainingPaths; // pairs of (moduleName, pathName)
 
@@ -212,8 +274,13 @@ namespace mu2e {
             << " has only " << part.second << " hits, which is below the training threshold of "
             << trainingThreshold << ". This particle type will NOT be included in the training.";
       } else {
-        // mark how many models will be trained for this particle type (1 for all-at-once, 2 for two-stage)
-        sumOutFile << "," << (useTwoStageTraining ? "2" : "1") << "\n";
+        // Columns: pdgId, hitCount, stage-mode (1=all-at-once, 2=two-stage), stage1Method.
+        // stage1Method (the V2 two-stage stage-1 pTotal source: DIFFUSION / INVERSE_CDF /
+        // SPLINE_CDF / KDE) is resolved per (pdgId, dataSourceTag) from the training plan.
+        // VDResamplerGenerateMix reads this column (fields[3]) per particle.
+        const std::string stage1Method =
+          resolveStage1Method(trainingPlan, dataSourceTag, part.first, "VDResamplerConfigure::endJob");
+        sumOutFile << "," << (useTwoStageTraining ? "2" : "1") << "," << stage1Method << "\n";
 
         // Generate the fcl file for training for this particle type
         // if pdgID is negative, we will use "m" instead of "-" in the filename to avoid issues with file naming
@@ -234,8 +301,13 @@ namespace mu2e {
                     << "      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag\n"
                     << "      SBDMuseTwoStageTraining : " << (useTwoStageTraining ? "true" : "false") << "\n";
         if (useTwoStageTraining) {
-          fclOutFile << "      SBDMstage1ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage1_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n"
-                     << "      SBDMstage2ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage2_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
+          // Under a resampler stage-1 method the 1-D pTotal model is NOT trained (the
+          // generator draws pTotal directly), so omit SBDMstage1ModelFile — the train
+          // module trains stage1 only when that path is non-empty. Always train stage2.
+          if (stage1Method == "DIFFUSION") {
+            fclOutFile << "      SBDMstage1ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage1_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
+          }
+          fclOutFile << "      SBDMstage2ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage2_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
         } else {
           fclOutFile << "      SBDMallAtOnceModelFile : \"" << VDResamplerDir << "/SBDMmodel_allAtOnce_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
         }

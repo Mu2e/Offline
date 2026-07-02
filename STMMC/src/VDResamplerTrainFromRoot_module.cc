@@ -59,6 +59,7 @@ namespace mu2e {
         fhicl::Atom<double> SBDMadamBeta2{     Name("SBDMadamBeta2"),     Comment("Adam beta2"),                                0.999 };
         fhicl::Atom<double> SBDMadamEps{       Name("SBDMadamEps"),       Comment("Adam epsilon"),                              1e-8 };
         fhicl::Atom<std::string> SBDMnoiseSchedule{ Name("SBDMnoiseSchedule"), Comment("Noise schedule (LINEAR/COSINE/LOGSIG)"), "COSINE" };
+        fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<double> SBDMbetaMin{       Name("SBDMbetaMin"),       Comment("Min beta (LINEAR schedule)"),                1e-4 };
         fhicl::Atom<double> SBDMbetaMax{       Name("SBDMbetaMax"),       Comment("Max beta (LINEAR schedule)"),                0.02 };
         fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Cosine offset"),                             0.008 };
@@ -141,6 +142,9 @@ namespace mu2e {
       std::string inputRootFile_;
       std::string treeName_;
       VDResampler::TrainState state_;
+      // Accumulates pz-fallback hits over the TTree loop; one summary warning in endJob
+      // (V2 slope basis only; see PzFallbackStats).
+      VDResampler::PzFallbackStats pzFallback_;
   };
 
   VDResamplerTrainFromRoot::VDResamplerTrainFromRoot(const Parameters& conf) :
@@ -159,6 +163,7 @@ namespace mu2e {
     state_.ckptStage1File      = conf().SBDMloadCheckPointStage1ModelFile();
     state_.ckptStage2File      = conf().SBDMloadCheckPointStage2ModelFile();
     state_.useTwoStageTraining = conf().SBDMuseTwoStageTraining();
+    state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrainFromRoot");
     state_.virtualDetectorID   = conf().VirtualDetectorID();
     state_.VDz0                = conf().VDz0();
     state_.VDr                 = conf().VDr();
@@ -281,17 +286,30 @@ namespace mu2e {
       if (vdId != state_.virtualDetectorID || (stepPdgId != state_.pdgID && state_.pdgID != 0) || pz <= 0)
         continue;
 
-      double x_trans, y_trans, t_trans, pr_t, pphi_t, pz_t;
+      // mom0/mom1/mom2 are the three transformed momentum values in state_.momentumBasis.
+      double x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t;
       VDResampler::forwardTransformSample(
           x, y, z, time, px, py, pz,
           VDResampler::kX0, VDResampler::kY0, VDResampler::kT0, VDResampler::kTScale, VDResampler::kP0,
           state_.VDr, state_.VDz0,
-          x_trans, y_trans, t_trans, pr_t, pphi_t, pz_t);
+          x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t,
+          state_.momentumBasis, &pzFallback_);
 
-      VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, pr_t, pphi_t, pz_t);
-      VDResampler::collectSample (state_, t_trans, x_trans, y_trans, pr_t, pphi_t, pz_t);
+      VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
+      VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
     }
     fin.Close();
+
+    // Single summary warning for any pz fallbacks accumulated over the TTree loop.
+    if (pzFallback_.count > 0) {
+      std::ostringstream oss;
+      oss << "pz fell below kPzSafetyEpsilon (" << VDResampler::kPzSafetyEpsilon << ") in "
+          << pzFallback_.count << " hit(s); the floor was used in a slope division "
+          << "(pz>0 expected from the selection). First " << pzFallback_.firstValues.size()
+          << " offending pz value(s):";
+      for (double v : pzFallback_.firstValues) oss << ' ' << v;
+      mf::LogWarning("VDResamplerTrainFromRoot") << oss.str();
+    }
 
     VDResampler::runTraining(state_, "VDResamplerTrainFromRoot");
   }
