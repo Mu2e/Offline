@@ -264,6 +264,11 @@
  <class name="mu2e::KKLineCollection" persistent="false"/>
  <class name="art::Wrapper<mu2e::KKLineCollection>"/>
 
+ <class name="mu2e::KalSeedDtDt"/>
+ <class name="mu2e::KalSeedDtDtCollection"/>
+ <class name="std::vector<mu2e::KalSeedDtDt>"/>
+ <class name="art::Wrapper<mu2e::KalSeedDtDtCollection>"/>
+
  <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
  <class name="mu2e::TrkQualDetail"/>
@@ -452,7 +457,7 @@
  <class name="mu2e::STMFragmentSummary"/>
  <class name="mu2e::STMFragmentSummaryCollection"/>
  <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
- 
+
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
   <class name="mu2e::MSDHitCollection"/>
