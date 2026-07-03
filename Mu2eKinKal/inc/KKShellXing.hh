@@ -17,7 +17,14 @@ namespace mu2e {
   // We correct the eloss for thick passive materials (ie. concrete blocks) by scaling the crossing path length.
   // Side-effect: the multiple-scattering variance scales too (~3-8% larger pointing sigma at high p),
   // which does not touch the |p| residual. f>=1 always (we never reduce the loss).
-  // Only applied if KinKal is configured with IonizationEnergyLossMode = moyalmean (KKMaterial fcl)
+  // Only applied if KinKal is configured with IonizationEnergyLossMode = moyalmean (KKMaterial fcl).
+  //
+  // This hand-rolls the unrestricted Bethe mean from DetMaterial's eloss_xi/eexc/densityCorrection.
+  // It intentionally omits DetMaterial::shellCorrection (which ionizationEnergyLossMPV includes): that
+  // term is negligible for the ~100 MeV/c muons and electrons extrapolated here, and this whole helper
+  // is a stopgap.
+  // TODO(remove once KinKal provides the unrestricted ionization mean directly as an energy-loss option,
+  // then this ratio and the betheCorr plumbing can be deleted).
   inline double betheCorrectionFactor(MatEnv::DetMaterial const& mat, double mom, double pathlen, double mass) {
     if(mom <= 0.0 || pathlen == 0.0) return 1.0;
     static constexpr double me = 0.510998950;               // electron mass [MeV]

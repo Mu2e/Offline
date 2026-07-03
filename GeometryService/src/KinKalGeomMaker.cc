@@ -146,10 +146,13 @@ namespace mu2e {
       materialCylinders.emplace_back(sid,cylinder,material,rout-rin);
       kkg_->map_.emplace(std::make_pair(sid,std::static_pointer_cast<Surface>(cylinder)));
     };
+    // KinKal DetMaterial name for the DS thermal shield (aluminium). The G4 geometry calls this
+    // material "G4_Al"; here we use a DS-specific MatEnv material so the passive plane self-documents.
+    std::string const dsShieldMaterial = "DSShieldAl";
     addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_CryoInner),ds->rIn1(),ds->rIn2(),ds->position().z(),ds->halfLength(),ds->material());
     addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_CryoOuter),ds->rOut1(),ds->rOut2(),ds->position().z(),ds->halfLength(),ds->material());
-    addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_ShieldInner),ds->shield_rIn1(),ds->shield_rIn2(),ds->position().z(),ds->shield_halfLength(),ds->shield_material());
-    addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_ShieldOuter),ds->shield_rOut1(),ds->shield_rOut2(),ds->position().z(),ds->shield_halfLength(),ds->shield_material());
+    addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_ShieldInner),ds->shield_rIn1(),ds->shield_rIn2(),ds->position().z(),ds->shield_halfLength(),dsShieldMaterial);
+    addMaterialCylinder(SurfaceId(SurfaceIdEnum::DS_ShieldOuter),ds->shield_rOut1(),ds->shield_rOut2(),ds->position().z(),ds->shield_halfLength(),dsShieldMaterial);
     // Coils: collapse the 11 short coil cylinders into ONE long cylinder spanning the coil z-range.
     // NB: the DSCoilMix density (TrackerConditions/data/MaterialsList.data) assumes the effective thickness below;
     // both follow the run-2 coil geometry.
@@ -191,11 +194,11 @@ namespace mu2e {
           ds->endWallHalfLength(), ds->material());
       addEndWall(SurfaceId(SurfaceIdEnum::DS_Back,1),  dsz+cOff, ds->rIn1(), ds->rOut2(),
           ds->endWallHalfLength(), ds->material());
-      // thermal-shield end walls (G4_Al)
+      // thermal-shield end walls (aluminium; see dsShieldMaterial above)
       addEndWall(SurfaceId(SurfaceIdEnum::DS_Front,2), dsz-sOff, ds->shield_rIn1(), ds->shield_rOut2(),
-          ds->shield_endWallHalfLength(), ds->shield_material());
+          ds->shield_endWallHalfLength(), dsShieldMaterial);
       addEndWall(SurfaceId(SurfaceIdEnum::DS_Back,2),  dsz+sOff, ds->shield_rIn1(), ds->shield_rOut2(),
-          ds->shield_endWallHalfLength(), ds->shield_material());
+          ds->shield_endWallHalfLength(), dsShieldMaterial);
     }
 
     // hard-coded for now
@@ -347,7 +350,9 @@ namespace mu2e {
       // Each CRV module carries a ~12.7 mm aluminium strongback (support plate) on the tracker-facing side
       // of the scintillator stack. Thickness (strongBackThickness, above) and material now come from the
       // CRV geometry rather than crs.strongBackThickness / crs.aluminumSheetMaterialName.
-      std::string const strongBackMaterial = shield.getAluminumSheetMaterialName();  // G4_Al
+      // KinKal DetMaterial name for the strongback (aluminium). The CRV geometry's aluminium-sheet
+      // material is the G4 name "G4_Al"; we use a CRV-specific MatEnv material so the plane self-documents.
+      std::string const strongBackMaterial = "CRVStrongbackAl";
       auto const sbcenter = midpoint - (whw + 0.5*strongBackThickness)*wdir;
       auto const sbplane  = std::make_shared<KinKal::Rectangle>(wdir,udir,sbcenter,uhw,vhw);
       SurfaceId sbsid(SurfaceIdEnum::CRV_StrongBack, static_cast<int>(kkg_->passiveMaterialPlanes_.size()));
@@ -417,7 +422,6 @@ namespace mu2e {
 
   void KinKalGeomMaker::makePassiveMaterials() {
     GeomHandle<DetectorSystem> det;
-    double const invSqrt3 = 1.0/std::sqrt(3.0);
     // External shielding (concrete) geometry now comes from the ExtShieldDownstream GeometryService object
     art::ServiceHandle<GeometryService> geomService;
     if(!geomService->hasElement<ExtShieldDownstream>()) return;
@@ -487,8 +491,12 @@ namespace mu2e {
     // Each is modelled with two Gauss-point planes so tracks through the crossbar-
     // only region (the ~2/3 of z-width outside the stem) correctly see half the
     // concrete compared to tracks through the full T height.
-    int const nType2 = nBoxOf(2);
-    if(nType2 > 0) {
+    // Wrapped in an IIFE so a degenerate Type-2 (no boxes / empty outline) skips only this block
+    // via `return`, without abandoning the side walls / roof / endcap / hatch handled below.
+    [&]{
+      int const nType2 = nBoxOf(2);
+      if(nType2 <= 0) return;
+      double const invSqrt3 = 1.0/std::sqrt(3.0);
       std::vector<double> uVerts = vertsOf(2,true), vVerts = vertsOf(2,false);
       if(uVerts.empty() || vVerts.empty()) return;
 
@@ -562,7 +570,7 @@ namespace mu2e {
           kkg_->map_.emplace(std::make_pair(sid, std::static_pointer_cast<Surface>(plane)));
         }
       }
-    }
+    }();
 
     // Collapse all type-<boxType> ExtShieldDownstream concrete boxes of a region into one
     // averaged plane. 'normalAxis' is the slab normal (0=x,1=y,2=z); the in-plane
@@ -651,6 +659,9 @@ namespace mu2e {
       double const roofYhalfThick = vHalf(2);   // V outline half -> roof vertical depth (452.2)
       double const roofXhalfBlock = lenHalf(2); // length/2 spans x (~2459)
       double const roofZhalfBlock = uHalf(2);   // U crossbar half spans z (680.8)
+      // These slabs borrow Type-2's dimensions; if Type-2 is zeroed but these types aren't, skip
+      // rather than emit zero-thickness planes (a partial config the run-1 nBoxOf(2)<=0 path misses).
+      if(roofYhalfThick > 0.0) {
       // type 4: barite roof T blocks (upstream)
       buildAveragedRegion(4, 1, roofXhalfBlock, roofZhalfBlock, roofYhalfThick, nullptr);
       // type 23: barite roof T blocks around the stopping target
@@ -663,6 +674,7 @@ namespace mu2e {
       // outline spans x and their short length spans z, modelled at the roof slab depth.
       buildAveragedRegion(29, 1, uHalf(29), lenHalf(29), roofYhalfThick, nullptr);
       buildAveragedRegion(30, 1, uHalf(30), lenHalf(30), roofYhalfThick, nullptr);
+      }
     }
 
     // --- Downstream endcap concrete (z-normal). Types 27 (3 boxes) and 28 (1 box)
@@ -681,10 +693,14 @@ namespace mu2e {
       // z half-thickness is each type's own length/2. (Type 28 shares the type-27 x-y face, as before.)
       double const ecXhalf = uHalf(27);   // U outline -> x half (2463.8)
       double const ecYhalf = vSpanH(27);  // V outline span -> y half (~1623)
+      // Both endcap types use Type-27's x-y face; skip if Type-27 is zeroed so Type-28 doesn't
+      // emit a zero-area plane.
+      if(ecXhalf > 0.0 && ecYhalf > 0.0) {
       // type 27: 3 stacked endcap blocks (cover most of the x-y face)
       buildAveragedRegion(27, 2, ecXhalf, ecYhalf, lenHalf(27), nullptr);
       // type 28: endcap bottom block
       buildAveragedRegion(28, 2, ecXhalf, ecYhalf, lenHalf(28), nullptr);
+      }
     }
 
     // Run-1 geometries zero the ExtShieldDownstream concrete T-blocks but retain the building

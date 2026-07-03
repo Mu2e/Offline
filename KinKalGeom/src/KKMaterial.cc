@@ -1,6 +1,7 @@
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace mu2e {
   using MatDBInfo = MatEnv::MatDBInfo;
@@ -21,6 +22,9 @@ namespace mu2e {
       // The KKShellXing Bethe (unrestricted ionization mean) correction is derived assuming KinKal
       // returns the restricted Moyal mean; only enable it in that mode so the two stay consistent.
       betheCorrection_ = (dmconf.elossmode_ == DetMaterial::moyalmean);
+      if(!betheCorrection_)
+        mf::LogInfo("KKMaterial") << "IonizationEnergyLossMode is not moyalmean ("
+          << matconfig.elossMode() << "): the KKShellXing Bethe-mean path correction is inactive.";
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();
