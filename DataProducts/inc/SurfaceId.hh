@@ -31,11 +31,12 @@ namespace mu2e {
         CRV_E1=230, CRV_E2,                                   // CRV-TS Extension
         CRV_U =240,                                           // CRV-Upstream
         CRV_D1=250, CRV_D2, CRV_D3, CRV_D4,                   // CRV-Downstream
-        CRV_C1=260, CRV_C2                                    // CRV-Cryo-Outer
+        CRV_C1=260, CRV_C2,                                   // CRV-Cryo-Outer
+        CRV_M1=270, CRV_M2, CRV_M3, CRV_M4, CRV_M5, CRV_M6, CRV_M7, CRV_M8 //CRV-Muon-Taggers
       };
 
     // Update this counter whenever you add/remove surface IDs from the enum above.
-    static constexpr std::size_t nSurfaceIds = 47;
+    static constexpr std::size_t nSurfaceIds = 55;
 
     static std::string const& typeName();
     static std::map<enum_type,std::string> const& names();

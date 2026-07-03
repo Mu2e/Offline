@@ -1,12 +1,5 @@
-#ifndef DbTables_CalTimeCalib_hh
-#define DbTables_CalTimeCalib_hh
-
-
-/*
-per SiPM time calibration constants reco table -
-S Middleton 2023
-
-*/
+#ifndef DbTables_CalBaselines_hh
+#define DbTables_CalBaselines_hh
 
 #include <string>
 #include <iomanip>
@@ -19,25 +12,27 @@ S Middleton 2023
 
 namespace mu2e {
 
-  class CalTimeCalib : public DbTable {
+  class CalBaselines : public DbTable {
   public:
-  typedef std::shared_ptr<CalTimeCalib> ptr_t;
-  typedef std::shared_ptr<const CalTimeCalib> cptr_t;
+  typedef std::shared_ptr<CalBaselines> ptr_t;
+  typedef std::shared_ptr<const CalBaselines> cptr_t;
 
     class Row {
     public:
-      Row(CaloSiPMId  roid, float tcorr):_roid(roid),_tcorr(tcorr) {}
+      Row(CaloSiPMId  roid, float baseline, float threshold):_roid(roid),_baseline(baseline),_threshold(threshold) {}
       CaloSiPMId   roid() const { return _roid;}
-      float tcorr() const { return _tcorr; } // correction in ns
+      float baseline() const { return _baseline; }
+      float threshold() const { return _threshold; }
 
     private:
-      CaloSiPMId   _roid;
-      float _tcorr;
+      CaloSiPMId _roid;
+      float _baseline;
+      float _threshold;
     };
 
-    constexpr static const char* cxname = "CalTimeCalib";
+    constexpr static const char* cxname = "CalBaselines";
 
-    CalTimeCalib():DbTable(cxname,"cal.timecalib","roid,tcorr"){}
+    CalBaselines():DbTable(cxname,"cal.baselines","roid,baseline,threshold"){}
 
     const Row& row(CaloSiPMId id) const {
                 return _rows.at(id.id());
@@ -52,10 +47,11 @@ namespace mu2e {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
     if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
-        throw cet::exception("CALOTIMECALIB_BAD_INDEX")<<"CalTimeCalib::addRow found index out of order:"<<index << " != " << int(_rows.size()) <<"\n";
+        throw cet::exception("CALOBASELINES_BAD_INDEX")<<"CalBaselines::addRow found index out of order:"<<index << " != " << int(_rows.size()) <<"\n";
       }
-       _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]));
-
+       _rows.emplace_back(CaloSiPMId(index),
+       std::stof(columns[1]),
+       std::stof(columns[2]));
     }
 
 
@@ -63,7 +59,8 @@ namespace mu2e {
       Row const& r = _rows.at(irow);
       sstream << std::fixed << std::setprecision(5);
       sstream << r.roid()<<",";
-      sstream << r.tcorr();
+      sstream << r.baseline()<<",";
+      sstream << r.threshold();
     }
 
     virtual void clear() override { baseClear(); _rows.clear();}
