@@ -32,8 +32,8 @@ namespace mu2e {
     {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Sequence<std::string> kalSeeds { Name("kalSeeds") , Comment("KalSeed collection names") };
-      fhicl::Atom<int>             diagLevel { Name("diagLevel"), Comment("Diag Level")              ,0 };
+      fhicl::Sequence<std::string> kalSeeds  { Name("kalSeeds") , Comment("KalSeed (Ptr) collection names") };
+      fhicl::Atom<int>             diagLevel { Name("diagLevel"), Comment("Diag Level")                    ,0 };
     };
 
     std::vector<std::string> kalSeeds_;
@@ -62,7 +62,7 @@ namespace mu2e {
     for(const auto& hit : seed.hits()) {
       const double dt_hit = hit.time() - hit.TOTDriftTime();
       const double dt_trk = hit.particleToca();
-      const double t_unc  = std::sqrt(hit.fitDOCAVar())*hit._dvel;
+      const double t_unc  = hit._udresid / hit._dvel;
       const double weight = 1./t_unc;
       fitter.addPoint(dt_trk, dt_hit, weight);
     }
@@ -77,14 +77,35 @@ namespace mu2e {
 
   //================================================================
   void TrackDtDt::produce(art::Event& event) {
+
+    // Loop over all KalSeed collections
     for(const auto& name : kalSeeds_) {
-      auto const& seedHandle = event.getValidHandle<KalSeedCollection>(name);
-      auto const& seeds = *seedHandle;
+
+      // Retrieve the KalSeed collection from the event, checking if it is a collection of KalSeed or KalSeedPtr
+      art::Handle<KalSeedCollection> seedHandle;
+      event.getByLabel(name, seedHandle);
+      art::Handle<KalSeedPtrCollection> seedPtrHandle;
+      const bool isSeedCollection = seedHandle.isValid();
+      if(!isSeedCollection) {
+        event.getByLabel(name, seedPtrHandle);
+        if(!seedPtrHandle.isValid()) {
+          throw cet::exception("RECO") << "TrackDtDt: No KalSeed or KalSeedPtr collection with label " << name << std::endl;
+        }
+      }
+
+      // Create the output collection
       std::unique_ptr<KalSeedDtDtCollection> dtDtCol(new KalSeedDtDtCollection());
-      if(diagLevel_ > 0) std::cout << "[TrackDtDt::" << __func__ << "] Processing " << seeds.size() << " seeds from collection " << name << std::endl;
-      for(const auto& seed : seeds) {
+
+      // Loop over all seeds in the collection and fit the dt_{hit} / dt_{track fit poca time} distribution
+      const auto nseeds = (isSeedCollection) ? seedHandle->size() : seedPtrHandle->size();
+      if(diagLevel_ > 0) std::cout << "[TrackDtDt::" << __func__ << "] Processing " << nseeds << " seeds from collection " << name << std::endl;
+      for(size_t iseed = 0; iseed < nseeds; ++iseed) {
+        const auto& seed = (isSeedCollection) ? seedHandle->at(iseed) : *seedPtrHandle->at(iseed);
+        if(diagLevel_ > 1) std::cout << "[TrackDtDt::" << __func__ << "] Processing seed " << iseed << " with " << seed.hits().size() << " hits" << std::endl;
         dtDtCol->emplace_back(fitTrackDtDt(seed));
       }
+
+      // Put the results into the event
       event.put(std::move(dtDtCol), name);
     }
   }
