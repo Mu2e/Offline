@@ -24,9 +24,14 @@ namespace mu2e {
     // momentum, not transverse radius). If it is ever used, the input pz was
     // pathologically small or non-positive (pz>0 is expected from the selection).
     constexpr double kPzSafetyEpsilon = 1e-9;
-    // asinh slope scale for V2_PtotSlopesAsinh (slopes are near 0 for a forward
+    // asinh slope scales for the V2 asinh variant (slopes are near 0 for a forward
     // beam, so asinh ~ identity there; this only compresses large-|u| tails).
-    constexpr double kSlopeScale = 1.0;
+    // when additional kSlopeScales < 1 are used, the regions near u=0 are stretched 
+    // and the tails are more compressed.
+    // Separate scales for the radial (ur=pr/pz) and azimuthal (uphi=pphi/pz) slopes
+    // so each can be tuned to its own spread.
+    constexpr double kUrSlopeScale   = 0.05;
+    constexpr double kUphiSlopeScale = 0.05;
 
     // ------------------------------------------------------------------------
     // PzFallbackStats — accumulates pz-fallback occurrences across a transform
@@ -63,7 +68,7 @@ namespace mu2e {
     //       |p|=pTotal, pz>0. Momentum slot order: m0=log(pTotal/p0), m1=ur=pr/pz,
     //       m2=uphi=pphi/pz  (pTotal FIRST).
     //   V2_PtotSlopesAsinh : as V2_PtotSlopes but slopes (m1,m2) wrapped in
-    //       asinh(u/kSlopeScale) to tame heavy wide-angle tails.
+    //       asinh(ur/kUrSlopeScale), asinh(uphi/kUphiSlopeScale) to tame heavy wide-angle tails.
     // In the all-at-once vector t,x,y occupy slots 0,1,2 and momentum occupies 3,4,5.
     // ------------------------------------------------------------------------
     enum class MomentumBasis {
@@ -255,7 +260,7 @@ namespace mu2e {
     // ========================================================================
     // V2_PtotSlopes / V2_PtotSlopesAsinh  (all-at-once 6-vector)
     //   momentum slots: m0=log(pTotal/p0), m1=ur=pr/pz, m2=uphi=pphi/pz
-    //   asinh variant wraps the slopes: m1=asinh(ur/kSlopeScale), m2=asinh(uphi/kSlopeScale)
+    //   asinh variant wraps the slopes: m1=asinh(ur/kUrSlopeScale), m2=asinh(uphi/kUphiSlopeScale)
     //   Inversion: pz = pTotal/sqrt(1+ur^2+uphi^2) (>0), pr=ur*pz, pphi=uphi*pz.
     //   pzStats (optional): records pz-fallback occurrences for a single summary
     //   warning by the caller (see PzFallbackStats). The inverse needs no such
@@ -285,8 +290,8 @@ namespace mu2e {
       double ur   = pr   / pzSafe;
       double uphi = pphi / pzSafe;
       if (asinhSlopes) {
-        ur   = std::asinh(ur   / kSlopeScale);
-        uphi = std::asinh(uphi / kSlopeScale);
+        ur   = std::asinh(ur   / kUrSlopeScale);
+        uphi = std::asinh(uphi / kUphiSlopeScale);
       }
 
       const double pTot = std::sqrt(px * px + py * py + pz * pz);
@@ -313,8 +318,8 @@ namespace mu2e {
 
       double ur = urTrans, uphi = uphiTrans;
       if (asinhSlopes) {
-        ur   = kSlopeScale * std::sinh(ur);
-        uphi = kSlopeScale * std::sinh(uphi);
+        ur   = kUrSlopeScale   * std::sinh(ur);
+        uphi = kUphiSlopeScale * std::sinh(uphi);
       }
       const double pTot = p0 * std::exp(pTotTrans);
       invertMomentumV2FromPtot(pTot, ur, uphi, dx, dy, r, px, py, pz);
@@ -328,8 +333,8 @@ namespace mu2e {
     inline void v2DecodeSlopes(double m1, double m2, bool asinhSlopes,
                                double& ur, double& uphi)
     {
-      if (asinhSlopes) { ur = kSlopeScale * std::sinh(m1); uphi = kSlopeScale * std::sinh(m2); }
-      else             { ur = m1;                           uphi = m2;                          }
+      if (asinhSlopes) { ur = kUrSlopeScale * std::sinh(m1); uphi = kUphiSlopeScale * std::sinh(m2); }
+      else             { ur = m1;                            uphi = m2;                             }
     }
 
     // ========================================================================

@@ -157,7 +157,7 @@ struct TrainState {
     // values in the active MomentumBasis:
     //   V1_CylindricalTransformed : mom0=asinh(pr/p0), mom1=asinh(pphi/p0), mom2=log(pz/p0)
     //   V2_PtotSlopes             : mom0=log(pTotal/p0), mom1=ur,                 mom2=uphi
-    //   V2_PtotSlopesAsinh        : mom0=log(pTotal/p0), mom1=asinh(ur/kSlopeScale), mom2=asinh(uphi/kSlopeScale)
+    //   V2_PtotSlopesAsinh        : mom0=log(pTotal/p0), mom1=asinh(ur/kUrSlopeScale), mom2=asinh(uphi/kUphiSlopeScale)
     double t_mean=0,    t_M2=0,    t_stdev=0;
     double x_mean=0,    x_M2=0,    x_stdev=0;
     double y_mean=0,    y_M2=0,    y_stdev=0;
