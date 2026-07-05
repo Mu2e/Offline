@@ -639,6 +639,27 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     }
 }
 
+// Reject a checkpoint whose stored ModelLayout tag doesn't match the slot it is being
+// loaded into. The tag is packed into the SBDM's opaque basisTag() at save time
+// (packBasisTag), so an all-at-once file dropped into a stage slot (or vice versa) loads
+// self-consistently and would otherwise train/diagnose silently on the wrong architecture.
+// NOTE: a legacy v<=6 checkpoint predates the tag and reads back as basisTag()==0 ==
+// AllAtOnce6D; feeding such a file into a stage slot is correctly flagged here.
+inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
+                             VDResampler::ModelLayout expected,
+                             const std::string& file, const char* slot,
+                             const std::string& moduleName) {
+    const int tag = model.basisTag();
+    mf::LogInfo(moduleName)
+        << "Loaded " << slot << " checkpoint " << file << ": " << basisTagToString(tag);
+    if (VDResampler::unpackModelLayout(tag) != expected)
+        throw cet::exception(moduleName)
+            << "Checkpoint " << file << " loaded into the " << slot
+            << " slot has " << basisTagToString(tag) << ", but that slot requires layout "
+            << modelLayoutName(expected)
+            << ". The checkpoint parameter points at the wrong model file.";
+}
+
 // ---------------------------------------------------------------------------
 // buildModels — construct SBDM model objects (or load checkpoints) and reserve
 //               training data vectors.  Sets trainStage1/trainStage2 flags.
@@ -653,6 +674,29 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
     s.allAtOnceModelFile = ensureBinExtension(s.allAtOnceModelFile, "SBDMallAtOnceModelFile",  moduleName);
     s.stage1ModelFile    = ensureBinExtension(s.stage1ModelFile,    "SBDMstage1ModelFile",     moduleName);
     s.stage2ModelFile    = ensureBinExtension(s.stage2ModelFile,    "SBDMstage2ModelFile",     moduleName);
+
+    // Mode/checkpoint consistency. Each training mode only consults the checkpoint
+    // parameter(s) for the slot(s) it actually builds: all-at-once reads ckptAllAtOnceFile
+    // and ignores the stage checkpoints; two-stage reads ckptStage1/2File and ignores the
+    // all-at-once one. A checkpoint set on the wrong parameter is otherwise silently dropped
+    // (no load, no error) and the model trains/diagnoses from random weights — an expensive,
+    // invisible mistake. Reject the mismatch up front instead.
+    if (s.useTwoStageTraining) {
+        if (!s.ckptAllAtOnceFile.empty())
+            throw cet::exception(moduleName)
+                << "SBDMloadCheckPointAllAtOnceModelFile is set (" << s.ckptAllAtOnceFile
+                << ") but SBDMuseTwoStageTraining=true, which never loads it. "
+                << "Use SBDMloadCheckPointStage1ModelFile / SBDMloadCheckPointStage2ModelFile, "
+                << "or set SBDMuseTwoStageTraining=false.";
+    } else {
+        if (!s.ckptStage1File.empty() || !s.ckptStage2File.empty())
+            throw cet::exception(moduleName)
+                << "A stage checkpoint is set (SBDMloadCheckPointStage1ModelFile=\""
+                << s.ckptStage1File << "\", SBDMloadCheckPointStage2ModelFile=\""
+                << s.ckptStage2File << "\") but SBDMuseTwoStageTraining=false, which never "
+                << "loads them. Use SBDMloadCheckPointAllAtOnceModelFile, or set "
+                << "SBDMuseTwoStageTraining=true.";
+    }
 
     // Validate EMA promotion requests against useEMANetwork
     bool anyPromotion = s.promoteEMAOnStart ||
@@ -698,6 +742,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             if (!s.ckptStage1File.empty()) {
                 s.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
                     ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptStage1File));
+                checkModelLayout(*s.stage1Model,
+                    s.isV2() ? VDResampler::ModelLayout::TwoStageStage1Ptot1D
+                             : VDResampler::ModelLayout::AllAtOnce6D,
+                    s.ckptStage1File, "stage-1", moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -712,6 +760,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             if (!s.ckptStage2File.empty()) {
                 s.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
                     ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptStage2File));
+                checkModelLayout(*s.stage2Model,
+                    s.isV2() ? VDResampler::ModelLayout::TwoStageStage2_5D
+                             : VDResampler::ModelLayout::AllAtOnce6D,
+                    s.ckptStage2File, "stage-2", moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
@@ -727,6 +779,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         if (!s.ckptAllAtOnceFile.empty()) {
             s.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
                 ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptAllAtOnceFile));
+            checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
+                s.ckptAllAtOnceFile, "all-at-once", moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;

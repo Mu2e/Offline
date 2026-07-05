@@ -79,6 +79,27 @@ namespace mu2e {
       const int magnitude = std::stoi(fileName.substr(startDigits, pos - startDigits));
       return negative ? -magnitude : magnitude;
     }
+
+    // Reject a checkpoint whose stored ModelLayout doesn't match the generation slot it is
+    // loaded into (an all-at-once file dropped into a stage slot, or vice versa, otherwise
+    // generates silently through the wrong inverse transform). The layout tag is only
+    // unambiguous for the V2 bases: V1 two-stage stages and the V1 all-at-once model all
+    // share layout AllAtOnce6D (the tag predates the stage layouts), so there is nothing to
+    // check there and we skip. A pre-tag (v<=6) file reads back as tag 0 == V1 AllAtOnce6D,
+    // which also lands here and is correctly left unenforced.
+    void requireLayout(const ScoreBasedDiffusionModel& model,
+                       VDResampler::ModelLayout expected, const std::string& file,
+                       const char* slot) {
+      const int tag = model.basisTag();
+      if (VDResampler::unpackMomentumBasis(tag) == VDResampler::MomentumBasis::V1_CylindricalTransformed)
+        return; // V1 layouts are ambiguous; nothing to enforce
+      if (VDResampler::unpackModelLayout(tag) != expected)
+        throw cet::exception("VDResamplerGenerateFromModel")
+          << "Checkpoint " << file << " loaded into the " << slot << " slot has "
+          << VDResampler::basisTagToString(tag) << ", but that slot requires layout "
+          << VDResampler::modelLayoutName(expected)
+          << ". The model file parameter points at the wrong model.";
+    }
   }
 
   class VDResamplerGenerateFromModel : public art::EDProducer {
@@ -278,6 +299,11 @@ namespace mu2e {
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile_)
       );
       basis_ = VDResampler::unpackMomentumBasis(stage2Model_->basisTag());
+      mf::LogInfo("VDResamplerGenerateFromModel")
+        << "Loaded stage-2 model " << stage2ModelFile_ << ": "
+        << VDResampler::basisTagToString(stage2Model_->basisTag());
+      requireLayout(*stage2Model_, VDResampler::ModelLayout::TwoStageStage2_5D,
+                    stage2ModelFile_, "stage-2");
       pdgId_ = loadPDGIdFromFileName(stage2ModelFile_);
 
       if (useResampler) {
@@ -297,6 +323,11 @@ namespace mu2e {
         stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
         );
+        mf::LogInfo("VDResamplerGenerateFromModel")
+          << "Loaded stage-1 model " << stage1ModelFile_ << ": "
+          << VDResampler::basisTagToString(stage1Model_->basisTag());
+        requireLayout(*stage1Model_, VDResampler::ModelLayout::TwoStageStage1Ptot1D,
+                      stage1ModelFile_, "stage-1");
         // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
         const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
         if (stage1Basis != basis_)
@@ -314,6 +345,11 @@ namespace mu2e {
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, allAtOnceModelFile_)
       );
       basis_ = VDResampler::unpackMomentumBasis(allAtOnceModel_->basisTag());
+      mf::LogInfo("VDResamplerGenerateFromModel")
+        << "Loaded all-at-once model " << allAtOnceModelFile_ << ": "
+        << VDResampler::basisTagToString(allAtOnceModel_->basisTag());
+      requireLayout(*allAtOnceModel_, VDResampler::ModelLayout::AllAtOnce6D,
+                    allAtOnceModelFile_, "all-at-once");
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
     }
 

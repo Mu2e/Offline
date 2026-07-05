@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <sstream>
+#include <string>
 #include <vector>
 
 namespace mu2e {
@@ -107,6 +109,35 @@ namespace mu2e {
     }
     inline MomentumBasis unpackMomentumBasis(int tag) {
       return static_cast<MomentumBasis>(tag % kBasisTagLayoutStride);
+    }
+
+    // Human-readable enum names and a full basisTag decode, shared by the train and
+    // generate modules so an opaque tag is never printed raw. Pure string helpers —
+    // they add no I/O dependency, keeping this header messagefacility-free.
+    inline const char* modelLayoutName(ModelLayout l) {
+      switch (l) {
+        case ModelLayout::AllAtOnce6D:          return "AllAtOnce6D";
+        case ModelLayout::TwoStageStage1Ptot1D: return "TwoStageStage1Ptot1D";
+        case ModelLayout::TwoStageStage2_5D:    return "TwoStageStage2_5D";
+      }
+      return "unknown";
+    }
+    inline const char* momentumBasisName(MomentumBasis b) {
+      switch (b) {
+        case MomentumBasis::V1_CylindricalTransformed: return "V1_CylindricalTransformed";
+        case MomentumBasis::V2_PtotSlopes:             return "V2_PtotSlopes";
+        case MomentumBasis::V2_PtotSlopesAsinh:        return "V2_PtotSlopesAsinh";
+      }
+      return "unknown";
+    }
+    // Decode an opaque basisTag (layout*100 + basis) into
+    // "layout=<...>, basis=<...> (tag <n>)" for logs and error messages.
+    inline std::string basisTagToString(int tag) {
+      std::ostringstream os;
+      os << "layout=" << modelLayoutName(unpackModelLayout(tag))
+         << ", basis=" << momentumBasisName(unpackMomentumBasis(tag))
+         << " (tag " << tag << ")";
+      return os.str();
     }
 
     // ------------------------------------------------------------------------
