@@ -640,14 +640,28 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
 }
 
 // Reject a checkpoint whose stored ModelLayout tag doesn't match the slot it is being
-// loaded into. The tag is packed into the SBDM's opaque basisTag() at save time
-// (packBasisTag), so an all-at-once file dropped into a stage slot (or vice versa) loads
-// self-consistently and would otherwise train/diagnose silently on the wrong architecture.
+// loaded into, and ADOPT the checkpoint's momentum basis as authoritative for this run.
+// The tag is packed into the SBDM's opaque basisTag() at save time (packBasisTag), so an
+// all-at-once file dropped into a stage slot (or vice versa) loads self-consistently and
+// would otherwise train/diagnose silently on the wrong architecture.
+//
+// Momentum basis handling: the training/diagnostic data is rebuilt from ROOT in
+// s.momentumBasis, and the loaded network was trained in the checkpoint's basis. These MUST
+// agree or the data (and the diagnostic true_dim values) live in a different momentum space
+// than the network expects — e.g. raw ur/uphi vs asinh-wrapped slopes. Rather than force the
+// user to keep SBDMmomentumBasis in sync with the checkpoint by hand, we take the basis FROM
+// the checkpoint: s.momentumBasis is overwritten with the loaded tag's basis (warning if the
+// configured value differed). buildModels runs before the ROOT event loop that consults
+// s.momentumBasis, so this override governs the rebuilt data. When several checkpoints are
+// loaded in one run they must agree; the second call detects a cross-stage disagreement.
+//
 // NOTE: a legacy v<=6 checkpoint predates the tag and reads back as basisTag()==0 ==
-// AllAtOnce6D; feeding such a file into a stage slot is correctly flagged here.
+// (AllAtOnce6D, V1_CylindricalTransformed); feeding such a file into a stage slot is
+// correctly flagged by the layout check here.
 inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
                              VDResampler::ModelLayout expected,
                              const std::string& file, const char* slot,
+                             MomentumBasis& runBasis, bool& runBasisAdopted,
                              const std::string& moduleName) {
     const int tag = model.basisTag();
     mf::LogInfo(moduleName)
@@ -658,6 +672,28 @@ inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
             << " slot has " << basisTagToString(tag) << ", but that slot requires layout "
             << modelLayoutName(expected)
             << ". The checkpoint parameter points at the wrong model file.";
+
+    const MomentumBasis ckptBasis = VDResampler::unpackMomentumBasis(tag);
+    if (!runBasisAdopted) {
+        // First loaded checkpoint: adopt its basis for the whole run so the rebuilt data
+        // matches the network. Warn if it differs from the configured SBDMmomentumBasis.
+        if (ckptBasis != runBasis)
+            mf::LogWarning(moduleName)
+                << "Checkpoint " << file << " was trained in momentum basis "
+                << momentumBasisName(ckptBasis) << ", which differs from the configured "
+                << "SBDMmomentumBasis (" << momentumBasisName(runBasis)
+                << "). Using the checkpoint's basis so the rebuilt data (and diagnostic "
+                << "true_dim values) match the loaded network.";
+        runBasis = ckptBasis;
+        runBasisAdopted = true;
+    } else if (ckptBasis != runBasis) {
+        // A previously loaded checkpoint already fixed the run basis; this one disagrees.
+        throw cet::exception(moduleName)
+            << "Checkpoint " << file << " loaded into the " << slot << " slot has basis "
+            << momentumBasisName(ckptBasis) << ", but another checkpoint in this run uses "
+            << momentumBasisName(runBasis)
+            << ". Stage checkpoints loaded together must share one momentum basis.";
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -753,6 +789,12 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
     bool phase0UseDimWeightController =
         s.nPhase > 1 ? s.curriculumUseDimWeightController[0] : p.useDimWeightController;
 
+    // Tracks whether a loaded checkpoint has fixed s.momentumBasis for this run yet.
+    // checkModelLayout adopts the first loaded checkpoint's basis (overriding config) and
+    // then enforces that any further loaded checkpoint agrees. Remains false when no
+    // checkpoint is loaded (fresh training), leaving the configured basis in place.
+    bool runBasisAdopted = false;
+
     if (s.useTwoStageTraining) {
         if (s.stage1ModelFile.empty() && s.stage2ModelFile.empty())
             throw cet::exception(moduleName)
@@ -767,7 +809,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 checkModelLayout(*s.stage1Model,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage1Ptot1D
                              : VDResampler::ModelLayout::AllAtOnce6D,
-                    s.ckptStage1File, "stage-1", moduleName);
+                    s.ckptStage1File, "stage-1", s.momentumBasis, runBasisAdopted, moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -785,7 +827,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 checkModelLayout(*s.stage2Model,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage2_5D
                              : VDResampler::ModelLayout::AllAtOnce6D,
-                    s.ckptStage2File, "stage-2", moduleName);
+                    s.ckptStage2File, "stage-2", s.momentumBasis, runBasisAdopted, moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
@@ -802,7 +844,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             s.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
                 ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptAllAtOnceFile));
             checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
-                s.ckptAllAtOnceFile, "all-at-once", moduleName);
+                s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, runBasisAdopted, moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
