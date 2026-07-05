@@ -41,10 +41,6 @@
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
-// MC (TruthSeedDiag only)
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/MCTrajectory.hh"
-#include "Offline/GeometryService/inc/DetectorSystem.hh"
 // KinKal
 #include "KinKal/Fit/Track.hh"
 #include "KinKal/Fit/Config.hh"
@@ -76,9 +72,6 @@
 #include <functional>
 #include <vector>
 #include <memory>
-#include <array>
-#include <cmath>
-#include <limits>
 
 using KTRAJ= KinKal::CentralHelix; // this must come before HelixFit
 using namespace ROOT::Math;
@@ -131,13 +124,6 @@ namespace mu2e {
     fhicl::Atom<float> sampleTBuff { Name("SampleTimeBuffer"), Comment("Time buffer for sample intersections (nsec)") };
     fhicl::Atom<bool> useFitCharge { Name("UseFitCharge"), Comment("Set the PDG particle according to the fit charge; otherwise reject fits that don't agree with the PDG particle charge") };
     fhicl::Atom<float> minCenterRho { Name("MinCenterRho"), Comment("Minimum transverse distance from the helix axis to the Z axis to consider the fit non-degenerate (mm)") };
-    fhicl::Atom<bool> truthSeedDiag { Name("TruthSeedDiag"), Comment("Diagnostic: also extrapolate a copy of each fit re-seeded with the true muon state, isolating extrapolation error from fit error. Writes KalSeeds under instance 'TruthSeed'"), false };
-    fhicl::OptionalAtom<art::InputTag> mcTrajectoryCollection { Name("MCTrajectories"), Comment("MCTrajectory map providing the true muon state at the fit reference point (required iff TruthSeedDiag)") };
-    fhicl::Sequence<double> truthSeedParamConstraints {
-      Name("TruthSeedParameterConstraints"),
-      Comment("TruthSeedDiag ParameterHit RMS constraints for CentralHelix parameters d0, phi0, omega, z0, tanDip, t0"),
-      std::vector<double>{1.0e-3, 1.0e-6, 1.0e-9, 1.0e-3, 1.0e-6, 1.0e-3}
-    };
   };
 
   struct GlobalConfig {
@@ -191,9 +177,6 @@ namespace mu2e {
       SurfaceIdCollection ssids_;
       KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
       bool constraining_;
-      bool truthSeedDiag_; // diagnostic: extrapolate a truth-seeded copy of each fit
-      art::ProductToken<MCTrajectoryCollection> mctrajcol_T_; // MC trajectories (truth seed)
-      std::vector<double> truthSeedParamConstraints_; // ParameterHit RMS constraints for truth seeding
   };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -216,31 +199,13 @@ namespace mu2e {
     useFitCharge_(settings().modSettings().useFitCharge()),
     minCenterRho_(settings().modSettings().minCenterRho()),
     sampleinrange_(settings().modSettings().sampleInRange()),
-    sampleinbounds_(settings().modSettings().sampleInBounds()),
-    truthSeedDiag_(settings().modSettings().truthSeedDiag()),
-    truthSeedParamConstraints_(settings().modSettings().truthSeedParamConstraints())
+    sampleinbounds_(settings().modSettings().sampleInBounds())
     {
       // collection handling
       for(const auto& cseedtag : settings().modSettings().seedCollections()) { cseedCols_.emplace_back(consumes<CosmicTrackSeedCollection>(cseedtag)); }
       produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       //      produces<KalHelixAssns>();
-      // TruthSeedDiag: a parallel truth-seeded extrapolation, written under instance "TruthSeed"
-      if(truthSeedDiag_){
-        art::InputTag mctrajtag;
-        if(!settings().modSettings().mcTrajectoryCollection(mctrajtag))
-          throw cet::exception("RECO") << "mu2e::CentralHelixFit: TruthSeedDiag requires MCTrajectories" << endl;
-        if(truthSeedParamConstraints_.size() != KinKal::NParams())
-          throw cet::exception("RECO") << "mu2e::CentralHelixFit: TruthSeedParameterConstraints must have "
-            << KinKal::NParams() << " entries" << endl;
-        for(auto const& sigma : truthSeedParamConstraints_){
-          if(sigma <= 0.0)
-            throw cet::exception("RECO") << "mu2e::CentralHelixFit: TruthSeedParameterConstraints entries must be positive" << endl;
-        }
-        mctrajcol_T_ = consumes<MCTrajectoryCollection>(mctrajtag);
-        produces<KKTRKCOL>("TruthSeed");
-        produces<KalSeedCollection>("TruthSeed");
-      }
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
       if(seederrors.size() != KinKal::NParams())
@@ -304,12 +269,6 @@ namespace mu2e {
     // create output
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
-    // TruthSeedDiag parallel outputs + truth inputs
-    unique_ptr<KKTRKCOL> ktrkcol_truth(new KKTRKCOL );
-    unique_ptr<KalSeedCollection> kkseedcol_truth(new KalSeedCollection );
-    MCTrajectoryCollection const* mctrajs = nullptr;
-    GeomHandle<DetectorSystem> det;
-    if(truthSeedDiag_) mctrajs = event.getValidHandle<MCTrajectoryCollection>(mctrajcol_T_).product();
 
     unsigned nseed(0);
     for (auto const& cseedtag : cseedCols_) {
@@ -398,128 +357,6 @@ namespace mu2e {
             kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *ktrk );
             goodfit = goodFit(*ktrk);
           }
-          // [TruthSeedDiag] Build a parallel track from the piecewise tracker truth trajectory,
-          // constrained to it by ParameterHits, and extrapolate that (via the PUBLIC KinKal
-          // reconstruction interface -- no fitTrajMutable substitution). The truth-seeded CRV
-          // residual isolates the extrapolation (B-field/material) error; differencing it from
-          // the fit-seeded residual gives the fit's contribution (the charge over-rotation).
-          if(truthSeedDiag_ && goodfit && extrap_ && mctrajs != nullptr){
-            // The fit trajectory is PIECEWISE (one CentralHelix per domain) with dE/dx applied
-            // between pieces, so its |p| steps down through the tracker. A single truth helix has
-            // CONSTANT |p| and so cannot match the truth at every tracker surface for a low-|p|
-            // muon that sheds a large momentum fraction crossing the tracker. So we rebuild the
-            // truth seed with the SAME domain structure as the fit: one truth helix per fit piece,
-            // each anchored at the true muon state (MC trajectory) at that piece's location. This
-            // reproduces the truth |p| -- tracker energy loss included -- at every surface, giving a
-            // ~zero tracker residual at all momenta. The extrapolation then carries it to the CRV.
-            // NB: do NOT dereference the trajectory's SimParticle Ptr -- cosmic resampling/mixing
-            // leaves it dangling (ProductNotFound); the trajectory POINTS (pos/time/KE) are valid.
-            int tcharge = (ktrk->fitTraj().nearestPiece(ktrk->fitTraj().t0()).charge() > 0.0) ? 1 : -1; // from the fit
-            // truth muon state (pos, mom, time) from the MC trajectory point nearest a given location
-            auto trueStateAt = [&](VEC3 const& at, VEC3& tpos, VEC3& tmom, double& ttime)->bool{
-              double bestd2 = std::numeric_limits<double>::max(); bool found = false;
-              for(auto const& tjpair : *mctrajs){
-                auto const& pts = tjpair.second.points();
-                if(pts.size() < 2) continue;
-                for(size_t i = 0; i < pts.size(); ++i){
-                  auto pdh = det->toDetector(pts[i].pos());
-                  VEC3 pd(pdh.x(),pdh.y(),pdh.z());
-                  double d2 = (pd - at).Mag2();
-                  if(d2 >= bestd2) continue;
-                  size_t j = (i + 1 < pts.size()) ? i + 1 : i - 1; // local tangent for the direction
-                  auto qdh = det->toDetector(pts[j].pos());
-                  VEC3 qd(qdh.x(),qdh.y(),qdh.z());
-                  VEC3 dir = (j > i) ? (qd - pd) : (pd - qd);
-                  double dn = sqrt(dir.Mag2());
-                  if(dn <= 0.0) continue;
-                  dir /= dn;
-                  double ke = pts[i].kineticEnergy();
-                  double pmag = std::sqrt(ke*ke + 2.0*ke*mass_); // |p| from kinetic energy
-                  bestd2 = d2; found = true; tpos = pd; tmom = pmag*dir; ttime = pts[i].t();
-                }
-              }
-              return found;
-            };
-            // build the piecewise truth trajectory (one truth helix per fit domain) and remember each
-            // piece's reference time, to constrain it with a ParameterHit below.
-            PTRAJ truthpt;
-            std::vector<double> truthHitTimes;
-            for(auto const& fpieceptr : ktrk->fitTraj().pieces()){
-              auto const& fpiece = *fpieceptr;
-              auto const htime = fpiece.range().mid();
-              VEC3 tpos, tmom; double ttime = 0.0;
-              if(!trueStateAt(fpiece.position3(htime), tpos, tmom, ttime)) continue;
-              auto tbnom = kkbf_->fieldVect(tpos);
-              KTRAJ tpiece(KinKal::VEC4(tpos.X(),tpos.Y(),tpos.Z(),ttime),
-                           KinKal::MOM4(tmom.X(),tmom.Y(),tmom.Z(),mass_),
-                           tcharge, tbnom.Z(), fpiece.range());
-              tpiece.params() = KinKal::Parameters(tpiece.params().parameters(), seedcov_);
-              truthpt.append(tpiece);
-              truthHitTimes.emplace_back(htime);
-            }
-            if(!truthHitTimes.empty()){
-              // Constrain each truth piece with a ParameterHit at its reference time (RMS from
-              // TruthSeedParameterConstraints). This pins the fit to the truth via the PUBLIC KinKal
-              // reconstruction interface -- no fitTrajMutable substitution -- at the cost of being a
-              // (tightly) constrained fit rather than an exact trajectory swap.
-              PARAMHITCOL truthParamHits;
-              PARAMHIT::PMASK truthMask;
-              truthMask.fill(true);
-              auto addTruthHit = [&](double hitTime, double covarianceScale) {
-                auto cparams = truthpt.nearestPiece(hitTime).params();
-                for(size_t ipar = 0; ipar < KinKal::NParams(); ++ipar){
-                  for(size_t jpar = 0; jpar < KinKal::NParams(); ++jpar){
-                    cparams.covariance()[ipar][jpar] = 0.0;
-                  }
-                  auto const sigma = truthSeedParamConstraints_.at(ipar);
-                  cparams.covariance()[ipar][ipar] = covarianceScale*sigma*sigma;
-                }
-                truthParamHits.push_back(std::make_shared<PARAMHIT>(
-                    hitTime, truthpt, cparams, truthMask));
-              };
-              // a single piece gives a zero-length fit range (lowNDOF); split it into two hits a
-              // sliver apart, with looser (x2) constraint, as the line tail does.
-              if(truthHitTimes.size() == 1){
-                constexpr double truthHitDt = 1.0e-3;
-                addTruthHit(truthHitTimes.front() - 0.5*truthHitDt, 2.0);
-                addTruthHit(truthHitTimes.front() + 0.5*truthHitDt, 2.0);
-              } else {
-                for(auto const hitTime : truthHitTimes) addTruthHit(hitTime, 1.0);
-              }
-              // copy the fit's field domains so the truth fit/extrapolation see the same BField model
-              KKTRK::DOMAINCOL truthDomains;
-              for(auto const& domain : ktrk->domains()){
-                truthDomains.emplace(std::make_shared<KinKal::Domain>(*domain));
-              }
-              KKTRK::PKTRAJPTR truthTraj = std::make_unique<PTRAJ>(truthpt);
-              KKSTRAWHITCOL nostrawhits; KKSTRAWXINGCOL nostrawxings; KKCALOHITCOL nocalohits;
-              // one iteration, no convergence churn: the ParameterHits already pin the params
-              auto truthConfig = config_;
-              truthConfig.maxniter_ = 1;
-              truthConfig.divdchisq_ = std::numeric_limits<double>::max();
-              truthConfig.pdchisq_ = std::numeric_limits<double>::max();
-              truthConfig.divgap_ = std::numeric_limits<double>::max();
-              auto ktrk_truth = make_unique<KKTRK>(truthConfig,*kkbf_,fitpart,truthTraj,
-                  nostrawhits,nostrawxings,nocalohits,truthParamHits,truthDomains);
-              if(ktrk_truth->fitStatus().usable()){
-                extrap_->extrapolate(*ktrk_truth);
-                TrkFitFlag tflag; tflag.merge(fitflag_); tflag.merge(TrkFitFlag::FitOK);
-                auto truthKSeed = kkfit_.createSeed(*ktrk_truth,tflag,*calo_h,*nominalTracker_h);
-                // EventNtuple and other consumers use the detector-hit list for bookkeeping even
-                // when hit details are disabled; carry the reco fit's hit metadata onto the truth
-                // KalSeed without adding the detector measurements to the truth-constrained fit.
-                auto recoMetadata = kkfit_.createSeed(*ktrk,tflag,*calo_h,*nominalTracker_h);
-                truthKSeed._hits = std::move(recoMetadata._hits);
-                truthKSeed._hitcalibs = std::move(recoMetadata._hitcalibs);
-                truthKSeed._chit = std::move(recoMetadata._chit);
-                kkseedcol_truth->push_back(std::move(truthKSeed));
-                ktrkcol_truth->push_back(ktrk_truth.release());
-              } else if(print_ > 0) {
-                std::cout << "CentralHelixFit TruthSeed ParameterHit fit unusable: "
-                  << ktrk_truth->fitStatus() << std::endl;
-              }
-            }
-          }
           // extrapolate as required
           if(goodfit && extrap_)extrap_->extrapolate(*ktrk);
           if(print_>1)ktrk->printFit(std::cout,print_);
@@ -548,10 +385,6 @@ namespace mu2e {
     if(print_ > 0) std::cout << "Fitted " << ktrkcol->size() << " tracks from " << nseed << " Seeds" << std::endl;
     event.put(move(ktrkcol));
     event.put(move(kkseedcol));
-    if(truthSeedDiag_){
-      event.put(move(ktrkcol_truth),"TruthSeed");
-      event.put(move(kkseedcol_truth),"TruthSeed");
-    }
   }
 
   bool CentralHelixFit::goodFit(KKTRK const& ktrk) const {
