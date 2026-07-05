@@ -2015,7 +2015,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version < 1 || version > 6)
+            if (version < 1 || version > 7)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -2198,6 +2198,9 @@ namespace mu2e {
                 diffusionSteps, false
             );
             model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
+            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                << "Loaded binary checkpoint " << filename
+                << ": format version " << version << ", basisTag " << basisTag;
 
             // EMA decay semantics fix-up. The constructor rescaled emaNetworkDecayStored
             // as if it were the batch-size-independent base. That is correct for version-4
@@ -2761,6 +2764,9 @@ namespace mu2e {
                 false // initializeRandomWeights
             );
             model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
+            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
+                << "Loaded CSV checkpoint " << filename
+                << ": format CSV (unversioned), basisTag " << basisTag;
 
             // Legacy-CSV EMA decay fix-up (mirrors the binary version <= 3 path). When the
             // file predates emaNetworkDecayBase, the stored emaNetworkDecay is the per-step
