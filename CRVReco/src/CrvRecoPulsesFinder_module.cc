@@ -235,7 +235,7 @@ namespace mu2e
         if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
                                              waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 

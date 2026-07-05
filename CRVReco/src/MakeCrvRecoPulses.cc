@@ -89,7 +89,7 @@ void MakeCrvRecoPulses::SubtractPulse(TGraph &g, uint16_t startTDC, float digiti
   for(int bin=0; bin<g.GetN(); ++bin)
   {
     double t=(startTDC+bin)*digitizationPeriod;
-    int16_t diff=static_cast<int16_t>(std::round(_f1.Eval(t)));
+    double diff=std::round(_f1.Eval(t));
 
     g.SetPointY(bin,g.GetPointY(bin)-diff);
   }
@@ -192,6 +192,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
     _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
     _zeroNdf.push_back(zeroNdf);
+    //if one pulse reconstruction fails, all subsequent pulses should also get the error flag,
+    //because a wrong pulse subtraction will create wrong secondary pulses
     if(_failedFits.size()>0)
     {
       if(_failedFits.back()) _failedFits.push_back(true);
