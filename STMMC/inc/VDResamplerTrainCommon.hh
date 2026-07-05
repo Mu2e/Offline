@@ -698,6 +698,28 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 << "SBDMuseTwoStageTraining=true.";
     }
 
+    // Checkpoint-vs-slot-enabled consistency. A stage is active only when its output
+    // SBDMstage{1,2}ModelFile is non-empty (that name gates trainStage{1,2} below and,
+    // in diagnostic mode, becomes the output ROOT stem). If a checkpoint is set for a
+    // stage whose model file is empty, the slot is skipped entirely — the checkpoint is
+    // loaded-then-ignored (or never loaded), so the diagnostics/training the user asked
+    // for silently never run. Reject that rather than no-op. (Two-stage only; the
+    // all-at-once checkpoint is already handled by the mode check above.)
+    if (s.useTwoStageTraining) {
+        if (!s.ckptStage1File.empty() && s.stage1ModelFile.empty())
+            throw cet::exception(moduleName)
+                << "SBDMloadCheckPointStage1ModelFile is set (" << s.ckptStage1File
+                << ") but SBDMstage1ModelFile is empty, so the stage-1 slot is disabled and "
+                << "the checkpoint is never used. Set SBDMstage1ModelFile (it names the "
+                << "output/diagnostic files), or clear the stage-1 checkpoint.";
+        if (!s.ckptStage2File.empty() && s.stage2ModelFile.empty())
+            throw cet::exception(moduleName)
+                << "SBDMloadCheckPointStage2ModelFile is set (" << s.ckptStage2File
+                << ") but SBDMstage2ModelFile is empty, so the stage-2 slot is disabled and "
+                << "the checkpoint is never used. Set SBDMstage2ModelFile (it names the "
+                << "output/diagnostic files), or clear the stage-2 checkpoint.";
+    }
+
     // Validate EMA promotion requests against useEMANetwork
     bool anyPromotion = s.promoteEMAOnStart ||
         std::any_of(s.curriculumPromoteEMA.begin(), s.curriculumPromoteEMA.end(),
