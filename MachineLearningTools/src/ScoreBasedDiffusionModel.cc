@@ -2198,9 +2198,6 @@ namespace mu2e {
                 diffusionSteps, false
             );
             model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
-            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
-                << "Loaded binary checkpoint " << filename
-                << ": format version " << version << ", basisTag " << basisTag;
 
             // EMA decay semantics fix-up. The constructor rescaled emaNetworkDecayStored
             // as if it were the batch-size-independent base. That is correct for version-4
@@ -2258,7 +2255,8 @@ namespace mu2e {
 
             mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
                 << "Binary model loaded from " << filename
-                << " (adamStep=" << loadedAdamStep << ", epochs=" << numEpochs << ")";
+                << " (format version " << version << ", basisTag " << basisTag
+                << ", adamStep=" << loadedAdamStep << ", epochs=" << numEpochs << ")";
             return model;
         } else if (isCsv) {
 
@@ -2713,7 +2711,8 @@ namespace mu2e {
             }
 
             std::ostringstream logMsg;
-            logMsg << "Model loaded successfully from " << filename << "\n";
+            logMsg << "Model loaded successfully from " << filename
+                   << " (format CSV (unversioned), basisTag " << basisTag << ")\n";
             if (optimizerStateLoaded) {
                 logMsg << "  Optimizer state (Adam moments, step=" << loadedAdamStep << ") restored — training can be resumed.\n";
             } else {
@@ -2764,9 +2763,6 @@ namespace mu2e {
                 false // initializeRandomWeights
             );
             model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
-            mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
-                << "Loaded CSV checkpoint " << filename
-                << ": format CSV (unversioned), basisTag " << basisTag;
 
             // Legacy-CSV EMA decay fix-up (mirrors the binary version <= 3 path). When the
             // file predates emaNetworkDecayBase, the stored emaNetworkDecay is the per-step
