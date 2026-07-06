@@ -180,9 +180,11 @@ namespace mu2e {
         produces<KalSeedMCCollection>();
       }
     }
-    if(has_kseedcol_)kseedcol_T_ = art::ProductToken<KalSeedCollection>(mayConsume<KalSeedCollection>(settings().kalSeedCollection().value()));
-    if(has_kseedptrcol_)kseedptrcol_T_ = art::ProductToken<KalSeedPtrCollection>(mayConsume<KalSeedPtrCollection>(settings().kalSeedPtrCollection().value()));
-    if(has_cccol_) cccol_T_ = art::ProductToken<CaloClusterCollection>(mayConsume<CaloClusterCollection>(settings().caloClusterCollection().value()));
+    if(!(has_kseedcol_ || has_kseedptrcol_) || (has_kseedcol_ && has_kseedptrcol_))
+      throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: exactly 1 of KalSeedCollection or KalSeedPtrCollection must be specified" << endl;
+    if(has_kseedcol_)kseedcol_T_ = art::ProductToken<KalSeedCollection>(consumes<KalSeedCollection>(settings().kalSeedCollection().value()));
+    if(has_kseedptrcol_)kseedptrcol_T_ = art::ProductToken<KalSeedPtrCollection>(consumes<KalSeedPtrCollection>(settings().kalSeedPtrCollection().value()));
+    if(has_cccol_) cccol_T_ = art::ProductToken<CaloClusterCollection>(consumes<CaloClusterCollection>(settings().caloClusterCollection().value()));
   }
 
   void RegrowLoopHelix::beginRun(art::Run& run)
@@ -224,8 +226,6 @@ namespace mu2e {
         KalSeedMCCollectionPID = event.getProductID<KalSeedMCCollection>();
       }
     }
-    if(!(has_kseedcol_ || has_kseedptrcol_) || (has_kseedcol_ && has_kseedptrcol_))
-      throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: exactly 1 of KalSeedCollection or KalSeedPtrCollection must be specified" << endl;
 
     KalSeedPtrCollection kseedptrs;
     if(has_kseedptrcol_){

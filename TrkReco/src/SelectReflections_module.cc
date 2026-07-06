@@ -137,7 +137,7 @@ namespace mu2e {
         if(matches.size()>1){
           ++nmultref_;
           if(debug_ > 0) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << " according to " << selbest_ << " event " << event.id() << std::endl;
-          double value = std::numeric_limits<double>::max();
+          double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
             if(debug_ > 1)std::cout << "Match " << imatch << " has downstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << std::endl;
