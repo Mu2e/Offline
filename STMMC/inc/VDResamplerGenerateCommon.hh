@@ -147,11 +147,11 @@ inline void invertGenerated(
     double& x, double& y, double& z, double& t, double& px, double& py, double& pz)
 {
     if (g.rawPtotValid) {
-        const bool asinhSlopes = (g.basis == MomentumBasis::V2_PtotSlopesAsinh);
+        const bool asinhSlopes = basisUsesAsinhSlopes(g.basis);
         double dx, dy, r, ur, uphi;
         invertPosition(g.xTrans, g.yTrans, ip.x0, ip.y0, ip.VDr, x, y, dx, dy, r);
         z = ip.VDz0;
-        t = invertTime(g.tTrans, ip.t0, ip.tScale);
+        t = invertTimeForBasis(g.tTrans, ip.t0, ip.tScale, g.basis);
         v2DecodeSlopes(g.m1, g.m2, asinhSlopes, ur, uphi);
         invertMomentumV2FromPtot(g.rawPtot, ur, uphi, dx, dy, r, px, py, pz);
     } else {

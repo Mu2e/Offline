@@ -158,6 +158,8 @@ struct TrainState {
     //   V1_CylindricalTransformed : mom0=asinh(pr/p0), mom1=asinh(pphi/p0), mom2=log(pz/p0)
     //   V2_PtotSlopes             : mom0=log(pTotal/p0), mom1=ur,                 mom2=uphi
     //   V2_PtotSlopesAsinh        : mom0=log(pTotal/p0), mom1=asinh(ur/kUrSlopeScale), mom2=asinh(uphi/kUphiSlopeScale)
+    //   V3_PtotSlopesAsinhTimeAsinh: momentum slots as V2_PtotSlopesAsinh; the t slot
+    //                               additionally uses asinh tail-taming (kTBulkCenter/kTTailScale)
     double t_mean=0,    t_M2=0,    t_stdev=0;
     double x_mean=0,    x_M2=0,    x_stdev=0;
     double y_mean=0,    y_M2=0,    y_stdev=0;
@@ -313,11 +315,13 @@ parseNoiseSchedule(const std::string& sched, const std::string& moduleName) {
 //   V1_CYLINDRICAL       : V1_CylindricalTransformed (legacy asinh(pr),asinh(pphi),log(pz))
 //   V2_PTOT_SLOPES       : V2_PtotSlopes (log(pTotal), ur=pr/pz, uphi=pphi/pz) [default]
 //   V2_PTOT_SLOPES_ASINH : V2_PtotSlopesAsinh (slopes wrapped in asinh)
+//   V3_PTOT_SLOPES_ASINH_TIME_ASINH : V3_PtotSlopesAsinhTimeAsinh (as V2 asinh + asinh log-time)
 // ---------------------------------------------------------------------------
 inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string& moduleName) {
     if (b == "V1_CYLINDRICAL")       return MomentumBasis::V1_CylindricalTransformed;
     if (b == "V2_PTOT_SLOPES")       return MomentumBasis::V2_PtotSlopes;
     if (b == "V2_PTOT_SLOPES_ASINH") return MomentumBasis::V2_PtotSlopesAsinh;
+    if (b == "V3_PTOT_SLOPES_ASINH_TIME_ASINH") return MomentumBasis::V3_PtotSlopesAsinhTimeAsinh;
     mf::LogWarning(moduleName) << "Unrecognized SBDMmomentumBasis value \"" << b
                                << "\"; falling back to V2_PTOT_SLOPES.";
     return MomentumBasis::V2_PtotSlopes;

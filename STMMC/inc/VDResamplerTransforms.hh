@@ -35,6 +35,18 @@ namespace mu2e {
     constexpr double kUrSlopeScale   = 0.05;
     constexpr double kUphiSlopeScale = 0.05;
 
+    // Tail-taming of the log-time coordinate for the V3 basis. After the shared
+    // forwardTime (ln(t/t0)/tScale), V3 applies asinh((base - kTBulkCenter)/kTTailScale)
+    // to compress a heavy but physical right tail (~1e-6 of events reach z-score ~100
+    // after the log alone). kTBulkCenter is the empirical bulk center of ln(t/t0)/tScale
+    // (measured ~-2.25 across particle species) so the bulk lands at asinh(0)=0 where the
+    // map is locally linear/symmetric and only the far tail is compressed. asinh is smooth,
+    // monotone, and exactly invertible with no hard cutoff (unlike asinh(pz/p0), which was
+    // rejected for its wall at 0). kTTailScale sets the asinh width; smaller => tails
+    // compressed harder, bulk near center stretched more.
+    constexpr double kTBulkCenter = -2.25;
+    constexpr double kTTailScale  = 1.0;
+
     // ------------------------------------------------------------------------
     // PzFallbackStats — accumulates pz-fallback occurrences across a transform
     //   loop so the CALLER can emit a SINGLE summary warning at the end (instead
@@ -71,12 +83,16 @@ namespace mu2e {
     //       m2=uphi=pphi/pz  (pTotal FIRST).
     //   V2_PtotSlopesAsinh : as V2_PtotSlopes but slopes (m1,m2) wrapped in
     //       asinh(ur/kUrSlopeScale), asinh(uphi/kUphiSlopeScale) to tame heavy wide-angle tails.
+    //   V3_PtotSlopesAsinhTimeAsinh : identical momentum treatment to V2_PtotSlopesAsinh,
+    //       plus asinh tail-taming of the log-time coordinate (see kTBulkCenter/kTTailScale).
+    //       Use V2_PtotSlopesAsinh when the extra time transform is NOT wanted.
     // In the all-at-once vector t,x,y occupy slots 0,1,2 and momentum occupies 3,4,5.
     // ------------------------------------------------------------------------
     enum class MomentumBasis {
-      V1_CylindricalTransformed = 0,
-      V2_PtotSlopes             = 1,
-      V2_PtotSlopesAsinh        = 2
+      V1_CylindricalTransformed   = 0,
+      V2_PtotSlopes               = 1,
+      V2_PtotSlopesAsinh          = 2,
+      V3_PtotSlopesAsinhTimeAsinh = 3
     };
 
     // ------------------------------------------------------------------------
@@ -127,6 +143,7 @@ namespace mu2e {
         case MomentumBasis::V1_CylindricalTransformed: return "V1_CylindricalTransformed";
         case MomentumBasis::V2_PtotSlopes:             return "V2_PtotSlopes";
         case MomentumBasis::V2_PtotSlopesAsinh:        return "V2_PtotSlopesAsinh";
+        case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh: return "V3_PtotSlopesAsinhTimeAsinh";
       }
       return "unknown";
     }
@@ -231,6 +248,40 @@ namespace mu2e {
       return t0 * std::exp(tTrans * tScale);
     }
 
+    // V3 time transform: asinh tail-taming layered on top of the shared log-time.
+    // Centered at kTBulkCenter so the bulk maps near asinh(0)=0. Exactly invertible.
+    inline double forwardTimeAsinh(double t, double t0, double tScale) {
+      const double base = forwardTime(t, t0, tScale); // ln(tSafe/t0)/tScale
+      return std::asinh((base - kTBulkCenter) / kTTailScale);
+    }
+    inline double invertTimeAsinh(double tTrans, double t0, double tScale) {
+      const double base = kTBulkCenter + kTTailScale * std::sinh(tTrans);
+      return t0 * std::exp(base * tScale);
+    }
+
+    // Basis feature predicates — single source of truth for "which knobs does this
+    // basis turn on", so callers never enumerate basis values themselves. A basis is
+    // added here once and every dispatch site follows.
+    inline bool basisUsesAsinhSlopes(MomentumBasis b) {
+      return b == MomentumBasis::V2_PtotSlopesAsinh
+          || b == MomentumBasis::V3_PtotSlopesAsinhTimeAsinh;
+    }
+    inline bool basisUsesAsinhTime(MomentumBasis b) {
+      return b == MomentumBasis::V3_PtotSlopesAsinhTimeAsinh;
+    }
+
+    // Basis-aware time transforms: dispatch to the asinh variant for bases that
+    // request it, else the plain log-time. Use these wherever a bare forwardTime/
+    // invertTime would otherwise be called against a known basis.
+    inline double forwardTimeForBasis(double t, double t0, double tScale, MomentumBasis b) {
+      return basisUsesAsinhTime(b) ? forwardTimeAsinh(t, t0, tScale)
+                                   : forwardTime(t, t0, tScale);
+    }
+    inline double invertTimeForBasis(double tTrans, double t0, double tScale, MomentumBasis b) {
+      return basisUsesAsinhTime(b) ? invertTimeAsinh(tTrans, t0, tScale)
+                                   : invertTime(tTrans, t0, tScale);
+    }
+
     // Shared momentum reconstruction for V2 given a RAW physical pTotal (MeV/c) and
     // the (already de-asinh'd) slopes ur,uphi. Lets the resampler path pass its raw
     // drawn pTotal directly (no log/exp round-trip); also used by invertGeneratedSampleV2.
@@ -304,7 +355,8 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& xTrans, double& yTrans, double& tTrans,
       double& pTotTrans, double& urTrans, double& uphiTrans,
-      const bool asinhSlopes, PzFallbackStats* pzStats = nullptr)
+      const bool asinhSlopes, const bool asinhTime = false,
+      PzFallbackStats* pzStats = nullptr)
     {
       double dx, dy, r;
       extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
@@ -330,7 +382,7 @@ namespace mu2e {
       urTrans   = ur;
       uphiTrans = uphi;
 
-      tTrans = forwardTime(t, t0, tScale);
+      tTrans = asinhTime ? forwardTimeAsinh(t, t0, tScale) : forwardTime(t, t0, tScale);
     }
 
     inline void invertGeneratedSampleV2(
@@ -340,12 +392,12 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& x, double& y, double& z, double& t,
       double& px, double& py, double& pz,
-      const bool asinhSlopes)
+      const bool asinhSlopes, const bool asinhTime = false)
     {
       double dx, dy, r;
       invertPosition(xTrans, yTrans, x0, y0, VDr, x, y, dx, dy, r);
       z = VDz0;
-      t = invertTime(tTrans, t0, tScale);
+      t = asinhTime ? invertTimeAsinh(tTrans, t0, tScale) : invertTime(tTrans, t0, tScale);
 
       double ur = urTrans, uphi = uphiTrans;
       if (asinhSlopes) {
@@ -388,11 +440,18 @@ namespace mu2e {
       switch (basis) {
         case MomentumBasis::V2_PtotSlopes:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                   xTrans, yTrans, tTrans, m0, m1, m2, /*asinhSlopes=*/false, pzStats);
+                                   xTrans, yTrans, tTrans, m0, m1, m2,
+                                   /*asinhSlopes=*/false, /*asinhTime=*/false, pzStats);
           break;
         case MomentumBasis::V2_PtotSlopesAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                   xTrans, yTrans, tTrans, m0, m1, m2, /*asinhSlopes=*/true, pzStats);
+                                   xTrans, yTrans, tTrans, m0, m1, m2,
+                                   /*asinhSlopes=*/true, /*asinhTime=*/false, pzStats);
+          break;
+        case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
+          forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
+                                   xTrans, yTrans, tTrans, m0, m1, m2,
+                                   /*asinhSlopes=*/true, /*asinhTime=*/true, pzStats);
           break;
         case MomentumBasis::V1_CylindricalTransformed:
         default:
@@ -414,11 +473,15 @@ namespace mu2e {
       switch (basis) {
         case MomentumBasis::V2_PtotSlopes:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/false);
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/false, /*asinhTime=*/false);
           break;
         case MomentumBasis::V2_PtotSlopesAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true);
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/false);
+          break;
+        case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
+          invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/true);
           break;
         case MomentumBasis::V1_CylindricalTransformed:
         default:
