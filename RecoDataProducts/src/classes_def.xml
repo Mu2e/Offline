@@ -368,6 +368,16 @@
 ]]>
 </ioread>
 
+<ioread sourceClass="mu2e::CrvRecoPulse"
+        source=""
+        checksum="[738711339]"
+        targetClass="mu2e::CrvRecoPulse"
+        target="_sequenceIndex">
+<![CDATA[
+  _sequenceIndex=0;
+]]>
+</ioread>
+
  <class name="mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII" />
  <class name="std::vector<mu2e::CRVDataDecoder::CRVROCStatusPacketFEBII>" />
  <class name="mu2e::CrvStatus" />
@@ -452,7 +462,7 @@
  <class name="mu2e::STMFragmentSummary"/>
  <class name="mu2e::STMFragmentSummaryCollection"/>
  <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
- 
+
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
   <class name="mu2e::MSDHitCollection"/>

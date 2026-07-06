@@ -61,9 +61,8 @@ namespace mu2e
       fhicl::Atom<float> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
       fhicl::Atom<float> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
       fhicl::Atom<float> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
-      fhicl::Atom<float> pulseThreshold{Name("pulseThreshold"), Comment("fraction of ADC peak used as threshold to determine the pulse time interval for the no-fit option")}; //0.5
-      fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
-      fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
+      fhicl::Atom<int>   samplesBefore{Name("samplesBefore"), Comment("number of samples before the peak to be included in fit")};
+      fhicl::Atom<int>   samplesAfter{Name("samplesAfter"), Comment("number of samples after the peak to be included in fit")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer"};
       fhicl::Atom<art::InputTag> protonBunchTimeTag{Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer"};
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
@@ -109,10 +108,6 @@ namespace mu2e
     _timeOffsetScale(conf().timeOffsetScale()),
     _ignoreChannels(conf().ignoreChannels())
   {
-    if(conf().pulseAreaThreshold()>conf().minADCdifference())
-      throw cet::exception("CRVRECO_BAD_CONFIG")
-      << "CrvRecoPulseFinder pulseAreaThreshold " << conf().pulseAreaThreshold()
-      << "  larger than minADCdifference " << conf().minADCdifference();
     produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
                                                                                                     conf().defaultBeta(),
@@ -122,9 +117,8 @@ namespace mu2e
                                                                                                     conf().minPulseHeightRatio(),
                                                                                                     conf().maxPulseHeightRatio(),
                                                                                                     conf().LEtimeFactor(),
-                                                                                                    conf().pulseThreshold(),
-                                                                                                    conf().pulseAreaThreshold(),
-                                                                                                    conf().doublePulseSeparation()));
+                                                                                                    conf().samplesBefore(),
+                                                                                                    conf().samplesAfter()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -233,25 +227,15 @@ namespace mu2e
         float  pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2s().at(j);
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
-        bool   duplicateNoFitPulse    = _makeCrvRecoPulses->GetDuplicateNoFitPulses().at(j);
-        bool   separatedDoublePulse   = _makeCrvRecoPulses->GetSeparatedDoublePulses().at(j);
         bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
-        if(duplicateNoFitPulse)    flags.set(CrvRecoPulseFlagEnums::duplicateNoFitPulse);
-        if(separatedDoublePulse)   flags.set(CrvRecoPulseFlagEnums::separatedDoublePulse);
         if(zeroNdf)                flags.set(CrvRecoPulseFlagEnums::zeroNdf);
 
-        float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
-        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time + timeOffset;
-        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time + timeOffset;
-        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time + timeOffset;
-
-        if(calibPulseArea<=0) {PEs=0; PEsNoFit=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
+        if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
-                                             PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
                                              waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 
