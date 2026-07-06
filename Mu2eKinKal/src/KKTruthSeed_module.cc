@@ -2,9 +2,9 @@
 // Produce a truth-seeded, extrapolated "track" for each reconstructed KalSeed, purely from MC
 // information, to isolate the extrapolation (B-field / material / scattering) error from the fit error.
 //
-// A single module handles every supported fit type (CentralHelix, KinematicLine; extensible to
-// LoopHelix): for each reconstructed KalSeed it dispatches on the seed's fit type to a templated
-// worker that rebuilds a parallel track seeded with the true muon state -- sampled from the matched
+// A single module handles every supported fit type (LoopHelix, CentralHelix, KinematicLine): for each
+// reconstructed KalSeed it dispatches on the seed's fit type to a templated worker that rebuilds a
+// parallel track seeded with the true muon state -- sampled from the matched
 // particle's MCTrajectory at each reco-fit-piece location -- constrains it to that truth with
 // ParameterHits, and extrapolates it through the public KinKal reconstruction interface using the
 // identical fit/extension/extrapolation configuration as the reco track. Differencing the truth-seeded
@@ -40,6 +40,7 @@
 #include "KinKal/General/Vectors.hh"
 #include "KinKal/Trajectory/CentralHelix.hh"
 #include "KinKal/Trajectory/KinematicLine.hh"
+#include "KinKal/Trajectory/LoopHelix.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
@@ -84,7 +85,6 @@ namespace mu2e {
           Comment("ParameterHit RMS constraints pinning the seed to the truth (one per fit parameter)"),
           std::vector<double>{1.0e-3, 1.0e-6, 1.0e-9, 1.0e-3, 1.0e-6, 1.0e-3}
         };
-        fhicl::Atom<bool> rebuildDomains { Name("RebuildDomains"), Comment("Rebuild the fit's BField domains from the seed (turn off for field-free line fits)"), true };
         fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
         fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
         fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
@@ -102,10 +102,10 @@ namespace mu2e {
       bool trueStateAt(MCTrajectoryCollection const& mctrajs, DetectorSystem const& det,
                        VEC3 const& at, double mass, VEC3& tpos, VEC3& tmom, double& ttime) const;
 
-      // templated worker: build + extrapolate the truth-seeded track for one reco KalSeed of type KTRAJ,
-      // returning its truth KalSeed (or nullopt if the truth seed can't be built / the fit is unusable).
+      // templated worker: build the truth-seeded track for one reco KalSeed of type KTRAJ (extrapolating
+      // it if configured), returning its truth KalSeed (or nullopt if it can't be built / the fit is unusable).
       template <class KTRAJ>
-      std::optional<KalSeed> extrapolateFit(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
+      std::optional<KalSeed> createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
           KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
           DetectorSystem const& det, ParticleDataList const& ptable,
           Calorimeter const& calo, Tracker const& nominalTracker) const;
@@ -115,7 +115,6 @@ namespace mu2e {
       art::InputTag ksmca_T_;
       art::ProductToken<MCTrajectoryCollection> mctraj_T_;
       std::vector<double> truthSeedParamConstraints_;
-      bool rebuildDomains_;
       KinKal::Config config_;   // fit configuration used to build+pin the truth track
       KinKal::Config exconfig_; // extension configuration; supplies the extrapolation-relevant fields
       DMAT seedcov_;            // seed covariance matrix
@@ -123,6 +122,7 @@ namespace mu2e {
       std::unique_ptr<KKExtrap> extrap_;
       KKFit<KinKal::CentralHelix>  chfit_;
       KKFit<KinKal::KinematicLine> klfit_;
+      KKFit<KinKal::LoopHelix>     lhfit_;
   };
 
   KKTruthSeed::KKTruthSeed(const Parameters& settings) : art::EDProducer(settings),
@@ -131,11 +131,11 @@ namespace mu2e {
     ksmca_T_(settings().kalSeedMCAssns()),
     mctraj_T_(consumes<MCTrajectoryCollection>(settings().mcTrajectoryCollection())),
     truthSeedParamConstraints_(settings().truthSeedParamConstraints()),
-    rebuildDomains_(settings().rebuildDomains()),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings())),
     chfit_(settings().kkfitSettings()),
-    klfit_(settings().kkfitSettings())
+    klfit_(settings().kkfitSettings()),
+    lhfit_(settings().kkfitSettings())
   {
     consumes<KalSeedMCAssns>(ksmca_T_);
     produces<KalSeedCollection>();
@@ -185,7 +185,7 @@ namespace mu2e {
   }
 
   template <class KTRAJ>
-  std::optional<KalSeed> KKTruthSeed::extrapolateFit(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
+  std::optional<KalSeed> KKTruthSeed::createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
       KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
       DetectorSystem const& det, ParticleDataList const& ptable,
       Calorimeter const& calo, Tracker const& nominalTracker) const {
@@ -197,6 +197,8 @@ namespace mu2e {
     using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
     using PARAMHITCOL = std::vector<std::shared_ptr<PARAMHIT>>;
     using DOMAINCOL = std::set<std::shared_ptr<KinKal::Domain>>;
+    // KinematicLine is the only field-FREE fit: it is a single trajectory piece with no BField domains.
+    constexpr bool isLine = std::is_same_v<KTRAJ,KinKal::KinematicLine>;
 
     double mass = ptable.particle(recoseed.particle()).mass();
     int tcharge = (recotraj.nearestPiece(recotraj.t0()).charge() > 0.0) ? 1 : -1;
@@ -215,7 +217,7 @@ namespace mu2e {
       // the KTRAJ nominal BField: the local field for a helix; a fixed non-zero z for a field-free line
       // (KinematicLine requires a non-zero bnom for interface consistency).
       KTRAJ tpiece = [&]{
-        if constexpr (std::is_same_v<KTRAJ,KinKal::KinematicLine>){
+        if constexpr (isLine){
           return KTRAJ(VEC4(tpos.X(),tpos.Y(),tpos.Z(),ttime), MOM4(tmom.X(),tmom.Y(),tmom.Z(),mass),
                        tcharge, VEC3(0.0,0.0,0.001), fpiece.range());
         } else {
@@ -242,19 +244,22 @@ namespace mu2e {
       }
       truthParamHits.push_back(std::make_shared<PARAMHIT>(hitTime, truthpt, cparams, truthMask));
     };
-    // a single piece gives a zero-length fit range (lowNDOF); split it into two hits a sliver apart.
     if(truthHitTimes.size() == 1){
+      // Rare degenerate case: recotraj is normally MANY pieces (one per material/BField crossing), so the
+      // per-piece branch below runs. But a lone piece gives a single ParameterHit == a zero-length (lowNDOF)
+      // fit range, so pin two hits a sliver apart instead.
       constexpr double truthHitDt = 1.0e-3;
       addTruthHit(truthHitTimes.front() - 0.5*truthHitDt, 2.0);
       addTruthHit(truthHitTimes.front() + 0.5*truthHitDt, 2.0);
     } else {
+      // pin each trajectory piece at its reference-time midpoint.
       for(auto const hitTime : truthHitTimes) addTruthHit(hitTime, 1.0);
     }
 
     // rebuild the fit's field domains from the seed so the truth fit/extrapolation see the same BField
-    // model (empty for a field-free line; skipped entirely if RebuildDomains is off).
+    // model. Field-on fits only: a field-free line (KinematicLine) has no BField domains.
     DOMAINCOL truthDomains;
-    if(rebuildDomains_){
+    if constexpr(!isLine){
       auto const& dbounds = recoseed.domainBounds();
       for(size_t idb = 0; idb + 1 < dbounds.size(); ++idb){
         double tstart = dbounds[idb];
@@ -330,14 +335,17 @@ namespace mu2e {
 
       // dispatch on the reco fit type (the runtime type check): build the matching KTRAJ truth seed
       std::optional<KalSeed> tsseed;
-      if(kseed.centralHelixFit()){
+      if(kseed.loopHelixFit()){
+        auto recotraj = kseed.loopHelixFitTrajectory();
+        tsseed = createTruthSeed<KinKal::LoopHelix>(*recotraj,kseed,lhfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+      } else if(kseed.centralHelixFit()){
         auto recotraj = kseed.centralHelixFitTrajectory();
-        tsseed = extrapolateFit<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
       } else if(kseed.kinematicLineFit()){
         auto recotraj = kseed.kinematicLineFitTrajectory();
-        tsseed = extrapolateFit<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
       } else {
-        throw cet::exception("RECO") << "mu2e::KKTruthSeed: KalSeed is neither a CentralHelix nor a KinematicLine fit" << std::endl;
+        throw cet::exception("RECO") << "mu2e::KKTruthSeed: KalSeed is not a LoopHelix, CentralHelix, or KinematicLine fit" << std::endl;
       }
       if(!tsseed) continue;
 

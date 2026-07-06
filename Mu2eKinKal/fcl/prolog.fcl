@@ -580,7 +580,6 @@ Mu2eKinKal : {
     KalSeedCollection : "KKLine"      # reconstructed KKLine KalSeeds to truth-seed
     KalSeedMCAssns : "SelectRecoMC"   # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
     MCTrajectories : "compressDigiMCs" # true trajectory (set to the sample's MCTrajectory product)
-    RebuildDomains : false            # field-free line fit: no BField domains
     SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # d0, phi0, z0, cost, t0, mom (matches KINEMATICLINE)
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
@@ -600,7 +599,6 @@ Mu2eKinKal : {
     KalSeedCollection : "KKCHmu"        # reconstructed KKCH KalSeeds to truth-seed
     KalSeedMCAssns : "SelectRecoMC"     # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
     MCTrajectories : "compressDigiMCs"  # dense true trajectory used to match the piecewise |p| through the tracker
-    RebuildDomains : true               # field-on helix fit: rebuild BField domains from the seed
     SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0 (matches CENTRALHELIX)
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
