@@ -105,6 +105,11 @@ public:
     // the basis/transform resolution.
     static constexpr std::size_t kSmallSampleWarn = 1000;
 
+    // Bound on redraws when SPLINE_CDF / KDE produce a non-positive pTotal (physical
+    // magnitude must be > 0). Exceeding this points at a malformed spline / oversized
+    // KDE bandwidth rather than an unlucky draw, so we throw instead of looping forever.
+    static constexpr int kMaxNonPositiveRedraws = 100;
+
     // Populate from a source ROOT file using the standard selection. After this the
     // sorted physical pTotal vector is ready; method-specific structures are built lazily.
     void buildFromRoot(const std::string& file, const std::string& tree,
@@ -218,14 +223,33 @@ private:
         cdfSpline_ = std::make_unique<TSpline3>("ptotCdfSpline", cdf.data(), val.data(), nKnots);
     }
 
+    // Cubic-spline inversion can extrapolate below 0 near the CDF ends; pTotal is a
+    // physical magnitude, so reject a non-positive draw and try again (bounded).
     double drawSpline(CLHEP::RandFlat& rf) const {
-        return cdfSpline_->Eval(rf.fire());
+        for (int attempt = 0; attempt < kMaxNonPositiveRedraws; ++attempt) {
+            const double p = cdfSpline_->Eval(rf.fire());
+            if (p > 0.0) return p;
+            mf::LogWarning("PtotResampler")
+                << "SPLINE_CDF drew non-positive pTotal " << p << " MeV/c (spline extrapolation); redrawing.";
+        }
+        throw cet::exception("PtotResampler")
+            << "SPLINE_CDF failed to draw a positive pTotal after " << kMaxNonPositiveRedraws
+            << " attempts; the spline fit is likely producing negative values.";
     }
 
-    // KDE: pick a sample at random and jitter by a Gaussian of width bandwidth_.
+    // KDE: pick a sample at random and jitter by a Gaussian of width bandwidth_. The
+    // Gaussian jitter can push a small-pTotal sample below 0; reject and redraw (bounded).
     double drawKde(CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg) const {
-        const std::size_t i = static_cast<std::size_t>(rf.fireInt(static_cast<long>(ptot_.size())));
-        return ptot_[i] + bandwidth_ * rg.fire();
+        for (int attempt = 0; attempt < kMaxNonPositiveRedraws; ++attempt) {
+            const std::size_t i = static_cast<std::size_t>(rf.fireInt(static_cast<long>(ptot_.size())));
+            const double p = ptot_[i] + bandwidth_ * rg.fire();
+            if (p > 0.0) return p;
+            mf::LogWarning("PtotResampler")
+                << "KDE drew non-positive pTotal " << p << " MeV/c (Gaussian jitter); redrawing.";
+        }
+        throw cet::exception("PtotResampler")
+            << "KDE failed to draw a positive pTotal after " << kMaxNonPositiveRedraws
+            << " attempts; the bandwidth is likely too large for the smallest pTotal samples.";
     }
 
     // Median spacing between adjacent sorted samples — a rough resolution proxy.

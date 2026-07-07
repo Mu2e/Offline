@@ -1120,6 +1120,20 @@ namespace mu2e {
             } else {
                 pP.assign(pk.size(), 0);
                 for (double fk : f) sumF += fk;
+                // geff[k] = max(f[k], gMax[k]*exp(-sigma^2/2sigma0^2)); the exp factor is in (0,1],
+                // so geff[k] <= gMax[k] AS LONG AS f[k] <= gMax[k], and then sum geff <= sum gMax < 1
+                // (validated above). If a window's empirical fraction f[k] exceeds its gMax, that
+                // window's geff is pinned to f[k] > gMax[k], which can push sum geff over 1 and break
+                // the cumulative selection / importance weights. Warn per offending window so the
+                // configuration can be fixed (raise gMax or narrow the window).
+                for (size_t k = 0; k < pk.size(); ++k) {
+                    if (f[k] > pk[k].gMax)
+                        mf::LogWarning("ScoreBasedDiffusionModel::train")
+                            << "Peak window " << k << " on dim " << pk[k].dim
+                            << " has empirical fraction f=" << f[k] << " > gMax=" << pk[k].gMax
+                            << "; its g_eff floors at f (not gMax), which can make sum g_eff exceed 1. "
+                            << "Raise gMax above f or narrow the window.";
+                }
                 std::ostringstream oss;
                 oss << "Peak importance sampling enabled: " << pk.size()
                     << " window(s), total in-window fraction " << sumF
@@ -1212,6 +1226,15 @@ namespace mu2e {
                         geff[k] = std::max(f[k], pk[k].gMax * std::exp(-(s_t * s_t) / (2.0 * pk[k].sigma0 * pk[k].sigma0)));
                         sumGeff += geff[k];
                     }
+                    // sum gMax < 1 is validated up front and the exp factor is in (0,1], so this can
+                    // only trip when some window has f[k] > gMax[k] (warned at setup). If it does, the
+                    // out-of-window pool Q becomes unreachable and the importance weights stop being a
+                    // valid estimator, so fail loudly rather than train on a silently biased sample.
+                    if (sumGeff >= 1.0)
+                        throw cet::exception("ScoreBasedDiffusionModel::train")
+                            << "Peak sampling sum g_eff (" << sumGeff << ") >= 1 at sigma=" << s_t
+                            << "; a window's empirical fraction exceeds its gMax. Raise gMax above f "
+                            << "or narrow the window(s).";
                     double u = randFlat_.fire();
                     int sel = -1;       // -1 = out-of-window pool Q
                     double cum = 0.0;
@@ -2959,7 +2982,7 @@ namespace mu2e {
 
             double t = ((double)step + 1.0)/steps;
             double dt = 1.0/steps;
-            double beta_val = beta(t); // as long as diffusionSteps_ is not too large, s should not become too small to cause numerical issues.
+            double beta_val = beta(t);
             bool effectiveSDE = useSDE &&
                 (sdeToOdeSigmaThreshold < 0.0 || sigma(t) >= sdeToOdeSigmaThreshold);
 
@@ -2972,6 +2995,8 @@ namespace mu2e {
                 {
                     // Convert network output to the score for any prediction target. For SCORE
                     // this is the identity (epsHat=-out*s -> -epsHat/s = out).
+                    // s = sigma(t); as long as diffusionSteps_ is not too large the smallest t on
+                    // the grid keeps s above sigma_safe, so the 1/s in scoreFromOutput stays well-behaved.
                     double s = std::max(sigma(t), sigma_safe);
                     double a = std::sqrt(std::max(0.0, alphabar(t)));
                     for (int i = 0; i < dim_; ++i)

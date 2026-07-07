@@ -61,7 +61,10 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMnoiseSchedule{ Name("SBDMnoiseSchedule"), Comment("Noise schedule (LINEAR/COSINE/LOGSIG)"), "COSINE" };
         fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<double> SBDMbetaMin{       Name("SBDMbetaMin"),       Comment("Min beta (LINEAR schedule)"),                1e-4 };
-        fhicl::Atom<double> SBDMbetaMax{       Name("SBDMbetaMax"),       Comment("Max beta (LINEAR schedule)"),                0.02 };
+        // Continuous VP-SDE: beta(t) is a rate integrated over t in [0,1], not a DDPM per-step beta.
+        // The integral ~0.5*betaMax must be O(a few) to fully noise the data by t=1; the old 0.02
+        // (DDPM per-step value, meant to sum over ~1000 steps) left sigma(1)~0.1, not ~1.
+        fhicl::Atom<double> SBDMbetaMax{       Name("SBDMbetaMax"),       Comment("Max beta (LINEAR schedule)"),                20.0 };
         fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Cosine offset"),                             0.008 };
         fhicl::Atom<double> SBDMlogSigMin{     Name("SBDMlogSigMin"),     Comment("Min sigma (LOGSIG schedule)"),               1e-5 };
         fhicl::Atom<double> SBDMlogSigMax{     Name("SBDMlogSigMax"),     Comment("Max sigma (LOGSIG schedule)"),               1.0 };
