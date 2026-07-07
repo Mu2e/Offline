@@ -25,8 +25,6 @@ namespace mu2e {
     STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, double peak_fitTime1, double peak_fitTime2, double peak_sep, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(peak_fitTime1), _peak_fitTime2(peak_fitTime2), _peak_sep(peak_sep), _adcs(adcs) {};
     // Basic constructor
     STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(adcs) {};
-    // Constructor for simulation validation
-    STMWaveformDigi(double sim_time, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _peak_fitTime1(0), _peak_fitTime2(0), _peak_sep(0), _adcs(adcs) {};
 
     int16_t                     DetID  () const { return _DetID; }
     uint64_t                    EWT    () const { return _EWT; }
