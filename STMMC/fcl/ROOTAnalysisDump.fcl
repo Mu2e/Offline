@@ -100,8 +100,8 @@ physics: {
     }
   }
 
-  o1 : ["HPGeMWDspectra"] # Populate me!
+  o1 : ["HPGeEDeps"] # Populate me!
   end_paths: [o1]
 }
 
-services.TFileService.fileName : "tree.root" # Populate me!
+services.TFileService.fileName : "S2E.HPGeTree.root" # Populate me!
