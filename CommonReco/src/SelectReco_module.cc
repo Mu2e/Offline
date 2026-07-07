@@ -104,8 +104,8 @@ namespace mu2e {
       consumes<CaloDigiCollection>(cdct_);
       consumes<CaloClusterCollection>(ccct_);
       consumes<CrvDigiCollection>(crvdct_);
-      consumesMany<KalSeedCollection>();
       consumes<CrvCoincidenceClusterCollection>(crvcct_);
+      consumesMany<KalSeedCollection>();
       produces <IndexMap>("StrawDigiMap");
       produces <IndexMap>("CrvDigiMap");
       produces <CaloDigiCollection>();
@@ -196,54 +196,57 @@ namespace mu2e {
     for(auto const& ch : chc)nrec._shthist.fill(ch.time());
   }
   void SelectReco::fillCrv(art::Event& event, RecoCount& nrec) {
-    // find Crv data in event
-    auto crvdch = event.getValidHandle<CrvDigiCollection>(crvdct_);
-    auto const& crvdc = *crvdch;
-    auto CrvRecoPulseCollectionPID = event.getProductID<CrvRecoPulseCollection>();
-    auto CrvRecoPulseCollectionGetter = event.productGetter(CrvRecoPulseCollectionPID);
     // create new Crv collections
     std::unique_ptr<CrvDigiCollection> scrvdc(new CrvDigiCollection);
     std::unique_ptr<CrvRecoPulseCollection> scrvrpc(new CrvRecoPulseCollection);
     std::unique_ptr<CrvCoincidenceClusterCollection> scrvccc(new CrvCoincidenceClusterCollection);
     std::unique_ptr<IndexMap> crvdim(new IndexMap);
 
-    std::set<uint16_t> crvindices;
-    auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(crvcct_);
-    auto const& crvccc = *crvccch;
-    // loop over CrvCoincidenceClusters
-    for(auto const& crvcc: crvccc) {
-      std::vector<art::Ptr<CrvRecoPulse>> pulses;
-      for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
-        // deep-copy the pulses used in coincidences: the digi indices are updated later
-        // the map must be used to connect them
-        scrvrpc->push_back(*crvrp);
-        auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
-        pulses.push_back(crvrpp);
-        for(auto index : crvrp->GetWaveformIndices()){
-          crvindices.insert(index);
+    auto crvdch = event.getHandle<CrvDigiCollection>(crvdct_);
+    auto crvccch = event.getHandle<CrvCoincidenceClusterCollection>(crvcct_);
+    if (crvdch.isValid() && crvccch.isValid()){
+      // find Crv data in event
+      auto const& crvdc = *crvdch;
+      auto CrvRecoPulseCollectionPID = event.getProductID<CrvRecoPulseCollection>();
+      auto CrvRecoPulseCollectionGetter = event.productGetter(CrvRecoPulseCollectionPID);
+
+      std::set<uint16_t> crvindices;
+      auto const& crvccc = *crvccch;
+      // loop over CrvCoincidenceClusters
+      for(auto const& crvcc: crvccc) {
+        std::vector<art::Ptr<CrvRecoPulse>> pulses;
+        for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
+          // deep-copy the pulses used in coincidences: the digi indices are updated later
+          // the map must be used to connect them
+          scrvrpc->push_back(*crvrp);
+          auto crvrpp = art::Ptr<CrvRecoPulse>(CrvRecoPulseCollectionPID,scrvrpc->size()-1,CrvRecoPulseCollectionGetter);
+          pulses.push_back(crvrpp);
+          for(auto index : crvrp->GetWaveformIndices()){
+            crvindices.insert(index);
+          }
+        }
+        // deep-copy the coincidence-cluster with updated Reco Pulses
+        CrvCoincidenceCluster scrvcc(crvcc);
+        scrvcc.SetCrvRecoPulses(pulses);
+        scrvccc->push_back(scrvcc);
+      }
+      // Fill CrvIndex map
+      uint16_t crvcount(0);
+      for(auto crvindex : crvindices){
+        crvdim->addElement(crvindex,crvcount++);
+        // deep-copy the selected CrvDigis
+        scrvdc->push_back(crvdc.at(crvindex));
+      }
+      // update digi indices in the pulses
+      for(auto& crvrp : *scrvrpc) {
+        auto& indices = crvrp.GetWaveformIndices();
+        for(size_t iindex=0; iindex < indices.size(); ++iindex){
+          indices[iindex] = crvdim->getCondensedIndex(indices[iindex]);
         }
       }
-      // deep-copy the coincidence-cluster with updated Reco Pulses
-      CrvCoincidenceCluster scrvcc(crvcc);
-      scrvcc.SetCrvRecoPulses(pulses);
-      scrvccc->push_back(scrvcc);
+      // update reco count
+      nrec._ncrvdigi = crvdc.size();
     }
-    // Fill CrvIndex map
-    uint16_t crvcount(0);
-    for(auto crvindex : crvindices){
-      crvdim->addElement(crvindex,crvcount++);
-      // deep-copy the selected CrvDigis
-      scrvdc->push_back(crvdc.at(crvindex));
-    }
-    // update digi indices in the pulses
-    for(auto& crvrp : *scrvrpc) {
-      auto& indices = crvrp.GetWaveformIndices();
-      for(size_t iindex=0; iindex < indices.size(); ++iindex){
-        indices[iindex] = crvdim->getCondensedIndex(indices[iindex]);
-      }
-    }
-    // update reco count
-    nrec._ncrvdigi = crvdc.size();
     // put new data in event
     event.put(std::move(scrvdc));
     event.put(std::move(scrvrpc));
@@ -251,31 +254,34 @@ namespace mu2e {
     event.put(std::move(crvdim),"CrvDigiMap");
   }
   void SelectReco::fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec) {
-    auto cdch = event.getValidHandle<CaloDigiCollection>(cdct_);
-    auto const& cdc = *cdch;
-    auto ccch = event.getValidHandle<CaloClusterCollection>(ccct_);
-    auto const& ccc = *ccch;
-
     std::unique_ptr<CaloDigiCollection> scdc(new CaloDigiCollection);
-    // reco count
-    nrec._ncalodigi = cdc.size();
-    nrec._ncc = ccc.size();
-    nrec._cce = 0.0;
-    // loop over all the CaloClusters and mark the ones that are above energy for saving by adding their Ptrs to the list
-    for(unsigned icc=0;icc < ccc.size(); icc++){
-      auto const& cc = ccc[icc];
-      nrec._cce += cc.energyDep();
-      if(cc.energyDep() > ccme_){
-        auto ccp = art::Ptr<CaloCluster>(ccch,icc);
-        ccptrs.insert(ccp);
+
+    auto cdch = event.getHandle<CaloDigiCollection>(cdct_);
+    auto ccch = event.getHandle<CaloClusterCollection>(ccct_);
+    if (cdch.isValid() and ccch.isValid()){
+      auto const& cdc = *cdch;
+      auto const& ccc = *ccch;
+
+      // reco count
+      nrec._ncalodigi = cdc.size();
+      nrec._ncc = ccc.size();
+      nrec._cce = 0.0;
+      // loop over all the CaloClusters and mark the ones that are above energy for saving by adding their Ptrs to the list
+      for(unsigned icc=0;icc < ccc.size(); icc++){
+        auto const& cc = ccc[icc];
+        nrec._cce += cc.energyDep();
+        if(cc.energyDep() > ccme_){
+          auto ccp = art::Ptr<CaloCluster>(ccch,icc);
+          ccptrs.insert(ccp);
+        }
       }
-    }
-    // deep-copy CaloDigis from selected clusters
-    for(auto const& ccptr : ccptrs) {
-      for(auto const& cchptr : ccptr->caloHitsPtrVector()){
-        for (auto const& rcdptr : cchptr->recoCaloDigis()){
-          // deep-copy CaloDigis used in clusters
-          scdc->push_back(*rcdptr->caloDigiPtr());
+      // deep-copy CaloDigis from selected clusters
+      for(auto const& ccptr : ccptrs) {
+        for(auto const& cchptr : ccptr->caloHitsPtrVector()){
+          for (auto const& rcdptr : cchptr->recoCaloDigis()){
+            // deep-copy CaloDigis used in clusters
+            scdc->push_back(*rcdptr->caloDigiPtr());
+          }
         }
       }
     }

@@ -1,4 +1,3 @@
-# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # make digis from artdaq fragments - default
 #------------------------------------------------------------------------------
@@ -21,13 +20,17 @@ services: {
     message: @local::default_message
 }
 
-services.scheduler.wantSummary        : true
 # Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit       : 1000
 services.message.destinations.log.categories.ArtReport.timespan    : 300
 services.message.destinations.log.outputStatistics                 : true
 # services.message.destinations.log.filename                         : "/dev/stdout"
+
+services.DbService          : @local::DbEmpty
+services.DbService.textFile : [ "Offline/TrackerConditions/data/TrkPanelMap.txt" ]
+services.ProditionsService.trackerPanelMap.useDb        : true
+services.scheduler.wantSummary                          : true
 
 source.module_type : RootInput
 
@@ -36,7 +39,7 @@ physics: {
         @table::DAQ.producers
     }
 
-    p1: [ StrawDigisFromArtdaqFragments ]
+    p1: [ makeSD ]
     e1: [ Output ]
 
     trigger_paths: [ p1 ]
@@ -50,9 +53,10 @@ outputs: {
     }
 }
 
-physics.producers.StrawDigisFromArtdaqFragments.saveWaveforms : 1
-physics.producers.StrawDigisFromArtdaqFragments.debugLevel    : 3  # 1:print fragments, 2: waveforms, 3: both
-physics.producers.StrawDigisFromArtdaqFragments.diagLevel     : 1  #
+physics.producers.makeSD.saveWaveforms : true
+physics.producers.makeSD.debugMode     : 1 ##
+physics.producers.makeSD.debugBits     : [ "bit1:1", "bit2:1", "bit3:1" ] ## 1:print fragments, 2: waveforms, 3: both
+physics.producers.makeSD.diagLevel     : 1 ##
 #------------------------------------------------------------------------------
 # just for testing
 #------------------------------------------------------------------------------

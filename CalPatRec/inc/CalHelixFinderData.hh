@@ -4,8 +4,8 @@
 
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 
-#include "BTrk/TrkBase/TrkErrCode.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
+#include "Offline/BTrkLegacy/inc/TrkErrCode.hh"
+#include "Offline/BTrkLegacy/inc/TrkParticle.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -14,12 +14,11 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
-
 #include "Offline/TrkReco/inc/TrkFaceData.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 
 #include <array>
 
-class HelixTraj;
 
 namespace mu2e {
 
@@ -100,10 +99,10 @@ namespace mu2e {
       float    eDepAvg;
     };
 
-    const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
+    const TimeCluster*                _timeCluster = nullptr;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
-    HelixTraj*                        _helix;
+    HelixTraj*                        _helix = nullptr;
     Helicity                          _helicity;
 
     std::vector<int>                  _goodhits;
@@ -133,33 +132,27 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
-    ::LsqSums4         _sxy;
-    ::LsqSums4         _szphi;
+    ::LsqSums4         _sxy;    // circle fitter
+    ::LsqSums4         _szphi;  // dphi / dz line fitter
 
-    XYZVectorF             _center;
-    float             _radius;
+    XYZVectorF         _center; // circle fit results
+    float              _radius;
+    float              _circle_chisq_dof; // circle fit quality
 
-    //    float             _chi2;
-//-----------------------------------------------------------------------------
-// 2015-02-06 P.Murat: fit with non-equal weights - XY-only
-//-----------------------------------------------------------------------------
-    // ::LsqSums4         _sxyw;
-    // XYZVectorF             _cw;
-    // float             _rw;
-    // float             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)),
 // fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
 //-----------------------------------------------------------------------------
-    float             _dfdz;
-    float             _fz0;
+    float              _dfdz; // dphi / dz fit results
+    float              _fz0;
+    float              _dfdz_chisq_dof; // dphi / dz fit quality
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
     Diag_t             _diag;
 //-----------------------------------------------------------------------------
-// structure used to organize thei strawHits for the pattern recognition
+// structure used to organize the strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
 //    PanelZ_t                                           _oTracker[kNTotalPanels];
 //    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;

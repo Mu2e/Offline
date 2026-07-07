@@ -157,13 +157,24 @@ bool CaloClusterCounter::filter(art::Event& event) {
         (clRadius >= _minClRadius)) {
       size_t index = std::distance(caloClusters->begin(), icl);
       triginfo->_caloClusters.push_back(art::Ptr<CaloCluster>(clH, index));
+      if(_diagLevel > 0) std::cout << "  --> Accepted cluster\n";
 
       ++nClusterAboveThreshold;
-    }
+    } else if(_diagLevel > 1) std::cout << "  --> Rejected cluster\n";
+
   }
 
-  if (nClusterAboveThreshold > _minNCl)
+  if (nClusterAboveThreshold >= _minNCl) {
+    if(_diagLevel > 0) std::cout << "[CaloClusterCounter::filter] Event " << event.id()
+                                 << ": Accepting event, N(accepted clusters) = " << nClusterAboveThreshold
+                                 << " from " << caloClusters->size() << " clusters"
+                                 << std::endl;
     retval = true;
+  } else if(_diagLevel > 1) std::cout << "[CaloClusterCounter::filter] Event " << event.id()
+                                      << ": Rejecting event, N(accepted clusters) = " << nClusterAboveThreshold
+                                      << " from " << caloClusters->size() << " clusters"
+                                      << std::endl;
+
 
   event.put(std::move(triginfo));
   return retval;

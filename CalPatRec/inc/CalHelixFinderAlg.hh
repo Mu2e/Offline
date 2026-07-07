@@ -13,13 +13,12 @@
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 
-// BaBar
-#include "BTrk/TrkBase/TrkErrCode.hh"
 //root
 //#include "TString.h"
 
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 // #include "CalPatRec/inc/CalTimePeak.hh"
 //#include "CalPatRec/inc/CalHelixPoint.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderData.hh"
@@ -46,7 +45,7 @@ namespace mu2e {
       fhicl::Atom<int>            minNHits{            fhicl::Name("minNHit"),                fhicl::Comment("Min NHits") };
       fhicl::Atom<float>          absMpDfDz{           fhicl::Name("mostProbableDfDz"),               fhicl::Comment("Most Probable DfDz") };
       fhicl::Atom<int>            initDfDz{            fhicl::Name("initDfDz"),                fhicl::Comment("Initial DfDz") };
-      fhicl::Atom<float>            dzOverHelPitchCut{   fhicl::Name("dzOverHelPitchCut"),       fhicl::Comment("Cut on Ratio Between Dz and HelPitch") };
+      fhicl::Atom<float>          dzOverHelPitchCut{   fhicl::Name("dzOverHelPitchCut"),       fhicl::Comment("Cut on Ratio Between Dz and HelPitch") };
       fhicl::Atom<float>          maxDfDz{             fhicl::Name("maxDfDz"),                 fhicl::Comment("Max DfDz") };
       fhicl::Atom<float>          minDfDz{             fhicl::Name("minDfDz"),                 fhicl::Comment("Min DfDz") };
       fhicl::Atom<float>          sigmaPhi{            fhicl::Name("sigmaPhi"),                fhicl::Comment("Sigma Phi") };
@@ -76,6 +75,8 @@ namespace mu2e {
       fhicl::Atom<float>          chi2hel3DMax{        fhicl::Name("chi2hel3DMax"),            fhicl::Comment("Chi2 Hel3D Max") };
       fhicl::Atom<float>          dfdzErr{             fhicl::Name("dfdzErr"),                 fhicl::Comment("DfDz Error") };
       fhicl::Atom<float>          maxNHitsRatio{       fhicl::Name("maxNHitsRatio"),           fhicl::Comment("Max NHits Ratio") };
+      fhicl::Atom<bool>           procAllTCs{          fhicl::Name("procAllTCs"),              fhicl::Comment("Process all TimeClusters by faking a CaloCluster when absentexu") };
+      fhicl::Atom<float>          slopeRatioLimit{     fhicl::Name("slopeRatioLimit"),         fhicl::Comment("Slope-ratio limit used in the initial track-params evaluation") };
       fhicl::Atom<float>          minArea{             fhicl::Name("minArea"),                 fhicl::Comment("Minimum triplet area") };
     };
 //-----------------------------------------------------------------------------
@@ -91,6 +92,7 @@ namespace mu2e {
     float                     fCaloX;
     float                     fCaloY;
     float                     fCaloZ;
+    float                     fCaloOffset;
 
     //    std::vector<CalHelixPoint> _xyzp;        // normally includes only hits from the time peak
 //-----------------------------------------------------------------------------
@@ -195,7 +197,11 @@ namespace mu2e {
 
     float    _dfdzErr;                 // error on dfdz by ::findDfDz
     float    _maxNHitsRatio;
+    bool     _procAllTCs;              // flag to allow the algorithm to fake a CaloCluster when the TimeCluster doesn't have one
+    float    _slopeRatioLimit;         // limit used during the initial track-parameters evaluation
+                                       // used to check we are not in a degenerate case where m is close to k, which rapresents two almost parallel lines
     float    _minarea2;
+
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
 //-----------------------------------------------------------------------------
@@ -308,8 +314,6 @@ namespace mu2e {
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix);
     int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_1                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
-    int  findDfDz_2                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     void findTrack                    (HitInfo_t&         SeedIndex,
                                        CalHelixFinderData& Helix,
                                        int                 UseMPVdfdz     = 0);
@@ -321,7 +325,15 @@ namespace mu2e {
 // setters
 //-----------------------------------------------------------------------------
     void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
-    void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+    void  setCalorimeter(const Calorimeter* Cal    ) {
+      _calorimeter = Cal;
+      fCaloOffset = (_calorimeter->caloInfo().getDouble("diskCaseZLength")/2.
+                     + (  _calorimeter->caloInfo().getDouble("BPPipeZOffset")
+                        + _calorimeter->caloInfo().getDouble("BPHoleZLength")
+                        + _calorimeter->caloInfo().getDouble("FEEZLength"))/2.
+                     - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength")
+                     );
+    }
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------

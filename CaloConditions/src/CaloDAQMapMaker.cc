@@ -34,8 +34,9 @@ namespace mu2e {
     CaloDAQMap::OfflineArray offline2Raw;
     uint16_t oid,rid,nRead(0);
 
-    ordFile >> oid >> rid;
-    while (!ordFile.eof()) {
+    while (!ordFile.eof()){
+      ordFile >> rid >> oid;
+      if (ordFile.eof()) break;
 
       if(rid >= CaloConst::_nRawChannel) {
         throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker read invalid rawId" << rid << endl;
@@ -52,8 +53,6 @@ namespace mu2e {
         offline2Raw[oid] = CaloRawSiPMId(rid);
       }
 
-      ordFile >> oid >> rid;
-
     }
 
     if(nRead != CaloConst::_nRawChannel) {
@@ -68,13 +67,43 @@ namespace mu2e {
 
   } // end fromFcl
 
+  //***************************************************
 
-  CaloDAQMap::ptr_t CaloDAQMapMaker::fromDb() {
+  CaloDAQMap::ptr_t CaloDAQMapMaker::fromDb(CalChannels::cptr_t cch_p) {
 
-    // initially fill from fcl to get all the constants
-    auto ptr = fromFcl();
+    if (_config.verbose()>0) {
+      cout << "CaloDAQMapMaker::fromDb making CaloDAQMap\n";
+    }
 
-    // swaps table added here when needed
+    CaloDAQMap::RawArray raw2Offline;
+    CaloDAQMap::OfflineArray offline2Raw;
+
+    for (auto const& row : cch_p->rows()) {
+      CaloRawSiPMId rawid = row.rawid();
+      CaloSiPMId roid = row.roid();
+      if(!rawid.isValid()) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker found invalid rawId" << rawid << endl;
+      }
+      if(!(roid.isValid() || roid.id() == CaloConst::_invalid)) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CaloDAQMapMaker found invalid offlineId " << roid << endl;
+      }
+
+      raw2Offline[rawid.id()] = roid;
+
+      if(roid.isValid()) {
+        offline2Raw[roid.id()] = rawid;
+      }
+    } // end loop over table
+
+    // check that all roid were filled since some table entries are set
+    // to invalid and there is no other check that this was done correctly
+    for (auto const& cc : offline2Raw) {
+      if(!cc.isValid()) {
+        throw cet::exception("CALODAQMAPMAKER_MISSING") << "CaloDAQMapMaker found missing roid " << endl;
+      }
+    }
+
+    auto ptr = make_shared<CaloDAQMap>(raw2Offline, offline2Raw);
 
     return ptr;
 

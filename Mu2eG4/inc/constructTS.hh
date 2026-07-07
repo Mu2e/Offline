@@ -7,7 +7,9 @@
 // Original author KLG
 //
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/Mu2eG4Helper/inc/AntiLeakRegistry.hh"
 #include "Geant4/G4Material.hh"
+#include "Geant4/G4Tubs.hh"
 
 namespace mu2e {
 
@@ -27,15 +29,18 @@ namespace mu2e {
                              TransportSolenoid::TSRegion::enum_type TSRegion,
                              G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldAlMaterial,
                              double centerWallThickness);
-  void addThermalShieldStraightSection( VolumeInfo const& useAsParent, std::vector<double> innerRadii,
+  void addThermalShieldStraightSection( SimpleConfig const & config, VolumeInfo const& useAsParent, std::vector<double> innerRadii,
                                         std::vector<double> outerRadii, double halfLength,
                                         G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldMidMaterial,
                                         CLHEP::Hep3Vector const& origin, std::string name);
-  void addThermalShieldTorusSection( VolumeInfo const& useAsParent, std::vector<double> innerRadii,
+  void addThermalShieldTorusSection( SimpleConfig const & config, VolumeInfo const& useAsParent, std::vector<double> innerRadii,
                                      std::vector<double> outerRadii, std::vector<double> torusParams,
                                      G4Material* thermalShieldMLIMaterial, G4Material* thermalShieldMidMaterial,
                                      CLHEP::Hep3Vector const& origin, std::string name);
 
+  void getBeamPipe(SimpleConfig const& config, AntiLeakRegistry& reg, G4Tubs * &beamPassTub, CLHEP::HepRotation * &turn, CLHEP::Hep3Vector &place);
+
+  bool createBeamPipe(SimpleConfig const& config);
 }
 
 #endif /* Mu2eG4_constructTS_hh */

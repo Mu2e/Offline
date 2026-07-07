@@ -27,7 +27,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
-#include "BTrk/BField/BField.hh"
 // utiliities
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Offline/DataProducts/inc/TrkTypes.hh"
@@ -448,7 +447,8 @@ namespace mu2e {
       const Tracker& tracker = *GeomHandle<Tracker>();
       _rstraw = tracker.strawProperties()._strawInnerRadius;
       if ( _printLevel > 0 ) {
-        auto const& strawphys = _strawphys_h.get(run.id());
+        // nominal subrun for debugging, calls in produce() give formal result
+        auto const& strawphys = _strawphys_h.get(art::EventID(run.run(),0,0));
         strawphys.print(cout);
       }
     }

@@ -8,11 +8,13 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // beam
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/RecoDataProducts/inc/RecoProtonBunchIntensity.hh"
 
 // calorimeter
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -25,6 +27,7 @@
 // straws
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Offline/RecoDataProducts/inc/StrawFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigiFlag.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
@@ -44,13 +47,8 @@
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
 
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/KKCentralHelix.hh"
-#include "Offline/RecoDataProducts/inc/TrackSummaryRecoMap.hh"
-#include "Offline/RecoDataProducts/inc/TrackSummary.hh"
-#include "Offline/RecoDataProducts/inc/TrackCaloAssns.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
@@ -62,20 +60,17 @@
 #include "Offline/RecoDataProducts/inc/MVAResult.hh"
 
 // extrapolation and PID
-#include "Offline/RecoDataProducts/inc/TrkCaloIntersect.hh"
-#include "Offline/RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "Offline/RecoDataProducts/inc/PIDProduct.hh"
-#include "Offline/RecoDataProducts/inc/TrkToCaloExtrapol.hh"
-#include "Offline/RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
-#include "Offline/RecoDataProducts/inc/CrvCoincidence.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "artdaq-core-mu2e/Overlays/Decoders/CRVDataDecoder.hh"
 
 // ExtMon
 #include "Offline/RecoDataProducts/inc/ExtMonFNALRawHit.hh"
@@ -100,10 +95,11 @@
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+#include "Offline/RecoDataProducts/inc/STMFragmentSummary.hh"
 
-// MTP
-#include "Offline/RecoDataProducts/inc/MTPHit.hh"
+// MSD
+#include "Offline/RecoDataProducts/inc/MSDHit.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

@@ -17,18 +17,6 @@
 #include "Offline/TrackerConditions/inc/StrawDrift.hh"
 #include "Offline/CosmicReco/inc/DriftFitUtils.hh"
 
-//For Drift:
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BbrGeom/Trajectory.hh"
-#include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/BbrGeom/HepPoint.h"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-
 using namespace mu2e;
 
     double DriftFitUtils::GetTestDOCA(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker) {

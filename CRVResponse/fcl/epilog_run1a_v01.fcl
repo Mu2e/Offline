@@ -1,0 +1,9 @@
+physics.producers.CrvPhotons.CRVSectors           : ["T1", "T2"]
+physics.producers.CrvPhotons.reflectors           : [  0 ,   0 ]
+physics.producers.CrvPhotons.scintillationYields  : [39794,30482]   //assuming modules from CRV-T(1.8mm) and CRV-T(1.4mm)
+physics.producers.CrvPhotons.lookupTableFileNames : [
+                                                     "CRVConditions/v6_0/LookupTable_6000_0",
+                                                     "CRVConditions/v6_0/LookupTable_6000_0"
+                                                    ]
+physics.producers.CrvPhotons.photonYieldScaleFactor : 0.90  //scale factor applied to photon yields to mimic aging
+                                                            //of 4 years with a rate 2.5% per year (from 12/2023 to 12/2027)

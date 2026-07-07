@@ -52,8 +52,8 @@ void mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind,
 
   TriggerResultsNavigator trigNavig(&obj);
   for (unsigned int i = 0; i < trigNavig.getTrigPaths().size(); ++i) {
-    std::string path = trigNavig.getTrigPathName(i);
-    size_t pathID = trigNavig.findTrigPathID(path);
+    std::string path = trigNavig.getTrigPathNameByIndex(i);
+    size_t pathID = trigNavig.getTrigBitByName(path);
     os << "  " << (trigNavig.accepted(path) ? "pass" : "fail") << "  " << pathID
        << "  " << path << std::endl;
   }

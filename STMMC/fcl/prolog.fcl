@@ -136,7 +136,7 @@ STMMCAnalysis : {
             naverage : @local::STM.HPGe.naverage
         }
     }
-    MWD : {
+    PH : {
         HPGe : {
             stmWaveformDigisTag : {
                 concatenated: @local::DataProducts.Waveforms.HPGe.concatenated

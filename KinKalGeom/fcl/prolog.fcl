@@ -1,0 +1,19 @@
+BEGIN_PROLOG
+KinKalGeom : {
+    KKMaterial : {
+    elements  : "Offline/TrackerConditions/data/ElementsList.data"
+    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
+    materials : "Offline/TrackerConditions/data/MaterialsList.data"
+    strawGasMaterialName  : "straw-gas"
+    strawWallMaterialName : "straw-wall"
+    strawWireMaterialName : "straw-wire"
+    IPAMaterialName : "HDPE"
+    STMaterialName : "Target"
+    CRVMaterialName : "CRVModule"
+    IonizationEnergyLossMode : 1 # Moyal mean
+    SolidScatteringFraction : 0.999999
+    GasScatteringFraction : 0.9999999
+    ElectronBrehmsFraction : 0.04
+  }
+}
+END_PROLOG

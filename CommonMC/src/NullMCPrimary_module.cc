@@ -14,6 +14,7 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/MCTrajectory.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
 #include <vector>
 #include <string>
@@ -44,6 +45,7 @@ namespace mu2e {
       produces <StrawGasStepCollection>();
       produces <CrvStepCollection>();
       produces <CaloShowerStepCollection>();
+      produces <SurfaceStepCollection>();
     }
 
   void NullMCPrimary::produce(art::Event& event) {
@@ -61,6 +63,7 @@ namespace mu2e {
     event.put(std::make_unique<StrawGasStepCollection>());
     event.put(std::make_unique<CrvStepCollection>());
     event.put(std::make_unique<CaloShowerStepCollection>());
+    event.put(std::make_unique<SurfaceStepCollection>());
   }
 }
 DEFINE_ART_MODULE(mu2e::NullMCPrimary)

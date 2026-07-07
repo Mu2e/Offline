@@ -52,6 +52,7 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
       fhicl::Atom<bool> NZSdata{Name("NZSdata"), Comment("use digis with the NZS instance label")};  //false
+      fhicl::Atom<float> pedestalUndershootThreshold{Name("pedestalUndershootThreshold"), Comment("if 1st ADC sample is below DB pedestal by this threshold value, use 1st ADC sample as pedestal. E.g. -10000 forces it to always use the 1st ADC sample.")};  //6.0
       fhicl::Atom<float> minADCdifference{Name("minADCdifference"), Comment("minimum ADC difference above pedestal to be considered for reconstruction")};  //40
       fhicl::Atom<float> defaultBeta{Name("defaultBeta"), Comment("initialization value for fit and default value for invalid fits (regular pulses: 19.0ns, dark counts for calibration: 12.0ns)")};
       fhicl::Atom<float> minBeta{Name("minBeta"), Comment("smallest accepted beta for valid fit [ns]")};  //5.0ns
@@ -60,15 +61,12 @@ namespace mu2e
       fhicl::Atom<float> minPulseHeightRatio{Name("minPulseHeightRatio"), Comment("smallest accepted ratio between largest ADC value and fitted peak")}; //0.7
       fhicl::Atom<float> maxPulseHeightRatio{Name("maxPulseHeightRatio"), Comment("largest accepted ratio between largest ADC value and fitted peak")}; //1.5
       fhicl::Atom<float> LEtimeFactor{Name("LEtimeFactor"), Comment("time of leading edge is peakTime-LEtimeFactor*beta (0.985,1.385,1.587 for a leading edge of 0.5,0.2,0.1 pulse height")};
-      fhicl::Atom<float> pulseThreshold{Name("pulseThreshold"), Comment("fraction of ADC peak used as threshold to determine the pulse time interval for the no-fit option")}; //0.5
-      fhicl::Atom<float> pulseAreaThreshold{Name("pulseAreaThreshold"), Comment("threshold to determine the pulse area for the the no-fit option")}; //5
-      fhicl::Atom<float> doublePulseSeparation{Name("doublePulseSeparation"), Comment("fraction of both peaks at which double pulses can be separated in the no-fit option")}; //0.25
+      fhicl::Atom<int>   samplesBefore{Name("samplesBefore"), Comment("number of samples before the peak to be included in fit")};
+      fhicl::Atom<int>   samplesAfter{Name("samplesAfter"), Comment("number of samples after the peak to be included in fit")};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer"};
       fhicl::Atom<art::InputTag> protonBunchTimeTag{Name("protonBunchTimeTag"), Comment("ProtonBunchTime producer"),"EWMProducer"};
-      fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
-      fhicl::Atom<float> timeOffsetCutoffLow{Name("timeOffsetCutoffLow"), Comment("lower cutoff of time offsets (for random values - otherwise set to minimum value)")}; //-3.0ns
-      fhicl::Atom<float> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh"), Comment("upper cutoff of time offsets (for random values - otherwise set to maximum value)")}; //+3.0ns
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
+      fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
     };
 
@@ -85,13 +83,12 @@ namespace mu2e
 
     std::string _crvDigiModuleLabel;
     bool        _NZSdata;
+    float       _pedestalUndershootThreshold;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeTag;
 
-    float _timeOffsetScale;
-    float _timeOffsetCutoffLow;
-    float _timeOffsetCutoffHigh;
     bool  _useTimeOffsetDB;
+    float _timeOffsetScale;
 
     bool  _ignoreChannels;
 
@@ -104,12 +101,11 @@ namespace mu2e
     art::EDProducer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
     _NZSdata(conf().NZSdata()),
+    _pedestalUndershootThreshold(conf().pedestalUndershootThreshold()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
-    _timeOffsetScale(conf().timeOffsetScale()),
-    _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
-    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
+    _timeOffsetScale(conf().timeOffsetScale()),
     _ignoreChannels(conf().ignoreChannels())
   {
     produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
@@ -121,9 +117,8 @@ namespace mu2e
                                                                                                     conf().minPulseHeightRatio(),
                                                                                                     conf().maxPulseHeightRatio(),
                                                                                                     conf().LEtimeFactor(),
-                                                                                                    conf().pulseThreshold(),
-                                                                                                    conf().pulseAreaThreshold(),
-                                                                                                    conf().doublePulseSeparation()));
+                                                                                                    conf().samplesBefore(),
+                                                                                                    conf().samplesAfter()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -170,7 +165,10 @@ namespace mu2e
     {
       const CrvDigi &digi = crvDigiCollection->at(waveformIndex);
       const CRSScintillatorBarIndex &barIndex = digi.GetScintillatorBarIndex();
-      int SiPM = digi.GetSiPMNumber();
+      uint8_t SiPM = digi.GetSiPMNumber();
+      uint8_t ROC = digi.GetROC();
+      uint8_t FEB = digi.GetFEB();
+      uint8_t FEBchannel = digi.GetFEBchannel();
       uint16_t startTDC = digi.GetStartTDC();
       std::vector<int16_t> ADCs=digi.GetADCs();
       std::vector<size_t> waveformIndices;
@@ -178,13 +176,14 @@ namespace mu2e
 
       //checking following digis whether they are a continuation of the current digis
       //if that is the case, append the next digis
+      //requires that digis belonging to the same channel are grouped together and ordered by timestamp
       while(++waveformIndex<crvDigiCollection->size())
       {
         const CrvDigi &nextDigi = crvDigiCollection->at(waveformIndex);
         if(barIndex!=nextDigi.GetScintillatorBarIndex()) break;
         if(SiPM!=nextDigi.GetSiPMNumber()) break;
-        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;
-        for(size_t i=0; i<nextDigi.GetADCs().size(); ++i) ADCs.push_back(nextDigi.GetADCs()[i]);
+        if(startTDC+ADCs.size()!=nextDigi.GetStartTDC()) break;  //checks that the next waveform begins right after the previous one
+        ADCs.insert(ADCs.end(),nextDigi.GetADCs().begin(),nextDigi.GetADCs().end()); //append the waveform
         waveformIndices.push_back(waveformIndex);
       }
 
@@ -197,15 +196,19 @@ namespace mu2e
       }
 
       double pedestal = calib.pedestal(channel);
+      bool pedestalFromDB = true;
+      if(pedestal-((float)ADCs.at(0))>_pedestalUndershootThreshold) //pulse seems to be in an undershoot. get pedestal from 1st ADC sample instead of DB.
+      {
+        pedestal=ADCs.at(0);
+        pedestalFromDB=false;
+      }
       double calibPulseArea = calib.pulseArea(channel);
       double calibPulseHeight = calib.pulseHeight(channel);
       double timeOffset = 0.0;
       if(_useTimeOffsetDB)
       {
-        double timeOffset = calib.timeOffset(channel);
+        timeOffset = calib.timeOffset(channel);
         timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
-        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
-        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
       }
 
       _makeCrvRecoPulses->SetWaveform(ADCs, startTDC, CRVDigitizationPeriod, pedestal, calibPulseArea, calibPulseHeight);
@@ -224,26 +227,16 @@ namespace mu2e
         float  pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2s().at(j);
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
-        bool   duplicateNoFitPulse    = _makeCrvRecoPulses->GetDuplicateNoFitPulses().at(j);
-        bool   separatedDoublePulse   = _makeCrvRecoPulses->GetSeparatedDoublePulses().at(j);
         bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
-        if(duplicateNoFitPulse)    flags.set(CrvRecoPulseFlagEnums::duplicateNoFitPulse);
-        if(separatedDoublePulse)   flags.set(CrvRecoPulseFlagEnums::separatedDoublePulse);
         if(zeroNdf)                flags.set(CrvRecoPulseFlagEnums::zeroNdf);
 
-        float  PEsNoFit          = _makeCrvRecoPulses->GetPEsNoFit().at(j);
-        double pulseTimeNoFit    = _makeCrvRecoPulses->GetPulseTimesNoFit().at(j) + TDC0time + timeOffset;
-        double pulseStart        = _makeCrvRecoPulses->GetPulseStarts().at(j) + TDC0time + timeOffset;
-        double pulseEnd          = _makeCrvRecoPulses->GetPulseEnds().at(j) + TDC0time + timeOffset;
-
-        if(calibPulseArea<=0) {PEs=0; PEsNoFit=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
+        if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, flags,
-                                             PEsNoFit, pulseTimeNoFit, pulseStart, pulseEnd,
-                                             waveformIndices, barIndex, SiPM);
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
+                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 
     }

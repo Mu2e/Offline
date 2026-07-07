@@ -1,0 +1,38 @@
+# This module dumps CRV digis and status information into ROOT ntuples
+#
+# Usage examples:
+#   mu2e -c CRVTools/fcl/crvDigiDump.fcl -s <input-art-file> -n <nevents>
+#
+# Change output filename:
+#   mu2e -c CRVTools/fcl/crvDigiDump.fcl -s input.art -T myOutput.root
+#
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CrvDigiDump
+
+source : {
+  module_type : RootInput
+  maxEvents   : -1
+}
+
+services : {
+  message : @local::default_message
+  TFileService : {
+    fileName : "crvDigiDump.root"
+  }
+}
+
+physics : {
+  analyzers: {
+    crvDigiDump : {
+      module_type  : CrvDigiDump
+      crvDigiTag   : "CrvDigi"      # Module label that produces CRV digis (default: "CrvDigi")
+      crvStatusTag : "CrvDigi"      # Module label that produces CRV status (default: "CrvDigi")
+      diagLevel    : 0               # 0=quiet, 1=summary, 2=per-event, 3=detailed
+    }
+  }
+
+  ana : [ crvDigiDump ]
+  end_paths : [ ana ]

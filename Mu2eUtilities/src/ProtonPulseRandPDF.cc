@@ -15,7 +15,6 @@
 #include "CLHEP/Random/RandGeneral.h"
 
 // Mu2e includes
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "fhiclcpp/ParameterSet.h"

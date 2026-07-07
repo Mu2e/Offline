@@ -12,8 +12,6 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 
-class KalRep;
-
 namespace mu2e {
 
   class StrawHit;
@@ -32,7 +30,6 @@ namespace mu2e {
   class StepPointMC;
   class StrawDigiMC;
   class StrawGasStep;
-  class TrackClusterMatch;
   class TrkCaloHit;
   class TrkStrawHit;
   class TrkPrintUtils;

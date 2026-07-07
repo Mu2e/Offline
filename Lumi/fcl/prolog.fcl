@@ -1,0 +1,40 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+
+Lumi : {
+    producers : {
+        RecoNPOTMaker : {
+            module_type      : RecoNPOTMaker
+            caloIntInfoTag   : "CaloHitMakerFast"
+            trkHitIntInfoTag : "TTmakeSH"
+            tcIntInfoTZTag   : "TTTZClusterFinder"
+            tcIntInfoDFTag   : "TTflagPH"
+            debugLevel       : 0
+        }
+    }
+
+    filters : {
+        RecoNPOTFilter: {
+            module_type         : RecoNPOTFilter
+            recoNPOTTag         : "RecoNPOTMaker"
+            minWeight           : 0.01
+            fileName            : "npot_1b.root"
+            debugLevel          : 0
+        }
+    }
+
+    analyzers : {
+        NPOTAnalysis : {
+            module_type: NPOTAnalysis
+            caloTag    : "CaloHitMakerFast"
+            thCollTag  : "TTmakeSH"
+            dfCollTag  : "TTflagPH"
+            tcCollTag  : "TTTZClusterFinder"
+            recoPOTTag : "RecoNPOTMaker"
+            MCPOTTag   : "PBISim"
+            processName: "lumiAna"
+            filterName : "lumiStream"
+        }
+    }
+}
+END_PROLOG

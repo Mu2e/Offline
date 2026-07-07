@@ -1,0 +1,18 @@
+//
+// Use G4's surface check technology to check for overlaps.
+//
+//
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+bool g4.doSurfaceCheck    = true;
+
+// number of random points on the volume surface
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

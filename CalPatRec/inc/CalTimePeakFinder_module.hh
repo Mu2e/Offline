@@ -24,25 +24,6 @@ namespace art {
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "Offline/BTrkData/inc/Doublet.hh"
-
-// BaBar
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BField/BField.hh"
-#include "BTrk/BField/BFieldFixed.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
-#include "BTrk/BaBar/BbrStringUtils.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "Offline/TrkPatRec/inc/TrkHitFilter.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-
-// #include "CalPatRec/inc/CalTimePeak.hh"
 #include "Offline/CalPatRec/inc/CalTimePeakFinder_types.hh"
 
 // Mu2e
@@ -171,4 +152,3 @@ namespace mu2e {
   };
 }
 #endif
-

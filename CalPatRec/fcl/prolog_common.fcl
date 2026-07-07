@@ -23,30 +23,6 @@ CommonTrk                : {
             HelixFinders : [ "AgnosticHelixFinder", "CalHelixFinderUmu"]
         }
 #------------------------------------------------------------------------------
-# BTRK track fit, downstream electron hypothesis
-#------------------------------------------------------------------------------
-        KSFDeH     : { @table::TrkPatRec.producers.KSFDe                            SeedCollection : MHFinderDe  CheckHelicity:false }
-        KFFDeHPar  : { @table::TrkPatRec.producers.KFFDe                            SeedCollection : KSFDeH  }
-        KFFDeHDar  : { @table::CalPatRec.producers.CalTrkFitDe  SeedCollection : KSFDeH  }
-#------------------------------------------------------------------------------
-# BTRK track fit, upstream electron hypothesis
-#------------------------------------------------------------------------------
-        KSFUeH     : { @table::TrkPatRec.producers.KSFUe                            SeedCollection : MHFinderUe  CheckHelicity:false }
-        KFFUeHPar  : { @table::TrkPatRec.producers.KFFUe                            SeedCollection : KSFUeH  }
-        KFFUeHDar  : { @table::CalPatRec.producers.CalTrkFitUe  SeedCollection : KSFUeH  }
-#------------------------------------------------------------------------------
-# BTRK track fit, downstream muon hypothesis
-#------------------------------------------------------------------------------
-        KSFDmuH    : { @table::TrkPatRec.producers.KSFDmu                           SeedCollection : MHFinderDmu CheckHelicity:false}
-        KFFDmuHPar : { @table::TrkPatRec.producers.KFFDmu                           SeedCollection : KSFDmuH }
-        KFFDmuHDar : { @table::CalPatRec.producers.CalTrkFitDm  SeedCollection : KSFDmuH }
-#------------------------------------------------------------------------------
-# BTRK track fit, upstream muon hypothesis
-#------------------------------------------------------------------------------
-        KSFUmuH    : { @table::TrkPatRec.producers.KSFUmu                           SeedCollection : MHFinderUmu CheckHelicity:false }
-        KFFUmuHPar : { @table::TrkPatRec.producers.KFFUmu                           SeedCollection : KSFUmuH }
-        KFFUmuHDar : { @table::CalPatRec.producers.CalTrkFitUmm  SeedCollection : KSFUmuH }
-#------------------------------------------------------------------------------
 # assume KinKal doesn't check the helicity, using that of the helix
 # KinKal track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
@@ -56,7 +32,6 @@ CommonTrk                : {
                 HelixSeedCollections : [ "MHFinderDe"  ]
             }
         }
-        # KFFDeHDar  : { @table::CalPatRec.producers.CalTrkFitDe  SeedCollection : KSFDeH  }
 #------------------------------------------------------------------------------
 # KinKal track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
@@ -66,7 +41,6 @@ CommonTrk                : {
                 HelixSeedCollections  : [ "MHFinderDmu" ]
             }
         }
-        # KKDmuHDar : { @table::CalPatRec.producers.CalTrkFitDm  SeedCollection : KSFDmuH }
 #------------------------------------------------------------------------------
 # KinKal track fit, upstream electron hypothesis
 #------------------------------------------------------------------------------
@@ -107,24 +81,5 @@ CommonTrk.helix_reco_Umu  : [ CalTimePeakFinderUmu, CalHelixFinderUmu, MHFinderC
                               TZClusterFinder, AgnosticHelixFinder,
                               MHFinderTprUmu    ,
                               MHFinderUmu ]
-#------------------------------------------------------------------------------
-# by default, write out two lists of tracks corresponding to two different
-# ambiguity resolvers
-#------------------------------------------------------------------------------
-CommonTrk.reco_DeHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHPar  ]
-CommonTrk.reco_DeHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHDar  ]
-CommonTrk.reco_DeH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeH , KFFDeHPar,  KFFDeHDar  ]
-
-CommonTrk.reco_UeHPar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHPar  ]
-CommonTrk.reco_UeHDar   : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHDar  ]
-CommonTrk.reco_UeH      : [ @sequence::CommonTrk.helix_reco_Ue , KSFUeH , KFFUeHPar,  KFFUeHDar  ]
-
-CommonTrk.reco_DmuHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHPar ]
-CommonTrk.reco_DmuHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHDar ]
-CommonTrk.reco_DmuH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuH, KFFDmuHPar, KFFDmuHDar ]
-
-CommonTrk.reco_UmuHPar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHPar ]
-CommonTrk.reco_UmuHDar  : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHDar ]
-CommonTrk.reco_UmuH     : [ @sequence::CommonTrk.helix_reco_Umu, KSFUmuH, KFFUmuHPar, KFFUmuHDar ]
 
 END_PROLOG

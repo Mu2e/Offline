@@ -54,6 +54,22 @@ namespace mu2e {
       KKStrawHitCluster(KKSTRAWHITPTR const& hitptr);
       // create from a collection of panel hits
       KKStrawHitCluster(KKSTRAWHITCOL const& hits,KKSTRAWHITCLUSTERER const& clusterer);
+      // clone op for reinstantiation
+      KKStrawHitCluster(KKStrawHitCluster<KTRAJ> const& rhs){
+        /**/
+      };
+      std::shared_ptr< KinKal::Hit<KTRAJ> > clone(CloneContext& context) const override{
+        auto rv = std::make_shared< KKStrawHitCluster<KTRAJ> >(*this);
+        for (const auto& ptr: this->strawHits()){
+          auto hit = context.get(ptr);
+          rv->push_back(hit);
+        }
+        for (const auto& ptr: this->strawXings()){
+          auto xng = context.get(ptr);
+          rv->push_back(xng);
+        }
+        return rv;
+      };
       //Hit interface
       bool active() const override { return false; } // panel hits are never active
       KinKal::Chisq chisq(KinKal::Parameters const& params) const override { return KinKal::Chisq(); }
@@ -61,7 +77,7 @@ namespace mu2e {
       KinKal::Weights const& weight() const override { return (*hits_.begin())->weight(); }
       double time() const override;
       void updateReference(PTRAJ const& ptraj) override {} // nothing to do here, ref comes from individual hits
-      KTRAJPTR const& refTrajPtr() const override { return (*hits_.begin())->refTrajPtr(); }
+      KTRAJPTR refTrajPtr() const override { return (*hits_.begin())->refTrajPtr(); }
       // update the internals of the hit, specific to this meta-iteraion.  This will affect the next fit iteration
       void updateState(KinKal::MetaIterConfig const& config,bool first) override;
       void print(std::ostream& ost=std::cout,int detail=0) const override;
@@ -73,6 +89,11 @@ namespace mu2e {
       bool canAddHit(KKSTRAWHITPTR hit,KKSTRAWHITCLUSTERER const& clusterer) const;
       void addHit(KKSTRAWHITPTR hit,KKSTRAWHITCLUSTERER const& clusterer);
       void addXing(KKSTRAWXINGPTR xing);
+
+    protected:
+      void push_back(KKSTRAWHITPTR hit){ hits_.push_back(hit); }
+      void push_back(KKSTRAWXINGPTR xng){ xings_.push_back(xng); };
+
     private:
       // references to the individual hits and xings in this hit cluster
       KKSTRAWHITCOL hits_;
@@ -122,7 +143,7 @@ namespace mu2e {
     // return time just before the first hit's time.  This insures hit clusters are updated before individual hits
     // This insures the weights subtracted correspond to the reference fit, and that any changes made to the
     // hits in the cluster get propagated to the residuals and weights before the next fit
-    double mintime(std::numeric_limits<float>::max());
+    double mintime(std::numeric_limits<double>::max());
     for(auto const& hit : hits_){
       mintime = std::min(hit->time(),mintime);
     }

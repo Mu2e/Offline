@@ -29,6 +29,8 @@ namespace mu2e {
     const Tube* getIFBendSeal()    const { return _ifbEndSeal.get();   }
     const Tube* getIFBendPlug()    const { return _ifbEndPlug.get();   }
     const Tube* getIFBendWindow()  const { return _ifbEndWindow.get(); }
+    const Tube* getIFBendWindowFrameInside()  const { return _ifbEndWindowFrameInside.get(); }
+    const Tube* getIFBendWindowFrameOutside()  const { return _ifbEndWindowFrameOutside.get(); }
 
     const std::vector<const Tube*> getTubes() const { return _dssTubes; }
 
@@ -51,6 +53,8 @@ namespace mu2e {
     std::unique_ptr<Tube> _ifbEndSeal;
     std::unique_ptr<Tube> _ifbEndPlug;
     std::unique_ptr<Tube> _ifbEndWindow;
+    std::unique_ptr<Tube> _ifbEndWindowFrameInside;
+    std::unique_ptr<Tube> _ifbEndWindowFrameOutside;
 
     // Map for both
     std::vector<const Tube*> _dssTubes;

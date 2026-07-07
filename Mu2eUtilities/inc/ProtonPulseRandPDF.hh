@@ -90,12 +90,12 @@ namespace mu2e {
 
       fhicl::OptionalAtom<double> tmin {
         Name("tmin"),
-          Comment("Override proton pulse start time.  The default is determined from the ConditionsService based on the pulseType.")
+          Comment("Override proton pulse start time.")
           };
 
       fhicl::OptionalAtom<double> tmax {
         Name("tmax"),
-          Comment("Override proton pulse end time.  The default is determined from the ConditionsService based on the pulseType.")
+          Comment("Override proton pulse end time.")
           };
 
       fhicl::Atom<double> tres {

@@ -18,35 +18,43 @@ using namespace std;
 
 
 void mu2eBanner() {
+  char* strs;
   char* str;
   string art,root,kinkal,rdir,dir,stub,btime,bdir;
-  str = getenv("ART_VERSION");
-  if(str) art = str;
-  str = getenv("KINKAL_VERSION");
-  if(str) kinkal = str;
-  str = getenv("ROOT_VERSION");
-  if(str) root = str;
-  str = getenv("MUSE_WORK_DIR");
-  if(str) rdir = str;
-  str = getenv("MUSE_STUB");
-  if(str) stub = str;
-
-  btime = "musebuild file not found";
-  dir = rdir;
-  ifstream mfile(rdir+"/build/"+stub+"/.musebuild");
-  if (mfile.is_open()) {
-    getline(mfile,btime);
-    if(btime.size()>17) btime = btime.substr(0,17);
-    getline(mfile,bdir);
-    if(bdir.size()>0) dir = bdir;
-  }
-  mfile.close();
 
   cout << "   ************************** Mu2e Offline **************************" << endl;
-  cout << "     art "<< art <<"    root " << root
-       << "    KinKal " << kinkal << endl;
-  cout << "     build  " << dir << endl;
-  cout << "     build  " << stub << "    " << btime << endl;
+
+  strs = getenv("OFFLINE_BANNER");
+  str = getenv("MUSE_WORK_DIR");
+  if(str) rdir = str;
+  if(strs) { // spack only build
+    cout << "     " << strs << endl;
+  } else if(str) { // muse build
+    str = getenv("ART_VERSION");
+    if(str) art = str;
+    str = getenv("KINKAL_VERSION");
+    if(str) kinkal = str;
+    str = getenv("ROOT_VERSION");
+    if(str) root = str;
+    str = getenv("MUSE_STUB");
+    if(str) stub = str;
+
+    btime = "musebuild file not found";
+    dir = rdir;
+    ifstream mfile(rdir+"/build/"+stub+"/.musebuild");
+    if (mfile.is_open()) {
+      getline(mfile,btime);
+      if(btime.size()>17) btime = btime.substr(0,17);
+      getline(mfile,bdir);
+      if(bdir.size()>0) dir = bdir;
+    }
+    mfile.close();
+
+    cout << "     art "<< art <<"    root " << root
+         << "    KinKal " << kinkal << endl;
+    cout << "     build  " << dir << endl;
+    cout << "     build  " << stub << "    " << btime << endl;
+  } // end muse format
   cout << "   ******************************************************************" << endl;
 
 }

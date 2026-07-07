@@ -15,6 +15,8 @@ cet_build_plugin(CrvCalibration art::module
     LIBRARIES REG
       Offline::CRVReco
       art_root_io::TFileService_service
+      ROOT::Tree
+      ROOT::Spectrum
 )
 
 cet_build_plugin(CrvCoincidenceFinder art::module
@@ -41,6 +43,7 @@ cet_build_plugin(CrvPedestalFinder art::module
     LIBRARIES REG
       Offline::CRVReco
       art_root_io::TFileService_service
+      ROOT::Tree
 )
 
 cet_build_plugin(CrvRecoPulsesFinder art::module
@@ -81,6 +84,28 @@ cet_build_plugin(CrvWidebandTriggerFilter art::module
       Offline::DataProducts
       Offline::GeometryService
       Offline::RecoDataProducts
+)
+
+cet_build_plugin(CrvTimingStudies art::module
+    REG_SOURCE src/CrvTimingStudies_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::CRVReco
+
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(PrintCrvChannelMap art::module
+    REG_SOURCE src/PrintCrvChannelMap_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_v11.fcl ${CURRENT_BINARY_DIR} fcl/prolog_v11.fcl)

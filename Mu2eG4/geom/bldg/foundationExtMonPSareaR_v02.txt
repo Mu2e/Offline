@@ -5,8 +5,8 @@ double building.foundation.ExtMon.PSarea.R.offsetFromFloorSurface.y = 1816.10;
 double building.foundation.ExtMon.PSarea.R.offsetFromMu2eOrigin.z   = -3581.40;
 double building.foundation.ExtMon.PSarea.R.yHalfThickness           = 1968.45;
 vector<double> building.foundation.ExtMon.PSarea.R.xPositions = {
--19681.30, // 0
--18356.00, // 1
+-19681.29, // 0
+-18355.99, // 1
 -18356.00, // 2
 -19681.30, // 3
 -19681.30, // 4

@@ -30,7 +30,6 @@
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "BTrk/BaBar/BaBar.hh"
 #include "Offline/TrkReco/inc/RobustHelixFit.hh"
 
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"

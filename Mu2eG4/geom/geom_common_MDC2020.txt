@@ -1,0 +1,4 @@
+//
+// Geometry used for MDC2020 simulations
+//
+#include "Offline/Mu2eG4/geom/geom_2021_PhaseI_v03.txt"

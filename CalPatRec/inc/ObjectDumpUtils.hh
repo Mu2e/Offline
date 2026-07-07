@@ -17,10 +17,8 @@ namespace art {
   class Event;
 }
 
-class KalRep;
 
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
-#include "Offline/RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
 
 namespace mu2e {
@@ -49,12 +47,6 @@ namespace mu2e {
     static void SetFlagBgrHitsModuleLabel(const char* Label) { _FlagBgrHitsModuleLabel = Label; }
 
     static void printEventHeader(const art::Event* Event, const char* Message = "");
-
-    static void printKalRep(const KalRep* Krep, const char* Opt = "", const char* Prefix = "");
-
-    static void printKalRepCollection(const art::Event*          Event        ,
-                                      const KalRepPtrCollection* Coll         ,
-                                      int                        PrintHits = 0);
 
     static void printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt = "");
 

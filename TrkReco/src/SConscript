@@ -11,13 +11,9 @@ Import('mu2e_helper')
 helper=mu2e_helper(env)
 
 rootlibs  = env['ROOTLIBS']
-babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-  'mu2e_BTrkData',
-  'mu2e_Mu2eBTrk',
   'mu2e_Mu2eUtilities',
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_CalorimeterGeom',
   'mu2e_BFieldGeom',
@@ -28,7 +24,6 @@ mainlib = helper.make_mainlib ( [
   'mu2e_GlobalConstantsService',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
-  babarlibs,
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',
@@ -54,10 +49,8 @@ mainlib = helper.make_mainlib ( [
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
   mainlib,
-  'mu2e_BTrkData',
   'mu2e_Mu2eUtilities',
   'mu2e_SeedService',
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_CalorimeterGeom',
   'mu2e_BFieldGeom',
@@ -69,7 +62,6 @@ helper.make_plugins( [
   'mu2e_GlobalConstantsService',
   'mu2e_DataProducts',
   'mu2e_GeneralUtilities',
-  babarlibs,
   'art_Framework_Core',
   'art_Framework_Principal',
   'art_Framework_Services_Registry',
@@ -90,19 +82,6 @@ helper.make_plugins( [
   rootlibs,
   'xerces-c',
   'boost_filesystem',
-  ] )
-
-# Fixme: do I need all of babarlibs below?
-helper.make_dict_and_map( [
-  mainlib,
-  babarlibs,
-  'art_Persistency_Common',
-  'art_Utilities',
-  'canvas',
-  'cetlib',
-  'cetlib_except',
-  'CLHEP',
-  'Core',
   ] )
 
 

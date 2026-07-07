@@ -30,8 +30,8 @@ CRVOrdinal::ptr_t CRVOrdinalMaker::fromFcl() {
   // both maps initialized to invalid
   // both are sparse, so this is used to catch invalid access
   CRVOrdinal::OfflineMap offMap;
-  for (size_t i = 0; i < CRVId::nROC; i++) {
-    for (size_t j = 0; j < CRVId::nFEBPerROC; j++) {
+  for (size_t i = 0; i <= CRVId::nROC; i++) {             //ROC numbers start at 1
+    for (size_t j = 0; j <= CRVId::nFEBPerROC; j++) {     //FEB numbers start at 1
       for (size_t k = 0; k < CRVId::nChanPerFEB; k++) {
         offMap[i][j][k] = CRVId::nChannels;
       }

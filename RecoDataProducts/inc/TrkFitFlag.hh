@@ -19,6 +19,7 @@ namespace mu2e {
     circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged, //12
     MatCorr, BFCorr, FitOK, //15
     KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKCentralHelix,KKLine, APRHelix, MPRHelix, AmbFitDir, //26
+    Regrown=27,
     MCSeed=31, //31
     };
 

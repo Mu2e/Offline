@@ -10,7 +10,6 @@ cet_make_library(
       src/TruncatedSinusoid.cc
     LIBRARIES PUBLIC
 
-      Offline::ConditionsService
       Offline::DataProducts
       Offline::MCDataProducts
       Offline::TrackerConditions
@@ -24,7 +23,6 @@ cet_build_plugin(MakeMCKalSeed art::module
       Offline::TrackerMC
 
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::GeometryService
       Offline::MCDataProducts
       Offline::ProditionsService
@@ -55,13 +53,21 @@ cet_build_plugin(PoissonTrackerNoise art::module
       Offline::SeedService
 )
 
+cet_build_plugin(StationStepSelector art::module
+    REG_SOURCE src/StationStepSelector_module.cc
+    LIBRARIES REG
+      Offline::TrackerMC
+
+      Offline::ProditionsService
+      Offline::SeedService
+)
+
 cet_build_plugin(StrawDigisFromStrawGasSteps art::module
     REG_SOURCE src/StrawDigisFromStrawGasSteps_module.cc
     LIBRARIES REG
       Offline::TrackerMC
 
       Offline::BFieldGeom
-      Offline::ConditionsService
       Offline::ConfigTools
       Offline::DataProducts
       Offline::GeometryService

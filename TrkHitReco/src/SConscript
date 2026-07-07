@@ -15,7 +15,6 @@ rootlibs = env['ROOTLIBS']
 
 mainlib = helper.make_mainlib([
   'mu2e_TrackerConditions',
-  'mu2e_ConditionsService',
   'mu2e_GeometryService',
   'mu2e_RecoDataProducts',
   'mu2e_TrackerGeom',
@@ -35,11 +34,14 @@ mainlib = helper.make_mainlib([
   'tbb',
   'cetlib',
   'cetlib_except',
+  'TMVA',
+  'ROOTTMVASofie',
+  'openblas',
   rootlibs,
  ])
 
+
 helper.make_plugins([mainlib,
-  'mu2e_ConditionsService',
   'mu2e_TrackerConditions',
   'mu2e_GeometryService',
   'mu2e_TrackerGeom',

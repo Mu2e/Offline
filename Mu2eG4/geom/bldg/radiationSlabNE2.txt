@@ -1,26 +1,26 @@
 string building.radiation.slabne2.name     = "radiationSlabNE2";
 string building.radiation.slabne2.material = "CONCRETE_MARS";
 double building.radiation.slabne2.offsetFromMu2eOrigin.x   = 947.40;
-double building.radiation.slabne2.offsetFromFloorSurface.y = 8458.30;
+double building.radiation.slabne2.offsetFromFloorSurface.y = 8458.25;
 double building.radiation.slabne2.offsetFromMu2eOrigin.z   = -3581.40;
-double building.radiation.slabne2.yHalfThickness           = 228.60;
+double building.radiation.slabne2.yHalfThickness           = 228.55;
 vector<double> building.radiation.slabne2.xPositions = {
-7975.80, // 0
-12547.90, // 1
-12547.90, // 2
-10211.10, // 3
-10211.10, // 4
-7925.10, // 5
-7925.10, // 6
-7975.80 // 7
+7975.70, // 0
+12547.80, // 1
+12547.80, // 2
+9905.90, // 3
+9905.90, // 4
+7620.00, // 5
+7620.00, // 6
+7975.70 // 7
 };
 vector<double> building.radiation.slabne2.yPositions = {
-2031.75, // 0
-2031.75, // 1
-202.95, // 2
-202.95, // 3
--254.25, // 4
--254.25, // 5
-202.95, // 6
-202.95 // 7
+2031.85, // 0
+2031.85, // 1
+203.05, // 2
+203.05, // 3
+-254.15, // 4
+-254.15, // 5
+203.05, // 6
+203.05 // 7
 };

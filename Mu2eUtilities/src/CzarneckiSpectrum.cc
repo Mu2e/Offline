@@ -23,7 +23,7 @@
 namespace mu2e {
 
   CzarneckiSpectrum::CzarneckiSpectrum() :
-    _table ( loadTable<2>( ConfigFileLookupPolicy()( "Offline/ConditionsService/data/czarnecki_"+
+    _table ( loadTable<2>( ConfigFileLookupPolicy()( "Offline/EventGenerator/data/czarnecki_"+
                                                      GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial()+".tbl" ) ) )
   {
     _halfBinWidth = (_table.getRow(1).first - _table.getRow(0).first)/2.;

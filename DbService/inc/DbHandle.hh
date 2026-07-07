@@ -53,7 +53,10 @@ bool mu2e::DbHandle<T>::current(art::EventID const& eid) {
     if (_tid < 0) {  // table not defined in the engine
       throw cet::exception("DBHANDLE_NO_TID")
           << "DbHandle could not get TID (Table ID) from DbEngine for " << _name
-          << " at first use ";
+          << " at first use\n"
+          << "You are currently using DB calibration set "
+          << _dbh->engine().version().to_string() << "\n"
+          << "See https://mu2einternalwiki.fnal.gov/wiki/CalibrationSets for more info\n";
     }
   }
 

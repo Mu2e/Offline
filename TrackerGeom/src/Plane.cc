@@ -41,6 +41,9 @@ namespace mu2e {
     if(wdir.z() < 0.0) // flip about Y
       prot = HepRotation(Hep3Vector(0.0,1.0,0.0),M_PI);
     _PlanetoDS = HepTransform(origin,prot);
+    _udir = _PlanetoDS.rotation()*xyzVec(1.0,0.0,0.0);
+    _vdir = _PlanetoDS.rotation()*xyzVec(0.0,1.0,0.0);
+    _wdir = _PlanetoDS.rotation()*xyzVec(0.0,0.0,1.0);
   }
 
 }

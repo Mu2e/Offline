@@ -1,0 +1,4 @@
+//
+// Extracted position used for MDC2020 simulations
+//
+#include "Offline/Mu2eG4/geom/geom_common_extracted_v01.txt"

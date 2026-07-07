@@ -1,4 +1,3 @@
-#include "BTrk/BaBar/BaBar.hh"
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"

@@ -21,6 +21,7 @@
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // simulation
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
@@ -32,6 +33,8 @@
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
+#include "Offline/MCDataProducts/inc/ScorerSummary.hh"
+#include "Offline/MCDataProducts/inc/ScorerConfigSummary.hh"
 
 // simulation bookeeping
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfo.hh"
@@ -41,6 +44,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Offline/MCDataProducts/inc/ProtonBunchIntensitySummary.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/SumOfWeights.hh"
 
 // G4
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
@@ -63,7 +67,6 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 
 // tracking
-#include "Offline/MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
 
 // CRV

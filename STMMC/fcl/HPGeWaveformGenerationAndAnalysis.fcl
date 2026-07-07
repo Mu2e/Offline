@@ -65,7 +65,7 @@ physics : {
     MWDHPGe : {
       # Perform moving window deconvolution on the concatenated (or zero-suppressed) waveforms to determine the pulse energies
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : @local::STMMCAnalysis.MWD.HPGe.stmWaveformDigisTag.concatenated
+      stmWaveformDigisTag : @local::STMMCAnalysis.PH.HPGe.stmWaveformDigisTag.concatenated
       tau : @local::STMMCAnalysis.MWD.HPGe.tau
       M : @local::STMMCAnalysis.MWD.HPGe.M
       L : @local::STMMCAnalysis.MWD.HPGe.L
@@ -73,7 +73,7 @@ physics : {
       thresholdgrad : @local::STMMCAnalysis.MWD.HPGe.thresholdgrad
       defaultBaselineMean : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineMean.suppressed
       defaultBaselineSD : @local::STMMCAnalysis.MWD.HPGe.defaultBaselineSD.suppressed
-      makeTTreeMWD: false
+      makeTTreePH: false
       makeTTreeEnergies: false
       TTreeEnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
       verbosityLevel : 1
@@ -100,7 +100,7 @@ outputs : {
     SelectEvents: @nil # Populate me!
     outputCommands: [
         "drop *_*_*_*",
-        "keep mu2e::STMMWDDigis_MWDHPGe_*_HPGeReco"
+        "keep mu2e::STMPHDigis_PHHPGe_*_HPGeReco"
     ]
   }
 }

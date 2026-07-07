@@ -14,7 +14,6 @@
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // utilities
-#include "Offline/TrkReco/inc/TrkUtilities.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 #include "Offline/Mu2eUtilities/inc/LsqSums4.hh"
 // C++

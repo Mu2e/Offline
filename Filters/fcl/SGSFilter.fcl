@@ -1,0 +1,40 @@
+#include "Offline/fcl/standardServices.fcl"
+process_name : SGSFilter
+
+source : {
+  module_type: RootInput
+}
+services : @local::Services.Core
+
+physics : {
+  filters : {
+    SGSFilter : {
+      StrawGasStepTag: "compressDetStepMCs"
+      MinSteps: 10
+      module_type: "StrawGasStepFilter"
+    }
+  }
+  FilterPath: [
+    SGSFilter
+  ]
+  e1        : [FilterOutput]
+  end_paths : [e1]
+}
+physics.trigger_paths : [ FilterPath ]
+
+outputs: {
+   FilterOutput: {
+      SelectEvents: [
+         "FilterPath"
+      ]
+      module_type: "RootOutput"
+      outputCommands: [
+         "keep *_*_*_*"
+      ]
+   }
+}
+
+services.ProditionsService.trackerStatus.Settings.useDb: true
+services.ProditionsService.trackerStatus.Settings.verbose: 2
+#services.DbService.textFile : ["TrackerStatus.txt" ]
+services.DbService.verbose: 2

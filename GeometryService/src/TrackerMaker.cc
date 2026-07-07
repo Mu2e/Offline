@@ -124,14 +124,13 @@ namespace mu2e {
     _strawOuterRadius     =  config.getDouble("tracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   =  config.getDouble("tracker.strawWallThickness")*CLHEP::mm;
     _strawGap             =  config.getDouble("tracker.strawGap")*CLHEP::mm;
-    _planeSpacing        =  config.getDouble("tracker.planeSpacing")*CLHEP::mm;
+    _planeSpacing        =  config.getDouble("tracker.planeSpacing")*CLHEP::mm; // this is really the station spacing
     _planeHalfSeparation =  config.getDouble("tracker.planeHalfSeparation")*CLHEP::mm;
 
     _outerSupportRadius   =  config.getDouble("tracker.outerSupportRadius")*CLHEP::mm;
     _innerSupportRadius   =  config.getDouble("tracker.innerSupportRadius")*CLHEP::mm;
     _supportHalfThickness =  config.getDouble("tracker.supportHalfThickness")*CLHEP::mm;
     _wireRadius           =  config.getDouble("tracker.wireRadius")*CLHEP::mm;
-    _manifoldYOffset      =  config.getDouble("tracker.manifoldYOffset")*CLHEP::mm;
     _virtualDetectorHalfLength = config.getDouble("vd.halfLength")*CLHEP::mm;
 
     config.getVectorInt("tracker.nonExistingPlanes", _nonExistingPlanes,  vector<int>() );
@@ -902,11 +901,9 @@ namespace mu2e {
 
 
   void TrackerMaker::computeLayerSpacingAndShift(){
-
-    _layerHalfSpacing = (StrawId::_nlayers<=1) ? 0.0 :
-      sqrt(3.0*(square(_strawOuterRadius)+_strawOuterRadius*_strawGap+0.25*square(_strawGap)))*0.5;
-    _layerHalfShift   = (StrawId::_nlayers<=1) ? 0.0 : _strawGap*0.25 + _strawOuterRadius*0.5;
-
+    double rspacing = 2*_strawOuterRadius + _strawGap;
+    _layerHalfSpacing = (StrawId::_nlayers<=1) ? 0.0 : 0.25*sqrt(3.0)*rspacing; // sqrt(3.0) = 2*sin(60)
+    _layerHalfShift   = (StrawId::_nlayers<=1) ? 0.0 : 0.25*rspacing;
   }
 
   void TrackerMaker::computeManifoldEdgeExcessSpace(){

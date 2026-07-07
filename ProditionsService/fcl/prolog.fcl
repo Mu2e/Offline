@@ -13,14 +13,13 @@ Proditions : {
    stmEnergyCalib : @local::STMEnergyCalib
    fullReadoutStraw : @local::FullReadoutStraw
    trackerStatus : @local::TrackerStatus
+   trackerPanelMap : @local::TrackerPanelMap
    strawDrift : @local::StrawDrift
    strawPhysics : @local::StrawPhysics
    strawElectronics : @local::StrawElectronics
    strawResponse : @local::StrawResponse
    alignedTracker : @local::AlignedTracker
    alignedTrackerSim : @local::AlignedTrackerSim
-   mu2eMaterial : @local::Mu2eMaterial
-   mu2eDetector : @local::Mu2eDetector
    caloDAQConditions : @local::CaloDAQConditions
    trkQualCatalog : @local::TrkQualCatalog
    crvOrdinal : @local::CRVOrdinal

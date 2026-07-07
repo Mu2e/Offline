@@ -36,12 +36,7 @@
 #include "Offline/Mu2eUtilities/inc/ParametricFit.hh"
 
 //For Drift:
-#include "Offline/TrkReco/inc/PanelAmbigResolver.hh"
-#include "Offline/TrkReco/inc/PanelStateIterator.hh"
 #include "Offline/TrkReco/inc/TrkFaceData.hh"
-
-// Mu2e BaBar
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
 
 //CLHEP:
 #include "CLHEP/Units/PhysicalConstants.h"

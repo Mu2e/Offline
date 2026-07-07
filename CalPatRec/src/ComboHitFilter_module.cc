@@ -16,7 +16,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 // conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 // data
@@ -155,6 +154,7 @@ namespace mu2e {
 
     for (int i=0; i<_nComboHits; i++) {
       const ComboHit* ch  = &(*_chColl)[i];
+      if (ch->indexArray().empty()) continue;
       int ind = ch->indexArray().at(0);
 
       const mu2e::StrawDigiMC*  sdmc = &_sdmcColl->at(ind);

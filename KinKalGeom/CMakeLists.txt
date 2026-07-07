@@ -1,15 +1,17 @@
 cet_make_library(
     SOURCE
-      src/CRV.cc
-      src/DetectorSolenoid.cc
-      src/StoppingTarget.cc
-      src/SurfaceMap.cc
-      src/TestCRV.cc
-      src/Tracker.cc
+      src/KinKalGeom.cc
+      src/KKMaterial.cc
+      src/KKStrawMaterial.cc
     LIBRARIES PUBLIC
-      KinKal_Geometry
+      Offline::ConfigTools
+      KinKal::MatEnv
+      KinKal::Geometry
+      KinKal::Trajectory
+      KinKal::General
       Offline::GeneralUtilities
 )
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/KinKalGeom/fcl)

@@ -246,7 +246,6 @@ gallery             v1_22_03        s128
 geant4              v4_11_1_p02d    s128
 xerces_c            v3_2_3e
 artdaq_core_mu2e    v3_00_00
-BTrk                v1_02_46        s128
 KinKal              v03_00_01       s128
 cry                 v1_7q
 gsl                 v2_7
@@ -305,7 +304,7 @@ end_product_list
 #   *required* unless the only_for_build flag is specified, in which
 #   case it is optional.
 #
-qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    BTrk            KinKal          cry         gsl
+qualifier           art_root_io gallery     geant4          xerces_c    artdaq_core_mu2e    KinKal          cry         gsl
 e28:s128:trig:debug e28:debug   e28:debug   -               e28         e28:s128:debug      e28:p3915:debug e28:p3915:debug -           -nq-
 e28:s128:trig:prof  e28:prof    e28:prof    -               e28         e28:s128:prof       e28:p3915:prof  e28:p3915:prof  -           -nq-
 

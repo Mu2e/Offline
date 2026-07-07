@@ -293,7 +293,7 @@ EventGenerator : { @table::EventGenerator
                 pdgId            :  11
                 spectrumVariable : "totalEnergy"
                 spectrumShape    : "tabulated"
-                spectrumFileName : "Offline/ConditionsService/data/czarnecki_Al.tbl"
+                spectrumFileName : "Offline/EventGenerator/data/czarnecki_Al.tbl"
             }
         }
 #------------------------------------------------------------------------------
@@ -305,7 +305,7 @@ EventGenerator : { @table::EventGenerator
                 pdgId            :  11
                 spectrumVariable : "totalEnergy"
                 spectrumShape    : "tabulated"
-                spectrumFileName : "Offline/ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+                spectrumFileName : "Offline/EventGenerator/data/czarnecki_szafron_Al_2016.tbl"
             }
         }
 #------------------------------------------------------------------------------

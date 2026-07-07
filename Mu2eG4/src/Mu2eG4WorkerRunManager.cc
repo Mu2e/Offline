@@ -108,6 +108,7 @@ namespace mu2e {
     // Set the geometry for the worker, share from master
     G4VPhysicalVolume* worldPV = G4MTRunManager::GetMasterRunManagerKernel()->GetCurrentWorld();
     kernel->WorkerDefineWorldVolume(worldPV);
+    kernel->SetNumberOfParallelWorld(G4MTRunManager::GetMasterRunManagerKernel()->GetNumberOfParallelWorld());
 
     G4TransportationManager::GetTransportationManager()->SetWorldForTracking(worldPV);
 

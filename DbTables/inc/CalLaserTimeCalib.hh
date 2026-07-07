@@ -8,6 +8,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
@@ -17,7 +18,7 @@ namespace mu2e {
 
       class Row {
         public:
-        Row(CaloSiPMId  roid, double T0, double ErrT0, double chisq, int nev):
+        Row(CaloSiPMId  roid, float T0, float ErrT0, float chisq, int nev):
           _roid(roid),_T0(T0),_ErrT0(ErrT0),_chisq(chisq),_nev(nev) {}
         CaloSiPMId       roid()     const { return _roid;} // Offline ID
         float     T0()     const { return _T0; }
@@ -43,12 +44,12 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize() + nrow()*sizeof(Row); };
-    virtual std::size_t nrowFix() const override { return CaloConst::_nChannel; };
+    virtual std::size_t nrowFix() const override { return CaloConst::_nChannelDB; };
     const std::string orderBy() const { return std::string("roid"); }
     void addRow(const std::vector<std::string>& columns) override {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
-    if (index >= CaloConst::_nChannel  || index != _rows.size()) {
+    if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
         throw cet::exception("CalLaserTimeCalib_BAD_INDEX")
         << "CalLaserTimeTable::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
@@ -74,7 +75,6 @@ namespace mu2e {
 
     private:
       std::vector<Row> _rows;
-      //std::map<int,std::size_t> _chanIndex;
   };
 
 }

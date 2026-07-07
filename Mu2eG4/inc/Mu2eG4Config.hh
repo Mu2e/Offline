@@ -125,6 +125,13 @@ namespace mu2e {
       fhicl::Atom<bool> decayMuonsWithSpin {Name("decayMuonsWithSpin"), false};
       fhicl::Atom<double> minRangeCut {Name("minRangeCut")};
 
+      fhicl::Atom<std::string> beamTimeProfileRad {Name("beamTimeProfileRad"), Comment("Beam time profile for radiation studies"),""};
+      fhicl::Atom<std::string> coolTimeProfileRad {Name("coolTimeProfileRad"), Comment("Cool off time profile for radiation studies"),""};
+      fhicl::Atom<bool>        radiationVRmode    {Name("radiationVRmode"),    Comment("Run G4RadiationDecay in variance reduction mode"),false};
+      fhicl::Atom<bool>        radiationBRBias    {Name("radiationBRBias"),    Comment("Bias BR in variance reduction mode"),false};
+      fhicl::Atom<int>         radiationNsplit    {Name("radiationNsplit"),    Comment("Number nucleus split in variance reduction mode"),1};
+      fhicl::Atom<double>      radiationHLT       {Name("radiationHLT"),       Comment("Half-life threshold for isomer in variance reduction mode"),1e60};
+      fhicl::Atom<std::string> radiationTableName {Name("radiationTableName"), Comment("ICRP table name suffix"),"ISO"};
 
       fhicl::Atom<bool> setMuHadLateralDisplacement {Name("setMuHadLateralDisplacement"), false};
 
@@ -232,6 +239,18 @@ namespace mu2e {
 
     };
 
+    struct Scoring {
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
+
+      fhicl::Atom<bool>                enabled       {Name("enabled"),      Comment("Enabling Geant4 scoring")};
+      fhicl::Sequence<std::string>     meshNames     {Name("meshNames"),    Comment("List of mesh name(s)"),  };
+      fhicl::Sequence<std::string>     scorerNames   {Name("scorerNames"),  Comment("List of scorer name(s)") };
+      fhicl::Atom<int>                 verboseLevel  {Name("verboseLevel"), Comment("Set vervosity level"),  0};
+    };
+
+
+
     struct Top {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -248,6 +267,8 @@ namespace mu2e {
       DelegatedParameter  Mu2eG4CommonCut { Name("Mu2eG4CommonCut") };
 
       fhicl::OptionalTable<SimParticleCollectionPrinter::Config> SimParticlePrinter { Name("SimParticlePrinter") };
+
+      fhicl::Table<Scoring> scoring { Name("Scoring") };
 
       fhicl::Table<Physics> physics { Name("physics") };
       fhicl::Table<Debug> debug { Name("debug") };

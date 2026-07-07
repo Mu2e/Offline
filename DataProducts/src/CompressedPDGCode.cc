@@ -8,7 +8,7 @@ namespace mu2e {
   }
 
   static const std::map<CompressedPDGCodeDetail::enum_type,std::string> nam{
-    {CompressedPDGCodeDetail::anti_n0       , "anti_n0" },      // -7
+    {CompressedPDGCodeDetail::anti_n0       , "anti_neutron" },  // -7
     {CompressedPDGCodeDetail::anti_proton   , "anti_proton" },  // -6
     {CompressedPDGCodeDetail::K_minus       , "K_minus" },      // -5
     {CompressedPDGCodeDetail::pi_minus      , "pi_minus" },     // -4
@@ -22,7 +22,7 @@ namespace mu2e {
     {CompressedPDGCodeDetail::pi_plus       , "pi_plus" },      //  4
     {CompressedPDGCodeDetail::K_plus        , "K_plus" },       //  5
     {CompressedPDGCodeDetail::proton        , "proton" },       //  6
-    {CompressedPDGCodeDetail::n0            , "n0" },           //  7
+    {CompressedPDGCodeDetail::n0            , "neutron" },      //  7
     {CompressedPDGCodeDetail::pi0           , "pi0" },          //  8
     {CompressedPDGCodeDetail::K_S0          , "K_S0" },         //  9
     {CompressedPDGCodeDetail::K_L0          , "K_L0" },         // 10

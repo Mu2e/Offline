@@ -139,7 +139,7 @@ namespace mu2e {
       G4VUserTrackInformation* info = trk->GetUserInformation();
       Mu2eG4UserTrackInformation const* tinfo   = dynamic_cast<Mu2eG4UserTrackInformation*>(info);
 
-      if ( tinfo->isForced() ){
+      if ( tinfo && tinfo->isForced() ){
         return tinfo->code().name();
       }
 
@@ -241,7 +241,8 @@ namespace mu2e {
       G4VProcess const* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
 
       if (process) {
-
+        //artificially set the process name to "Transportation" if this is a parallel world step
+        if (process->GetProcessType()==G4ProcessType::fParallel) return G4String("Transportation");
         return process->GetProcessName();
 
       } else {

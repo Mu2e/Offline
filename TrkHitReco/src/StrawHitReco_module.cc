@@ -15,7 +15,6 @@
 
 // conditions
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/ConditionsBase/inc/TrackerCalibrationStructs.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"

@@ -1,0 +1,7 @@
+#include "Offline/EventDisplay/fcl/EventDisplayBase.fcl"
+
+physics.analyzers.eventdisplay.wideband              : true
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_Wideband2modules.txt"
+services.ProditionsService.crvCalib.useDb            : false
+services.ProditionsService.crvCalib.pedestal         : 2047

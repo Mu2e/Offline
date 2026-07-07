@@ -191,9 +191,9 @@ namespace mu2e{
     for (const auto& pair: bundles_map){
       const auto& id = pair.first;
       const auto& bundles = pair.second;
-      TimeBasedBuckets<StrawDigiBundle> buckets(window);
+      TimeBasedBuckets<StrawDigiBundle> buckets;
       for (const auto& bundle: bundles){
-        buckets.Insert(bundle);
+        buckets.Insert(bundle, window);
       }
       buckets_map.emplace(id, buckets);
     }

@@ -2,6 +2,7 @@
 #define RecoDataProducts_CaloDigi_hh
 
 #include <vector>
+#include <cstddef>
 
 namespace mu2e
 {

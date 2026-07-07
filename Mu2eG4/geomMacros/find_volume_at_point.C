@@ -18,7 +18,7 @@ void find_volume_at_point(double x, double y, double z, TGeoManager* geom, bool 
   }
 }
 
-void find_volume_at_point(double x, double y, double z, TString gdmlname = "mu2e.gdml", bool output_csv = false, std::ostream& out = std::cout) {
+void find_volume_at_point(double x, double y, double z, TString gdmlname = "mu2e_common.gdml", bool output_csv = false, std::ostream& out = std::cout) {
 
   TGeoManager::SetDefaultUnits(TGeoManager::kG4Units); // default is kRootUnits which is cm, s, GeV; kG4Units are mm, ns, MeV
   TGeoManager* geom = TGeoManager::Import(gdmlname);

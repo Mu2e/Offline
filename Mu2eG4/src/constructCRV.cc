@@ -92,6 +92,8 @@ namespace mu2e
 
       int thicknessDirection=shield.getCRSScintillatorBarDetail().getThicknessDirection();
 
+      bool countersOnly = _config.getBool("crs.countersOnly"+CRVsectorName.substr(4),false); //no strongbacks or aluminum sheets
+
       //determine the dimensions of all combined layers of a sector
       //e.g. the 3rd layers of all modules are combined into one big layer
       //(ordered from the strong back to the thin aluminum cover sheet)
@@ -101,7 +103,7 @@ namespace mu2e
       for(size_t l=0; l<module0.getLayers().size(); ++l)
       {
         //strong back dimensions
-        if(l==0 && module0.getLayers().size()>1)
+        if(l==0 && module0.getLayers().size()>1 && countersOnly==false)
         {
           const CRSAluminumSheet &aluminumSheet0 = module0.getAluminumSheets().at(0);
           const CRSAluminumSheet &aluminumSheet1 = module1.getAluminumSheets().at(0);
@@ -134,7 +136,7 @@ namespace mu2e
         }
 
         //aluminum absorbers dimensions
-        if(l+1<module0.getLayers().size() && module0.getLayers().size()>1)
+        if(l+1<module0.getLayers().size() && module0.getLayers().size()>1 && countersOnly==false)
         {
           const CRSAbsorberLayer &aluminumSheet0 = module0.getAbsorberLayers().at(l);
           const CRSAbsorberLayer &aluminumSheet1 = module1.getAbsorberLayers().at(l);
@@ -151,7 +153,7 @@ namespace mu2e
         }
 
         //thin aluminum cover sheet dimensions
-        if(l+1==module0.getLayers().size() && module0.getLayers().size()>1)
+        if(l+1==module0.getLayers().size() && module0.getLayers().size()>1 && countersOnly==false)
         {
           const CRSAluminumSheet &aluminumSheet0 = module0.getAluminumSheets().at(1);
           const CRSAluminumSheet &aluminumSheet1 = module1.getAluminumSheets().at(1);
@@ -374,12 +376,12 @@ namespace mu2e
           //place these scintillator-layer-mother volumes (of a particular module)
           //into one of the layer-mother volumes (that spans the entire sector)
           const CLHEP::Hep3Vector &scintLayerCenterInMu2e=scintLayers.at(l).getPosition();
-          CLHEP::Hep3Vector scintLayerMotherOffset = scintLayerCenterInMu2e - motherCenterInMu2e.at(scintLayers.size()>1?l*2+1:0);
+          CLHEP::Hep3Vector scintLayerMotherOffset = scintLayerCenterInMu2e - motherCenterInMu2e.at((scintLayers.size()>1 && countersOnly==false)?l*2+1:l);
           G4VPhysicalVolume* scintLayerPhysical = new G4PVPlacement(nullptr,
                                                                     scintLayerMotherOffset,
                                                                     scintLayerLogical,
                                                                     scintLayerSolid->GetName(),
-                                                                    motherLayersLogical.at(scintLayers.size()>1?l*2+1:0),
+                                                                    motherLayersLogical.at((scintLayers.size()>1 && countersOnly==false)?l*2+1:l),
                                                                     false,
                                                                     0,
                                                                     false);

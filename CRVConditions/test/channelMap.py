@@ -54,7 +54,7 @@ nSiPMsPerCounter=4
 
 globalChannel=0
 ROC=1  #starts counting at 1 - same as CAT6 cable labels
-FEB=0
+FEB=1  #starts counting at 1 - same as ROC port labels
 FEBchannel=0
 
 print("Channel\tROC\tFEB\tFEBchannel")
@@ -62,7 +62,7 @@ for sectorName,sectorModules in sectors.items():
   #deal with special / out-of-sequence situations
   if sectorName in outOfSequence:
     ROC=outOfSequence[sectorName]["ROC"]
-    FEB=outOfSequence[sectorName]["port"]-1  #FEB start counting at 0, ports start counting at 1 (as printed at ROC and CAT6 cable label)
+    FEB=outOfSequence[sectorName]["port"]
 
   for sectorModule in range(sectorModules):
     #print("sector {} module {}".format(sectorName,sectorModule))
@@ -70,7 +70,7 @@ for sectorName,sectorModules in sectors.items():
     #special situation for U modules
     if sectorName=="U" and sectorModule==2:
        ROC=16  #ROCs start counting at 1
-       FEB=0   #FEBs start counting at 0, ports start counting at 1 (as printed at ROC and CAT6 cable label)
+       FEB=1   #FEBs start counting at 1
 
     #special situation for C module
     nCountersThisModule=nCountersPerModule
@@ -120,6 +120,6 @@ for sectorName,sectorModules in sectors.items():
           else:
              FEB+=2*sparsifiedFEBs[sectorName]
 
-    if FEB>=24:   #each ROC can handle 24 FEB. use the next ROC if all FEBs have been used
-       FEB=0
+    if FEB>24:   #each ROC can handle 24 FEB. use the next ROC if all FEBs have been used
+       FEB=1
        ROC+=1

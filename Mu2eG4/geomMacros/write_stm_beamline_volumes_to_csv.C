@@ -5,7 +5,7 @@
 
 #include "find_volume_at_point.C"
 
-void write_stm_beamline_volumes_to_csv(TString gdmlname = "mu2e.gdml", TString csvname = "out.csv") {
+void write_stm_beamline_volumes_to_csv(TString gdmlname = "mu2e_common.gdml", TString csvname = "out.csv") {
 
   TGeoManager::SetDefaultUnits(TGeoManager::kG4Units); // default is kRootUnits which is cm, s, GeV; kG4Units are mm, ns, MeV
   TGeoManager *geom = TGeoManager::Import(gdmlname);

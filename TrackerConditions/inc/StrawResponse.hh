@@ -149,15 +149,6 @@ namespace mu2e {
 
       // access raw drift information
       auto const& strawDrift() const { return *_strawDrift; }
-      // BTrk legacy functions.  These will be retired with BTrk
-      // DO NOT write any new code referencing these functions, or modify them (except to fix bugs)
-      // values are intentionally hard-coded: no modification is allowed
-      double BTrk_Mint0doca() const { return -0.2; }
-      double BTrk_driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
-      double BTrk_driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
-      double BTrk_driftDistanceError(StrawId strawId, double ddist, double phi) const;
-      double BTrk_driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
-
     private:
 
       // helper functions

@@ -1,3 +1,5 @@
+// Prefetch DAQ data to avoid fetch times impacting module timing evaluations
+
 // framework
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -6,12 +8,12 @@
 #include "art_root_io/TFileService.h"
 
 // data
+#include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
+#include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 
 // DAQ data
-//#include "artdaq-core-mu2e/Overlays/FragmentType.hh"
-//#include "artdaq-core-mu2e/Overlays/TrackerDataDecoder.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
 
@@ -22,7 +24,28 @@ namespace mu2e {
   protected:
 
   public:
-    explicit PrefetchDAQData(fhicl::ParameterSet const&);
+    struct Config {
+      using  Name    = fhicl::Name;
+      using  Comment = fhicl::Comment;
+
+      fhicl::Atom<int>         debugLevel            {Name("debugLevel"            ), Comment("Debug output verbosity level"), 0};
+      fhicl::Atom<bool>        fetchCaloDigis        {Name("fetchCaloDigis"        ), Comment("Prefetch calorimeter digi collections")};
+      fhicl::Atom<bool>        fetchStrawDigis       {Name("fetchStrawDigis"       ), Comment("Prefetch straw tracker digi collections")};
+      fhicl::Atom<bool>        fetchCaloFragments    {Name("fetchCaloFragments"    ), Comment("Prefetch calorimeter DAQ fragments")};
+      fhicl::Atom<bool>        fetchTrkFragments     {Name("fetchTrkFragments"     ), Comment("Prefetch tracker DAQ fragments")};
+      fhicl::Atom<bool>        fetchAllFragments     {Name("fetchAllFragments"     ), Comment("Prefetch all available DAQ fragments regardless of subdetector-specific fetch flags" )};
+      fhicl::Atom<bool>        fetchEWM              {Name("fetchEWM"              ), Comment("Prefetch EventWindowMarker")};
+      fhicl::Atom<bool>        fetchPBT              {Name("fetchPBT"              ), Comment("Prefetch ProtonBunchTime")};
+      fhicl::Atom<std::string> caloDigiCollectionTag {Name("caloDigiCollectionTag" ), Comment("Input tag for the calorimeter digi collection")};
+      fhicl::Atom<std::string> strawDigiCollectionTag{Name("strawDigiCollectionTag"), Comment("Input tag for the straw tracker digi collection")};
+      fhicl::Atom<std::string> caloFragmentTag       {Name("caloFragmentTag"       ), Comment("Input tag for the calorimeter DAQ fragment collection")};
+      fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("Input tag for the tracker DAQ fragment collection")};
+      fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("Input tag for the ProtonBunchTime")};
+      fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("Input tag for the EventWindowMarker")};
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit PrefetchDAQData(const Parameters&);
     virtual ~PrefetchDAQData();
     virtual void beginJob();
     virtual void produce( art::Event& e);
@@ -36,37 +59,47 @@ namespace mu2e {
     bool findData(const art::Event& e);
                                         // control flags
     int   _debugLevel;
-    int   _fetchCaloDigis;
-    int   _fetchStrawDigis;
-    int   _fetchCaloFragments;
-    int   _fetchTrkFragments;
-    int   _fetchAllFragments;
+    bool  _fetchCaloDigis;
+    bool  _fetchStrawDigis;
+    bool  _fetchCaloFragments;
+    bool  _fetchTrkFragments;
+    bool  _fetchAllFragments;
+    bool  _fetchEWM;
+    bool  _fetchPBT;
 
     art::InputTag                  _cdTag;
     art::InputTag                  _sdTag;
     art::InputTag                  _cfTag;
     art::InputTag                  _tfTag;
+    art::InputTag                  _ewmTag;
+    art::InputTag                  _pbtTag;
                                         // cache of event objects
     const CaloDigiCollection*      _cdcol;
     const StrawDigiCollection*     _sdcol;
     const artdaq::Fragments*       _cfcol;
     const artdaq::Fragments*       _tfcol;
+    const EventWindowMarker*       _ewm;
+    const ProtonBunchTime*         _pbt;
     int                            _eventNum;
   };
 
-  //-----------------------------------------------------------------------------
-  PrefetchDAQData::PrefetchDAQData(fhicl::ParameterSet const& pset):
-    art::EDProducer(pset),
-    _debugLevel        (pset.get<int>        ("debugLevel")),
-    _fetchCaloDigis    (pset.get<int>        ("fetchCaloDigis" )),
-    _fetchStrawDigis   (pset.get<int>        ("fetchStrawDigis")),
-    _fetchCaloFragments(pset.get<int>        ("fetchCaloFragments")),
-    _fetchTrkFragments (pset.get<int>        ("fetchTrkFragments")),
-    _fetchAllFragments (pset.get<int>        ("fetchAllFragments")),
-    _cdTag             (pset.get<std::string>("caloDigiCollectionTag")),
-    _sdTag             (pset.get<std::string>("strawDigiCollectionTag")),
-    _cfTag             (pset.get<std::string>("caloFragmentTag")),
-    _tfTag             (pset.get<std::string>("trkFragmentTag"))
+//-----------------------------------------------------------------------------
+  PrefetchDAQData::PrefetchDAQData(const Parameters& config):
+    art::EDProducer(config),
+    _debugLevel        (config().debugLevel()),
+    _fetchCaloDigis    (config().fetchCaloDigis()),
+    _fetchStrawDigis   (config().fetchStrawDigis()),
+    _fetchCaloFragments(config().fetchCaloFragments()),
+    _fetchTrkFragments (config().fetchTrkFragments()),
+    _fetchAllFragments (config().fetchAllFragments()),
+    _fetchEWM          (config().fetchEWM()),
+    _fetchPBT          (config().fetchPBT()),
+    _cdTag             (config().caloDigiCollectionTag()),
+    _sdTag             (config().strawDigiCollectionTag()),
+    _cfTag             (config().caloFragmentTag()),
+    _tfTag             (config().trkFragmentTag()),
+    _ewmTag            (config().ewmTag()),
+    _pbtTag            (config().pbtTag())
   {}
 
   PrefetchDAQData::~PrefetchDAQData() {
@@ -93,7 +126,12 @@ namespace mu2e {
     _sdcol   = 0;
     _cfcol   = 0;
     _tfcol   = 0;
+    _ewm     = 0;
+    _pbt     = 0;
 
+//-----------------------------------------------------------------------------
+// Retrieve the data from the event
+//-----------------------------------------------------------------------------
     if (_fetchCaloDigis) {
       auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);
       _cdcol = cdH.product();
@@ -122,8 +160,19 @@ namespace mu2e {
         }
       }
     }
-      //-----------------------------------------------------------------------------
-// prefetch data
+
+    if (_fetchEWM) {
+      auto handle = evt.getValidHandle<EventWindowMarker>(_ewmTag);
+      _ewm = handle.product();
+    }
+
+    if (_fetchPBT) {
+      auto handle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
+      _pbt = handle.product();
+    }
+
+//-----------------------------------------------------------------------------
+// prefetch data within the collections
 //-----------------------------------------------------------------------------
     if (_cdcol) {
       int ncd = _cdcol->size();
@@ -174,6 +223,3 @@ namespace mu2e {
 DEFINE_ART_MODULE(PrefetchDAQData)
 
 }
-
-
-

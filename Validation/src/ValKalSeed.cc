@@ -30,6 +30,7 @@ namespace mu2e {
     _hStatus = tfs.make<TH1D>("Status", "Status", 32, -0.5, 31.5);
     _hchi2 = tfs.make<TH1D>("Chi2N", "Chi2/DOF", 100, 0.0, 10.0);
     _hhasCal = tfs.make<TH1D>("hasCal", "CalCluster attached", 2, -0.5, 1.5);
+    _hactiveCal = tfs.make<TH1D>("activeCal", "Calo Hit Active", 2, -0.5, 1.5);
     _hfitCon = tfs.make<TH1D>("FitConn", "Fit CL", 100, 0.0, 1.0);
     _hfitConC = tfs.make<TH1D>("FitConnC", "Fit CL CPR", 100, 0.0, 1.0);
     _hfitConT = tfs.make<TH1D>("FitConnT", "Fit CL TPR", 100, 0.0, 1.0);
@@ -46,6 +47,7 @@ namespace mu2e {
     _hPhi = tfs.make<TH1D>("phi", "phi", 100, -M_PI, M_PI);
     _hCost = tfs.make<TH1D>("cost", "cos(Theta)", 100, -1.0, 1.0);
     _ht0 = tfs.make<TH1D>("t0", "t0", 100, 0.0,1800);
+    _ht0e = tfs.make<TH1D>("t0e", "t0 error", 100, 0.0,5.0);
     _ht02 = tfs.make<TH1D>("t02", "t0", 100, 0.0,1e5);
     _hCuts = tfs.make<TH1D>("Cuts", "Cut series", 8, 0.5, 8.5);
     _hCCdisk = tfs.make<TH1D>("CCdisk", "Calo Disk", 2, -0.5, 1.5);
@@ -58,8 +60,8 @@ namespace mu2e {
     _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -5.0, 5.0);
     _hHEDep = tfs.make<TH1D>("HEDep", "Hit Energy Deposition;EDep (KeV)", 100, 0, 5.0);
     _hHPanel = tfs.make<TH1D>("HPanel", "Hit Unique Panel", 216, -0.5, 215.5);
-    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 1.0e-3);
-    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.04);
+    _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 2.5e-3);
+    _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.08);
     int ibin = 1;
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Primary");  // bin 1, first visible
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Momentum");
@@ -83,7 +85,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(12.0);
+    _hVer->Fill(13.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -108,6 +110,8 @@ namespace mu2e {
       _hchi2->Fill(ks.chisquared() /ks.nDOF());
       int q = ks.hasCaloCluster();
       _hhasCal->Fill(q);
+      q = ks.caloHit()._flag.hasAllProperties(StrawHitFlag::active);
+      _hactiveCal->Fill(q);
       _hfitCon->Fill(ks.fitConsistency());
       if (isCPR) _hfitConC->Fill(ks.fitConsistency());
       if (isTPR) _hfitConT->Fill(ks.fitConsistency());
@@ -122,60 +126,76 @@ namespace mu2e {
         } else
           vdid = VirtualDetectorId::TT_FrontHollow;
       }
+      //
+      double t0;
+      auto t0seg = ks.t0Segment(t0);
+      double t0var = ks.t0Var();
+      _ht0->Fill(t0);
+      _ht02->Fill(t0);
+      _ht0e->Fill(sqrt(t0var));
+
       // stop at the first found intersection
       // p of MC associated particle at this intersection
       double p_pri(0.0);
       double p_mc = mcTrkP(event,vdid,p_pri);
+      double ksCharge = ptable->particle(ks.particle()).charge();
+      double recoCharge = t0seg->state().charge();
       SurfaceId sid = _vdmap[vdid];
       auto kintercol = ks.intersections(sid);
-      double ksCharge = ptable->particle(ks.particle()).charge();
-      if(kintercol.size() > 0){
-        auto ikinter = kintercol.front(); // just sample the 1st intersection if there are >1
-        auto mom3 = ikinter->momentum3();
-        double p = mom3.R();
-        double recoCharge(1.);
-        auto   kseg = ks.segments().back();
-        if(ks.centralHelixFit()) recoCharge = kseg.centralHelix().charge();
-        _hp->Fill(p*recoCharge);
-        _hp2->Fill(p*recoCharge);
-        if (isCPR) _hpC->Fill(p);
-        if (isTPR) _hpT->Fill(p);
-        _hpce->Fill(p);
-        _hpcep->Fill(p);
-        _hsignedp->Fill(p*ksCharge);
-        _hsignedp2->Fill(p*ksCharge);
-        _hpe->Fill(ikinter->momerr());
-        _hRho->Fill(ikinter->position3().Rho());
-        _hPhi->Fill(mom3.Phi());
-        double cost = cos(mom3.Theta());
-        _hCost->Fill(cost);
-        _ht0->Fill(ikinter->time());
-        _ht02->Fill(ikinter->time());
+      auto mom3 = t0seg->momentum3();
+      double momerr = t0seg->momerr();
+      double p = mom3.R();
+      double rho = t0seg->position3().Rho();
+      // if loophelix, use the intersection instead of t0 segment
+      if(ks.loopHelixFit() && kintercol.size() > 0){
+        auto ikinter = kintercol.front();
+        for(auto jkinter : kintercol) {
+          if(jkinter->momentum3().Z() > 0.0){
+            ikinter = jkinter;
+            break;
+          }
+        }
+        mom3 = ikinter->momentum3();
+        momerr = ikinter->momerr();
+        p = mom3.R();
+        rho = ikinter->position3().Rho();
+      }
+      _hp->Fill(p*recoCharge);
+      _hp2->Fill(p*recoCharge);
+      if (isCPR) _hpC->Fill(p);
+      if (isTPR) _hpT->Fill(p);
+      _hpce->Fill(p);
+      _hpcep->Fill(p);
+      _hsignedp->Fill(p*ksCharge);
+      _hsignedp2->Fill(p*ksCharge);
+      _hpe->Fill(momerr);
+      _hRho->Fill(rho);
+      _hPhi->Fill(mom3.Phi());
+      double cost = cos(mom3.Theta());
+      _hCost->Fill(cost);
 
-        // fill the cut series; this needs updating TODO
-        bool d0cut =true;
-        // the first of the cut series, number of events
-        _hCuts->Fill(1.0);
-        // MC CE found
-        double t0 = ikinter->time();
-        double td = 1.0/tan(mom3.Theta());
-        // note: these are crude and arbitrary cuts just for validation,
-        // do not intepret these as a correct analysis selection!
-        _hPResA->Fill(p - p_pri);
-        if (p_mc > 90.0) {
-          _hCuts->Fill(2.0);
-          if (tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
-            _hCuts->Fill(3.0);
-            if (ks.fitConsistency() > 0.002) {
-              _hCuts->Fill(4.0);
-              if (t0 > 700.0 && t0 < 1695.0) {
-                _hCuts->Fill(5.0);
-                if (td > 0.577 && td < 1.0) {
-                  _hCuts->Fill(6.0);
-                  if (d0cut) {
-                    _hCuts->Fill(7.0);
-                    _hPRes->Fill(p - p_mc);
-                  }
+      // fill the cut series; this needs updating TODO
+      bool d0cut =true;
+      // the first of the cut series, number of events
+      _hCuts->Fill(1.0);
+      // MC CE found
+      double td = 1.0/tan(mom3.Theta());
+      // note: these are crude and arbitrary cuts just for validation,
+      // do not intepret these as a correct analysis selection!
+      _hPResA->Fill(p - p_pri);
+      if (p_mc > 90.0) {
+        _hCuts->Fill(2.0);
+        if (tff.hasAllProperties(TrkFitFlag("KalmanOK"))) {
+          _hCuts->Fill(3.0);
+          if (ks.fitConsistency() > 0.002) {
+            _hCuts->Fill(4.0);
+            if (t0 > 700.0 && t0 < 1695.0) {
+              _hCuts->Fill(5.0);
+              if (td > 0.577 && td < 1.0) {
+                _hCuts->Fill(6.0);
+                if (d0cut) {
+                  _hCuts->Fill(7.0);
+                  _hPRes->Fill(p - p_mc);
                 }
               }
             }
@@ -208,8 +228,8 @@ namespace mu2e {
       float radlensum(0.0);
       for (auto const& ts : ks.straws()) {
         if (ts.active()) {
-          _hSRadLen->Fill(ts.radLen());
-          radlensum += ts.radLen();
+          _hSRadLen->Fill(ts._radlen);
+          radlensum += ts._radlen;
         }
       }
       _hSRadLenSum->Fill(radlensum);

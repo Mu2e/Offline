@@ -3,13 +3,16 @@
 namespace mu2eCrv
 {
 
-void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision)
+void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCconversionFactor, int pedestal, double startTime, double digitizationPrecision, int minADC, int maxADC)
 {
   _ADCs.clear();
-  _ADCs.reserve(waveform.size());
+  _ADCs.resize(waveform.size());
   for(size_t i=0; i<waveform.size(); i++)
   {
-    _ADCs.push_back(static_cast<int16_t>(waveform[i]*ADCconversionFactor+pedestal+0.5));
+    int16_t ADC = static_cast<int16_t>(waveform[i]*ADCconversionFactor+pedestal+0.5);
+    if(ADC<minADC) ADC=minADC;
+    if(ADC>maxADC) ADC=maxADC;
+    _ADCs.at(i)=ADC;
   }
 
   int TDCtmp=lrint(startTime/digitizationPrecision);

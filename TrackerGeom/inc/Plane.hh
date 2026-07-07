@@ -38,6 +38,9 @@ namespace mu2e {
     const StrawId&  id()  const { return _id;}
 
     const xyzVec& origin() const { return _PlanetoDS.displacement(); }
+    xyzVec uDirection() const { return _udir; }
+    xyzVec vDirection() const { return _vdir; }
+    xyzVec wDirection() const { return _wdir; }
 
     PanelCollection const& panels() const { return _panels; }
 
@@ -67,9 +70,17 @@ namespace mu2e {
     auto const& planeToDS() const { return _PlanetoDS; }
     auto dsToPlane() const { return _PlanetoDS.inverse(); }
 
+    void setPlaneToDS(HepTransform const& planeToDS) {
+      _PlanetoDS = planeToDS;
+      _udir = _PlanetoDS.rotation()*xyzVec(1.0,0.0,0.0);
+      _vdir = _PlanetoDS.rotation()*xyzVec(0.0,1.0,0.0);
+      _wdir = _PlanetoDS.rotation()*xyzVec(0.0,0.0,1.0);
+    }
+
     private:
     StrawId             _id;
     HepTransform        _PlanetoDS; // transform from plane coordinates to DS (just a translation)
+    xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame
     PanelCollection     _panels;
     static StrawIdMask  _sidmask; // mask to plane level
   };

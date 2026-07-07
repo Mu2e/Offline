@@ -8,6 +8,7 @@
 #ifndef EventDisplay_src_ContentSelector_h
 #define EventDisplay_src_ContentSelector_h
 
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
@@ -28,8 +29,6 @@
 #include <vector>
 
 using namespace CLHEP;
-#include "Offline/RecoDataProducts/inc/KalRepCollection.hh"
-#include "Offline/RecoDataProducts/inc/TrkExtTraj.hh"
 
 namespace mu2e_eventdisplay
 {
@@ -45,16 +44,14 @@ class ContentSelector
   std::vector<art::Handle<mu2e::StrawHitCollection> > _strawHitVector;
   std::vector<art::Handle<mu2e::StrawHitFlagCollection> > _strawHitFlagVector;
   std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
+  std::vector<art::Handle<mu2e::CaloDigiCollection> > _caloDigiVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::CrvRecoPulseCollection> > _crvRecoPulseVector;
   std::vector<art::Handle<mu2e::CrvDigiCollection> > _crvDigisVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
-  std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
-  std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedTrkVector;
   std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
-  std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
   art::Handle<mu2e::ProtonBunchTime> _protonBunchTime;
   bool _hasPhysicalVolumesMulti;

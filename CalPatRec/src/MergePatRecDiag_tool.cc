@@ -72,7 +72,6 @@ namespace mu2e {
     void        bookTrackHistograms(TrackHist_t* Hist, art::TFileDirectory* Dir);
 
     void        fillEventHistograms(EventHist_t* Hist);
-    void        fillTrackHistograms(TrackHist_t* Hist, const KalRep* KRep);
 //-----------------------------------------------------------------------------
 // overriden virtual functions of the base class
 //-----------------------------------------------------------------------------
@@ -189,27 +188,14 @@ namespace mu2e {
     Hist->fEventNumber->Fill(event_number);
     Hist->fRunNumber  ->Fill(run_number);
 
-    int ntpr = _data->list_of_kreps_tpr->size();
+    int ntpr = _data->list_of_kseed_tpr->size();
     Hist->fNTprTracks->Fill(ntpr);
 
-    int ncpr = _data->list_of_kreps_cpr->size();
+    int ncpr = _data->list_of_kseed_cpr->size();
     Hist->fNCprTracks->Fill(ncpr);
   }
 
 //-----------------------------------------------------------------------------
-  void  MergePatRecDiag::fillTrackHistograms(TrackHist_t* Hist, const KalRep* KRep) {
-
-    Hep3Vector mom = KRep->momentum(0);
-    float chi2     = KRep->chisq();
-    //    int   nhits    = KRep->hitVector().size();
-    int   nactive  = KRep->nActive();
-
-    Hist->fChi2Dof->Fill(chi2/(nactive-5+1.e-12));
-    Hist->fMom->Fill(mom.mag());
-    Hist->fNActive->Fill(nactive);
-  }
-
-
 //-----------------------------------------------------------------------------
 // main fill histograms function called once per event
 // 'Mode' not used
@@ -229,27 +215,14 @@ namespace mu2e {
 // event histograms - just one set
 //-----------------------------------------------------------------------------
     fillEventHistograms(_hist.fEvent[0]);
+    return 0;
+  }
 //-----------------------------------------------------------------------------
 // fill TrkPatRec histograms
 //-----------------------------------------------------------------------------
-    const KalRep  *tpr, *cpr;
-
-    int ntpr = _data->list_of_kreps_tpr->size();
-    for(int i=0; i<ntpr; i++) {
-      tpr       = _data->list_of_kreps_tpr->at(i).get();
-      fillTrackHistograms(_hist.fTpr[0],tpr);
-    }
 //-----------------------------------------------------------------------------
 // fill CalPatRec histograms
 //-----------------------------------------------------------------------------
-    int ncpr = _data->list_of_kreps_cpr->size();
-    for(int i=0; i<ncpr; i++) {
-      cpr  = _data->list_of_kreps_cpr->at(i).get();
-      fillTrackHistograms(_hist.fCpr[0],cpr);
-    }
-    return 0;
-  }
-
 //-----------------------------------------------------------------------------
 // debugLevel > 0: print seeds
 //-----------------------------------------------------------------------------

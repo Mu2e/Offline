@@ -55,12 +55,8 @@ namespace mu2e
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
       fhicl::Atom<double> minVoltage{Name("minVoltage")};                       //0.022V (corresponds to 3.5PE)
       fhicl::Atom<double> noise{Name("noise")};                                 //4.0e-4V
-      fhicl::Atom<double> timeOffsetScale{Name("timeOffsetScale")};             // 1.0ns (scale factor applied to the database values)
-      fhicl::Atom<double> timeOffsetCutoffLow{Name("timeOffsetCutoffLow")};     //-3.0ns
-      fhicl::Atom<double> timeOffsetCutoffHigh{Name("timeOffsetCutoffHigh")};   // 3.0ns
-                                                                                //note: if measured time offsets are used,
-                                                                                //the cutoffs should be set to the maximum values
-      fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB")};  //false, will be applied at reco
+      fhicl::Atom<bool>   useTimeOffsetDB{Name("useTimeOffsetDB")};             //false, will be applied at reco
+      fhicl::Atom<double> timeOffsetScale{Name("timeOffsetScale")};             //1.0ns (scale factor applied to the database values)
       fhicl::Atom<double> singlePEWaveformMaxTime{Name("singlePEWaveformMaxTime")};        //100ns
       fhicl::Atom<double> singlePEWaveformPrecision{Name("singlePEWaveformPrecision")};    //1.0 ns
       fhicl::Atom<double> singlePEWaveformStretchFactor{Name("singlePEWaveformStretchFactor")};    //1.047
@@ -88,10 +84,8 @@ namespace mu2e
     double                              _digitizationEnd;
     double                              _minVoltage;
     double                              _noise;
-    double                              _timeOffsetScale;
-    double                              _timeOffsetCutoffLow;
-    double                              _timeOffsetCutoffHigh;
     bool                                _useTimeOffsetDB;
+    double                              _timeOffsetScale;
     double                              _singlePEWaveformMaxTime;
 
     int                                 _numberSamplesZS;
@@ -109,12 +103,11 @@ namespace mu2e
 
     static constexpr int nDigiPeriods = 4; //number of digitization periods to check for charges
 
-    struct ChargeCluster
-    {
-      std::vector<std::pair<double,double> > timesAndCharges;
-    };
+    typedef std::vector<std::pair<double,double> > ChargeCluster;  //first: time, second: charge
+                                                                   //this structure is required by the MakeCrvWaveforms class,
+                                                                   //which cannot be modified, since it is used in other projects.
 
-    void FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges,
+    void FindChargeClusters(const std::vector<CrvSiPMCharges::SingleCharge> &singleCharges,
                             std::vector<ChargeCluster> &chargeClusters, double timeOffset);
     bool SingleWaveformStart(std::vector<double> &fullWaveform, size_t i);
   };
@@ -129,10 +122,8 @@ namespace mu2e
     _digitizationEnd(conf().digitizationEnd()),
     _minVoltage(conf().minVoltage()),
     _noise(conf().noise()),
-    _timeOffsetScale(conf().timeOffsetScale()),
-    _timeOffsetCutoffLow(conf().timeOffsetCutoffLow()),
-    _timeOffsetCutoffHigh(conf().timeOffsetCutoffHigh()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
+    _timeOffsetScale(conf().timeOffsetScale()),
     _singlePEWaveformMaxTime(conf().singlePEWaveformMaxTime()),
     _numberSamplesZS(conf().numberSamplesZS()),
     _numberSamplesNZS(conf().numberSamplesNZS()),
@@ -221,8 +212,6 @@ namespace mu2e
         //get the numbers from the database (either measured values of random values)
         timeOffset = calib.timeOffset(barIndex.asUint()*CRVId::nChanPerBar + SiPM);
         timeOffset*=_timeOffsetScale;   //random time offsets can be scaled to a wider or smaller spread
-        if(timeOffset<_timeOffsetCutoffLow)  timeOffset=_timeOffsetCutoffLow;  //random time offsets can be cutoff at some limit
-        if(timeOffset>_timeOffsetCutoffHigh) timeOffset=_timeOffsetCutoffHigh;
       }
 
       //need to find where this FEB's TDC=0 (first point after the event window start, i.e. first clock tick after POT) is located with respect to the global time
@@ -231,26 +220,25 @@ namespace mu2e
       double TDC0time=eventWindowStart+digitizationPointShiftFEB;  //that's the time when TDC=0 for this FEB
 
       //charges and times
-      const std::vector<CrvSiPMCharges::SingleCharge> &timesAndCharges = iter->GetCharges();
+      const std::vector<CrvSiPMCharges::SingleCharge> &singleCharges = iter->GetCharges();
 
       //zero suppressed data
       std::vector<ChargeCluster> chargeClusters;
-      FindChargeClusters(timesAndCharges, chargeClusters, timeOffset);
+      FindChargeClusters(singleCharges, chargeClusters, timeOffset);
 
-      for(size_t iCluster=0; iCluster<chargeClusters.size(); ++iCluster)
+      for(const ChargeCluster &thisChargeCluster : chargeClusters)
       {
         //if the number of charges in this cluster cannot achieve the minimum voltage, skip this cluster
-        if(chargeClusters[iCluster].timesAndCharges.size()*_makeCrvWaveforms->GetSinglePEMaxVoltage()<_minVoltage) continue;
+        if(thisChargeCluster.size()*_makeCrvWaveforms->GetSinglePEMaxVoltage()<_minVoltage) continue;
 
         //find the TDC time when the first charge occurs (adjusted for this FEB)
-        double firstChargeTime=chargeClusters[iCluster].timesAndCharges.front().first;
+        double firstChargeTime=thisChargeCluster.front().first;
         firstChargeTime-=1.0*CRVDigitizationPeriod;  //start somewhere before the first charge
         double TDCstartTime=ceil((firstChargeTime-TDC0time)/CRVDigitizationPeriod) * CRVDigitizationPeriod + TDC0time;
 
         //first create the full waveform
         std::vector<double> fullWaveform;
-        _makeCrvWaveforms->MakeWaveform(chargeClusters[iCluster].timesAndCharges,
-                                        fullWaveform, TDCstartTime, CRVDigitizationPeriod);
+        _makeCrvWaveforms->MakeWaveform(thisChargeCluster, fullWaveform, TDCstartTime, CRVDigitizationPeriod);
         _makeCrvWaveforms->AddElectronicNoise(fullWaveform, _noise, _randGaussQ);
 
         //break the waveform apart into short pieces (_numberSampleZS) and apply the zero suppression
@@ -276,15 +264,15 @@ namespace mu2e
             }
 
             //collect CrvSteps and SimParticles responsible for this single waveform
-            std::set<art::Ptr<CrvStep> > steps;  //use a set to remove dublicate steppoints
+            std::set<art::Ptr<CrvStep> > steps;  //use a set to remove duplicate steppoints
             std::map<art::Ptr<SimParticle>, int> simparticles;
-            for(size_t j=0; j<timesAndCharges.size(); ++j)
+            for(size_t j=0; j<singleCharges.size(); ++j)
             {
-              if(timesAndCharges[j]._time>=digiStartTime-_singlePEWaveformMaxTime &&
-                 timesAndCharges[j]._time<=digiStartTime+_numberSamplesZS*CRVDigitizationPeriod)
+              if(singleCharges[j]._time+timeOffset>=digiStartTime-_singlePEWaveformMaxTime &&
+                 singleCharges[j]._time+timeOffset<=digiStartTime+_numberSamplesZS*CRVDigitizationPeriod)
               {
-                steps.insert(timesAndCharges[j]._step);
-                if(timesAndCharges[j]._step.isNonnull()) simparticles[timesAndCharges[j]._step->simParticle()]++;
+                steps.insert(singleCharges[j]._step);
+                if(singleCharges[j]._step.isNonnull()) simparticles[singleCharges[j]._step->simParticle()]++;
               }
             }
 
@@ -320,19 +308,19 @@ namespace mu2e
       {
         //non-zero suppressed data
         //use only charges for the first 134 samples (_numberSamplesNZS)
-        std::vector<std::pair<double,double> > timesAndChargesNZS;
-        for(size_t iCharge=0; iCharge<timesAndCharges.size(); ++iCharge)
+        ChargeCluster chargeClusterNZS;
+        for(size_t iCharge=0; iCharge<singleCharges.size(); ++iCharge)
         {
-          if(timesAndCharges[iCharge]._time>=TDC0time-_singlePEWaveformMaxTime &&
-             timesAndCharges[iCharge]._time<=TDC0time+CRVDigitizationPeriod*_numberSamplesNZS)
+          if(singleCharges[iCharge]._time+timeOffset>=TDC0time-_singlePEWaveformMaxTime &&
+             singleCharges[iCharge]._time+timeOffset<=TDC0time+CRVDigitizationPeriod*_numberSamplesNZS)
           {
-            timesAndChargesNZS.emplace_back(timesAndCharges[iCharge]._time,timesAndCharges[iCharge]._charge);
+            chargeClusterNZS.emplace_back(singleCharges[iCharge]._time+timeOffset,singleCharges[iCharge]._charge);
           }
         }
 
         //create NZS waveform
         std::vector<double> fullWaveformNZS;
-        _makeCrvWaveforms->MakeWaveform(timesAndChargesNZS, fullWaveformNZS, TDC0time, CRVDigitizationPeriod);
+        _makeCrvWaveforms->MakeWaveform(chargeClusterNZS, fullWaveformNZS, TDC0time, CRVDigitizationPeriod);
         //record first 134 samples (_numberSamplesNZS)
         //assumed to be always within eventWindowStart and eventWindowEnd
         fullWaveformNZS.resize(_numberSamplesNZS);
@@ -362,20 +350,20 @@ namespace mu2e
       if(chargeClusters.empty())
       {
         chargeClusters.resize(1);
-        chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());
+        chargeClusters.back().reserve(timesAndCharges.size());
       }
       else
       {
-        if(timeTmp-chargeClusters.back().timesAndCharges.back().first>_singlePEWaveformMaxTime+nDigiPeriods*CRVDigitizationPeriod)
+        if(timeTmp-chargeClusters.back().back().first>_singlePEWaveformMaxTime+nDigiPeriods*CRVDigitizationPeriod)
         //if the difference b/w the time of the next charge and the time of the last charge
         //is greater than a full single PE waveform plus four additional digitization periods
         //-->start a new charge cluster
         {
           chargeClusters.resize(chargeClusters.size()+1);
-          chargeClusters.back().timesAndCharges.reserve(timesAndCharges.size());
+          chargeClusters.back().reserve(timesAndCharges.size());
         }
       }
-      chargeClusters.back().timesAndCharges.emplace_back(timeTmp,timesAndCharges[i]._charge);
+      chargeClusters.back().emplace_back(timeTmp,timesAndCharges[i]._charge);
     }
   }
 

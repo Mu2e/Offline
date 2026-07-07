@@ -33,17 +33,19 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<unsigned> windowPeak        { Name("windowPeak"),       Comment("Number of bins around central value to inspect") };
-            fhicl::Atom<double>   minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
-            fhicl::Atom<double>   minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
-            fhicl::Atom<unsigned> numNoiseBins      { Name("numNoiseBins"),     Comment("Number of bins to estimate noise") };
-            fhicl::Atom<double>   psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") };
-            fhicl::Atom<double>   chiThreshold      { Name("chiThreshold"),     Comment("Min chi2 for refit strategy") };
-            fhicl::Atom<bool>     refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
-            fhicl::Atom<double>   digiSampling      { Name("digiSampling"),     Comment("Digitization time sampling") };
-            fhicl::Atom<int>      fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
-            fhicl::Atom<int>      fitStrategy       { Name("fitStrategy"),      Comment("Minuit fit strategy") };
-            fhicl::Atom<int>      diagLevel         { Name("diagLevel"),        Comment("Diagnosis level") };
+            fhicl::Atom<std::string> pulseFileName     { Name("pulseFileName"),    Comment("Calo pulse file name") };
+            fhicl::Atom<std::string> pulseHistName     { Name("pulseHistName"),    Comment("Calo pulse hist name") };
+            fhicl::Atom<unsigned>    windowPeak        { Name("windowPeak"),       Comment("Number of bins around central value to inspect") };
+            fhicl::Atom<double>      minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
+            fhicl::Atom<double>      minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
+            fhicl::Atom<unsigned>    numNoiseBins      { Name("numNoiseBins"),     Comment("Number of bins to estimate noise") };
+            fhicl::Atom<double>      psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") };
+            fhicl::Atom<double>      chiThreshold      { Name("chiThreshold"),     Comment("Min chi2 for refit strategy") };
+            fhicl::Atom<bool>        refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
+            fhicl::Atom<double>      digiSampling      { Name("digiSampling"),     Comment("Digitization time sampling") };
+            fhicl::Atom<int>         fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
+            fhicl::Atom<int>         fitStrategy       { Name("fitStrategy"),      Comment("Minuit fit strategy") };
+            fhicl::Atom<int>         diagLevel         { Name("diagLevel"),        Comment("Diagnosis level") };
         };
 
 

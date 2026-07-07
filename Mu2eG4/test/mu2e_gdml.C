@@ -15,7 +15,7 @@
 TBrowser *b = 0;
 void mu2e_gdml()
 {
-  TGeoManager *geom = TGeoManager::Import("mu2e.gdml");
+  TGeoManager *geom = TGeoManager::Import("mu2e_common.gdml");
   geom->Export("mu2e.C");
   b = new TBrowser();
   geom->GetTopVolume()->Draw();

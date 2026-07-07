@@ -40,58 +40,57 @@ int  PSEnclosure.nWindows = 3;
 //IMPORTANT: Windows must be sorted in increasing z due to plane cuts on pipes at the given z
 
 // ExtMonFNAL window
-string PSEnclosure.window1.materialName = "G4_Ti";
-double PSEnclosure.window1.thickness = 2.84;
-double PSEnclosure.window1.r =  84.14;
+string PSEnclosure.window1.materialName = "StainlessSteel316";
+double PSEnclosure.window1.thickness = 2.21;//2.84;
+double PSEnclosure.window1.r =  101.6;
 double PSEnclosure.window1.x = -683.23; // relative to PS center
 double PSEnclosure.window1.y =  520.37; // relative to PS center
 double PSEnclosure.window1.z = -197.61; // 9.78" past endplate, z is relative to PS endplate end
 bool   PSEnclosure.window1.hasFrame = true;
-double PSEnclosure.window1.frameThickness = 22.23;//mm 0.875" thick
+double PSEnclosure.window1.frameThickness = 22.225;//mm 0.875" thick
 double PSEnclosure.window1.frameRadialWidth = 50.8;//mm
 string PSEnclosure.window1.frameMaterialName = "StainlessSteel316L";
 bool   PSEnclosure.window1.hasFrameOut = true;
-double PSEnclosure.window1.frameOutThickness = 101.6;//mm 4" thick
+double PSEnclosure.window1.frameOutThickness = 63.5;//mm 4" thick
 string PSEnclosure.window1.frameOutMaterialName = "G4_Al";
 // ExtMonFNAL window pipe
 double PSEnclosure.window1.pipe.rin  =   80.73; //0.134" thick
 double PSEnclosure.window1.pipe.rout =   84.14; //6.625" outer diameter
 double PSEnclosure.window1.pipe.thetaX =  -9.59; //degrees
 double PSEnclosure.window1.pipe.thetaY = -12.26; //degrees
-
 // Primary beam window
 string PSEnclosure.window2.materialName = "G4_Ti";
-double PSEnclosure.window2.thickness = 2.84;
-double PSEnclosure.window2.r =  161.925;
+double PSEnclosure.window2.thickness = 3.226 ;
+double PSEnclosure.window2.r =  152.4;
 double PSEnclosure.window2.x = -786.05; // relative to PS center
 double PSEnclosure.window2.y =  122.76; // relative to PS center
 double PSEnclosure.window2.z = -282.96; // 13.14" past endplate, z is relative to PS endplate end without 2" frame
 bool   PSEnclosure.window2.hasFrame = true;
-double PSEnclosure.window2.frameThickness = 22.23;//mm 0.875" thick
+double PSEnclosure.window2.frameThickness = 22.225;//mm 0.875" thick
 double PSEnclosure.window2.frameRadialWidth = 50.8;//mm
 string PSEnclosure.window2.frameMaterialName = "StainlessSteel316L";
 bool   PSEnclosure.window2.hasFrameOut = true;
-double PSEnclosure.window2.frameOutThickness = 101.6;//mm 4" thick
+double PSEnclosure.window2.frameOutThickness = 63.5;//mm 4" thick
 string PSEnclosure.window2.frameOutMaterialName = "G4_Al";
 // Primary beam window pipe
-double PSEnclosure.window2.pipe.rin  =  157.353; //0.18" thick wall
-double PSEnclosure.window2.pipe.rout =  161.925; //12.75" outer diameter
+double PSEnclosure.window2.pipe.rin  =  147.9; //0.18" thick wall
+double PSEnclosure.window2.pipe.rout =  152.4;
 double PSEnclosure.window2.pipe.thetaX =  -2.18.; //degrees
 double PSEnclosure.window2.pipe.thetaY = -13.73; //degrees
 
 // Central axis target access window
-string PSEnclosure.window3.materialName = "G4_Ti";
-double PSEnclosure.window3.thickness = 2.84;
+string PSEnclosure.window3.materialName = "StainlessSteel316";
+double PSEnclosure.window3.thickness = 5.258;
 double PSEnclosure.window3.r =  254;
 double PSEnclosure.window3.x =  0.; // relative to PS center
 double PSEnclosure.window3.y =  0.; // relative to PS center
 double PSEnclosure.window3.z = -289.82; // 35.14" long, 13.78" past endplate, z is relative to PS endplate end
 bool   PSEnclosure.window3.hasFrame = true;
-double PSEnclosure.window3.frameThickness = 22.23;//mm 0.875" thick
+double PSEnclosure.window3.frameThickness = 22.225;//mm 0.875" thick
 double PSEnclosure.window3.frameRadialWidth = 50.8;//mm 2" wide
 string PSEnclosure.window3.frameMaterialName = "StainlessSteel316L";
 bool   PSEnclosure.window3.hasFrameOut = true;
-double PSEnclosure.window3.frameOutThickness = 101.6;//mm 4" thick
+double PSEnclosure.window3.frameOutThickness = 63.5;//mm 4" thick
 string PSEnclosure.window3.frameOutMaterialName = "G4_Al";
 double PSEnclosure.window3.pipe.rin  =  249.17.; //use the radius in the west end
 double PSEnclosure.window3.pipe.rout =  254.;

@@ -80,6 +80,7 @@ cet_build_plugin(MergeDigis art::module
     LIBRARIES REG
       Offline::Blinding
       Offline::TrackerMC
+      Offline::CaloMC
 )
 
 cet_build_plugin(TrackDigiExtractor art::module

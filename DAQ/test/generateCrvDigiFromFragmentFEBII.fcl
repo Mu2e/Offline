@@ -1,0 +1,49 @@
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : FragmentToDigi
+
+services :
+{
+  @table::Services.Core
+}
+
+source :
+{
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics :
+{
+  producers :
+  {
+    CrvDigi :
+    {
+      module_type   : CrvDigisFromArtdaqFragmentsFEBII
+      diagLevel     : 10
+      useSubsystem0 : false
+    }
+  }
+
+  t1 : [ CrvDigi]
+  e1 : [ outfile ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "crvDigis.art"
+  }
+}
+
+#services.message.destinations.log.categories.ArtReport.reportEvery : 1
+#services.message.destinations.log.categories.ArtReport.limit : 1
+#services.message.destinations.log.categories.ArtReport.timespan : 300

@@ -133,6 +133,7 @@ namespace mu2e
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
+                    << " p = " << hmom << " pT = " << hpT
                     << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
@@ -347,7 +348,7 @@ namespace mu2e
 
 
   bool HelixFilter::endRun( art::Run& run ) {
-    if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
+    if(_debug > 0 && _nevt > 0){      std::cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

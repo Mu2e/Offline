@@ -319,8 +319,9 @@ int GrlTool::bits(const std::string& name) {
 }
 
 //**************************************************
-int GrlTool::entries(const std::string& name, const std::string& bitname) {
+int GrlTool::entries(const std::string& name, const DbIoV& iov) {
   std::string command, result;
+  _result.clear();
   int rc = 0;
 
   std::string csv;
@@ -337,14 +338,20 @@ int GrlTool::entries(const std::string& name, const std::string& bitname) {
   }
 
   StringVec lines = DbUtil::splitCsvLines(csv);
+
   for (auto& line : lines) {
     StringVec words = DbUtil::splitCsv(line);
     // name, iov, value,eid, retired,create_date,create_user
     _entries.emplace_back(words[0], words[1], std::stoi(words[2]),
                           std::stoi(words[3]), std::stoi(words[4]), words[5],
                           words[6]);
+    if(name.empty() || words[0]==name) {
+      if(iov.isNull() || iov.isOverlapping(DbIoV(words[1]))>0 ) {
+        result.append(line+'\n');
+      }
+    }
   }
-  _result = csv;
+  _result = result;
   return 0;
 }
 
@@ -420,8 +427,8 @@ int GrlTool::genList(const std::string& comFile, const std::string& base) {
       std::cout << "Error parsing line: " << com << std::endl;
       return 1;
     }
-    std::string action = words[0];
-    std::string name = words[1];
+    std::string& action = words[0];
+    std::string& name = words[1];
     bool found = false;
     for (auto const& ww : _words) {
       if (name == ww.name()) found = true;
@@ -433,7 +440,6 @@ int GrlTool::genList(const std::string& comFile, const std::string& base) {
     int mask = 0;
     // rest of the words are bits
     for (size_t i = 2; i < words.size(); i++) {
-      found = false;
       for (auto const& bb : _bits) {
         if (bb.name() == name && bb.bitname() == words[i]) {
           mask |= (1 << bb.bitnumber());
@@ -558,7 +564,6 @@ int GrlTool::genList(const std::string& comFile, const std::string& base) {
 int GrlTool::lists() {
   if (_verbose > 1) std::cout << "starting lists" << std::endl;
 
-  std::string command, result;
   int rc = 0;
 
   std::string csv;
@@ -612,8 +617,6 @@ GrlList GrlTool::list(const std::string& name) {
     std::cout << "list function found the list\n"
               << header.formatted() << std::endl;
   // read the database table of IoV's for this GRL
-
-  std::string command, result;
 
   std::string csv;
   std::string select("iov,create_time,create_user");

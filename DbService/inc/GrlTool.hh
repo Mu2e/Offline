@@ -34,7 +34,7 @@ class GrlTool {
   // load the bit definitions and copy into results
   int bits(const std::string& name = "");
   // load the bit entries definitions and copy into results
-  int entries(const std::string& name = "", const std::string& bitname = "");
+  int entries(const std::string& name = "", const DbIoV& iov = DbIoV());
 
   // apply a file of bit selections commands to create a GRL
   int genList(const std::string& comFile, const std::string& base = "");

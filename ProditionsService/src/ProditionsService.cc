@@ -22,13 +22,12 @@
 
 #include "Offline/TrackerConditions/inc/AlignedTrackerCache.hh"
 #include "Offline/TrackerConditions/inc/FullReadoutStrawCache.hh"
-#include "Offline/TrackerConditions/inc/Mu2eDetectorCache.hh"
-#include "Offline/TrackerConditions/inc/Mu2eMaterialCache.hh"
 #include "Offline/TrackerConditions/inc/StrawDriftCache.hh"
 #include "Offline/TrackerConditions/inc/StrawElectronicsCache.hh"
 #include "Offline/TrackerConditions/inc/StrawPhysicsCache.hh"
 #include "Offline/TrackerConditions/inc/StrawResponseCache.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatusCache.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMapCache.hh"
 
 #include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
@@ -65,9 +64,10 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto frc =
       std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
   _caches[frc->name()] = frc;
-  auto tsc =
-      std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
+  auto tsc = std::make_shared<mu2e::TrackerStatusCache>(_config.trackerStatus());
   _caches[tsc->name()] = tsc;
+  auto tpm = std::make_shared<mu2e::TrackerPanelMapCache>(_config.trackerPanelMap());
+  _caches[tpm->name()] = tpm;
   auto sdc = std::make_shared<mu2e::StrawDriftCache>(_config.strawDrift());
   _caches[sdc->name()] = sdc;
   auto spc = std::make_shared<mu2e::StrawPhysicsCache>(_config.strawPhysics());
@@ -85,10 +85,6 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto atcs =
     std::make_shared<mu2e::AlignedTrackerCacheSim>(_config.alignedTrackerSim());
   _caches[atcs->name()+"Sim"] = atcs;
-  auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
-  _caches[mmc->name()] = mmc;
-  auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
-  _caches[mdc->name()] = mdc;
   auto cdc =
       std::make_shared<mu2e::CaloDAQMapCache>(_config.caloDAQConditions());
   _caches[cdc->name()] = cdc;

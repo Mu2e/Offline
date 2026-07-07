@@ -7,7 +7,6 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "art_root_io/TFileService.h"
 // conditions
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 // root
 #include "TMath.h"
@@ -231,7 +230,7 @@ namespace mu2e {
       }
     }
 
-    if (_shcol) {
+    if (_shcol && _shpcol) {
       int nsh = _shcol->size();
       for(int ish=0;ish<nsh;++ish){
         const StrawHit& sh          = _shcol->at (ish);

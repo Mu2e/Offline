@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 find_package(cetmodules)
 
-project(Offline VERSION 11.01.00)
+project(Offline VERSION 13.07.00)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -30,7 +30,9 @@ cet_set_compiler_flags(DIAGS VIGILANT
              -Wno-unused-parameter
              -Wno-non-virtual-dtor
              -Wno-extra
+             -Wreorder
 )
+
 
 if(DEFINED Offline_UPS_QUALIFIER_STRING)
   string(FIND ${Offline_UPS_QUALIFIER_STRING} "trig" TRIG_BUILD)
@@ -42,11 +44,24 @@ if(DEFINED Offline_UPS_QUALIFIER_STRING)
   endif()
 endif()
 
-message("WITH_G4 SET TO ${WITH_G4}")
+if(NOT DEFINED WITH_G4)
+  message("WITH_G4 UNDEFINED, SET TO FALSE")
+  set(WITH_G4 FALSE)
+else()
+  message("WITH_G4 SET TO ${WITH_G4}")
+endif()
+
+# Create a variable to hold optional Online libraries
+find_package(artdaq)
+if(artdaq_FOUND) # only enable ONLINE_MODE if artdaq is found, so we can use artdaq libraries
+  message("ARTDAQ found, enabling ONLINE_MODE")
+  set(ARTDAQ_DAQDATA_LIB artdaq::DAQdata)
+  add_definitions("-DONLINE_MODE=1")
+endif()
 
 message("Creating link from ${CMAKE_CURRENT_SOURCE_DIR} to ${CMAKE_CURRENT_SOURCE_DIR}/Offline to satisfy includes")
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/Offline SYMBOLIC)
- 
+
 find_package(art_root_io REQUIRED EXPORT)
 find_package(GSL REQUIRED EXPORT)
 find_package(PostgreSQL REQUIRED EXPORT)
@@ -55,21 +70,44 @@ find_package(Boost COMPONENTS iostreams program_options REQUIRED EXPORT)
 find_package(XercesC REQUIRED EXPORT)
 find_package(BLAS REQUIRED EXPORT)
 find_package(artdaq-core-mu2e REQUIRED EXPORT)
-if( ${WITH_G4} ) 
-    message("--> ADDING G4 LIBS")	
+find_package(TRACE REQUIRED EXPORT)
+find_package(KinKal REQUIRED EXPORT)
+
+if( ${WITH_G4} )
+    message("--> ADDING G4 LIBS")
     find_package(Geant4 REQUIRED EXPORT)
 
-# TODO: Find or implement FindCRY.cmake
-include_directories($ENV{CRYHOME}/src)
-link_directories($ENV{CRYHOME}/lib)
+    # TODO: Find or implement FindCRY.cmake
+    include_directories($ENV{CRYHOME}/src)
+    link_directories($ENV{CRYHOME}/lib)
 endif()
 
+# empty defaults to off
+option(BUILD_PYTHON_INTERFACE "Generate Python bindings via SWIG" FALSE)
+if( BUILD_PYTHON_INTERFACE )
+    message("--> Adding SWIG calls to generate Python interface")
+    find_package(SWIG REQUIRED EXPORT)
+    include(${SWIG_USE_FILE})
 
-# BTrk and KinKal have non-standard Find*.cmake...
-include_directories($ENV{KINKAL_INC})
-include_directories($ENV{BTRK_INC})
-link_directories($ENV{KINKAL_LIB})
-link_directories($ENV{BTRK_LIB})
+    # Find the Python interpreter and development files
+    find_package(Python3 COMPONENTS Interpreter Development)
+    if(NOT Python3_FOUND)
+      message(FATAL_ERROR "Python3 not found. Please install Python3 development files.")
+    endif()
+
+    # Define these ONCE here so they are available everywhere
+    set(PYTHON_VER "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
+    set(PYTHON_INSTALL_DIR "lib/python${PYTHON_VER}/site-packages" CACHE INTERNAL "Python install destination")
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/scripts/build/cmake/Mu2eSwigHelper.cmake)
+
+    message("--> Python install directory set to: ${PYTHON_INSTALL_DIR}")
+endif()
+
+# KinKal has non-standard Find*.cmake...
+if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+  include(${CMAKE_CURRENT_BINARY_DIR}/../KinKal/KinKalTargets.cmake)
+endif()
 
 include(ArtDictionary)
 include(BuildPlugins)
@@ -84,7 +122,7 @@ add_subdirectory(BFieldTest)
 add_subdirectory(Blinding)
 add_subdirectory(bin)
 add_subdirectory(boost_fix)
-add_subdirectory(BTrkData)
+add_subdirectory(BTrkLegacy)
 add_subdirectory(CaloCluster)
 add_subdirectory(CaloConditions)
 add_subdirectory(CaloConfig)
@@ -93,11 +131,11 @@ add_subdirectory(CaloFilters)
 add_subdirectory(CaloMC)
 add_subdirectory(CaloReco)
 add_subdirectory(CalorimeterGeom)
+add_subdirectory(CaloVisualizer)
 add_subdirectory(CalPatRec)
 add_subdirectory(CommonMC)
+add_subdirectory(CommonReco)
 add_subdirectory(Compression)
-add_subdirectory(ConditionsBase)
-add_subdirectory(ConditionsService)
 add_subdirectory(ConfigTools)
 add_subdirectory(CosmicRayShieldGeom)
 add_subdirectory(CosmicReco)
@@ -106,6 +144,7 @@ add_subdirectory(CRVConfig)
 add_subdirectory(CRVFilters)
 add_subdirectory(CRVReco)
 add_subdirectory(CRVResponse)
+add_subdirectory(CRVTools)
 add_subdirectory(DAQ)
 add_subdirectory(DAQConditions)
 add_subdirectory(DAQConfig)
@@ -126,12 +165,12 @@ add_subdirectory(GlobalConstantsService)
 add_subdirectory(HelloWorld)
 add_subdirectory(KalmanTests)
 add_subdirectory(KinKalGeom)
+add_subdirectory(MachineLearningTools)
 add_subdirectory(MBSGeom)
 add_subdirectory(MCDataProducts)
 add_subdirectory(MECOStyleProtonAbsorberGeom)
 add_subdirectory(Mu2e)
-add_subdirectory(Mu2eBTrk)
-if( ${WITH_G4} ) 
+if( ${WITH_G4} )
     message("---> ADDING G4 DIRS")
     add_subdirectory(EventGenerator)
     add_subdirectory(Mu2eG4)
@@ -168,15 +207,12 @@ add_subdirectory(STMMC)
 add_subdirectory(STMReco)
 add_subdirectory(StoppingTargetGeom)
 add_subdirectory(TestTools)
-add_subdirectory(TEveEventDisplay)
-add_subdirectory(TrackCaloMatching)
+add_subdirectory(TimeoutService)
 add_subdirectory(TrackerConditions)
 add_subdirectory(TrackerConfig)
 add_subdirectory(TrackerGeom)
 add_subdirectory(TrackerMC)
 add_subdirectory(Trigger)
-add_subdirectory(TrkDiag)
-add_subdirectory(TrkExt)
 add_subdirectory(TrkFilters)
 add_subdirectory(TrkHitReco)
 add_subdirectory(TrkPatRec)

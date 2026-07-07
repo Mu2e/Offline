@@ -1,4 +1,4 @@
-void overlapCheck(TString const fname="mu2e.gdml",
+void overlapCheck(TString const fname="mu2e_common.gdml",
                   Double_t res=1.e-12)
 {
   TGeoManager::Import(fname);

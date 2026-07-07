@@ -13,13 +13,17 @@ namespace mu2e {
       }
     }
 
-  CaloSiPMId::value_type CaloSiPMId::detType() const {
-    if(crystal().isCaphri()) {
-      return CaloConst::detType::CAPHRI;
-    } else if(isCrystal()) {
-      return CaloConst::detType::CsI;
-    } else {
+  CaloConst::detType CaloSiPMId::detType() const {
+    if(isCrystal()){
+      if(crystal().isCaphri()) {
+        return CaloConst::detType::CAPHRI;
+      } else {
+        return CaloConst::detType::CsI;
+      }
+    } else if(isPINDiode()) {
       return CaloConst::detType::PINDiode;
+    } else {
+      return CaloConst::detType::Invalid;
     }
   }
 

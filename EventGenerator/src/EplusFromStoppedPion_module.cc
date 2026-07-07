@@ -8,14 +8,6 @@
 //
 // Original author Rob Kutschke.
 //
-// Notes:
-//
-// 1) At the writing of this code, it was not possible to access the particle data table in
-//    the constructor.  This is because the ConditionsService is not initialized until
-//    begin run time.  The service will be rewritten to initialize in its ctor those parts that can
-//    be initialized without a run number.  At that time we can move the PDT related stuff to
-//    the c'tor from the beginRun method.
-//
 
 // Mu2e includes.
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -23,11 +15,13 @@
 #include "Offline/GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 
 // art includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -53,6 +47,7 @@ namespace mu2e {
 
     void beginRun(art::Run& run);
     void produce( art::Event& event);
+    void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -117,6 +112,7 @@ namespace mu2e {
 
     // What does this module produce?
     produces<GenParticleCollection>();
+    produces<SpectrumConfig, art::InSubRun>();
 
   }
 
@@ -219,6 +215,11 @@ namespace mu2e {
     event.put(std::move(output));
 
   } // end of ::analyze.
+
+  void EplusFromStoppedPion::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
+  }
 
 }
 

@@ -48,7 +48,8 @@ namespace mu2e {
   };
 
 
-  typedef std::vector<mu2e::CaloTrigSeed> CaloTrigSeedCollection;
+  using CaloTrigSeedCollection = std::vector<mu2e::CaloTrigSeed>;
+  using CaloTrigSeedPtrCollection = std::vector<art::Ptr<mu2e::CaloTrigSeed>>;
 }
 
 #endif

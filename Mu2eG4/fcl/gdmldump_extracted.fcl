@@ -1,0 +1,3 @@
+#include "Offline/Mu2eG4/fcl/gdmldump.fcl"
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+physics.producers.g4run.debug.GDMLFileName: "mu2e_extracted.gdml"

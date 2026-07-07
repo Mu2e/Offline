@@ -16,6 +16,7 @@ cet_make_library(
       src/ExtMonFNALTrkParam.cc
       src/ExtMonUCITofHit.cc
       src/HelixVal.cc
+      src/IntensityInfoCalo.cc
       src/KalSeed.cc
       src/KalSegment.cc
       src/PIDProduct.cc
@@ -24,26 +25,21 @@ cet_make_library(
       src/StrawDigiFlag.cc
       src/StrawHit.cc
       src/StrawHitFlag.cc
-      src/TrackClusterMatch.cc
-      src/TrackSummary.cc
+      src/StrawFlag.cc
       src/TrkCaloHitPID.cc
-      src/TrkExtTraj.cc
-      src/TrkExtTrajPoint.cc
       src/TrkFitDirection.cc
       src/TrkFitFlag.cc
       src/TrkQual.cc
-      src/TrkToCaloExtrapol.cc
     LIBRARIES PUBLIC
-      BTrk_BbrGeom
-      BTrk_KalmanTrack
-      BTrk_ProbTools
-      KinKal_Trajectory
+      KinKal::Trajectory
 
       Offline::DataProducts
       Offline::GeneralUtilities
       Offline::KinKalGeom
       Offline::Mu2eKinKal
       Offline::TrackerConditions
+
+      artdaq-core-mu2e::Overlays
 )
 
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults

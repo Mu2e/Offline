@@ -18,7 +18,7 @@ physics :{
     printModule : {
       module_type : PrintModule
       kalSeedPrinter : {
-        verbose : 2
+        verbose : 1
       }
     } # printModule
 

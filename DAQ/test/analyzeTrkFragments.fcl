@@ -21,6 +21,14 @@ services.TimeTracker : {
 
 services.scheduler.wantSummary: true
 
+#------------------------------------------------------------------------------
+# make makeSD print everything
+#------------------------------------------------------------------------------
+services.message.destinations.log.categories.MAKE_SD: {
+    reportEvery : 1
+    limit       : -1
+}
+
 process_name : analyzeTrkFragments
 
 source : {

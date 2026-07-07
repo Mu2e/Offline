@@ -63,9 +63,10 @@ namespace mu2e {
       TH1* _hTrigPaths  ; //trigger path names that are firing
       TH2* _hTrig2D     ; //trigger path acceptance correlation
       TH1* _hNPOT       ; //N(POT) without cuts, matching TrigPOTEff binning
-      TH1* _hTrigInfo   [kNTrigInfo   ]; //1D trigger information
+      TH1* _hTrigInfo   [kNTrigInfo  ]; //1D trigger information
       TH1* _hTrigModules[kMaxTriggers]; //cut-flow on the module chain for each trigger
       TH1* _hTrigPOTEff [kMaxTriggers]; //trigger efficiencies vs. N(POT)
+
 
       summaryInfoHist_() {
         // initialize each histogram to null
@@ -87,7 +88,7 @@ namespace mu2e {
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<int>               diagLevel          {Name("diagLevel"          ), Comment("turn tool on or off"                       ), 0 };
+      fhicl::Atom<int>               diagLevel          {Name("diagLevel"          ), Comment("Diagnostic printouts"                      ), 0 };
       fhicl::Sequence<std::string>   ignorePaths        {Name("ignorePaths"        ), Comment("Path tags to ignore in overlap/rejection"  ), {"Path"}}; //non-trigger paths typically contain "Path"
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
@@ -298,7 +299,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void ReadTriggerPath::trigPathVal(const int Index, TriggerResultsNavigator& trigNavig, summaryInfoHist_& Hist) {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
-    const std::string path = trigNavig.getTrigPathName(Index);
+    const std::string path = trigNavig.getTrigPathNameByIndex(Index);
     const unsigned lastModule = trigNavig.indexLastModule(path);
     auto h = Hist._hTrigModules[Index];
     if(!h) throw cet::exception("BADCONFIG") << __func__ << ": Trigger path index " << Index << " is out of bounds for initialized histograms\n";
@@ -336,6 +337,8 @@ namespace mu2e {
 
     //////////////////////////////////////////
     // Evaluate summary info
+
+    if(!_sumHist._hTrigInfo[0]) return; // histograms were not booked
 
     // trigger efficiencies
     _sumHist._hTrigInfo[0]->Scale(1./_nProcess);
@@ -439,6 +442,7 @@ namespace mu2e {
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
     TriggerResultsNavigator   trigNavig(trigResults);
+    if(_diagLevel > 1) trigNavig.print();
 
     //now set the value of _trigPaths
     _trigPaths = trigNavig.getTrigPaths();
@@ -451,7 +455,7 @@ namespace mu2e {
     //initialize bin labels
     if(_sumHist._hTrigInfo[0]->Integral() <= 0.) {
       for (unsigned int i=0; i< trigNavig.getTrigPaths().size(); ++i) {
-        const std::string path = trigNavig.getTrigPathName(i);
+        const std::string path = trigNavig.getTrigPathNameByIndex(i);
         _sumHist._hTrigInfo[0]->GetXaxis()->SetBinLabel(_sumHist._hTrigInfo[0]->FindBin(i), path.c_str());
         _sumHist._hTrigInfo[1]->GetXaxis()->SetBinLabel(_sumHist._hTrigInfo[1]->FindBin(i), path.c_str());
         _sumHist._hTrigInfo[4]->GetXaxis()->SetBinLabel(_sumHist._hTrigInfo[4]->FindBin(i), path.c_str());
@@ -474,7 +478,7 @@ namespace mu2e {
     bool passed(false), track_passed(false), helix_passed(false), calo_passed(false), minbias_passed(false), unknown(false);
     unsigned naccept(0), exclusive_idx(-1);
     for (unsigned i=0; i< trigNavig.getTrigPaths().size(); ++i) {
-      const std::string path = trigNavig.getTrigPathName(i);
+      const std::string path = trigNavig.getTrigPathNameByIndex(i);
       if(_diagLevel > 4) {
         printf("[ReadTriggerPath::%s] Printing modules in path %s\n", __func__, path.c_str());
         auto modules = trigNavig.triggerModules(path);
@@ -482,8 +486,8 @@ namespace mu2e {
       }
 
       if(trigNavig.accepted(path)) {
-        _sumHist._hTrigBits->Fill(trigNavig.findTrigPathID(path));
-        _sumHist._hTrigIndices->Fill(trigNavig.findTrigPath(path));
+        _sumHist._hTrigBits->Fill(trigNavig.getTrigBitByName(path));
+        _sumHist._hTrigIndices->Fill(trigNavig.getTrigPathIndex(path));
         _sumHist._hTrigPaths  ->Fill(path.c_str(), 1.);
         // _sumHist._hTrigPaths  ->Fill(i);
         _sumHist._hTrigInfo[0]->Fill(i);
@@ -512,7 +516,7 @@ namespace mu2e {
         }
         //Fill the correlation matrix
         for (unsigned j=0; j < trigNavig.getTrigPaths().size(); ++j) {
-          if(trigNavig.accepted(trigNavig.getTrigPathName(j)) && !skip_exclusive) _sumHist._hTrig2D->Fill(i,j);
+          if(trigNavig.accepted(trigNavig.getTrigPathNameByIndex(j)) && !skip_exclusive) _sumHist._hTrig2D->Fill(i,j);
         }
       }
 

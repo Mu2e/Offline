@@ -9,9 +9,15 @@
 #include "Offline/DbTables/inc/SimEfficiencies.hh"
 #include "Offline/DbTables/inc/SimEfficiencies2.hh"
 
+#include "Offline/DbTables/inc/CalBaselines.hh"
+#include "Offline/DbTables/inc/CalChannels.hh"
+#include "Offline/DbTables/inc/CalChannelStatus.hh"
 #include "Offline/DbTables/inc/CalSourceEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicEnergyCalibInfo.hh"
+#include "Offline/DbTables/inc/CalCosmicTimeCalib.hh"
+#include "Offline/DbTables/inc/CalCombinedEnergyCalib.hh"
+#include "Offline/DbTables/inc/CalEnergyCalibInfo.hh"
 #include "Offline/DbTables/inc/CalLaserEnergyCalib.hh"
 #include "Offline/DbTables/inc/CalLaserTimeCalib.hh"
 #include "Offline/DbTables/inc/CalLaserRuns.hh"
@@ -26,6 +32,7 @@
 #include "Offline/DbTables/inc/TrkDelayPanel.hh"
 #include "Offline/DbTables/inc/TrkDelayRStraw.hh"
 #include "Offline/DbTables/inc/TrkElementStatus.hh"
+#include "Offline/DbTables/inc/TrkPanelMap.hh"
 #include "Offline/DbTables/inc/TrkPreampStraw.hh"
 #include "Offline/DbTables/inc/TstCalib1.hh"
 #include "Offline/DbTables/inc/TstCalib2.hh"
@@ -65,6 +72,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanelSim());
   } else if (name == "TrkAlignStrawSim") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignStrawSim());
+  } else if (name == "TrkPanelMap") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPanelMap());
   } else if (name == "TrkPlaneStatus") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPlaneStatus());
   } else if (name == "TrkPanelStatus") {
@@ -91,12 +100,20 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVSiPM());
   } else if (name == "CRVTime") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CRVTime());
+  }  else if (name=="CalBaselines") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalBaselines());
+  }  else if (name=="CalChannels") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalChannels());
+  }  else if (name=="CalChannelStatus") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalChannelStatus());
   }  else if (name=="CalSourceEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSourceEnergyCalib());
   } else if (name=="CalCosmicEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicEnergyCalib());
   } else if (name=="CalCosmicEnergyCalibInfo") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicEnergyCalibInfo());
+  } else if (name=="CalCosmicTimeCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicTimeCalib());
   } else if (name=="CalLaserEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserEnergyCalib());
   } else if (name=="CalLaserTimeCalib") {
@@ -105,6 +122,10 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalLaserRuns());
   } else if (name=="CalEnergyCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalib());
+  } else if (name=="CalCombinedEnergyCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCombinedEnergyCalib());
+  } else if (name=="CalEnergyCalibInfo") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalibInfo());
   } else if (name=="CalTimeCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalTimeCalib());
   } else if (name=="CalCosmicT0Align") {

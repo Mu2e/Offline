@@ -11,6 +11,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
@@ -23,6 +24,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -65,6 +67,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     virtual void beginRun(art::Run& run) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -121,6 +124,7 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
   }
 
@@ -231,6 +235,11 @@ namespace mu2e {
     event.put(std::move(output));
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
 
+  }
+
+  void CaloCalibGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

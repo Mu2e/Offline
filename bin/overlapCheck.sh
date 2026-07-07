@@ -44,7 +44,7 @@ GDMLFILE="$@"
 
 
 if [ -z "$GDMLFILE" ]; then
-    GDMLFILE=$MUSE_BUILD_DIR/Offline/gen/gdml/mu2e.gdml
+    GDMLFILE=$MUSE_BUILD_DIR/Offline/gen/gdml/mu2e_common.gdml
     if [[ ! -e "$GDMLFILE" && -n "$BUILD" ]]; then
         muse build GDML
     fi

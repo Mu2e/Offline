@@ -163,7 +163,7 @@ namespace mu2e
 
   void TSTrackAna::initGeom()
   {
-    _geom = TGeoManager::Import("mu2e.gdml");
+    _geom = TGeoManager::Import("mu2e_common.gdml");
     if (!_geom) cout << "geometry gdml file does not exist" << endl;
     //_geom->Export("mu2e.C");
 

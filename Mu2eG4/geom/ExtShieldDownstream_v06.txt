@@ -6,7 +6,7 @@
 // 04/08/18: addition of CR passive absorbers (GG3) as described in doicdb-8322
 // 05/07/18: DNB added back in the new endcap design
 
-int ExtShieldDownstream.numberOfBoxTypes = 30;
+int ExtShieldDownstream.numberOfBoxTypes = 31;
 
 // How many of each type box to make
 int ExtShieldDownstream.nBoxType1 = 20;  // Regular concrete wall T blocks
@@ -32,13 +32,14 @@ int ExtShieldDownstream.nBoxType20 = 0;  // little blocks to fill in for part of
 int ExtShieldDownstream.nBoxType21 = 1;  // NE corner block at interface to upstream
 int ExtShieldDownstream.nBoxType22 = 4;  // Barite concrete wall T blocks around stopping target
 int ExtShieldDownstream.nBoxType23 = 2;  // Barite concrete roof T blocks around stopping target
-int ExtShieldDownstream.nBoxType24 = 2;  // Shielding in penetration notch (NW)
+int ExtShieldDownstream.nBoxType24 = 0;  // Obsolete Shielding in penetration notch (NW)
 int ExtShieldDownstream.nBoxType25 = 1;  // Barite in NE corner
 int ExtShieldDownstream.nBoxType26 = 1;  // Triangular Barite in NE corner to shield CR muons
 int ExtShieldDownstream.nBoxType27 = 3;  // New endcap pieces
 int ExtShieldDownstream.nBoxType28 = 1;  // New endcap bottom piece
 int ExtShieldDownstream.nBoxType29 = 1;  // New endcap top back piece
 int ExtShieldDownstream.nBoxType30 = 1;  // New endcap top back piece
+int ExtShieldDownstream.nBoxType31 = 2;  // Simplified Shielding in penetration notch (NW) Type 24 is deprecated
 
 
 // Number of vertices of each type of box
@@ -72,6 +73,8 @@ int ExtShieldDownstream.nVertType27 = 12; // New endcap blocks
 int ExtShieldDownstream.nVertType28 = 12; // New endcap bottom block
 int ExtShieldDownstream.nVertType29 = 4; // New endcap top back block
 int ExtShieldDownstream.nVertType30 = 4; // New endcap top front block
+int ExtShieldDownstream.nVertType31 = 4; // NW corner penetration notch shield
+
 
 
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
@@ -209,6 +212,12 @@ vector<double> ExtShieldDownstream.outlineType29VVerts = {0,1773,1773,0};
 vector<double> ExtShieldDownstream.outlineType30UVerts = {2458.8,2458.8,-2458.8, -2458.8};
 vector<double> ExtShieldDownstream.outlineType30VVerts = {0,1611,1611,0};
 
+// Blocks at penetration notches in NW.  Since measurements are based on 0.0
+// as a starting point, non-zero corners are moved in 10 mm, instead of 5 as
+// for shapes above.
+
+vector<double> ExtShieldDownstream.outlineType31UVerts = {0.1,0.1,584,584};
+vector<double> ExtShieldDownstream.outlineType31VVerts = {0.1,813,813,0.1};
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
 // Note that lengths here are 10 mm shy of nominal.
@@ -242,6 +251,8 @@ double ExtShieldDownstream.lengthType27 = 1116.85; // New endcap blocks (15 micr
 double ExtShieldDownstream.lengthType28 = 906.77; // New endcap bottom block
 double ExtShieldDownstream.lengthType29 = 913.9; // New endcap top back block
 double ExtShieldDownstream.lengthType30 = 913.9; // New endcap top back block
+double ExtShieldDownstream.lengthType31 = 904.4; // penetration notch shield
+
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -277,6 +288,7 @@ vector<double> ExtShieldDownstream.tolsType27 = {0,0,0}; // new endcap
 vector<double> ExtShieldDownstream.tolsType28 = {0,0,0}; // new endcap bottom
 vector<double> ExtShieldDownstream.tolsType29 = {0,0,0}; // new endcap top back
 vector<double> ExtShieldDownstream.tolsType30 = {0,0,0}; // new endcap top front
+vector<double> ExtShieldDownstream.tolsType31 = {0.0,0.0,0.0}; // Pene notch shld
 
 // Materials for each type of box.  Here, Concrete and Iron.
 string ExtShieldDownstream.materialType1   = "CONCRETE_MARS";
@@ -309,6 +321,7 @@ string ExtShieldDownstream.materialType27  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType28  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType29  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType30  = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType31  = "CONCRETE_MASONRY";
 
 // The position of each shield block in Mu2e Offline coordinates
 //Start with 20 regular concrete wall T-blocks.  10 on north side then 10 south
@@ -474,6 +487,10 @@ vector<double> ExtShieldDownstream.centerType29Box1 = {-3904.0,2006.1,18542.0};
 // And top front of the endcap
 vector<double> ExtShieldDownstream.centerType30Box1 = {-3904.0,2006.1,16916.0};
 
+// Shielding blocks by penetration notch in NW
+vector<double> ExtShieldDownstream.centerType31Box1 = {444.0,278.8,-3589.0};
+vector<double> ExtShieldDownstream.centerType31Box2 = {-596.0,278.8,-3589.0};
+
 
 
 //
@@ -601,6 +618,9 @@ string ExtShieldDownstream.orientationType28Box1 = "300";
 string ExtShieldDownstream.orientationType29Box1 = "300";
 
 string ExtShieldDownstream.orientationType30Box1 = "300";
+
+string ExtShieldDownstream.orientationType31Box1 = "010";
+string ExtShieldDownstream.orientationType31Box2 = "010";
 
 
 // Notch information

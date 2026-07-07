@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
@@ -17,7 +18,7 @@ namespace mu2e {
 
     class Row {
     public:
-      Row(CaloSiPMId roid, float Peak, float ErrPeak, float Width, float ErrWidth, float Sigma, float ErrSigma, float chisq, int Nhits):
+      Row(CaloSiPMId roid, float Peak, float ErrPeak, float Width, float ErrWidth, float Sigma, float ErrSigma, float chisq, int ndf, int Nhits):
         _roid(roid),
         _Peak(Peak),
         _ErrPeak(ErrPeak),
@@ -26,6 +27,7 @@ namespace mu2e {
         _Sigma(Sigma),
         _ErrSigma(ErrSigma),
         _chisq(chisq),
+        _ndf(ndf),
         _Nhits(Nhits){}
       CaloSiPMId  roid() const { return _roid;}
       float Peak() const { return _Peak; }
@@ -35,6 +37,7 @@ namespace mu2e {
       float Sigma() const { return _Sigma; }
       float ErrSigma() const { return _ErrSigma; }
       float chisq() const { return _chisq; }
+      int ndf() const { return _ndf; }
       int Nhits() const { return _Nhits; }
 
     private:
@@ -46,24 +49,25 @@ namespace mu2e {
       float _Sigma;
       float _ErrSigma;
       float _chisq;
+      int _ndf;
       int _Nhits;
     };
 
     constexpr static const char* cxname = "CalCosmicEnergyCalib";
 
-    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,peak,errpeak,width,errwidth,sigma,errsigma,chisq,nhits"){}
+    CalCosmicEnergyCalib():DbTable(cxname,"cal.cosmicenergycalib","roid,peak,errpeak,width,errwidth,sigma,errsigma,chisq,ndf,nhits"){}
 
     const Row& row(CaloSiPMId  roid) const {
                 return _rows.at(roid.id()); }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
     size_t size() const override { return baseSize()  + nrow()*sizeof(Row); };
-    virtual std::size_t nrowFix() const override { return CaloConst::_nCrystalChannel; };
+    virtual std::size_t nrowFix() const override { return CaloConst::_nChannelDB; };
     const std::string orderBy() const { return std::string("roid"); }
     void addRow(const std::vector<std::string>& columns) override {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
-    if (index >= CaloConst::_nChannel  || index != _rows.size()) {
+    if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
         throw cet::exception("CALOCOSMICCALIB_BAD_INDEX")
         << "CalCosmicEnergyCalib::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";
@@ -77,7 +81,8 @@ namespace mu2e {
       std::stof(columns[5]),
       std::stof(columns[6]),
       std::stof(columns[7]),
-      std::stoi(columns[8]));
+      std::stoi(columns[8]),
+      std::stoi(columns[9]));
 
   }
 
@@ -92,6 +97,7 @@ namespace mu2e {
       sstream << r.Sigma()<<",";
       sstream << r.ErrSigma()<<",";
       sstream << r.chisq()<<",";
+      sstream << r.ndf()<<",";
       sstream << r.Nhits();
     }
 

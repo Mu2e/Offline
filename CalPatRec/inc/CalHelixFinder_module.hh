@@ -20,17 +20,7 @@
 #include "Offline/DataProducts/inc/Helicity.hh"
 
 // BaBar
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BField/BField.hh"
-#include "BTrk/BField/BFieldFixed.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/BaBar/BbrStringUtils.hh"
-#include "Offline/BTrkData/inc/TrkStrawHit.hh"
-#include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 #include "Offline/BFieldGeom/inc/BFieldConfig.hh"
 
 #include "Offline/CalPatRec/inc/CalHelixFinder_types.hh"
@@ -85,7 +75,6 @@ namespace mu2e {
 // event object labels
 //-----------------------------------------------------------------------------
     std::string                           _shLabel ; // MakeStrawHit label (makeSH)
-    // std::string                           _shpLabel;
     std::string                           _timeclLabel;
 
     int                                   _minNHitsTimeCluster; //min nhits within a TimeCluster after check of Delta-ray hits
@@ -106,7 +95,6 @@ namespace mu2e {
     const ComboHitCollection*             _chcol;
     const TimeClusterCollection*          _timeclcol;
 
-    HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;
     CalHelixFinderData                    _hfResult;
     std::vector<mu2e::Helicity>           _hels; // helicity values to fit
@@ -171,6 +159,10 @@ namespace mu2e {
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
 
     void pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best);
+
+    void fillDiagnosticInfo(const std::vector<HelixSeed>& helix_seed_vec,
+                            const std::vector<float>& nHitsRatio_vec,
+                            int index_best, const int nGoodTClusterHits);
   };
 }
 #endif

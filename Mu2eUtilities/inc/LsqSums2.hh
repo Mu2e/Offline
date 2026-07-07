@@ -1,20 +1,14 @@
 #ifndef murat_LsqSums2
 #define murat_LsqSums2
 ///////////////////////////////////////////////////////////////////////////////
-// circle fit
-// Author: P. Murat
-// Date:
+// accumulation of the LSQ sums for the straight line fit
 ///////////////////////////////////////////////////////////////////////////////
-
 class LsqSums2 {
-
 protected:
   double _qn, sw, sx, sy, sx2, sxy, sy2;
   double fX0, fY0; // offsets, need to be defined in the very beginning, by default - 0
-
-
 public:
-  LsqSums2();
+  LsqSums2(double X0 = 0, double Y0 = 0);
 
   void   clear();
 
@@ -36,15 +30,15 @@ public:
 
   double det     () { return sigXX()*sigYY() -sigXY()*sigXY(); }
 
-  // reconstructed parameters of the line
-  // note: error computations assume that weights on data points (x,y) with error on y were set using weight = 1/error^2
+                                        // reconstructed parameters of the line
   double dydx();
+  double y0(double X=0);
+                                        // parameter errors are calculated assuming
+                                        // the data point weights defined as weight=1./err^2
   double dydxErr();
-  double y0();
-  double y0Err();
+                                        // to take into account correlations
+  double y0Err  (double X=0);
   double chi2Dof();
-  //  ClassDef(LsqSums2,0)
-
 };
 
 #endif

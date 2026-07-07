@@ -1,0 +1,9 @@
+#include "Offline/EventDisplay/fcl/EventDisplayBase.fcl"
+
+physics.analyzers.eventdisplay.wideband              : true
+services.GeometryService.inputFile                   : "Offline/Mu2eG4/geom/geom_WidebandMuonTaggers_v01.txt"
+services.ProditionsService.crvPhotonYield.useDb      : false
+services.ProditionsService.crvStatus.useDb           : false
+services.ProditionsService.crvCalib.useDb            : true
+services.DbService.textFile                          : ["Offline/CRVConditions/data/calib_widebandMuonTaggers.txt"]
+#services.ProditionsService.crvCalib.pedestal         : 0.0                 #for special cases (100.0 is default pedestal for simulations)

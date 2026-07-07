@@ -61,6 +61,7 @@ namespace mu2e
     std::vector<int>                _nModules;
     std::vector<int>                _nLayers;
     std::vector<int>                _nCountersPerModule;
+    std::vector<bool>               _countersOnly;
     std::vector<CLHEP::Hep3Vector>  _firstCounter;
     std::vector<CLHEP::Hep3Vector>  _offsetDirection;   //direction in which the layers are shifted
     std::vector<CLHEP::Hep3Vector>  _gapDirection;      //direction to the next gap between the counters

@@ -13,6 +13,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
@@ -27,14 +28,22 @@ namespace mu2e {
       CLHEP::HepLorentzVector fourmom;
     };
 
-    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName) = 0;
+    virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName,
+                                      const bool isPrimary) = 0;
 
     virtual std::vector<Kinematic> generate() = 0;
 
     // This interface should be removed when we retire ntuple-based muon resampling
     virtual void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) = 0;
 
+    virtual std::unique_ptr<SpectrumConfig> spectrumConfig() {
+      auto config = std::make_unique<SpectrumConfig>();
+      return config;
+    }
+
     virtual ~ParticleGeneratorTool() noexcept = default;
+
+    bool _isPrimary = true; // flag to indicate if this is for primary generation or not
   };
 }
 

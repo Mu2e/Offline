@@ -19,6 +19,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -29,6 +30,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
@@ -64,6 +66,7 @@ namespace mu2e {
     explicit InFlightParticleSampler(const Parameters& conf);
 
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
   //================================================================
   InFlightParticleSampler::InFlightParticleSampler(const Parameters& conf)
@@ -76,6 +79,7 @@ namespace mu2e {
     , verbosityLevel_(conf().verbosityLevel())
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
     if(verbosityLevel_ > 0) {
       std::cout<<"InFlightParticleSampler: using = "
@@ -108,6 +112,12 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void InFlightParticleSampler::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

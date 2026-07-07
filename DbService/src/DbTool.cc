@@ -943,6 +943,7 @@ int mu2e::DbTool::commitCalibration() {
   args["file"] = "";
   args["addIOV"] = "";
   args["addGroup"] = "";
+  args["verify"] = "";
   if ((rc = getArgs(args))) return rc;
 
   if (args["file"].empty()) {
@@ -952,6 +953,7 @@ int mu2e::DbTool::commitCalibration() {
 
   bool qai = !args["addIOV"].empty();
   bool qag = !args["addGroup"].empty();
+  bool qverify = !args["verify"].empty();
 
   if (qag && !qai) {
     std::cout << "commit-calibration: addGroup requested without addIOV "
@@ -976,6 +978,16 @@ int mu2e::DbTool::commitCalibration() {
     std::cout << "commit-calibration: no table found in file " << args["file"]
               << std::endl;
     return 2;
+  }
+
+  if (qverify) {
+    for (auto lt : coll) {
+      std::cout << std::setw(25) << lt.table().name()
+                << std::setw(30) << lt.iov().to_string(true)
+                << std::setw(18) << lt.table().hash() << std::endl;
+      if (_verbose > 5) std::cout << lt.table().csv();
+    }
+    return 0;
   }
 
   rc = commitCalibrationList(coll, qai, qag, _admin);
@@ -2888,6 +2900,7 @@ int mu2e::DbTool::help() {
                  "    --addGroup : after adding IOV's, also create a new group "
                  "(requires --addIOV)\n"
                  "    --dry-run : do everything except final database commit\n"
+                 "    --verify : only read file and summarize with hash\n"
               << std::endl;
   } else if (_action == "commit-iov") {
     std::cout
@@ -3138,14 +3151,14 @@ int mu2e::DbTool::parseArgs() {
         std::cout << "Could not parse args at " << a << std::endl;
         return 1;
       }
-      par = a.substr(2, par.size() - 2);
+      par = a.substr(2);
       // std::cout << "par1  = "<< par<< std::endl;
     } else {
       if (a.substr(0, 2) == "--") {
         // then par did not have an argument, treat as a binary arg
         _argMap[par] = "y";
         // std::cout << "set " << par << " to y " <<std::endl;
-        par = a.substr(2, a.size() - 2);  // current word is the next par
+        par = a.substr(2);  // current word is the next par
         // std::cout << "par2  = "<< par<< std::endl;
       } else {
         _argMap[par] = a;

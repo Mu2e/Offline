@@ -7,15 +7,10 @@
 //  [00:13] : Giani
 //  [14:15] : Pasha - parameters of fit with non-equal weights
 //
-// the following has to come before other BaBar includes
-///////////////////////////////////////////////////////////////////////////////
-#include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/TrkBase/HelixTraj.hh"
+#include "Offline/BTrkLegacy/inc/HelixParams.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
-#include "Offline/ConditionsService/inc/ConditionsHandle.hh"
 #include "art_root_io/TFileService.h"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
@@ -84,6 +79,14 @@ namespace mu2e {
     // the helix fit introduces a radial bias due to an asymmetry in the detector (more phase space for
     // noise hits outside the circle than inside.  correct for it.
     float radius = Helix._radius; //  + _rbias;
+    if (radius == 0. || Helix._dfdz == 0.) {
+      std::cout << "[CalHelixFinderAlg::" << __func__ << "] "
+                << "Bad Helix parameters! Radius = " << radius
+                << " dphi/dz = " << Helix._dfdz
+                << std::endl;
+      Helix._helix = nullptr;
+      return;
+    }
     // omega is the inverse transverse radius of the particle's circular motion.
     // It is signed by the particle angular momentum about the cirle center.
     // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
@@ -180,7 +183,9 @@ namespace mu2e {
     _chi2zphiMax(config.chi2zphiMax()),
     _chi2hel3DMax(config.chi2hel3DMax()),
     _dfdzErr(config.dfdzErr()),
-    _maxNHitsRatio(config.maxNHitsRatio()){
+    _maxNHitsRatio(config.maxNHitsRatio()),
+    _procAllTCs(config.procAllTCs()),
+    _slopeRatioLimit(config.slopeRatioLimit()){
 
     float minarea(config.minArea());
     _minarea2    = minarea*minarea;
@@ -189,6 +194,8 @@ namespace mu2e {
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
     //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
+    _calorimeter = nullptr;
+    _tracker = nullptr;
   }
 
 //-----------------------------------------------------------------------------
@@ -214,10 +221,34 @@ namespace mu2e {
     //check presence of a cluster
     const CaloCluster* cl = Helix._timeCluster->caloCluster().get();
     if (cl == NULL){
-      fCaloTime = -9999.;
-      fCaloX    = -9999.;
-      fCaloY    = -9999.;
-      fCaloZ    = -9999.;
+      const std::vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
+
+      if((shIndices.size() !=0) && (_procAllTCs)){
+        float  zMax(-1e10);
+        size_t zMaxIndex(0);
+        for (size_t i=0; i<shIndices.size(); ++i){
+          StrawHitIndex   ll   = shIndices[i];
+          float           hitZ = Helix.chcol()->at(ll).pos().z();
+          if (hitZ > zMax){
+            zMax      = hitZ;
+            zMaxIndex = i;
+          }
+        }
+        StrawHitIndex   loc = shIndices[zMaxIndex];
+        const ComboHit& ch  = Helix.chcol()->at(loc);
+
+        fCaloTime = ch.correctedTime();
+        fCaloX    = ch.pos().x();
+        fCaloY    = ch.pos().y();
+        fCaloZ    = ch.pos().z();
+      }
+      else{
+        fCaloTime = -9999.;
+        fCaloX    = -9999.;
+        fCaloY    = -9999.;
+        fCaloZ    = -9999.;
+      }
+
       return;
     }
     //fill the calorimeter cluster info
@@ -226,8 +257,7 @@ namespace mu2e {
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
     fCaloY           = tpos.y();
-    float     offset = _calorimeter->caloInfo().getDouble("diskCaseZLength")/2. + (_calorimeter->caloInfo().getDouble("BPPipeZOffset") + _calorimeter->caloInfo().getDouble("BPHoleZLength")+ _calorimeter->caloInfo().getDouble("FEEZLength"))/2. - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength");
-    fCaloZ           = tpos.z()-offset;
+    fCaloZ           = tpos.z()-fCaloOffset;
   }
 
 
@@ -288,11 +318,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_diag > 0) saveResults(Helix, 0);
 
-    // if (_filter) {
-    //   filterDist(Helix);
-    //   if (_diag > 0) saveResults(_xyzp,Helix,1);
-    // }
-
     doPatternRecognition(Helix);
 //---------------------------------------------------------------------------
 // 2014-11-11 gianipez changed the following if() statement to test the
@@ -301,7 +326,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------
     if (_debug != 0) {
       printf("[CalHelixFinderAlg::findHelix] Helix._nXYSh = %i goodPointsTrkCandidate = %i\n",
-             Helix._nXYSh, Helix._nStrawHits);//_goodPointsTrkCandidate);
+             Helix._nXYSh, Helix._nStrawHits);
     }
 
     if (Helix._nStrawHits < _minNHits ) {
@@ -310,11 +335,13 @@ namespace mu2e {
     else if ((Helix._radius < _rmin) || (Helix._radius > _rmax)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,2); // initialization failure
     }
-    else if ((Helix._nXYSh < _minNHits) || (Helix._sxy.chi2DofCircle() > _chi2xyMax)) {
+    else if ((Helix._nXYSh < _minNHits) || (Helix._circle_chisq_dof > _chi2xyMax)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
     }
-    else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax) ||
-             (fabs(Helix._szphi.dfdz()) < _minDfDz) || (fabs(Helix._szphi.dfdz()) > _maxDfDz)) {
+    else if ((Helix._nZPhiSh < _minNHits) ||
+             (Helix._dfdz_chisq_dof < 0.f) || // no valid line fit was found
+             (Helix._dfdz_chisq_dof > _chi2zphiMax) ||
+             (fabs(Helix._dfdz) < _minDfDz) || (fabs(Helix._dfdz) > _maxDfDz)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }
     else {
@@ -340,436 +367,59 @@ namespace mu2e {
       }
 
       defineHelixParams(Helix);
-      retval = true;
+      retval = Helix.helix() != nullptr;
     }
 
     return retval;
   }
 
-//-----------------------------------------------------------------------------
-  int CalHelixFinderAlg::findDfDz(CalHelixFinderData& Helix,
-                                  HitInfo_t          SeedIndex,
-                                   // int *IndexVec,
-                                  int                 Diag_flag) {
-    //    return findDfDz_1(Helix, SeedIndex, IndexVec, Diag_flag);
-    return findDfDz_2(Helix, SeedIndex, Diag_flag);
-  }
-
 //----------------------------------------------------------------------------------------
 // 2015-01-13  calculate track DphiDz using histogrammed distribution of the dfdz residuals
 //----------------------------------------------------------------------------------------
-  int CalHelixFinderAlg::findDfDz_1(CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag) {
+  int CalHelixFinderAlg::findDfDz(CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag) {
 
-//     float phi, phi_ref(-1e10), z, z_ref, dphi, dz, dzOverHelPitch;
+    float phi, phi_ref(-1e10), z_ref, dphi, dz; // info for the current hits being checked
 
-//     CLHEP::Hep3Vector* center = &Helix._center;
-//     CLHEP::Hep3Vector pos_ref;
-
-//     _hDfDzRes->Reset();
-//     _hPhi0Res->Reset();
-//                                         // 2015 - 03 -30 G. Pezzu changed the value of tollMax.
-//                                         // using the initial value of dfdz we can set it more accuratelly:
-//                                         // tollMax = half-helix-step = Pi / dfdz
-//     float tollMin(100.);
-// //-----------------------------------------------------------------------------
-// // 2017-09-26 gianipez fixed a bug: in case the Helix phi-z fit didn't converge yet,
-// // Helix._dfdz is set to -1e6, so we need to make a check here!
-// // this is a tempOrary fix that doesn't take into account the particle helicity. FIX ME!
-// //-----------------------------------------------------------------------------
-//     float helix_dfdz(_mpDfDz);
-//     // 2017-11-14 gianipez: findDfDz shoudl use the dfdz value obtained only from the linearFit
-//     if (Helix._szphi.qn() >= 10) helix_dfdz = Helix._szphi.dfdz();
-//     //    if (Helix._dfdz > 0) helix_dfdz =  Helix._dfdz;
-//     float tollMax = 2.*M_PI / helix_dfdz;
-
-//     if (_debug > 5) {
-//       printf("[CalHelixFinderAlg::findDfDz:BEGIN] x0 = %9.3f y0 = %9.3f Helix._radius = %9.3f",
-//              center->x(), center->y(), Helix._radius);
-//       printf("helix_dfdz = %9.6f Helix._nStrawHits = %3i tollMax = %8.6f\n",helix_dfdz, Helix._nStrawHits, tollMax);
-//     }
-
-//     int       nstations, nhits[30];
-//     float    phiVec[30], zVec[30], weight(0), weight_cl(0);
-//     PanelZ_t* panelz(0);
-
-//     // np        = _xyzp.size();
-//     nstations = _tracker->nStations();
-
-//     for (int i=0; i<nstations; i++) {
-//       phiVec[i] = 0;
-//       zVec  [i] = 0;
-//       nhits [i] = 0;
-//     }
-//     //-----------------------------------------------------------------------------
-//     // Part 1: use only contiguous parts of the trajectory
-//     //-----------------------------------------------------------------------------
-//     for (int p=SeedIndex.Panel; p<FaceZ_t::kNTotalPanels; ++p){
-//       panelz = &Helix._oTracker[p];
-//       int  nhitsPerPanel  = panelz->fNHits;
-//       int  seedPanelIndex(0);
-//       if (nhitsPerPanel == 0)                                                            continue;
-//       if (p==SeedIndex.Panel) seedPanelIndex = SeedIndex.PanelHitIndex;
-
-//       for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){
-//         mu2e::ComboHit* hit = &panelz->_chHitsToProcess.at(i);
-//         int index = p*FaceZ_t::kNMaxHitsPerPanel + i;
-//         if (Helix._hitsUsed[index] != 1)                     continue;
-
-//         int ist = hit->_straw->id().getStation();                   // station number
-//         phi     = polyAtan2(hit->y()-center->y(),hit->x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
-//         if (phi < 0) phi += 2*M_PI;
-//         zVec  [ist] += hit->z();
-//         //-----------------------------------------------------------------------------
-//         // make sure there all hits within the station get close values of phi, although a
-//         // common 2pi ambiguity is still unresolved
-//         //-----------------------------------------------------------------------------
-//         if (nhits[ist] == 0) phiVec[ist] = phi;
-//         else {
-//           while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
-//           while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
-
-//           phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
-//         }
-//         nhits [ist] += 1;
-//       }
-//     }
-
-//     for (int i=0; i<nstations; i++) {
-//       if (nhits[i] > 0) {
-//         zVec  [i] = zVec  [i]/nhits[i];
-//       }
-//     }
-
-//     if (_debug >5) {
-//       printf("[CalHelixFinderAlg::findDfDz] StationID  nhits       z        phi\n");
-//       for (int i=0; i<nstations; i++) {
-//         if (nhits[i] > 0) printf("[CalHelixFinderAlg::findDfDz] %5i %6i    %9.3f %8.5f\n", i,nhits[i],zVec[i],phiVec[i]);
-//       }
-//     }
-
-//     int i0(-1), first_point(1);
-//                                         // add the cluster phi
-//     float zCl   = fCaloZ;
-//     float phiCl = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
-//     if (phiCl < 0) phiCl += 2*M_PI;
-
-//     for (int i=0; i<nstations; i++) {
-//       if (nhits[i] == 0)                                    continue;
-//                                         // i0: fist station with hits
-//       if (first_point) {
-//         i0          = i;
-//         first_point = 0;
-//       }
-
-//       phi_ref = phiVec[i];
-//       z_ref   = zVec  [i];
-
-//       for(int j=i+1; j<nstations; ++j) {
-//         if (nhits[j] == 0)                                  continue;
-//         phi = phiVec[j];
-//         z   = zVec  [j];
-//         dz  = z - z_ref;
-
-//         dzOverHelPitch = dz/tollMax - int(dz/tollMax);
-//         weight         = nhits[i] + nhits[j];
-
-//         //        if ((phi_ref > -9999) && (dzOverHelPitch < _dzOverHelPitchCut) && (dz > tollMin)) {
-//         if (dz > tollMin) {
-//           dphi = phi-phi_ref;
-//            while (dphi >  M_PI) dphi -= 2*M_PI;
-//            while (dphi < -M_PI) dphi += 2*M_PI;
-// //-----------------------------------------------------------------------------
-// // add 2*PI to take into account the fact we are in the second loop
-// // FIX ME: what to do if we are in the third loop?
-// //-----------------------------------------------------------------------------
-//           if (dz > tollMax) dphi += 2*M_PI*int(dz/tollMax);
-
-//           float dphidz = dphi/dz;
-//           while (dphidz < 0.) {
-//             dphi    = dphi+2.*M_PI;
-//             dphidz  = dphi/dz;
-//           }
-//           _hDfDzRes->Fill(dphidz, weight);
-
-//           float tmpphi0 = phi_ref - dphidz*z_ref;
-//           tmpphi0        = TVector2::Phi_0_2pi(tmpphi0);
-
-//           if (_debug > 5) {
-//             printf("[CalHelixFinderAlg::findDfDz:1] z_ref: %9.3f z: %9.3f dz: %9.3f",z_ref,z,dz);
-//             printf(" phi_ref: %9.5f phi: %9.5f dphi: %9.5f dz/HelPitch: %10.3f dphi/dz: %9.5f phi0 = %9.6f\n",
-//                    phi_ref,phi,dphi, dzOverHelPitch, dphidz, tmpphi0);
-//           }
-// //-----------------------------------------------------------------------------
-// // in case dfdz is out of limits, set tmpphi0 as negative
-// //-----------------------------------------------------------------------------
-//           if ((dphidz < _minDfDz) || (dphidz >  _maxDfDz)) tmpphi0 = -1;
-//           _hPhi0Res->Fill(tmpphi0, weight);
-//         }
-//       }
-// //-----------------------------------------------------------------------------
-// // include the calorimeter cluster phi
-// //-----------------------------------------------------------------------------
-//       dz             = zCl - z_ref;
-//       dzOverHelPitch = dz/tollMax - int(dz/tollMax);
-//       weight_cl      =  nhits[i];
-
-//       //      if ((dzOverHelPitch < _dzOverHelPitchCut) && (dz > tollMin)) {
-//       if (dz > tollMin) {
-//         dphi  = phiCl - phi_ref;
-//         dphi  = TVector2::Phi_0_2pi(dphi);
-// //-----------------------------------------------------------------------------
-// // add 2 pi for taking into account the fact we are in the second loop
-// // *FIX ME*: what if we are in the third loop?
-// //-----------------------------------------------------------------------------
-//         if (dz > tollMax) dphi += 2*M_PI*int(dz/tollMax);
-
-//         float dphidz = dphi/dz;
-//         while (dphidz < 0.) {
-//           dphi   += 2.*M_PI;
-//           dphidz = dphi/dz;
-//         }
-
-//         float tmpphi0 = phi_ref - dphidz*z_ref;
-//         tmpphi0        = TVector2::Phi_0_2pi(tmpphi0);
-
-//         if (_debug > 5){
-//           printf("[CalHelixFinderAlg::findDfDz:2] z_ref: %9.3f z: %9.3f dz: %9.3f",z_ref,zCl,dz);
-//           printf(" phi_ref: %9.5f phi: %9.5f dphi: %9.5f dz/HelPitch: %10.3f dphi/dz: %9.5f phi0 = %9.6f\n",
-//                  phi_ref,phiCl,dphi, dzOverHelPitch, dphidz, tmpphi0);
-//         }
-
-//         if (dzOverHelPitch < _dzOverHelPitchCut ) {
-//           _hDfDzRes->Fill(dphidz, weight_cl);
-//           if ((dphidz < _minDfDz) || (dphidz >  _maxDfDz)) tmpphi0 = -1;
-//           _hPhi0Res->Fill(tmpphi0, weight_cl);
-//         }
-//       }
-//     }
-// //-----------------------------------------------------------------------------
-// // 2015 - 04- 02 G. Pezzu changed the way the maximum is searched
-// // since sometimes a 2pi ambiguity creates two peaks in the histogram
-// // we want to use the second, because it is the correct one
-// //-----------------------------------------------------------------------------
-//     float  maxContent = _hDfDzRes->GetMaximum() - 0.001;
-//     int      maxBin    = _hDfDzRes->FindLastBinAbove(maxContent);//GetMaximumBin();
-//     _hdfdz             = _hDfDzRes->GetBinCenter(maxBin);//_hDfDzRes->GetMean();
-//     float dfdzmean    = _hDfDzRes->GetMean();
-//     int    nentries    = _hDfDzRes->GetEntries();
-//     int    overflows   = _hDfDzRes->GetBinContent(0)  + _hDfDzRes->GetBinContent(_hDfDzRes->GetNbinsX()+1);
-
-//     maxContent         = _hPhi0Res->GetMaximum() - 0.001;
-//     maxBin             = _hPhi0Res->FindLastBinAbove(maxContent);//GetMaximumBin();
-
-//     float mpvphi0     = _hPhi0Res->GetBinCenter(maxBin); //_hPhi0Res->GetMean();
-//     float menaphi0    = _hPhi0Res->GetMean();
-//     int    nentriesphi = _hPhi0Res->GetEntries();
-
-//     _hphi0 = mpvphi0;  // 2018-01-05: *FLOAT_CHECK*
-
-//     if (_debug > 5) {
-//       printf("[CalHelixFinderAlg::findDfDz:DFDZ] nent: %3i mpvDfDz: %9.6f meanDphiDz: %9.6f under: %3.0f over: %3.0f ENTRIES:",
-//              nentries, _hdfdz, dfdzmean,
-//              _hDfDzRes->GetBinContent(0),_hDfDzRes->GetBinContent(_hDfDzRes->GetNbinsX()+1)
-//              );
-//       for (int i=0; i<_hDfDzRes->GetNbinsX(); i++) {
-//         printf(" %3.0f",_hDfDzRes->GetBinContent(i+1));
-//       }
-//       printf("\n");
-
-//       printf("[CalHelixFinderAlg::findDfDz:PHI0] nent: %3i mpvPhi0: %9.6f meanPhi0  : %9.6f under: %3.0f over: %3.0f ENTRIES:",
-//              nentriesphi, mpvphi0,  menaphi0,
-//              _hPhi0Res->GetBinContent(0),_hPhi0Res->GetBinContent(_hPhi0Res->GetNbinsX()+1)
-//              );
-//       for (int i=0; i<_hPhi0Res->GetNbinsX(); i++) {
-//         printf(" %3.0f",_hPhi0Res->GetBinContent(i+1));
-//       }
-//       printf("\n");
-//     }
-// //-----------------------------------------------------------------------------
-// // Part 2: try to perform a more accurate estimate - straight line fit
-// //-----------------------------------------------------------------------------
-//     float z0, phi0, dphidz, pred;
-
-//     z0     = 0.    ;
-//     phi0   = _hphi0;
-//     dphidz = _hdfdz;
-//     //    _sdfdz = -1;
-
-//     if (_debug > 5) {
-//       float tmpphi0=phi0+dphidz*z0;
-//       printf("[CalHelixFinderAlg::findDfDz:PART2] phi0 = %9.6f dfdz = %9.6f\n", tmpphi0, dphidz);
-//     }
-// //--------------------------------------------------------------------------------
-// // 2015-03-25 G. Pezzu changed the way the 2PI ambiguity is resolved
-// //--------------------------------------------------------------------------------
-//     LsqSums4 szphi;
-
-//     weight = 1./(_sigmaPhi*_sigmaPhi);
-
-//     float xdphi, zLast(z0), zdist;
-
-//     if (_debug > 5) {
-//       printf("[CalHelixFinderAlg::findDfDz:LOOP]  i       z        dz      phiVec     phi    szphi.dfdz    dphi    xdphi     dfdz    \n");
-//     }
-
-//     dz   = zCl - z0;
-//     dphi = dz*dphidz + phi0 - phiCl;
-//     while (dphi > M_PI){
-//       phiCl += 2*M_PI;
-//       dphi  -= 2*M_PI; // dz*dphidz + phi0 - phiCl;
-//     }
-//     while (dphi < -M_PI){
-//       phiCl -= 2*M_PI;
-//       dphi  += 2*M_PI; // = dz*dphidz + phi0 - phiCl;
-//     }
-
-//     float errCl    = 2./30.;
-//     float weightCl = 1./(errCl*errCl);
-
-//     xdphi = fabs(dphi)/errCl;
-// //-----------------------------------------------------------------------------
-// // 2015-04-21 Gianipez added the condition (xdphi < 2.*_maxXDPhi) for adding or not
-// // the calorimeter point to the fitter. In case the particle scattered in the end of the tracker
-// // the calorimeter point is dangerous.
-// //-----------------------------------------------------------------------------
-//     if (xdphi < 2.*_maxXDPhi){
-//       szphi.addPoint(zCl, phiCl, weightCl);
-//     }
-
-//     if (_debug > 10) {
-//       printf("[CalHelixFinderAlg::findDfDz:LOOP] %3i %9.3f %9.3f %9.5f %9.5f %9.6f %9.6f %9.6f %9.6f\n",
-//              0, zCl, dz, phiCl, phiCl, szphi.dfdz(), dphi, xdphi, dphidz);
-//     }
-
-//     // 2015-07-06 Gianipez added the following line for avoiding infinite loops
-//     if ( i0 < 0 ) goto NEXT_STEP;
-
-//     for (int i=i0; i<nstations; i++) {
-//       if (nhits[i] > 0) {
-//         z    = zVec[i];
-//         dz   = z-z0;
-//         pred = phi0 + dz*dphidz;
-//         phi  = phiVec[i];
-//         dphi = phi - pred;//pred - phi;
-
-//         while (dphi > M_PI){
-//           phi -= 2*M_PI;//+= 2*M_PI;
-//           dphi = phi - pred;//pred - phi;
-//         }
-//         while (dphi < -M_PI){
-//           phi += 2*M_PI;//-= 2*M_PI;
-//           dphi = phi - pred;//pred - phi;
-//         }
-
-//         xdphi = fabs(dphi)/_sigmaPhi;
-
-//         if (xdphi < 2.*_maxXDPhi){
-//           szphi.addPoint(z, phi, weight);
-
-//           zdist = z - zLast;
-
-//           if ( (szphi.qn() >= 3.) && (zdist > 500.)){
-//             z0     = 0.;
-//             phi0   = szphi.phi0();
-//             dphidz = szphi.dfdz();
-//           }
-//         }
-
-//         if (_debug > 10) {
-//           float tmpDfDz = szphi.dfdz();//, Helix._szphi.chi2DofLine());
-//           printf("[CalHelixFinderAlg::findDfDz:LOOP] %3i %9.3f %9.3f %9.5f %9.5f %9.6f %9.6f %9.6f %9.6f\n",
-//                  i, z, dz, phiVec[i], phi, tmpDfDz, dphi, xdphi, dphidz);
-//         }
-//       }
-//     }
-
-//   NEXT_STEP:;
-
-//     if (szphi.qn() >= 3.) {
-//       _hdfdz = szphi.dfdz();                // sigxy/sigxx;
-//       _hphi0 = szphi.phi0();                // ymean - xmean*sigxy/sigxx;
-//       //      _sdfdz = szphi.chi2DofLine();
-//     }
-//     else {
-//       _hphi0 = phi0 + _hdfdz*z0;
-//       //      _sdfdz = -1;
-//     }
-
-//     int     nActive_stations = nentries - overflows;
-
-//     if (Diag_flag > 0){
-//       Helix._diag.nStationPairs = nActive_stations;
-//     }
-
-//     if (_debug > 5) {
-//       printf("[CalHelixFinderAlg::findDfDz] END: _hdfdz = %9.5f _hphi0 = %9.6f chi2 = %9.3f ", _hdfdz,
-//              _hphi0, -1.);
-//       printf(" FIT: szphi.dfdz() = %9.5f szphi.phi0() = %9.6f chi2 = %9.3f qn = %6.0f\n", szphi.dfdz(),
-//              szphi.phi0(), szphi.chi2DofLine(), szphi.qn());
-//     }
-// //-----------------------------------------------------------------------------
-// // 2017-11-14 gianipez: in case of less than _minNSt active stations we should
-// //                      probably use the _mpDfDz
-// //-----------------------------------------------------------------------------
-//     if (nActive_stations < _minNSt) {
-//       _hdfdz = _mpDfDz;
-//       return 0;
-//     }
-
-    return 1;
-  }
-
-
-
-//----------------------------------------------------------------------------------------
-// 2015-01-13  calculate track DphiDz using histogrammed distribution of the dfdz residuals
-//----------------------------------------------------------------------------------------
-  int CalHelixFinderAlg::findDfDz_2(CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag) {
-
-    float phi, phi_ref(-1e10), z_ref, dphi, dz;
-
-    //    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
-    float hist[50], minX(0), maxX(0.025), stepX(0.0005), nbinsX(50); // make it 20 bins: gianipez test 2019-09-23
+    constexpr int nbinsX(50);
+    float hist[nbinsX], minX(0), maxX(0.025), stepX((maxX - minX)/nbinsX); // histogram binning
+    for (int i=0; i<nbinsX; i++) hist[i] = 0.f;
 
     XYZVectorF* center = &Helix._center;
     XYZVectorF  pos_ref;
-//-----------------------------------------------------------------------------
-// 2017-09-26 gianipez fixed a bug: in case the Helix phi-z fit didn't converge yet,
-// Helix._dfdz is set to -1e6, so we need to make a check here!
-// this is a tempOrary fix that doesn't take into account the particle helicity. FIX ME!
-//-----------------------------------------------------------------------------
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::findDfDz:BEGIN] x0 = %9.3f y0 = %9.3f Helix._radius = %9.3f Helix._nStrawHits = %3i",
              center->x(), center->y(), Helix._radius,Helix._nStrawHits);
     }
 
-    int       nstations, nhits[30], nstations_with_hits(0);
-    float    phiVec[30], zVec[30], weight(0);
+    constexpr int max_station_index = 30; // safe value, larger than N(stations)
+    const int nstations = StrawId::_nstations;
+    if(max_station_index < nstations + 1) throw cet::exception("RECO") << "More stations than written to handle!";
 
-    // np        = _xyzp.size();
-    int       nPlanesPerStation(2);
-    nstations = StrawId::_nplanes/nPlanesPerStation;//_tracker->nStations();
+    // Information by station
+    int       nhits [max_station_index], nstations_with_hits(0);
+    float     phiVec[max_station_index], zVec[max_station_index], weight(0.f);
 
-    for (int i=0; i<nstations; i++) {
-      phiVec[i] = 0;
-      zVec  [i] = 0;
-      nhits [i] = 0;
+    // Initialize the by-station information to 0
+    for (int i=0; i<nstations+1; i++) {
+      phiVec[i] = 0.f;
+      zVec  [i] = 0.f;
+      nhits [i] = 0  ;
     }
 
-    for (int i=0; i<nbinsX; i++) hist[i] = 0;
 //-----------------------------------------------------------------------------
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
-    float zCl     = fCaloZ;
-    float phiCl   = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
+
+    const float zCl = fCaloZ;
+    float phiCl     = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
 
     phiVec[nstations] = phiCl;
     zVec  [nstations] = zCl;
     nhits [nstations] = 1;
-    //-----------------------------------------------------------------------------
-    // Step 1: for each station with track candidate hits, calculate average phi per station
-    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Step 1: for each station with track candidate hits, calculate average phi per station
+//-----------------------------------------------------------------------------
     PanelZ_t* panelz(0);
     FaceZ_t*  facez(0);
 
@@ -784,7 +434,6 @@ namespace mu2e {
         int  nhitsPerPanel  = panelz->nChHits();
         int  seedPanelIndex(0);
         if (nhitsPerPanel == 0)                                      continue;
-        //        if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;
         if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
 
         for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){
@@ -807,8 +456,10 @@ namespace mu2e {
             nstations_with_hits += 1;
           }
           else {
-            while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
-            while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
+            const float dphi = phi - phiVec[ist];
+            const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+            if     (dphi >  M_PI) phi -= (nrot  )*2.*M_PI;
+            else if(dphi < -M_PI) phi += (nrot+1)*2.*M_PI;
 
             phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
           }
@@ -818,8 +469,8 @@ namespace mu2e {
     }//end face loop
 
     for (int i=0; i<nstations; i++) {
-      if (nhits[i] > 0) {
-        zVec  [i] = zVec  [i]/nhits[i];
+      if (nhits[i] > 1) {
+        zVec[i] /= nhits[i]; // divide by N(hits) to get the average z of the hits
       }
     }
 
@@ -843,71 +494,44 @@ namespace mu2e {
 
         dphi = phiVec[j]-phi_ref;
         dz   = zVec[j] - z_ref;
-        float dphidz =dphi/dz*_dfdzsign; //HERE
 
-        weight = nhits[i] + nhits[j];
+        // ensure the z values are set and non-overlapping
+        if(std::fabs(dz) < 10e-10)         continue;
+
+        // check the sign of the dz makes sense
+        if (dz < 0.) {
+          if(!Helix._timeCluster->hasCaloCluster()) { // in the case we're using a tracker hit, just take the absolute |dz|
+            dz = -dz;
+          } else { // if not using a tracker hit as a cluster, then throw an error
+            throw cet::exception("RECO") << "Delta z < 0: z(cluster) = " << zCl
+                                         << " z(1) = " << z_ref << " z(2) = " << zVec[j] << "\n";
+          }
+        }
+
+        float dphidz =dphi/dz*_dfdzsign; // get dphi/dz with the helix helicity included
+
 //-----------------------------------------------------------------------------
 // calculate N potential choices for 2*PI ambiguity resolution
 //-----------------------------------------------------------------------------
-        int n(0), nmax(0), nmin(0), nchoices = 0;
 
-        float x = dphidz + n*2*M_PI/dz;
+        const float x        =  dphidz; // nominal value
+        const float dx       = 2.*M_PI/dz; // change in dphidz with turns
+        const float nmin_f   = (_minDfDz - x) / dx; // min/max turns allowed (float version for comparisons)
+        const float nmax_f   = (_maxDfDz - x) / dx;
+        const int   nmin     = (nmin_f < 0.f) ? nmin_f : nmin_f + 1.f; // actual step ranges
+        const int   nmax     = (nmax_f < 0.f) ? nmax_f - 1.f : nmax_f;
+        const int   nchoices = (nmax_f < nmin_f || nmax < nmin) ? 0 : nmax - nmin + 1;
 
-        if (x < _minDfDz) {
-//-----------------------------------------------------------------------------
-// for n=0, x < _minDfDz
-//-----------------------------------------------------------------------------
-          while (x < _maxDfDz) {
-            if (x < _minDfDz) nmin = n+1;
-            nmax = n;
-            if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
-            n += 1;
-            x += 2*M_PI/dz;
-          }
-        }
-        else if (x < _maxDfDz) {
-//-----------------------------------------------------------------------------
-// for n=0,   _xMin <= x < _xMax
-//-----------------------------------------------------------------------------
-          while (x < _maxDfDz) {
-            nmax = n;
-            if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
-            n += 1;
-            x += 2*M_PI/dz;
-          }
+        if (nchoices <= 0)                                  continue;
 
-          nmin = 0;
-          x    = dphidz+(nmin-1)*2*M_PI/dz;
-
-          while (x > _minDfDz) {
-            nchoices += 1;
-            nmin -= 1;
-            x    -= 2*M_PI/dz;
-          }
-        }
-        else {
-//-----------------------------------------------------------------------------
-// for n=0, x >= _xMax
-//-----------------------------------------------------------------------------
-          while (x > _minDfDz) {
-            if (x > _maxDfDz) nmax = n-1;
-            nmin = n;
-            if ((x > _minDfDz) && (x < _maxDfDz)) nchoices += 1;
-            n -= 1;
-            x -= 2*M_PI/dz;
-          }
-        }
-
-        if (nchoices == 0)                                  continue;
-
-        weight = 1.; // 1./nchoices;
+        weight = 1.f; // 1./nchoices;
 //-----------------------------------------------------------------------------
 // loop again over all choices and fill a histogram
 // histogram is from
 //-----------------------------------------------------------------------------
-        for (int n=nmin; n<=nmax; n++) { //
-          float x = dphidz + n*2*M_PI/dz;
-          int bin = (x-minX)/stepX;
+        for (int n=nmin; n<=nmax; n++) {
+          const float x = dphidz + n*dx;
+          const int bin = std::max(0, std::min(nbinsX-1, int((x-minX)/stepX)));
           hist[bin] += weight;
         }
       }
@@ -948,24 +572,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // for all points different from the first one need to choose the turn number
 //-----------------------------------------------------------------------------
-        dphi = phiVec[i]-(phi0+zVec[i]*_hdfdz);
-        float dphi_min = dphi;
 
-        int n= 0;
-        while (1) {
-          n += 1;
-          float dphi = phiVec[i]+2*M_PI*n-(phi0+zVec[i]*_hdfdz);
-          if (fabs(dphi) < fabs(dphi_min)) dphi_min = dphi;
-          else break;
-        }
-
-        n=0;
-        while (1) {
-          n -= 1;
-          float dphi = phiVec[i]+2*M_PI*n-(phi0+zVec[i]*_hdfdz);
-          if (fabs(dphi) < fabs(dphi_min)) dphi_min = dphi;
-          else break;
-        }
+        const float phi0_shifted = phi0+zVec[i]*_hdfdz;
+        dphi = phiVec[i] - phi0_shifted;
+        // find the minimum delta phi between the two phi values
+        const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+        const float dphi_min = (dphi < -M_PI) ? dphi + (nrot+1)*2.*M_PI : dphi - nrot*2.*M_PI;
 
         sdphi += dphi_min;
         sn += 1;
@@ -1066,7 +678,7 @@ namespace mu2e {
 
           if (PhiZInfo.useInteligentWeight == 1){
             weight  = calculatePhiWeight(*hit, helCenter, radius, 0, PhiZInfo.banner);
-            err     = 1./sqrt(weight);
+            if (weight > 0.) err = 1./sqrt(weight);
           }
           hit->_zphiWeight = weight;
 
@@ -1192,7 +804,7 @@ namespace mu2e {
 
           if (PhiZInfo.useInteligentWeight == 1){
             weight = hit->_zphiWeight;//calculatePhiWeight(*hit,  helCenter, radius, 0, PhiZInfo.banner);
-            err    = 1./sqrt(weight);
+            if (weight > 0.) err    = 1./sqrt(weight);
           }
 
           xdphi = dphi/err;
@@ -1223,24 +835,20 @@ namespace mu2e {
       helCenter = XYZVectorF( Helix._sxy.x0(), Helix._sxy.y0(), 0);
     }
 
-    float zCl   = fCaloZ;
-    float dx    = (fCaloX - helCenter.x());
-    float dy    = (fCaloY - helCenter.y());
-    float phiCl = polyAtan2(dy, dx);
-    if (phiCl < 0) phiCl = phiCl + 2*M_PI;
+    const float zCl    = fCaloZ;
+    const float dx     = (fCaloX - helCenter.x());
+    const float dy     = (fCaloY - helCenter.y());
+    const float phiCl0 = polyAtan2(dy, dx);
 
-    float deltaPhi = zCl*dfdz + phi0 - phiCl;
-    while (deltaPhi > M_PI){
-      phiCl   += 2*M_PI;
-      deltaPhi = zCl*dfdz + phi0 - phiCl;
-    }
-    while (deltaPhi < -M_PI){
-      phiCl   -= 2*M_PI;
-      deltaPhi = zCl*dfdz + phi0 - phiCl;
-    }
+    const float phi0_shifted = phi0 + zCl*dfdz;
+    const float dphi = phi0_shifted - phiCl0;
+    // find the minimum delta phi between the two phi values
+    const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+    const float dphi_min = (dphi < -M_PI) ? dphi   + (nrot+1)*2.*M_PI : dphi   - nrot*2.*M_PI;
+    const float phiCl    = (dphi < -M_PI) ? phiCl0 - (nrot+1)*2.*M_PI : phiCl0 + nrot*2.*M_PI;
 
-//check residual before adding to the LSqsum
-    float xdphi  = fabs(deltaPhi)/_sigmaPhi;
+    //check residual before adding to the LSqsum
+    float xdphi  = fabs(dphi_min)/_sigmaPhi;
 
 // weight_cl of 10 corresponds to an uncertainty of 0.1 in phi(cluster),
 // which means sigma(R-phi) of about 2-3 cm, about right
@@ -1253,7 +861,7 @@ namespace mu2e {
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doLinearFitPhiZ] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
-             0, 1, 0, 0,  zCl, phiCl, deltaPhi, xdphi, 0., 0., dfdz, 0., 0.);
+             0, 1, 0, 0,  zCl, phiCl, dphi_min, xdphi, 0., 0., dfdz, 0., 0.);
     }
 
   }
@@ -1315,7 +923,9 @@ namespace mu2e {
       printf("    phi         dphi      xdphi      zlast        dz      dphidz  szphidfdz  chi2\n");
     }
 
-    addCaloClusterToFitPhiZ(Helix);
+    if(Helix._timeCluster->hasCaloCluster()){
+      addCaloClusterToFitPhiZ(Helix);
+    }
 
     count = 0;
 
@@ -1392,6 +1002,8 @@ namespace mu2e {
         }
 
       CHECK_RESIDUALS:;
+        constexpr bool endAtThreshold(false); // Whether or not to keep iterating down to the threshold or stop once it's acceptable
+        if (endAtThreshold && Helix._szphi.chi2DofLine() <= _chi2zphiMax) goto NEXT_ITERATION_END;
         dphi_max    = _maxXDPhi;
         //reset the coordinates of the worst hit
         iworst.face          = -1;
@@ -1433,6 +1045,7 @@ namespace mu2e {
             goto NEXT_ITERATION;
           }
         }
+      NEXT_ITERATION_END:;
       }
     }
     //-----------------------------------------------------------------------------
@@ -1443,13 +1056,14 @@ namespace mu2e {
       success = true;
     }
     //----------------------------------------------------------------------//
-    if ( (Helix._szphi.qn() < minNFitHits) ||
-         ((Helix._szphi.qn() >= minNFitHits) && (Helix._szphi.dfdz()*_dfdzsign < 0.)) ) {
+    if ( (Helix._szphi.qn() < minNFitHits) || // too few hits
+         (Helix._szphi.dfdz()*_dfdzsign < 0.) ) { // wrong slope
       success = false;
     }
     else if (success) {                               // update helix results
       Helix._fz0  = Helix._szphi.phi0();
       Helix._dfdz = Helix._szphi.dfdz();
+      Helix._dfdz_chisq_dof = Helix._szphi.chi2DofLine();
     }
 
     if ((SeedIndex.face == 0 ) && (SeedIndex.panel == 0) && (SeedIndex.panelHitIndex == 0) && (_diag > 0)) {
@@ -1538,6 +1152,9 @@ namespace mu2e {
 
     if (!success) {
       Helix._hitsUsed = hitsUsed;
+      // _szphi was cleared and partially rebuilt during the failed fit;
+      // invalidate the cached chi2 field so it cannot disagree with _szphi
+      Helix._dfdz_chisq_dof = -1.f;
     }
 
     return success;
@@ -1549,6 +1166,12 @@ namespace mu2e {
 // points in filled array are ordered in Z coordinate
 //-------------------------------------------------------------------------
   void CalHelixFinderAlg::fillFaceOrderedHits(CalHelixFinderData& Helix) {
+
+//-----------------------------------------------------------------------------
+// Ensure the tracker and calorimeter utils are available
+//-----------------------------------------------------------------------------
+    if(!_tracker    ) throw cet::exception("RECO") << ": Tracker util not initialized!\n";
+    if(!_calorimeter) throw cet::exception("RECO") << ": Calorimeter util not initialized!\n";
 
 //-----------------------------------------------------------------------------
 // set the CaloCluster of CalHelixFinderAlg: this info is stored in the TimeCluster
@@ -1577,7 +1200,7 @@ namespace mu2e {
     ordChCol.reserve(size);
 
     if (_debug >0 ){
-      printf("-----------------------------------------------------------------------------------/n");
+      printf("-----------------------------------------------------------------------------------\n");
       printf("[CalHelixFinderAlg::fillFaceOrderedHits]  Plane   Panel  Layer Straw     x          y           z  \n");
     }
 
@@ -1628,10 +1251,10 @@ namespace mu2e {
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       ComboHit& ch = ordChCol[i];
 
-      cx.Station                 = ch.strawId().station();//straw.id().getStation();
-      cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+      cx.Station                 = ch.strawId().station();
+      cx.Plane                   = ch.strawId().plane() % 2;
       cx.Face                    = ch.strawId().face();
-      cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
+      cx.Panel                   = ch.strawId().panel();
 
       // get Z-ordered location
       Helix.orderID(&cx, &co);
@@ -1642,8 +1265,7 @@ namespace mu2e {
       int op       = co.Panel;
 
       int       stationId = os;
-      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
-      //        int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
       FaceZ_t*  fz        = &Helix._oTracker[faceId];
       PanelZ_t* pz        = &fz->panelZs[op];
 
@@ -1843,6 +1465,7 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     Helix._center.SetXYZ(x0, y0, 0.0);
     Helix._radius      = radius;
+    Helix._circle_chisq_dof = Helix._sxy.chi2DofCircle();
     Helix._nComboHits += rescuedPoints;
     Helix._nStrawHits += rescuedStrawHits;
 
@@ -1900,13 +1523,14 @@ namespace mu2e {
   void CalHelixFinderAlg::filterUsingPatternRecognition(CalHelixFinderData& Helix) {
 
     if (Helix._seedIndex.panel < 0) return;
+    if (Helix._dfdz == 0.) return; // undefined helix results
 
     int            nActive(0), nActive_hel(0);
     int            nSh = Helix._nFiltStrawHits;
 
     float         straw_mean_radius(0), chi2_global_helix(0), total_weight(0);
     float         x_center(Helix._center.x()), y_center(Helix._center.y()), radius(Helix._radius);
-    float         fz0(Helix._fz0), lambda(1./Helix._dfdz);
+    float         fz0(Helix._fz0), dfdz(Helix._dfdz);
     XYZVectorF         hel_pred(0., 0., 0.);
 
     PanelZ_t*      panelz(0);
@@ -1945,7 +1569,7 @@ namespace mu2e {
             float  x         = hit->pos().x();
             float  y         = hit->pos().y();
             float  z         = Helix._zFace[f];
-            float  phi_pred  = fz0 + z/lambda;
+            float  phi_pred  = fz0 + z*dfdz;
             float  x_pred    = x_center + radius*cos(phi_pred);
             float  y_pred    = y_center + radius*sin(phi_pred);
             hel_pred.SetX(x_pred);
@@ -2011,6 +1635,7 @@ namespace mu2e {
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
 
+    if (_debug > 5) { printf("[CalHelixFinderAlg::searchBestTriplet] BEGIN, nSh = %d\n",nSh); }
     for (int f=StrawId::_ntotalfaces-1; f>=0; --f){
       ///if (Helix._zFace[f] < _maxZTripletSearch)     break;
       facez     = &Helix._oTracker[f];
@@ -2019,7 +1644,7 @@ namespace mu2e {
         int       nhits  = panelz->nChHits();
         for (int i=0; i<nhits; ++i){
           if (Helix._nStrawHits > (nSh - nHitsTested))   continue;
-          if ((nSh - nHitsTested) < _minNHits        )  continue;
+          if ((nSh - nHitsTested) < _minNHits        )   continue;
           //clear the info of the tmp object used to test the triplet
           TmpHelix.clearResults();
 
@@ -2033,10 +1658,10 @@ namespace mu2e {
           //2019-02-15: gianipez put the old logic back. FIXME!
           if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
               ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2))) {
-          // int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
-          // if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
-          //      ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
-          //      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
+            // int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
+            // if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
+            //      ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
+            //      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
             Helix = TmpHelix;
           }
           if (_debug > 5) {
@@ -2046,7 +1671,7 @@ namespace mu2e {
         }//end loop over the hits on the panel
       }//end panels loop
     }//end faces loop
-
+    //}//end loop over the fake caloclusters
   }
 
 
@@ -2066,7 +1691,15 @@ namespace mu2e {
     tripletHelix._helix = NULL;//FIXME!
 
     _findTrackLoopIndex = 1;                 // debugging
+    if (_debug != 0) {
+      printf("[CalHelixFinderAlg::doPatternRecognition]: before first SearchBestTriplet \n");
+      printInfo(Helix);
+    }
     searchBestTriplet(Helix, tripletHelix);
+    if (_debug != 0) {
+      printf("[CalHelixFinderAlg::doPatternRecognition]: after first SearchBestTriplet \n");
+      printInfo(Helix);
+    }
     //-----------------------------------------------------------------------------
     // 2014-11-09 gianipez: if no track was found requiring the recalculation of dfdz
     // look for a track candidate using the default value of dfdz and the target center
@@ -2074,6 +1707,10 @@ namespace mu2e {
     _findTrackLoopIndex = 2;                 // *DEBUGGING*
     if (fUseDefaultDfDz == 0) {
       searchBestTriplet(Helix, tripletHelix, useMPVdfdz);
+      if (_debug != 0) {
+        printf("[CalHelixFinderAlg::doPatternRecognition]: after second SearchBestTriplet \n");
+        printInfo(Helix);
+      }
    }
 
     if (_debug == 0){
@@ -2107,8 +1744,9 @@ namespace mu2e {
       Helix._diag.nHitsRatio = nHitsRatio;
     }
 
-    if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END;
-    if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
+    if (nHitsRatio > _maxNHitsRatio) goto PATTERN_RECOGNITION_END; // bad hit ratio
+    if (Helix._szphi.qn() == 0.)     goto PATTERN_RECOGNITION_END; // no hits found on line
+    if (!rc)                         goto PATTERN_RECOGNITION_END; // failed linear fit
 
     rescueHitsBeforeSeed(Helix);
 //-----------------------------------------------------------------------------
@@ -2135,6 +1773,9 @@ namespace mu2e {
     rescueHits(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), usePhiResid);
 
     if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), useIntelligentWeight);//the factor "-1" takes into account that the XY fit includes the target center
+    // rescueHits may have added points to _szphi directly (UsePhiResiduals==1);
+    // if doLinearFitPhiZ was skipped above, sync the field from the live fitter
+    else if(usePhiResid) Helix._dfdz_chisq_dof = Helix._szphi.chi2DofLine();
 
     if (_debug != 0)  printInfo(Helix);
 //--------------------------------------------------------------------------------------------------------------
@@ -2149,6 +1790,7 @@ namespace mu2e {
       if (rs == 1) {                        // update Helix Z-phi part
         Helix._dfdz = _hdfdz;
         Helix._fz0  = _hphi0;
+        Helix._dfdz_chisq_dof = -1.f;
       }
     }
 
@@ -2158,6 +1800,9 @@ namespace mu2e {
       usePhiResid = 1;
       rescueHits(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), usePhiResid);
       if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(StrawId::_ntotalfaces-1,0,-1), useIntelligentWeight);  //the factor "-1" takes into account that the XY fit includes the target center
+      // rescueHits may have added points to _szphi directly (UsePhiResiduals==1);
+      // if doLinearFitPhiZ was skipped above, sync the field from the live fitter
+      else if(usePhiResid) Helix._dfdz_chisq_dof = Helix._szphi.chi2DofLine();
 
       if (_debug != 0)  printInfo(Helix);
       strcpy(banner,"refineHelixParameters-after-doLinearFitPhiZ");
@@ -2277,8 +1922,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void   CalHelixFinderAlg::doWeightedCircleFit (CalHelixFinderData& Helix,
                                                  HitInfo_t           SeedIndex,
-                                                 XYZVectorF&             HelCenter,
-                                                 float&             Radius   ,
+                                                 XYZVectorF&         HelCenter,
+                                                 float&              Radius   ,
                                                  int                 Print    ,
                                                  const char*         Banner   ) {
     float     wt;
@@ -2289,9 +1934,12 @@ namespace mu2e {
     Helix._nXYSh = 0;
     Helix._nComboHits = 0;
 
-    Helix._sxy.addPoint(fCaloX,fCaloY,1./100.);
-    Helix._nXYSh += 1;
-    Helix._nComboHits += 1;
+    // Only add the calo cluster position if one is associated with this time cluster
+    if(fCaloTime > 0.) {
+      Helix._sxy.addPoint(fCaloX,fCaloY,1./100.);
+      Helix._nXYSh += 1;
+      Helix._nComboHits += 1;
+    }
 //-------------------------------------------------------------------------------
 // add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
 //-------------------------------------------------------------------------------
@@ -2355,6 +2003,7 @@ namespace mu2e {
     Helix._center.SetX(Helix._sxy.x0());
     Helix._center.SetY(Helix._sxy.y0());
     Helix._radius  = Helix._sxy.radius();
+    Helix._circle_chisq_dof = Helix._sxy.chi2DofCircle();
 
 
     if (_debug > 5) {
@@ -2471,7 +2120,7 @@ namespace mu2e {
 
           chi2  = sxy.chi2DofCircle();
 
-          if ((chi2 < chi2_min) || ( (i == SeedIndex.panelHitIndex) && (p == SeedIndex.panel) && (f == SeedIndex.face)) ) {
+          if (chi2 < chi2_min) {
             chi2_min             = chi2;
             IWorst.face          = f;
             IWorst.panel         = p;
@@ -2655,11 +2304,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // update circle parameters
 //-----------------------------------------------------------------------------
-      // Trk._sxyw = sxyw;
       Trk._center.SetX(Trk._sxy.x0());
       Trk._center.SetY(Trk._sxy.y0());
       Trk._radius = Trk._sxy.radius();
-      //      Trk._chi2   = Trk._sxy.chi2DofCircle();
+      Trk._circle_chisq_dof = Trk._sxy.chi2DofCircle();
 
     }else {
       Trk._hitsUsed = hitsUsed;   //restore the info of the used-hits that was originally passed to the procedure
@@ -2859,6 +2507,7 @@ namespace mu2e {
 
       //evaluate the number of hits already in use in the same panel
       int    nHitsUsed(0), idSamePanel(-1);
+      facez  = &Helix._oTracker[ibest.face];
       panelz = &facez->panelZs[ibest.panel];
       for (int l=0; l<panelz->nChHits(); ++l){
         int   id = panelz->idChBegin + l;
@@ -2957,7 +2606,7 @@ namespace mu2e {
     Helix._center.SetX(Helix._sxy.x0());
     Helix._center.SetY(Helix._sxy.y0());
     Helix._radius  = Helix._sxy.radius();
-    //    Helix._chi2    = Helix._sxy.chi2DofCircle();
+    Helix._circle_chisq_dof = Helix._sxy.chi2DofCircle();
 
   F_END:;
     if (_debug > 5 ) {
@@ -3028,7 +2677,7 @@ namespace mu2e {
     bool removeTarget(true);            // avoid the recalculation of dfdz
                                         // and helix parameters in case when
                                         // others strawhit candidates are found
-    float dfdz = _mpDfDz;                // tanLambda/radius (set to most probable);
+    float dfdz = _mpDfDz;               // tanLambda/radius (set to most probable);
 //----------------------------------------------------------------------
 // calculate helix paramters using the center of the stopping target,
 // the EMC cluster which seeded the CalTimePeak and the seeding strawhit.
@@ -3037,11 +2686,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     float          lastFacez    = seedFacez;//Helix._zFace[SeedIndex.face];
     float          faceHitChi2  = 1e10;
+    std::string name("CalHelixFinderAlg::findTrack");
+
 
     XYZVectorF p1(0.,0.,0.);               // target, z(ST) = 5971. - 10200. is not used
     XYZVectorF p2(seedHit->_pos);          // seed hit
     XYZVectorF p3(fCaloX,fCaloY,fCaloZ);   // cluster
-
+    if( _debug > 5){
+      printf("[%s]              X       Y      Z \n",name.data());
+      printf("[%s]  SeedHit %6.2f %6.2f %6.2f \n",name.data(), p2.x(), p2.y(), p2.z() );
+      printf("[%s]  CaloCl  %6.2f %6.2f %6.2f \n",name.data(), p3.x(), p3.y(), p3.z() );
+    }
+    XYZVectorF pDiff = p2-p3;
+    if (!Helix._timeCluster->hasCaloCluster() && pDiff.R() < 1e-10)     return;
     if (!calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz))    return;
 
 //--------------------------------------------------------------------------------
@@ -3054,14 +2711,14 @@ namespace mu2e {
         dfdz = _hdfdz;
       }
     }
-    float     tollMax = fabs(2.*M_PI/dfdz);
+    float     tollMax = (dfdz != 0.) ? fabs(2.*M_PI/dfdz) : 1.e6;
 //------------------------------------------------------------------------------
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
 // 2014-11-05 gianipez set dfdz equal to the most probable value for CE
 //------------------------------------------------------------------------------
     if (UseMPVDfDz ==1 ) {
       dfdz    = _hdfdz;                        // _mpDfDz;
-      tollMax = fabs(2.*M_PI/dfdz);
+      tollMax = (dfdz != 0.) ? fabs(2.*M_PI/dfdz) : 1.e6;
     }
 
     HitInfo_t lastIndex;//(-1,-1);
@@ -3072,8 +2729,6 @@ namespace mu2e {
     sxy.addPoint(p2.x(), p2.y(), 1.     );  // seed hit
     sxy.addPoint(p3.x(), p3.y(), 1.     );  // EMC cluster position
     sxy.addPoint(    0.,     0., wtarget);  // Target center in the transverse plane, with small weight
-
-    std::string name("CalHelixFinderAlg::findTrack");
 
     int  NPoints = seedHit->nStrawHits();     // nhits, associated with the track, sxy has NPoints+2 or NPoints+1 points
     int  NComboHits(1);
@@ -3306,10 +2961,12 @@ namespace mu2e {
     Helix._nXYSh      = NPoints;
     Helix._radius     = sxy.radius();
     Helix._center.SetXYZ(sxy.x0(), sxy.y0(), 0.0);
+    Helix._circle_chisq_dof = sxy.chi2DofCircle();
     Helix._nStrawHits = NPoints;
     Helix._nComboHits = NComboHits;
     Helix._dfdz       = dfdz;
     Helix._fz0        = phi0 - dfdz*z_phi0; // *FLOAT_CHECK*
+    Helix._dfdz_chisq_dof = -1.f;
 
     radius_end = Helix._radius;
     //breakpoint -- radius before refine $
@@ -3319,11 +2976,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (rc < 0) return;
     //breakpoint -- radius after refine $
-    // Helix._center.SetXYZ(Helix._cw.x(), Helix._cw.y(), 0.0);
-    // Helix._radius  = Helix._rw;
     radius_end     = Helix._radius;
 
-    // Helix._sxy = Helix._sxyw;
                                         // doWeightedCircleFit still adds the ST and the cluster
     Chi2    = Helix._sxy.chi2DofCircle();
     NPoints = Helix._nStrawHits;   //  *FIXME*  in principle, the fit can remove ST as well as the cluster
@@ -3333,9 +2987,10 @@ namespace mu2e {
 // 2015-01-22 G. Pezzullo and P. Murat; update the dfdz value using all hits
 //-----------------------------------------------------------------------------
     int rs = findDfDz(Helix, SeedIndex);
-    if (rs ==1 ) {
+    if (rs ==1 ) { // 1 = success
       Helix._dfdz = _hdfdz;
       Helix._fz0  = _hphi0;
+      Helix._dfdz_chisq_dof = -1.f;
                                         // fill diag vector
       dfdzRes[1]  = _hdfdz;
       dphi0Res[1] = _hphi0;
@@ -3343,10 +2998,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 2015-01-23 G. Pezzu and P. Murat: when it fails, doLinearFitPhiZ returns negative value
 //                                   in this case, use the previous value for dfdz and phi0
+// NOTE: _hphi0 is initialised to -9999. in resetTrackParamters() and is only updated by
+//       findDfDz() when >=2 stations have hits.  If findDfDz() also failed, the fallback
+//       sets phi0_end = -9999., which is a sentinel value and NOT a valid phi0.
+//       The helix candidate is still stored in this state and compared against other
+//       candidates in searchBestTriplet; the final quality cuts in fitHelix will reject it
+//       only if the sentinel survives as _fz0 through to that check.
+//       A future improvement would be to return early from findTrack when rcPhiZ is false
+//       AND _hphi0 is still the sentinel value.
 //-----------------------------------------------------------------------------
     bool rcPhiZ = doLinearFitPhiZ(Helix, SeedIndex);
 
-    if (rcPhiZ) {
+    if (rcPhiZ) { // fit was successful
       dfdz_end    = Helix._dfdz;
       phi0_end    = Helix._fz0;
                                         // fill diagnostic vector
@@ -3359,27 +3022,6 @@ namespace mu2e {
       //FIXME! implement a function
       countUsedHits(Helix, SeedIndex, NComboHits, NPoints);
 
-      // for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
-      //         facez     = &Helix._oTracker[f];
-      //         int  firstPanel(0);
-      //         if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
-      //         for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
-      //           panelz = &facez->panelZs[p];
-      //           int  nhitsPerPanel  = panelz->nChHits();
-      //           int  seedPanelIndex(0);
-      //           if (nhitsPerPanel == 0)                                 continue;
-      //           if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
-
-      //           for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){
-      //             index = panelz->idChBegin + i;
-      //             hit   = &Helix._chHitsToProcess[index];
-      //             if (Helix._hitsUsed[index] > 0 )  {
-      //               ++NComboHits;
-      //               NPoints += hit->nStrawHits();
-      //             }
-      //           }
-      //         }//endl panels loop
-      // }
     }
     else {
       dfdz_end = _hdfdz;
@@ -3436,8 +3078,12 @@ namespace mu2e {
     //-----------------------------------------------------------------------------
     Helix._center.SetXYZ(Helix._sxy.x0(),Helix._sxy.y0(), 0.0);
     Helix._radius = radius_end;
+    Helix._circle_chisq_dof = Helix._sxy.chi2DofCircle();
     Helix._fz0    = phi0_end;
     Helix._dfdz   = dfdz_end;
+    // _dfdz_chisq_dof is already set by doLinearFitPhiZ when rcPhiZ==true;
+    // only reset it to 0 when the fit failed (histogram estimate, no valid chi2)
+    if (!rcPhiZ) Helix._dfdz_chisq_dof = -1.f;
 
     if (_diag > 0){
       Helix._diag.loopId_4           = _findTrackLoopIndex;
@@ -3467,7 +3113,7 @@ namespace mu2e {
         int  firstPanel(0);
         if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
         for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
-          panelz = &facez->panelZs[p];//Helix._oTracker[p];
+          panelz = &facez->panelZs[p];
           int  nhitsPerPanel  = panelz->nChHits();
           int  seedPanelIndex(0);
           if (nhitsPerPanel == 0)                          continue;
@@ -3477,17 +3123,8 @@ namespace mu2e {
             int   index = panelz->idChBegin + i;
             hit = &Helix._chHitsToProcess[index];
 
-            //            int index = facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
             if (Helix._hitsUsed[index] != 1)               continue;
 
-            //  if (j < Helix.maxIndex()) {
-              // Helix._diag.dist[j] = hit->_drFromPred;
-              // Helix._diag.dz  [j] = hit->_dzFromSeed;
-            //   ++j;
-            // }
-            // else {
-            //   printf("ERROR in CalHelixFinderAlg::findTrack : index out limits. IGNORE; \n");
-            // }
           }//end loop over the hits within a panel
         }//end panel loop
       }//end face loop
@@ -3536,21 +3173,23 @@ namespace mu2e {
     float t = y_n - x_n*k;
     //the eq. is: y = x*k + t
 
-    //check we are not in a degenerate case where m is close to k, which rapresents two almost parallel lines
-    float limit = 0.8;//FIXME!
+    if (std::isfinite(m) && std::isfinite(k) && std::fabs(k) > 1e-9) {
+      if ( (m/k>0) && ( (m/k) - int(m/k) > _slopeRatioLimit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
+        x_n = (p1.x() + p2.x())/2.;
+        y_n = (p1.y() + p2.y())/2.;
+        k   = -1.*(p1.x() - p2.x())/(p1.y() - p2.y());
+        t   = y_n - x_n*k;
+      }
+    }
 
-    if ( (m/k>0) && ( (m/k) - int(m/k) > limit) ) {//invert p3 with p1 and recalculate: x_n, y_n, k, t
-      x_n = (p1.x() + p2.x())/2.;
-      y_n = (p1.y() + p2.y())/2.;
-      k   = -1.*(p1.x() - p2.x())/(p1.y() - p2.y());
-      t   = y_n - x_n*k;
-     }
+    if (!std::isfinite(m) || !std::isfinite(k) || std::fabs(m-k) < 1e-6) return false;
 
     // calculate Center.x and Center.y
     float x0 = (t - c)/(m - k);//(c - t) * (k*m)/(m-k);
     Center.SetX(x0);
     float y0 = m*x0 + c;   //(c - t) * m / (m - k) + t;
     Center.SetY(y0);
+
 //-----------------------------------------------------------------------------
 // calculate the radius,phi0, tanLambda assuming that the helix also crosses
 // the point (0,0). Note that the Z-position of the stopping target is not used
@@ -3567,19 +3206,13 @@ namespace mu2e {
     Phi0        = polyAtan2(dy2,dx2);
 //-----------------------------------------------------------------------------
 // this assumes that the helix is right-handed, *FIXME*
-// make sure that we are lookign for a particle which makes close to expected
+// make sure that we are looking for a particle which makes close to expected
 // number of turns
 //-----------------------------------------------------------------------------
     float dphi32 = polyAtan2(dy3,dx3) - Phi0;
     if (dphi32*_dfdzsign < 0.) dphi32 += 2.*M_PI;
 
-    //    float exp_dphi = _mpDfDz*dz32;
-
-    //check id DfDz is within the range
-    if ( (fabs(DfDz32) < _minDfDz) || (fabs(DfDz32) > _maxDfDz)) DfDz32 = _mpDfDz;
-
     DfDz32 = dphi32/dz32;
-
     float   diff      = fabs(DfDz32 - _mpDfDz);
     float   diff_plus = fabs( (dphi32 + 2.*M_PI)/dz32 -_mpDfDz );
     while ( diff_plus < diff ){
@@ -3627,24 +3260,6 @@ namespace mu2e {
   void  CalHelixFinderAlg::calculateDfDz(float phi0, float phi1, float z0, float z1, float& DfDz) {
     float   deltaPhi  = TVector2::Phi_mpi_pi(phi1-phi0);
     DfDz               = deltaPhi/(z1-z0);
-
-    // 2018-01-02: don't do that!
-    // float   diff      = fabs(DfDz - _mpDfDz);
-    // float   diff_plus = fabs((deltaPhi + 2.*M_PI)/(z1-z0) -_mpDfDz);
-    // while (diff_plus < diff) {
-    //   deltaPhi  = deltaPhi + 2.*M_PI;
-    //   DfDz      = deltaPhi/(z1-z0);
-    //   diff      = fabs(DfDz - _mpDfDz);
-    //   diff_plus = fabs( (deltaPhi + 2.*M_PI)/(z1-z0) -_mpDfDz );
-    // }
-
-    // float   diff_minus = fabs((deltaPhi - 2.*M_PI)/(z1-z0) -_mpDfDz);
-    // while (diff_minus < diff) {
-    //   deltaPhi   = deltaPhi - 2.*M_PI;
-    //   DfDz       = deltaPhi/(z1-z0);
-    //   diff       = fabs(DfDz - _mpDfDz);
-    //   diff_minus = fabs( (deltaPhi - 2.*M_PI)/(z1-z0) -_mpDfDz );
-    // }
   }
 
 //-----------------------------------------------------------------------------
@@ -3771,71 +3386,20 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   void CalHelixFinderAlg::resolve2PiAmbiguity(ComboHit* Hit, XYZVectorF& Center, float &Phi_ref, float &DPhi){
-    float dx      = (Hit->_pos.x() - Center.x());
-    float dy      = (Hit->_pos.y() - Center.y());
-    float phi     = polyAtan2(dy, dx);
-    if (phi < 0) phi = phi + 2*M_PI;
-    DPhi    = Phi_ref - phi;
-    // resolve 2PI ambiguity
-    while (DPhi > M_PI) {
-      phi += 2*M_PI;
-      DPhi = Phi_ref - phi;
-    }
-    while (DPhi < -M_PI) {
-      phi -= 2*M_PI;
-      DPhi = Phi_ref - phi;
-    }
+    const float dx   = (Hit->_pos.x() - Center.x());
+    const float dy   = (Hit->_pos.y() - Center.y());
+    const float phi  = polyAtan2(dy, dx);
+
+    const float dphi = Phi_ref - phi;
+    // find the minimum delta phi between the two phi values
+    const int nrot = std::abs((dphi + M_PI) / (2.*M_PI));
+    const float dphi_min = (dphi < -M_PI) ? dphi + (nrot+1)*2.*M_PI : dphi - nrot*2.*M_PI;
+    const float phi_rot  = (dphi < -M_PI) ? phi  - (nrot+1)*2.*M_PI : phi  + nrot*2.*M_PI;
+
     // store the corrected value of phi
-    Hit->_hphi = phi;
-
+    Hit->_hphi = phi_rot;
+    DPhi = dphi_min;
   }
-  // void CalHelixFinderAlg::resolve2PiAmbiguity(CalHelixFinderData& Helix,const XYZVectorF& Center, float DfDz, float Phi0){
-
-  //   const XYZVectorF*  pos;
-  //   float         z, phi, phi_ref, dphi, dx, dy;
-
-  //   FaceZ_t*        facez(0);
-  //   PanelZ_t*       panelz(0);
-  //   mu2e::ComboHit* hit(0);
-
-  //   for (int f=0; f<StrawId::_ntotalfaces;  ++f){
-  //     facez     = &Helix._oTracker[f];
-  //     for (int p=0; p<FaceZ_t::kNPanels; ++p){
-  //         panelz = &facez->panelZs[p];//Helix._oTracker[p];
-  //         int  nhits          = panelz->nChHits();
-  //         for (int i=0; i<nhits; ++i){
-  //           hit = &panelz->_chHitsToProcess.at(i);
-  //           pos = &hit->_pos;
-  //           z   = pos->z();
-
-  //           dx  = (pos->x() - Center.x());
-  //           dy  = (pos->y() - Center.y());
-  //           phi = polyAtan2(dy, dx);
-  //           if (phi < 0) phi = phi + 2*M_PI;//phi = TVector2::Phi_0_2pi(phi);
-  //           // predicted value of phi
-  //           phi_ref = z*DfDz + Phi0;
-  //           // signed residual
-  //           dphi    = phi_ref - phi;
-  //           // resolve the 2PI ambiguity
-  //           while (dphi > M_PI) {
-  //             phi += 2*M_PI;
-  //             dphi = phi_ref - phi;
-  //           }
-  //           while (dphi < -M_PI) {
-  //             phi -= 2*M_PI;
-  //             dphi = phi_ref - phi;
-  //           }
-  //           // store the corrected value of phi
-  //           // _phiCorrected[i] = phi;
-  //         }
-
-  //     }
-  //   }
-  //                 // don't know
-  //   _phiCorrectedDefined = 0;
-  // }
-
-
 
 //---------------------------------------------------------------------------
 // reset track paramters

@@ -16,6 +16,18 @@ cet_build_plugin(KalSeedFilter art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(MultiHelixFilter art::module
+    REG_SOURCE src/MultiHelixFilter_module.cc
+    LIBRARIES REG      
+      Offline::BFieldGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+)
+
 cet_build_plugin(TimeClusterFilter art::module
     REG_SOURCE src/TimeClusterFilter_module.cc
     LIBRARIES REG      

@@ -17,11 +17,6 @@ PrintStrawHits : {
     makeSHinstance    : "CosmicFilter"
 }
 
-TrackSummaryMaker: {
-    module_type: TrackSummaryMaker
-    trackInput : "TrkPatRec:DeM"
-}
-
 CaloClusterCompareNew : {
         module_type : CaloClusterCompare
         CaloClusterCollection : CaloClusterOnline
