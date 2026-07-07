@@ -300,23 +300,23 @@ namespace mu2e {
   };
 
 
-void STMMovingWindowDeconvolution::deconvolve() {
-  if (verbosityLevel > 4) {
-    std::cout << "MWD: input ADCs (" << ADCs.size() << "): ";
-    for (int16_t data : ADCs)
-      std::cout << data << ", ";
-    std::cout << "\n" << std::endl;
+  void STMMovingWindowDeconvolution::deconvolve() {
+    if (verbosityLevel > 4) {
+      std::cout << "MWD: input ADCs (" << ADCs.size() << "): ";
+      for (int16_t data : ADCs)
+        std::cout << data << ", ";
+      std::cout << "\n" << std::endl;
+    };
+    deconvolved_data.push_back(ADCs[0] - pedestal);
+    for(i = 1; i < nADCs; i++)
+      deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
+    if (verbosityLevel > 4) {
+      std::cout << "MWD: deconvoluted data (" << deconvolved_data.size() << "): ";
+      for (double data : deconvolved_data)
+        std::cout << data << ", ";
+      std::cout << "\n" << std::endl;
+    };
   };
-  deconvolved_data.push_back(ADCs[0] - pedestal);
-  for(i = 1; i < nADCs; i++)
-    deconvolved_data.push_back((ADCs[i] - pedestal) - timeFactor * (ADCs[i - 1] - pedestal) + deconvolved_data[i - 1]);
-  if (verbosityLevel > 4) {
-    std::cout << "MWD: deconvoluted data (" << deconvolved_data.size() << "): ";
-    for (double data : deconvolved_data)
-      std::cout << data << ", ";
-    std::cout << "\n" << std::endl;
-  };
-};
 
   void STMMovingWindowDeconvolution::differentiate() {
     for (i = 0; i < M; i++)
