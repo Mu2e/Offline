@@ -193,7 +193,7 @@ namespace mu2e {
 
         // Assign optional variables
         microspillBufferLengthCount = conf().microspillBufferLengthCount() ? *(conf().microspillBufferLengthCount()) : defaultMicrospillBufferLengthCount;
-        if (defaultMicrospillBufferLengthCount < 2)
+        if (defaultMicrospillBufferLengthCount < 1)
           throw cet::exception("RANGE", "defaultMicrospillBufferLengthCount has to be at least 1!\n");
         verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
 
