@@ -13,7 +13,7 @@ namespace mu2e {
   if (_config.verbose()) {
     std::cout << "CalCalibMaker::fromFcl making nominal CalCalib\n";
   }
-  CalCalibPar csi(_config.ADC2MeV(), _config.timeoffset());
+  CalCalibPar csi(_config.ADC2MeVCsI(), _config.timeoffset());
   CalCalibPar lyso(_config.ADC2MeVlyso(), _config.timeoffset());
 
   size_t nChan = CaloConst::_nChannel;
