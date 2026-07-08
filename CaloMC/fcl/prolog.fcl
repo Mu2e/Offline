@@ -85,8 +85,7 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
-      readoutPEPerMeVCsI      : @local::readoutPEPerMeVCsI
-      readoutPEPerMeVLyso     : @local::readoutPEPerMeVLyso
+      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
       MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
