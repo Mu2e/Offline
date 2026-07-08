@@ -268,8 +268,8 @@ namespace mu2e {
       if (verbosityLevel > 0)
         std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
-        ph_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
-        STMPHDigi ph_digi(peak_times[i], -1 * ph_energy); // peak_heights are negative, make them positive here
+        mwd_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
+        STMPHDigi ph_digi(peak_times[i], -1 * mwd_energy); // peak_heights are negative, make them positive here
         if (ph_digi.energy() < -100)
           throw cet::exception("logicError", "The peak height must be positive!");
 
