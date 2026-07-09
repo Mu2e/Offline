@@ -18,6 +18,7 @@ namespace mu2e {
         TT_Front=0, TT_Mid, TT_Back, TT_Inner, TT_Outer, // tracker VD equivalents
         DS_Front=80, DS_Back, DS_Inner, DS_Outer,
         IPA_Legacy, //introduced for backwards compatibility with MDS1
+        DS_CryoInner, DS_CryoOuter, DS_ShieldInner, DS_ShieldOuter, DS_Coil,
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
@@ -32,11 +33,13 @@ namespace mu2e {
         CRV_U =240,                                           // CRV-Upstream
         CRV_D1=250, CRV_D2, CRV_D3, CRV_D4,                   // CRV-Downstream
         CRV_C1=260, CRV_C2,                                   // CRV-Cryo-Outer
-        CRV_M1=270, CRV_M2, CRV_M3, CRV_M4, CRV_M5, CRV_M6, CRV_M7, CRV_M8 //CRV-Muon-Taggers
+        CRV_M1=270, CRV_M2, CRV_M3, CRV_M4, CRV_M5, CRV_M6, CRV_M7, CRV_M8, // CRV-Muon-Taggers (Mu2e/Offline PR #1864)
+        CRV_StrongBack=280,                                   // CRV module Al strongback (tracker-side support plate)
+        DS_HatchConcrete=300                                  // detector-area hatch concrete block approximation
       };
 
     // Update this counter whenever you add/remove surface IDs from the enum above.
-    static constexpr std::size_t nSurfaceIds = 55;
+    static constexpr std::size_t nSurfaceIds = 62;
 
     static std::string const& typeName();
     static std::map<enum_type,std::string> const& names();
