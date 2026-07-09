@@ -64,6 +64,10 @@
  <class name="art::Wrapper<mu2e::FilterFraction>" />
  <class name="mu2e::PrescaleFilterFraction"/>
  <class name="art::Wrapper<mu2e::PrescaleFilterFraction>" />
+<class name="map<art::SubRunID,mu2e::PrescaleFilterFraction>"/>
+<class name="map<string,map<art::SubRunID,mu2e::PrescaleFilterFraction> >"/>
+<class name="art::Sampled<mu2e::PrescaleFilterFraction>"/>
+<class name="art::Wrapper<art::Sampled<mu2e::PrescaleFilterFraction> >"/>
 
 <!--  ********* general  ********* -->
  <class name="mu2e::SurfaceIdDetail"/>
