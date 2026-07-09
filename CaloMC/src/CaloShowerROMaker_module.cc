@@ -269,7 +269,7 @@ namespace mu2e {
                   std::vector<float> PETime(NPE,hitTime);
                   if (addTravelTime_)
                   {
-                      for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
+                      for (auto& time : PETime) time += photonProp_.propTimeSimu(crystallength-posZ);
                   }
                   CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));
 

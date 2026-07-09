@@ -61,6 +61,7 @@ public:
       fhicl::Atom<int>    configStatsVerbosity{Name("configStatsVerbosity"),false};
       fhicl::Atom<bool>   printConfig{Name("printConfig"),false};
       fhicl::Atom<bool>   printConfigTopLevel{Name("printConfigTopLevel"),false};
+      fhicl::Atom<int>    debugLevel{Name("debugLevel"),0};
       fhicl::Table<SimulatedDetector> simulatedDetector{Name("simulatedDetector")};
       fhicl::Table<KKMaterialConfig> matSettings{Name("KinKalMaterial")};
     };
@@ -126,6 +127,7 @@ private:
     // Print final config file after all replacements.  These affect both SimpleConfig objects.
     bool _printConfig;
     bool _printTopLevel;
+    int _debugLevel;
 
     // The objects that parse the run-time configuration files.
     std::unique_ptr<SimpleConfig> _config;

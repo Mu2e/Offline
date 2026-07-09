@@ -9,6 +9,7 @@ KinKalGeom : {
     strawWireMaterialName : "straw-wire"
     IPAMaterialName : "HDPE"
     STMaterialName : "Target"
+    CRVMaterialName : "CRVModule"
     IonizationEnergyLossMode : 1 # Moyal mean
     SolidScatteringFraction : 0.999999
     GasScatteringFraction : 0.9999999

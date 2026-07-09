@@ -54,7 +54,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -117,6 +116,9 @@ namespace mu2e {
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
       using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+      using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+      using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+      using PARAMHITCOL = std::vector<PARAMHITPTR>;
       using KKFIT = KKFit<KTRAJ>;
 
       using MEAS = KinKal::Hit<KTRAJ>;
@@ -179,7 +181,6 @@ namespace mu2e {
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
-    GeomHandle<mu2e::KKMaterial> kkmat_h;
 
    // find input event data
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
@@ -211,13 +212,14 @@ namespace mu2e {
       KKSTRAWXINGCOL strawxings;
       strawxings.reserve(kseed.straws().size());
       KKCALOHITCOL calohits;
+      PARAMHITCOL paramhits;
       DOMAINCOL domains;
       // create the trajectory. This is done here to be strongly typed
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
-          *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_h->strawMaterial(),
-          trajptr, strawhits, calohits, strawxings, domains);
+          *tracker,*calo_h,*strawresponse,*kkbf_,
+          trajptr, strawhits, calohits, paramhits, strawxings, domains);
       if(debug_ > 0){
-        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
+        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits, " << paramhits.size() << " ParameterHits, and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(debug_ > 2){
         unsigned nhactive(0);
@@ -230,7 +232,7 @@ namespace mu2e {
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
       if(goodhits){
       // create the KKTrack from these components
-        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,paramhits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowKinematicLine: successful track refit" << std::endl;
           // extrapolate as requested

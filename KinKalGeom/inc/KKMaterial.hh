@@ -33,6 +33,7 @@ namespace mu2e {
         fhicl::Atom<std::string> strawWireMaterialName{ Name("strawWireMaterialName"), Comment("strawWireMaterialName") };
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
+        fhicl::Atom<std::string> CRVMaterialName{ Name("CRVMaterialName"), Comment("CRV module MaterialName") };
         fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
         fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
         fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
@@ -43,6 +44,7 @@ namespace mu2e {
       KKStrawMaterial const& strawMaterial() const { return *smat_; }
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
+      auto CRVMaterial() const { return matdbinfo_->findDetMaterial(crvmatname_); }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;
@@ -55,7 +57,7 @@ namespace mu2e {
       std::string isotopesBaseName_;
       std::string materialsBaseName_;
       // specific material names
-      std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_;
+      std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_, crvmatname_;
       std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       std::unique_ptr<KKStrawMaterial> smat_; // straw material
   };

@@ -9,13 +9,15 @@
 namespace mu2e {
   class KinKalGeomMaker {
     public:
+      KinKalGeomMaker(int debug) : debug_(debug) {}
       std::unique_ptr<KinKalGeom>& makeKKG();
     private:
       void makeTracker();
       void makeDS();
       void makeTarget();
-      void makeTCRV();
+      void makeCRV();
       std::unique_ptr<KinKalGeom> kkg_;
+      int debug_ = 0;
   };
 }
 #endif

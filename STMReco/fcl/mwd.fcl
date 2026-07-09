@@ -33,7 +33,7 @@ physics: {
 
     phLaBr : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "makeSTMDigis:LaBr"
+      stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
       verbosityLevel : 6
       tau : @local::STM.LaBr.tau
       M : @local::STM.LaBr.M

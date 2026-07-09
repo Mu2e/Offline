@@ -21,6 +21,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
@@ -29,6 +30,7 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
@@ -60,6 +62,7 @@ namespace mu2e {
     explicit LeadingLog(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     void addParticles(StageParticleCollection* output, art::Ptr<SimParticle> mustop, double time);
     //----------------------------------------------------------------
@@ -97,6 +100,7 @@ namespace mu2e {
     , spectrum_(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     pid_ = static_cast<PDGCode::type>(pdgId_);
 
     if (pid_ == PDGCode::e_minus) {
@@ -151,6 +155,11 @@ namespace mu2e {
                        time
                        );
 
+  }
+
+  void LeadingLog::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 
 

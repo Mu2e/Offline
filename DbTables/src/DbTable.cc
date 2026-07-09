@@ -38,6 +38,12 @@ int mu2e::DbTable::fill(const std::string& csv, bool saveCsv) {
   return 0;
 }
 
+void mu2e::DbTable::hashCsv() {
+  if (_csv.empty()) return;
+  _hash = DbUtil::hash(_csv);
+  return;
+}
+
 int mu2e::DbTable::toCsv() {
   if (!_csv.empty()) return 0;
   std::ostringstream ss;

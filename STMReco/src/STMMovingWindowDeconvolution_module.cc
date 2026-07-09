@@ -158,10 +158,7 @@ namespace mu2e {
       if (M < L)
         throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
-      if (verbosityLevel >= 7){
-	_xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
-	std::cout<<"BG"<<_xAxis<<std::endl;
-      }
+      _xAxis = conf().xAxis() ? *(conf().xAxis()) : "";
       makeTTreePH = conf().makeTTreePH() ? *(conf().makeTTreePH()) : false;
       makeTTreeEnergies = conf().makeTTreeEnergies() ? *(conf().makeTTreeEnergies()) : false;
       TTreeEnergyCalib = conf().TTreeEnergyCalib() ? *(conf().TTreeEnergyCalib()) : 1.0;
