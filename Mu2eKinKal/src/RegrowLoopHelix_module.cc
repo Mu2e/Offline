@@ -274,7 +274,7 @@ namespace mu2e {
       // require hits and consistent BField domains
       if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
       // create the KKTrack from these
-        auto tpart = tpart_ != PDGCode::unknown ? tpart_ : kseed.particle(); // optionally override the particle type
+        auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
