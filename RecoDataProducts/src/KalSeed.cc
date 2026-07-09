@@ -1,17 +1,26 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "cetlib_except/exception.h"
 #include <limits>
 namespace mu2e {
 
   const double KalSeed::_regrowtol(1e-3); // 1 ps minimum for regrown segments
 
-  KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory() const {
+  KalSeed::LHPTPtr KalSeed::loopHelixFitTrajectory(PDGCode::type ptype) const {
+    double mass = -1.0;
+    if(ptype != PDGCode::unknown && ptype != _tpart){
+      auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+      mass = ptable->particle(ptype).mass();
+    }
+
     if(loopHelixFit() && segments().size() > 0){
       // initialize the piecewise trajectory with the front segment
-      LHPTPtr ptraj(new KalSeed::LHPT(segments().front().loopHelix()));
+      LHPTPtr ptraj(new KalSeed::LHPT(segments().front().loopHelix(mass)));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
-          auto trajptr = std::make_shared<KinKal::LoopHelix>(iseg->loopHelix());
+          auto trajptr = std::make_shared<KinKal::LoopHelix>(iseg->loopHelix(mass));
           ptraj->add(trajptr); // note this call resolves the phi0 ambiguity
         }
         ++iseg;
@@ -21,14 +30,20 @@ namespace mu2e {
       return LHPTPtr();
   }
 
-  KalSeed::CHPTPtr KalSeed::centralHelixFitTrajectory() const {
+  KalSeed::CHPTPtr KalSeed::centralHelixFitTrajectory(PDGCode::type ptype) const {
+    double mass = -1.0;
+    if(ptype != PDGCode::unknown && ptype != _tpart){
+      auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+      mass = ptable->particle(ptype).mass();
+    }
+
     if(centralHelixFit() && segments().size() > 0){
       // initialize the piecewise trajectory with the front segment
-      CHPTPtr ptraj(new KalSeed::CHPT(segments().front().centralHelix()));
+      CHPTPtr ptraj(new KalSeed::CHPT(segments().front().centralHelix(mass)));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
-          auto trajptr = std::make_shared<KinKal::CentralHelix>(iseg->centralHelix());
+          auto trajptr = std::make_shared<KinKal::CentralHelix>(iseg->centralHelix(mass));
           ptraj->add(trajptr);
         }
         ++iseg;
@@ -38,14 +53,20 @@ namespace mu2e {
       return CHPTPtr();
   }
 
-  KalSeed::KLPTPtr KalSeed::kinematicLineFitTrajectory() const {
+  KalSeed::KLPTPtr KalSeed::kinematicLineFitTrajectory(PDGCode::type ptype) const {
+    double mass = -1.0;
+    if(ptype != PDGCode::unknown && ptype != _tpart){
+      auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
+      mass = ptable->particle(ptype).mass();
+    }
+
     if(kinematicLineFit() && segments().size() > 0){
       // initialize the piecewise trajectory with the front segment
-      KLPTPtr ptraj(new KalSeed::KLPT(segments().front().kinematicLine()));
+      KLPTPtr ptraj(new KalSeed::KLPT(segments().front().kinematicLine(mass)));
       auto iseg = segments().begin(); ++iseg;
       while(iseg != segments().end()){
         if(iseg->timeRange().range() > _regrowtol ){
-          auto trajptr = std::make_shared<KinKal::KinematicLine>(iseg->kinematicLine());
+          auto trajptr = std::make_shared<KinKal::KinematicLine>(iseg->kinematicLine(mass));
           ptraj->add(trajptr);
         }
         ++iseg;
