@@ -1,5 +1,5 @@
-#ifndef DbTables_CalCrystals_hh
-#define DbTables_CalCrystals_hh
+#ifndef DbTables_CalSimCrystals_hh
+#define DbTables_CalSimCrystals_hh
 
 #include <string>
 #include <iomanip>
@@ -9,10 +9,10 @@
 
 namespace mu2e {
 
-  class CalCrystals : public DbTable {
+  class CalSimCrystals : public DbTable {
     public:
-      typedef std::shared_ptr<CalCrystals> ptr_t;
-      typedef std::shared_ptr<const CalCrystals> cptr_t;
+      typedef std::shared_ptr<CalSimCrystals> ptr_t;
+      typedef std::shared_ptr<const CalSimCrystals> cptr_t;
 
       class Row {
         public:
@@ -32,7 +32,7 @@ namespace mu2e {
       };
 
       constexpr static const char* cxname = "CalSimCrystal";
-      CalCrystals():DbTable(cxname,"cal.simcrystal","crid,LRU,pePerMeV0,pePerMeV1"){}
+      CalSimCrystals():DbTable(cxname,"cal.simcrystal","crid,LRU,pePerMeV0,pePerMeV1"){}
 
       const Row& row(CrystalId crid) const {return _rows.at(crid.id()); }
 
@@ -46,7 +46,7 @@ namespace mu2e {
         // enforce order, so channels can be looked up by index
         if (index != _rows.size() || index >= CaloConst::_nCrystal) {
           throw cet::exception("CALOROCALIB_BAD_INDEX")
-          << "CalCrystals::addRow found index out of order: "
+          << "CalSimCrystals::addRow found index out of order: "
           <<index<< " != " << _rows.size() <<"\n";
 
         }

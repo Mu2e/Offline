@@ -1,7 +1,7 @@
 #ifndef CaloConditions_CaloSimCrystalConfig_hh
 #define CaloConditions_CaloSimCrystalConfig_hh
 //
-// Initialize CaloMCCalib from fcl
+// Initialize CaloSimCrystalConfig from fcl
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"

@@ -8,7 +8,7 @@
 
 #include "Offline/CaloConditions/inc/CalSimCrystal.hh"
 #include "Offline/CaloConfig/inc/CalSimCrystalConfig.hh"
-#include "Offline/DbTables/inc/CalCrystals.hh"
+#include "Offline/DbTables/inc/CalSimCrystals.hh"
 
 namespace mu2e {
 
@@ -18,7 +18,7 @@ namespace mu2e {
     public:
       CalSimCrystalMaker(CalSimCrystalConfig const& config):_config(config) {}
       ptr_t fromFcl();
-      ptr_t fromDb(CalCrystals::cptr_t cch_p);
+      ptr_t fromDb(CalSimCrystals::cptr_t cch_p);
 
     private:
       // this object needs to be thread safe,

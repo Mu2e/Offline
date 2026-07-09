@@ -10,8 +10,12 @@ namespace mu2e {
 
   CalSimCrystal::ptr_t CalSimCrystalMaker::fromFcl() {
 
+    CalSimCrystal::IdArray     crystalIds;
+    CalSimCrystal::floatArray  LRUs;
+    CalSimCrystal::floatVArray pePerMeVs;
+
     if (_config.verbose()>0) {
-      std::cout << "CalSimCrystalMaker::fromFcl making nominal CalCrystals\n";
+      std::cout << "CalSimCrystalMaker::fromFcl making nominal CalSimCrystals\n";
     }
 
     ConfigFileLookupPolicy configFile;
@@ -20,25 +24,41 @@ namespace mu2e {
       std::cout << "CalSimCrystalMaker::fromFcl reading from " << fileName << "\n";
     }
 
-    std::ifstream ordFile;
-    ordFile.open(fileName);
+    std::ifstream ordFile(fileName);
     if (!ordFile.is_open()) {
-      throw cet::exception("CalCrystals_OPEN_FAILED")
+      throw cet::exception("CalSimCrystals_OPEN_FAILED")
         << " failed to open file " << fileName << "\n";
     }
 
-    CalSimCrystal::IdArray     crystalIds;
-    CalSimCrystal::floatArray  LRUs;
-    CalSimCrystal::floatVArray pePerMeVs;
-    uint16_t sid,nRead(0);
-    float lru,npe0,npe1;
+    uint16_t nRead(0);
+    std::string line;
+    while (std::getline(ordFile, line)) {
+      uint16_t sid;
+      float lru, npe0, npe1;
 
-    while (!ordFile.eof()){
-      ordFile >> sid >> lru >> npe0 >> npe1;
-      if (ordFile.eof()) break;
+      std::istringstream iss(line);
+      if (!(iss >> sid >> lru >> npe0 >> npe1)) {
+        throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
+        << "invalid format at line "<<nRead+1<<"\n";
+      }
 
-      if (sid != CaloConst::_invalid && sid >= CaloConst::_nCrystal) {
-        throw cet::exception("CalSimCrystalMaker_RANGE") << "CalSimCrystalMaker read invalid offlineId " << sid << "\n";
+      // Check that there is nothing left on the line
+      float extra;
+      if (iss >> extra) {
+        throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
+        << "invalid format at line "<<nRead+1<<"\n";
+      }
+
+      //the file should contain crystals in ascending order
+      if (sid != nRead){
+        throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
+        << "invalid sid values at line "<<nRead+1<<"\n";
+      }
+
+      //and the values should be positive
+      if (lru<0 || npe0<0 || npe1<0){
+        throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
+        << "invalid lru, npe, or npe1 values at line "<<nRead+1<<"\n";
       }
 
       crystalIds[sid]  = CrystalId(sid);
@@ -47,12 +67,7 @@ namespace mu2e {
       ++nRead;
     }
 
-    if (pePerMeVs.back().size() !=CaloConst::_nSiPMPerCrystal ) {
-      throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
-      << "CalSimCrystalMaker found  too many nPE values\n";
-    }
-
-    if(nRead != CaloConst::_nCrystal) {
+    if (nRead != CaloConst::_nCrystal) {
       throw cet::exception("CalSimCrystalMaker_COUNT")
         << "CalSimCrystalMaker read the wrong number of id's "
         << nRead << ", expected " << CaloConst::_nCrystal << "\n";
@@ -64,10 +79,10 @@ namespace mu2e {
 
 
   //***************************************************
-  CalSimCrystal::ptr_t CalSimCrystalMaker::fromDb(CalCrystals::cptr_t cch_p) {
+  CalSimCrystal::ptr_t CalSimCrystalMaker::fromDb(CalSimCrystals::cptr_t cch_p) {
 
     if (_config.verbose()>0) {
-      std::cout << "CalSimCrystalMaker::fromDb making CalCrystals\n";
+      std::cout << "CalSimCrystalMaker::fromDb making CalSimCrystals\n";
     }
 
     CalSimCrystal::IdArray     crystalIds;
@@ -81,7 +96,7 @@ namespace mu2e {
       float      npe0 = row.pePerMeV_0();
       float      npe1 = row.pePerMeV_1();
 
-      if (!(crid.isValid() || crid.id() == CaloConst::_invalid)) {
+      if (!crid.isValid()) {
         throw cet::exception("CALSIMCRYSTALMAKER_RANGE")
         << "CalSimCrystalMaker found invalid offlineId " << crid << "\n";
       }
@@ -98,7 +113,7 @@ namespace mu2e {
     }
 
     // check that all roid were filled
-    if(nRead != CaloConst::_nCrystal) {
+    if (nRead != CaloConst::_nCrystal) {
       throw cet::exception("CalSimCrystalMaker_COUNT")
         << "CalSimCrystalMaker read the wrong number of id's "
         << nRead << ", expected " << CaloConst::_nCrystal << "\n";

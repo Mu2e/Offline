@@ -15,7 +15,7 @@ namespace mu2e {
 
       void initialize() {
         if (_useDb) {
-          _cch_p = std::make_unique<DbHandle<CalCrystals>>();
+          _cch_p = std::make_unique<DbHandle<CalSimCrystals>>();
         }
       }
 
@@ -51,7 +51,7 @@ namespace mu2e {
       CalSimCrystalMaker _maker;
       // these handles are not default constructed
       // so the db can be completely turned off
-      std::unique_ptr<DbHandle<CalCrystals>> _cch_p;
+      std::unique_ptr<DbHandle<CalSimCrystals>> _cch_p;
   };
 }
 

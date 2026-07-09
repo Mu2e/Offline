@@ -11,6 +11,9 @@ namespace mu2e {
 
   CalDAQMap::ptr_t CalDAQMapMaker::fromFcl() {
 
+    CalDAQMap::RawArray raw2Offline;
+    CalDAQMap::OfflineArray offline2Raw;
+
     if (_config.verbose()>0) {
       cout << "CalDAQMapMaker::fromFcl making nominal CalDAQMap\n";
     }
@@ -21,38 +24,41 @@ namespace mu2e {
       cout << "CalDAQMapMaker::fromFcl reading from " << fileSpec << "\n";
     }
 
-    ifstream ordFile;
-    ordFile.open(fileSpec);
+    ifstream ordFile(fileSpec);
     if (!ordFile.is_open()) {
       throw cet::exception("CALODAQMAP_OPEN_FAILED")
         << " failed to open file " << fileSpec << "\n";
     }
 
-    string line;
+    uint16_t nRead(0);
+    std::string line;
+    while (std::getline(ordFile, line)) {
+      uint16_t oid,rid;
 
-    CalDAQMap::RawArray raw2Offline;
-    CalDAQMap::OfflineArray offline2Raw;
-    uint16_t oid,rid,nRead(0);
+      std::istringstream iss(line);
+      if (!(iss >> rid >> oid)) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE")
+        << "file format invalid on line "<<nRead+1<<"\n";
+      }
 
-    while (!ordFile.eof()){
-      ordFile >> rid >> oid;
-      if (ordFile.eof()) break;
+      // Check that there is nothing left on the line
+      float extra;
+      if (iss >> extra) {
+        throw cet::exception("CALODAQMAPMAKER_RANGE")
+        << "file format invalid on line "<<nRead+1<<"\n";
+      }
 
       if(rid >= CaloConst::_nRawChannel) {
         throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid rawId" << rid << endl;
       }
-      if(oid != CaloConst::_invalid && oid >= CaloConst::_nChannel) {
+
+      if(oid >= CaloConst::_nChannel) {
         throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid offlineId " << oid << endl;
       }
 
-      nRead++;
-
       raw2Offline[rid] = CaloSiPMId(oid);
-
-      if(oid < CaloConst::_nChannel) {
-        offline2Raw[oid] = CaloRawSiPMId(rid);
-      }
-
+      offline2Raw[oid] = CaloRawSiPMId(rid);
+      ++nRead;
     }
 
     if(nRead != CaloConst::_nRawChannel) {
