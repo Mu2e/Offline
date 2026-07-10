@@ -138,8 +138,9 @@ TrkReco: { @table::TrkReco
 # standard config for reflection selection
   SelectReflections: {
     module_type : SelectReflections
-    MaxDeltaT : 20 # ns
-    MaxDeltaP : 10 # MeV
+    Surface : TT_Front
+    MaxDeltaT : 15 # ns
+    MaxDeltaP : 15 # MeV
     # optionally only merge selected candidates
     # a simple selector is used here, but any selector implemented as a tool can be used
     Selector : {
@@ -150,7 +151,7 @@ TrkReco: { @table::TrkReco
       MinDeltaNHitFraction : 0.0
       MinActiveHits : 0
     }
-    SelectBestPair : 0 # select highest-momentum match
+    SelectBestPair : 3 # select pair with highest # of active hits
     debugLevel : 0
   }
 }
