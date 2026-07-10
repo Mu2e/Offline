@@ -60,18 +60,18 @@ namespace mu2e {
   KalSeedDtDt TrackDtDt::fitTrackDtDt(const KalSeed& seed) {
     LsqSums2 fitter;
     for(const auto& hit : seed.hits()) {
-      const double dt_hit = hit.time() - hit.TOTDriftTime();
-      const double dt_trk = hit.particleToca();
-      const double t_unc  = hit._udresid / hit._dvel;
-      const double weight = 1./t_unc;
-      fitter.addPoint(dt_trk, dt_hit, weight);
+      const double t_hit = hit.time();
+      const double t_trk = hit.particleToca() + hit.fitDt(); // add dt to get to the estimated base hit time
+      const double t_var  = hit.fitTocaVar() + hit.reTocaVar(); // variance of the track poca time and the hit time
+      const double weight = 1./t_var; // inverse variance weighting
+      fitter.addPoint(t_trk, t_hit, weight);
     }
     KalSeedDtDt result;
     result.slope_     = fitter.dydx();
     result.offset_    = fitter.y0();
     result.slopeUnc_  = fitter.dydxErr();
     result.dof_       = fitter.qn() - 2; // two parameters fitted
-    result.chisq_     = fitter.chi2Dof()*result.dof_;
+    result.chisq_     = (result.dof_ > 0) ? fitter.chi2Dof()*result.dof_ : 0.f; // chi2Dof() not defined for dof <= 0
     return result;
   }
 
