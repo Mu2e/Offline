@@ -16,19 +16,20 @@ CaloMC : {
       pulseFileName           : @local::pulseFileName
       pulseHistName           : @local::pulseHistName
       elecNphotPerNs          : 0.18
+      rinNphotPerNs           : 0.25
+      darkNphotPerNs          : 0.00
 # Run2 values
 #      rinNphotPerNs           : 0.36
 #      darkNphotPerNs          : 0.60
-      rinNphotPerNs           : 0.25
-      darkNphotPerNs          : 0.00
       digiSampling            : @local::HitMakerDigiSampling
       nMaxFragment            : 1000
       minPeakADC              : @local::HitMakerMinPeakADC
-      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
-      MeVToADC                : @local::MeVToADC
+      readoutPEPerMeV         : 30
+      MeVToADC                : 16
       diagLevel               : 0
    }
 }
+
 
 CaloMC : { @table::CaloMC
    CaloShowerStepMaker  :
@@ -57,9 +58,6 @@ CaloMC : { @table::CaloMC
       digitizationStart        : @local::HitMakerDigitizationStart
       digitizationEnd          : @local::HitMakerDigitizationEnd
       digitizationBuffer       : 10
-      crystalNonUniformity     : 0.05
-      readoutPEPerMeVCsI       : @local::readoutPEPerMeVCsI
-      readoutPEPerMeVLyso      : @local::readoutPEPerMeVLyso
       LRUCorrection            : true
       BirksCorrection          : true
       PEStatCorrection         : true
@@ -85,8 +83,6 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
-      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
-      MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
 
@@ -100,7 +96,6 @@ CaloMC : { @table::CaloMC
       pulseHistName           : @local::pulseHistName
       digiSampling            : @local::HitMakerDigiSampling
       minAmplitude            : 32
-      MeVToADC                : @local::MeVToADC
       fillDetailedMC          : false
       diagLevel               : 0
    }

@@ -16,7 +16,7 @@
 #include <artdaq-core/Data/Fragment.hh>
 
 //-- insert calls to proditions ..for calodmap-----
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CaloConditions/inc/CalDAQMap.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 //-------------------------------------------------
 
@@ -60,9 +60,9 @@ public:
   virtual void endJob();
 
 private:
-  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+  mu2e::ProditionsHandle<mu2e::CalDAQMap> _calodaqconds_h;
 
-  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+  void analyze_calorimeter_(mu2e::CalDAQMap const& calodaqconds,
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis);
 
@@ -102,7 +102,7 @@ void art::CaloDigiFromDTCEvents::produce(Event& event) {
   // Collection of CaloDigis for the event
   std::unique_ptr<mu2e::CaloDigiCollection> calo_digis(new mu2e::CaloDigiCollection);
 
-  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id()); // Get calo daq cond
+  mu2e::CalDAQMap const& calodaqconds = _calodaqconds_h.get(event.id()); // Get calo daq cond
 
   size_t totalSize = 0;
   size_t numCalDecoders = 0;
@@ -145,7 +145,7 @@ void art::CaloDigiFromDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
-    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    mu2e::CalDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloDigiCollection> const& calo_digis) {
 
   auto dtcID = cc.event_.GetDTCID();

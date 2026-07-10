@@ -20,14 +20,15 @@ Proditions : {
    strawResponse : @local::StrawResponse
    alignedTracker : @local::AlignedTracker
    alignedTrackerSim : @local::AlignedTrackerSim
-   caloDAQConditions : @local::CaloDAQConditions
    trkQualCatalog : @local::TrkQualCatalog
    crvOrdinal : @local::CRVOrdinal
    crvPhotonYield : @local::CRVPhotonYield
    crvStatus : @local::CRVStatus
    crvCalib : @local::CRVCalib
    simbookkeeper : @local::SimBookkeeper
-   calCalib : @local::calCalib
+   calDAQConditions : @local::CalDAQConditions
+   calCalib : @local::CalCalib
+   calSimParams : @local::CalSimParams
    verbose : 0
 }
 

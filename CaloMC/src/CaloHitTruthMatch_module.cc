@@ -43,7 +43,6 @@ namespace mu2e {
              fhicl::Atom<std::string>    pulseHistName            { Name("pulseHistName"),            Comment("Calo pulse hist name") };
              fhicl::Atom<double>         digiSampling             { Name("digiSampling"),             Comment("Digitization time sampling") };
              fhicl::Atom<double>         minAmplitude             { Name("minAmplitude"),             Comment("Minimum amplitude of waveform to define hit length") };
-             fhicl::Atom<double>         MeVToADC                 { Name("MeVToADC"),       Comment("MeV to ADC conversion factor") };
              fhicl::Atom<bool>           fillDetailedMC           { Name("fillDetailedMC"),           Comment("Fill SimParticle - SimShower Assn map")};
              fhicl::Atom<int>            diagLevel                { Name("diagLevel"),                Comment("Diag Level"),0 };
          };
@@ -58,7 +57,6 @@ namespace mu2e {
            pulseHistName_      (config().pulseHistName()),
            digiSampling_       (config().digiSampling()),
            minAmplitude_       (config().minAmplitude()),
-           MeVToADC_           (config().MeVToADC()),
            fillDetailedMC_     (config().fillDetailedMC()),
            diagLevel_          (config().diagLevel())
         {
@@ -88,7 +86,6 @@ namespace mu2e {
          double                                           deltaTimeMinus_;
          double                                           digiSampling_;
          double                                           minAmplitude_;
-         double                                           MeVToADC_;
          bool                                             fillDetailedMC_;
          std::vector<double>                              wf_;
          size_t                                           wfBinMax_;
@@ -133,7 +130,6 @@ namespace mu2e {
       cps.buildShapes();
 
       wf_ = cps.digitizedPulse(0);
-      for (auto& v : wf_) v *= MeVToADC_;
       wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));
   }
 
