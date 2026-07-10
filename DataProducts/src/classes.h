@@ -4,6 +4,7 @@
 //
 
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Sampled.h"
 #include "cetlib/map_vector.h"
 #include "boost/array.hpp"
 #include <vector>
@@ -28,8 +29,7 @@
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/CaloRawSiPMId.hh"
 #include "Offline/DataProducts/inc/CrystalId.hh"
-#include "canvas/Persistency/Common/Wrapper.h"
-#include "canvas/Persistency/Common/Sampled.h"
+
 // CRV
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
