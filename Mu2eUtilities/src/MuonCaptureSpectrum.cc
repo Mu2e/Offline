@@ -38,6 +38,7 @@ namespace mu2e {
     _kMaxUserSet (false           ),
     _kMaxUser    (0.              ),
     _kMaxMax     (0.              ),
+    _nKnockout   (0               ),
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
@@ -55,6 +56,7 @@ namespace mu2e {
     _kMaxUserSet (kMaxUserSet     ),
     _kMaxUser    (kMaxUser        ),
     _kMaxMax     (kMaxMax         ),
+    _nKnockout   (0               ),
     _rnFlat      (rnFlat          ),
     _rnUnitSphere(rnUnitSphere    )
   {
@@ -65,6 +67,25 @@ namespace mu2e {
     _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
   }
 
+  MuonCaptureSpectrum::MuonCaptureSpectrum(double kMax, int nKnockout,
+                                           CLHEP::RandFlat* rnFlat, RandomUnitSphere* rnUnitSphere):
+    _spectrum    (PhaseSpace      ),
+    _spectrum2D  (KrollWadaJoseph ),
+    _kMaxUserSet (true            ),
+    _kMaxUser    (kMax            ),
+    _kMaxMax     (kMax            ),
+    _nKnockout   (nKnockout       ),
+    _rnFlat      (rnFlat          ),
+    _rnUnitSphere(rnUnitSphere    )
+  {
+    GlobalConstantsHandle<ParticleDataList> pdt;
+
+    _me    = pdt->particle(PDGCode::e_minus ).mass();
+    _mmu   = pdt->particle(PDGCode::mu_minus).mass();
+    _MN    = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass("Al");
+
+  }
+
   double MuonCaptureSpectrum::getWeight(double E) const {
 
     double weight(0.);
@@ -73,7 +94,8 @@ namespace mu2e {
     else if ( _spectrum == RMC )        weight = getRMCSpectrum( E , _kMaxUserSet, _kMaxUser, _kMaxMax);
     */
 
-    weight = getRMCSpectrum(E, _kMaxUserSet,_kMaxUser,_kMaxMax);
+    if     (_spectrum == RMC       ) weight = getRMCSpectrum(E, _kMaxUserSet,_kMaxUser,_kMaxMax);
+    else if(_spectrum == PhaseSpace) weight = getRMCPhaseSpaceSpectrum(E, _kMaxUser, _nKnockout);
 
     //   std::cout << "spectrum is " << _spectrum << std::endl;
 
@@ -127,6 +149,24 @@ namespace mu2e {
     //    std::cout << " kMax, xfit, value = " << kMax << " " << xFit << " " << value << std::endl;
 
     return (1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
+  }
+
+
+  //=======================================================
+  // Phase-space approximation to the photon energy spectrum
+  //  -
+  //  - see doc-db 57178
+  //=======================================================
+
+  double MuonCaptureSpectrum::getRMCPhaseSpaceSpectrum(double e, double kMax, int nKnockout) const {
+    if ( e >= kMax ) return 0.;
+    if ( e <= 0.   ) return 0.;
+
+    const double x = e/kMax;
+    const double power = 2. + 1.5*nKnockout;
+    const double norm  = (power + 1.) * (power + 2.) / kMax;
+    const double weight = norm * x * std::pow(1. - x, power);
+    return weight;
   }
 
 
