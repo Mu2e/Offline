@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// STMPrintFragments_plugin:  Add CRV data products to the event
+// STMPrintFragments_plugin: Print STM art file payload and data
 //
 // ======================================================================
 

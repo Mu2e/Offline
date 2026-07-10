@@ -91,6 +91,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using KKFIT = KKFit<KTRAJ>;
   using KinKal::VEC3;
   using KinKal::DMAT;
@@ -113,7 +116,7 @@ namespace mu2e {
     fhicl::OptionalAtom<double> fixedBField { Name("ConstantBField"), Comment("Constant BField value") };
     fhicl::Atom<double> seedMom { Name("SeedMomentum"), Comment("Seed momentum") };
     fhicl::Atom<int> seedCharge { Name("SeedCharge"), Comment("Seed charge MAGNITUDE, in electron charge units") };
-    fhicl::Sequence<float> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
+    fhicl::Sequence<double> parconst { Name("ParameterConstraints"), Comment("External constraint on parameters to seed values (rms, various units)") };
     fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
     fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
     fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
@@ -165,6 +168,7 @@ namespace mu2e {
       bool fixedfield_; //
       double seedMom_;
       int seedCharge_;
+      std::vector<double> paramconstraints_;
       double intertol_; // surface intersection tolerance (mm)
       double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
       bool useFitCharge_; // Set the PDG particle to agree with the fit charge
@@ -172,7 +176,7 @@ namespace mu2e {
       bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
       SurfaceIdCollection ssids_;
       KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
-      std::array<double,KinKal::NParams()> paramconstraints_;
+      bool constraining_;
   };
 
   CentralHelixFit::CentralHelixFit(const Parameters& settings) : art::EDProducer{settings},
@@ -189,6 +193,7 @@ namespace mu2e {
     fixedfield_(false),
     seedMom_(settings().modSettings().seedMom()),
     seedCharge_(settings().modSettings().seedCharge()),
+    paramconstraints_(settings().modSettings().parconst()),
     intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     useFitCharge_(settings().modSettings().useFitCharge()),
@@ -208,9 +213,15 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
-      auto const& parerrors = settings().modSettings().parconst();
-      for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-        paramconstraints_[ipar] = parerrors[ipar];
+      constraining_ = false;
+      if (paramconstraints_.size() == KinKal::NParams()){
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+          if (paramconstraints_[ipar] > 0)
+            constraining_ = true;
+        }
+      }else if (paramconstraints_.size() > 0){
+        throw cet::exception("RECO")<<"mu2e::CentralHelixFit: Parameter constraint configuration error"<< endl;
+      }
 
       if(print_ > 0) std::cout << "Fit " << config_ << "Extension " << exconfig_;
       double bz(0.0);
@@ -330,8 +341,14 @@ namespace mu2e {
 
         try {
           seedtraj.range() = kkfit_.range(strawhits,calohits,strawxings);
+          // create parameter constraint, use seedtrajectory parameters
+          PARAMHITCOL paramhits;
+          if (constraining_){
+            kkfit_.makeSeedParamHit(seedtraj,paramconstraints_,paramhits);
+          }
+
           // create and fit the track
-          auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto ktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fitpart,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
           // Check the fit
           auto goodfit = goodFit(*ktrk);
           // if we have an extension schedule, extend.

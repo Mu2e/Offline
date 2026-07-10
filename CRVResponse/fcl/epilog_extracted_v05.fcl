@@ -1,0 +1,19 @@
+physics.producers.CrvPhotons.CRVSectors           : ["EX","T1","T2", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"]
+physics.producers.CrvPhotons.reflectors           : [  0,  -1,   0 ,   1 ,   1 ,   1 ,   1 ,   1 ,   1 ,   1 ,   1 ]
+physics.producers.CrvPhotons.scintillationYields  : [39794,28610,28610,   //assuming modules from CRV-T(1.8mm),CRV-DS,CRV-L
+                                                     28610,28610,28610,28610,28610,28610,28610,28610] //scintillator yield for muon tagger assumed to be similar to CRV-L
+physics.producers.CrvPhotons.lookupTableFileNames : [
+                                                     "CRVConditions/v6_0/LookupTable_6000_0",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_3200_0",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1", //no lookup table for 2200mm counters with absorber
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1",
+                                                     "CRVConditions/v6_0/LookupTable_2370_1"
+                                                    ]
+physics.producers.CrvPhotons.photonYieldScaleFactor : 0.94  //scale factor applied to photon yields to mimic aging
+                                                            //of 2.5 years with a rate 2.5% per year (from 12/2023 to 6/2026)

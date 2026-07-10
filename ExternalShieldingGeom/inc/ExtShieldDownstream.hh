@@ -70,6 +70,13 @@ namespace mu2e {
     { return _notchLocations; }
     const std::vector<std::vector<double> >& getNotchDimensions() const
     { return _notchDimensions; }
+    // 1-based box-type number per block (the "type" from the SimpleConfig description).
+    const std::vector<int>&                  getBoxTypes() const
+    { return _boxTypes; }
+    // Declared number of box types (ExtShieldDownstream.numberOfBoxTypes); may exceed the
+    // number of types that actually have blocks (some types can have zero blocks).
+    int                                      getNumberOfBoxTypes() const
+    { return _numberOfBoxTypes; }
 
   private:
 
@@ -91,7 +98,9 @@ namespace mu2e {
                         const std::vector<std::string>&          oHole,
                         const std::vector<int>&                  iNotch,
                         const std::vector<CLHEP::Hep3Vector>&    locNotch,
-                        const std::vector<std::vector<double> >& locDims)
+                        const std::vector<std::vector<double> >& locDims,
+                        const std::vector<int>&                  boxTypes,
+                        int                                      numberOfBoxTypes)
       : _extShieldOutlines(outlines),
         _extShieldLengths (lengths),
         _extShieldBoxTols (tols),
@@ -107,7 +116,9 @@ namespace mu2e {
         _holeOrientations (oHole),
         _notchIndices     (iNotch),
         _notchLocations   (locNotch),
-        _notchDimensions  (locDims)
+        _notchDimensions  (locDims),
+        _boxTypes         (boxTypes),
+        _numberOfBoxTypes (numberOfBoxTypes)
     { }
 
     // Or read back from persistent storage
@@ -137,6 +148,9 @@ namespace mu2e {
     std::vector< int >                   _notchIndices;
     std::vector< CLHEP::Hep3Vector >     _notchLocations;
     std::vector< std::vector< double > > _notchDimensions;
+    // 1-based box-type number per block (parallel to _centerPositions etc.)
+    std::vector< int >                   _boxTypes;
+    int                                  _numberOfBoxTypes = 0;
   };
 
   std::ostream& operator<<(std::ostream& os, const ExtShieldDownstream& upstr);

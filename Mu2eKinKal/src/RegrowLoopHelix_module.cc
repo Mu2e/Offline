@@ -124,6 +124,9 @@ namespace mu2e {
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
       using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+      using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+      using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+      using PARAMHITCOL = std::vector<PARAMHITPTR>;
       using KKFIT = KKFit<KTRAJ>;
 
       using MEAS = KinKal::Hit<KTRAJ>;
@@ -255,13 +258,14 @@ namespace mu2e {
       KKSTRAWXINGCOL strawxings;
       strawxings.reserve(kseed.straws().size());
       KKCALOHITCOL calohits;
+      PARAMHITCOL paramhits;
       DOMAINCOL domains;
       // create the trajectory. This is done here to be strongly typed
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
           *tracker,*calo_h,*strawresponse,*kkbf_,
-          trajptr, strawhits, calohits, strawxings, domains);
+          trajptr, strawhits, calohits, paramhits, strawxings, domains);
       if(debug_ > 1){
-        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
+        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits, " << paramhits.size() << " ParameterHits, and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(debug_ > 2){
         unsigned nhactive(0);
@@ -275,7 +279,7 @@ namespace mu2e {
       if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
       // create the KKTrack from these
         auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
-        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,domains);
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,paramhits, domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
           if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H , *ktrk );

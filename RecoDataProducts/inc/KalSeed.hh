@@ -11,6 +11,7 @@
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitCalib.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
+#include "Offline/RecoDataProducts/inc/TrkParamHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStraw.hh"
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
@@ -45,6 +46,7 @@ namespace mu2e {
     auto const& hitCalibInfos() const { return _hitcalibs;}
     auto const& caloHit() const { return _chit; }
     auto const& straws() const { return _straws;}
+    auto const& paramHits() const { return _paramhits;}
     auto const& segments() const { return _segments; }
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
@@ -91,6 +93,7 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed>  _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStrawHitCalib> _hitcalibs; // extra calibration/alignment info
     std::vector<TrkStraw>         _straws; // straws interesected by this fit
+    std::vector<TrkParamHitSeed>  _paramhits; // parameter constraint hits
     std::vector<double>           _domainbounds; // domain time boundaries
     TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
     // static value used in regrowing

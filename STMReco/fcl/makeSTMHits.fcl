@@ -27,7 +27,7 @@ physics: {
   # setup paths
   HPGePath : [ stmHitsHPGe ]
   LaBrPath : [ stmHitsLaBr ]
-  trigger_paths: [LaBrPath ]
+  trigger_paths: [HPGePath, LaBrPath ]
   outPath : [ STMOutput ]
   end_paths: [outPath]
 }

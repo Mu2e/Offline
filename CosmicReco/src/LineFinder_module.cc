@@ -190,8 +190,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
                 Straw const& strawk = tracker->getStraw(shC[kloc].strawId());
                 TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
                     ipos, newdir);
-                double dist = (pca.point1()-strawk.getMidPoint()).mag();
-                if (pca.dca() < _maxDOCA && dist < strawk.halfLength()){
+                double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
+                if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
                   count += 1;
                   ll += pow(dist-shC[kloc].wireDist(),2)/shC[kloc].wireVar();
                 }
