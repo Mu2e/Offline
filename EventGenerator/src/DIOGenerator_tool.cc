@@ -88,7 +88,7 @@ namespace mu2e {
 
   std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
-    const double r = (_czmax - _czmin)/2.;
+    const double r = _energyFraction*(_czmax - _czmin)/2.; // reduce the rate by the spectrum restriction
     if(_isPrimary || _randFlat->fire() <= r) {
 
       double energy = _spectrum.sample(_randSpectrum->fire());

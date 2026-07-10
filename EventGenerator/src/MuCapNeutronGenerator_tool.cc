@@ -57,7 +57,7 @@ namespace mu2e {
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
       _isPrimary = isPrimary;
       _rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate(material);
-      const double rate = _rate * (_czMax - _czMin)/2.; // accouunt for potential cz selection in the produced rates
+      const double rate = _rate * _energyFraction * (_czMax - _czMin)/2.; // account for potential spectrum restriction in the produced rates
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czMin, _czMax);
       _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, rate);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
