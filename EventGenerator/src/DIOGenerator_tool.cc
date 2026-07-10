@@ -48,29 +48,12 @@ namespace mu2e {
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
       _emin = fullconfig.get<double>("elow", _spectrum.getXMin());
       _emax = fullconfig.get<double>("ehi", _spectrum.getXMax());
-      fullconfig.erase(std::string("elow"));
-      fullconfig.erase(std::string("ehi"));
-      fullconfig.put(std::string("elow"),double(0.0));
-      fullconfig.put(std::string("ehi"),double(0.0));
-      BinnedSpectrum fullspect(fullconfig);
-      double fullintegral(0.0);
-      for(size_t ibin=0;ibin < fullspect.getNbins();++ibin){
-        fullintegral += fullspect.getPDF(ibin);
-      }
-      // correct for the missing prediction near threshold, assuming the rate falls to 0 linearly.
-      double pmin = _spectrum.getAbscissa(0);
-      double pdfmin = _spectrum.getPDF(0);
-      double binsize = _spectrum.getBinWidth();
-      fullintegral += 0.5*pdfmin*pmin/binsize;
-      _energy_fraction = (fullintegral > 0.) ? integral / fullintegral : 0.;
-      std::cout << "Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
-      std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
-      std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
-      std::cout << "Restricted Spectrum integral " << integral << std::endl;
-      std::cout << "Restricted Spectrum integral*cos(theta_z) restriction " << integral*((_czmax - _czmin)/2.) << std::endl;
-      std::cout << "Full Spectrum integral " << fullintegral << std::endl;
-      std::cout << "Sampled spectrum fraction " << integral/fullintegral << std::endl;
-      std::cout << "Sampled spectrum fraction (with cos(theta_z)) " << (integral/fullintegral)*((_czmax - _czmin)/2.) << std::endl;
+      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig);
+
+      std::cout << "[" << __func__ << "] Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
+      std::cout << "[" << __func__ << "] Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction " << _energyFraction << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction (with cos(theta_z)) " << (_energyFraction)*((_czmax - _czmin)/2.) << std::endl;
 
     }
 
@@ -94,7 +77,7 @@ namespace mu2e {
     BinnedSpectrum    _spectrum;
     double _emin;
     double _emax;
-    double _energy_fraction;
+    double _energyFraction;
     bool _flatSpectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
@@ -135,7 +118,7 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> DIOGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->add_var(SpectrumConfig::RestrictedVar("energy", _energy_fraction    , _emin , _emax,
+    config->add_var(SpectrumConfig::RestrictedVar("energy", _energyFraction    , _emin , _emax,
                                                   _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     config->add_var(SpectrumConfig::RestrictedVar("cosz"  , (_czmax - _czmin)/2., _czmin, _czmax));
     return config;
