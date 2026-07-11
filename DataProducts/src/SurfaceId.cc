@@ -70,6 +70,7 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_C1, "CRV_C1"),
     std::make_pair(SurfaceIdEnum::CRV_C2, "CRV_C2"),
     std::make_pair(SurfaceIdEnum::CRV_C3, "CRV_C3"),
+    std::make_pair(SurfaceIdEnum::CRV_C4, "CRV_C4"),
     std::make_pair(SurfaceIdEnum::CRV_M1, "CRV_M1"),
     std::make_pair(SurfaceIdEnum::CRV_M2, "CRV_M2"),
     std::make_pair(SurfaceIdEnum::CRV_M3, "CRV_M3"),
