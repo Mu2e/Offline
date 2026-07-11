@@ -39,7 +39,7 @@ Mu2eKinKal : {
     SampleSurfaces : [] # specific to the fit type
     SaveHitCalibInfo : false
     SaveDomains : false
-    SaveMaterialXings : true # save generic passive material Xings (filled during extrapolation) in the KalSeed
+    SaveMaterialXings : false # save generic passive material Xings (filled during extrapolation) in the KalSeed
   }
 
    CHSEEDFIT: {

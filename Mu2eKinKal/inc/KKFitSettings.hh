@@ -98,7 +98,7 @@ namespace mu2e {
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
-      fhicl::Atom<bool> saveMatXings { Name("SaveMaterialXings"), Comment("Save generic passive material Xings (filled during extrapolation) in the KalSeed intersections"), true };
+      fhicl::Atom<bool> saveMatXings { Name("SaveMaterialXings"), Comment("Save generic passive material Xings (filled during extrapolation) in the KalSeed intersections"), false };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {
