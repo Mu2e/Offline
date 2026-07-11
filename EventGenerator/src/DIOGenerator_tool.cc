@@ -48,7 +48,7 @@ namespace mu2e {
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
       _emin = fullconfig.get<double>("elow", _spectrum.getXMin());
       _emax = fullconfig.get<double>("ehi", _spectrum.getXMax());
-      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig);
+      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig, true); // energy fraction, correcting for missing 0 - 1 MeV component
 
       std::cout << "[" << __func__ << "] Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
       std::cout << "[" << __func__ << "] Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
