@@ -12,9 +12,12 @@ namespace mu2e {
     //    = bfmgr_.getBField(vpoint_mu2e);
     if(bfmgr_.getBFieldWithStatus(vpoint_mu2e,field))
       return VEC3(field);
-// see if there's no maps; that says this is the no-field case
-// FIXME need to deal with case when outside all maps
-    static const VEC3 nullfield(0.0,0.0,0.0);
+    // Outside all field maps the real field is ~0 (detector hall, far from the solenoids), but a
+    // CentralHelix evaluated at IDENTICALLY zero field is singular (omega->0 -> 1/omega -> NaN). A
+    // bfcorr=true fit's domain walk can transiently sample just outside the maps, so return a tiny
+    // NON-zero axial placeholder instead: physically negligible, but it keeps omega finite so the
+    // fit can't NaN.
+    static const VEC3 nullfield(0.0,0.0,1.0e-3);
     return nullfield;
   }
 
@@ -34,7 +37,9 @@ namespace mu2e {
   // numerical derivatives for now: TODO!
   VEC3 KKBField::fieldDeriv(VEC3 const& position, VEC3 const& velocity) const {
     static double dt(0.1); // 100 psec, ~3cm.  this is arbitrary and should be set according to the field sampling TODO
-    if(!inRange(position))throw std::runtime_error("Position out of range");
+    // fieldVect is defined everywhere (tiny non-zero placeholder outside the maps), so the derivative
+    // can always be evaluated; out of the maps it is ~0. No out-of-range throw: a bfcorr=true fit whose
+    // domain walk steps just outside the maps must not be aborted.
     VEC3 start = fieldVect(position);
     VEC3 end = fieldVect(position + velocity*dt);
     return (end-start)/dt;
