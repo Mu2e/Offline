@@ -375,19 +375,7 @@ namespace mu2e {
     // fill map
     unsigned isect(0);
     for(auto const& sector : kkg_->crv_->sectors()){
-      // Tolerate CRV sector names with no SurfaceId enum entry: historical
-      // geometries (e.g. geom_common_MDC2020 -> crv_counters_v09, sector
-      // CRV_C3) predate the current enum. Such sectors remain part of the
-      // CRV geometry but are not addressable as KinKal extrapolation
-      // surfaces.
-      // args: throwIfUnknown=false, throwIfUndefined=false -> non-throwing lookup
-      SurfaceIdEnum sid(sector.sname_, false, false);
-      if(sid.id() == SurfaceIdDetail::unknown){
-        if(debug_ > 0) std::cout << "KinKalGeomMaker: CRV sector " << sector.sname_
-          << " has no SurfaceId enum entry; skipping KinKal surface" << std::endl;
-        continue;
-      }
-      kkg_->map_.emplace(std::make_pair(SurfaceId(sid.id()),std::static_pointer_cast<Surface>(sector.sector_)));
+      kkg_->map_.emplace(std::make_pair(SurfaceId(sector.sname_),std::static_pointer_cast<Surface>(sector.sector_)));
       isect++;
     }
   }
