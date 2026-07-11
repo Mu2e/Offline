@@ -380,6 +380,7 @@ namespace mu2e {
       // CRV_C3) predate the current enum. Such sectors remain part of the
       // CRV geometry but are not addressable as KinKal extrapolation
       // surfaces.
+      // args: throwIfUnknown=false, throwIfUndefined=false -> non-throwing lookup
       SurfaceIdEnum sid(sector.sname_, false, false);
       if(sid.id() == SurfaceIdDetail::unknown){
         if(debug_ > 0) std::cout << "KinKalGeomMaker: CRV sector " << sector.sname_
