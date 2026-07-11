@@ -164,6 +164,7 @@ namespace mu2e {
       double addStrawMinDz_;
       int strawNBuffer_;
       bool saveHitCalib_;
+      bool savematxings_; // save generic (post-extrapolation) passive material Xings in the KalSeed
       SurfaceIdCollection ssids_;
   };
 
@@ -198,7 +199,8 @@ namespace mu2e {
     skipStrawCheck_(fitconfig.skipStrawCheck()),
     addStrawMinDz_(fitconfig.addStrawMinDz()),
     strawNBuffer_(fitconfig.strawNBuffer()),
-    saveHitCalib_(fitconfig.saveHitCalib())
+    saveHitCalib_(fitconfig.saveHitCalib()),
+    savematxings_(fitconfig.saveMatXings())
   {
     if (fitconfig.saveTraj() == "T0") {
       savetraj_ = t0seg;
@@ -889,6 +891,23 @@ namespace mu2e {
       double dmom,paramomvar,perpmomvar;
       crvxing->materialEffects(dmom,paramomvar,perpmomvar);
       inters.emplace_back(ktraj.stateEstimate(crvxing->time()),XYZVectorF(ktraj.bnom()),crvxing->surfaceId(),crvxing->intersection(),dmom);
+    }
+    // generic passive material Xings are only filled during extrapolation; saving them in the KalSeed is optional
+    if(savematxings_){
+      for(auto const& matxing : kktrk.materialCylXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
+      for(auto const& matxing : kktrk.materialPlaneXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
     }
     // record other intersections saved in the track
     for(auto const& interpair : kktrk.intersections()) {

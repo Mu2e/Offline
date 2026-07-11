@@ -10,13 +10,18 @@
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateToR.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateCRV.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateCRVRegion.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateCylinders.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolatePlanes.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include <unordered_set>
+#include <map>
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 namespace mu2e {
@@ -38,15 +43,17 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateST(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
       template <class KTRAJ> bool extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> void extrapolateDSMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> void extrapolatePassiveMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
       template <class KTRAJ> void toTrackerEnds(KKTrack<KTRAJ>& ktrk) const;
-        // TODO add DS and shielding material
 
     private:
       int debug_;
-      double btol_, intertol_, maxdt_, maxdtstep_, minv_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
+      double btol_, intertol_, maxdt_, maxdtstep_, minv_, minvlong_, maxtrackerendsradius_;
+      double mintrackerendsz_, maxtrackerendsz_;
+      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, toTrackerEndsRadius_, upstream_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
   };
@@ -58,9 +65,14 @@ namespace mu2e {
     maxdt_(extrapconfig.MaxDt()),
     maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
+    minvlong_(extrapconfig.MinVLong()),
+    maxtrackerendsradius_(extrapconfig.MaxTrackerEndsRadius()),
+    mintrackerendsz_(extrapconfig.MinTrackerEndsZ()),
+    maxtrackerendsz_(extrapconfig.MaxTrackerEndsZ()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
+    toTrackerEndsRadius_(extrapconfig.ToTrackerEndsRadius()),
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV())
   {}
@@ -103,7 +115,11 @@ namespace mu2e {
     }
     // try CRV in both directions
     if(toCRV_){
+      extrapolateDSMaterial(ktrk,TimeDir::backwards);
+      extrapolatePassiveMaterial(ktrk,TimeDir::backwards);
       extrapolateCRV(ktrk,TimeDir::backwards);
+      extrapolateDSMaterial(ktrk,TimeDir::forwards);
+      extrapolatePassiveMaterial(ktrk,TimeDir::forwards);
       extrapolateCRV(ktrk,TimeDir::forwards);
     }
   }
@@ -111,8 +127,38 @@ namespace mu2e {
   template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
 
-    ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
-    ExtrapolateToZ trackerBack(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->back().center().Z(),debug_);
+    // CentralHelix (cosmic) mode: extrapolate to the tracker OUTER CYLINDER (constant rho), not the z-end
+    // planes. A cosmic traverses the tracker radially (mostly in y), so the outer cylinder is its true exit;
+    // ExtrapolateToZ would chase the constant-z plane out to large rho. The z bounds keep near-horizontal
+    // cosmics from chasing the radius past the tracker ends.
+    if(toTrackerEndsRadius_){
+      auto const& outer = kkg_h->tracker()->outer();
+      ExtrapolateToR toOuter(maxdt_,maxdtstep_,btol_,outer.radius(),mintrackerendsz_,maxtrackerendsz_,debug_);
+      auto const& ftraj = ktrk.fitTraj();
+      // the cosmic crosses the outer cylinder on both ends; extend in both time directions
+      auto tofwd = ktrk.extrapolate(TimeDir::forwards,toOuter);
+      auto tobwd = ktrk.extrapolate(TimeDir::backwards,toOuter);
+      static const SurfaceId tt_outer("TT_Outer");
+      static const SurfaceId tt_mid("TT_Mid");
+      // middle reference, recorded only if the track actually crosses it
+      auto midinter = KinKal::intersect(ftraj,kkg_h->tracker()->middle(),ftraj.range(),intertol_);
+      if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
+      // outer-cylinder crossings (tracker entry and exit) from the respective end pieces
+      if(tofwd){
+        auto const& fhel = ftraj.back();
+        auto inter = KinKal::intersect(fhel,outer,fhel.range(),intertol_,TimeDir::forwards);
+        if(inter.good()) ktrk.addIntersection(tt_outer,inter);
+      }
+      if(tobwd){
+        auto const& bhel = ftraj.front();
+        auto inter = KinKal::intersect(bhel,outer,bhel.range(),intertol_,TimeDir::backwards);
+        if(inter.good()) ktrk.addIntersection(tt_outer,inter);
+      }
+      return;
+    }
+
+    ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_,maxtrackerendsradius_);
+    ExtrapolateToZ trackerBack(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->back().center().Z(),debug_,maxtrackerendsradius_);
     // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
     // reflect inside the tracker volume
     auto const& ftraj = ktrk.fitTraj();
@@ -284,32 +330,142 @@ namespace mu2e {
   }
 
   //extrapolate to the CRV sectors. This only makes sense for KKLine or CentralHelix
-  template <class KTRAJ> void KKExtrap::extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
-    using KKCRVXING = KKShellXing<KTRAJ,KinKal::Rectangle>;
-    using KKCRVXINGPTR = std::shared_ptr<KKCRVXING>;
+  template <class KTRAJ> void KKExtrap::extrapolateDSMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    using KKMATCYLXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     GeomHandle<mu2e::KKMaterial> kkmat_h;
-    // extrapolate to the extracted CRV. Loop to cover multiple intersections
-    auto extrapCRV = ExtrapolateCRV(maxdt_,maxdtstep_,btol_,intertol_,minv_,*kkg_h->CRV(),debug_);
-    if(debug_ > 5){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors" << std::endl;
-      for(auto const& sector : kkg_h->CRV()->sectors()) {
-        std::cout << sector.sname_ << " position " << sector.sector_->center() << " halfwidth " << sector.whw_ << std::endl;
+    auto const& cylinders = kkg_h->DS()->materialCylinders();
+    if(cylinders.empty()) return;
+    auto extrapCylinders = ExtrapolateCylinders(maxdt_,maxdtstep_,btol_,intertol_,minv_,cylinders,debug_);
+    auto const& ftraj = ktrk.fitTraj();
+    using MaterialCylinder = ExtrapolateCylinders::MaterialCylinder;
+    std::unordered_set<MaterialCylinder const*> banked; // bank each cylinder once (avoid re-found duplicates)
+    do {
+      ktrk.extrapolate(tdir,extrapCylinders);
+      if(debug_ > 0) std::cout << "Found " << extrapCylinders.intersections().size() << " DS material intersections " << std::endl;
+      // Bank every crossing found in this pass, in strict tracker-inward time order (descending time
+      // for backward, ascending for forward). The DS material shells are concentric and closely spaced,
+      // so a single extrapolation step overshoots the whole cluster and the trajectory piece spans all
+      // of them; adding the crossings in this order makes each prepend/append shrink the piece down to
+      // exactly the next crossing, so every one stays within the addable front/back range and none is
+      // stranded as interior. (intersections() is not reliably time-sorted, so sort a local copy.) The
+      // 'banked' set skips a crossing re-found on a later step; once a pass adds nothing new, we are done.
+      auto inters = extrapCylinders.intersections();
+      std::sort(inters.begin(),inters.end(),[tdir](auto const& a,auto const& b){
+        return tdir == TimeDir::forwards ? a.inter_.time_ < b.inter_.time_ : a.inter_.time_ > b.inter_.time_; });
+      bool newbank = false;
+      for(auto const& inter : inters) {
+        if(!banked.insert(inter.cylinder_).second) continue;
+        newbank = true;
+        auto const& cylinder = *inter.cylinder_;
+        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        auto matxingptr = std::make_shared<KKMATCYLXING>(cylinder.surface_,cylinder.sid_,*kkmat_h->material(cylinder.material_),
+            inter.inter_,reftrajptr,cylinder.thickness_,extrapCylinders.interTolerance(),kkmat_h->applyBetheCorrection());
+        ktrk.addMaterialCylXing(matxingptr,tdir);
       }
+      if(!newbank) break;
+    } while(extrapCylinders.intersections().size()>0);
+  }
+
+  template <class KTRAJ> void KKExtrap::extrapolatePassiveMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    using KKMATRECXING = KKShellXing<KTRAJ,KinKal::Plane>;  // passive plane (Rectangle or Annulus)
+    using MaterialPlane = ExtrapolatePlanes::MaterialPlane;
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+    auto const& planes = kkg_h->passiveMaterialPlanes();
+    if(planes.empty()) return;
+    auto extrapPlanes = ExtrapolatePlanes(maxdt_,maxdtstep_,btol_,intertol_,minv_,planes,debug_);
+    auto const& ftraj = ktrk.fitTraj();
+
+    // Normal path: process each plane at most once.
+    // Stop before calling ktrk.extrapolate when all planes have been processed so
+    // we don't advance the trajectory past the last plane (which would overshoot the
+    // CRV and prevent extrapolateCRV from finding it).
+    std::unordered_set<MaterialPlane const*> processed;
+    // The CRV strongback planes are crossed together with the CRV sectors in extrapolateCRV
+    // (interleaved, time-ordered): processing all strongbacks HERE advances the front past the
+    // lower sectors of a stacked geometry and strands them. Exclude the strongbacks from this
+    // (concrete-only for the extracted geometry) pass by pre-marking them processed.
+    SurfaceId const sbid(SurfaceIdEnum::CRV_StrongBack);
+    for(auto const& plane : planes) if(plane.sid_.id() == sbid.id()) processed.insert(&plane);
+    do {
+      if(processed.size() >= planes.size()) break;
+      ktrk.extrapolate(tdir,extrapPlanes);
+      if(debug_ > 0) std::cout << "Found " << extrapPlanes.intersections().size() << " passive material plane intersections " << std::endl;
+      bool found = false;
+      for(auto const& inter : extrapPlanes.intersections()) {
+        if(processed.count(inter.plane_) > 0) continue;
+        auto const& plane = *inter.plane_;
+        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        auto matxingptr = std::make_shared<KKMATRECXING>(plane.surface_,plane.sid_,*kkmat_h->material(plane.material_),
+            inter.inter_,reftrajptr,plane.thickness_,extrapPlanes.interTolerance(),kkmat_h->applyBetheCorrection());
+        ktrk.addMaterialPlaneXing(matxingptr,tdir);
+        processed.insert(inter.plane_);
+        found = true;
+        break;
+      }
+      if(!found) break;
+    } while(extrapPlanes.intersections().size()>0);
+  }
+
+  template <class KTRAJ> void KKExtrap::extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    using KKCRVXING = KKShellXing<KTRAJ,KinKal::Rectangle>;
+    using KKMATRECXING = KKShellXing<KTRAJ,KinKal::Plane>;  // strongback (passive) plane
+    using MaterialPlane = ExtrapolateCRVRegion::MaterialPlane;
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+    // The CRV sector planes and their aluminium strongbacks are spatially interleaved (the sector plane
+    // is modeled at the scintillator-stack center; its tracker-facing strongback plane sits ~60 mm --
+    // a stack half-thickness -- toward the tracker), so they MUST be crossed in ONE outward,
+    // time-ordered pass -- a xing can only be added at the trajectory front/back, never the interior.
+    // Crossing all strongbacks first (the old extrapolatePassiveMaterial pass) advanced the front past
+    // the lower sectors of a stacked geometry (extracted EX/T1/T2 ~150 mm apart in y) and stranded them
+    // (CRV_T1 lost on every track). Hand both surface types to ExtrapolateCRVRegion, which stops at the
+    // next crossing of either; add them one at a time, innermost first, re-extrapolating between each
+    // so every crossing is added at the current front (mirrors extrapolatePassiveMaterial). Run-2 sees
+    // <=1 sector per direction, so the order (strongback then sector) is unchanged.
+    ExtrapolateCRVRegion::MaterialPlaneCollection strongbacks;
+    SurfaceId const sbid(SurfaceIdEnum::CRV_StrongBack);
+    for(auto const& plane : kkg_h->passiveMaterialPlanes())
+      if(plane.sid_.id() == sbid.id()) strongbacks.push_back(plane);
+    auto extrapCRV = ExtrapolateCRVRegion(maxdt_,maxdtstep_,btol_,intertol_,minv_,minvlong_,*kkg_h->CRV(),strongbacks,debug_);
+    if(debug_ > 5){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors + "
+        << strongbacks.size() << " strongbacks" << std::endl;
+      for(auto const& sector : kkg_h->CRV()->sectors())
+        std::cout << sector.sname_ << " position " << sector.sector_->center() << " halfwidth " << sector.whw_ << std::endl;
     }
     auto const& ftraj = ktrk.fitTraj();
+    std::unordered_set<int> processedSectors;
+    std::unordered_set<MaterialPlane const*> processedPlanes;
     do {
-      // iterate until we no longer hit CRV modules
       ktrk.extrapolate(tdir,extrapCRV);
-      if(debug_ > 0) std::cout << "Found " << extrapCRV.intersections().size() << " CRV intersections " << std::endl;
-      for(auto const& inter : extrapCRV.intersections()){
-        // we have a good intersection. Use this to create a Shell material Xing
+      if(debug_ > 0) std::cout << "Found " << extrapCRV.intersections().size() << " CRV-region intersections " << std::endl;
+      bool added = false;
+      // intersections are time-sorted (innermost first for this tdir): add the nearest un-processed
+      // one, then re-extrapolate so the next is again at the front.
+      for(auto const& xing : extrapCRV.intersections()){
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)inter.isect_).sector_,
-            SurfaceId(kkg_h->CRV()->sectorName(inter.isect_)),*kkmat_h->CRVMaterial(),inter.inter_,reftrajptr,
-            2*inter.whw_, extrapCRV.interTolerance(),kkmat_h->applyBetheCorrection());
-        ktrk.addCRVXing(crvxingptr,tdir);
-        if(debug_ > 1) std::cout << "Good CRV " << inter.inter_ << ftraj.range() << std::endl;
+        if(xing.isSector_){
+          if(processedSectors.count(xing.sectorIdx_) > 0) continue;
+          auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)xing.sectorIdx_).sector_,
+              SurfaceId(kkg_h->CRV()->sectorName(xing.sectorIdx_)),*kkmat_h->CRVMaterial(),xing.inter_,reftrajptr,
+              2*xing.whw_, extrapCRV.interTolerance(),kkmat_h->applyBetheCorrection());
+          ktrk.addCRVXing(crvxingptr,tdir);
+          processedSectors.insert(xing.sectorIdx_);
+          if(debug_ > 1) std::cout << "Good CRV sector " << xing.sectorIdx_ << " " << xing.inter_ << std::endl;
+        } else {
+          if(processedPlanes.count(xing.plane_) > 0) continue;
+          auto const& plane = *xing.plane_;
+          auto matxingptr = std::make_shared<KKMATRECXING>(plane.surface_,plane.sid_,*kkmat_h->material(plane.material_),
+              xing.inter_,reftrajptr,plane.thickness_,extrapCRV.interTolerance(),kkmat_h->applyBetheCorrection());
+          ktrk.addMaterialPlaneXing(matxingptr,tdir);
+          processedPlanes.insert(xing.plane_);
+          if(debug_ > 1) std::cout << "Good CRV strongback " << plane.sid_ << " " << xing.inter_ << std::endl;
+        }
+        added = true;
+        break;
       }
+      if(!added) break;
     } while(extrapCRV.intersections().size()>0);
   }
 
