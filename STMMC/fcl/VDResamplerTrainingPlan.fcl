@@ -35,9 +35,22 @@
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
 
 common_training_config : { # Common training configuration for all particles
-  trainingFromROOTFile : true # If true, VDReamplerConfigure will provide the ROOT file and tree names
+  # Campaign/version tag embedded in every generated file name (summary CSV, model .bin files, and
+  # the recommended ROOT dump name). Lets several campaigns coexist in one directory and lets the
+  # generator recover the version from the summary file name. Required.
+  versionTag : "MDC2025ai"
+  trainingFromROOTFile : true # If true, VDResamplerConfigure emits a VDResamplerTrainFromRoot job
+                              # (EmptyEvent source, reads InputRootFile below). If false, it emits a
+                              # VDResamplerTrain job that reads the ART data source instead.
+  # ROOT-source settings (used only when trainingFromROOTFile is true). InputRootFile defaults to
+  # @nil so the generated fcl is intentionally incomplete: set it to the real training ROOT file.
+  # VDResamplerConfigure both logs a reminder and writes one into the generated fcl next to @nil.
+  InputRootFile : @nil
+  TreeName : "VDResamplerTrainingSetup/ttree"
+  # ART-source settings (used only when trainingFromROOTFile is false).
   StepPointMCsTag : "compressDetStepMCsSTM116:"
   SimParticlemvTag : "compressDetStepMCsSTM116:"
+  # common VD info
   VirtualDetectorID : 116
   VDz0 : 37700.39
   VDr : 2000.0

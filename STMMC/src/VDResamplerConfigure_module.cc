@@ -1,14 +1,16 @@
 // VDResamplerConfigure_module.cc
-// Makes one pass of the data set and determines which particles will need training for the
-// resampler, and generates a fcl file for training. "dataSourceTag" specifies the tag of the
-// data source, and will be appended to the generated fcl file and then csv files to
-// distinguish between different data sources. The generated fcl files will be stored and
-// named "VDResamplerTrain_[dataSourceTag].fcl".
-// On the other hand, a breakdown of the number of hits for each particle type will be stored
-// in "VDResamplerConfigure_[dataSourceTag]_HitSummary.csv" for reference.
-// Later when generating new samples using the resampler, the program will look for the
-// generated fcl files to determine which particle source to use, which particle types to
-// generate and which model parameters to load for each particle type.
+// Makes one pass of the data set and determines which particles need training for the resampler,
+// then generates ONE self-contained training fcl per (source, particle). "dataSourceTag" tags the
+// data source and, together with the plan's versionTag and the VD id, is embedded in every
+// generated file name so several campaigns/sources/detectors coexist in one directory:
+//   train fcl : <TrainModule>_<ver>_VD<id>_<src>_pdg<pdgTok>.fcl
+//   model     : SBDMmodel_<role>_<ver>_VD<id>_<src>_pdg<pdgTok>.bin   (see VDResamplerNameHelper)
+// A breakdown of the per-particle hit counts is written to
+//   VDResamplerConfigure_<ver>_VD<id>_<src>_HitSummary.csv
+// which the generator (VDResamplerGenerateMix) parses to recover ver/id/src and rebuild the model
+// names via the SAME shared helper. Per-particle training config (momentum basis, curriculum, ...)
+// is resolved from the training plan; common_training_config supplies the shared VD geometry,
+// versionTag, and the training-source selection (trainingFromROOTFile).
 // Yongyi Wu, Mar. 2026
 
 // stdlib includes
@@ -16,6 +18,12 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <map>
+#include <ctime>
+#include <algorithm>
 
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -40,6 +48,7 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh" // parseStage1Method (validation)
+#include "Offline/STMMC/inc/VDResamplerNameHelper.hh"     // summaryFileName / modelFileName / rootDumpFileName
 
 #include "fhiclcpp/ParameterSet.h"
 
@@ -51,7 +60,10 @@ typedef unsigned long VolumeId_type;
 
 namespace mu2e {
   namespace {
-    constexpr int kTwoStageTrainingHitThreshold = 100000;
+    // Fallback only: two-stage training needs enough events to fit both stages, so when a plan
+    // entry does NOT set SBDMuseTwoStageTraining we default to two-stage iff nHits > this. When the
+    // plan sets SBDMuseTwoStageTraining explicitly, that value wins and this is not consulted.
+    constexpr int kTwoStageTrainingHitThreshold = 10000;
 
     // fhicl key for a pdgId: negatives can't start with '-', so use 'm<abs>'
     // (matching the model-file token convention), positives use the bare number.
@@ -99,6 +111,77 @@ namespace mu2e {
       (void) VDResampler::parseStage1Method(method, moduleName); // validate; throws on typo
       return method;
     }
+
+    // Plan-entry keys that are NOT VDResamplerTrain(FromRoot) parameters and so must not be
+    // copied into the generated fcl. Only stage1Method is a generate-side / summary field;
+    // every other key in a resolved entry (including SBDMuseTwoStageTraining and SBDMmomentumBasis)
+    // is a training parameter that passes straight through.
+    bool isPassThroughTrainingKey(const std::string& key) {
+      return key != "stage1Method";
+    }
+
+    // Preferred emission order for the pass-through training keys. fhicl's ParameterSet does not
+    // preserve the plan file's textual key order (get_names() is sorted, and @table:: expansion
+    // scrambles it), so we impose a fixed, readable grouping here: architecture, then schedule,
+    // then target/loss, then curriculum arrays, then planner. Any key not listed is emitted after
+    // these, in fhicl's sorted order, so newly added plan keys still pass through (just ungrouped).
+    const std::vector<std::string>& trainingKeyOrder() {
+      static const std::vector<std::string> order = {
+        // --- model architecture ---
+        "SBDMuseTwoStageTraining", "SBDMmomentumBasis",
+        "SBDMhidden", "SBDMlayers",
+        "SBDMtimeEmbeddingDim", "SBDMinputEmbeddingDims", "SBDMconditionEmbeddingDims",
+        // --- noise schedule ---
+        "SBDMnoiseSchedule", "SBDMbetaMin", "SBDMbetaMax", "SBDMcosineOffset",
+        "SBDMlogSigMin", "SBDMlogSigMax",
+        // --- prediction target / loss ---
+        "SBDMpredictionTarget", "SBDMlossWeightPower",
+        // --- dim-weight controller / EMA ---
+        "SBDMuseDimWeightController", "SBDMdimWeightControllerEMADecay",
+        "SBDMuseEMANetwork", "SBDMemaNetworkDecay", "SBDMpromoteEMA",
+        // --- curriculum (per-phase arrays) ---
+        "SBDMtrainingCurriculumEpochs", "SBDMtrainingCurriculumGradientClip",
+        "SBDMtrainingCurriculumLearningRate", "SBDMtrainingCurriculumBiasLowSigma",
+        "SBDMtrainingCurriculumTLowBound",
+        "SBDMtrainingCurriculumTFocusLow", "SBDMtrainingCurriculumTFocusHigh",
+        "SBDMtrainingCurriculumTFocusFraction", "SBDMtrainingCurriculumBatchSize",
+        "SBDMtrainingCurriculumSamplesDrawnPerEpoch",
+        "SBDMtrainingCurriculumUseDimWeightController", "SBDMtrainingCurriculumUsePeakSampling",
+        "SBDMtrainingCurriculumPromoteEMA", "SBDMtrainingCurriculumMinDelta",
+        // --- planner ---
+        "SBDMautoCurriculumPlanner", "SBDMplannerSmoothWindow", "SBDMplannerPatience",
+        "SBDMplannerMinEpochsPerPhase", "SBDMplannerMaxEpochsPerPhase"
+      };
+      return order;
+    }
+
+    // Render a ParameterSet once and split it into a { key -> "key: value" text block } map,
+    // reusing fhicl's own serializer (to_indented_string) so every value type — bool/int/double/
+    // string/sequence/table — is formatted exactly as fhicl would write it. Multi-line values
+    // (sequences/tables) keep their newlines; bracket-depth counting is used ONLY to detect where
+    // a multi-line value ends (it is not an indentation control). The map lets the caller emit the
+    // blocks in trainingKeyOrder() regardless of fhicl's internal sorted key order.
+    std::map<std::string, std::string> renderKeyBlocks(const fhicl::ParameterSet& pSet) {
+      std::map<std::string, std::string> blocks;
+      std::istringstream iss(pSet.to_indented_string(0));
+      std::string line;
+      while (std::getline(iss, line)) {
+        // A new top-level key begins at a line "key: ...". Find its name (up to the first ':').
+        const std::size_t colon = line.find(':');
+        if (colon == std::string::npos) continue;
+        const std::string key = line.substr(0, colon);
+        std::string block = line;
+        int depth = 0;
+        for (char c : line) { if (c == '[' || c == '{') ++depth; else if (c == ']' || c == '}') --depth; }
+        // Absorb continuation lines until brackets balance (multi-line sequence/table value).
+        while (depth > 0 && std::getline(iss, line)) {
+          block += "\n" + line;
+          for (char c : line) { if (c == '[' || c == '{') ++depth; else if (c == ']' || c == '}') --depth; }
+        }
+        blocks[key] = block;
+      }
+      return blocks;
+    }
   }
 
   class VDResamplerConfigure : public art::EDAnalyzer {
@@ -108,7 +191,9 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> StepPointMCsTag{Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs")};
         fhicl::Atom<art::InputTag> SimParticlemvTag{Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv")};
-        fhicl::Atom<int> VirtualDetectorID{Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"), 116};
+        // VirtualDetectorID (and VDz0/VDr) are NOT module parameters: they come from the training
+        // plan's common_training_config, the single source of truth used both to filter hits here
+        // and to configure the generated training fcls.
         fhicl::Atom<std::string> VDResamplerDir{Name("VDResamplerDir"), Comment("Directory to store the generated csv files")};
         fhicl::Atom<std::string> fclDir{Name("fclDir"), Comment("Directory to store the generated fhicl files"), ""};
         fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files (MuBeam, EleBeam, TgtStp1809, or Neutrals)")};
@@ -123,13 +208,21 @@ namespace mu2e {
     private:
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
-      VolumeId_type VirtualDetectorID = 0;
       std::string VDResamplerDir;
       std::string fclDir;
       std::string dataSourceTag;
       int trainingThreshold;
       std::string trainingPlanFile;
       bool doROOTDump;
+      // Training plan, loaded once in the constructor so analyze() can filter on the plan's VD id.
+      // common_training_config is the single source of truth for VirtualDetectorID / VDz0 / VDr.
+      fhicl::ParameterSet trainingPlan;
+      fhicl::ParameterSet commonConfig;
+      VolumeId_type VirtualDetectorID = 0;
+      double VDz0 = 0.0;
+      double VDr = 0.0;
+      bool trainingFromROOT = true;   // common_training_config.trainingFromROOTFile (required)
+      std::string versionTag;         // common_training_config.versionTag (required); embedded in file names
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, px = 0.0, py = 0.0, pz = 0.0, mass = 0.0, E = 0.0, time = 0.0;
@@ -143,13 +236,42 @@ namespace mu2e {
     art::EDAnalyzer(conf),
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
     SimParticlemvToken(consumes<SimParticleCollection>(conf().SimParticlemvTag())),
-    VirtualDetectorID(conf().VirtualDetectorID()),
     VDResamplerDir(conf().VDResamplerDir()),
     fclDir(conf().fclDir()),
     dataSourceTag(conf().dataSourceTag()),
     trainingThreshold(conf().trainingThreshold()),
     trainingPlanFile(conf().trainingPlanFile()),
     doROOTDump(conf().doROOTDump()) {
+
+    // Load the (required) training-plan guideline file once, up front. common_training_config is
+    // the single source of truth for the VD geometry (id/z0/r), used both to filter hits in
+    // analyze() and to configure the generated training fcls in endJob(). All three are required.
+    if (trainingPlanFile.empty())
+        throw cet::exception("VDResamplerConfigure")
+            << "trainingPlanFile is required but empty.";
+    trainingPlan = ParameterSetFromFile(trainingPlanFile).pSet();
+    if (!trainingPlan.has_key("common_training_config"))
+        throw cet::exception("VDResamplerConfigure")
+            << "trainingPlanFile " << trainingPlanFile << " has no 'common_training_config' table.";
+    commonConfig = trainingPlan.get<fhicl::ParameterSet>("common_training_config");
+    // The VD geometry is required in common_training_config (single source of truth). Report each
+    // missing key by name instead of letting fhicl throw a generic get<> error.
+    auto requireCommon = [&](const char* key) {
+      if (!commonConfig.has_key(key))
+        throw cet::exception("VDResamplerConfigure")
+          << "common_training_config in " << trainingPlanFile << " is missing required key '" << key << "'.";
+    };
+    requireCommon("versionTag");
+    requireCommon("trainingFromROOTFile");
+    requireCommon("VirtualDetectorID");
+    requireCommon("VDz0");
+    requireCommon("VDr");
+    versionTag        = commonConfig.get<std::string>("versionTag");
+    trainingFromROOT  = commonConfig.get<bool>("trainingFromROOTFile");
+    VirtualDetectorID = static_cast<VolumeId_type>(commonConfig.get<int>("VirtualDetectorID"));
+    VDz0 = commonConfig.get<double>("VDz0");
+    VDr  = commonConfig.get<double>("VDr");
+
     if (doROOTDump) {
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>( "ttree", "Virtual Detectors Hit Summary");
@@ -226,126 +348,188 @@ namespace mu2e {
 
     // store a summary of the number of hits for each particle type in a csv file for reference,
     // all particles are included, but the particle types with hits below the training threshold are
-    // marked with an asterisk to indicate that they will not be included in the training.
-    std::string summaryFile = VDResamplerDir + "/VDResamplerConfigure_" + dataSourceTag + "_HitSummary.csv";
+    // marked with an asterisk in the TrainingMode column to indicate they are NOT trained.
+    // Summary name embeds versionTag + VD id + dataSourceTag (see VDResamplerNameHelper). The
+    // generator parses all three back out of this file name, so it MUST be built via the shared helper.
+    std::string summaryFile =
+      VDResamplerDir + "/" + VDResampler::summaryFileName(versionTag, VirtualDetectorID, dataSourceTag);
     std::string fclFilePath = fclDir.empty() ? VDResamplerDir : fclDir;
-    std::string fclFile = fclFilePath + "/VDResamplerTrain_" + dataSourceTag + ".fcl";
     std::ofstream sumOutFile(summaryFile);
-    std::ofstream fclOutFile(fclFile);
-    if (!sumOutFile) {
+    if (!sumOutFile)
         throw cet::exception("VDResamplerConfigure::endJob") << "Cannot open file " << summaryFile;
-    }
-    if (!fclOutFile) {
-        throw cet::exception("VDResamplerConfigure::endJob") << "Cannot open file " << fclFile;
-    }
 
-    // Load the (required) training-plan guideline file. Per-particle training choices
-    // (stage1Method, and later curriculum settings) are resolved from it by (pdgId, source).
-    if (trainingPlanFile.empty())
-        throw cet::exception("VDResamplerConfigure::endJob")
-            << "trainingPlanFile is required but empty.";
-    const fhicl::ParameterSet trainingPlan =
-        ParameterSetFromFile(trainingPlanFile).pSet();
+    // The ROOT dump this job writes is named by services.TFileService.fileName (set at launch,
+    // outside this module). Log the recommended, version-consistent name so it matches the models.
+    mf::LogInfo("VDResamplerConfigure::endJob")
+        << "Recommended TFileService.fileName for this job's ROOT dump: "
+        << VDResampler::rootDumpFileName(versionTag, VirtualDetectorID, dataSourceTag)
+        << " (set services.TFileService.fileName to keep it version-consistent).";
 
-    std::string trainingPathNames = "";
-    std::vector<std::pair<std::string, std::string>> trainingPaths; // pairs of (moduleName, pathName)
+    // trainingPlan / commonConfig were loaded (and their required keys validated) in the
+    // constructor. common_training_config is the single source of truth for the VD geometry
+    // (VirtualDetectorID / VDz0 / VDr) and trainingFromROOT, which selects the training path for
+    // EVERY generated job:
+    //   true  -> VDResamplerTrainFromRoot module + EmptyEvent source, reading InputRootFile.
+    //   false -> VDResamplerTrain module + the ART data source (StepPointMCs/SimParticles tags).
+    // ROOT-source keys (only written when trainingFromROOT). InputRootFile may be @nil (or absent):
+    // a @nil value is present but is NOT an atom, so is_key_to_atom() cleanly distinguishes a real
+    // path from @nil/absent without exceptions. When unset, the fcl gets a placeholder + reminder.
+    const std::string treeName = commonConfig.get<std::string>("TreeName", "VDResamplerTrainingSetup/ttree");
+    const bool inputRootFileSet =
+      commonConfig.has_key("InputRootFile") && commonConfig.is_key_to_atom("InputRootFile");
+    const std::string inputRootFile =
+      inputRootFileSet ? commonConfig.get<std::string>("InputRootFile") : std::string();
+    // ART-source tags (only written when !trainingFromROOT).
+    const std::string stepTag = commonConfig.get<std::string>("StepPointMCsTag", "compressDetStepMCsSTM116:");
+    const std::string simTag  = commonConfig.get<std::string>("SimParticlemvTag", "compressDetStepMCsSTM116:");
 
-    sumOutFile << "PDGID,HitCount,TrainingMode\n";
+    // Fixed 4-column schema (every row has the same field count for easy parsing):
+    //   PDGID, HitCount, TrainingMode (1=all-at-once, 2=two-stage, *=below threshold, not trained),
+    //   Stage1Method (DIFFUSION/INVERSE_CDF/... for two-stage; '-' otherwise).
+    sumOutFile << "PDGID,HitCount,TrainingMode,Stage1Method\n";
 
-    fclOutFile << "# This fcl is generated by VDResamplerConfigure_module.cc\n";
-    fclOutFile << "# Training configuration for the VD resampler is generated for each particle type\n\n";
-    fclOutFile << "#include \"Offline/fcl/standardServices.fcl\"\n";
-    fclOutFile << "#include \"Production/JobConfig/pileup/STM/prolog.fcl\"\n\n";
-    fclOutFile << "process_name: VDResamplerTrain\n\n";
-    fclOutFile << "source : @local::STMPileup.VDResamplerSource\n\n";
-    fclOutFile << "services : @local::Services.Sim\n\n";
-    fclOutFile << "physics: {\n  analyzers : {\n";
+    // Sanitize the data-source tag once for the module / path / fcl identifiers (the model and
+    // summary file names sanitize internally via the shared helper). Same rule as the helper.
+    const std::string sanitizedDataSourceTag = VDResampler::sanitizeTag(dataSourceTag);
+    const std::string vdStr = std::to_string(VirtualDetectorID);
 
     for (const auto& part : pdgIds) {
-      sumOutFile << part.first << "," << part.second;
-      bool useTwoStageTraining = false;
-      if (part.second < kTwoStageTrainingHitThreshold) {
-        // if data is limited, use two-stage training to improve performance and reduce the required training data size for each model.
-        useTwoStageTraining = true;
-      }
-      if (part.second < trainingThreshold) {
-        sumOutFile << ",*\n";
-        mf::LogWarning("VDResamplerConfigure::endJob") << "Particle type with PDGID " << part.first
-            << " has only " << part.second << " hits, which is below the training threshold of "
+      const int pdg   = part.first;
+      const int nHits = part.second;
+      sumOutFile << pdg << "," << nHits;
+
+      if (nHits < trainingThreshold) {
+        // Below threshold: not trained. Keep the 4-column schema (TrainingMode='*', Stage1Method='-').
+        sumOutFile << ",*,-\n";
+        mf::LogWarning("VDResamplerConfigure::endJob") << "Particle type with PDGID " << pdg
+            << " has only " << nHits << " hits, which is below the training threshold of "
             << trainingThreshold << ". This particle type will NOT be included in the training.";
-      } else {
-        // Columns: pdgId, hitCount, stage-mode (1=all-at-once, 2=two-stage), stage1Method.
-        // stage1Method (the V2 two-stage stage-1 pTotal source: DIFFUSION / INVERSE_CDF /
-        // SPLINE_CDF / KDE) is resolved per (pdgId, dataSourceTag) from the training plan.
-        // VDResamplerGenerateMix reads this column (fields[3]) per particle.
-        const std::string stage1Method =
-          resolveStage1Method(trainingPlan, dataSourceTag, part.first, "VDResamplerConfigure::endJob");
-        sumOutFile << "," << (useTwoStageTraining ? "2" : "1") << "," << stage1Method << "\n";
-
-        // Generate the fcl file for training for this particle type
-        // if pdgID is negative, we will use "m" instead of "-" in the filename to avoid issues with file naming
-        std::string pdgIdstr = (part.first < 0) ? "m" + std::to_string(-part.first) : std::to_string(part.first);
-        std::string sanitizedDataSourceTag = dataSourceTag;
-        for (char& c : sanitizedDataSourceTag) {
-          const bool isAlphaNum = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
-          if (!isAlphaNum && c != '_') {
-            c = '_';
-          }
-        }
-        std::string moduleName = "VDResamplerTrainVD"+ std::to_string(VirtualDetectorID) + sanitizedDataSourceTag + "pdg" + pdgIdstr;
-        std::string pathName = "trainPathVD" + std::to_string(VirtualDetectorID) + "pdg" + pdgIdstr;
-        trainingPaths.push_back({moduleName, pathName});
-        fclOutFile << "    " << moduleName << " : {\n"
-                    << "      module_type : VDResamplerTrain\n"
-                    << "      StepPointMCsTag : \"compressDetStepMCsSTM116:\"\n"
-                    << "      SimParticlemvTag : \"compressDetStepMCsSTM116:\"\n"
-                    << "      SBDMuseTwoStageTraining : " << (useTwoStageTraining ? "true" : "false") << "\n";
-        if (useTwoStageTraining) {
-          // Under a resampler stage-1 method the 1-D pTotal model is NOT trained (the
-          // generator draws pTotal directly), so omit SBDMstage1ModelFile — the train
-          // module trains stage1 only when that path is non-empty. Always train stage2.
-          if (stage1Method == "DIFFUSION") {
-            fclOutFile << "      SBDMstage1ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage1_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
-          }
-          fclOutFile << "      SBDMstage2ModelFile : \"" << VDResamplerDir << "/SBDMmodel_stage2_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
-        } else {
-          fclOutFile << "      SBDMallAtOnceModelFile : \"" << VDResamplerDir << "/SBDMmodel_allAtOnce_VD" << VirtualDetectorID << "_" << sanitizedDataSourceTag << "_pdg" << pdgIdstr << ".csv\"\n";
-        }
-        fclOutFile << "      VirtualDetectorID : " << VirtualDetectorID << "\n"
-                    // << "      VDz0 : " << std::to_string(<value>) << "\n" // include if not VD116
-                    // << "      VDr : " << std::to_string(<value>) << "\n" // include if not VD116
-                    << "      pdgID : " << part.first << "\n"
-                    // << "      SBDMhidden : 128\n"
-                    // << "      SBDMlayers : 4\n"
-                    // << "      SBDMoptimizer : \"ADAM\"\n"
-                    // << "      SBDMadamBeta1 : 0.9\n"
-                    // << "      SBDMadamBeta2 : 0.999\n"
-                    // << "      SBDMadamEps : 1e-8\n"
-                    // << "      SBDMnoiseSchedule : \"COSINE\"\n"
-                    // << "      SBDMbetaMin : 1e-4\n"
-                    // << "      SBDMbetaMax : 0.02\n"
-                    // << "      SBDMcosineOffset : 0.008\n"
-                    // << "      SBDMbatchSize : 32\n"
-                    // << "      SBDMgradientClip : 1.0\n"
-                    // << "      SBDMlearningRate : 1e-3\n"
-                    // << "      SBDMdiffusionSteps : 200\n"
-                    << "      SBDMtrainingSize : " << part.second << "\n"
-                    // << "      SBDMtrainingEpochs : 10\n"
-                    << "    }\n";
+        continue;
       }
-    }
-    fclOutFile << "  }\n";
 
-    // Create trigger paths for each training module
-    for (size_t i = 0; i < trainingPaths.size(); ++i) {
-      fclOutFile << "  " << trainingPaths[i].second << " : [" << trainingPaths[i].first << "]\n";
-      if (i > 0) trainingPathNames += ", ";
-      trainingPathNames += trainingPaths[i].second;
-    }
+      // Resolve this particle's plan entry (pdg.<source> -> pdg.default -> default.default). The
+      // entry already carries the @table::-expanded SBDM* keys plus SBDMuseTwoStageTraining /
+      // SBDMmomentumBasis / stage1Method.
+      const fhicl::ParameterSet entry =
+        resolvePlanEntry(trainingPlan, dataSourceTag, pdg, "VDResamplerConfigure::endJob");
+      // The plan's explicit SBDMuseTwoStageTraining wins; only when it is absent do we fall back to
+      // the hit-count rule (two-stage iff there are enough events to fit both stages).
+      const bool useTwoStageTraining =
+        entry.get<bool>("SBDMuseTwoStageTraining", nHits > kTwoStageTrainingHitThreshold);
+      // stage1Method (the V2 two-stage stage-1 pTotal source) is only meaningful for a two-stage
+      // model; resolve/validate it only then. Single-stage rows write "-" in the summary column.
+      const std::string stage1Method = useTwoStageTraining
+        ? resolveStage1Method(trainingPlan, dataSourceTag, pdg, "VDResamplerConfigure::endJob")
+        : std::string("-");
 
-    fclOutFile << "  end_paths: [" + trainingPathNames + "]\n";
-    fclOutFile << "}\n\n";
-    fclOutFile << "services.SeedService.baseSeed : 8\n"; // fixed random seed for reproducibility, can be changed if needed
+      // Summary columns: pdgId, hitCount, stage-mode (1=all-at-once, 2=two-stage), stage1Method.
+      // VDResamplerGenerateMix reads the stage1Method column (fields[3]) only for two-stage particles.
+      sumOutFile << "," << (useTwoStageTraining ? "2" : "1") << "," << stage1Method << "\n";
+
+      // One self-contained fcl per (source, particle). Negative pdgId uses 'm<abs>' in file names.
+      const std::string pdgIdstr = (pdg < 0) ? "m" + std::to_string(-pdg) : std::to_string(pdg);
+      const std::string tag = "VD" + vdStr + sanitizedDataSourceTag + "pdg" + pdgIdstr;
+      const std::string trainModule = trainingFromROOT ? "VDResamplerTrainFromRoot" : "VDResamplerTrain";
+      const std::string moduleName  = trainModule + tag;
+      const std::string pathName    = "trainPathVD" + vdStr + "pdg" + pdgIdstr;
+      // fcl file name mirrors the training module actually used (…TrainFromRoot_… vs …Train_…).
+      const std::string fclFile = fclFilePath + "/" + trainModule + "_" + VDResampler::sanitizeTag(versionTag)
+                                + "_VD" + vdStr + "_" + sanitizedDataSourceTag + "_pdg" + pdgIdstr + ".fcl";
+
+      std::ofstream fclOutFile(fclFile);
+      if (!fclOutFile)
+        throw cet::exception("VDResamplerConfigure::endJob") << "Cannot open file " << fclFile;
+
+      // ---- header + source + services ----
+      fclOutFile << "# This fcl is generated by VDResamplerConfigure_module.cc\n"
+                 << "# Training configuration for VD" << vdStr << " " << dataSourceTag
+                 << " pdg " << pdg << " (" << nHits << " hits).\n\n"
+                 << "#include \"Offline/fcl/standardServices.fcl\"\n"
+                 << "#include \"Production/JobConfig/pileup/STM/prolog.fcl\"\n\n";
+      if (trainingFromROOT) {
+        fclOutFile << "process_name: VDResamplerTrainParticle\n\n"
+                   << "# No ART input: VDResamplerTrainFromRoot reads InputRootFile directly.\n"
+                   << "source : {\n  module_type : EmptyEvent\n}\n\n";
+      } else {
+        fclOutFile << "process_name: VDResamplerTrain\n\n"
+                   << "source : @local::STMPileup.VDResamplerSource\n\n";
+      }
+      fclOutFile << "services : @local::Services.Sim\n\n";
+
+      // ---- analyzer block ----
+      const std::string ind = "      ";
+      fclOutFile << "physics: {\n  analyzers : {\n"
+                 << "    " << moduleName << " : {\n"
+                 << ind << "module_type : " << trainModule << "\n";
+
+      // Source keys, per training path.
+      if (trainingFromROOT) {
+        if (inputRootFileSet) {
+          fclOutFile << ind << "InputRootFile : \"" << inputRootFile << "\"\n";
+        } else {
+          // Plan left InputRootFile as @nil / unset: emit a placeholder + in-file reminder, and log one.
+          fclOutFile << ind << "InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
+          mf::LogWarning("VDResamplerConfigure::endJob")
+            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
+            << " has a placeholder that MUST be set before running.";
+        }
+        fclOutFile << ind << "TreeName : \"" << treeName << "\"\n";
+      } else {
+        fclOutFile << ind << "StepPointMCsTag : \"" << stepTag << "\"\n"
+                   << ind << "SimParticlemvTag : \"" << simTag << "\"\n";
+      }
+
+      // Model output files (.bin, full double precision), named via the shared helper so the
+      // generator reconstructs identical paths. Under a resampler stage-1 method the 1-D pTotal
+      // model is NOT trained (the generator draws pTotal directly), so omit stage1's file — the
+      // train module trains stage1 only when that path is non-empty. Always train stage2.
+      const std::string modelDir = VDResamplerDir + "/";
+      if (useTwoStageTraining) {
+        if (stage1Method == "DIFFUSION")
+          fclOutFile << ind << "SBDMstage1ModelFile : \""
+                     << modelDir << VDResampler::modelFileName("stage1", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+        fclOutFile << ind << "SBDMstage2ModelFile : \""
+                   << modelDir << VDResampler::modelFileName("stage2", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+      } else {
+        fclOutFile << ind << "SBDMallAtOnceModelFile : \""
+                   << modelDir << VDResampler::modelFileName("allAtOnce", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+      }
+
+      // VD geometry — always from the plan (single source of truth).
+      fclOutFile << ind << "VirtualDetectorID : " << VirtualDetectorID << "\n"
+                 << ind << "VDz0 : " << VDz0 << "\n"
+                 << ind << "VDr : "  << VDr  << "\n"
+                 << ind << "pdgID : " << pdg << "\n"
+                 << ind << "SBDMtrainingSize : " << nHits << "\n";
+
+      // Pass through the plan's training keys (SBDM*), in a fixed readable grouping. stage1Method is
+      // excluded (generate-side). Keys not in trainingKeyOrder() are emitted afterwards in fhicl's
+      // sorted order so newly added plan keys still flow through.
+      const std::map<std::string, std::string> blocks = renderKeyBlocks(entry);
+      std::vector<std::string> emitted;
+      for (const std::string& key : trainingKeyOrder()) {
+        auto it = blocks.find(key);
+        if (it == blocks.end() || !isPassThroughTrainingKey(key)) continue;
+        fclOutFile << ind << it->second << "\n";
+        emitted.push_back(key);
+      }
+      for (const auto& kv : blocks) {
+        if (!isPassThroughTrainingKey(kv.first)) continue;
+        if (std::find(emitted.begin(), emitted.end(), kv.first) != emitted.end()) continue;
+        fclOutFile << ind << kv.second << "\n";
+      }
+
+      fclOutFile << "    }\n  }\n";
+
+      // ---- path + end_paths + services overrides ----
+      fclOutFile << "  " << pathName << " : [" << moduleName << "]\n"
+                 << "  end_paths: [" << pathName << "]\n"
+                 << "}\n\n";
+      // Remove the per-category log line limit so full training logs are kept.
+      fclOutFile << "services.message.destinations.log.categories.default.limit: -1\n";
+      // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
+      fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
+    }
 
     return;
   };
