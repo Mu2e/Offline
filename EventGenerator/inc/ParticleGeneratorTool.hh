@@ -45,7 +45,7 @@ namespace mu2e {
     virtual ~ParticleGeneratorTool() noexcept = default;
 
     double calculateBinnedSpectrumEnergyFraction(fhicl::ParameterSet pset,
-                                                 const bool correct_full_integral = false, // correct for missing low tail to full integral
+                                                 const bool correct_full_integral = true, // correct for missing low tail to full integral
                                                  std::string var_low = "elow", // default to energy spectrum variables
                                                  std::string var_high = "ehi",
                                                  double full_var_low = 0., // if elow == ehi, it does the full spectrum
@@ -70,11 +70,11 @@ namespace mu2e {
       }
       // The "full" integral may be missing the lowest tail component in some cases (e.g. DIO)
       // --> apply a linear interpolation correction if requested
-      if(correct_full_integral) {
-        const double xmin    = fullSpectrum.getAbscissa(0);
+      const double xmin = fullSpectrum.getAbscissa(0);
+      if(correct_full_integral && xmin > full_var_low) {
         const double pdfmin  = fullSpectrum.getPDF(0);
         const double binsize = fullSpectrum.getBinWidth();
-        fullIntegral += 0.5*pdfmin*xmin/binsize; // 0 to <pdfmin> from x = 0 to x = <xmin> linear interpolation
+        fullIntegral += 0.5*(pdfmin/binsize)*(xmin - full_var_low); // 0 to <pdfmin> over x = <spectrum low edge> to <xmin> linear interpolation
       }
 
       // Evaluate the fraction being sampled
