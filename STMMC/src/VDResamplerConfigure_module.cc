@@ -62,24 +62,24 @@ namespace mu2e {
     // Resolve a per-particle training entry from the plan ParameterSet. pdgId is the
     // OUTER axis (a particle usually trains similarly across sources); source is the
     // finer override. Fallback order:
-    //   particles.<pdg_key>.<source>  ->  particles.<pdg_key>.default  ->
-    //   particles.default.default
+    //   particle_training_config.<pdg_key>.<source>  ->  particle_training_config.<pdg_key>.default  ->
+    //   particle_training_config.default.default
     // Throws if no default chain exists (the plan file is required and must supply at
-    // least particles.default.default).
+    // least particle_training_config.default.default).
     fhicl::ParameterSet resolvePlanEntry(const fhicl::ParameterSet& plan,
                                          const std::string& source, int pdgId,
                                          const std::string& moduleName)
     {
-      const fhicl::ParameterSet particles =
-        plan.get<fhicl::ParameterSet>("particles", fhicl::ParameterSet());
+      const fhicl::ParameterSet particle_training_config =
+        plan.get<fhicl::ParameterSet>("particle_training_config", fhicl::ParameterSet());
       const std::string pdgKey = pdgPlanKey(pdgId);
 
       fhicl::ParameterSet pdgSet;
-      if (particles.has_key(pdgKey))         pdgSet = particles.get<fhicl::ParameterSet>(pdgKey);
-      else if (particles.has_key("default")) pdgSet = particles.get<fhicl::ParameterSet>("default");
+      if (particle_training_config.has_key(pdgKey))         pdgSet = particle_training_config.get<fhicl::ParameterSet>(pdgKey);
+      else if (particle_training_config.has_key("default")) pdgSet = particle_training_config.get<fhicl::ParameterSet>("default");
       else
         throw cet::exception(moduleName)
-          << "trainingPlanFile: 'particles' has neither \"" << pdgKey
+          << "trainingPlanFile: 'particle_training_config' has neither \"" << pdgKey
           << "\" nor a 'default' entry.";
 
       if (pdgSet.has_key(source))            return pdgSet.get<fhicl::ParameterSet>(source);
@@ -111,10 +111,10 @@ namespace mu2e {
         fhicl::Atom<int> VirtualDetectorID{Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"), 116};
         fhicl::Atom<std::string> VDResamplerDir{Name("VDResamplerDir"), Comment("Directory to store the generated csv files")};
         fhicl::Atom<std::string> fclDir{Name("fclDir"), Comment("Directory to store the generated fhicl files"), ""};
-        fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files")};
+        fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files (MuBeam, EleBeam, TgtStp1809, or Neutrals)")};
         fhicl::Atom<int> trainingThreshold{Name("trainingThreshold"), Comment("Minimum number of hits for a particle type to be included in the training"), 100};
         fhicl::Atom<std::string> trainingPlanFile{Name("trainingPlanFile"), Comment("Required fhicl guideline file with per-(source,pdg) training configuration (e.g. stage1Method). See resolveStage1Method for the lookup order.")};
-        fhicl::Atom<bool> doROOTDump{Name("doROOTDump"), Comment("Whether to dump the VD hit info into a ROOT file for debugging and analysis"), false};
+        fhicl::Atom<bool> doROOTDump{Name("doROOTDump"), Comment("Whether to dump the VD hit info into a ROOT file for debugging and analysis"), true};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerConfigure(const Parameters& conf);
@@ -297,8 +297,8 @@ namespace mu2e {
         trainingPaths.push_back({moduleName, pathName});
         fclOutFile << "    " << moduleName << " : {\n"
                     << "      module_type : VDResamplerTrain\n"
-                    << "      StepPointMCsTag : @local::SimplifyStage1Data.StepPointMCsTag\n"
-                    << "      SimParticlemvTag : @local::SimplifyStage1Data.SimParticlemvTag\n"
+                    << "      StepPointMCsTag : \"compressDetStepMCsSTM116:\"\n"
+                    << "      SimParticlemvTag : \"compressDetStepMCsSTM116:\"\n"
                     << "      SBDMuseTwoStageTraining : " << (useTwoStageTraining ? "true" : "false") << "\n";
         if (useTwoStageTraining) {
           // Under a resampler stage-1 method the 1-D pTotal model is NOT trained (the

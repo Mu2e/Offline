@@ -53,6 +53,7 @@ namespace mu2e {
         fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector"),      37700.39 };
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
         fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on"),         22 };
+        fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
         fhicl::Sequence<int> SBDMinputEmbeddingDims{     Name("SBDMinputEmbeddingDims"),     Comment("Per-state-dim Fourier depth: [] none, [k] broadcast, or length-dim list; each 0 or even >= 2"),     std::vector<int>() };
         fhicl::Sequence<int> SBDMconditionEmbeddingDims{ Name("SBDMconditionEmbeddingDims"), Comment("Per-condition-dim Fourier depth: [] none, [k] broadcast, or length-condDim list; each 0 or even >= 2"), std::vector<int>() };
@@ -63,7 +64,6 @@ namespace mu2e {
         fhicl::Atom<double> SBDMadamBeta2{     Name("SBDMadamBeta2"),     Comment("Adam beta2"),                                0.999 };
         fhicl::Atom<double> SBDMadamEps{       Name("SBDMadamEps"),       Comment("Adam epsilon"),                              1e-8 };
         fhicl::Atom<std::string> SBDMnoiseSchedule{ Name("SBDMnoiseSchedule"), Comment("Noise schedule (LINEAR/COSINE/LOGSIG)"), "COSINE" };
-        fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<double> SBDMbetaMin{       Name("SBDMbetaMin"),       Comment("Min beta (LINEAR schedule)"),                1e-4 };
         // Continuous VP-SDE: beta(t) is a rate integrated over t in [0,1], not a DDPM per-step beta.
         // The integral ~0.5*betaMax must be O(a few) to fully noise the data by t=1; the old 0.02
@@ -90,7 +90,12 @@ namespace mu2e {
         fhicl::Atom<double> SBDMemaNetworkDecay{    Name("SBDMemaNetworkDecay"),    Comment("Decay for EMA network"),                      0.9999 };
         fhicl::Atom<int>    SBDMdiffusionSteps{     Name("SBDMdiffusionSteps"),     Comment("Diffusion steps"),                            200 };
         fhicl::Atom<int>    SBDMtrainingSize{       Name("SBDMtrainingSize"),       Comment("Training data size (-1 = all)"),               -1 };
-        fhicl::Atom<int>    SBDMtrainingSubsetSizePerEpoch{ Name("SBDMtrainingSubsetSizePerEpoch"), Comment("Subset size per epoch (0 = full set)"), 0 };
+        // Samples DRAWN per epoch (0 = one full pass over the dataset). Values above the dataset size
+        // cycle the data (with reshuffle-on-wrap) so an epoch is a fixed amount of optimization work.
+        // SBDMtrainingSubsetSizePerEpoch is the deprecated former name, still accepted; the new key
+        // wins when both are set to a non-zero value.
+        fhicl::Atom<int>    SBDMsamplesDrawnPerEpoch{ Name("SBDMsamplesDrawnPerEpoch"), Comment("Samples drawn per epoch (0 = full set; >N cycles the data)"), 0 };
+        fhicl::Atom<int>    SBDMtrainingSubsetSizePerEpoch{ Name("SBDMtrainingSubsetSizePerEpoch"), Comment("[deprecated: use SBDMsamplesDrawnPerEpoch] Subset size per epoch (0 = full set)"), 0 };
         fhicl::Atom<int>    SBDMtrainingEpochs{     Name("SBDMtrainingEpochs"),     Comment("Number of training epochs"),                  10 };
         fhicl::Sequence<int> SaveEpochs{ Name("SaveEpochs"), Comment("Epochs at which to save checkpoint models"), std::vector<int>() };
         fhicl::Atom<bool>   SBDMautoCurriculumPlanner{ Name("SBDMautoCurriculumPlanner"), Comment("Train each curriculum phase until loss converges instead of for a fixed epoch count"), false };
@@ -114,7 +119,11 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("Realized in-window t focus fraction per curriculum phase (rest drawn from complement)"),       std::vector<double>() };
-        fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
+        // Per-phase samples drawn per epoch. SBDMtrainingCurriculumSamplesDrawnPerEpoch is the
+        // preferred name; SBDMtrainingCurriculumSubsetSizePerEpoch is the deprecated former name,
+        // still accepted. The new key wins when it is non-empty.
+        fhicl::Sequence<int>    SBDMtrainingCurriculumSamplesDrawnPerEpoch{ Name("SBDMtrainingCurriculumSamplesDrawnPerEpoch"), Comment("Samples drawn per epoch per curriculum phase (0 = full set; >N cycles the data)"), std::vector<int>() };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("[deprecated: use SBDMtrainingCurriculumSamplesDrawnPerEpoch] Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
         fhicl::Sequence<double> SBDMtrainingCurriculumMinDelta{ Name("SBDMtrainingCurriculumMinDelta"), Comment("Auto-planner minDelta per curriculum phase (relative smoothed-loss improvement threshold; empty = use SBDMplannerMinDelta)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
         fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
@@ -200,7 +209,17 @@ namespace mu2e {
     state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
     state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
     state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
-    state_.curriculumSubsetSizePerEpoch  = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
+    // Prefer the new SamplesDrawnPerEpoch key; fall back to the deprecated SubsetSizePerEpoch
+    // name (warn once) so existing plan files keep working.
+    if (!conf().SBDMtrainingCurriculumSamplesDrawnPerEpoch().empty()) {
+        state_.curriculumSamplesDrawnPerEpoch = conf().SBDMtrainingCurriculumSamplesDrawnPerEpoch();
+    } else {
+        state_.curriculumSamplesDrawnPerEpoch = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
+        if (!state_.curriculumSamplesDrawnPerEpoch.empty())
+            mf::LogWarning("VDResamplerTrain")
+                << "SBDMtrainingCurriculumSubsetSizePerEpoch is deprecated; "
+                << "rename it to SBDMtrainingCurriculumSamplesDrawnPerEpoch.";
+    }
     state_.curriculumMinDelta            = conf().SBDMtrainingCurriculumMinDelta();
     state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
     state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
@@ -230,12 +249,22 @@ namespace mu2e {
             conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrain");
     }
 
+    // Prefer the new SBDMsamplesDrawnPerEpoch; fall back to the deprecated
+    // SBDMtrainingSubsetSizePerEpoch (warn once) so existing configs keep working. This is the
+    // non-curriculum default; the per-phase curriculum key is handled separately above.
+    int samplesDrawnPerEpoch = conf().SBDMsamplesDrawnPerEpoch();
+    if (samplesDrawnPerEpoch == 0 && conf().SBDMtrainingSubsetSizePerEpoch() != 0) {
+        samplesDrawnPerEpoch = conf().SBDMtrainingSubsetSizePerEpoch();
+        mf::LogWarning("VDResamplerTrain")
+            << "SBDMtrainingSubsetSizePerEpoch is deprecated; rename it to SBDMsamplesDrawnPerEpoch.";
+    }
+
     VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
         conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
         conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
         /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController(),
-        conf().SBDMtrainingSubsetSizePerEpoch(), predictionTarget);
+        samplesDrawnPerEpoch, predictionTarget);
 
     VDResampler::ModelBuildParams p;
     p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();

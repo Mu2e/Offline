@@ -351,7 +351,15 @@ namespace mu2e{
         // Parameters:
         //   data         - Training samples (transformed state vectors)
         //   epochs       - Number of training epochs to perform
-        //   trainSubsetDataSize - If > 0, randomly samples this many data points from the full dataset for each epoch (default: 0, uses all data)
+        //   samplesDrawnPerEpoch - If > 0, the number of training samples DRAWN per epoch (default: 0, uses all data
+        //                   = one pass over the dataset). This defines the epoch as a fixed quantum of
+        //                   optimization work (samplesDrawnPerEpoch/batchSize gradient steps), which is the
+        //                   meaningful progress metric — NOT "one pass over the data". If it is <= the dataset
+        //                   size N, a random subset of that many DISTINCT samples is used (drawn without
+        //                   replacement from the per-epoch shuffle). If it EXCEEDS N, the shuffled dataset is
+        //                   cycled with reshuffle-on-wrap so the requested count is still drawn (samples are
+        //                   then reused within the epoch, with fresh noise per draw); a warning is emitted once
+        //                   since epoch no longer equals one dataset pass. (Formerly named trainSubsetDataSize.)
         //   biasLowSigma  - If true, biases the sampling of diffusion time t towards smaller values (smaller sigma) by sampling t^2 instead of t (default: false)
         //   tLowBound     - If > 0, enforces a lower bound on the sampled diffusion time t to focus training on larger sigma values (default: 0.0, no lower bound)
         //   tFocusLow/tFocusHigh/tFocusFraction
@@ -379,7 +387,7 @@ namespace mu2e{
         void train(
             const std::vector<DiffusionTrainingSample>& data,
             int epochs,
-            int trainSubsetDataSize = 0,
+            int samplesDrawnPerEpoch = 0,
             bool biasLowSigma = false,
             double tLowBound = 0.0,
             double tFocusLow = 0.0,

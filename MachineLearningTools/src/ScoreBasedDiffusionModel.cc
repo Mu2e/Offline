@@ -961,7 +961,7 @@ namespace mu2e {
     void ScoreBasedDiffusionModel::train(
         const std::vector<DiffusionTrainingSample>& data,
         int epochs,
-        int trainSubsetDataSize,
+        int samplesDrawnPerEpoch,
         bool biasLowSigma,
         double tLowBound,
         double tFocusLow,
@@ -1046,10 +1046,24 @@ namespace mu2e {
             }
         }
 
-        // Determine how many samples to use per epoch after shuffling
-        const size_t activeN = (trainSubsetDataSize > 0 && static_cast<size_t>(trainSubsetDataSize) < N)
-                               ? static_cast<size_t>(trainSubsetDataSize)
+        // Determine how many samples to DRAW per epoch. An epoch is a fixed quantum of
+        // optimization work (activeN/batchSize gradient steps), which is the meaningful
+        // progress metric — not "one pass over the data". samplesDrawnPerEpoch == 0 means
+        // one full pass (activeN = N). Otherwise activeN is exactly the requested count,
+        // EVEN IF it exceeds N: the non-peak draw path cycles the shuffled index list with
+        // reshuffle-on-wrap (samples reused within the epoch, fresh noise per draw). Warn
+        // once when wrapping, since the epoch no longer equals a single dataset pass.
+        const size_t activeN = (samplesDrawnPerEpoch > 0)
+                               ? static_cast<size_t>(samplesDrawnPerEpoch)
                                : N;
+        if (samplesDrawnPerEpoch > 0 && static_cast<size_t>(samplesDrawnPerEpoch) > N) {
+            mf::LogWarning("ScoreBasedDiffusionModel::train")
+                << "samplesDrawnPerEpoch=" << samplesDrawnPerEpoch << " exceeds the dataset size N="
+                << N << "; the dataset will be cycled (with reshuffle-on-wrap) to draw the full count. "
+                << "Samples are reused within each epoch, so an epoch no longer equals one dataset pass "
+                << "(~" << (static_cast<double>(samplesDrawnPerEpoch) / static_cast<double>(N))
+                << " passes/epoch). Planner budgets count these epochs.";
+        }
 
         // Create index vector once
         std::vector<size_t> indices(N);
@@ -1146,6 +1160,7 @@ namespace mu2e {
             }
         }
         std::vector<double> geff(pk.size(), 0.0); // reusable per-draw g_eff buffer
+        size_t pIdx = 0; // non-peak wrapping cursor into `indices` (reset + reshuffle on wrap)
 
         // Data shuffling and batching is performed at the epoch level to ensure that each epoch sees the data
         // in a different order, which can improve training convergence.
@@ -1158,7 +1173,7 @@ namespace mu2e {
                 for (size_t k = 0; k < P.size(); ++k) { shuffleVec(P[k]); pP[k] = 0; }
                 shuffleVec(Q); pQ = 0;
             } else {
-                shuffleVec(indices);
+                shuffleVec(indices); pIdx = 0;
             }
 
             // Counter for number of samples processed in the epoch (used for averaging loss). Avoid using N directly to
@@ -1175,7 +1190,7 @@ namespace mu2e {
             double epochPeakLoss = 0.0;
             long   epochPeakCount = 0;
 
-            // iterate over the shuffled data samples (subset if trainSubsetDataSize was specified)
+            // iterate over the drawn samples (samplesDrawnPerEpoch if specified; cycles the data when it exceeds N)
             for (size_t idx = 0; idx < activeN; ++idx)
             {
                 // Sample diffusion time. If tFocusFraction > 0, this sample draws t uniformly from the
@@ -1254,7 +1269,13 @@ namespace mu2e {
                         wIS = (1.0 - sumF) / (1.0 - sumGeff); // alpha = 1: unbiased continuum
                     }
                 } else {
-                    chosenIdx = indices[idx];
+                    // Draw the next entry from the per-epoch shuffled full-data list via a
+                    // wrapping cursor. When activeN <= N this is a plain subset (distinct
+                    // samples). When activeN > N the cursor wraps and the list is reshuffled,
+                    // so the requested count is drawn while reusing samples (fresh noise per
+                    // draw); pIdx tracks the position independently of the epoch draw counter.
+                    if (pIdx >= N) { shuffleVec(indices); pIdx = 0; }
+                    chosenIdx = indices[pIdx++];
                 }
                 const auto& sample = data[chosenIdx];
 

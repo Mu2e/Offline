@@ -102,7 +102,7 @@ struct TrainState {
     std::vector<double> curriculumTFocusLow;
     std::vector<double> curriculumTFocusHigh;
     std::vector<double> curriculumTFocusFraction;
-    std::vector<int>    curriculumSubsetSizePerEpoch;
+    std::vector<int>    curriculumSamplesDrawnPerEpoch;
     std::vector<double> curriculumMinDelta; // per-phase planner minDelta (auto planner only)
     bool   promoteEMAOnStart   = false;
     bool   currentBiasLowSigma = false;
@@ -110,7 +110,7 @@ struct TrainState {
     double currentTFocusLow      = 0.0;
     double currentTFocusHigh     = 0.0;
     double currentTFocusFraction = 0.0;
-    int    currentSubsetSizePerEpoch = 0; // live trainingSubsetSizePerEpoch (per-phase under curriculum)
+    int    currentSamplesDrawnPerEpoch = 0; // live samplesDrawnPerEpoch (per-phase under curriculum)
     bool   currentUsePeakWindowLoss = false; // live: track peak-window loss this phase (auto planner)
     std::vector<PeakWindow> currentPeakWindows; // live: s.peakWindows if phase enables sampling, else empty
     std::vector<int> phaseBoundaries;
@@ -432,7 +432,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     bool defaultBiasLowSigma, double defaultTLowBound, int defaultBatchSize,
     double defaultTFocusLow = 0.0, double defaultTFocusHigh = 0.0, double defaultTFocusFraction = 0.0,
     bool defaultPromoteEMA = false, bool defaultUseDimWeightController = false,
-    int defaultSubsetSizePerEpoch = 0,
+    int defaultSamplesDrawnPerEpoch = 0,
     ScoreBasedDiffusionModel::PredictionTarget predictionTarget =
         ScoreBasedDiffusionModel::PredictionTarget::SCORE)
 {
@@ -478,7 +478,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
             fill(s.curriculumTFocusLow,       defaultTFocusLow,       "SBDMtrainingCurriculumTFocusLow");
             fill(s.curriculumTFocusHigh,      defaultTFocusHigh,      "SBDMtrainingCurriculumTFocusHigh");
             fill(s.curriculumTFocusFraction,  defaultTFocusFraction,  "SBDMtrainingCurriculumTFocusFraction");
-            fill(s.curriculumSubsetSizePerEpoch, defaultSubsetSizePerEpoch, "SBDMtrainingCurriculumSubsetSizePerEpoch");
+            fill(s.curriculumSamplesDrawnPerEpoch, defaultSamplesDrawnPerEpoch, "SBDMtrainingCurriculumSamplesDrawnPerEpoch");
             fill(s.curriculumMinDelta,        s.plannerMinDelta,      "SBDMtrainingCurriculumMinDelta");
 
             // Validate focus-window values for every phase up front, so a bad late-phase
@@ -558,7 +558,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
                    << std::setw(15) << s.curriculumTFocusLow[i]
                    << std::setw(15) << s.curriculumTFocusHigh[i]
                    << std::setw(15) << s.curriculumTFocusFraction[i]
-                   << std::setw(15) << s.curriculumSubsetSizePerEpoch[i]
+                   << std::setw(15) << s.curriculumSamplesDrawnPerEpoch[i]
                    << std::setw(15) << s.curriculumMinDelta[i]
                    << std::setw(15) << s.curriculumUsePeakWindowLoss[i]
                    << std::setw(15) << (s.curriculumPeakAlpha[i] >= 0.0
@@ -572,7 +572,7 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
     s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : defaultTFocusLow;
     s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : defaultTFocusHigh;
     s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : defaultTFocusFraction;
-    s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : defaultSubsetSizePerEpoch;
+    s.currentSamplesDrawnPerEpoch = s.nPhase > 1 ? s.curriculumSamplesDrawnPerEpoch[0] : defaultSamplesDrawnPerEpoch;
     s.currentUsePeakWindowLoss  = s.nPhase > 1 ? s.curriculumUsePeakWindowLoss[0]  : false;
 
     // Auto curriculum planner sanity checks. The min-epochs floor must cover both the
@@ -1591,7 +1591,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusLow       = s.nPhase > 1 ? s.curriculumTFocusLow[0]       : s.currentTFocusLow;
             s.currentTFocusHigh      = s.nPhase > 1 ? s.curriculumTFocusHigh[0]      : s.currentTFocusHigh;
             s.currentTFocusFraction  = s.nPhase > 1 ? s.curriculumTFocusFraction[0]  : s.currentTFocusFraction;
-            s.currentSubsetSizePerEpoch = s.nPhase > 1 ? s.curriculumSubsetSizePerEpoch[0] : s.currentSubsetSizePerEpoch;
+            s.currentSamplesDrawnPerEpoch = s.nPhase > 1 ? s.curriculumSamplesDrawnPerEpoch[0] : s.currentSamplesDrawnPerEpoch;
             s.currentUsePeakWindowLoss  = s.nPhase > 1 ? s.curriculumUsePeakWindowLoss[0]  : s.currentUsePeakWindowLoss;
         }
         // Apply phase-0 peak alpha unconditionally (override or base): enterPhase is only
@@ -1606,7 +1606,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << ", tLowBound=" << s.currentTLowBound
             << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
             << "] (fraction=" << s.currentTFocusFraction << ")"
-            << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch;
+            << ", samplesDrawnPerEpoch=" << s.currentSamplesDrawnPerEpoch;
         const std::string base = stripExt(outFile);
 
         // Apply curriculum phase `k`'s hyperparameters (k is 0-based; only meaningful
@@ -1623,7 +1623,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             s.currentTFocusLow       = s.curriculumTFocusLow      [k];
             s.currentTFocusHigh      = s.curriculumTFocusHigh     [k];
             s.currentTFocusFraction  = s.curriculumTFocusFraction [k];
-            s.currentSubsetSizePerEpoch = s.curriculumSubsetSizePerEpoch[k];
+            s.currentSamplesDrawnPerEpoch = s.curriculumSamplesDrawnPerEpoch[k];
             s.currentUsePeakWindowLoss  = s.curriculumUsePeakWindowLoss[k];
             const double effAlpha = applyPeakAlpha(k); // mutate s.peakWindows alpha for this phase
             applyPeakSampling(k); // set currentPeakWindows (windows or empty) for this phase
@@ -1638,7 +1638,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 << ", tLowBound=" << s.currentTLowBound
                 << ", tFocusWindow=[" << s.currentTFocusLow << ", " << s.currentTFocusHigh
                 << "] (fraction=" << s.currentTFocusFraction << ")"
-                << ", trainingSubsetSizePerEpoch=" << s.currentSubsetSizePerEpoch
+                << ", samplesDrawnPerEpoch=" << s.currentSamplesDrawnPerEpoch
                 << ", usePeakWindowLoss=" << s.currentUsePeakWindowLoss
                 << ", peakAlpha=" << (s.curriculumPeakAlpha[k] >= 0.0 ? effAlpha : -1.0)
                 << (s.curriculumPeakAlpha[k] >= 0.0 ? " (override)" : " (base)")
@@ -1662,7 +1662,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                         if (e == s.phaseBoundaries[ph] + 1) enterPhase(ph + 1);
                 }
                 mf::LogInfo(moduleName) << "Epoch " << e << "/" << s.trainingEpochs;
-                model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                model.train(data, 1, s.currentSamplesDrawnPerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
                     model.saveModel(base + ".epoch" + std::to_string(e) + ".bin", basisTag);
@@ -1739,7 +1739,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             // means the installed weights themselves are bad.
             {
                 double evalLoss = model.evaluateAverageLoss(
-                    data, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                    data, s.currentSamplesDrawnPerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                     s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction);
                 mf::LogInfo(moduleName)
                     << "Phase " << phaseNum << " pre-train eval loss (no optimizer step) = " << evalLoss;
@@ -1753,7 +1753,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 mf::LogInfo(moduleName)
                     << "Phase " << phaseNum << " epoch " << epochInPhase
                     << " (global epoch " << globalEpoch << ")";
-                model.train(data, 1, s.currentSubsetSizePerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
+                model.train(data, 1, s.currentSamplesDrawnPerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 const double aggLoss = model.getLastEpochLoss(); // read immediately after train()
                 // Metric selection: in a phase flagged usePeakWindowLoss, plateau on the
