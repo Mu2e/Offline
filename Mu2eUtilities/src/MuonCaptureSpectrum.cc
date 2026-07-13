@@ -89,18 +89,8 @@ namespace mu2e {
   double MuonCaptureSpectrum::getWeight(double E) const {
 
     double weight(0.);
-    /*  if I want options can implement later
-    if      ( _spectrum == Flat )       weight = getFlat( E );
-    else if ( _spectrum == RMC )        weight = getRMCSpectrum( E , _kMaxUserSet, _kMaxUser, _kMaxMax);
-    */
-
     if     (_spectrum == RMC       ) weight = getRMCSpectrum(E, _kMaxUserSet,_kMaxUser,_kMaxMax);
     else if(_spectrum == PhaseSpace) weight = getRMCPhaseSpaceSpectrum(E, _kMaxUser, _nKnockout);
-
-    //   std::cout << "spectrum is " << _spectrum << std::endl;
-
-    //    if (_spectrum == Flat) {std::cout << "Flat Spectrum" << std::endl;}
-    //if (_spectrum==RMC) {std::cout << "RMC Spectrum" << std::endl;}
 
     return weight;
 
@@ -140,15 +130,11 @@ namespace mu2e {
     }
 
     if ( e > kMax ) return 0.;
+    if ( e <= 0.  ) return 0.;
 
     double xFit = e/kMax;
-
-
-    //    double value = (1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
-
-    //    std::cout << " kMax, xfit, value = " << kMax << " " << xFit << " " << value << std::endl;
-
-    return (1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
+    const double norm = 20./kMax; // not needed, but useful for reference
+    return norm*(1 - 2*xFit +2*xFit*xFit)*xFit*(1-xFit)*(1-xFit);
   }
 
 
@@ -159,12 +145,13 @@ namespace mu2e {
   //=======================================================
 
   double MuonCaptureSpectrum::getRMCPhaseSpaceSpectrum(double e, double kMax, int nKnockout) const {
-    if ( e >= kMax ) return 0.;
-    if ( e <= 0.   ) return 0.;
+    if ( e >= kMax   ) return 0.;
+    if ( e <= 0.     ) return 0.;
+    if (nKnockout < 0) return 0.;
 
     const double x = e/kMax;
-    const double power = 2. + 1.5*nKnockout;
-    const double norm  = (power + 1.) * (power + 2.) / kMax;
+    const double power = 2. + 1.5*nKnockout; // phase-space form, valid for all N(knockout) >= 0
+    const double norm  = (power + 1.) * (power + 2.) / kMax; // not needed, but useful for reference
     const double weight = norm * x * std::pow(1. - x, power);
     return weight;
   }

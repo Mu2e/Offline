@@ -71,15 +71,16 @@ namespace mu2e {
       double elow = psphys.get<double>("elow");
       double ehi = psphys.get<double>("ehi");
       double res = psphys.get<double>("spectrumResolution");
+      std::string material = psphys.get<std::string>("material", "Al"); // RMC material, defaulting to aluminum
       const bool phase_space = psphys.get<bool>("phaseSpaceShape", false);
       if(phase_space) {
         const int nKnockout = psphys.get<int>("nKnockout");
-        const double kMax  = GlobalConstantsHandle<PhysicsParams>()->getRMCKMaxKnockout("Al", nKnockout);
+        const double kMax  = GlobalConstantsHandle<PhysicsParams>()->getRMCKMaxKnockout(material, nKnockout);
         this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMax, nKnockout);
       } else { // Closure approximation
-        const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit("Al");
-        const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit("Al");
-        const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit("Al");
+        const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit(material);
+        const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit(material);
+        const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit(material);
         const double mmu = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
         const double kMaxMax =mmu - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
         bool kMaxUserSet = psphys.get<bool>  ("kMaxUserSet",false);
