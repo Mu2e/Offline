@@ -402,7 +402,7 @@ Mu2eKinKal : {
     MaxDt : 200.0 # (ns)
     MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
-    MinVLong : 265.0 # mm/ns; near-normal-incidence floor for CRV end-cap (z-normal U/D/E) planes -> suppresses grazing fakes from soft transverse cosmics
+    MinVLong : 265.0 # mm/ns (= 0.884c -> cos(incidence)>~0.88, i.e. within ~28deg of normal); near-normal-incidence floor for CRV end-cap (z-normal U/D/E) planes -> suppresses grazing fakes from soft transverse cosmics
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : false
     Upstream : false
@@ -416,7 +416,7 @@ Mu2eKinKal : {
     MaxDt : 200.0 # (ns)
     MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
-    MinVLong : 265.0 # mm/ns; near-normal-incidence floor for CRV end-cap (z-normal U/D/E) planes -> suppresses grazing fakes from soft transverse cosmics
+    MinVLong : 265.0 # mm/ns (= 0.884c -> cos(incidence)>~0.88, i.e. within ~28deg of normal); near-normal-incidence floor for CRV end-cap (z-normal U/D/E) planes -> suppresses grazing fakes from soft transverse cosmics
     BCorrTolerance : 1e-2 # momemntum fraction
     ToTrackerEnds : false
     Upstream : false
