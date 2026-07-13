@@ -132,6 +132,10 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
 
     // Parse the run table row: run_number,comment,create_time,run_type_id
     StringVec sv = DbUtil::splitCsv(csv);
+    if (sv.size() != 4) {
+      throw cet::exception("RUNTOOL_RUN_PARSE")
+          << " RunTool::listRuns can't parse CSV line" << csv << " \n";
+    }
 
     int run = std::stoi(sv[0]);
     std::string comment = sv[1];

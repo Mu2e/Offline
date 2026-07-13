@@ -7,13 +7,6 @@
 #include <iostream>
 
 
-// ---------------------------------------------------------------------------
-// The _settings field stores a JSONB blob retrieved from PostgreSQL as a
-// string.  We parse it with nlohmann::json and walk the full tree, collecting
-// every key-value pair inside every "DBServiceTables" dictionary found at any
-// nesting depth.
-// ---------------------------------------------------------------------------
-
 namespace {
 
 using nlohmann::json;
@@ -75,7 +68,7 @@ void walkCID(const json& node,
   }
 }
 
-}  // anonymous namespace
+}
 
 // ---------------------------------------------------------------------------
 // mu2e::RunConfig::dbTables2

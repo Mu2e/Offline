@@ -1,7 +1,7 @@
 #ifndef DbService_RunConfig_hh
 #define DbService_RunConfig_hh
 
-// holds info for one row in the config table
+// holds info for one row in the run_info config table
 
 #include <string>
 #include <vector>
@@ -39,7 +39,6 @@ class RunConfig {
   // If json=true  -> returns a JSON list of {"cid":..., "name":...} objects.
   // If json=false -> returns one "cid name" pair per line.
   std::string dbTables2(bool qjson = false) const;
-
 
  private:
   int _run_number;
