@@ -5,16 +5,13 @@
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/General/TimeDir.hh"
 #include <limits>
-#include <cmath>
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::TimeDir;
   using KinKal::timeDirSign;
   class ExtrapolateToZ {
     public:
-      ExtrapolateToZ(double maxdt, double maxdtstep, double tol, double zval,int debug,
-          double maxradius = std::numeric_limits<double>::max()) :
-        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(tol), zval_(zval), debug_(debug), maxradius_(maxradius) {}
+      ExtrapolateToZ(double maxdt, double maxdtstep, double tol, double zval,int debug) : maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(tol), zval_(zval), debug_(debug) {}
       // interface for extrapolation
       double maxDt() const { return maxDt_; } // maximum time to extend the track, WRT the time of the first(last) measurement
       double maxDtStep() const { return maxDtStep_; }
@@ -29,9 +26,6 @@ namespace mu2e {
       double dptol_ = 1e10; // fractional momentum tolerance in BField domain
       double zval_ = 0; // z value targeted
       int debug_ = 0; // debug level
-      double maxradius_ = std::numeric_limits<double>::max(); // max transverse radius rho=sqrt(x^2+y^2) (mm)
-                            // the track may reach; stops near-vertical (small-v_z) cosmics from chasing the
-                            // constant-z target plane out to large rho. Default = no limit.
   };
 
   template <class KTRAJ> bool ExtrapolateToZ::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, KinKal::TimeDir tdir) const {
@@ -43,12 +37,7 @@ namespace mu2e {
     double zval = pos.Z();
     auto const& bnom = ktraj.bnom(time);
     double zref = vel.R()*fabs(sin(bnom.Theta()));
-    double rho = std::sqrt(pos.X()*pos.X() + pos.Y()*pos.Y());
-    if(debug_ > 2)std::cout << "Z extrap start time " << time << " z " << zval << " zvel " << zvel << " zref " <<  zref << " rho " << rho << std::endl;
-    // stop if we have reached the maximum allowed transverse radius: a near-vertical (small-v_z) track
-    // would otherwise keep chasing the constant-z target plane out to large rho (e.g. a cosmic running
-    // metres in y), pre-extending the trajectory past the DS before the DS-material pass. Default = no limit.
-    if(rho > maxradius_) return false;
+    if(debug_ > 2)std::cout << "Z extrap start time " << time << " z " << zval << " zvel " << zvel << " zref " <<  zref << std::endl;
     // if z velocity is unreliable, continue
     if(fabs(zvel) < zref) return true;
     // stop if we're heading away from the target z
