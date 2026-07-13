@@ -12,16 +12,9 @@ namespace mu2e {
     //    = bfmgr_.getBField(vpoint_mu2e);
     if(bfmgr_.getBFieldWithStatus(vpoint_mu2e,field))
       return VEC3(field);
-    // Outside all field maps the real field is ~0 (detector hall, far from the solenoids), but a
-    // CentralHelix evaluated at IDENTICALLY zero field is singular (omega->0 -> 1/omega -> NaN). A
-    // bfcorr=true fit's domain walk can transiently sample just outside the maps, so return a tiny
-    // NON-zero axial placeholder instead: physically negligible, but it keeps omega finite so the
-    // fit can't NaN. 1e-3 T is negligible for every fit type: the implied curvature radius
-    // (R = p/(0.3 B) ~ 3 km for a 1 GeV/c track) dwarfs the ~10 m out-of-map path we extrapolate, and
-    // KKLine (straight) ignores the field entirely -- only CentralHelix's 1/omega ever sees it.
-    // TODO(KinKal): remove this placeholder once the upstream bfcorr singularity at B==0 is fixed;
-    // then out-of-map queries can return an honest (0,0,0).
-    static const VEC3 nullfield(0.0,0.0,1.0e-3);
+// see if there's no maps; that says this is the no-field case
+// FIXME need to deal with case when outside all maps
+    static const VEC3 nullfield(0.0,0.0,0.0);
     return nullfield;
   }
 
@@ -41,12 +34,7 @@ namespace mu2e {
   // numerical derivatives for now: TODO!
   VEC3 KKBField::fieldDeriv(VEC3 const& position, VEC3 const& velocity) const {
     static double dt(0.1); // 100 psec, ~3cm.  this is arbitrary and should be set according to the field sampling TODO
-    // fieldVect is defined everywhere (tiny non-zero placeholder outside the maps), so the derivative
-    // can always be evaluated; out of the maps it is ~0. No out-of-range throw: a bfcorr=true fit whose
-    // domain walk steps just outside the maps must not be aborted. Dropping the throw does not hide a
-    // genuinely broken position -- one that is nonsensical still fails downstream as a bad surface
-    // intersection / extrapolation failure, which is caught there; the throw here only aborted the
-    // legitimate just-outside-the-maps case.
+    if(!inRange(position))throw std::runtime_error("Position out of range");
     VEC3 start = fieldVect(position);
     VEC3 end = fieldVect(position + velocity*dt);
     return (end-start)/dt;
