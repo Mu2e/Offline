@@ -39,6 +39,9 @@ int main(int argc, char** argv) {
                 "print formatted JSON blob for specified subsystem");
   cli.addSwitch("", "dbtables", "q", "dbtables", false,
                 "print the cat 3 DbService tables");
+  cli.addSwitch("", "cidtables", "e", "cidtables", false,
+                "print the cat 2 DbService CID tables (cid name)");
+
 
   // Parse command line
   int rc = cli.setArgs(argc, argv);
@@ -89,9 +92,12 @@ int main(int argc, char** argv) {
   bool subruns = cli.getBool("", "subruns");
   std::string blob_subsystem = cli.getString("", "blob");
   bool dbtables = cli.getBool("", "dbtables");
+  bool cidtables = cli.getBool("", "cidtables");
 
   // If blob subsystem or dbtables is specified, we need to fetch configs
-  bool need_configs = configs || !blob_subsystem.empty() || dbtables;
+  bool need_configs =
+      configs || !blob_subsystem.empty() || dbtables || cidtables;
+
 
   // Query and print runs
   RunInfo::RunVec runvec =
@@ -111,6 +117,22 @@ int main(int argc, char** argv) {
     }
     return 0;
   }
+
+  // Handle cidtables output: cat-2 DbService CID table entries, printed as
+  // "cid name" one pair per line.  The runTool only emits the non-JSON
+  // format; the JSON format is reserved for the python wrapper.
+  if (cidtables) {
+    for (auto const& rr : runvec) {
+      for (const auto& config : rr.configs()) {
+        std::string tables = config.dbTables2(false);
+        if (!tables.empty()) {
+          std::cout << tables << "\n";
+        }
+      }
+    }
+    return 0;
+  }
+
 
   // Handle JSON blob output for specific subsystem
   if (!blob_subsystem.empty()) {

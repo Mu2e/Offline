@@ -34,6 +34,13 @@ class RunConfig {
   // If json=false -> returns one VALUE per line (flat list).
   std::string dbTables3(bool qjson = false) const;
 
+  // Walk the entire JSON tree in _settings, collect all (cid, name) pairs
+  // from every "DBServiceCIDTable" array found at any depth.
+  // If json=true  -> returns a JSON list of {"cid":..., "name":...} objects.
+  // If json=false -> returns one "cid name" pair per line.
+  std::string dbTables2(bool qjson = false) const;
+
+
  private:
   int _run_number;
   std::string _subsystem;

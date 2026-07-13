@@ -47,11 +47,80 @@ void walk(const json& node,
   }
 }
 
+// Recursively walk a JSON node.  Whenever an object contains the key
+// "DBServiceCIDTable" whose value is an array, each element (expected to be
+// an object with "cid" and "name" fields) is appended to `collected` as a
+// (cid, name) pair.  Nested objects and arrays are always traversed so that
+// "DBServiceCIDTable" entries at any depth are found.
+void walkCID(const json& node,
+             std::vector<std::pair<std::string, std::string>>& collected) {
+  if (node.is_object()) {
+    for (auto it = node.begin(); it != node.end(); ++it) {
+      if (it.key() == "DBServiceCIDTable" && it.value().is_array()) {
+        for (auto const& elem : it.value()) {
+          if (elem.is_object() && elem.contains("cid") &&
+              elem.contains("name")) {
+            collected.emplace_back(valueToString(elem["cid"]),
+                                   valueToString(elem["name"]));
+          }
+        }
+      } else {
+        walkCID(it.value(), collected);
+      }
+    }
+  } else if (node.is_array()) {
+    for (auto const& elem : node) {
+      walkCID(elem, collected);
+    }
+  }
+}
+
 }  // anonymous namespace
+
+// ---------------------------------------------------------------------------
+// mu2e::RunConfig::dbTables2
+// ---------------------------------------------------------------------------
+std::string mu2e::RunConfig::dbTables2(bool qjson) const {
+  std::vector<std::pair<std::string, std::string>> pairs;
+
+  // Parse the settings blob; tolerate malformed/empty content by returning
+  // an empty result rather than throwing.
+  nlohmann::json root = nlohmann::json::parse(_settings, nullptr, false);
+  if (!root.is_discarded()) {
+    walkCID(root, pairs);
+  }
+
+  std::string result;
+
+  if (qjson) {
+    // Build a JSON array of {"cid":..., "name":...} objects and serialize it,
+    // reproducing the DBServiceCIDTable list.
+    nlohmann::json out = nlohmann::json::array();
+    for (auto const& p : pairs) {
+      nlohmann::json entry = nlohmann::json::object();
+      entry["cid"] = p.first;
+      entry["name"] = p.second;
+      out.push_back(entry);
+    }
+    result = out.dump(1, ' ');
+  } else {
+    // One (cid, name) pair per line: the CID followed by the name.
+    for (auto const& p : pairs) {
+      result += p.first;
+      result += " ";
+      result += p.second;
+      result += "\n";
+    }
+    if (!result.empty() && result.back() == '\n') result.pop_back();
+  }
+
+  return result;
+}
 
 // ---------------------------------------------------------------------------
 // mu2e::RunConfig::dbTables3
 // ---------------------------------------------------------------------------
+
 std::string mu2e::RunConfig::dbTables3(bool qjson) const {
   std::vector<std::pair<std::string, std::string>> pairs;
 

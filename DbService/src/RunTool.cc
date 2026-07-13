@@ -74,7 +74,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
         << " RunTool::listRuns failed to retrieve runs \n";
   }
 
-  StringVec rows = splitString(tcsv, "\n", "\"", "\\", true, false);
+  StringVec rows = DbUtil::splitCsvLines(tcsv);
 
   // apply the selection and fetch configs, transitions, and subruns if
   // requested
@@ -131,7 +131,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
     bool pass = true;
 
     // Parse the run table row: run_number,comment,create_time,run_type_id
-    StringVec sv = splitString(csv);
+    StringVec sv = DbUtil::splitCsv(csv);
 
     int run = std::stoi(sv[0]);
     std::string comment = sv[1];
