@@ -292,6 +292,17 @@ cet_build_plugin(WeightSamplingFilter art::module
       art_root_io::TFileService_service
 )
 
+cet_build_plugin(PhotonFilter art::module
+    REG_SOURCE src/PhotonFilter_module.cc
+    LIBRARIES REG
+      Offline::CaloCluster
+      Offline::CalorimeterGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      art_root_io::TFileService_service
+)   
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
 
 install_source(SUBDIRS src)
