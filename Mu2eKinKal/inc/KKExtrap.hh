@@ -54,8 +54,13 @@ namespace mu2e {
       double btol_, intertol_, maxdt_, maxdtstep_, minv_, minvlong_, maxtrackerendsradius_;
       double mintrackerendsz_, maxtrackerendsz_;
       bool backToTracker_, extrapolateOPA_, toTrackerEnds_, toTrackerEndsRadius_, upstream_, toCRV_;
-      double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
-      double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
+      // IPA/ST thicknesses are nominal literals, consistent with the rest of KinKalGeom, whose IPA
+      // (single Cylinder) and ST (uniform Annulus foils) surfaces are themselves hard-coded nominal
+      // placeholders (see KinKalGeomMaker::makeDS/makeTarget). Sourcing these from the real geometry
+      // service is part of the broader "build KinKalGeom from the geometry service" work, not a standalone
+      // fix -- doing it for the thicknesses alone while the surfaces stay nominal would be inconsistent. TODO
+      double ipathick_ = 0.511; // ipa thickness (mm)
+      double stthick_ = 0.1056; // st foil thickness (mm)
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig) :
@@ -339,6 +344,12 @@ namespace mu2e {
     auto extrapCylinders = ExtrapolateCylinders(maxdt_,maxdtstep_,btol_,intertol_,minv_,cylinders,debug_);
     auto const& ftraj = ktrk.fitTraj();
     using MaterialCylinder = ExtrapolateCylinders::MaterialCylinder;
+    // NB: this bank-all-sorted idiom differs deliberately from the one-crossing-at-a-time idiom in
+    // extrapolatePassiveMaterial / extrapolateCRV below. It is safe HERE because the DS shells are
+    // CONCENTRIC and closely spaced: one step overshoots the whole cluster and the resulting trajectory
+    // piece spans all of them, so all crossings can be added in a single sorted pass. The planar surfaces
+    // are STACKED and spatially separated, so adding more than the nearest crossing before re-extrapolating
+    // advances the front past the farther planes and strands them -- hence they must go one at a time.
     std::unordered_set<MaterialCylinder const*> banked; // bank each cylinder once (avoid re-found duplicates)
     do {
       ktrk.extrapolate(tdir,extrapCylinders);
@@ -377,7 +388,10 @@ namespace mu2e {
     auto extrapPlanes = ExtrapolatePlanes(maxdt_,maxdtstep_,btol_,intertol_,minv_,planes,debug_);
     auto const& ftraj = ktrk.fitTraj();
 
-    // Normal path: process each plane at most once.
+    // Normal path: process each plane at most once, ONE crossing per extrapolate pass (add nearest,
+    // re-extrapolate, repeat). Unlike extrapolateDSMaterial's bank-all-sorted pass, the passive planes
+    // are stacked and spatially separated, so adding more than the nearest crossing before re-extrapolating
+    // would advance the front past the farther planes and strand them (see the cross-reference note there).
     // Stop before calling ktrk.extrapolate when all planes have been processed so
     // we don't advance the trajectory past the last plane (which would overshoot the
     // CRV and prevent extrapolateCRV from finding it).

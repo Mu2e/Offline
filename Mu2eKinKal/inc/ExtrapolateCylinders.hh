@@ -65,7 +65,8 @@ namespace mu2e {
       double dptol_ = 1e10;
       double intertol_ = 1e10;
       double minvnorm_ = 1e-5;
-      double minShellCosine_ = 0.1;
+      double minShellCosine_ = 0.1; // min |cos(incidence)| to accept a shell crossing (~within 84 deg of normal);
+                                    // below this the thin-shell path length blows up (near-tangent), so skip it
       MaterialCylinderCollection const& cylinders_;
       int debug_ = 0;
       double maxRadius_ = 0.0;
