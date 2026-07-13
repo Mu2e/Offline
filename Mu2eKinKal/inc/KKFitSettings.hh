@@ -119,10 +119,6 @@ namespace mu2e {
       fhicl::Atom<float> MaxDtStep { Name("MaxDtStep"), Comment("Maximum time step when extrapolating a fit (ns)") };
       fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum velocity perp to the surface extrapolate a straight track fit") };
       fhicl::Atom<float> MinVLong { Name("MinVLong"), Comment("Minimum velocity perp to a z-normal CRV end-cap plane (mm/ns); suppresses grazing-cosmic fakes"), 265.0f };
-      fhicl::Atom<float> MaxTrackerEndsRadius { Name("MaxTrackerEndsRadius"), Comment("Max transverse radius rho=sqrt(x^2+y^2) (mm) a track may reach in the toTrackerEnds step"), 1.0e10f };
-      fhicl::Atom<bool> ToTrackerEndsRadius { Name("ToTrackerEndsRadius"), Comment("In toTrackerEnds, extrapolate to the tracker outer cylinder (TT_Outer) rather than the z-end planes"), false };
-      fhicl::Atom<float> MaxTrackerEndsZ { Name("MaxTrackerEndsZ"), Comment("Max z (mm) reachable in toTrackerEnds (used only when ToTrackerEndsRadius=true)"), 1.0e10f };
-      fhicl::Atom<float> MinTrackerEndsZ { Name("MinTrackerEndsZ"), Comment("Min z (mm) reachable in toTrackerEnds (used only when ToTrackerEndsRadius=true)"), -1.0e10f };
       fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
       fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };

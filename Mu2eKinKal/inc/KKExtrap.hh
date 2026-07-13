@@ -10,7 +10,7 @@
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateToZ.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateToR.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateToTrackerPerimeter.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateIPA.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateST.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateCRVRegion.hh"
@@ -22,6 +22,10 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include <unordered_set>
 #include <map>
+#include <optional>
+#include <utility>
+#include <algorithm>
+#include <limits>
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 namespace mu2e {
@@ -47,13 +51,12 @@ namespace mu2e {
       template <class KTRAJ> void extrapolatePassiveMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
-      template <class KTRAJ> void toTrackerEnds(KKTrack<KTRAJ>& ktrk) const;
+      template <class KTRAJ> void toTrackerPerimeter(KKTrack<KTRAJ>& ktrk) const;
 
     private:
       int debug_;
-      double btol_, intertol_, maxdt_, maxdtstep_, minv_, minvlong_, maxtrackerendsradius_;
-      double mintrackerendsz_, maxtrackerendsz_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, toTrackerEndsRadius_, upstream_, toCRV_;
+      double btol_, intertol_, maxdt_, maxdtstep_, minv_, minvlong_;
+      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
       // IPA/ST thicknesses are nominal literals, consistent with the rest of KinKalGeom, whose IPA
       // (single Cylinder) and ST (uniform Annulus foils) surfaces are themselves hard-coded nominal
       // placeholders (see KinKalGeomMaker::makeDS/makeTarget). Sourcing these from the real geometry
@@ -71,13 +74,9 @@ namespace mu2e {
     maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
     minvlong_(extrapconfig.MinVLong()),
-    maxtrackerendsradius_(extrapconfig.MaxTrackerEndsRadius()),
-    mintrackerendsz_(extrapconfig.MinTrackerEndsZ()),
-    maxtrackerendsz_(extrapconfig.MaxTrackerEndsZ()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
-    toTrackerEndsRadius_(extrapconfig.ToTrackerEndsRadius()),
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV())
   {}
@@ -88,7 +87,7 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    if(toTrackerEnds_)toTrackerEnds(ktrk);
+    if(toTrackerEnds_)toTrackerPerimeter(ktrk);
     if(upstream_){
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -129,77 +128,62 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> void KKExtrap::toTrackerEnds(KKTrack<KTRAJ>& ktrk) const {
+  // Extrapolate a fit to the tracker PERIMETER (the closed cylinder bounding the tracker active volume)
+  // and record the bounding-surface intersection the track actually reaches. One code path serves every
+  // track type: a downstream track exits through a z-end plane (TT_Front/TT_Back), a cosmic exits through
+  // the outer wall (TT_Outer). The perimeter (R, z-ends) is taken entirely from KinKalGeom::tracker(),
+  // which is built from GeometryService -- there are no hand-entered radius/z limits to keep in sync.
+  template <class KTRAJ> void KKExtrap::toTrackerPerimeter(KKTrack<KTRAJ>& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-
-    // CentralHelix (cosmic) mode: extrapolate to the tracker OUTER CYLINDER (constant rho), not the z-end
-    // planes. A cosmic traverses the tracker radially (mostly in y), so the outer cylinder is its true exit;
-    // ExtrapolateToZ would chase the constant-z plane out to large rho. The z bounds keep near-horizontal
-    // cosmics from chasing the radius past the tracker ends.
-    if(toTrackerEndsRadius_){
-      auto const& outer = kkg_h->tracker()->outer();
-      ExtrapolateToR toOuter(maxdt_,maxdtstep_,btol_,outer.radius(),mintrackerendsz_,maxtrackerendsz_,debug_);
-      auto const& ftraj = ktrk.fitTraj();
-      // the cosmic crosses the outer cylinder on both ends; extend in both time directions
-      auto tofwd = ktrk.extrapolate(TimeDir::forwards,toOuter);
-      auto tobwd = ktrk.extrapolate(TimeDir::backwards,toOuter);
-      static const SurfaceId tt_outer("TT_Outer");
-      static const SurfaceId tt_mid("TT_Mid");
-      // middle reference, recorded only if the track actually crosses it
-      auto midinter = KinKal::intersect(ftraj,kkg_h->tracker()->middle(),ftraj.range(),intertol_);
-      if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
-      // outer-cylinder crossings (tracker entry and exit) from the respective end pieces
-      if(tofwd){
-        auto const& fhel = ftraj.back();
-        auto inter = KinKal::intersect(fhel,outer,fhel.range(),intertol_,TimeDir::forwards);
-        if(inter.good()) ktrk.addIntersection(tt_outer,inter);
-      }
-      if(tobwd){
-        auto const& bhel = ftraj.front();
-        auto inter = KinKal::intersect(bhel,outer,bhel.range(),intertol_,TimeDir::backwards);
-        if(inter.good()) ktrk.addIntersection(tt_outer,inter);
-      }
-      return;
-    }
-
-    ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_,maxtrackerendsradius_);
-    ExtrapolateToZ trackerBack(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->back().center().Z(),debug_,maxtrackerendsradius_);
-    // time direction to reach the bounding surfaces from the active region depends on the z momentum. This calculation assumes the particle doesn't
-    // reflect inside the tracker volume
+    auto const& trk = *kkg_h->tracker();
+    double const R  = trk.outer().radius();
+    double const zf = trk.front().center().Z();
+    double const zb = trk.back().center().Z();
+    double const zmin = std::min(zf,zb); // upstream z-end plane (do not assume front<back)
+    double const zmax = std::max(zf,zb); // downstream z-end plane
+    ExtrapolateToTrackerPerimeter toPerim(maxdt_,maxdtstep_,btol_,R,zmin,zmax,debug_);
     auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
-    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    auto tofront = ktrk.extrapolate(fronttdir,trackerFront);
-    auto toback = ktrk.extrapolate(backtdir,trackerBack);
-    // record the standard tracker intersections
+    static const SurfaceId tt_outer("TT_Outer");
     static const SurfaceId tt_front("TT_Front");
-    static const SurfaceId tt_mid("TT_Mid");
     static const SurfaceId tt_back("TT_Back");
+    static const SurfaceId tt_mid("TT_Mid");
 
-    // start with the middle
-    auto midinter = KinKal::intersect(ftraj,kkg_h->tracker()->middle(),ftraj.range(),intertol_);
+    // middle reference, recorded once if the track crosses it
+    auto midinter = KinKal::intersect(ftraj,trk.middle(),ftraj.range(),intertol_);
     if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
-    if(tofront){
-      // check the front piece first; that is usually correct
-      // track extrapolation to the front succeeded, but the intersection failed. Use the last trajectory to force an intersection
-      auto fhel = fronttdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto frontinter = KinKal::intersect(fhel,kkg_h->tracker()->front(),fhel.range(),intertol_,fronttdir);
-      if(!frontinter.good()){
-        // start from the middle
-        TimeRange frange = ftraj.range();
-        if(midinter.good())frange = fronttdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-        frontinter = KinKal::intersect(ftraj,kkg_h->tracker()->front(),frange,intertol_,fronttdir);
-      }
-      if(frontinter.good()) ktrk.addIntersection(tt_front,frontinter);
-    }
-    if(toback){
-      // start from the middle
-      TimeRange brange = ftraj.range();
-      if(midinter.good())brange = backtdir == TimeDir::forwards ? TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
-      auto backinter = KinKal::intersect(ftraj,kkg_h->tracker()->back(),brange,intertol_,backtdir);
-      if(backinter.good())ktrk.addIntersection(tt_back,backinter);
-    }
+
+    // The track meets the perimeter at BOTH ends (tracker entry and exit); extend each time direction and
+    // record the face it reaches. For a given direction the exit face is the bounding surface crossed
+    // first, so among the good candidate intersections we keep the earliest one in that direction. Disk
+    // (z-end) intersections can fail at the edge, so on failure retry over the middle->end sub-range using
+    // the full trajectory (the outer wall does not need this fallback).
+    auto recordFace = [&](TimeDir tdir){
+      if(!ktrk.extrapolate(tdir,toPerim)) return;
+      auto const& end = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
+      double const sgn = KinKal::timeDirSign(tdir);
+      double const t0 = tdir == TimeDir::forwards ? end.range().begin() : end.range().end();
+      std::optional<std::pair<SurfaceId,KinKal::Intersection>> best;
+      double bestdt = std::numeric_limits<double>::max();
+      auto consider = [&](SurfaceId const& sid, auto const& surf, bool midFallback){
+        auto inter = KinKal::intersect(end,surf,end.range(),intertol_,tdir);
+        if(!inter.good() && midFallback){
+          TimeRange rng = ftraj.range();
+          if(midinter.good()) rng = tdir == TimeDir::forwards ?
+            TimeRange(midinter.time_,ftraj.range().end()) : TimeRange(ftraj.range().begin(),midinter.time_);
+          inter = KinKal::intersect(ftraj,surf,rng,intertol_,tdir);
+        }
+        if(inter.good()){
+          double const dt = sgn*(inter.time_ - t0); // time from the tracker interior out to this face
+          if(dt >= 0.0 && dt < bestdt){ bestdt = dt; best.emplace(sid,inter); }
+        }
+      };
+      consider(tt_outer, trk.outer(), false);
+      consider(tt_front, trk.front(), true);
+      consider(tt_back,  trk.back(),  true);
+      if(best) ktrk.addIntersection(best->first,best->second);
+    };
+    recordFace(TimeDir::backwards);
+    recordFace(TimeDir::forwards);
   }
 
   template <class KTRAJ> bool KKExtrap::extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
