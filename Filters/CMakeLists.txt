@@ -301,6 +301,7 @@ cet_build_plugin(PhotonFilter art::module
       Offline::MCDataProducts
       Offline::RecoDataProducts
       art_root_io::TFileService_service
+      ROOT::Hist
 )   
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)

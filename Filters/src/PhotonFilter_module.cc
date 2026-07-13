@@ -10,7 +10,6 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-#include "BTrk/TrkBase/TrkT0.hh"
 
 
 #include "fhiclcpp/types/Atom.h"
@@ -222,10 +221,6 @@ namespace mu2e {
     bookClusterHistograms(cluster_hists[1], Dir1);
     art::TFileDirectory Dir2 =  tfs->mkdir("all_background_clusters");
     bookClusterHistograms(cluster_hists[2], Dir2);
-    //  art::TFileDirectory Dir1 =  tfs->mkdir("Z passed_clusters");
-    // bookClusterHistograms(_hists[1], Dir1);
-    // art::TFileDirectory Dir2 =  tfs->mkdir("Z rejected_clusters");
-    //  bookClusterHistograms(_hists[2], Dir2);
     art::TFileDirectory Dir10 =  tfs->mkdir("C_passed_clusters");
     bookClusterHistograms(cluster_hists[10], Dir10);
     art::TFileDirectory Dir20 =  tfs->mkdir("C_rejected_clusters");
@@ -258,13 +253,11 @@ namespace mu2e {
 
     hists._hCalECrys   = Dir.make<TH1F>("hCalECrys",   "Cluster energy per Crystal, MeV/c", 125, 0, 250);
 
-    //hists._hZRes_CloseHelix   = Dir.make<TH1F>("hZResidual_ClosestHelix",   "Helix of lowest Residual, extrapolated from Z Coordinate of Cluster (mm)", 500, 0, 1000);
     hists._hCRes_CloseHelix   = Dir.make<TH1F>("hCResidual_CloesestHelix",   "Helix of lowest Residual, extrapolated from Center Coordinate of Cluster (mm)", 500, 0, 1000);
     hists._hTRes   = Dir.make<TH1F>("hTRes",   "Difference in time between helix and cluster (ns)", 1000, 0, 2000);
 
     hists._hNCrystals   = Dir.make<TH1F>("hNCrystals",   "Number of crystals in a cluster", 100, 0, 10);
 
-    // hists._hZcoord_calo = Dir.make<TH1F>("hZcoord_calo",  "Cluster Z",     500, -1e-11, 1e-11);
     hists._hHelixP = Dir.make<TH1F>("hHelixP",  "Helix Momentum (MeV)",     250, 0, 500);
     hists._hHelixChi2_dXY = Dir.make<TH1F>("hHelixChi2_dXY",  "Helix Chi2 in dXY",     250, 0, 50);
     hists._hHelixChi2_dZPhi = Dir.make<TH1F>("hHelixChi2_dZPhi",  "Helix Chi2 in dZPhi",     100, 0, 50);
@@ -358,21 +351,14 @@ namespace mu2e {
     const double e25 = clu.e25()/clusterEDep;
     const double secMoment = clu.secondMoment();
 
-
-
     const int  clusterHits          = cluster.caloHitsPtrVector().size();
-    //bool helixExists = (helices.size()>0);
     bool bestHelixExists = false;
 
 
     float cR = sqrt(clusterPos.x()*clusterPos.x()+clusterPos.y()*clusterPos.y());
     float cT = cluster.time();
-    // float bestZResidual = std::numeric_limits<float>::max();
 
     const auto eDepMCs =  caloClusterTruth.energyDeposits();
-
-
-    //std::cout << "New cluster ..." << std::endl;
 
     std::unordered_map<int,double> eDepSimMap;
     // find PDG with largest total EDep
@@ -401,7 +387,6 @@ namespace mu2e {
     } else {
 
       mainPdg = mainSim->pdgId();
-      // const bool isPrimarySim = _primary_sim != nullptr && mainSim.isNonnull() && &(*_primary_sim) == &(*mainSim);
 
       if(_primaryParticle != nullptr) {
         art::Ptr<SimParticle> sim_parent = mainSim;
@@ -415,15 +400,9 @@ namespace mu2e {
       }
     }
 
-
-    // const bool isPrimarySim = _primary_sim != nullptr && mainSim.isNonnull() && &(*_primary_sim) == &(*mainSim);
     double clusterSimE = maxEDep;
     double genE0 = 0;
     if(_primaryParticle != nullptr) {genE0 =  _primaryParticle->startMomentum().e();}
-
-
-
-    //std::cout << " Most freuqent PdgID: " << mainPdg << std::endl;
 
     float minCResidual = std::numeric_limits<float>::max();
     double bestHelixMom = 0;
@@ -435,24 +414,14 @@ namespace mu2e {
 
     for (size_t i = 0; i < helices.size(); ++i) {
       const auto& helix = helices[i];
-      // helixExists = true;
       const auto& hval = helix.helix();
-      //std::cout << "helix momentstd::cout << "Helix size "
-      //Calo Cluster Truth
-
-
-
 
       if (hval.momentum()*0.3 < 90) continue;
-
-      // float z = clusterPos.z();
-      // auto helixPos = hval.position(z);
 
       // Extract helix center and radius
       float radius = hval.radius();
       float centerX = hval.centerx();
       float centerY = hval.centery();
-
 
       float deltaCR = std::fabs(std::hypot(clusterPos.x() - centerX,
                                            clusterPos.y() - centerY) - radius);
@@ -465,15 +434,6 @@ namespace mu2e {
         bestHelixChi2dXY = hval.chi2dXY();
         bestHelixChi2dZPhi = hval.chi2dZPhi();
       }
-      // float dx = helixPos.x() - clusterPos.x();
-      // float dy = helixPos.y() - clusterPos.y();
-      // float deltaZR = std::sqrt(dx * dx + dy * dy);
-
-      // if (deltaZR < bestZResidual) {
-      //   bestZResidual = deltaZR;
-      //   bestZHelix = &helix;
-      // }
-
     }
 
     double bestdT = std::abs(bestHelixT - cT);
@@ -620,27 +580,8 @@ namespace mu2e {
 
       }
     }
-    // if (bestZHelix) {
-    // accepted = bestZResidual > _maxdR;
-    // for (size_t index = 0; index < kNhists; index++){
-    //   if (index == 0)
-    //   {
-    //     cluster_hists[index]._hZRes_BestHelix->Fill(bestZResidual);
-
-
-    //   }
-    //   if ((index == 3 && accepted) || (index == 4 && !accepted)){
-    //     cluster_hists[Index]._Hzres_BestHelix->Fill(bestZResidual);
-    //     cluster_hists[index]._hCalE->Fill(clusterEDep);
-    //     cluster_hists[index]._hNCrystals->Fill(clusterHits);
-
-
-    // }
-    // }
-    // }
 
     if (_debugLevel >= 1) {
-      //std::cout << " Photon Filter: best match z residual = " << bestZResidual << std::endl;
       std::cout << " Photon Filter: best match c residual = " << minCResidual << std::endl;
 
     }
