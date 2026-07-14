@@ -32,37 +32,80 @@ namespace mu2e {
     {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Sequence<std::string> kalSeeds  { Name("kalSeeds") , Comment("KalSeed (Ptr) collection names") };
-      fhicl::Atom<int>             diagLevel { Name("diagLevel"), Comment("Diag Level")                    ,0 };
+      fhicl::Sequence<std::string> kalSeeds    { Name("kalSeeds")    , Comment("KalSeed (Ptr) collection names") };
+      fhicl::Atom<bool>            doHistograms{ Name("doHistograms"), Comment("Make histograms")               , false };
+      fhicl::Atom<int>             diagLevel   { Name("diagLevel")   , Comment("Diag Level")                    ,0 };
     };
 
     std::vector<std::string> kalSeeds_;
+    bool doHistograms_;
     int diagLevel_;
+
+    // Histograms
+    TH1* h_slope_ = nullptr; // fit results
+    TH1* h_offset_ = nullptr;
+    TH1* h_slopeUnc_ = nullptr;
+    TH1* h_chisq_ = nullptr;
+    TH1* h_dof_ = nullptr;
+    TH1* h_chisqDof_ = nullptr;
+    TH1* h_trk_chisq_ = nullptr; // track parameters
+    TH1* h_trk_fitcon_ = nullptr;
 
   public:
     explicit TrackDtDt(const art::EDProducer::Table<Config>& config);
     virtual void produce(art::Event& event);
     KalSeedDtDt fitTrackDtDt(const KalSeed& seed);
+
+    void bookHistograms();
+    void fillHistograms(const KalSeedDtDt& dtDt, const KalSeed& seed);
   };
 
   //================================================================
   TrackDtDt::TrackDtDt(const art::EDProducer::Table<Config>& config)
     : art::EDProducer{config}
     , kalSeeds_(config().kalSeeds())
+    , doHistograms_(config().doHistograms())
     , diagLevel_(config().diagLevel())
   {
     for(const auto& name : kalSeeds_) {
       produces<mu2e::KalSeedDtDtCollection>(name);
     }
+    if(doHistograms_) bookHistograms();
+  }
+
+  //================================================================
+  void TrackDtDt::bookHistograms() {
+    art::ServiceHandle<art::TFileService> tfs;
+    h_slope_     = tfs->make<TH1D>("h_slope",     "Slope of dt_{hit} vs dt_{track fit poca time};Slope;Entries", 100, 0., 4.);
+    h_offset_    = tfs->make<TH1D>("h_offset",    "Offset of dt_{hit} vs dt_{track fit poca time};Offset [ns];Entries", 100, -100., 100.);
+    h_slopeUnc_  = tfs->make<TH1D>("h_slopeUnc",  "Uncertainty of slope;Slope Uncertainty;Entries", 100, 0., 0.1);
+    h_chisq_     = tfs->make<TH1D>("h_chisq",     "Chi2 of fit;Chi2;Entries", 100, 0., 100.);
+    h_dof_      = tfs->make<TH1D>("h_dof",      "Degrees of freedom of fit;DOF;Entries", 100, 0., 100.);
+    h_chisqDof_   = tfs->make<TH1D>("h_chisqDof",   "Chi2/DOF of fit;Chi2/DOF;Entries", 100, 0., 5.);
+    h_trk_chisq_ = tfs->make<TH1D>("h_trk_chisq", "Track chi2;Chi2;Entries", 100, 0., 100.);
+    h_trk_fitcon_ = tfs->make<TH1D>("h_trk_fitcon", "Track fit convergence;Convergence;Entries", 100, 0., 1.);
+  }
+
+  //================================================================
+  void TrackDtDt::fillHistograms(const KalSeedDtDt& dtDt, const KalSeed& seed) {
+    if(!doHistograms_) return;
+    h_slope_->Fill(dtDt.slope_);
+    h_offset_->Fill(dtDt.offset_);
+    h_slopeUnc_->Fill(dtDt.slopeUnc_);
+    h_chisq_->Fill(dtDt.chisq_);
+    h_dof_->Fill(dtDt.dof_);
+    h_chisqDof_->Fill((dtDt.dof_ > 0) ? dtDt.chisq_/dtDt.dof_ : 0.);
+    h_trk_chisq_->Fill(seed.chisquared());
+    h_trk_fitcon_->Fill(seed.fitConsistency());
   }
 
   //================================================================
   KalSeedDtDt TrackDtDt::fitTrackDtDt(const KalSeed& seed) {
     LsqSums2 fitter;
     for(const auto& hit : seed.hits()) {
-      const double t_hit = hit.time();
-      const double t_trk = hit.particleToca() + hit.fitDt(); // add dt to get to the estimated base hit time
-      const double t_var  = hit.fitTocaVar() + hit.reTocaVar(); // variance of the track poca time and the hit time
+      const double t_trk = hit.particleToca(); // estimated time of the particle
+      const double t_hit = t_trk + hit.fitDt(); // add dt to get the hit time
+      const double t_var  = hit.fitTocaVar(); // variance of the track poca time and the hit time
       const double weight = 1./t_var; // inverse variance weighting
       fitter.addPoint(t_trk, t_hit, weight);
     }
@@ -72,6 +115,15 @@ namespace mu2e {
     result.slopeUnc_  = fitter.dydxErr();
     result.dof_       = fitter.qn() - 2; // two parameters fitted
     result.chisq_     = (result.dof_ > 0) ? fitter.chi2Dof()*result.dof_ : 0.f; // chi2Dof() not defined for dof <= 0
+
+    if(diagLevel_ > 1) {
+      std::cout << "[TrackDtDt::" << __func__ << "] Fit results for seed with " << seed.hits().size() << " hits:\n"
+                << "  slope = " << result.slope_ << " +/- " << result.slopeUnc_ << "\n"
+                << "  offset = " << result.offset_ << "\n"
+                << "  chi2 = " << result.chisq_ << "\n"
+                << "  dof = " << result.dof_ << "\n";
+    }
+    if(doHistograms_) fillHistograms(result, seed);
     return result;
   }
 
