@@ -83,6 +83,7 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
+      MeVToADC                : 16
       diagLevel               : 0
    }
 
