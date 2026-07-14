@@ -33,4 +33,21 @@ VetoIncorrectHits: {
     crvStepPoints        : CRV
     crvPositionTolerance : 0.01
 }
+
+PhotonFilter : {
+    module_type             : PhotonFilter
+    CaloClusterCollection   : "CaloClusterMaker"
+    HelixSeedCollection     : "MHDe"
+    CaloClusterMC           : CaloClusterTruthMatch
+    DebugLevel              : 0
+    MinDeltaR               : 0.
+    MaxNCrys                :  100
+    MinCalE                 : 0
+    MinCalERatio            : 0
+    MinHelP                 : 0
+    MaxHelChi2dXY           : 100
+    MaxHelChi2dZPhi         : 100
+    ApplyCuts               : false
+}
+
 END_PROLOG
