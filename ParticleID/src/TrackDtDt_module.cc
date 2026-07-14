@@ -76,7 +76,7 @@ namespace mu2e {
   //================================================================
   void TrackDtDt::bookHistograms() {
     art::ServiceHandle<art::TFileService> tfs;
-    h_slope_     = tfs->make<TH1D>("h_slope",     "Slope of dt_{hit} vs dt_{track fit poca time};Slope;Entries", 100, 0., 4.);
+    h_slope_     = tfs->make<TH1D>("h_slope",     "Slope of dt_{hit} vs dt_{track fit poca time};Slope;Entries", 100, -2., 4.);
     h_offset_    = tfs->make<TH1D>("h_offset",    "Offset of dt_{hit} vs dt_{track fit poca time};Offset [ns];Entries", 100, -100., 100.);
     h_slopeUnc_  = tfs->make<TH1D>("h_slopeUnc",  "Uncertainty of slope;Slope Uncertainty;Entries", 100, 0., 0.1);
     h_chisq_     = tfs->make<TH1D>("h_chisq",     "Chi2 of fit;Chi2;Entries", 100, 0., 100.);
