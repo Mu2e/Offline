@@ -144,25 +144,6 @@ namespace mu2e
       outputFile<<channel<<","<<funcPedestal.GetParameter(1)<<",-1,-1"<<std::endl;  //only print out pedestal values
     }
 
-    outputFile<<std::endl;
-
-    //time offsets
-    art::ServiceHandle<art::TFileService> tfs;
-    TTree *treeTimeOffsets = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
-    size_t channel;
-    double offset;
-    treeTimeOffsets->Branch("channel", &channel);
-    treeTimeOffsets->Branch("timeOffset", &offset);
-
-    outputFile<<"TABLE CRVTime"<<std::endl;
-    outputFile<<"#channel, timeOffset"<<std::endl;
-    for(channel=0; channel<_timeOffsets.size(); ++channel)
-    {
-      offset=_timeOffsets.at(channel);
-      outputFile<<channel<<","<<offset<<std::endl;  //write to temporary DB text file
-      treeTimeOffsets->Fill(); //fill tree
-    }
-
     outputFile.close();
   }
 

@@ -130,21 +130,6 @@ namespace mu2e
         febChannel  = onlineChannel.FEBchannel();
         treeChannelMap->Fill();
       }
-
-      TTree *treeCalib = tfs->make<TTree>("crvCalib","crvCalib");
-      double pedestal, calibPulseHeight, calibPulseArea;
-      treeCalib->Branch("channel", &channel);
-      treeCalib->Branch("pedestal", &pedestal);
-      treeCalib->Branch("calibPulseHeight", &calibPulseHeight);
-      treeCalib->Branch("calibPulseArea", &calibPulseArea);
-
-      for(channel=0; channel<counters.size()*CRVId::nChanPerBar; ++channel)
-      {
-        pedestal = calib.pedestal(channel);
-        calibPulseHeight = calib.pulseHeight(channel);
-        calibPulseArea = calib.pulseArea(channel);
-        treeCalib->Fill();
-      }
     }
 
     int previousOfflineChannel=-1;

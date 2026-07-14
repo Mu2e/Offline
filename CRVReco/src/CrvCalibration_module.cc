@@ -180,23 +180,6 @@ namespace mu2e
       treePedestal->Fill(); //fill tree
     }
 
-    outputFile<<std::endl;
-
-    //time offsets
-    TTree *treeTimeOffset = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
-    double offset;
-    treeTimeOffset->Branch("channel", &channel);
-    treeTimeOffset->Branch("timeOffset", &offset);
-
-    outputFile<<"TABLE CRVTime"<<std::endl;
-    outputFile<<"#channel,timeOffset"<<std::endl;
-    for(channel=0; channel<_timeOffsets.size(); ++channel)
-    {
-      offset=_timeOffsets.at(channel);
-      outputFile<<channel<<","<<offset<<std::endl;  //write to DB text file
-      treeTimeOffset->Fill(); //fill tree
-    }
-
     outputFile.close();
   }
 
