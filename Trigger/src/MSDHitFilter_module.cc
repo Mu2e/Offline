@@ -83,6 +83,8 @@ namespace mu2e {
 
     passed &= naccepted >= _minHits;
 
+    if (passed) ++_npass;
+
     // Return the result
     return passed;
   }
