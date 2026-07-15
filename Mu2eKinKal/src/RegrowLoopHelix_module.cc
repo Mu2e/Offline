@@ -21,8 +21,6 @@
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // utiliites
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
