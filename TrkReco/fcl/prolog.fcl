@@ -139,7 +139,7 @@ TrkReco: { @table::TrkReco
   SelectReflections: {
     module_type : SelectReflections
     Surface : TT_Front
-    MaxDeltaT : 15 # ns
+    MaxDeltaT : 5 # ns
     MaxDeltaP : 15 # MeV
     # optionally only merge selected candidates
     # a simple selector is used here, but any selector implemented as a tool can be used
