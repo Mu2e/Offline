@@ -101,9 +101,10 @@ namespace mu2e {
       float      adc0 = row.ADCPerMeV_0();
       float      adc1 = row.ADCPerMeV_1();
 
-      if (!crid.isValid()) {
+      //the file should contain crystals in ascending order
+      if (crid.id() != nRead || !crid.isValid()){
         throw cet::exception("CALSIMPARAMSMAKER_RANGE")
-        << "CalSimParamsMaker found invalid offlineId " << crid << "\n";
+        << "invalid crystalID values at line "<<nRead+1<<"\n";
       }
 
       crystalIds[crid.id()]  = crid;
@@ -113,10 +114,6 @@ namespace mu2e {
       ++nRead;
     }
 
-    if (pePerMeVs.back().size() !=CaloConst::_nSiPMPerCrystal ) {
-      throw cet::exception("CALSIMPARAMSMAKER_RANGE")
-      << "CalSimParamsMaker found  too many nPE values\n";
-    }
 
     // check that all roid were filled
     if (nRead != CaloConst::_nCrystal) {

@@ -67,7 +67,7 @@ namespace mu2e {
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
              fhicl::Atom<bool>          addRandomNoise       { Name("addRandomNoise"),         Comment("Add random salt and pepper noise") };
              fhicl::Atom<float>         digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
-             fhicl::Atom<float>         MeVToADC             { Name("MeVToADC"),               Comment("MeV to ADC conversion factor") };
+             fhicl::Atom<float>         minNoiseAmplitude    { Name("minNoiseAmplitude"),      Comment("minimum amplitude to start adding noise") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
              fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") };
@@ -86,7 +86,7 @@ namespace mu2e {
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
-            MeVToADC_          (config().MeVToADC()),
+            minNoiseAmplitude_ (config().minNoiseAmplitude()),
             pulseShape_        (CaloPulseShape(config().pulseFileName(),config().pulseHistName(),config().digiSampling())),
             wfExtractor_       (config().bufferDigi(),config().nBinsPeak(),config().minPeakADC(),config().bufferDigi()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
@@ -130,7 +130,7 @@ namespace mu2e {
        unsigned                bufferDigi_;
        float                   startTimeBuffer_;
        int                     maxADCCounts_;
-       float                   MeVToADC_;
+       float                   minNoiseAmplitude_;
        CaloPulseShape          pulseShape_;
        CaloWFExtractor         wfExtractor_;
        CLHEP::HepRandomEngine& engine_;
@@ -262,8 +262,6 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------
   void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform)
   {
-       double minAmplitude = 0.1*MeVToADC_;
-
        size_t timeSample(0);
        std::vector<size_t> hitStarts{}, hitStops{};
        hitStarts.reserve(16);hitStops.reserve(16);
@@ -271,11 +269,11 @@ namespace mu2e {
        // First, find the ranges in the waveform with non-zero bins.
        while (timeSample < waveform.size())
        {
-           if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
+           if (waveform[timeSample] < minNoiseAmplitude_) {++timeSample; continue;}
 
            size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
            size_t sampleStop(timeSample);
-           while (sampleStop < waveform.size() && waveform[sampleStop] > minAmplitude) ++sampleStop;
+           while (sampleStop < waveform.size() && waveform[sampleStop] > minNoiseAmplitude_) ++sampleStop;
 
            hitStarts.push_back(sampleStart);
            hitStops.push_back(sampleStop);

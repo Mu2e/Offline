@@ -1,5 +1,5 @@
-#ifndef CaloConditions_CaloSimCrystalConfig_hh
-#define CaloConditions_CaloSimCrystalConfig_hh
+#ifndef CaloConditions_CalSimParamsConfig_hh
+#define CaloConditions_CalSimParamsConfig_hh
 //
 // Initialize CaloSimCrystalConfig from fcl
 //

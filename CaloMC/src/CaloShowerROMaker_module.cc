@@ -36,8 +36,6 @@
 #include <vector>
 #include <utility>
 
-#include "TFile.h"
-#include "TH2.h"
 
 namespace {
 
@@ -215,8 +213,8 @@ namespace mu2e {
 
       float mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
-      const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
-      const float crystalLength    = cal.caloInfo().getDouble("crystalZLength");
+      const Calorimeter& cal    = *(GeomHandle<Calorimeter>());
+      const float crystalLength = cal.caloInfo().getDouble("crystalZLength");
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
       diagSummary diagSum;
