@@ -50,13 +50,33 @@ namespace mu2e
     public:
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
+    struct ModuleConfig
+    {
+      fhicl::Atom<std::string> name{Name("moduleName")};
+      fhicl::Atom<int>         firstFEB{Name("firstFEB")};
+      fhicl::Atom<int>         sides{Name("sides")};
+      fhicl::Atom<bool>        muonTaggers{Name("muonTaggers")};
+      fhicl::Atom<std::string> neighborName{Name("neighborName")};
+    };
+    struct TimeOffset
+    {
+      fhicl::Atom<int>         feb{Name("feb")};
+      fhicl::Atom<double>      timeOffset{Name("timeOffset")};
+    };
     struct Config
     {
-      fhicl::Atom<std::string> crvRecoPulsesModuleLabel{ Name("crvRecoPulseModuleLabel"), Comment("CrvRecoPulse Label")};
-      fhicl::Atom<double>      PEthreshold{ Name("PEthreshold"), Comment("PE threshold")};
-      fhicl::Atom<bool>        removeTimeOffsets{ Name("removeTimeOffsets"), Comment("remove time offsets added by reco")};
+      fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulseModuleLabel"), Comment("CrvRecoPulse Label")};
+      fhicl::Atom<double>      PEthreshold{Name("PEthreshold"), Comment("PE threshold")};
+      fhicl::Atom<bool>        removeTimeOffsets{Name("removeTimeOffsets"), Comment("remove time offsets added by reco")};
       fhicl::Atom<std::string> calibFileName{Name("calibFileName"), Comment("name of the DB file name for the time offsets")};
       fhicl::Atom<std::string> pdfFileName{Name("pdfFileName"), Comment("name of the pdf file name with the time difference plots")};
+
+      //specifically for a geometry
+      fhicl::Sequence<int>                         specialFEBsType1{Name("specialFEBsType1"), Comment("FEB numbers where the FPGAs are compared 0/2, 1/3, 1/2")};  //extracted: none
+      fhicl::Sequence<int>                         specialFEBsType2{Name("specialFEBsType2"), Comment("FEB numbers where the FPGAs are compared 0/1, 1/2, 2/3")};  //extracted: 28,29
+      fhicl::Sequence<fhicl::Table<ModuleConfig> > moduleConfigs{Name("moduleConfigs"), Comment("module-specific settings")};
+      fhicl::Sequence<std::string>                 checkOppositeSides{Name("checkOppositeSides"), Comment("Check time diffs between opposite sides")};  //extracted: "EX_0", "T2_0"
+      fhicl::Sequence<fhicl::Table<TimeOffset> >   specialTimeOffsets{Name("specialTimeOffsets"), Comment("special time offsets")};
     };
 
     using Parameters = art::EDAnalyzer::Table<Config>;
@@ -65,6 +85,7 @@ namespace mu2e
     void analyze(const art::Event& e) override;
     void beginJob() override;
     void endJob() override;
+    void PreparePlots();
 
     private:
     std::string   _crvRecoPulsesModuleLabel;
@@ -74,8 +95,16 @@ namespace mu2e
     std::string   _calibFileName;
     std::string   _pdfFileName;
 
+    //specifically for a geometry
+    std::vector<int>          _specialFEBsType1;
+    std::vector<int>          _specialFEBsType2;
+    std::vector<ModuleConfig> _moduleConfigs;
+    std::vector<std::string>  _checkOppositeSides;
+    std::vector<TimeOffset>   _specialTimeOffsets;
+
     std::map<std::pair<int,int>,TH1F*>  _histTimeDiffs; //between FPGAs
     std::map<int,CRVROC>                _channels;
+    std::set<int>                       _febs;
 
     ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
     ProditionsHandle<CRVCalib>   _calib_h;
@@ -120,70 +149,105 @@ namespace mu2e
     _removeTimeOffsets(conf().removeTimeOffsets()),
     _firstEvent(true),
     _calibFileName(conf().calibFileName()),
-    _pdfFileName(conf().pdfFileName())
-  {
-    //create all required histograms of time differences between FPGAs
+    _pdfFileName(conf().pdfFileName()),
+    _specialFEBsType1(conf().specialFEBsType1()),
+    _specialFEBsType2(conf().specialFEBsType2()),
+    _moduleConfigs(conf().moduleConfigs()),
+    _checkOppositeSides(conf().checkOppositeSides()),
+    _specialTimeOffsets(conf().specialTimeOffsets())
+  {}
 
+  void CrvTimeOffsets::PreparePlots() //create all required histograms of time differences between FPGAs
+  {
     //(1) compare FPGAs of one FEB
-    for(int feb=0; feb<30; ++feb)  //TODO: Get the number 30 from the channel map
+    for(int feb : _febs)
     {
       std::string pageName(Form("FEB %i",feb+1));
       _plotPages.emplace_back(pageName);
-      if(feb<28) //regular modules
+      if(std::find(_specialFEBsType1.begin(),_specialFEBsType1.end(),feb)!=_specialFEBsType1.end()) //reverse offset
       {
-        _plotPages.back()._plots.emplace_back(1,feb,feb,0,2,_histTimeDiffs);
+        _plotPages.back()._plots.emplace_back(1,feb,feb,0,1,_histTimeDiffs);
         _plotPages.back()._plots.emplace_back(2,feb,feb,1,3,_histTimeDiffs);
-        _plotPages.back()._plots.emplace_back(3,feb,feb,0,3,_histTimeDiffs);
+        _plotPages.back()._plots.emplace_back(3,feb,feb,1,2,_histTimeDiffs);
       }
-      else //muon taggers
+      else if(std::find(_specialFEBsType2.begin(),_specialFEBsType2.end(),feb)!=_specialFEBsType2.end()) //muon taggers
       {
         _plotPages.back()._plots.emplace_back(1,feb,feb,0,1,_histTimeDiffs);
         _plotPages.back()._plots.emplace_back(2,feb,feb,1,2,_histTimeDiffs);
         _plotPages.back()._plots.emplace_back(3,feb,feb,2,3,_histTimeDiffs);
       }
+      else //regular modules
+      {
+        _plotPages.back()._plots.emplace_back(1,feb,feb,0,2,_histTimeDiffs);
+        _plotPages.back()._plots.emplace_back(2,feb,feb,1,3,_histTimeDiffs);
+        _plotPages.back()._plots.emplace_back(3,feb,feb,0,3,_histTimeDiffs);
+      }
     }
 
     //(2) compare both FEBs at a module's readout side
     //module 8 is for the muon taggers
-    for(int crvmodule=0; crvmodule<9; ++crvmodule) //TODO: Get the modules from the geometry
+    for(auto moduleConfig : _moduleConfigs)
     {
-      std::string pageName(Form("Module %i (FEBs on same side)",crvmodule+1));
+      std::string pageName(Form("Module %s (FEBs on same side)",moduleConfig.name().c_str()));
       _plotPages.emplace_back(pageName);
-      if(crvmodule<6)
+      if(moduleConfig.muonTaggers())
       {
-        _plotPages.back()._plots.emplace_back(1,crvmodule*4+0,crvmodule*4+1,3,1,_histTimeDiffs); //one module side
-        _plotPages.back()._plots.emplace_back(2,crvmodule*4+2,crvmodule*4+3,3,1,_histTimeDiffs); //other module side
+        _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,moduleConfig.firstFEB()+1,3,0,_histTimeDiffs);
       }
-      else if(crvmodule==6) _plotPages.back()._plots.emplace_back(1,24,25,3,1,_histTimeDiffs);
-      else if(crvmodule==7) _plotPages.back()._plots.emplace_back(1,26,27,3,1,_histTimeDiffs);
-      else if(crvmodule==8) _plotPages.back()._plots.emplace_back(1,28,29,3,0,_histTimeDiffs);
+      else
+      {
+        if(moduleConfig.sides()==2)
+        {
+          _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,moduleConfig.firstFEB()+1,3,1,_histTimeDiffs); //one module side
+          _plotPages.back()._plots.emplace_back(2,moduleConfig.firstFEB()+2,moduleConfig.firstFEB()+3,3,1,_histTimeDiffs); //other module side
+        }
+        else
+        {
+          _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,moduleConfig.firstFEB()+1,3,1,_histTimeDiffs); //one module side
+        }
+      }
     }
 
     //(3) compare neighboring modules
-    for(int crvmodule=0; crvmodule<8; ++crvmodule)
+    for(auto moduleConfig : _moduleConfigs)
     {
-      if(crvmodule==3) continue; //last Tmodule
-      if(crvmodule==5) continue; //last LEmodule
-      if(crvmodule==7) continue; //last DSmodule
-      std::string pageName(Form("Module %i / Module %i",crvmodule+1,crvmodule+2));
-      _plotPages.emplace_back(pageName);
-      if(crvmodule<6)
+      std::string neighborName = moduleConfig.neighborName();
+      if(neighborName=="") continue;  //last module in sector type
+
+      auto neighborModuleConfig = std::find_if(_moduleConfigs.begin(),_moduleConfigs.end(),[&neighborName](const ModuleConfig &m){return m.name()==neighborName;});
+      if(neighborModuleConfig==_moduleConfigs.end())
       {
-        _plotPages.back()._plots.emplace_back(1,crvmodule*4+0,crvmodule*4+5,1,2,_histTimeDiffs); //one module side
-        _plotPages.back()._plots.emplace_back(2,crvmodule*4+2,crvmodule*4+7,1,2,_histTimeDiffs); //other module side
+        std::cerr<<"Neighbor module "<<neighborName<<" for module "<<moduleConfig.name()<<" does not exist."<<std::endl;
+        continue;
       }
-      else if(crvmodule==6) _plotPages.back()._plots.emplace_back(1,24,27,1,2,_histTimeDiffs);
+
+      std::string pageName(Form("Module %s / Module %s",moduleConfig.name().c_str(),neighborName.c_str()));
+      _plotPages.emplace_back(pageName);
+
+      if(!moduleConfig.muonTaggers())
+      {
+        if(moduleConfig.sides()==2)
+        {
+          _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,neighborModuleConfig->firstFEB()+1,1,2,_histTimeDiffs); //one module side
+          _plotPages.back()._plots.emplace_back(2,moduleConfig.firstFEB()+2,neighborModuleConfig->firstFEB()+3,1,2,_histTimeDiffs); //other module side
+        }
+        else
+        {
+          _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,neighborModuleConfig->firstFEB()+1,1,2,_histTimeDiffs); //one module side
+        }
+      }
     }
 
     //(4) compare FEBs of opposite readout sides
+    for(auto moduleConfig : _moduleConfigs)
     {
-      std::string pageName1("Module 1 (FEBs on opposite sides)");
-      std::string pageName2("Module 5 (FEBs on opposite sides)");
-
-      _plotPages.emplace_back(pageName1);
-      _plotPages.back()._plots.emplace_back(1,0*4+0,0*4+2,0,0,_histTimeDiffs);
-      _plotPages.emplace_back(pageName2);
-      _plotPages.back()._plots.emplace_back(1,4*4+0,4*4+2,0,0,_histTimeDiffs);
+      std::string moduleName = moduleConfig.name();
+      if(std::find(_checkOppositeSides.begin(),_checkOppositeSides.end(),moduleName)!=_checkOppositeSides.end())
+      {
+        std::string pageName(Form("Module %s (FEBs on opposite sides)",moduleName.c_str()));
+        _plotPages.emplace_back(pageName);
+        _plotPages.back()._plots.emplace_back(1,moduleConfig.firstFEB()+0,moduleConfig.firstFEB()+2,0,0,_histTimeDiffs);
+      }
     }
   }
 
@@ -200,11 +264,10 @@ namespace mu2e
     std::map<std::pair<int,int>,float> measuredTimeDiffs;
     std::map<int,float> timeOffsets;
 
-    //TODO: use user constants from fcl file
-    timeOffsets[(1-1)*4]=0;     //FEB1 is used as reference
-    timeOffsets[(17-1)*4]=112;  //FEB17 has 72ft longer cable (for testing purpose)
-    timeOffsets[(25-1)*4]=7.8;  //FEB25 has 5ft longer cable
-    timeOffsets[(29-1)*4]=34;   //FEB29 has 22ft longer cable
+    for(const auto& [feb,specialTimeOffset] : _specialTimeOffsets)
+    {
+      timeOffsets[feb()*4]=specialTimeOffset();  //reference time offsets to start chains of FPGAs with time differences
+    }
 
     TCanvas c0;
     c0.Print(Form("%s[", _pdfFileName.c_str()), "pdf");
@@ -219,7 +282,7 @@ namespace mu2e
       c->Divide(1,2);
 
       c->cd(1);
-      t->SetTextSize(0.15);
+      t->SetTextSize(0.08);
       t->Draw();
 
       c->cd(2);
@@ -283,10 +346,10 @@ namespace mu2e
     }
     for(const auto& timeOffset: timeOffsets)
     {
-      int fpga=timeOffset.first%4;
-      int globalfeb=timeOffset.first/4;
-      int feb=globalfeb%24+1;
-      int roc=globalfeb/24+1;
+      int fpga=timeOffset.first%CRVId::nFPGAPerFEB;
+      int globalfeb=timeOffset.first/CRVId::nFPGAPerFEB;
+      int feb=globalfeb%CRVId::nFEBPerROC+1;
+      int roc=globalfeb/CRVId::nFEBPerROC+1;
       std::cout<<"ROC "<<roc<<"    FEB "<<feb<<"   fpga "<<fpga<<"     timeOffset "<<timeOffset.second<<std::endl;
     }
 
@@ -329,9 +392,13 @@ namespace mu2e
       for(size_t offlineChannel=0; offlineChannel<counters.size()*CRVId::nChanPerBar; ++offlineChannel)
       {
         if(!crvChannelMap.onlineExists(offlineChannel)) continue;
-        CRVROC onlineChannel  = crvChannelMap.online(offlineChannel);
+        CRVROC onlineChannel = crvChannelMap.online(offlineChannel);
         _channels.emplace(offlineChannel,onlineChannel);
+        int feb = (onlineChannel.ROC()-1)*CRVId::nFEBPerROC+(onlineChannel.FEB()-1);
+        _febs.insert(feb);
       }
+
+      PreparePlots();
     }
 
 
