@@ -145,8 +145,8 @@ namespace mu2e
       {
         c->cd(_pad);
         _h->Draw();
-        float mean=_h->GetMean();
-        if(_h->Integral(1,300)<25)
+        float mean=_h->GetMean();  //TODO: get the mean from a Gaussian fit (where possible)
+        if(_h->Integral(1,300)<25) //TODO: use a better cutoff
         {
           std::cerr<<"Couldn't find the mean for histogram "<<_h->GetName()<<"."<<std::endl;
         }
