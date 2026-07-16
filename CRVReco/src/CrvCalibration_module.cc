@@ -87,7 +87,6 @@ namespace mu2e
     ProditionsHandle<CRVCalib> _calib_h;
 
     std::vector<double> _pedestals;
-    std::vector<double> _timeOffsets;
   };
 
 
@@ -122,7 +121,6 @@ namespace mu2e
     _calibHistsPulseArea.reserve(counters.size()*CRVId::nChanPerBar);
     _calibHistsPulseHeight.reserve(counters.size()*CRVId::nChanPerBar);
     _pedestals.resize(counters.size()*CRVId::nChanPerBar);
-    _timeOffsets.resize(counters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -138,7 +136,6 @@ namespace mu2e
                                                  Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
                                                  _histBinsPulseHeight,0,_histMaxPulseHeight));
         _pedestals[channelIndex]=0;
-        _timeOffsets[channelIndex]=0;
       }
     }
   }
@@ -198,7 +195,6 @@ namespace mu2e
       for(size_t channelIndex=0; channelIndex<_pedestals.size(); ++channelIndex)
       {
         _pedestals[channelIndex] = calib.pedestal(channelIndex);
-        _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
       }
     }
 

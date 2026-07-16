@@ -43,6 +43,20 @@
 #include <TText.h>
 #include <TROOT.h>
 
+#include <TError.h>
+
+namespace
+{
+  ErrorHandlerFunc_t oldHandler = nullptr;
+
+  void QuietPrintHandler(int level, Bool_t abort, const char* location, const char* msg)
+  {
+    // Suppress only TCanvas::Print informational messages.
+    if (level == kInfo && strcmp(location, "TCanvas::Print") == 0) return;
+    oldHandler(level, abort, location, msg);
+  }
+}
+
 namespace mu2e
 {
   class CrvTimeOffsets : public art::EDAnalyzer
@@ -70,6 +84,7 @@ namespace mu2e
       fhicl::Atom<bool>        removeTimeOffsets{Name("removeTimeOffsets"), Comment("remove time offsets added by reco")};
       fhicl::Atom<std::string> calibFileName{Name("calibFileName"), Comment("name of the DB file name for the time offsets")};
       fhicl::Atom<std::string> pdfFileName{Name("pdfFileName"), Comment("name of the pdf file name with the time difference plots")};
+      fhicl::Atom<int>         diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level"), 1};
 
       //specifically for a geometry
       fhicl::Sequence<int>                         specialFEBsType1{Name("specialFEBsType1"), Comment("FEB numbers where the FPGAs are compared 0/2, 1/3, 1/2")};  //extracted: none
@@ -94,6 +109,7 @@ namespace mu2e
     bool          _firstEvent;
     std::string   _calibFileName;
     std::string   _pdfFileName;
+    int           _diagLevel;
 
     //specifically for a geometry
     std::vector<int>          _specialFEBsType1;
@@ -118,9 +134,9 @@ namespace mu2e
       Plot(int pad, int feb1, int feb2, int fpga1, int fpga2, std::map<std::pair<int,int>,TH1F*> &histTimeDiffs) :
            _pad(pad), _feb1(feb1), _feb2(feb2), _fpga1(fpga1), _fpga2(fpga2)
       {
-        std::pair<int,int> histIndex(feb1*4+fpga1,feb2*4+fpga2);
+        std::pair<int,int> histIndex(feb1*CRVId::nFPGAPerFEB+fpga1,feb2*CRVId::nFPGAPerFEB+fpga2);
         art::ServiceHandle<art::TFileService> tfs;
-        _h = tfs->make<TH1F>(Form("TimeDiffs_FEB/FGPA_%i/%i_%i/%i",feb1+1,fpga1,feb2+1,fpga2),
+        _h = tfs->make<TH1F>(Form("TimeDiffs__FEB_FPGA__%i_%i__%i_%i",feb1+1,fpga1,feb2+1,fpga2),
                              Form("FEB/FPGA %i/%i, FEB/FPGA %i/%i;time difference [ns];counts",feb1+1,fpga1,feb2+1,fpga2),
                              300,-150,150);
         histTimeDiffs[histIndex] = _h;
@@ -129,8 +145,16 @@ namespace mu2e
       {
         c->cd(_pad);
         _h->Draw();
-        float mean=_h->GetMean();  //FIXME: replace by mean of gaussian fit
-        measuredTimeDiffs[std::pair<int,int>(_feb1*4+_fpga1,_feb2*4+_fpga2)]=mean;
+        float mean=_h->GetMean();
+        if(_h->Integral(1,300)<25)
+        {
+          std::cerr<<"Couldn't find the mean for histogram "<<_h->GetName()<<"."<<std::endl;
+        }
+        else
+        {
+          std::pair<int,int> histIndex(_feb1*CRVId::nFPGAPerFEB+_fpga1,_feb2*CRVId::nFPGAPerFEB+_fpga2);
+          measuredTimeDiffs[histIndex]=mean;
+        }
       }
     };
     struct PlotPage
@@ -150,6 +174,7 @@ namespace mu2e
     _firstEvent(true),
     _calibFileName(conf().calibFileName()),
     _pdfFileName(conf().pdfFileName()),
+    _diagLevel(conf().diagLevel()),
     _specialFEBsType1(conf().specialFEBsType1()),
     _specialFEBsType2(conf().specialFEBsType2()),
     _moduleConfigs(conf().moduleConfigs()),
@@ -266,9 +291,10 @@ namespace mu2e
 
     for(const auto& [feb,specialTimeOffset] : _specialTimeOffsets)
     {
-      timeOffsets[feb()*4]=specialTimeOffset();  //reference time offsets to start chains of FPGAs with time differences
+      timeOffsets[feb()*CRVId::nFPGAPerFEB]=specialTimeOffset();  //reference time offsets to start chains of FPGAs with time differences
     }
 
+    oldHandler = SetErrorHandler(QuietPrintHandler);  //suppress the messages caused by TCanvas::Print()
     TCanvas c0;
     c0.Print(Form("%s[", _pdfFileName.c_str()), "pdf");
 
@@ -298,6 +324,7 @@ namespace mu2e
     }
 
     c0.Print(Form("%s]", _pdfFileName.c_str()), "pdf");
+    SetErrorHandler(oldHandler);
 
     //Find a chain of FPGAs starting from a reference FPGA to find time offsets all FPGAs relative to the reference FPGA
     size_t prevSize=measuredTimeDiffs.size();
@@ -339,37 +366,52 @@ namespace mu2e
       ++measuredTimeDiff;
     } //done with connecting all FPGAs
 
-    if(measuredTimeDiffs.size()>0) std::cout<<"There are still some unused measured time diffs!"<<std::endl;
-    for(const auto& measuredTimeDiff: measuredTimeDiffs)
+    if(measuredTimeDiffs.size()>0) std::cerr<<"There are still some unused measured time diffs!"<<std::endl;
+
+    if(_diagLevel>0)
     {
-      std::cout<<measuredTimeDiff.first.first<<"/"<<measuredTimeDiff.first.second<<" "<<measuredTimeDiff.second<<std::endl;
-    }
-    for(const auto& timeOffset: timeOffsets)
-    {
-      int fpga=timeOffset.first%CRVId::nFPGAPerFEB;
-      int globalfeb=timeOffset.first/CRVId::nFPGAPerFEB;
-      int feb=globalfeb%CRVId::nFEBPerROC+1;
-      int roc=globalfeb/CRVId::nFEBPerROC+1;
-      std::cout<<"ROC "<<roc<<"    FEB "<<feb<<"   fpga "<<fpga<<"     timeOffset "<<timeOffset.second<<std::endl;
+      for(const auto& measuredTimeDiff: measuredTimeDiffs)
+      {
+        std::cout<<"Unused time diff for "<<measuredTimeDiff.first.first<<"/"<<measuredTimeDiff.first.second<<": "<<measuredTimeDiff.second<<std::endl;
+      }
+      for(const auto& timeOffset: timeOffsets)
+      {
+        int fpga=timeOffset.first%CRVId::nFPGAPerFEB;
+        int globalfeb=timeOffset.first/CRVId::nFPGAPerFEB;
+        int feb=globalfeb%CRVId::nFEBPerROC+1;
+        int roc=globalfeb/CRVId::nFEBPerROC+1;
+        std::cout<<"ROC "<<roc<<"    FEB "<<feb<<"   fpga "<<fpga<<"     timeOffset "<<timeOffset.second<<std::endl;
+      }
     }
 
     //write out time calibration file
     std::ofstream calibFile(_calibFileName);
+    if(!calibFile.is_open()) throw cet::exception("CRVCALIB") << "Couldn't create output txt file " << _calibFileName << ".";
     calibFile<<"TABLE CRVTime"<<std::endl;
     calibFile<<"#channel,timeOffset"<<std::endl;
 
     //find time offsets for each offline channel
-    for(const auto& [offlineChannel, onlineChannel] : _channels)
+    int nChanPerFPGA = CRVId::nChanPerFEB/CRVId::nFPGAPerFEB;
+    GeomHandle<CosmicRayShield> CRS;
+    const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+    for(size_t offlineChannel=0; offlineChannel<counters.size()*CRVId::nChanPerBar; ++offlineChannel)
     {
-      int globalfeb    = (onlineChannel.ROC()-1)*CRVId::nFEBPerROC + (onlineChannel.FEB()-1);
-      int nChanPerFPGA = CRVId::nChanPerFEB/CRVId::nFPGAPerFEB;
-      int globalfpga   = globalfeb*CRVId::nFPGAPerFEB + onlineChannel.FEBchannel()/nChanPerFPGA;
-      if(timeOffsets.find(globalfpga)==timeOffsets.end())
+      if(_channels.find(offlineChannel)==_channels.end())
       {
-        std::cerr<<"Couldn't find a time offset for roc "<<onlineChannel.ROC()<<"  feb "<<onlineChannel.FEB()<<"  febChannel "<<onlineChannel.FEBchannel()<<std::endl;
         calibFile<<offlineChannel<<",0"<<std::endl;
       }
-      else calibFile<<offlineChannel<<","<<timeOffsets.at(globalfpga)<<std::endl;
+      else
+      {
+        const CRVROC &onlineChannel = _channels.find(offlineChannel)->second;
+        int globalfeb    = (onlineChannel.ROC()-1)*CRVId::nFEBPerROC + (onlineChannel.FEB()-1);
+        int globalfpga   = globalfeb*CRVId::nFPGAPerFEB + onlineChannel.FEBchannel()/nChanPerFPGA;
+        if(timeOffsets.find(globalfpga)==timeOffsets.end())
+        {
+          std::cerr<<"Couldn't find a time offset for roc "<<onlineChannel.ROC()<<"  feb "<<onlineChannel.FEB()<<"  febChannel "<<onlineChannel.FEBchannel()<<std::endl;
+          calibFile<<offlineChannel<<",0"<<std::endl;
+        }
+        else calibFile<<offlineChannel<<","<<timeOffsets.at(globalfpga)<<std::endl;
+      }
     }
 
     calibFile.close();
@@ -444,17 +486,15 @@ namespace mu2e
     }
 
     //compare time differences between different FPGAs
-    for(auto fpga1=fpgaAverageTimes.begin(); fpga1!=fpgaAverageTimes.end(); fpga1++)
-    for(auto fpga2=fpgaAverageTimes.begin(); fpga2!=fpgaAverageTimes.end(); fpga2++)
+    for(const auto& [histIndex, hist] : _histTimeDiffs)
     {
-      if(fpga1->first>=fpga2->first) continue; //don't compare with itself (=) and avoid comparing the same FPGAs twice (>)
-
-      std::pair<int,int> histIndex(fpga1->first,fpga2->first);
-      auto h = _histTimeDiffs.find(histIndex);
-      if(h==_histTimeDiffs.end()) continue; //only store time differences for prepared plots
-
-      double timeDiff=fpga1->second-fpga2->second;
-      h->second->Fill(timeDiff);
+      int fpga1=histIndex.first;
+      int fpga2=histIndex.second;
+      auto avgTime1 = fpgaAverageTimes.find(fpga1);
+      auto avgTime2 = fpgaAverageTimes.find(fpga2);
+      if(avgTime1==fpgaAverageTimes.end() || avgTime2==fpgaAverageTimes.end()) continue;  //plot cannot be created
+      double timeDiff=avgTime1->second-avgTime2->second;
+      hist->Fill(timeDiff);
     }
 
   } // end analyze

@@ -26,7 +26,6 @@
 
 #include <TH1F.h>
 #include <TF1.h>
-#include <TTree.h>
 
 namespace mu2e
 {
@@ -64,10 +63,6 @@ namespace mu2e
     double             _maxADCspread;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _pedestalHists;
-
-    ProditionsHandle<CRVCalib> _calib_h;
-
-    std::vector<double> _timeOffsets;
   };
 
 
@@ -91,7 +86,6 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     _pedestalHists.reserve(counters.size()*CRVId::nChanPerBar);
-    _timeOffsets.resize(counters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -103,7 +97,6 @@ namespace mu2e
         _pedestalHists.emplace_back(tfs->make<TH1F>(Form("crvPedestalHist_%lu",channelIndex),
                                                     Form("crvPedestalHist_%lu",channelIndex),
                                                     _histBins,_histMin,_histMax));
-        _timeOffsets[channelIndex]=0;
       }
     }
   }
@@ -151,19 +144,6 @@ namespace mu2e
   {
     art::Handle<CrvDigiCollection> crvDigiCollection;
     if(!event.getByLabel(_crvDigiModuleLabel,(_useNZS?"NZS":""),crvDigiCollection)) return;
-
-    //find time offsets from first event
-    //need to assume that this is only used for calibration runs where the time offsets stay constant over the entire run
-    static bool first=true;
-    if(first)
-    {
-      first=false;
-      auto const& calib = _calib_h.get(event.id());
-      for(size_t channelIndex=0; channelIndex<_timeOffsets.size(); ++channelIndex)
-      {
-        _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
-      }
-    }
 
     for(auto iter=crvDigiCollection->begin(); iter!=crvDigiCollection->end(); ++iter)
     {
