@@ -18,9 +18,10 @@
 // RUN-2 SAFETY: run-2 geometry presents at most one CRV sector (and its one strongback) per
 // extrapolation direction, so the outward order is unchanged (strongback then sector) and no
 // stacking occurs. Concrete passive planes are NOT handled here (they stay in
-// extrapolatePassiveMaterial); only the CRV strongbacks are merged with the sectors. Per-surface
-// grazing floors are preserved exactly: sectors keep the z-normal end-cap floor (minvlong), the
-// strongback planes keep minvnorm, identical to the originals.
+// extrapolatePassiveMaterial); only the CRV strongbacks are merged with the sectors. Sectors and
+// strongback planes share the same minvnorm floor (a near-zero guard against the normvel divide in
+// time_to_sector, not a physics cut): grazing incidence is not pre-filtered by a velocity threshold,
+// it is left to fail at the actual surface intersection (newinter.good()), same as any other surface.
 #ifndef Mu2eKinKal_ExtrapolateCRVRegion_hh
 #define Mu2eKinKal_ExtrapolateCRVRegion_hh
 #include "KinKal/General/TimeDir.hh"
@@ -68,15 +69,9 @@ namespace mu2e {
       };
 
       ExtrapolateCRVRegion(double maxdt, double maxdtstep, double dptol, double intertol,
-          double minv, double minvlong, CRV const& crv, MaterialPlaneCollection const& planes, int debug=0) :
+          double minv, CRV const& crv, MaterialPlaneCollection const& planes, int debug=0) :
         maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol),
-        minvnorm_(minv), minvlong_(minvlong), debug_(debug), sectors_(crv.sectors()), planes_(planes) {
-        // per-sector grazing floor: stricter (minvlong) for z-normal end-cap planes, looser (minvnorm)
-        // for the oblique-cosmic top/side planes -- identical to ExtrapolateCRV.
-        sectorminv_.reserve(sectors_.size());
-        for(auto const& sector : sectors_)
-          sectorminv_.push_back( fabs(sector.sector_->normal().Z()) > 0.9 ? minvlong_ : minvnorm_ );
-      }
+        minvnorm_(minv), debug_(debug), sectors_(crv.sectors()), planes_(planes) {}
       double maxDt() const { return maxDt_; }
       double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
@@ -93,11 +88,9 @@ namespace mu2e {
       double dptol_ = 1e10;
       double intertol_ = 1e10;
       double minvnorm_ = 1e-5;
-      double minvlong_ = 1e-5;
       int debug_ = 0;
       CRVSV sectors_;
       MaterialPlaneCollection const& planes_;
-      std::vector<double> sectorminv_;
       mutable RegionXingCollection inters_;
   };
 
@@ -124,8 +117,9 @@ namespace mu2e {
       double normvel = vel.Dot(sector.sector_->normal())*timeDirSign(tdir);
       double signed_perp = (sector.sector_->center()-pos).Dot(sector.sector_->normal());
       double time_to_sector = signed_perp / normvel;
-      // skip grazing, or planes already behind this piece's evaluation point (already crossed/added)
-      if(fabs(normvel) < sectorminv_[isect] || time_to_sector < 0 )continue;
+      // skip planes already behind this piece's evaluation point (already crossed/added); grazing
+      // incidence is not pre-filtered here, it is left to fail at the intersection attempt below
+      if(fabs(normvel) < minvnorm_ || time_to_sector < 0 )continue;
       auto newinter = KinKal::intersect(fittraj,*sector.sector_,trange,intertol_,tdir);
       if(newinter.good()){
         if(!coincident(newinter.time_)) inters_.emplace_back(newinter,(int)isect,sector.whw_);
