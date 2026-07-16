@@ -70,7 +70,7 @@ namespace mu2e {
       }
       // The "full" integral may be missing the lowest tail component in some cases (e.g. DIO)
       // --> apply a linear interpolation correction if requested
-      const double xmin = fullSpectrum.getAbscissa(0);
+      const double xmin = fullSpectrum.getXMin();
       if(correct_full_integral && xmin > full_var_low) {
         const double pdfmin  = fullSpectrum.getPDF(0);
         const double binsize = fullSpectrum.getBinWidth();
