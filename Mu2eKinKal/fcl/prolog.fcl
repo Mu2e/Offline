@@ -485,8 +485,8 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
-     SaveDomains : true
-     SaveTrajectory : Detector
+      SaveDomains : true
+      SaveTrajectory : Detector
     }
     FitSettings : {
       @table::Mu2eKinKal.LHSEEDFIT
@@ -527,8 +527,8 @@ Mu2eKinKal : {
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
       # save the full trajectory
-       SaveTrajectory: Full
-       SaveDomains : false # meaningless for Linefit
+      SaveTrajectory: Full
+      SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -569,10 +569,78 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP
   }
+
+  # MC-only diagnostic producers: re-seed each reconstructed cosmic fit with the TRUE muon state and
+  # re-extrapolate it, isolating the extrapolation (B-field/material) error from the fit error. These
+  # consume MC products, so they must NOT be added to any real-data reconstruction path; add them to an
+  # MC analysis path after the drift fit and SelectRecoMC. The truth-seeded KalSeed is associated to the
+  # same KalSeedMC as its reco parent (see KinematicLineTruthSeed / CentralHelixTruthSeed).
+  KLTruthSeed : {
+    module_type : KKTruthSeed
+    KalSeedCollection : "KKLine"      # reconstructed KKLine KalSeeds to truth-seed
+    KalSeedMCAssns : "SelectRecoMC"   # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
+    MCTrajectories : "compressDigiMCs" # true trajectory (set to the sample's MCTrajectory product)
+    SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # d0, phi0, z0, cost, t0, mom (matches KINEMATICLINE)
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory: Full
+      SaveDomains : false # meaningless for a line fit
+      # Sample the truth track at the tracker ends + extracted-CRV sectors so its KalSeed carries the CRV
+      # crossings (the truth track has no straw hits, so it relies entirely on this surface sampling).
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","CRV_EX","CRV_T1","CRV_T2"]
+    }
+    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT   # match the reco KKLine ExtensionSettings
+    ExtrapolationSettings : @local::Mu2eKinKal.KLXTRAP  # match the reco KKLine ExtrapolationSettings
+  }
+
+  CHTruthSeed : {
+    module_type : KKTruthSeed
+    KalSeedCollection : "KKCHmu"        # reconstructed KKCH KalSeeds to truth-seed
+    KalSeedMCAssns : "SelectRecoMC"     # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
+    MCTrajectories : "compressDigiMCs"  # dense true trajectory used to match the piecewise |p| through the tracker
+    SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0 (matches CENTRALHELIX)
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : Full
+      SaveDomains : false  # the truth track has no BField domains (upstream bfcorr=false); SaveDomains:true
+                           # would deref rbegin() of an empty domain set in KKFit::createSeed (SIGSEGV)
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer",
+        "CRV_T1","CRV_T2","CRV_T3","CRV_T4","CRV_T5",
+        "CRV_R1","CRV_R2","CRV_R3","CRV_R4","CRV_R5","CRV_R6",
+        "CRV_L1","CRV_L2","CRV_L3","CRV_U","CRV_D1","CRV_D2","CRV_D3","CRV_D4"]
+    }
+    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT   # match the reco KKCHmu ExtensionSettings
+    ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP  # match the reco KKCHmu ExtrapolationSettings
+  }
 }
 
 Mu2eKinKal : {
   @table::Mu2eKinKal
+
+  RegrowLH : {
+    module_type : RegrowLoopHelix
+    CaloClusterCollection : "CaloClusterMaker"
+    StrawDigiIndexMap : "SelectReco:StrawDigiMap"
+    RefitSettings : {
+      @table::Mu2eKinKal.REGROW
+      BFieldCorrection : true
+    }
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"]
+      AddHits : false
+      SaveDomains : true
+      SaveTrajectory : Full
+    }
+    ExtrapolationSettings :{
+      @table::Mu2eKinKal.LHDRIFTXTRAP
+      BackToTracker: true
+    }
+    Extend: false
+  }
+
   producers : {
     # seed fits: these don't use drift information or BField corrections
     KLSeedFit: @local::Mu2eKinKal.KLSeedFit
@@ -608,7 +676,6 @@ Mu2eKinKal.producers.KKUeSeedFit.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKUmuSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmuSeedFit.FitDirection : @local::FitDir.downstream
 
-# save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : @local::Particle.muminus
@@ -621,5 +688,4 @@ Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUe.ExtrapolationSettings.BackToTracker : true
 Mu2eKinKal.producers.KKUmu.ExtrapolationSettings.BackToTracker : true
 
-#
 END_PROLOG

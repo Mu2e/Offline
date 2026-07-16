@@ -170,7 +170,7 @@ namespace mu2e {
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = kkg_h->DS()->innerProtonAbsorberPtr();
-        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance());
+        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance(),kkmat_h->applyBetheCorrection());
         if(extrapIPA.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
@@ -211,7 +211,7 @@ namespace mu2e {
       if(extrapST.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance());
+        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance(),kkmat_h->applyBetheCorrection());
         if(extrapST.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
@@ -306,7 +306,7 @@ namespace mu2e {
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)inter.isect_).sector_,
             SurfaceId(kkg_h->CRV()->sectorName(inter.isect_)),*kkmat_h->CRVMaterial(),inter.inter_,reftrajptr,
-            2*inter.whw_, extrapCRV.interTolerance());
+            2*inter.whw_, extrapCRV.interTolerance(),kkmat_h->applyBetheCorrection());
         ktrk.addCRVXing(crvxingptr,tdir);
         if(debug_ > 1) std::cout << "Good CRV " << inter.inter_ << ftraj.range() << std::endl;
       }

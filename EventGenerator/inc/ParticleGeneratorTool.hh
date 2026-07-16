@@ -13,6 +13,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
 
@@ -34,6 +35,11 @@ namespace mu2e {
 
     // This interface should be removed when we retire ntuple-based muon resampling
     virtual void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) = 0;
+
+    virtual std::unique_ptr<SpectrumConfig> spectrumConfig() {
+      auto config = std::make_unique<SpectrumConfig>();
+      return config;
+    }
 
     virtual ~ParticleGeneratorTool() noexcept = default;
 

@@ -236,7 +236,7 @@ namespace mu2e {
 
       const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
       const int   nROs             = cal.caloInfo().getInt("nSiPMPerCrystal");
-      const float cryhalflength    = cal.caloInfo().getDouble("crystalZLength")/2.0;
+      const float crystallength    = cal.caloInfo().getDouble("crystalZLength");
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
       diagSummary diagSum;
@@ -275,7 +275,7 @@ namespace mu2e {
 
               float edep_corr(step.energyDepG4());
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
-              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/cryhalflength, edep_corr);
+              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/crystallength, edep_corr);
 
               bool isCaphri = CrystalId(crystalID).isCaphri();
               float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
@@ -290,13 +290,13 @@ namespace mu2e {
                   std::vector<float> PETime(NPE,hitTime);
                   if (addTravelTime_)
                   {
-                      for (auto& time : PETime) time += photonProp_.propTimeSimu(2.0*cryhalflength-posZ);
+                      for (auto& time : PETime) time += photonProp_.propTimeSimu(crystallength-posZ);
                   }
                   CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));
 
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
-                  if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(2.0*cryhalflength-posZ,time-hitTime);
+                  if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(crystallength-posZ,time-hitTime);
 
                   diagSum.totNPE     += NPE;
                   diagSum.totEdepNPE += double(NPE)/pePerMeV/2.0; //average between the two RO

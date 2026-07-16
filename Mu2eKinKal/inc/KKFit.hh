@@ -82,6 +82,9 @@ namespace mu2e {
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
       using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+      using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+      using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+      using PARAMHITCOL = std::vector<PARAMHITPTR>;
       //      using KKPANELHIT = KKPanelHit<KTRAJ>;
       using MEAS = KinKal::Hit<KTRAJ>;
       using MEASPTR = std::shared_ptr<MEAS>;
@@ -99,10 +102,12 @@ namespace mu2e {
       bool makeStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,
           PTRAJ const& ptraj, ComboHitCollection const& chcol, StrawHitIndexCollection const& strawHitIdxs,
           KKSTRAWHITCOL& hits, KKSTRAWXINGCOL& exings) const;
+      void makeSeedParamHit(KTRAJ const& seedtraj, std::vector<double> const& paramconstraints, PARAMHITCOL& paramhits) const;
       // regrow KKTrack components from a KalSeed
       bool regrowComponents(KalSeed const& kseed, ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap,
           Tracker const& tracker,Calorimeter const& calo, StrawResponse const& strawresponse,BFieldMap const& kkbf,
-          PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const;
+          PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, PARAMHITCOL& paramhits,
+          KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const;
       std::shared_ptr<SensorLine> caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const; // should come from CaloCluster TODO
       bool makeCaloHit(CCPtr const& cluster, Calorimeter const& calo, PTRAJ const& pktraj, KKCALOHITCOL& hits) const;
       // extend a track with a new configuration, optionally searching for and adding hits and straw material
@@ -251,11 +256,29 @@ namespace mu2e {
     return ngood >= minNStrawHits_;
   }
 
+  template <class KTRAJ> void KKFit<KTRAJ>::makeSeedParamHit(KTRAJ const& seedtraj, std::vector<double> const& paramconstraints, PARAMHITCOL& paramhits) const {
+    std::array<bool,KinKal::NParams()> mask = {false};
+    KinKal::Parameters cparams = seedtraj.params();
+    for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+      for (size_t jpar=0;jpar<KinKal::NParams();jpar++){
+        cparams.covariance()[ipar][jpar] = 0.0;
+      }
+      if (paramconstraints[ipar] > 0){
+        mask[ipar] = true;
+        cparams.covariance()[ipar][ipar] = paramconstraints[ipar]*paramconstraints[ipar];
+      }else{
+        cparams.covariance()[ipar][ipar] = 1.0; // otherwise inversion fails
+      }
+    }
+    paramhits.push_back(std::make_shared<PARAMHIT>(seedtraj.range().mid(),seedtraj,cparams,mask));
+  }
+
   template <class KTRAJ> bool KKFit<KTRAJ>::regrowComponents(KalSeed const& kseed, // primary event input
       ComboHitCollection const& chcol, mu2e::IndexMap const& strawindexmap, // ancillary event input
       Tracker const& tracker,Calorimeter const& calo, // geometries
       StrawResponse const& strawresponse,BFieldMap const& kkbf, // other conditions
-      PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const { // return values
+      PTRAJPTR& ptraj, KKSTRAWHITCOL& strawhits, KKCALOHITCOL& calohits, PARAMHITCOL& paramhits,
+      KKSTRAWXINGCOL& exings, DOMAINCOL& domains) const { // return values
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     auto const& smat = kkmat_h->strawMaterial();
     unsigned ngood(0), nactive(0), nsactive(0);
@@ -281,6 +304,9 @@ namespace mu2e {
     }
     if(kseed.caloCluster()){
       makeCaloHit(kseed.caloCluster(),calo,*ptraj,calohits);
+    }
+    for (auto const& paramhit : kseed.paramHits()){
+      paramhits.push_back(std::make_shared<PARAMHIT>(paramhit.time(),*ptraj,paramhit.params(),paramhit.pmask()));
     }
     if(matcorr_){
       // add Straw Xings for straws without hits
@@ -723,6 +749,9 @@ namespace mu2e {
           ca.tpData(),
           calohit->unbiasedClosestApproach().tpData(),
           ctres,ca.particleTraj().momentum3(ca.particleToca()));
+    }
+    for (auto const& paramhit : kktrk.paramHits()){
+      kseed._paramhits.emplace_back(paramhit->time(),paramhit->constraintParameters(),paramhit->constraintMask());
     }
     kseed._straws.reserve(kktrk.strawXings().size());
     for(auto const& sxing : kktrk.strawXings()) {

@@ -16,8 +16,11 @@ CaloMC : {
       pulseFileName           : @local::pulseFileName
       pulseHistName           : @local::pulseHistName
       elecNphotPerNs          : 0.18
-      rinNphotPerNs           : 0.36
-      darkNphotPerNs          : 0.60
+# Run2 values
+#      rinNphotPerNs           : 0.36
+#      darkNphotPerNs          : 0.60
+      rinNphotPerNs           : 0.25
+      darkNphotPerNs          : 0.00
       digiSampling            : @local::HitMakerDigiSampling
       nMaxFragment            : 1000
       minPeakADC              : @local::HitMakerMinPeakADC
@@ -82,8 +85,7 @@ CaloMC : { @table::CaloMC
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2
       bufferDigi              : 16
-      readoutPEPerMeVCsI      : @local::readoutPEPerMeVCsI
-      readoutPEPerMeVLyso     : @local::readoutPEPerMeVLyso
+      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
       MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
