@@ -9,6 +9,7 @@
 
 #include "art/Utilities/ToolConfigTable.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"

@@ -16,6 +16,8 @@
 
 #include "fhiclcpp/types/DelegatedParameter.h"
 
+#include <iostream>
+
 namespace mu2e {
   class DIOGenerator : public ParticleGeneratorTool {
   public:

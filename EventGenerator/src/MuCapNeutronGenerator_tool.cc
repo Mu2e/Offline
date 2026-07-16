@@ -17,6 +17,8 @@
 
 #include "fhiclcpp/types/DelegatedParameter.h"
 
+#include <iostream>
+
 namespace mu2e {
   class MuCapNeutronGenerator : public ParticleGeneratorTool {
   public:
@@ -45,7 +47,7 @@ namespace mu2e {
     {
       if(_czMin < -1. || _czMax > 1. || _czMin > _czMax) throw cet::exception("BADCONFIG") << "Cos(theta_z) range unphysical: " << _czMin << " - " << _czMax;
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
-      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig);
+      _energyFraction = (_flatSpectrum) ? 1. : calculateBinnedSpectrumEnergyFraction(fullconfig, false);
       std::cout << "[" << __func__ << "] Sampled spectrum fraction " << _energyFraction << std::endl;
       std::cout << "[" << __func__ << "] Sampled spectrum fraction (with cos(theta_z)) " << (_energyFraction)*((_czMax - _czMin)/2.) << std::endl;
     }
