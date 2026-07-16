@@ -22,6 +22,7 @@
 #include "Offline/Mu2eUtilities/inc/LsqSums2.hh"
 
 #include "TH1.h"
+#include "TGraph.h"
 
 namespace mu2e {
 
@@ -50,6 +51,9 @@ namespace mu2e {
     TH1* h_chisqDof_ = nullptr;
     TH1* h_trk_chisq_ = nullptr; // track parameters
     TH1* h_trk_fitcon_ = nullptr;
+    TGraph* g_t_hit_vs_z = nullptr;
+    TGraph* g_t_poca_vs_z = nullptr;
+    TGraph* g_t_hit_vs_t_poca = nullptr;
 
   public:
     explicit TrackDtDt(const art::EDProducer::Table<Config>& config);
@@ -84,6 +88,9 @@ namespace mu2e {
     h_chisqDof_   = tfs->make<TH1D>("h_chisqDof",   "Chi2/DOF of fit;Chi2/DOF;Entries", 100, 0., 5.);
     h_trk_chisq_ = tfs->make<TH1D>("h_trk_chisq", "Track chi2;Chi2;Entries", 100, 0., 100.);
     h_trk_fitcon_ = tfs->make<TH1D>("h_trk_fitcon", "Track fit convergence;Convergence;Entries", 100, 0., 1.);
+    g_t_hit_vs_z = tfs->makeAndRegister<TGraph>("t_hit_vs_z", "t_{hit} vs. z;z [mm];t_{hit} [ns]");
+    g_t_poca_vs_z = tfs->makeAndRegister<TGraph>("t_poca_vs_z", "t_{POCA} vs. z;z [mm];t_{POCA} [ns]");
+    g_t_hit_vs_t_poca = tfs->makeAndRegister<TGraph>("t_hit_vs_t_poca", "t_{hit} vs. t_{POCA};t_{POCA} [ns];t_{hit} [ns]");
   }
 
   //================================================================
@@ -97,6 +104,18 @@ namespace mu2e {
     h_chisqDof_->Fill((dtDt.dof_ > 0) ? dtDt.chisq_/dtDt.dof_ : 0.);
     h_trk_chisq_->Fill(seed.chisquared());
     h_trk_fitcon_->Fill(seed.fitConsistency());
+
+    // Fill one example event
+    if(g_t_hit_vs_z->GetN() == 0) {
+      for(const auto& hit : seed.hits()) {
+        const double t_trk = hit.particleToca(); // estimated time of the particle
+        const double t_hit = t_trk + hit.fitDt(); // add dt to get the hit time
+        const double z_trk = hit._upoca.z();
+        g_t_hit_vs_z     ->AddPoint(z_trk, t_hit);
+        g_t_poca_vs_z    ->AddPoint(z_trk, t_trk);
+        g_t_hit_vs_t_poca->AddPoint(t_trk, t_hit);
+      }
+    }
   }
 
   //================================================================
