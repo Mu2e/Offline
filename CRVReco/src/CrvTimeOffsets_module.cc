@@ -84,7 +84,7 @@ namespace mu2e
       fhicl::Atom<bool>        removeTimeOffsets{Name("removeTimeOffsets"), Comment("remove time offsets added by reco")};
       fhicl::Atom<std::string> calibFileName{Name("calibFileName"), Comment("name of the DB file name for the time offsets")};
       fhicl::Atom<std::string> pdfFileName{Name("pdfFileName"), Comment("name of the pdf file name with the time difference plots")};
-      fhicl::Atom<int>         diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level"), 1};
+      fhicl::Atom<int>         diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level"), 0};
 
       //specifically for a geometry
       fhicl::Sequence<int>                         specialFEBsType1{Name("specialFEBsType1"), Comment("FEB numbers where the FPGAs are compared 0/2, 1/3, 1/2")};  //extracted: none
@@ -367,13 +367,13 @@ namespace mu2e
     } //done with connecting all FPGAs
 
     if(measuredTimeDiffs.size()>0) std::cerr<<"There are still some unused measured time diffs!"<<std::endl;
+    for(const auto& measuredTimeDiff: measuredTimeDiffs)
+    {
+      std::cerr<<"Unused time diff for "<<measuredTimeDiff.first.first<<"/"<<measuredTimeDiff.first.second<<": "<<measuredTimeDiff.second<<std::endl;
+    }
 
     if(_diagLevel>0)
     {
-      for(const auto& measuredTimeDiff: measuredTimeDiffs)
-      {
-        std::cout<<"Unused time diff for "<<measuredTimeDiff.first.first<<"/"<<measuredTimeDiff.first.second<<": "<<measuredTimeDiff.second<<std::endl;
-      }
       for(const auto& timeOffset: timeOffsets)
       {
         int fpga=timeOffset.first%CRVId::nFPGAPerFEB;
