@@ -7,6 +7,7 @@
 #include "KinKal/Geometry/Intersection.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateSurface.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -19,50 +20,29 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::timeDirSign;
 
-  class ExtrapolatePlanes {
+  struct PlaneIntersection {
+    using MaterialPlane = KinKalGeom::PassiveMaterialPlane;
+    Intersection inter_;
+    MaterialPlane const* plane_ = nullptr;
+    PlaneIntersection() {}
+    PlaneIntersection(Intersection const& inter, MaterialPlane const& plane) :
+        inter_(inter), plane_(&plane) {}
+  };
+
+  class ExtrapolatePlanes : public ExtrapolateSurface<PlaneIntersection> {
     public:
+      using Base = ExtrapolateSurface<PlaneIntersection>;
       using MaterialPlane = KinKalGeom::PassiveMaterialPlane;
       using MaterialPlaneCollection = KinKalGeom::PassiveMaterialPlaneCollection;
-      struct PlaneIntersection {
-        Intersection inter_;
-        MaterialPlane const* plane_ = nullptr;
-        PlaneIntersection() {}
-        PlaneIntersection(Intersection const& inter, MaterialPlane const& plane) :
-            inter_(inter), plane_(&plane) {}
-      };
-      using PlaneIntersectionCollection = std::vector<PlaneIntersection>;
-
-      struct SortIntersections {
-        TimeDir tdir_;
-        bool operator () (PlaneIntersection const& lhs, PlaneIntersection const& rhs) {
-          return tdir_ == TimeDir::forwards ? lhs.inter_.time_ < rhs.inter_.time_ : lhs.inter_.time_ > rhs.inter_.time_;
-        }
-        SortIntersections(TimeDir tdir) : tdir_(tdir) {}
-      };
 
       ExtrapolatePlanes(double maxdt, double maxdtstep, double dptol, double intertol,
           double minv, MaterialPlaneCollection const& planes, int debug=0) :
-        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol), minvnorm_(minv), planes_(planes), debug_(debug) {}
-
-      double maxDt() const { return maxDt_; }
-      double maxDtStep() const { return maxDtStep_; }
-      double dpTolerance() const { return dptol_; }
-      double interTolerance() const { return intertol_; }
-      auto const& intersections() const { return inters_; }
-      int debug() const { return debug_; }
-      void reset() const { inters_.clear(); }
+        Base(maxdt,maxdtstep,dptol,intertol,minv,debug), planes_(planes) {}
 
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
 
     private:
-      double maxDt_ = -1;
-      double maxDtStep_ = -1;
-      double dptol_ = 1e10;
-      double intertol_ = 1e10;
-      double minvnorm_ = 1e-5;
       MaterialPlaneCollection const& planes_;
-      int debug_ = 0;
-      mutable PlaneIntersectionCollection inters_;
   };
 
   template <class KTRAJ> bool ExtrapolatePlanes::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {

@@ -55,8 +55,8 @@ namespace mu2e {
 
     private:
       int debug_;
-      double btol_, intertol_, maxdt_, maxdtstep_, minv_, minvlong_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
+      double btol_, intertol_, maxdt_, maxdtstep_, minv_;
+      bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       // IPA/ST thicknesses are nominal literals, consistent with the rest of KinKalGeom, whose IPA
       // (single Cylinder) and ST (uniform Annulus foils) surfaces are themselves hard-coded nominal
       // placeholders (see KinKalGeomMaker::makeDS/makeTarget). Sourcing these from the real geometry
@@ -73,10 +73,9 @@ namespace mu2e {
     maxdt_(extrapconfig.MaxDt()),
     maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
-    minvlong_(extrapconfig.MinVLong()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
-    toTrackerEnds_(extrapconfig.ToTrackerEnds()),
+    toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV())
   {}
@@ -87,7 +86,7 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    if(toTrackerEnds_)toTrackerPerimeter(ktrk);
+    if(toTrackerPerimeter_)toTrackerPerimeter(ktrk);
     if(upstream_){
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -426,7 +425,7 @@ namespace mu2e {
     SurfaceId const sbid(SurfaceIdEnum::CRV_StrongBack);
     for(auto const& plane : kkg_h->passiveMaterialPlanes())
       if(plane.sid_.id() == sbid.id()) strongbacks.push_back(plane);
-    auto extrapCRV = ExtrapolateCRVRegion(maxdt_,maxdtstep_,btol_,intertol_,minv_,minvlong_,*kkg_h->CRV(),strongbacks,debug_);
+    auto extrapCRV = ExtrapolateCRVRegion(maxdt_,maxdtstep_,btol_,intertol_,minv_,*kkg_h->CRV(),strongbacks,debug_);
     if(debug_ > 5){std::cout << "Extrapolating to CRV with " << extrapCRV.sectors().size() << " sectors + "
         << strongbacks.size() << " strongbacks" << std::endl;
       for(auto const& sector : kkg_h->CRV()->sectors())

@@ -7,6 +7,7 @@
 #include "KinKal/Geometry/Intersection.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
+#include "Offline/Mu2eKinKal/inc/ExtrapolateSurface.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -20,57 +21,36 @@ namespace mu2e {
   using KinKal::TimeRange;
   using KinKal::timeDirSign;
 
-  class ExtrapolateCylinders {
+  struct CylinderIntersection {
+    using MaterialCylinder = KKGeom::DetectorSolenoid::MaterialCylinder;
+    Intersection inter_;
+    MaterialCylinder const* cylinder_ = nullptr;
+    CylinderIntersection() {}
+    CylinderIntersection(Intersection const& inter, MaterialCylinder const& cylinder) :
+        inter_(inter), cylinder_(&cylinder) {}
+  };
+
+  class ExtrapolateCylinders : public ExtrapolateSurface<CylinderIntersection> {
     public:
+      using Base = ExtrapolateSurface<CylinderIntersection>;
       using MaterialCylinder = KKGeom::DetectorSolenoid::MaterialCylinder;
       using MaterialCylinderCollection = KKGeom::DetectorSolenoid::MaterialCylinderCollection;
-      struct CylinderIntersection {
-        Intersection inter_;
-        MaterialCylinder const* cylinder_ = nullptr;
-        CylinderIntersection() {}
-        CylinderIntersection(Intersection const& inter, MaterialCylinder const& cylinder) :
-            inter_(inter), cylinder_(&cylinder) {}
-      };
-      using CylinderIntersectionCollection = std::vector<CylinderIntersection>;
-
-      struct SortIntersections {
-        TimeDir tdir_;
-        bool operator () (CylinderIntersection const& lhs, CylinderIntersection const& rhs) {
-          return tdir_ == TimeDir::forwards ? lhs.inter_.time_ < rhs.inter_.time_ : lhs.inter_.time_ > rhs.inter_.time_;
-        }
-        SortIntersections(TimeDir tdir) : tdir_(tdir) {}
-      };
 
       ExtrapolateCylinders(double maxdt, double maxdtstep, double dptol, double intertol,
           double minv, MaterialCylinderCollection const& cylinders, int debug=0) :
-        maxDt_(maxdt), maxDtStep_(maxdtstep), dptol_(dptol), intertol_(intertol), minvnorm_(minv), cylinders_(cylinders), debug_(debug) {
+        Base(maxdt,maxdtstep,dptol,intertol,minv,debug), cylinders_(cylinders) {
         for(auto const& cylinder : cylinders_) {
           maxRadius_ = std::max(maxRadius_, cylinder.surface_->radius() + 0.5*cylinder.thickness_);
         }
       }
 
-      double maxDt() const { return maxDt_; }
-      double maxDtStep() const { return maxDtStep_; }
-      double dpTolerance() const { return dptol_; }
-      double interTolerance() const { return intertol_; }
-      auto const& intersections() const { return inters_; }
-      int debug() const { return debug_; }
-      void reset() const { inters_.clear(); }
-
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
 
     private:
-      double maxDt_ = -1;
-      double maxDtStep_ = -1;
-      double dptol_ = 1e10;
-      double intertol_ = 1e10;
-      double minvnorm_ = 1e-5;
       double minShellCosine_ = 0.1; // min |cos(incidence)| to accept a shell crossing (~within 84 deg of normal);
                                     // below this the thin-shell path length blows up (near-tangent), so skip it
       MaterialCylinderCollection const& cylinders_;
-      int debug_ = 0;
       double maxRadius_ = 0.0;
-      mutable CylinderIntersectionCollection inters_;
   };
 
   template <class KTRAJ> bool ExtrapolateCylinders::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {

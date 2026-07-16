@@ -118,9 +118,8 @@ namespace mu2e {
       fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit (ns)") };
       fhicl::Atom<float> MaxDtStep { Name("MaxDtStep"), Comment("Maximum time step when extrapolating a fit (ns)") };
       fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum velocity perp to the surface extrapolate a straight track fit") };
-      fhicl::Atom<float> MinVLong { Name("MinVLong"), Comment("Minimum velocity perp to a z-normal CRV end-cap plane (mm/ns); suppresses grazing-cosmic fakes"), 265.0f };
       fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
-      fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
+      fhicl::Atom<bool> ToTrackerPerimeter { Name("ToTrackerPerimeter"), Comment("Extrapolate tracks to the tracker perimeter (z-ends and outer wall)") };
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
