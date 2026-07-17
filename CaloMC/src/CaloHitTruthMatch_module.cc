@@ -216,10 +216,14 @@ namespace mu2e {
                                        <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*digiSampling_<<" "<<deltaTimePlus<<std::endl;
 
 
+          // FIXME
+          // deltaTimePlus = 200.;
+          double deltaTimeMin = 100.; // 2*digiSampling_
+
           //forward until we reach the recoHit time, then loop as long as the shower time is within the recoTime window
           bool hitIsMatched(false);
           std::vector<CaloEDepMC> edeps;
-          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - 2*digiSampling_) ) ++showerIt;
+          while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() - deltaTimeMin ) ) ++showerIt;
           while (showerIt != showerItEnd && ( (*showerIt)->time() < (*hitIt)->time() + deltaTimePlus) )
           {
               hitIsMatched = true;

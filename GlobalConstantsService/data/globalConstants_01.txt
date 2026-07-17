@@ -139,13 +139,14 @@ double physicsParams.C.capture.RMCInternalRate = 0.0069; //measurement of intern
 
 //Ce+ endpoint energy
 double physicsParams.Al.ePlusEndpointEnergy = 92.32;
+double physicsParams.Ti.ePlusEndpointEnergy = 98.89;
 
 // parameters for RMC spectrum shape
 double physicsParams.Al.RMCbindingEnergyFit = 0.464;
 double physicsParams.Al.RMCrecoilEnergyFit  = 0.220;
 double physicsParams.Al.RMCdeltaMassFit     = 3.121;
-
-
+double physicsParams.Al.RMCKMaxKnockout.0   = 101.87; // 0 nucleon knockout
+double physicsParams.Al.RMCKMaxKnockout.1   =  95.45; // 1 neutron knockout
 
 // Shanker interpolation coefficients - Phys. Rev. D 25, 1847 (1982)
 // - The Shanker formula includes one D, E and F coefficient for a

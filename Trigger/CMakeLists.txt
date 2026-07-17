@@ -54,4 +54,11 @@ cet_build_plugin(TriggerInfoToCollections art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(MSDHitFilter art::module
+    REG_SOURCE src/MSDHitFilter_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+      TRACE::MF
+)
+
 install_source(SUBDIRS src)
