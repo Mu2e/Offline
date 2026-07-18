@@ -91,6 +91,7 @@ namespace mu2e {
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::OptionalAtom<art::InputTag> kalSeedMCAssns {Name("KalSeedMCAssns"), Comment("Association to KalSeedMC. If set, regrown KalSeeds will be associated with the same KalSeedMC as the original") };
     fhicl::OptionalAtom<bool> copyKalSeedMCs { Name("CopyKalSeedMCs"), Comment("If set, and KalSeedMCs are referenced, create a deep copy of the input") };
+    fhicl::OptionalAtom<int> fitParticle {  Name("FitParticle"), Comment("PDG code of particle type to refit: e-, e+, mu-, ...")};
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
     fhicl::Atom<bool> extend {Name("Extend"), Comment("Extend the fit") };
@@ -152,10 +153,11 @@ namespace mu2e {
       art::ProductToken<CaloClusterCollection> cccol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
       art::InputTag ksmca_T_;
-      bool fillMCAssns_, copyKalSeedMCs_;
+      bool fillMCAssns_ = false, copyKalSeedMCs_ = false;
       bool extend_;
       bool has_cccol_, has_kseedcol_, has_kseedptrcol_;
       std::unique_ptr<KKExtrap> extrap_;
+      PDGCode::type tpart_ = PDGCode::unknown;
   };
 
   RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
@@ -188,6 +190,8 @@ namespace mu2e {
     if(has_kseedcol_)kseedcol_T_ = art::ProductToken<KalSeedCollection>(consumes<KalSeedCollection>(settings().kalSeedCollection().value()));
     if(has_kseedptrcol_)kseedptrcol_T_ = art::ProductToken<KalSeedPtrCollection>(consumes<KalSeedPtrCollection>(settings().kalSeedPtrCollection().value()));
     if(has_cccol_) cccol_T_ = art::ProductToken<CaloClusterCollection>(consumes<CaloClusterCollection>(settings().caloClusterCollection().value()));
+    int type;
+    if(settings().fitParticle(type))tpart_ = static_cast<PDGCode::type>(type);
   }
 
   void RegrowLoopHelix::beginRun(art::Run& run)
@@ -246,7 +250,7 @@ namespace mu2e {
       auto const& kseed = *kseedptr;
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
       // regrow the components from the seed
-      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory();
+      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory(tpart_);
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
@@ -271,8 +275,9 @@ namespace mu2e {
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
       // require hits and consistent BField domains
       if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
-      // create the KKTrack from these components
-        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,paramhits,domains);
+      // create the KKTrack from these
+        auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,paramhits, domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
           if(extend_)kkfit_.extendTrack(config_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H , *ktrk );

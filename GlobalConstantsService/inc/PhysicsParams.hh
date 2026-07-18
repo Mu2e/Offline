@@ -162,6 +162,13 @@ namespace mu2e
     double getRMCdeltaMassFit(targetMat material = "") const {
       return doubleOrThrow(_RMCdeltaMassFit,material,"RMCdeltaMassFit");
     }
+    double getRMCKMaxKnockout(targetMat material = "", int nKnockout = 0) const {
+      if(nKnockout == 0)
+        return doubleOrThrow(_RMCKMaxKnockout0n,material,std::string("RMCKMaxKnockout.0"));
+      if(nKnockout == 1)
+        return doubleOrThrow(_RMCKMaxKnockout1n,material,std::string("RMCKMaxKnockout.1"));
+      throw cet::exception("PhysicsParams") << "Greater than 1 knockout RMC not yet implemented!";
+    }
 
     PhysicsParams( SimpleConfig const& config );
 
@@ -220,6 +227,8 @@ namespace mu2e
     std::map<targetMat, double> _RMCbindingEnergyFit;
     std::map<targetMat, double> _RMCrecoilEnergyFit;
     std::map<targetMat, double> _RMCdeltaMassFit;
+    std::map<targetMat, double> _RMCKMaxKnockout0n;
+    std::map<targetMat, double> _RMCKMaxKnockout1n;
 
 
     inline targetMat checkMaterial( const targetMat& material ) const {
