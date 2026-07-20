@@ -445,7 +445,8 @@ namespace mu2e {
 
     // save configured TimeCluster collections and preserve referenced straw/calo content
     for (auto const& tcTag : _tccs) {
-      auto tcch = event.getValidHandle<TimeClusterCollection>(tcTag);
+      auto tcch = event.getHandle<TimeClusterCollection>(tcTag);
+      if (!tcch.isValid()) continue;
       auto const& tcc = *tcch;
 
       for (auto const& tc : tcc) {
