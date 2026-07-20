@@ -4,13 +4,11 @@
 #ifndef Print_inc_EventHeaderPrinter_hh
 #define Print_inc_EventHeaderPrinter_hh
 
-#include <cstring>
 #include <iostream>
 
 #include "Offline/Print/inc/ProductPrinter.hh"
 #include "artdaq-core-mu2e/Data/EventHeader.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
 
@@ -25,7 +23,7 @@ class EventHeaderPrinter : public ProductPrinter {
              std::ostream& os = std::cout);
   void Print(const art::ValidHandle<EventHeader>& handle,
              std::ostream& os = std::cout);
-  void Print(const mu2e::EventHeader& obj, int ind = -1,
+  void Print(const mu2e::EventHeader& obj,
              std::ostream& os = std::cout);
   void PrintHeader(const std::string& tag, std::ostream& os = std::cout);
 };

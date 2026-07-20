@@ -10,12 +10,12 @@ void mu2e::EventHeaderPrinter::Print(art::Event const& event,
     // if a list of instances not specified, print all instances
     std::vector<art::Handle<EventHeader> > vah =
         event.getMany<EventHeader>();
-    for (auto const& ah : vah) Print(ah);
+    for (auto const& ah : vah) Print(ah, os);
   } else {
     // print requested instances
     for (const auto& tag : tags()) {
       auto ih = event.getValidHandle<EventHeader>(tag);
-      Print(ih);
+      Print(ih, os);
     }
   }
 }
@@ -27,7 +27,7 @@ void mu2e::EventHeaderPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::EventHeaderPrinter::Print(
@@ -37,11 +37,11 @@ void mu2e::EventHeaderPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::EventHeaderPrinter::Print(const mu2e::EventHeader& obj,
-                                         int ind, std::ostream& os) {
+                                         std::ostream& os) {
   if (verbose() < 1) return;
 
   os << obj << std::endl;

@@ -28,7 +28,7 @@ void mu2e::RawEventHeaderPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::RawEventHeaderPrinter::Print(
@@ -39,11 +39,11 @@ void mu2e::RawEventHeaderPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::RawEventHeaderPrinter::Print(
-    const artdaq::detail::RawEventHeader& obj, int ind, std::ostream& os) {
+    const artdaq::detail::RawEventHeader& obj, std::ostream& os) {
   if (verbose() < 1) return;
 
   os << obj << std::endl;

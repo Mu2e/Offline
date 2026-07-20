@@ -27,7 +27,7 @@ void mu2e::EventHeadersPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::EventHeadersPrinter::Print(
@@ -37,11 +37,11 @@ void mu2e::EventHeadersPrinter::Print(
   std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back();  // remove trailing dot
   PrintHeader(tag, os);
-  Print(*handle);
+  Print(*handle, os);
 }
 
 void mu2e::EventHeadersPrinter::Print(const mu2e::EventHeaders& obj,
-                                         int ind, std::ostream& os) {
+                                         std::ostream& os) {
   if (verbose() < 1) return;
   for (const auto& sobj : obj ) {
     os << sobj << std::endl;
