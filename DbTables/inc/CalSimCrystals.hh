@@ -1,11 +1,14 @@
 #ifndef DbTables_CalSimCrystals_hh
 #define DbTables_CalSimCrystals_hh
 
+#include "Offline/DataProducts/inc/CaloConst.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
+#include "Offline/DbTables/inc/DbTable.hh"
+#include "cetlib_except/exception.h"
+
 #include <string>
 #include <iomanip>
 #include <sstream>
-#include "Offline/DbTables/inc/DbTable.hh"
-#include "Offline/DataProducts/inc/CrystalId.hh"
 
 namespace mu2e {
 
@@ -50,7 +53,7 @@ namespace mu2e {
       std::size_t nrow() const override { return _rows.size(); };
       size_t size() const override { return baseSize()  + nrow()*sizeof(Row); };
       virtual std::size_t nrowFix() const override { return CaloConst::_nCrystal; };
-      const std::string orderBy() const { return std::string("crid"); }
+      const std::string orderBy() const override { return std::string("crid"); }
       void addRow(const std::vector<std::string>& columns) override {
         std::uint16_t index = std::stoul(columns[0]);
         // enforce order, so channels can be looked up by index

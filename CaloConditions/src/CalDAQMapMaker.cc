@@ -26,7 +26,7 @@ namespace mu2e {
 
     ifstream ordFile(fileSpec);
     if (!ordFile.is_open()) {
-      throw cet::exception("CALODAQMAP_OPEN_FAILED")
+      throw cet::exception("CALDAQMAP_OPEN_FAILED")
         << " failed to open file " << fileSpec << "\n";
     }
 
@@ -37,23 +37,23 @@ namespace mu2e {
 
       std::istringstream iss(line);
       if (!(iss >> rid >> oid)) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE")
+        throw cet::exception("CALDAQMAPMAKER_RANGE")
         << "file format invalid on line "<<nRead+1<<"\n";
       }
 
       // Check that there is nothing left on the line
       float extra;
       if (iss >> extra) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE")
+        throw cet::exception("CALDAQMAPMAKER_RANGE")
         << "file format invalid on line "<<nRead+1<<"\n";
       }
 
       if(rid >= CaloConst::_nRawChannel) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid rawId" << rid << endl;
+        throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid rawId" << rid << endl;
       }
 
       if(oid >= CaloConst::_nChannel) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid offlineId " << oid << endl;
+        throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid offlineId " << oid << endl;
       }
 
       raw2Offline[rid] = CaloSiPMId(oid);
@@ -62,7 +62,7 @@ namespace mu2e {
     }
 
     if(nRead != CaloConst::_nRawChannel) {
-      throw cet::exception("CALODAQMAPMAKER_COUNT")
+      throw cet::exception("CALDAQMAPMAKER_COUNT")
         << "CalDAQMapMaker read the wrong number of id's "
         << nRead << ", expected " << CaloConst::_nRawChannel << endl;
     }
@@ -88,10 +88,10 @@ namespace mu2e {
       CaloRawSiPMId rawid = row.rawid();
       CaloSiPMId roid = row.roid();
       if(!rawid.isValid()) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid rawId" << rawid << endl;
+        throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid rawId" << rawid << endl;
       }
       if(!(roid.isValid() || roid.id() == CaloConst::_invalid)) {
-        throw cet::exception("CALODAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid offlineId " << roid << endl;
+        throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker found invalid offlineId " << roid << endl;
       }
 
       raw2Offline[rawid.id()] = roid;
@@ -105,7 +105,7 @@ namespace mu2e {
     // to invalid and there is no other check that this was done correctly
     for (auto const& cc : offline2Raw) {
       if(!cc.isValid()) {
-        throw cet::exception("CALODAQMAPMAKER_MISSING") << "CalDAQMapMaker found missing roid " << endl;
+        throw cet::exception("CALDAQMAPMAKER_MISSING") << "CalDAQMapMaker found missing roid " << endl;
       }
     }
 

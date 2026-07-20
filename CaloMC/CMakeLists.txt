@@ -29,6 +29,7 @@ cet_build_plugin(CaloDigiMaker art::module
       Offline::CaloMC
       
       Offline::CalorimeterGeom
+      Offline::CaloConditions
       Offline::DAQConditions
       Offline::DataProducts
       Offline::GeometryService

@@ -24,7 +24,6 @@ namespace mu2e {
     typedef std::array<CaloSiPMId,CaloConst::_nRawChannel> RawArray;
     typedef std::array<CaloRawSiPMId,CaloConst::_nChannel> OfflineArray;
 
-    //CalDAQMap():_name("CalDAQMap") {}
     constexpr static const char* cxname = {"CalDAQMap"};
 
     // construct with constants, then some values are computed and filled below
@@ -32,7 +31,7 @@ namespace mu2e {
        ProditionsEntity(cxname),
        _raw2Offline(raw2Offline),_offline2Raw(offline2Raw) {};
 
-    virtual ~CalDAQMap() {}
+    virtual ~CalDAQMap() = default;
 
     CaloSiPMId offlineId(CaloRawSiPMId rawId) const;
     CaloRawSiPMId rawId(CaloSiPMId offId) const;

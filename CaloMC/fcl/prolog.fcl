@@ -96,7 +96,7 @@ CaloMC : { @table::CaloMC
       pulseFileName           : @local::pulseFileName
       pulseHistName           : @local::pulseHistName
       digiSampling            : @local::HitMakerDigiSampling
-      minAmplitude            : 32
+      minAmplitude            : 2
       fillDetailedMC          : false
       diagLevel               : 0
    }

@@ -7,7 +7,7 @@ namespace mu2e {
 
 CaloSiPMId CalDAQMap::offlineId(CaloRawSiPMId rawId) const {
   if (!rawId.isValid()) {
-    throw cet::exception("CALODAQMP_RANGE")
+    throw cet::exception("CALDAQMP_RANGE")
         << "CalDAQMap::offlineId invalid input rawId" << rawId << std::endl;
   }
   return _raw2Offline[rawId.id()];
@@ -15,7 +15,7 @@ CaloSiPMId CalDAQMap::offlineId(CaloRawSiPMId rawId) const {
 
 CaloRawSiPMId CalDAQMap::rawId(CaloSiPMId offId) const {
   if (!offId.isValid()) {
-    throw cet::exception("CALODAQMP_RANGE")
+    throw cet::exception("CALDAQMP_RANGE")
         << "CalDAQMap::rawId invalid input offlineId" << offId << std::endl;
   }
   return _offline2Raw[offId.id()];

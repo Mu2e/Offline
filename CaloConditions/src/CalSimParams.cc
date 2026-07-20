@@ -12,7 +12,7 @@ namespace mu2e {
     return _LRUs[Id.id()];
   }
 
-  const std::vector<float> CalSimParams::pePerMeVs(const CrystalId& Id) const {
+  const std::vector<float>& CalSimParams::pePerMeVs(const CrystalId& Id) const {
     if (!Id.isValid()) {
       throw cet::exception("CALSIMPARAMS_RANGE")
           << "invalid pePerMev input id" << Id << "\n";
@@ -20,7 +20,7 @@ namespace mu2e {
     return _pePerMeVs[Id.id()];
   }
 
-  const std::vector<float> CalSimParams::ADCPerMeVs(const CrystalId& Id) const {
+  const std::vector<float>& CalSimParams::ADCPerMeVs(const CrystalId& Id) const {
     if (!Id.isValid()) {
       throw cet::exception("CALSIMPARAMS_RANGE")
           << "invalid ADCPerMev input id" << Id << "\n";

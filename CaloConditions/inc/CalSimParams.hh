@@ -36,9 +36,9 @@ namespace mu2e {
       virtual ~CalSimParams() = default;
 
       void  print(std::ostream& os) const;
-      const std::vector<float> pePerMeVs (const CrystalId& Id) const;
-      const std::vector<float> ADCPerMeVs(const CrystalId& Id) const;
-      float                    LRU       (const CrystalId& Id) const;
+      const std::vector<float>& pePerMeVs (const CrystalId& Id) const;
+      const std::vector<float>& ADCPerMeVs(const CrystalId& Id) const;
+      float                     LRU       (const CrystalId& Id) const;
 
     private:
       IdArray     _crystalIds;

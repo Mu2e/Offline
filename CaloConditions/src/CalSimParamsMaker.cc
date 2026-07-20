@@ -51,15 +51,15 @@ namespace mu2e {
       }
 
       //the file should contain crystals in ascending order
-      if (sid != nRead){
+      if (sid != nRead || sid >= CaloConst::_nCrystal){
         throw cet::exception("CALSIMPARAMSMAKER_RANGE")
         << "invalid sid values at line "<<nRead+1<<"\n";
       }
 
       //and the values should be positive
-      if (lru<0 || npe0<0 || npe1<0){
+      if (lru<0 || npe0<0 || npe1<0 || adc0<0 || adc1<0){
         throw cet::exception("CALSIMPARAMSMAKER_RANGE")
-        << "invalid lru, npe, or npe1 values at line "<<nRead+1<<"\n";
+        << "invalid lru, npe, or adc values at line "<<nRead+1<<"\n";
       }
 
       crystalIds[sid]  = CrystalId(sid);
@@ -107,13 +107,18 @@ namespace mu2e {
         << "invalid crystalID values at line "<<nRead+1<<"\n";
       }
 
-      crystalIds[crid.id()]  = crid;
-      LRUs[crid.id()]        = lru;
-      pePerMeVs[crid.id()]   = std::vector<float>{npe0,npe1};
-      ADCPerMeVs[crid.id()]  = std::vector<float>{adc0,adc1};
+      //and the values should be positive
+      if (lru<0 || npe0<0 || npe1<0 || adc0<0 || adc1<0){
+        throw cet::exception("CALSIMPARAMSMAKER_RANGE")
+        << "invalid lru, npe, or adc values at line "<<nRead+1<<"\n";
+      }
+
+      crystalIds[crid.id()] = crid;
+      LRUs[crid.id()]       = lru;
+      pePerMeVs[crid.id()]  = std::vector<float>{npe0,npe1};
+      ADCPerMeVs[crid.id()] = std::vector<float>{adc0,adc1};
       ++nRead;
     }
-
 
     // check that all roid were filled
     if (nRead != CaloConst::_nCrystal) {
