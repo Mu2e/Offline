@@ -170,11 +170,13 @@ int mu2e::DbTool::printCalibration() {
   args["user"] = "";
   args["cid"] = "";
   args["ctime"] = "";
+  args["hash"] = "";
   if ((rc = getArgs(args))) return rc;
   std::string name = args["name"];
   std::string user = args["user"];
   std::vector<int>  cids = intList(args["cid"]);
   timeInterval tint = parseInterval(args["ctime"]);
+  std::string chash = args["hash"];
 
   // if this is a val table, just exit - there is no summary line
   if (name.substr(0, 3) == "Val") {
@@ -202,7 +204,9 @@ int mu2e::DbTool::printCalibration() {
       if (tid < 0 || cc.tid() == tid) {
         if (user.empty() || user == cc.create_user()) {
           if (tint.start == 0 || inTime(tint, cc.create_time())) {
-            cids.push_back(cc.cid());
+            if (chash.empty() || chash == cc.chash() ) {
+              cids.push_back(cc.cid());
+            }
           }
         }
       }
@@ -764,9 +768,9 @@ int mu2e::DbTool::printCIDLine(int cid, int indent) {
   auto name = tids.row(cr.tid()).name();
 
   std::stringstream ss;
-  ss << "CID " << std::setw(5 + 4 * std::max(indent, 0)) << cid << std::setw(20)
-     << name << std::setw(12) << cr.create_user() << std::setw(35)
-     << cr.create_time() << std::endl;
+  ss << "CID " << std::setw(5 + 4 * std::max(indent, 0)) << cid << std::setw(22)
+     << name << std::setw(12) << cr.create_user()
+     << std::setw(35) << cr.create_time() << std::endl;
   _result.append(ss.str());
 
   return 0;
@@ -1037,13 +1041,21 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll, bool qai,
 
     liveTable.setTid(tid);
 
+    if (ptr->hash().empty()) {
+      std::cout
+        << "DbTool::commitCalibrationList found empty hash summary for table named "
+        << liveTable.table().name() << std::endl;
+      return 1;
+    }
+
     command = "SET ROLE val_role;";
     rc = _sql.execute(command, result);
     if (rc != 0) return rc;
 
     command =
-        "INSERT INTO val.calibrations (tid,create_time,create_user)  VALUES (" +
-        std::to_string(tid) + ",CURRENT_TIMESTAMP,SESSION_USER) RETURNING cid;";
+        "INSERT INTO val.calibrations (tid,chash,create_time,create_user)  VALUES (" +
+      std::to_string(tid) + ",'" + ptr->hash() +
+      "',CURRENT_TIMESTAMP,SESSION_USER) RETURNING cid;";
     rc = _sql.execute(command, result);
     if (rc != 0) return rc;
 
@@ -2747,6 +2759,7 @@ int mu2e::DbTool::help() {
            " [OPTIONS]\n"
            "    --name NAME : name of the table\n"
            "    --user USERNAME : only print tables committed by this user \n"
+           "    --hash HASH : only print table with this content hash \n"
            "    --ctime TIME/TIME : only print contents created in this "
            "interval \n"
            "    --cid INT or INT LIST : only print this cid \n"
