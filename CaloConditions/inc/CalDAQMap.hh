@@ -1,8 +1,8 @@
-#ifndef CaloConditions_CaloDAQMap_hh
-#define CaloConditions_CaloDAQMap_hh
+#ifndef CaloConditions_CalDAQMap_hh
+#define CaloConditions_CalDAQMap_hh
 
 //
-// CaloDAQMap converts between offline and readout SiPM channel numbers
+// CalDAQMap converts between offline and readout SiPM channel numbers
 //
 
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
@@ -15,24 +15,23 @@
 
 namespace mu2e {
 
-  class CaloDAQMap : virtual public ProditionsEntity {
+  class CalDAQMap : virtual public ProditionsEntity {
   public:
 
-    typedef std::shared_ptr<CaloDAQMap> ptr_t;
-    typedef std::shared_ptr<const CaloDAQMap> cptr_t;
+    typedef std::shared_ptr<CalDAQMap> ptr_t;
+    typedef std::shared_ptr<const CalDAQMap> cptr_t;
 
     typedef std::array<CaloSiPMId,CaloConst::_nRawChannel> RawArray;
     typedef std::array<CaloRawSiPMId,CaloConst::_nChannel> OfflineArray;
 
-    //CaloDAQMap():_name("CaloDAQMap") {}
-    constexpr static const char* cxname = {"CaloDAQMap"};
+    constexpr static const char* cxname = {"CalDAQMap"};
 
     // construct with constants, then some values are computed and filled below
-    CaloDAQMap(const RawArray& raw2Offline, const OfflineArray& offline2Raw) :
+    CalDAQMap(const RawArray& raw2Offline, const OfflineArray& offline2Raw) :
        ProditionsEntity(cxname),
        _raw2Offline(raw2Offline),_offline2Raw(offline2Raw) {};
 
-    virtual ~CaloDAQMap() {}
+    virtual ~CalDAQMap() = default;
 
     CaloSiPMId offlineId(CaloRawSiPMId rawId) const;
     CaloRawSiPMId rawId(CaloSiPMId offId) const;
