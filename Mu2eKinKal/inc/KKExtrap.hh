@@ -46,7 +46,7 @@ namespace mu2e {
     private:
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
+      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_, stopAtTSDA_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
   };
@@ -62,7 +62,8 @@ namespace mu2e {
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerEnds_(extrapconfig.ToTrackerEnds()),
     upstream_(extrapconfig.Upstream()),
-    toCRV_(extrapconfig.ToCRV())
+    toCRV_(extrapconfig.ToCRV()),
+    stopAtTSDA_(extrapconfig.StopAtTSDA())
   {}
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
@@ -81,7 +82,7 @@ namespace mu2e {
         if(exitsST) { // if it exits out the back, extrapolate to the TSDA (DS rear absorber)
           bool hitTSDA = extrapolateTSDA(ktrk,tdir);
           // if we hit the TSDA we are done. Otherwise if we reflected, go back through the ST
-          if(!hitTSDA){ // reflection upstream of the target: go back through the target
+          if( (!hitTSDA) || (!stopAtTSDA_) ){ // reflection upstream of the target: go back through the target
             extrapolateST(ktrk,tdir);
             if(backToTracker_){ // optionally extrapolate back through the IPA, then to the tracker entrance
               extrapolateIPA(ktrk,tdir);
@@ -95,8 +96,7 @@ namespace mu2e {
           }
         }
       } else { // reflection inside the IPA; extrapolate back through the IPA, then to the tracker entrance
-        ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,kkg_h->tracker()->front().center().Z(),debug_);
-        if(backToTracker_)ktrk.extrapolate(tdir,trackerFront);
+        if(backToTracker_)extrapolateTracker(ktrk,tdir);
       }
       // optionally test for intersection with the OPA
       if(extrapolateOPA_)extrapolateOPA(ktrk,starttime,tdir);

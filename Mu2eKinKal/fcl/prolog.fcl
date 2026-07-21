@@ -381,6 +381,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : true
     ToCRV : false
+    StopAtTSDA: true
   }
 
   LHSEEDXTRAP : {
@@ -394,6 +395,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : false
+    StopAtTSDA: true
   }
 
   KLXTRAP : {
@@ -407,6 +409,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : true
+    StopAtTSDA: false
   }
 
   CHXTRAP : {
@@ -420,6 +423,7 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : true
+    StopAtTSDA: true
   }
 
   CENTRALHELIX : {
@@ -636,7 +640,8 @@ Mu2eKinKal : {
     }
     ExtrapolationSettings :{
       @table::Mu2eKinKal.LHDRIFTXTRAP
-      BackToTracker: true
+      BackToTracker : true
+      StopAtTSDA : false # allow regrown tracks to go past TSDA
     }
     Extend: false
   }

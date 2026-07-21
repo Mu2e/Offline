@@ -50,47 +50,44 @@ namespace mu2e {
   };
 
   template <class KTRAJ> bool ExtrapolateIPA::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const {
-    // we are answering the question: did the segment last added to this extrapolated track hit the IPA or not?
-    // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going.
+    // we are answering the question: did the segment last added to this extrapolated trajectory hit the IPA or not?
+    // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going, otherwise stop
     reset(); // clear any cache
-    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
+    bool retval(false);
+    auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front(); // most recently added segment
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small step to avoid re-intersecting
     if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
-    auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
-    auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto vel = ktraj.speed(stime)*ktraj.linearize(stime).direction();// use hlinear approximation
-    auto spos = ktraj.position3(stime);
-    auto epos = ktraj.position3(etime);
-    double zvel = vel.Z()*timeDirSign(tdir); // sign by extrapolation direction
-    if(debug_ > 2)std::cout << "IPA extrap start time " << stime << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << zvel << std::endl;
-    // stop if the particle is heading away from the IPA
-    if( (zvel > 0 && spos.Z() > zmax_ ) || (zvel < 0 && spos.Z() < zmin_)){
-      if(debug_ > 1)std::cout << "Heading away from IPA: done" << std::endl;
-      return false;
-    }
-    // if the particle is going in the right direction but hasn't yet reached the IPA just keep going
-    if( (zvel > 0 && epos.Z() < zmin_) || (zvel < 0 && epos.Z() > zmax_) ){
-      if(debug_ > 2)std::cout << "Heading towards IPA, z " << spos.Z()<< std::endl;
-      return true;
-    }
-    // if we get to here we need to test for an intersection with the actual cylinder. Make sure the range is positive definite
-    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,etime) : TimeRange(etime,stime);
-    Intersection newinter = KinKal::intersect(fittraj,*ipa_,trange,intertol_,tdir);
-    if(debug_ > 2)std::cout << "IPA " << newinter << std::endl;
-    if(newinter.good()){
-      // update the cache
-      inter_ = newinter;
-      if(debug_ > 0)std::cout << "Good IPA " << newinter << std::endl;
-      return false;
+    auto trange = tdir == TimeDir::forwards ?
+      TimeRange(ktraj.range().begin()+epsilon, ktraj.range().end()) :
+      TimeRange(ktraj.range().begin(), ktraj.range().end()-epsilon);
+    auto spos = ktraj.position3(trange.begin());
+    auto epos = ktraj.position3(trange.end());
+    // if either end of the segment is inside the z range of the IPA, test for an in-range interestection
+    if( (spos.Z() > zmin_ && spos.Z() < zmax_) || (epos.Z() > zmin_ && epos.Z() < zmax_) ){
+      Intersection newinter = KinKal::intersect(ktraj,*ipa_,trange,intertol_,tdir);
+      if(debug_ > 2)std::cout << "IPA " << newinter << std::endl;
+      if(newinter.good()){
+        // update the cache
+        inter_ = newinter;
+        if(debug_ > 0)std::cout << "Good IPA " << newinter << ", Stopping " << std::endl;
+      } else {
+        retval =  true; // no intersection; keep extending till we clear the IPA
+      }
     } else {
-      // no more intersections: keep extending in Z till we clear the IPA
-      if(debug_ > 1)std::cout << "Extrapolating to IPA edge, z " << spos.Z() << std::endl;
-      if(zvel > 0.0)
-        return spos.Z() < zmax_;
-      else
-        return spos.Z() > zmin_;
+// if the trajectory is heading towards the IPA keep going
+      auto vel = ktraj.velocity(trange.end())*timeDirSign(tdir); // sign velocity by extrapolation direction
+      if( (epos.Z() > zmax_ && vel.Z() < 0) || (epos.Z() < zmin_ && vel.Z() > 0) ) {
+        if(debug_ > 1)std::cout << "Extrapolating towards IPA, z " << epos.Z() << std::endl;
+        retval = true; // keep going
+      } else if(epos.Z() < zmin_ && fabs(vel.Z()/vel.R()) < 0.1){
+        if(debug_ > 1)std::cout << "Small velocity away from IPA edge, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+        retval = true; // keep going
+      } else {
+        if(debug_ > 1)std::cout << "Heading away from IPA, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+      }
     }
+    return retval;
   }
 }
 #endif

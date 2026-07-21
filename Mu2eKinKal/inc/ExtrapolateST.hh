@@ -70,58 +70,59 @@ namespace mu2e {
     // we are answering the question: did the segment last added to this extrapolated track hit a foil or not? If so we are done
     // extrapolating (for now) and we want to find all the intersections in that piece. If not, and if we're still inside or heading towards the
     // ST, keep going.
+    reset(); // clear any cache
+    bool retval = false;
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small difference to avoid re-intersecting
     if(ktraj.range().range() <= epsilon) return true; // keep going if the step is very small
-    auto stime = tdir == TimeDir::forwards ? ktraj.range().begin()+epsilon : ktraj.range().end()-epsilon;
-    auto etime = tdir == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    auto vel = ktraj.velocity(stime); // physical velocity
-    if(tdir == TimeDir::backwards) vel *= -1.0;
-    auto spos = ktraj.position3(stime);
-    auto epos = ktraj.position3(etime);
+    auto trange = tdir == TimeDir::forwards ?
+      TimeRange(ktraj.range().begin()+epsilon, ktraj.range().end()) :
+      TimeRange(ktraj.range().begin(), ktraj.range().end()-epsilon);
+    auto spos = ktraj.position3(trange.begin());
+    auto epos = ktraj.position3(trange.end());
+    auto vel = ktraj.velocity(trange.begin())*timeDirSign(tdir); // sign velocity by extrapolation direction
     if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << vel.Z() << " rho " << spos.Rho() << std::endl;
-    // stop if the particle is heading away from the ST
-    if( (vel.Z() > 0 && spos.Z() > zmax_ ) || (vel.Z() < 0 && spos.Z() < zmin_)){
-      reset(); // clear any cache
-      if(debug_ > 1)std::cout << "Heading away from ST: done" << std::endl;
-      return false;
-    }
-    // if the particle is going in the right direction but haven't yet reached the ST in Z just keep going
-    if( (vel.Z() > 0 && epos.Z() < zmin_) || (vel.Z() < 0 && epos.Z() > zmax_) ){
-      reset();
-      if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
-      return true;
-    }
-    // if we get to here we are in the correct Z range. Test foils.
-    int ifoil = nearestFoil(spos.Z(),vel.Z());
-    if(ifoil >= (int)foils_.size())return true;
-    if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
-    int dfoil = vel.Z() > 0.0 ? 1 : -1; // iteration direction
-    auto trange = tdir == TimeDir::forwards ? TimeRange(stime,ktraj.range().end()) : TimeRange(ktraj.range().begin(),stime);
-    // loop over foils in the z range of this piece
-    while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
-      auto foilptr = foils_[ifoil];
-      if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
-      auto newinter = KinKal::intersect(ktraj,*foilptr,trange,intertol_,tdir);
-      if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
-      if(newinter.good()){
-        // update the cache
-        inter_ = newinter;
-        ann_ = foils_[ifoil];
-        sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
-        if(debug_ > 0)std::cout << "Good ST foil " << newinter << " sid " << sid_ << std::endl;
-        return false;
+    // rough geometric test
+    double srho = spos.Rho();
+    double erho = epos.Rho();
+    if( ( (spos.Z() > zmin_ && spos.Z() < zmax_) || (epos.Z() > zmin_ && epos.Z() < zmax_) ) &&
+        ( ( srho > rmin_ && srho < rmax_) || (erho > rmin_ && erho < rmax_)) ){
+      // test intersection with nearby foils
+      int ifoil = nearestFoil(spos.Z(),vel.Z());
+      if(ifoil >= (int)foils_.size())return true;
+      if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
+      int dfoil = vel.Z() > 0.0 ? 1 : -1; // iteration direction
+      // loop over foils in the z range of this piece, and find the first intersection by this piece.
+      while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
+        auto foilptr = foils_[ifoil];
+        if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
+        auto newinter = KinKal::intersect(ktraj,*foilptr,trange,intertol_,tdir);
+        if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
+        if(newinter.good()){
+          // update the cache
+          inter_ = newinter;
+          ann_ = foils_[ifoil];
+          sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
+          if(debug_ > 0)std::cout << "Good ST foil " << newinter << " sid " << sid_ << std::endl;
+          retval = false;
+          break;
+        }
+        ifoil += dfoil; // otherwise continue loopin on foils
       }
-      ifoil += dfoil; // otherwise continue loopin on foils
+    } else {
+      // if the particle is going in the right direction but hasn't yet reached the ST in Z just keep going
+      if( (vel.Z() > 0 && epos.Z() < zmin_) || (vel.Z() < 0 && epos.Z() > zmax_) ){
+        if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
+        return true;
+      } else if(epos.Z() < zmin_ && fabs(vel.Z()/vel.R()) < 0.1){
+        if(debug_ > 1)std::cout << "Small velocity away from ST edge, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+        retval = true; // keep going
+      } else {
+        if(debug_ > 1)std::cout << "Heading away from ST, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+      }
     }
-    // no more intersections: keep extending in Z till we clear the ST
-    reset();
-    if(debug_ > 1)std::cout << "Extrapolating to ST edge, z " << spos.Z() << std::endl;
-    if(vel.Z() > 0.0)
-      return spos.Z() < zmax_;
-    else
-      return spos.Z() > zmin_;
+    return retval;
   }
 
   size_t ExtrapolateST::nearestFoil(double zpos, double zvel) const {
