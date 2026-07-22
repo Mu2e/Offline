@@ -164,7 +164,7 @@ namespace mu2e {
         p = mom3.R();
         rho = ikinter->position3().Rho();
       }
-      auto stinters = ks.intersections(SurfaceId("ST_Foils"));
+      auto stinters = ks.intersections(SurfaceId("ST_Foils",-1)); // match all foils
       _hNST->Fill(stinters.size());
       for (auto stinter : stinters)_hSTdP->Fill(stinter->dMom());
       auto ipainters = ks.intersections(SurfaceId("IPA"));
