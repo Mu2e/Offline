@@ -62,6 +62,8 @@ namespace mu2e {
     _hHPanel = tfs.make<TH1D>("HPanel", "Hit Unique Panel", 216, -0.5, 215.5);
     _hSRadLen = tfs.make<TH1D>("SRadLen", "Fractional Straw Radiation Length", 100, 0, 2.5e-3);
     _hSRadLenSum = tfs.make<TH1D>( "SRadLenSum", "Sum Fractional Straw Radiation Length", 100, 0, 0.08);
+    _hSTdP = tfs.make<TH1D>( "hSTdE", "Momentum Change Crossing a ST Foil;MeV", 100, -1.0, 0.0);
+    _hIPAdP = tfs.make<TH1D>( "hIPAdE", "Momentum Change Crossing the IPA;MeV", 100, -0.5, 0.0);
     int ibin = 1;
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Primary");  // bin 1, first visible
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Momentum");
@@ -160,6 +162,11 @@ namespace mu2e {
         p = mom3.R();
         rho = ikinter->position3().Rho();
       }
+      auto stinters = ks.intersections(SurfaceId("ST_Foils"));
+      for (auto stinter : stinters)_hSTdP->Fill(stinter->dMom());
+      auto ipainters = ks.intersections(SurfaceId("IPA"));
+      for (auto ipainter : ipainters)_hIPAdP->Fill(ipainter->dMom());
+
       _hp->Fill(p*recoCharge);
       _hp2->Fill(p*recoCharge);
       if (isCPR) _hpC->Fill(p);
