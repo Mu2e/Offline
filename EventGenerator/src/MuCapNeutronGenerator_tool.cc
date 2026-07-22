@@ -17,6 +17,8 @@
 
 #include "fhiclcpp/types/DelegatedParameter.h"
 
+#include <iostream>
+
 namespace mu2e {
   class MuCapNeutronGenerator : public ParticleGeneratorTool {
   public:
@@ -40,9 +42,14 @@ namespace mu2e {
       _czMax(conf().czMax()),
       _spectrumXMin(_spectrum.getXMin()),
       _spectrumXMax(_spectrum.getXMax()),
+      _energyFraction(1.),
       _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {
       if(_czMin < -1. || _czMax > 1. || _czMin > _czMax) throw cet::exception("BADCONFIG") << "Cos(theta_z) range unphysical: " << _czMin << " - " << _czMax;
+      auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
+      _energyFraction = (_flatSpectrum) ? 1. : calculateBinnedSpectrumEnergyFraction(fullconfig, false);
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction " << _energyFraction << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction (with cos(theta_z)) " << (_energyFraction)*((_czMax - _czMin)/2.) << std::endl;
     }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
@@ -52,7 +59,7 @@ namespace mu2e {
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
       _isPrimary = isPrimary;
       _rate = GlobalConstantsHandle<PhysicsParams>()->getCaptureNeutronRate(material);
-      const double rate = _rate * (_czMax - _czMin)/2.; // accouunt for potential cz selection in the produced rates
+      const double rate = _rate * _energyFraction * (_czMax - _czMin)/2.; // account for potential spectrum restriction in the produced rates
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czMin, _czMax);
       _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, rate);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
@@ -69,6 +76,7 @@ namespace mu2e {
     double _czMax;
     double _spectrumXMin;
     double _spectrumXMax;
+    double _energyFraction;
     bool _flatSpectrum;
 
     std::unique_ptr<CLHEP::RandPoissonQ> _randomPoissonQ;
@@ -121,7 +129,7 @@ namespace mu2e {
       default:            spectrumVarName = "energy";        break;
     }
 
-    config->add_var(SpectrumConfig::RestrictedVar(spectrumVarName, 1., _spectrumXMin, _spectrumXMax,
+    config->add_var(SpectrumConfig::RestrictedVar(spectrumVarName, _energyFraction, _spectrumXMin, _spectrumXMax,
                                                   _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czMax - _czMin)/2., _czMin, _czMax));
     return config;
