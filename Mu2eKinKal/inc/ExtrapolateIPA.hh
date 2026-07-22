@@ -31,6 +31,7 @@ namespace mu2e {
       auto const& intersection() const { return inter_; }
       double zmin() const { return zmin_; }
       double zmax() const { return zmax_; }
+      double zmid() const { return 0.5*(zmin_+zmax_); }
       int debug() const { return debug_; }
       // extrapolation predicate: the track will be extrapolated until this predicate returns false, subject to the maximum time
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
@@ -53,7 +54,7 @@ namespace mu2e {
     // we are answering the question: did the segment last added to this extrapolated trajectory hit the IPA or not?
     // if so, stop extrapolating (for now). If not, and if we're still inside or heading towards the IPA, keep going, otherwise stop
     reset(); // clear any cache
-    bool retval(false);
+    bool retval(true); // by default keep going
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front(); // most recently added segment
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small step to avoid re-intersecting
@@ -71,20 +72,17 @@ namespace mu2e {
         // update the cache
         inter_ = newinter;
         if(debug_ > 0)std::cout << "Good IPA " << newinter << ", Stopping " << std::endl;
-      } else {
-        retval =  true; // no intersection; keep extending till we clear the IPA
+        retval = false;
       }
     } else {
-// if the trajectory is heading towards the IPA keep going
+      // otherwise, if the trajectory is heading towards the IPA keep going
       auto vel = ktraj.velocity(trange.end())*timeDirSign(tdir); // sign velocity by extrapolation direction
-      if( (epos.Z() > zmax_ && vel.Z() < 0) || (epos.Z() < zmin_ && vel.Z() > 0) ) {
-        if(debug_ > 1)std::cout << "Extrapolating towards IPA, z " << epos.Z() << std::endl;
-        retval = true; // keep going
-      } else if(epos.Z() < zmin_ && fabs(vel.Z()/vel.R()) < 0.1){
-        if(debug_ > 1)std::cout << "Small velocity away from IPA edge, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
-        retval = true; // keep going
+      double vb = vel.Dot(ktraj.bnom().Unit()); // project along the BField axis. This is insensitive to reflection.
+      if( (epos.Z() > zmax_ && vb < 0) || (epos.Z() < zmin_ && vb > 0) ) {
+        if(debug_ > 1)std::cout << "Extrapolating towards IPA, z " << epos.Z() << " bvel " << vb << std::endl;
       } else {
-        if(debug_ > 1)std::cout << "Heading away from IPA, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+        retval = false;
+        if(debug_ > 1)std::cout << "Heading away from IPA, z " << epos.Z() << " bvel " << vb << std::endl;
       }
     }
     return retval;

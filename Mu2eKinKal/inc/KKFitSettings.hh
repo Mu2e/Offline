@@ -122,7 +122,6 @@ namespace mu2e {
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
-      fhicl::Atom<bool> StopAtTSDA { Name("StopAtTSDA"), Comment("Stop extrapolating tracks if they hit TSDA") };
     };
   }
 }

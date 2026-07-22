@@ -36,6 +36,7 @@ namespace mu2e {
       double interTolerance() const { return intertol_; }
       double zmin() const { return zmin_; }
       double zmax() const { return zmax_; }
+      double zmid() const { return 0.5*(zmin_+zmax_); }
       double rmin() const { return rmin_; }
       double rmax() const { return rmax_; }
       auto const& foils () const { return foils_; }
@@ -47,8 +48,8 @@ namespace mu2e {
       template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& fittraj, TimeDir tdir) const;
       // reset between tracks
       void reset() const { inter_ = Intersection(); sid_ = SurfaceId(); ann_ = AnnPtr();}
-      // find the nearest foil to a z positionin a given z direction
-      size_t nearestFoil(double zpos, double zdir) const;
+      // find the foils bounded by a set of z positions in a given z direction
+      void boundedFoils(double spos, double epos, double zdir, std::vector<size_t>& foils) const;
     private:
       double maxDt_ = -1; // maximum extrapolation time
       double maxDtStep_ = -1; // maximum extrapolation time step in a single iteration
@@ -71,7 +72,7 @@ namespace mu2e {
     // extrapolating (for now) and we want to find all the intersections in that piece. If not, and if we're still inside or heading towards the
     // ST, keep going.
     reset(); // clear any cache
-    bool retval = false;
+    bool retval = true; // by default keep going
     auto const& ktraj = tdir == TimeDir::forwards ? fittraj.back() : fittraj.front();
     // add a small buffer to the test range to prevent re-intersection with the same piece
     static const double epsilon(1e-7); // small difference to avoid re-intersecting
@@ -84,68 +85,63 @@ namespace mu2e {
     auto vel = ktraj.velocity(trange.begin())*timeDirSign(tdir); // sign velocity by extrapolation direction
     if(debug_ > 2)std::cout << "ST extrap tdir " << tdir << " start z " << spos.Z() << " end z " << epos.Z() << " zvel " << vel.Z() << " rho " << spos.Rho() << std::endl;
     // rough geometric test
-    double srho = spos.Rho();
-    double erho = epos.Rho();
-    if( ( (spos.Z() > zmin_ && spos.Z() < zmax_) || (epos.Z() > zmin_ && epos.Z() < zmax_) ) &&
-        ( ( srho > rmin_ && srho < rmax_) || (erho > rmin_ && erho < rmax_)) ){
-      // test intersection with nearby foils
-      int ifoil = nearestFoil(spos.Z(),vel.Z());
-      if(ifoil >= (int)foils_.size())return true;
-      if(debug_ > 2)std::cout << "Looping on foils " << std::endl;
-      int dfoil = vel.Z() > 0.0 ? 1 : -1; // iteration direction
-      // loop over foils in the z range of this piece, and find the first intersection by this piece.
-      while(ifoil >= 0 && ifoil < (int)foils_.size() && (foils_[ifoil]->center().Z() - epos.Z())*dfoil < 0.0){
-        auto foilptr = foils_[ifoil];
-        if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
-        auto newinter = KinKal::intersect(ktraj,*foilptr,trange,intertol_,tdir);
-        if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
-        if(newinter.good()){
-          // update the cache
-          inter_ = newinter;
-          ann_ = foils_[ifoil];
-          sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
-          if(debug_ > 0)std::cout << "Good ST foil " << newinter << " sid " << sid_ << std::endl;
-          retval = false;
-          break;
+    if( (spos.Z() > zmin_ && spos.Z() < zmax_) || (epos.Z() > zmin_ && epos.Z() < zmax_) ) {
+      double srho = spos.Rho();
+      double erho = epos.Rho();
+      if( ( srho > rmin_ && srho < rmax_) || (erho > rmin_ && erho < rmax_)){
+        // Find foils bounded by the segment Z positions. These are ordered by the trajectory direction, so they can be tested in order
+        std::vector<size_t> foils;
+        boundedFoils(spos.Z(),epos.Z(),vel.Z(),foils);
+        if(debug_ > 2)std::cout << "Looping on " << foils.size() << " foils " << std::endl;
+        // loop over foils in the z range of this piece, and find the first intersection by this piece.
+        for(auto ifoil : foils){
+          auto const& foilptr = foils_[ifoil];
+          if(debug_ > 2)std::cout << "foil " << ifoil << " z " << foilptr->center().Z() << std::endl;
+          auto newinter = KinKal::intersect(ktraj,*foilptr,trange,intertol_,tdir);
+          if(debug_ > 2)std::cout << "ST foil inter " << newinter  << std::endl;
+          if(newinter.good()){
+            // update the cache
+            inter_ = newinter;
+            ann_ = foils_[ifoil];
+            sid_ = SurfaceId(SurfaceIdEnum::ST_Foils,ifoil);
+            if(debug_ > 0)std::cout << "Good ST foil " << newinter << " sid " << sid_ << std::endl;
+            retval = false;
+            break;
+          }
         }
-        ifoil += dfoil; // otherwise continue loopin on foils
       }
     } else {
       // if the particle is going in the right direction but hasn't yet reached the ST in Z just keep going
-      if( (vel.Z() > 0 && epos.Z() < zmin_) || (vel.Z() < 0 && epos.Z() > zmax_) ){
-        if(debug_ > 2)std::cout << "Heading towards ST, z " << spos.Z()<< std::endl;
-        return true;
-      } else if(epos.Z() < zmin_ && fabs(vel.Z()/vel.R()) < 0.1){
-        if(debug_ > 1)std::cout << "Small velocity away from ST edge, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
-        retval = true; // keep going
+      double vb = vel.Dot(ktraj.bnom().Unit());
+      if( (epos.Z() > zmax_ && vb < 0) || (epos.Z() < zmin_ && vb > 0) ) {
+        if(debug_ > 1)std::cout << "Extrapolating towards ST, z " << epos.Z() << " bvel " << vb << std::endl;
       } else {
-        if(debug_ > 1)std::cout << "Heading away from ST, z " << epos.Z() << " zvel " << vel.Z() << std::endl;
+        retval = false;
+        if(debug_ > 1)std::cout << "Heading away from ST, z " << epos.Z() << " bvel " << vb << std::endl;
       }
     }
     return retval;
   }
 
-  size_t ExtrapolateST::nearestFoil(double zpos, double zvel) const {
-    size_t retval = foils_.size();
+  void ExtrapolateST::boundedFoils(double sz, double ez, double zvel, std::vector<size_t>& foils) const {
+    double zmin = min(sz,ez);
+    double zmax = max(sz,ez);
     if(zvel > 0.0){ // going forwards in z
-      for(auto ifoil= foils_.begin(); ifoil != foils_.end(); ifoil++){
-        auto const& foilptr = *ifoil;
-        if(foilptr->center().Z() > zpos){
-          retval = std::distance(foils_.begin(),ifoil);
-          break;
+      for(size_t ifoil=0;ifoil < foils_.size();++ifoil) {
+        auto const& foilptr = foils_[ifoil];
+        if(foilptr->center().Z() > zmin && foilptr->center().Z() < zmax ){
+          foils.push_back(ifoil);
         }
       }
-    } else {
-      for(auto ifoil= foils_.rbegin(); ifoil != foils_.rend(); ifoil++){
-        auto const& foilptr = *ifoil;
-        if(foilptr->center().Z() < zpos){
-          auto jfoil = ifoil.base()-1; // points to the equivalent forwards object
-          retval = std::distance(foils_.begin(),jfoil);
-          break;
+    } else { // backwards in z
+      for(int ifoil = foils_.size()-1;ifoil >= 0; --ifoil){
+        auto jfoil = static_cast<size_t>(ifoil);
+        auto const& foilptr = foils_[jfoil];
+        if(foilptr->center().Z() > zmin && foilptr->center().Z() < zmax ){
+          foils.push_back(jfoil);
         }
       }
     }
-    return retval;
   }
 
 }
