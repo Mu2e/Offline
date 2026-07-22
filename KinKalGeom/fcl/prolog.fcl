@@ -14,6 +14,12 @@ KinKalGeom : {
     SolidScatteringFraction : 0.999999
     GasScatteringFraction : 0.9999999
     ElectronBrehmsFraction : 0.04
+    # Bethe path correction for KKShellXing: off by default; enable per crossing type as needed.
+    # Only effective when IonizationEnergyLossMode is moyalmean.
+    BetheCorrectionIPA : false
+    BetheCorrectionST : false
+    BetheCorrectionCRV : false
+    BetheCorrectionPassive : false
   }
 }
 END_PROLOG
