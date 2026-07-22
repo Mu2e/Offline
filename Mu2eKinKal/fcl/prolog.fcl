@@ -39,6 +39,7 @@ Mu2eKinKal : {
     SampleSurfaces : [] # specific to the fit type
     SaveHitCalibInfo : false
     SaveDomains : false
+    SaveMaterialXings : false # save generic passive material Xings (filled during extrapolation) in the KalSeed
   }
 
    CHSEEDFIT: {
@@ -376,7 +377,7 @@ Mu2eKinKal : {
     MaxDtStep : 1.0 # (ns)
     MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-4 # momemntum fraction
-    ToTrackerEnds : true
+    ToTrackerPerimeter : true
     Upstream : true
     BackToTracker : false
     ToOPA : true
@@ -389,7 +390,7 @@ Mu2eKinKal : {
     MaxDtStep : 10.0 # (ns)
     MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
-    ToTrackerEnds : true
+    ToTrackerPerimeter : true
     Upstream : false
     BackToTracker : false
     ToOPA : false
@@ -402,7 +403,7 @@ Mu2eKinKal : {
     MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
-    ToTrackerEnds : false
+    ToTrackerPerimeter : false
     Upstream : false
     BackToTracker : false
     ToOPA : false
@@ -415,7 +416,7 @@ Mu2eKinKal : {
     MaxDtStep : 1.0 # (ns)
     MinV : 1e-5 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
-    ToTrackerEnds : false
+    ToTrackerPerimeter : false
     Upstream : false
     BackToTracker : false
     ToOPA : false
