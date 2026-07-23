@@ -2247,7 +2247,7 @@ int mu2e::DbTool::commitPatch() {
 
     // check that this group does not include any tables to be dropped
     for (int t : droptids) {
-      if (omap.find(t) == omap.end()) {
+      if (omap.find(t) != omap.end()) {
         omap.erase(t);
         remakegroup = true;
         if (_verbose > 1) {
