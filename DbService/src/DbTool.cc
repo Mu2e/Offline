@@ -2518,7 +2518,7 @@ int mu2e::DbTool::verifySet() {
     if (iovv.find(t) == iovv.end()) {
       std::stringstream ss;
         ss << "Error - TID " << t
-                << " not found in the set near the requested runs\n";
+           << " not found in the set near the requested runs\n";
       _result.append(ss.str());
       nmiss++;
     }
