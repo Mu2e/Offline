@@ -15,6 +15,7 @@ helper = mu2e_helper(env)
 
 mainlib = helper.make_mainlib([
   'mu2e_ConfigTools',
+  'mu2e_DataProducts',
   'KinKal_MatEnv',
   'KinKal_Geometry',
   'KinKal_Trajectory',

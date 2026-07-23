@@ -38,12 +38,10 @@ namespace mu2e {
         CRV_StrongBack=280,                                   // CRV module Al strongback (tracker-side support plate)
         DS_HatchConcrete=300                                  // detector-area hatch concrete block approximation
       };
-
-    // Update this counter whenever you add/remove surface IDs from the enum above.
-    static constexpr std::size_t nSurfaceIds = 64;
-
-    static std::string const& typeName();
-    static std::map<enum_type,std::string> const& names();
+      // Update this counter whenever you add/remove surface IDs from the enum above.
+      static constexpr std::size_t nSurfaceIds = 64;
+      static std::string const& typeName();
+      static std::map<enum_type,std::string> const& names();
   };
   using SurfaceIdEnum = EnumToStringSparse<SurfaceIdDetail>;
   class SurfaceId {
@@ -59,12 +57,13 @@ namespace mu2e {
       int index() const { return index_; }
       auto const& name() const { return sid_.name(); }
 
-      bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ < 0 || other.index_ < 0; }
-      bool indexCompare(SurfaceId const& other) const { return index_<0 || other.index_ < 0 ? false : index_ < other.index_; }
+      bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ == allIndices_ || other.index_ == allIndices_; }
+      bool indexCompare(SurfaceId const& other) const { return index_== allIndices_ || other.index_ == allIndices_ ? false : index_ < other.index_; }
       bool operator == (SurfaceId const& other ) const { return sid_ == other.sid_ && indexMatch(other) ; }
       bool operator != (SurfaceId const& other ) const { return sid_ != other.sid_ || !indexMatch(other) ; }
       bool operator < (SurfaceId const& other ) const { return sid_ == other.sid_ ? indexCompare(other) : sid_ < other.sid_; }
-    private:
+      static int allIndices_; // index wildcard
+      private:
       SurfaceIdEnum sid_;
       int index_; // index.  Negative value is a wild card for matching
   };
