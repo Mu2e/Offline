@@ -49,6 +49,9 @@ namespace mu2e {
       fhicl::Atom<float>           cluster_radius         {Name("ClusterRadius"),              Comment("Radius around cluster position in mm for seeding")};
       fhicl::Atom<float>           particle_beta          {Name("ParticleBeta"),               Comment("Particle beta for distance to time (0-1)"), 1.};
       fhicl::Atom<std::string>     fit_direction          {Name("FitDirection"),               Comment("Fit Direction in Search (\"downstream\" or \"upstream\")") };
+      fhicl::Atom<float>           hit_edep_min           {Name("StrawEDepMin"),               Comment("Straw hit energy minimum"), -1.};
+      fhicl::Atom<float>           hit_edep_max           {Name("StrawEDepMax"),               Comment("Straw hit energy maximum"), -1.};
+      fhicl::Atom<bool>            ignore_target          {Name("IgnoreTarget"),               Comment("Cluster all hits in time with the calo cluster"), false};
     };
 
     //-----------------------------------------------------------------------------
@@ -65,11 +68,18 @@ namespace mu2e {
     float                                 cluster_radius_;          // radius around cluster position in mm for seeding
     float                                 particle_beta_;           // particle beta (v/c)
     TrkFitDirection                       fit_dir_;                 // fit direction in search
+    float                                 hit_edep_min_;            // straw hit energy minimum
+    float                                 hit_edep_max_;            // straw hit energy maximum
+    bool                                  ignore_target_;           // ignore target origin, cluster any hits consistent in time
     int                                   diag_level_;              // diagnostic output
 
     //-----------------------------------------------------------------------------
     // Data
     //-----------------------------------------------------------------------------
+
+    size_t                                nevents_;                 // counters
+    size_t                                ntime_clusters_;
+
     const ComboHitCollection*             combo_hit_col_;           // input combo hit collection
     const CaloClusterCollection*          calo_cluster_col_;        // input calo cluster collection
     art::Handle<ComboHitCollection>       combo_hit_col_handle_;    // handle for input combo hit collection
@@ -86,6 +96,7 @@ namespace mu2e {
 
     virtual void beginRun(art::Run&   run   );
     virtual void produce (art::Event& event );
+    virtual void endJob  ();
     //-----------------------------------------------------------------------------
     // helper functions
     //-----------------------------------------------------------------------------
@@ -112,7 +123,12 @@ namespace mu2e {
     , cluster_radius_(config().cluster_radius())
     , particle_beta_(config().particle_beta())
     , fit_dir_(config().fit_direction())
+    , hit_edep_min_(config().hit_edep_min())
+    , hit_edep_max_(config().hit_edep_max())
+    , ignore_target_(config().ignore_target())
     , diag_level_(config().diag_level())
+    , nevents_(0)
+    , ntime_clusters_(0)
    {
     // declare the data products
     consumes<ComboHitCollection>(hit_tag_);
@@ -152,7 +168,8 @@ namespace mu2e {
 
     evt.getByLabel(hit_tag_, combo_hit_col_handle_);
     if(!combo_hit_col_handle_.isValid()) {
-      printf("[CalLineTimePeakFinder::%s] ERROR: ComboHit collection with label \"%s\" not found! RETURN\n", __func__, hit_tag_.encode().c_str());
+      printf("[%s::CalLineTimePeakFinder::%s] ERROR: ComboHit collection with label \"%s\" not found! RETURN\n",
+             moduleDescription().moduleLabel().c_str(), __func__, hit_tag_.encode().c_str());
       combo_hit_col_ = nullptr;
       return false;
     } else {
@@ -161,7 +178,8 @@ namespace mu2e {
 
     evt.getByLabel(calo_cluster_tag_, calo_cluster_col_handle_);
     if(!calo_cluster_col_handle_.isValid()) {
-      printf("[CalLineTimePeakFinder::%s] ERROR: CaloCluster collection with label \"%s\" not found! RETURN\n", __func__, calo_cluster_tag_.encode().c_str());
+      printf("[%s::CalLineTimePeakFinder::%s] ERROR: CaloCluster collection with label \"%s\" not found! RETURN\n",
+             moduleDescription().moduleLabel().c_str(), __func__, calo_cluster_tag_.encode().c_str());
       calo_cluster_col_ = nullptr;
       return false;
     } else {
@@ -188,9 +206,9 @@ namespace mu2e {
     if(seed_dir_mag <= 0.) return; // can't define a seed direction
     seed_dir *= 1./seed_dir_mag; // normalize the seed direction
     if(std::fabs(seed_dir.z()) < 1.e-3) return; // too sharp of a slope (shouldn't be possible)
-    if(diag_level_ > 1) {
-      printf("[CalLineTimePeakFinder::%s] CaloCluster time = %.2f, position = (%.1f, %.1f, %.1f), seed direction = (%.2f, %.2f, %.2f)\n",
-             __func__, cl_time, cl_pos.x(), cl_pos.y(), cl_pos.z(), seed_dir.x(), seed_dir.y(), seed_dir.z());
+    if(diag_level_ > 2) {
+      printf("[%s::CalLineTimePeakFinder::%s] CaloCluster time = %.2f, position = (%.1f, %.1f, %.1f), seed direction = (%.2f, %.2f, %.2f)\n",
+             moduleDescription().moduleLabel().c_str(), __func__, cl_time, cl_pos.x(), cl_pos.y(), cl_pos.z(), seed_dir.x(), seed_dir.y(), seed_dir.z());
     }
 
     // Look for hits consistent this seed position and direction, and add them to the seed
@@ -207,7 +225,7 @@ namespace mu2e {
       const double time_at_hit = cl_time + dt; // expected time at the hit z position
       const double time_unc = std::sqrt(hit.timeRes()*hit.timeRes() + cl.timeErr()*cl.timeErr()); // uncertainty on the time difference between the hit and the expected time based on the seed
       const double time_sigma = std::abs((hit_time - time_at_hit) / time_unc); // number of sigma the hit time is from the expected time based on the seed
-      if(diag_level_ > 2) {
+      if(diag_level_ > 3) {
         printf("  Hit %zu: time = %.2f, expected time = %.2f, time sigma = %.2f\n",
                i_hit, hit_time, time_at_hit, time_sigma);
       }
@@ -216,17 +234,17 @@ namespace mu2e {
       // next check if the hit is consistent in space
       const CLHEP::Hep3Vector pos_at_hit = cl_pos + dr * seed_dir; // position along the seed direction at the same z as the hit
       const double cone = cluster_radius_ + std::abs(dz/dz_target) * (stopping_target_radius_ - cluster_radius_); // radius of the cone in the x-y plane at the hit z based on the seed direction and cluster position
-      if((pos_at_hit.perp() + cone) < min_hit_radius_) continue; // expected hit position is too low radius to still reach the tracker
+      if(!ignore_target_ && (pos_at_hit.perp() + cone) < min_hit_radius_) continue; // expected hit position is too low radius to still reach the tracker
       const double x_y_dist = (hit_pos - pos_at_hit).perp(); // distance in the x-y plane between the hit and the expected position based on the seed
       const double xy_unc = std::sqrt(hit.transVar() + hit.wireVar()); // uncertainty in the hit position in the x-y plane
       const double xy_sigma = (x_y_dist - cone) / xy_unc; // number of sigma the hit is from the cone from the cluster to the target, negative means contained within the cone
-      if(diag_level_ > 2) {
+      if(diag_level_ > 3) {
         printf("  Expected position at hit z: (%.1f, %.1f, %.1f), hit position: (%.1f, %.1f, %.1f), x-y distance = %.2f, target cone = %.2f, sigma = %.2f\n",
                pos_at_hit.x(), pos_at_hit.y(), pos_at_hit.z(), hit_pos.x(), hit_pos.y(), hit_pos.z(), x_y_dist, cone, xy_sigma);
       }
-      if(xy_sigma > hit_xy_sigma_thresh_) continue; // hit is not consistent with the seed
-      if(diag_level_ > 1) {
-        if(diag_level_ <= 2) { // print full info if not already printed
+      if(!ignore_target_ && xy_sigma > hit_xy_sigma_thresh_) continue; // hit is not consistent with the seed
+      if(diag_level_ > 2) {
+        if(diag_level_ <= 3) { // print full info if not already printed
           printf("  Hit %zu: time = %.2f, expected time = %.2f, time sigma = %.2f\n",
                  i_hit, hit_time, time_at_hit, time_sigma);
           printf("  Expected position at hit z: (%.1f, %.1f, %.1f), hit position: (%.1f, %.1f, %.1f), x-y distance = %.2f, target cone = %.2f, sigma = %.2f\n",
@@ -243,6 +261,7 @@ namespace mu2e {
   // event entry point
   //-----------------------------------------------------------------------------
   void CalLineTimePeakFinder::produce(art::Event& event ) {
+    ++nevents_;
 
     // output collection
     std::unique_ptr<TimeClusterCollection> out_tcs(new TimeClusterCollection);
@@ -261,18 +280,19 @@ namespace mu2e {
       const size_t n_clusters = calo_cluster_col_->size();
       for(size_t i_cl = 0; i_cl < n_clusters; ++i_cl) {
         const auto& cl = calo_cluster_col_->at(i_cl);
-        if(diag_level_ > 1) {
-          printf("[CalLineTimePeakFinder::%s] Seeding from CaloCluster %zu with energy = %.2f, time = %.2f, N(combo hits) = %zu\n",
-                 __func__, i_cl, cl.energyDep(), cl.time(), combo_hit_col_->size());
+        if(diag_level_ > 2) {
+          printf("[%s::CalLineTimePeakFinder::%s] Seeding from CaloCluster %zu with energy = %.2f, time = %.2f, N(combo hits) = %zu\n",
+                 moduleDescription().moduleLabel().c_str(), __func__, i_cl, cl.energyDep(), cl.time(), combo_hit_col_->size());
         }
         if(cl.energyDep() < min_calo_cluster_energy_) continue; // skip clusters that don't pass the energy cut
         TimeCluster tc;
         findTimePeakInCluster(tc, cl);
         if(!isGoodTimeCluster(tc)) continue; // skip time clusters that don't pass selection criteria
         finalizeTimeCluster(tc, i_cl);
-        if(diag_level_ > 0) {
-          printf("[CalLineTimePeakFinder::%s] Found time cluster with %zu hits and t0 = %.2f\n", __func__, tc.nhits(), tc.t0().t0());
-          if(diag_level_ > 1) {
+        if(diag_level_ > 1) {
+          printf("[%s::CalLineTimePeakFinder::%s] Found time cluster with %zu hits and t0 = %.1f from cluster E = %.1f MeV and t = %.1f ns\n",
+                 moduleDescription().moduleLabel().c_str(), __func__, tc.nhits(), tc.t0().t0(), cl.energyDep(), cl.time());
+          if(diag_level_ > 2) {
             for(size_t i = 0; i < tc.nhits(); ++i) {
               const size_t hit_index = tc.hits().at(i);
               const auto& hit = combo_hit_col_->at(hit_index);
@@ -288,17 +308,26 @@ namespace mu2e {
     // put reconstructed time clusters into the event record
     //-----------------------------------------------------------------------------
 
-    if(diag_level_ > 0) {
-      printf("[CalLineTimePeakFinder::%s] Found %zu time clusters in total\n", __func__, out_tcs->size());
+    if((diag_level_ > 0 && out_tcs->size() > 0) || (diag_level_ > 1)) {
+      printf("[%s::CalLineTimePeakFinder::%s] %i:%i:%i Found %zu time clusters in total\n",
+             moduleDescription().moduleLabel().c_str(), __func__, event.run(), event.subRun(), event.event(), out_tcs->size());
     }
+    ntime_clusters_ += out_tcs->size();
     event.put(std::move(out_tcs));
   }
 
   //-----------------------------------------------------------------------------
   bool  CalLineTimePeakFinder::isGoodHit(const ComboHit& hit) {
     const auto&  flag    = hit.flag();
-    const int    bkg_hit = flag.hasAnyProperty(StrawHitFlag::bkg);
-    if (bkg_hit != 0) return false;
+    // the flag being set means it was identified as background (e.g. delta electron)
+    const bool   bkg_hit = flag.hasAnyProperty(StrawHitFlag::bkg);
+    // use local energy deposit testing for electron vs. proton
+    const float edep = hit.energyDep();
+    if(diag_level_ > 3) printf("  [%s::CalLineTimePeakFinder::%s] Hit flags %10s: bkg = %o edep_flag = %o, edep = %.6f\n",
+                               moduleDescription().moduleLabel().c_str(), __func__, flag.hex().c_str(), bkg_hit, flag.hasAnyProperty(StrawHitFlag::energysel), edep);
+    if(bkg_hit != 0) return false;
+    if(edep < hit_edep_min_) return false;
+    if(hit_edep_max_ > 0. && edep > hit_edep_max_) return false;
     return true;
   }
 
@@ -333,6 +362,11 @@ namespace mu2e {
     tc._t0._t0err = std::sqrt(std::max(0., t0sq  - avg_t0*avg_t0));
   }
 
+  //-----------------------------------------------------------------------------
+  void CalLineTimePeakFinder::endJob() {
+    if(diag_level_ > 0) printf("[%s::CalLineTimePeakFinder::%s] Found %zu time clusters from %zu events\n",
+                                moduleDescription().moduleLabel().c_str(), __func__, ntime_clusters_, nevents_);
+  }
 } // end namespace mu2e
 
 using mu2e::CalLineTimePeakFinder;

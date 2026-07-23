@@ -16,12 +16,14 @@
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -56,11 +58,14 @@ namespace mu2e{
         fhicl::Atom<unsigned> nmax{Name("MaxPairs"), Comment("Max pairs to try")};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+        fhicl::Atom<art::InputTag> ccToken{Name("CaloClusterCollection"),Comment("tag for calo cluster collection"), ""};
+        fhicl::Atom<bool> addCaloClusters{Name("AddCaloClusters"), Comment("Whether to connect calo clusters to the line seeds"), false};
       };
       typedef art::EDProducer::Table<Config> Parameters;
       explicit LineFinder(const Parameters& conf);
       virtual ~LineFinder(){};
       virtual void produce(art::Event& event ) override;
+      virtual void beginRun(art::Run& run) override;
 
     private:
 
@@ -76,11 +81,17 @@ namespace mu2e{
       unsigned _nmax;
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
+      art::InputTag  _ccToken;
+      bool _addCaloClusters;
 
       ProditionsHandle<Tracker> _alignedTracker_h;
+      const CaloClusterCollection* _cccol;
+      art::Handle<CaloClusterCollection> _cccolH;
+      const Calorimeter* _calorimeter;
 
       int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed);
-  };
+      void addClusterToSeed(CosmicTrackSeed& tseed);
+};
 
 
  LineFinder::LineFinder(const Parameters& conf) :
@@ -93,14 +104,25 @@ namespace mu2e{
         _Ntsteps (conf().ntsteps()),
         _stepSize (conf().stepsize()),
         _nmax (conf().nmax()),
-            _chToken (conf().chToken()),
-        _tcToken (conf().tcToken())
+        _chToken (conf().chToken()),
+        _tcToken (conf().tcToken()),
+        _ccToken (conf().ccToken()),
+        _addCaloClusters (conf().addCaloClusters()),
+        _cccol(nullptr),
+        _calorimeter(nullptr)
 {
   consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);
+  if(_addCaloClusters) {
+    consumes<CaloClusterCollection>(_ccToken);
+  }
   produces<CosmicTrackSeedCollection>();
 
  }
+
+void LineFinder::beginRun(art::Run& run) {
+  _calorimeter = GeomHandle<Calorimeter>().get();
+}
 
 void LineFinder::produce(art::Event& event ) {
 
@@ -109,9 +131,18 @@ void LineFinder::produce(art::Event& event ) {
   auto  const& tcH = event.getValidHandle<TimeClusterCollection>(_tcToken);
   const TimeClusterCollection& tccol(*tcH);
 
+  if(_addCaloClusters) {
+    event.getByLabel(_ccToken, _cccolH);
+    if(!_cccolH.isValid()) {
+      throw cet::exception("RECO") << "[LineFinder::produce] Could not retrieve calo cluster collection with tag " << _ccToken.encode();
+    }
+    _cccol = _cccolH.product();
+  }
 
 
   std::unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
+  if(_diag > 2) std::cout << "[LineFinder:: " << __func__ << "] Event " << event.id()
+                         << " has " << tccol.size() << " time clusters\n";
 
   for (size_t index=0;index< tccol.size();++index) {
     const auto& tclust = tccol[index];
@@ -126,13 +157,22 @@ void LineFinder::produce(art::Event& event ) {
     tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
     tseed._track.converged = true;
 
+    if(_diag > 2) std::cout << "  Time cluster " << index << " has " << tclust.hits().size() << " hits"
+                           << " and " << chc.size() << " straw hits\n";
     int seedSize = findLine(chc, shiv, event, tseed);
     if (_diag > 1)
-      std::cout << "LineFinder: seedSize = " << seedSize << std::endl;
+      std::cout << "[LineFinder::" << __func__ <<"] Line seed N(hits) = " << seedSize << std::endl;
 
     if (seedSize >= _minPeak){
       if (_diag > 0)
-        std::cout << "LineFinder: found line (" << seedSize << ")" << " " << tseed._track.FitParams.T0 << " " << tseed._track.FitParams.A0 << " " << tseed._track.FitParams.B0 << " " << tseed._track.FitParams.A1 << " " << tseed._track.FitParams.B1 << std::endl;
+        std::cout << "LineFinder: found line (N(hits) = " << seedSize << ")"
+                  << " " << tseed._track.FitParams.T0
+                  << " " << tseed._track.FitParams.A0
+                  << " " << tseed._track.FitParams.B0
+                  << " " << tseed._track.FitParams.A1
+                  << " " << tseed._track.FitParams.B1
+                  << std::endl;
+      if(_addCaloClusters) addClusterToSeed(tseed);
       tseed._status.merge(TrkFitFlag::Straight);
       tseed._status.merge(TrkFitFlag::hitsOK);
       tseed._status.merge(TrkFitFlag::helixOK);
@@ -269,6 +309,51 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
   tseed._track.SetMinuitEquation(XYZTrack);
 
   return good_hits;
+}
+
+void LineFinder::addClusterToSeed(CosmicTrackSeed& tseed) {
+  if(!_cccol) return;
+
+  // Get the track seed information
+  const XYZVectorF seedInt = tseed._track.Pos0();
+  const XYZVectorF seedDir = tseed._track.Dir();
+  if(std::abs(seedDir.z()) < 1e-3) return; // avoid near-vertical tracks
+  const CLHEP::Hep3Vector seedDirCLHEP(seedDir.x(), seedDir.y(), seedDir.z());
+  const CLHEP::Hep3Vector seedIntCLHEP(seedInt.x(), seedInt.y(), seedInt.z());
+  const double t0 = tseed._t0._t0;
+
+  // Check if a calo cluster can be matched to the line seed
+  const CaloCluster* matchedCluster = nullptr;
+  int matchedClusterIndex = -1;
+  double min_t0_diff = 1.e10;
+  constexpr double t0_match_window = 50.; // ns, loose time window for matching
+  for(size_t i_cl = 0; i_cl < _cccol->size(); ++i_cl) {
+    const CaloCluster& cl = _cccol->at(i_cl);
+    const CLHEP::Hep3Vector cl_pos = _calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskToMu2e(cl.diskID(), cl.cog3Vector()));
+    const double cl_time = cl.time();
+    // Get the expected time at the calo disk based on the line seed
+    const double speed = CLHEP::c_light; // assume speed of the particle is close to the speed of light
+    const double dr = std::abs((cl_pos - seedIntCLHEP).dot(seedDirCLHEP.unit()));
+    const double t_flight = dr / speed;
+    // check either trajectory
+    const double t0_diff_1 = std::abs((t0 + t_flight) - cl_time);
+    const double t0_diff_2 = std::abs((t0 - t_flight) - cl_time);
+    const double t0_diff = std::min(t0_diff_1, t0_diff_2);
+    if(t0_diff < min_t0_diff && t0_diff < t0_match_window) {
+      min_t0_diff = t0_diff;
+      matchedCluster = &cl;
+      matchedClusterIndex = i_cl;
+    }
+  }
+
+  if(matchedCluster) {
+    tseed._caloCluster = art::Ptr<CaloCluster>(_cccolH, matchedClusterIndex);
+    if(_diag > 0) {
+      std::cout << "LineFinder: matched calo cluster with energy " << matchedCluster->energyDep() << " MeV"
+                << " time " << matchedCluster->time() << " ns to line seed with t0 = "
+                << tseed._t0._t0 << " ns" << std::endl;
+    }
+  }
 }
 
 }//end mu2e namespace
