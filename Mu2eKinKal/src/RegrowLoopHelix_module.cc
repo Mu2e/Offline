@@ -263,8 +263,9 @@ namespace mu2e {
     for (auto const& kseedptr : kseedptrs) {
       auto const& kseed = *kseedptr;
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
+      auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
       // regrow the components from the seed
-      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory(tpart_);
+      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory(tpart);
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
@@ -290,7 +291,6 @@ namespace mu2e {
       // require hits and consistent BField domains
       if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
       // create the KKTrack from these
-        auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,paramhits, domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
