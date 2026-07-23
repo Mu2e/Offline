@@ -17,7 +17,9 @@ namespace mu2e {
   // We correct the eloss for thick passive materials (ie. concrete blocks) by scaling the crossing path length.
   // Side-effect: the multiple-scattering variance scales too (~3-8% larger pointing sigma at high p),
   // which does not touch the |p| residual. f>=1 always (we never reduce the loss).
-  // Only applied if KinKal is configured with IonizationEnergyLossMode = moyalmean (KKMaterial fcl).
+  // Opt-in per crossing type via KKMaterial BetheCorrection{IPA,ST,CRV} (all default false);
+  // BetheCorrectionPassive is commented out until KKExtrap wires DS/shielding crossings.
+  // only effective when IonizationEnergyLossMode is moyalmean.
   //
   // This hand-rolls the unrestricted Bethe mean from DetMaterial's eloss_xi/eexc/densityCorrection.
   // It intentionally omits DetMaterial::shellCorrection (which ionizationEnergyLossMPV includes): that

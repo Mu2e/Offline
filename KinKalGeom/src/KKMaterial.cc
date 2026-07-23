@@ -20,11 +20,18 @@ namespace mu2e {
       MatEnv::DetMaterialConfig dmconf;
       dmconf.elossmode_ = (DetMaterial::energylossmode)matconfig.elossMode();
       // The KKShellXing Bethe (unrestricted ionization mean) correction is derived assuming KinKal
-      // returns the restricted Moyal mean; only enable it in that mode so the two stay consistent.
-      betheCorrection_ = (dmconf.elossmode_ == DetMaterial::moyalmean);
-      if(!betheCorrection_)
-        mf::LogInfo("KKMaterial") << "IonizationEnergyLossMode is not moyalmean ("
-          << matconfig.elossMode() << "): the KKShellXing Bethe-mean path correction is inactive.";
+      // returns the restricted Moyal mean; only enable requested crossing types in that mode.
+      bool const moyal = (dmconf.elossmode_ == DetMaterial::moyalmean);
+      bool const wantAny = matconfig.betheCorrIPA() || matconfig.betheCorrST()
+        || matconfig.betheCorrCRV(); // || matconfig.betheCorrPassive();
+      if(wantAny && !moyal) {
+        mf::LogWarning("KKMaterial") << "BetheCorrection* requested but IonizationEnergyLossMode is not moyalmean ("
+          << matconfig.elossMode() << "): all Bethe path corrections forced off.";
+      }
+      betheCorrIPA_     = matconfig.betheCorrIPA() && moyal;
+      betheCorrST_      = matconfig.betheCorrST() && moyal;
+      betheCorrCRV_     = matconfig.betheCorrCRV() && moyal;
+      // betheCorrPassive_ = matconfig.betheCorrPassive() && moyal;
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();
