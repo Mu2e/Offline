@@ -23,7 +23,7 @@ namespace mu2e {
       // returns the restricted Moyal mean; only enable requested crossing types in that mode.
       bool const moyal = (dmconf.elossmode_ == DetMaterial::moyalmean);
       bool const wantAny = matconfig.betheCorrIPA() || matconfig.betheCorrST()
-        || matconfig.betheCorrCRV() || matconfig.betheCorrPassive();
+        || matconfig.betheCorrCRV(); // || matconfig.betheCorrPassive();
       if(wantAny && !moyal) {
         mf::LogWarning("KKMaterial") << "BetheCorrection* requested but IonizationEnergyLossMode is not moyalmean ("
           << matconfig.elossMode() << "): all Bethe path corrections forced off.";
@@ -31,7 +31,7 @@ namespace mu2e {
       betheCorrIPA_     = matconfig.betheCorrIPA() && moyal;
       betheCorrST_      = matconfig.betheCorrST() && moyal;
       betheCorrCRV_     = matconfig.betheCorrCRV() && moyal;
-      betheCorrPassive_ = matconfig.betheCorrPassive() && moyal;
+      // betheCorrPassive_ = matconfig.betheCorrPassive() && moyal;
       dmconf.scatterfrac_solid_ = matconfig.solidScatter();
       dmconf.scatterfrac_gas_ = matconfig.gasScatter();
       dmconf.ebrehmsfrac_ = matconfig.eBrehms();

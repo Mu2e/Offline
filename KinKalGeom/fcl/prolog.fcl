@@ -19,7 +19,8 @@ KinKalGeom : {
     BetheCorrectionIPA : false
     BetheCorrectionST : false
     BetheCorrectionCRV : false
-    BetheCorrectionPassive : false
+    # Reserved until KKExtrap adds DS/shielding crossings (TODO there).
+    # BetheCorrectionPassive : false
   }
 }
 END_PROLOG

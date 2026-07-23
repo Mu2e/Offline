@@ -47,8 +47,9 @@ namespace mu2e {
           Comment("Apply Bethe path correction to stopping-target foil crossings"), false };
         fhicl::Atom<bool> betheCorrCRV { Name("BetheCorrectionCRV"),
           Comment("Apply Bethe path correction to CRV scintillator-sector crossings"), false };
-        fhicl::Atom<bool> betheCorrPassive { Name("BetheCorrectionPassive"),
-          Comment("Apply Bethe path correction to passive material crossings (DS cylinders, concrete/strongback planes)"), false };
+        // Reserved for DS/shielding crossings once KKExtrap wires them (see TODO there).
+        // fhicl::Atom<bool> betheCorrPassive { Name("BetheCorrectionPassive"),
+        //   Comment("Apply Bethe path correction to passive material crossings (DS cylinders, concrete/strongback planes)"), false };
       };
 
       explicit KKMaterial( Config const& config, Tracker const& tracker);
@@ -61,7 +62,7 @@ namespace mu2e {
       bool applyBetheCorrectionIPA() const { return betheCorrIPA_; }
       bool applyBetheCorrectionST() const { return betheCorrST_; }
       bool applyBetheCorrectionCRV() const { return betheCorrCRV_; }
-      bool applyBetheCorrectionPassive() const { return betheCorrPassive_; }
+      // bool applyBetheCorrectionPassive() const { return betheCorrPassive_; }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;
@@ -80,7 +81,7 @@ namespace mu2e {
       bool betheCorrIPA_ = false;
       bool betheCorrST_ = false;
       bool betheCorrCRV_ = false;
-      bool betheCorrPassive_ = false;
+      // bool betheCorrPassive_ = false;
   };
 }
 #endif
