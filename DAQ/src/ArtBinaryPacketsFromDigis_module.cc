@@ -43,7 +43,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 // #include "Offline/DAQDataProducts/inc/DataBlockCollection.hh"
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CaloConditions/inc/CalDAQMap.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -184,7 +184,7 @@ private:
   int _includeDMAHeaders;
 
   // -- include proditions handling
-  ProditionsHandle<CaloDAQMap> _calodaqconds_h;
+  ProditionsHandle<CalDAQMap> _calodaqconds_h;
   ProditionsHandle<CRVOrdinal> _crvChannelMap_h;
   // Set to 1 to save packet data to a binary file
   int _generateBinaryFile;
@@ -276,12 +276,12 @@ private:
   //--------------------------------------------------------------------------------
   //  methods used to handle the calorimeter data
   //--------------------------------------------------------------------------------
-  void fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds, const CaloDigi& SD,
+  void fillCalorimeterDataPacket(CalDAQMap const& calodaqconds, const CaloDigi& SD,
                                  CaloDataPacket& caloData);
 
   void addCaloHitToCaloPacket(calo_data_block_t& dataBlock, CaloDataPacket& caloData);
 
-  void fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds, const CaloDigi& SD,
+  void fillCalorimeterHeaderDataPacket(CalDAQMap const& calodaqconds, const CaloDigi& SD,
                                        DataBlockHeader& HeaderData, uint64_t& EventNum);
 
   void fillHeaderByteAndPacketCounts(calo_data_block_t& caloData);
@@ -663,7 +663,7 @@ void ArtBinaryPacketsFromDigis::processCalorimeterData(art::Event& evt, uint64_t
                                                        calo_data_block_list_t& caloDataBlocks) {
   auto const& cdH = evt.getValidHandle(_cdtoken);
   const CaloDigiCollection& hits_CD(*cdH);
-  CaloDAQMap const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
+  CalDAQMap const& calodaqconds = _calodaqconds_h.get(evt.id()); // Get calo daq cond
 
   calo_data_block_list_t tmpCaloDataBlockList;
 
@@ -757,7 +757,7 @@ void ArtBinaryPacketsFromDigis::fillHeaderByteAndPacketCounts(calo_data_block_t&
 //--------------------------------------------------------------------------------
 // crate a caloPacket from the digi
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CaloDAQMap const& calodaqconds,
+void ArtBinaryPacketsFromDigis::fillCalorimeterDataPacket(CalDAQMap const& calodaqconds,
                                                           const CaloDigi& CD,
                                                           CaloDataPacket& CaloData) {
   // CaloData.dataPacket.NumberOfHits = 1;
@@ -920,7 +920,7 @@ void ArtBinaryPacketsFromDigis::fillCalorimeterDataStream(DTCLib::DTC_Event& cur
 //--------------------------------------------------------------------------------
 // create the header for the caloPacket
 //--------------------------------------------------------------------------------
-void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CaloDAQMap const& calodaqconds,
+void ArtBinaryPacketsFromDigis::fillCalorimeterHeaderDataPacket(CalDAQMap const& calodaqconds,
                                                                 const CaloDigi& CD,
                                                                 DataBlockHeader& HeaderData,
                                                                 uint64_t& EventNum) {

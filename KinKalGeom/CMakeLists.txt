@@ -5,6 +5,7 @@ cet_make_library(
       src/KKStrawMaterial.cc
     LIBRARIES PUBLIC
       Offline::ConfigTools
+      Offline::DataProducts
       KinKal::MatEnv
       KinKal::Geometry
       KinKal::Trajectory

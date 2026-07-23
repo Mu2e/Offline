@@ -1,7 +1,7 @@
-#ifndef CaloConditions_CaloDAQMapConfig_hh
-#define CaloConditions_CaloDAQMapConfig_hh
+#ifndef CaloConditions_CalDAQMapConfig_hh
+#define CaloConditions_CalDAQMapConfig_hh
 //
-// Initialize CaloDAQMap from fcl
+// Initialize CalDAQMap from fcl
 //
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -9,7 +9,7 @@
 
 namespace mu2e {
 
-  struct CaloDAQMapConfig {
+  struct CalDAQMapConfig {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     fhicl::Atom<std::string> fileSpec{

@@ -16,6 +16,8 @@
 
 #include "fhiclcpp/types/DelegatedParameter.h"
 
+#include <iostream>
+
 namespace mu2e {
   class Mu2eXGenerator : public ParticleGeneratorTool {
   public:
@@ -33,39 +35,19 @@ namespace mu2e {
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
       _emin(0.),
       _emax(0.),
-      _energy_fraction(1.),
+      _energyFraction(1.),
       _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {
-      // compute normalization
-      double integral(0.0);
-      for(size_t ibin=0;ibin < _spectrum.getNbins();++ibin){
-        integral += _spectrum.getPDF(ibin);
-      }
-
       _emin = _spectrum.getXMin();
       _emax = _spectrum.getXMax();
 
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
-      fullconfig.erase(std::string("elow"));
-      fullconfig.erase(std::string("ehi"));
-      fullconfig.put(std::string("elow"),double(0.0));
-      fullconfig.put(std::string("ehi"),double(0.0));
-      BinnedSpectrum fullspect(fullconfig);
-      double fullintegral(0.0);
-      for(size_t ibin=0;ibin < fullspect.getNbins();++ibin){
-        fullintegral += fullspect.getPDF(ibin);
-      }
-      // correct for the missing prediction near threshold, assuming the rate falls to 0 linearly.
-      double pmin = _spectrum.getAbscissa(0);
-      double pdfmin = _spectrum.getPDF(0);
-      double binsize = _spectrum.getBinWidth();
-      fullintegral += 0.5*pdfmin*pmin/binsize;
-      _energy_fraction = (fullintegral > 0.) ? integral/fullintegral : 0.;
-      std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
-      std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
-      std::cout << "Restricted Spectrum integral " << integral << std::endl;
-      std::cout << "Full Spectrum integral " << fullintegral << std::endl;
-      std::cout << "Sampled spectrum fraction " << _energy_fraction << std::endl;
+      _emin = fullconfig.get<double>("elow", _spectrum.getXMin());
+      _emax = fullconfig.get<double>("ehi", _spectrum.getXMax());
+      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig, true); // energy fraction evaluation
+
+      std::cout << "[" << __func__ << "] Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction " << _energyFraction << std::endl;
 
     }
 
@@ -86,7 +68,7 @@ namespace mu2e {
     BinnedSpectrum    _spectrum;
     double _emin;
     double _emax;
-    double _energy_fraction;
+    double _energyFraction;
     bool _flatSpectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
@@ -123,7 +105,7 @@ namespace mu2e {
 
   std::unique_ptr<SpectrumConfig> Mu2eXGenerator::spectrumConfig() {
     auto config = std::make_unique<SpectrumConfig>();
-    config->add_var(SpectrumConfig::RestrictedVar("energy", _energy_fraction, _emin, _emax,
+    config->add_var(SpectrumConfig::RestrictedVar("energy", _energyFraction, _emin, _emax,
                                                   _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
     return config;
   }

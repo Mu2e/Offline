@@ -12,6 +12,7 @@ namespace mu2e {
     static const std::string type("SurfaceIdEnum");
     return type;
   }
+  int SurfaceId::allIndices_(-1); // wildcard for index comparison
 
   namespace {
     using SurfaceIdName = std::pair<SurfaceIdEnum::enum_type, char const*>;
