@@ -81,4 +81,3 @@ namespace mu2e {
     double gamma(double mass, double momentum) { return energy(mass,momentum)/mass; }
   } // TrkUtilities
 }// mu2e
-

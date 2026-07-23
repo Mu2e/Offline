@@ -1,0 +1,42 @@
+# Script to generate a separate file associated with a single event, for testing purposes. This is not intended to be used in production, but it can be useful for debugging and development.
+# The event ID is specified in the 'idsToMatch' parameter of the EventIDFilter module. In this example, it is set to "1:0:5", which corresponds to run 1, subrun 0, event 5. You can change this value to select a different event.
+# Mainly for use with the output of FirePhotonToDetector.fcl, as input to HPGeWaveformGenerationAndAnalysis.fcl, but it can be used with any input file that contains the specified event.
+# Original author: Pawel Plesniak
+
+#include "Offline/fcl/minimalMessageService.fcl"
+
+process_name: STMCat
+
+source: {
+    module_type: RootInput
+}
+
+physics: {
+    filters: {
+        isolateEvent: {
+            module_type: EventIDFilter
+            # The framework specifically asked for 'idsToMatch'
+            idsToMatch: [ "1:0:5" ]
+        }
+    }
+
+    # This is the path name that SelectEvents must reference
+    STMCompressedPath: [ isolateEvent ]
+    trigger_paths:     [ STMCompressedPath ]
+    o1 : [ out ]
+    end_paths: [ o1 ]
+}
+
+services: {
+    message: @local::default_message
+}
+
+outputs: {
+    out: {
+        module_type: RootOutput
+        fileName: "Filtered.art"
+        SelectEvents: ["STMCompressedPath"]
+    }
+}
+
+services.scheduler.wantSummary: true

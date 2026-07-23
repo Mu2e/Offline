@@ -18,12 +18,12 @@ namespace mu2e {
   class STMWaveformDigi {
 
   public:
- // Initialise all variables                                                                                                                                                                              
+ // Initialise all variables
     STMWaveformDigi() : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
-    // Constructor for timing plus trig offset                                                                                                                                                               
+    // Constructor for timing plus trig offset
     STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), \
 _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
-    // Basic constructor                                                                                                                                                                                     
+    // Basic constructor
     STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
     int16_t                     DetID  () const { return _DetID; }

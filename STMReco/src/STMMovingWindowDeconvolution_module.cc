@@ -66,7 +66,7 @@ namespace mu2e {
         fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
         fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"")
-	};
+  };
 
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -115,7 +115,15 @@ namespace mu2e {
     std::vector<double> averaged_data;
     double sum = 0.0;                         // variable part of avarege()
     int count = 0;                            // counter variable
-    int16_t ph_energy = 0;
+    int16_t mwd_energy = 0;
+    bool _isFirstWaveform = true;
+    double _last_ADC = 0.0;
+    double _last_deconvolved = 0.0;
+    // Rolling history buffers to bridge the gap between chunks
+    std::deque<double> _deconvolved_history;    // Stores last M samples
+    std::deque<double> _differentiated_history; // Stores last L samples
+    double _last_average = 0.0; // Stores the last average value from previous chunk
+
 
     // Peak finding variables
     double baseline_mean = 0.0;
@@ -140,7 +148,10 @@ namespace mu2e {
     uint eventId = 0, waveformID = 0;
 
     // Summary data
-    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0;
+    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0, processedADCs;
+
+    // Debugging variables
+    double waveform_time_microspill_frame = 0.0;
   };
 
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
@@ -190,7 +201,8 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::beginJob() {
     if (verbosityLevel) {
-      std::cout << "STM Moving Window Deconvolution" << std::endl;
+      std::cout << std::endl;
+      std::cout << "=======================================STM HPGe digitization parameters=======================================" << std::endl;
       std::cout << "\tAlgorithm parameters" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "tau"            << tau           << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "M"              << M             << std::endl;
@@ -200,6 +212,7 @@ namespace mu2e {
       std::cout << "\tChannel: " << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "Name" << channel.name()                  << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "ID"   << static_cast<int>(channel.id())  << std::endl;
+      std::cout << "==============================================================================================================" << std::endl;
       std::cout << std::endl; // buffer line
     };
   };
@@ -222,9 +235,9 @@ namespace mu2e {
 
       //Check prints --------------------------------------
       if (verbosityLevel>=7){
-	std::cout << "event id = "<< event.id().event()<<std::endl;
-	std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
-	std::cout << "waveform id =" << waveformID << std::endl;
+        std::cout << "event id = "<< event.id().event()<<std::endl;
+        std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
+        std::cout << "waveform id =" << waveformID << std::endl;
       }
       // clear out data from previous waveform
       ADCs.clear();
@@ -237,12 +250,13 @@ namespace mu2e {
       nADCs = ADCs.size();
       processedWaveforms++;
       waveformID++;
+      processedADCs+=nADCs;
 
       if (M > nADCs)
         M = nADCs;
       if (L > nADCs)
         L = nADCs;
-      //if(0 == nADCs)//Maybe should skip when its empty, nADs = ADCs.size, if 0 then its empty 
+      //if(0 == nADCs)//Maybe should skip when its empty, nADs = ADCs.size, if 0 then its empty
       deconvolve();
       differentiate();
       average();
@@ -251,11 +265,11 @@ namespace mu2e {
 
       nPeaks = peak_heights.size();
       foundPeaks += nPeaks;
-      if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
+      if (verbosityLevel > 0)
         std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
       for (i = 0; i < nPeaks; ++i) {
-        ph_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
-        STMPHDigi ph_digi(peak_times[i], -1 * ph_energy); // peak_heights are negative, make them positive here
+        mwd_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
+        STMPHDigi ph_digi(peak_times[i], -1 * mwd_energy); // peak_heights are negative, make them positive here
         if (ph_digi.energy() < -100)
           throw cet::exception("logicError", "The peak height must be positive!");
 
@@ -395,11 +409,23 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::endJob() {
     mf::LogInfo log("MWD summary");
+    log << "\n";
     log << "==================MWD summary==================\n";
     log << std::left << std::setw(25) << "\tProcessed events: "     << processedEvents    << "\n";
     log << std::left << std::setw(25) << "\tProcessed waveforms: "  << processedWaveforms << "\n";
     log << std::left << std::setw(25) << "\tFound peaks: "          << foundPeaks         << "\n";
+    log << std::left << std::setw(25) << "\tnADCs: "                << nADCs              << "\n";
+    log << std::left << std::setw(25) << "\tprocessedADCs: "        << processedADCs      << "\n";
     log << "===============================================\n";
+    if (verbosityLevel) {
+      log << "\n";
+      log << "==================Parameters==================\n";
+      log << std::left << std::setw(25) << "\tnsPerCt: "            << nsPerCt            << "\n";
+      log << std::left << std::setw(25) << "\tPedestal: "           << pedestal           << "\n";
+      log << std::left << std::setw(25) << "\tBaseline mean: "      << baseline_mean      << "\n";
+      log << std::left << std::setw(25) << "\tBaseline std dev: "   << baseline_stddev    << "\n";
+      log << "===============================================\n";
+    }
     return;
   };
 
@@ -445,7 +471,7 @@ namespace mu2e {
 
     h_peak_threshold->GetXaxis()->SetTitle("Sample Number");
     h_peak_threshold->GetYaxis()->SetTitle("ADCs");
-    
+
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
       h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
@@ -456,7 +482,7 @@ namespace mu2e {
       h_baseline_mean_minus_stddev->SetBinContent(i+1, baseline_mean - baseline_stddev);
       h_peak_threshold->SetBinContent(i+1, baseline_mean - nsigma_cut * baseline_stddev);
     }
-    
+
     TH1D* h_peaks = tfs->make<TH1D>(("h_peaks"+histsuffix.str()).c_str(), "Peaks", binning.nbins(),binning.low(),binning.high());
 
     h_peaks->GetXaxis()->SetTitle("Sample Number");

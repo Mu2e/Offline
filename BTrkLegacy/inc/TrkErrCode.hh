@@ -98,5 +98,3 @@ private:
 std::ostream& operator<<(std::ostream& os, const TrkErrCode& trkerr);
 
 #endif
-
-
