@@ -10,17 +10,12 @@ KinKalGeom : {
     IPAMaterialName : "HDPE"
     STMaterialName : "Target"
     CRVMaterialName : "CRVModule"
+    # Global default (1 = moyalmean). Thick concrete overrides to bethemean via a trailing
+    # token in MaterialsList.data (KinKal 3.7.0+).
     IonizationEnergyLossMode : 1 # Moyal mean
     SolidScatteringFraction : 0.999999
     GasScatteringFraction : 0.9999999
     ElectronBrehmsFraction : 0.04
-    # Bethe path correction for KKShellXing: off by default; enable per crossing type as needed.
-    # Only effective when IonizationEnergyLossMode is moyalmean.
-    BetheCorrectionIPA : false
-    BetheCorrectionST : false
-    BetheCorrectionCRV : false
-    # Reserved until KKExtrap adds DS/shielding crossings (TODO there).
-    # BetheCorrectionPassive : false
   }
 }
 END_PROLOG

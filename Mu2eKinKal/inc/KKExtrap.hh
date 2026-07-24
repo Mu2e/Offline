@@ -204,7 +204,7 @@ namespace mu2e {
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = kkg_h->DS()->innerProtonAbsorberPtr();
-        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance(),kkmat_h->applyBetheCorrectionIPA());
+        KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance());
         if(extrapIPA.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
@@ -245,7 +245,7 @@ namespace mu2e {
       if(extrapST.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance(),kkmat_h->applyBetheCorrectionST());
+        KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance());
         if(extrapST.debug() > 2){
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
@@ -354,7 +354,7 @@ namespace mu2e {
         auto const& cylinder = *inter.cylinder_;
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto matxingptr = std::make_shared<KKMATCYLXING>(cylinder.surface_,cylinder.sid_,*kkmat_h->material(cylinder.material_),
-            inter.inter_,reftrajptr,cylinder.thickness_,extrapCylinders.interTolerance(),false);
+            inter.inter_,reftrajptr,cylinder.thickness_,extrapCylinders.interTolerance());
         ktrk.addMaterialCylXing(matxingptr,tdir);
       }
       if(!newbank) break;
@@ -395,7 +395,7 @@ namespace mu2e {
         auto const& plane = *inter.plane_;
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto matxingptr = std::make_shared<KKMATRECXING>(plane.surface_,plane.sid_,*kkmat_h->material(plane.material_),
-            inter.inter_,reftrajptr,plane.thickness_,extrapPlanes.interTolerance(),false);
+            inter.inter_,reftrajptr,plane.thickness_,extrapPlanes.interTolerance());
         ktrk.addMaterialPlaneXing(matxingptr,tdir);
         processed.insert(inter.plane_);
         found = true;
@@ -446,7 +446,7 @@ namespace mu2e {
           if(processedSectors.count(xing.sectorIdx_) > 0) continue;
           auto crvxingptr = std::make_shared<KKCRVXING>(extrapCRV.sector((size_t)xing.sectorIdx_).sector_,
               SurfaceId(kkg_h->CRV()->sectorName(xing.sectorIdx_)),*kkmat_h->CRVMaterial(),xing.inter_,reftrajptr,
-              2*xing.whw_, extrapCRV.interTolerance(),kkmat_h->applyBetheCorrectionCRV());
+              2*xing.whw_, extrapCRV.interTolerance());
           ktrk.addCRVXing(crvxingptr,tdir);
           processedSectors.insert(xing.sectorIdx_);
           if(debug_ > 1) std::cout << "Good CRV sector " << xing.sectorIdx_ << " " << xing.inter_ << std::endl;
@@ -454,7 +454,7 @@ namespace mu2e {
           if(processedPlanes.count(xing.plane_) > 0) continue;
           auto const& plane = *xing.plane_;
           auto matxingptr = std::make_shared<KKMATRECXING>(plane.surface_,plane.sid_,*kkmat_h->material(plane.material_),
-              xing.inter_,reftrajptr,plane.thickness_,extrapCRV.interTolerance(),false);
+              xing.inter_,reftrajptr,plane.thickness_,extrapCRV.interTolerance());
           ktrk.addMaterialPlaneXing(matxingptr,tdir);
           processedPlanes.insert(xing.plane_);
           if(debug_ > 1) std::cout << "Good CRV strongback " << plane.sid_ << " " << xing.inter_ << std::endl;
