@@ -65,7 +65,7 @@ namespace mu2e {
       static int allIndices_; // index wildcard
       private:
       SurfaceIdEnum sid_;
-      int index_; // index.  Negative value is a wild card for matching
+      int index_; // index
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
   // printout
