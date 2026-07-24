@@ -46,18 +46,19 @@ namespace mu2e {
     virtual ~ParticleGeneratorTool() noexcept = default;
 
     double calculateBinnedSpectrumEnergyFraction(fhicl::ParameterSet pset,
-                                                 const bool correct_full_integral = true, // correct for missing low tail to full integral
                                                  std::string var_low = "elow", // default to energy spectrum variables
                                                  std::string var_high = "ehi",
-                                                 double full_var_low = 0., // if elow == ehi, it does the full spectrum
-                                                 double full_var_high = 0.) const {
+                                                 const bool correct_full_integral = false, // correct for missing low tail to full integral
+                                                 const double full_var_low = 0.) const {
+
+      // No clear fraction for a flat spectrum
+      const bool flat = pset.get<std::string>("spectrumShape", "") == "flat";
+      if(flat) return 1.;
 
       // Initialize the spectra with and without the (possible) energy restriction
       BinnedSpectrum spectrum(pset);
-      pset.erase(var_low);
+      pset.erase(var_low); // allow the spectrum to pick default values
       pset.erase(var_high);
-      pset.put(var_low, full_var_low);
-      pset.put(var_high, full_var_high);
       BinnedSpectrum fullSpectrum(pset);
 
       // Calculate the integrals
