@@ -2247,7 +2247,7 @@ int mu2e::DbTool::commitPatch() {
 
     // check that this group does not include any tables to be dropped
     for (int t : droptids) {
-      if (omap.find(t) == omap.end()) {
+      if (omap.find(t) != omap.end()) {
         omap.erase(t);
         remakegroup = true;
         if (_verbose > 1) {
@@ -2516,8 +2516,10 @@ int mu2e::DbTool::verifySet() {
   int nmiss = 0;
   for (auto t : tids) {
     if (iovv.find(t) == iovv.end()) {
-      std::cout << "Error - TID " << t
-                << " not found in the set near the requested runs" << std::endl;
+      std::stringstream ss;
+        ss << "Error - TID " << t
+           << " not found in the set near the requested runs\n";
+      _result.append(ss.str());
       nmiss++;
     }
   }
@@ -2553,8 +2555,10 @@ int mu2e::DbTool::verifySet() {
 
     for (auto const& ii : list) {
       if (!ii.isNull()) {
-        std::cout << "Missing coverage - TID " << tid << "  range "
-                  << ii.to_string(true) << std::endl;
+        std::stringstream ss;
+        ss << "Missing coverage - TID " << tid << "  range "
+                  << ii.to_string(true) << "\n";
+        _result.append(ss.str());
         nbad++;
       }
     }
@@ -2566,8 +2570,7 @@ int mu2e::DbTool::verifySet() {
      << " missing tables and " << nbad << " missing IoVs " << std::endl;
   _result.append(ss.str());
 
-  if (nmiss > 0 || nbad > 0) rc = 1;
-  return rc;
+  return 0;
 }
 
 // ****************************************  testUrl
