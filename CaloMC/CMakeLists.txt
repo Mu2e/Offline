@@ -29,6 +29,7 @@ cet_build_plugin(CaloDigiMaker art::module
       Offline::CaloMC
       
       Offline::CalorimeterGeom
+      Offline::CaloConditions
       Offline::DAQConditions
       Offline::DataProducts
       Offline::GeometryService
@@ -56,6 +57,7 @@ cet_build_plugin(CaloShowerROMaker art::module
       
       Offline::CalorimeterGeom
       Offline::DAQConditions
+      Offline::CaloConditions
       Offline::DataProducts
       Offline::GeometryService
       Offline::GlobalConstantsService

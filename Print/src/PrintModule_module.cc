@@ -18,6 +18,9 @@
 #include "Offline/Print/inc/CaloShowerStepPrinter.hh"
 #include "Offline/Print/inc/ComboHitPrinter.hh"
 #include "Offline/Print/inc/CosmicLivetimePrinter.hh"
+#include "Offline/Print/inc/EventHeaderPrinter.hh"
+#include "Offline/Print/inc/EventHeadersPrinter.hh"
+#include "Offline/Print/inc/RawEventHeaderPrinter.hh"
 #include "Offline/Print/inc/FilterFractionPrinter.hh"
 #include "Offline/Print/inc/PrescaleFilterFractionPrinter.hh"
 #include "Offline/Print/inc/CrvCoincidenceClusterPrinter.hh"
@@ -79,6 +82,12 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("FilterFractionPrinter")};
     fhicl::Table<ProductPrinter::Config> PrescaleFilterFractionPrinter{
         fhicl::Name("PrescaleFilterFractionPrinter")};
+    fhicl::Table<ProductPrinter::Config> EventHeaderPrinter{
+        fhicl::Name("EventHeaderPrinter")};
+    fhicl::Table<ProductPrinter::Config> EventHeadersPrinter{
+        fhicl::Name("EventHeadersPrinter")};
+    fhicl::Table<ProductPrinter::Config> RawEventHeaderPrinter{
+        fhicl::Name("RawEventHeaderPrinter")};
     fhicl::Table<ProductPrinter::Config> EventWindowMarkerPrinter{
         fhicl::Name("EventWindowMarkerPrinter")};
     fhicl::Table<ProductPrinter::Config> genParticlePrinter{
@@ -192,6 +201,12 @@ mu2e::PrintModule::PrintModule(const Parameters& conf) : art::EDAnalyzer(conf),
       make_unique<FilterFractionPrinter>(conf().FilterFractionPrinter()));
   _printers.push_back(
       make_unique<PrescaleFilterFractionPrinter>(conf().PrescaleFilterFractionPrinter()));
+  _printers.push_back(
+      make_unique<EventHeaderPrinter>(conf().EventHeaderPrinter()));
+  _printers.push_back(
+      make_unique<EventHeadersPrinter>(conf().EventHeadersPrinter()));
+  _printers.push_back(
+      make_unique<RawEventHeaderPrinter>(conf().RawEventHeaderPrinter()));
   _printers.push_back(
       make_unique<EventWindowMarkerPrinter>(conf().EventWindowMarkerPrinter()));
   _printers.push_back(

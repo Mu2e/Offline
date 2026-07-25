@@ -257,11 +257,17 @@ int ParseCLI::autohelp() const {
   if (!need)
     return 0;
 
+  bool realSubs = ( _subs.size() > 1 ||
+                    ( _subs.size() == 1 &&  ! _subs[0].subcommand.empty() ) );
+
   std::cout << "\n";
   if (_subcommand.empty()) {
-    std::cout << "   " << _command << " [GLOBAL OPTIONS] [SUBCOMMAND] [SUBCOMMAND OPTIONS]"
-              << "\n\n";
-    std::cout << "   " << _helpstr << "\n\n";
+    if ( realSubs ) {
+      std::cout << "   " << _command << " [GLOBAL OPTIONS] [SUBCOMMAND] [SUBCOMMAND OPTIONS]";
+    } else {
+      std::cout << "   " << _command << " [GLOBAL OPTIONS]";
+    }
+    std::cout << "\n\n   " << _helpstr << "\n\n";
   } else {
     std::cout << _command << " " << _subcommand << " [SUBCOMMAND OPTIONS]"
               << "\n";
@@ -303,7 +309,7 @@ int ParseCLI::autohelp() const {
     }
   }
 
-  if (_subcommand.empty()) {
+  if (_subcommand.empty() && realSubs) {
     std::cout << "\n   subcommands:\n";
     for (const auto& ss : _subs) {
       if (!ss.subcommand.empty()) {

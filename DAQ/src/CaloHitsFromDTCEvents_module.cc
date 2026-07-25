@@ -15,7 +15,7 @@
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CaloConditions/inc/CalDAQMap.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
@@ -89,9 +89,9 @@ public:
   virtual void endJob();
 
 private:
-  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+  mu2e::ProditionsHandle<mu2e::CalDAQMap> _calodaqconds_h;
 
-  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+  void analyze_calorimeter_(mu2e::CalDAQMap const& calodaqconds,
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
@@ -206,7 +206,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
-  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
+  mu2e::CalDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
 
   // Collection of CaloHits for the event
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
@@ -263,7 +263,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
-    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    mu2e::CalDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
     std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {

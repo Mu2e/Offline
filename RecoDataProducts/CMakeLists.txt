@@ -35,6 +35,7 @@ cet_make_library(
 
       Offline::DataProducts
       Offline::GeneralUtilities
+      Offline::GlobalConstantsService
       Offline::KinKalGeom
       Offline::Mu2eKinKal
       Offline::TrackerConditions

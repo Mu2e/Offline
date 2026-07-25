@@ -23,6 +23,7 @@ mainlib = helper.make_mainlib([
   'MathCore',
   'art_Framework_Services_Registry',
   'art_Utilities',
+  'MF_MessageLogger',
   'canvas',
   'cetlib',
   'cetlib_except',

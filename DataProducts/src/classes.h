@@ -4,6 +4,7 @@
 //
 
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Sampled.h"
 #include "cetlib/map_vector.h"
 #include "boost/array.hpp"
 #include <vector>

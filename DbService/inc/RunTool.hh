@@ -7,21 +7,22 @@
 #include "Offline/DbService/inc/DbReader.hh"
 #include "Offline/DbService/inc/RunInfo.hh"
 #include "Offline/DbService/inc/RunSelect.hh"
+
 #include <string>
 
 namespace mu2e {
 
 class RunTool {
  public:
-  enum class FlagType { run = 0, transition = 1, cause = 2 };
+  enum class FlagType { run = 0, transition = 1 };
 
   RunTool();
 
-  // fill argument with the names of all channels
+  // fill argument with the names of all flag types
   std::map<int, std::string> flags(FlagType ftype);
-  RunInfo::RunVec listRuns(const RunSelect& runsel, bool conditions = false,
-                           bool transitions = false);
-  void printRun(const RunInfo& info, bool longp = false);
+  RunInfo::RunVec listRuns(const RunSelect& runsel, bool configs = false,
+                           bool transitions = false, bool subruns = false);
+  void printRun(const RunInfo& info);
 
  private:
   // read the database via query_engine

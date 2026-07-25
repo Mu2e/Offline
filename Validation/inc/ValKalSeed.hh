@@ -66,6 +66,10 @@ class ValKalSeed {
   TH1D* _hHPanel;
   TH1D* _hSRadLen;
   TH1D* _hSRadLenSum;
+  TH1D* _hNST;
+  TH1D* _hSTdP;
+  TH1D* _hNIPA;
+  TH1D* _hIPAdP;
 };
 }  // namespace mu2e
 #endif

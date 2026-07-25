@@ -1,18 +1,18 @@
-#ifndef CaloConditions_CaloDAQMapCache_hh
-#define CaloConditions_CaloDAQMapCache_hh
+#ifndef CaloConditions_CalDAQMapCache_hh
+#define CaloConditions_CalDAQMapCache_hh
 
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 //#include "DbTables/inc/DbIoV.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
 
-#include "Offline/CaloConditions/inc/CaloDAQMapMaker.hh"
+#include "Offline/CaloConditions/inc/CalDAQMapMaker.hh"
 
 
 namespace mu2e {
-  class CaloDAQMapCache : public ProditionsCache {
+  class CalDAQMapCache : public ProditionsCache {
   public:
-    CaloDAQMapCache(CaloDAQMapConfig const& config):
-    ProditionsCache(CaloDAQMap::cxname,config.verbose()),
+    CalDAQMapCache(CalDAQMapConfig const& config):
+    ProditionsCache(CalDAQMap::cxname,config.verbose()),
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
@@ -50,7 +50,7 @@ namespace mu2e {
 
   private:
     bool _useDb;
-    CaloDAQMapMaker _maker;
+    CalDAQMapMaker _maker;
 
     // these handles are not default constructed
     // so the db can be completely turned off

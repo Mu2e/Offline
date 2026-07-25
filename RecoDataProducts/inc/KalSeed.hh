@@ -71,9 +71,10 @@ namespace mu2e {
     // reconstitute (as best as possible) the fit trajectory.  The ptr will be null if the fit wasn't based on the requested trajector type
     // Note these return by value
     // Note that the returned piecetraj may have large gaps, unless the full fit trajectory was stored in the seed.
-    LHPTPtr loopHelixFitTrajectory() const;
-    CHPTPtr centralHelixFitTrajectory() const;
-    KLPTPtr kinematicLineFitTrajectory() const;
+    // Optionally override the particle Id
+    LHPTPtr loopHelixFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
+    CHPTPtr centralHelixFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
+    KLPTPtr kinematicLineFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
 
     // global information about the track
     PDGCode::type   _tpart = PDGCode::unknown; // particle assumed for this fit
