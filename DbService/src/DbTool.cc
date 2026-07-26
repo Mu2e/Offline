@@ -500,8 +500,9 @@ int mu2e::DbTool::printTable() {
         "         time"
      << std::endl;
   for (auto const& r : tt.rows()) {
-    ss << std::setw(3) << r.tid() << std::setw(20) << r.name() << std::setw(22)
-       << r.dbname() << "  " << std::setw(15) << r.create_user() << "  "
+    ss << std::setw(3) << r.tid() << " " << std::setw(22) << r.name()
+       << std::setw(22) << r.dbname() << "  "
+       << std::setw(15) << r.create_user() << "  "
        << r.create_time() << std::endl;
   }
   _result.append(ss.str());
@@ -986,9 +987,11 @@ int mu2e::DbTool::commitCalibration() {
 
   if (qverify) {
     for (auto lt : coll) {
-      std::cout << std::setw(25) << lt.table().name()
-                << std::setw(30) << lt.iov().to_string(true)
-                << std::setw(18) << lt.table().hash() << std::endl;
+      std::stringstream ss;
+      ss << std::setw(25) << lt.table().name()
+         << std::setw(30) << lt.iov().to_string(true)
+         << std::setw(18) << lt.table().hash() << std::endl;
+      _result.append(ss.str());
       if (_verbose > 5) std::cout << lt.table().csv();
     }
     return 0;
