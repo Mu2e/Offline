@@ -46,7 +46,7 @@ namespace mu2e {
     private:
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
-      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_, stopAtTSDA_;
+      bool backToTracker_, extrapolateOPA_, toTrackerEnds_, upstream_, toCRV_;
       double ipathick_ = 0.511; // ipa thickness: should come from geometry service TODO
       double stthick_ = 0.1056; // st foil thickness: should come from geometry service TODO
   };
