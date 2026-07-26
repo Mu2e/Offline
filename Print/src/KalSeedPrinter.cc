@@ -9,9 +9,15 @@ void mu2e::KalSeedPrinter::Print(art::Event const& event, std::ostream& os) {
   if (verbose() < 1) return;
   if (tags().empty()) {
     // if a list of instances not specified, print all instances
-    std::vector<art::Handle<KalSeedCollection> > vah =
-      event.getMany<KalSeedCollection>();
-    for (auto const& ah : vah) Print(ah);
+    if(ptrcol_){
+      std::vector<art::Handle<KalSeedPtrCollection> > vah =
+        event.getMany<KalSeedPtrCollection>();
+      for (auto const& ah : vah) Print(*ah);
+    } else {
+      std::vector<art::Handle<KalSeedCollection> > vah =
+        event.getMany<KalSeedCollection>();
+      for (auto const& ah : vah) Print(ah);
+    }
   } else {
     // print requested instances
     if(ptrcol_){
