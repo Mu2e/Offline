@@ -46,6 +46,7 @@ namespace mu2e {
   using SurfaceIdEnum = EnumToStringSparse<SurfaceIdDetail>;
   class SurfaceId {
     public:
+      static constexpr int allIndices_ = -1; // index wildcard
       using enum_type = SurfaceIdDetail::enum_type;
       // copy the constructors
       SurfaceId() : index_(0) {}
@@ -62,10 +63,9 @@ namespace mu2e {
       bool operator == (SurfaceId const& other ) const { return sid_ == other.sid_ && indexMatch(other) ; }
       bool operator != (SurfaceId const& other ) const { return sid_ != other.sid_ || !indexMatch(other) ; }
       bool operator < (SurfaceId const& other ) const { return sid_ == other.sid_ ? indexCompare(other) : sid_ < other.sid_; }
-      static int allIndices_; // index wildcard
       private:
       SurfaceIdEnum sid_;
-      int index_; // index.  Negative value is a wild card for matching
+      int index_; // index
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
   // printout
