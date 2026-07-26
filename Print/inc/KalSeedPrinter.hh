@@ -19,7 +19,8 @@ namespace mu2e {
 class KalSeedPrinter : public ProductPrinter {
  public:
   KalSeedPrinter() {}
-  KalSeedPrinter(const Config& conf) : ProductPrinter(conf) {}
+  bool ptrcol_;
+  KalSeedPrinter(const KSConfig& ksconf) : ProductPrinter(ksconf), ptrcol_(ksconf.ptrcol()) {}
 
   // all the ways to request a printout
   void Print(art::Event const& event, std::ostream& os = std::cout) override;
@@ -27,6 +28,7 @@ class KalSeedPrinter : public ProductPrinter {
              std::ostream& os = std::cout);
   void Print(const art::ValidHandle<KalSeedCollection>& handle,
              std::ostream& os = std::cout);
+  void Print(const KalSeedPtrCollection& coll, std::ostream& os = std::cout);
   void Print(const KalSeedCollection& coll, std::ostream& os = std::cout);
   void Print(const art::Ptr<KalSeed>& ptr, int ind = -1,
              std::ostream& os = std::cout);

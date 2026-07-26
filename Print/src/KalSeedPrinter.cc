@@ -14,9 +14,16 @@ void mu2e::KalSeedPrinter::Print(art::Event const& event, std::ostream& os) {
     for (auto const& ah : vah) Print(ah);
   } else {
     // print requested instances
-    for (const auto& tag : tags()) {
-      auto ih = event.getValidHandle<KalSeedCollection>(tag);
-      Print(ih);
+    if(ptrcol_){
+      for (const auto& tag : tags()) {
+        auto ih = event.getValidHandle<KalSeedPtrCollection>(tag);
+        Print(*ih);
+      }
+    } else {
+      for (const auto& tag : tags()) {
+        auto ih = event.getValidHandle<KalSeedCollection>(tag);
+        Print(ih);
+      }
     }
   }
 }
@@ -48,6 +55,15 @@ void mu2e::KalSeedPrinter::Print(const KalSeedCollection& coll,
   if (verbose() == 1) PrintListHeader();
   int i = 0;
   for (const auto& obj : coll) Print(obj, i++);
+}
+
+void mu2e::KalSeedPrinter::Print(const KalSeedPtrCollection& coll,
+    std::ostream& os) {
+  if (verbose() < 1) return;
+  os << "KalSeedPtrCollection has " << coll.size() << " tracks\n";
+  if (verbose() == 1) PrintListHeader();
+  int i = 0;
+  for (const auto& obj : coll) Print(*obj, i++);
 }
 
 void mu2e::KalSeedPrinter::Print(const art::Ptr<KalSeed>& obj, int ind,

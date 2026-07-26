@@ -39,6 +39,10 @@ class ProductPrinter {
     fhicl::Atom<float> eCut{fhicl::Name("eCut"),
                             fhicl::Comment("minimum energy cut"), -1};
   };
+  struct KSConfig : public Config {
+    fhicl::Atom<bool> ptrcol {fhicl::Name("PtrCollection"),
+                            fhicl::Comment("Are requested tags for Ptr collections?"),false};
+  };
 
   ProductPrinter() : _verbose(1) {}
   ProductPrinter(const Config& conf) {
