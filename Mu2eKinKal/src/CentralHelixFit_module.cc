@@ -234,7 +234,7 @@ namespace mu2e {
 
       // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,SurfaceId::allIndices_)); // match all elements
       }
     }
 

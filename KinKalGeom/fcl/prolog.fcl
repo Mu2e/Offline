@@ -15,7 +15,7 @@ KinKalGeom : {
     IonizationEnergyLossMode : 1 # Moyal mean
     SolidScatteringFraction : 0.999999
     GasScatteringFraction : 0.9999999
-    ElectronBrehmsFraction : 0.04
+    ElectronBrehmsFraction : 0.03
   }
 }
 END_PROLOG
