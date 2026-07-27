@@ -640,7 +640,7 @@ Mu2eKinKal : {
       BackToTracker : true
     }
     Extend: false
-    MustRegrow : "Any"
+    MustRegrow : "None"
   }
 
   producers : {
