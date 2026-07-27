@@ -34,22 +34,12 @@ namespace mu2e {
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
         fhicl::Atom<std::string> CRVMaterialName{ Name("CRVMaterialName"), Comment("CRV module MaterialName") };
+        // Global default ionization eloss mode (0=mpv, 1=moyalmean, 2=bethemean). Per-material overrides
+        // use a trailing token in TrackerConditions/data/MaterialsList.data (KinKal 3.7.0+).
         fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
         fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
         fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
         fhicl::Atom<double> eBrehms{ Name("ElectronBrehmsFraction"), Comment("Electron Brehmsstrahlung cutoff Fraction") };
-        // Unrestricted-Bethe path-length scale for KKShellXing (see Mu2eKinKal/inc/KKShellXing.hh).
-        // Off by default for every crossing type; enable only where the thicker-shell correction is wanted.
-        // Effective only when IonizationEnergyLossMode is moyalmean (otherwise forced off with a warning).
-        fhicl::Atom<bool> betheCorrIPA { Name("BetheCorrectionIPA"),
-          Comment("Apply Bethe path correction to IPA shell crossings"), false };
-        fhicl::Atom<bool> betheCorrST { Name("BetheCorrectionST"),
-          Comment("Apply Bethe path correction to stopping-target foil crossings"), false };
-        fhicl::Atom<bool> betheCorrCRV { Name("BetheCorrectionCRV"),
-          Comment("Apply Bethe path correction to CRV scintillator-sector crossings"), false };
-        // Reserved for DS/shielding crossings once KKExtrap wires them (see TODO there).
-        // fhicl::Atom<bool> betheCorrPassive { Name("BetheCorrectionPassive"),
-        //   Comment("Apply Bethe path correction to passive material crossings (DS cylinders, concrete/strongback planes)"), false };
       };
 
       explicit KKMaterial( Config const& config, Tracker const& tracker);
@@ -58,11 +48,6 @@ namespace mu2e {
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
       auto CRVMaterial() const { return matdbinfo_->findDetMaterial(crvmatname_); }
       auto material(std::string const& name) const { return matdbinfo_->findDetMaterial(name); }
-      // Per-crossing-type Bethe path correction (all false by default). See Config atoms above.
-      bool applyBetheCorrectionIPA() const { return betheCorrIPA_; }
-      bool applyBetheCorrectionST() const { return betheCorrST_; }
-      bool applyBetheCorrectionCRV() const { return betheCorrCRV_; }
-      // bool applyBetheCorrectionPassive() const { return betheCorrPassive_; }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;
@@ -78,10 +63,6 @@ namespace mu2e {
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_, crvmatname_;
       std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       std::unique_ptr<KKStrawMaterial> smat_; // straw material
-      bool betheCorrIPA_ = false;
-      bool betheCorrST_ = false;
-      bool betheCorrCRV_ = false;
-      // bool betheCorrPassive_ = false;
   };
 }
 #endif
