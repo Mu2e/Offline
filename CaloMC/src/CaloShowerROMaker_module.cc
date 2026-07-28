@@ -212,7 +212,7 @@ namespace mu2e {
       float mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
       const Calorimeter& cal    = *(GeomHandle<Calorimeter>());
-      const float crystalLength = cal.caloInfo().getDouble("crystalZLength");
+      const float crystalLength = cal.G4Info().get<double>("crystalZLength");
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
       diagSummary diagSum;

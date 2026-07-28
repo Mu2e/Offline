@@ -119,7 +119,6 @@ namespace mu2e {
          void makeCompressedHits       (const HandleVector&, CaloShowerStepCollection&, SimParticlePtrCollection&);
          void collectStepBySimAncestor (const Calorimeter&, const PhysicalVolumeMultiHelper&, const HandleVector&, std::map<SimPtr,CaloCompressUtil>&);
          void collectStepBySim         (const HandleVector&, SimStepMap&);
-         bool isInsideCalorimeter      (const Calorimeter& cal, const PhysicalVolumeMultiHelper&, const SimPtr&);
          void compressSteps            (const Calorimeter&, CaloShowerStepCollection&, int, const SimPtr&, std::vector<const StepPointMC*>&);
          void fillHisto1               (const Calorimeter&, const SimPtr&, const std::set<SimPtr>&);
          void fillHisto2               (int, float, const SimPtr&);
@@ -248,7 +247,7 @@ namespace mu2e {
       PhysicalVolumeMultiHelper vi(vols_);
 
       const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-      zSliceSize_            = cal.caloInfo().getDouble("crystalZLength")/float(numZSlices_)+1e-5;
+      zSliceSize_            = cal.G4Info().get<double>("crystalZLength")/float(numZSlices_)+1e-5;
 
 
       //-----------------------------------------------------------------
@@ -352,10 +351,10 @@ namespace mu2e {
              SimPtr sim = step.simParticle();
 
              SimParticlePtrCollection inspectedSims;
-             while (sim->hasParent() && isInsideCalorimeter(cal, vi, sim) )
+             while (sim->hasParent() && cal.isInsideAnyCrystal(sim->startPosition()) )
              {
                  //simparticle starting in one section and ending in another one see note above
-                 if (!cal.geomUtil().isContainedSection(sim->startPosition(),sim->endPosition()) ) break;
+                 if (!cal.isInsideSameDisk(sim->startPosition(),sim->endPosition()) ) break;
 
                  const auto alreadyInspected = simToAncestorMap.find(sim);
                  if (alreadyInspected != simToAncestorMap.end()) {sim = alreadyInspected->second; break;}
@@ -373,17 +372,6 @@ namespace mu2e {
       }
   }
 
-
-
-
-
-  //-------------------------------------------------------------------------------------------------------------------------
-  bool CaloShowerStepMaker::isInsideCalorimeter(const Calorimeter& cal, const PhysicalVolumeMultiHelper& vi,
-                                                const art::Ptr<SimParticle>& thisSimPtr)
-  {
-      if (usePhysVol_) return mapPhysVol_.find(&vi.startVolume(*thisSimPtr)) != mapPhysVol_.end();
-      return cal.geomUtil().isInsideCalorimeter(thisSimPtr->startPosition());
-  }
 
   //-----------------------------------------------------------------------------------------------------------------------------------------------
   void CaloShowerStepMaker::collectStepBySim(const HandleVector& stepsHandles,
@@ -409,7 +397,7 @@ namespace mu2e {
 
      for (const StepPointMC* step : steps)
      {
-         CLHEP::Hep3Vector pos  = cal.geomUtil().mu2eToCrystal(volId,step->position());
+         CLHEP::Hep3Vector pos  = cal.mu2eToCrystal(volId,step->position());
          int               idx  = int(std::max(1e-6,pos.z())/zSliceSize_);
 
          if (buffer.entries(idx)>0 && (step->time()-buffer.t0(idx) > deltaTime_) )
@@ -443,8 +431,8 @@ namespace mu2e {
   //-------------------------------------------------------------------------------------------------------------
   void CaloShowerStepMaker::fillHisto1(const Calorimeter& cal, const art::Ptr<SimParticle>& sim, const std::set<art::Ptr<SimParticle>>& infoSims)
   {
-      CLHEP::Hep3Vector startSection = cal.geomUtil().mu2eToDisk(0,sim->startPosition());
-      CLHEP::Hep3Vector endSection   = cal.geomUtil().mu2eToDisk(0,sim->endPosition());
+      CLHEP::Hep3Vector startSection = cal.mu2eToDisk(0,sim->startPosition());
+      CLHEP::Hep3Vector endSection   = cal.mu2eToDisk(0,sim->endPosition());
       double rStart = sqrt(startSection.x()*startSection.x()+startSection.y()*startSection.y());
       double rEnd   = sqrt(endSection.x()*endSection.x()+endSection.y()*endSection.y());
 
@@ -477,9 +465,9 @@ namespace mu2e {
           std::cout<<steps.size()<<std::endl;
           for (const auto& step : steps )
             std::cout<<step.volumeId()<<" "<<step.totalEDep()<<" "<<step.position()<<" "
-                     <<cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position())<<"   "
-                     <<cal.geomUtil().mu2eToDisk(cal.crystal(step.volumeId()).diskID(),step.position())<<"   "
-                     <<cal.geomUtil().mu2eToDiskFF(cal.crystal(step.volumeId()).diskID(),step.position())<<std::endl;
+                     <<cal.mu2eToCrystal(step.volumeId(),step.position())<<"   "
+                     <<cal.mu2eToDisk(cal.crystal(step.volumeId()).diskID(),step.position())<<"   "
+                     <<cal.mu2eToDiskFF(cal.crystal(step.volumeId()).diskID(),step.position())<<std::endl;
       }
   }
 

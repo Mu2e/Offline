@@ -280,7 +280,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<CaloHits.size();++ic){
            const CaloHit& hit            = CaloHits.at(ic);
            int diskId                    = cal.crystal(hit.crystalID()).diskID();
-           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
+           CLHEP::Hep3Vector crystalPos  = cal.mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
 
            //Find the caloDigiMC in the truth map
            auto itMC = caloDigiTruth.begin();
@@ -392,7 +392,7 @@ namespace mu2e {
           }
 
           const CaloHit& seedHit    = CaloHits.at(cryList[0]);
-          CLHEP::Hep3Vector seedPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
+          CLHEP::Hep3Vector seedPos = cal.mu2eToDiskFF(cluster.diskID(),cal.crystal(seedHit.crystalID()).position());
 
           cluDisk_[nCluster_]      = cluster.diskID();
           cluEnergy_[nCluster_]    = cluster.energyDep();
@@ -430,7 +430,7 @@ namespace mu2e {
               if (vdMapEntry != vdMap.end())
               {
                  simMom = vdMapEntry->second->momentum().mag();
-                 simPos = cal.geomUtil().mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
+                 simPos = cal.mu2eToDiskFF(cluster.diskID(), vdMapEntry->second->position());
               }
 
               sId.push_back(sim->id().asInt());
@@ -480,7 +480,7 @@ namespace mu2e {
 
                   double hitTime         = fmod(hit.time(),_mbtime);
 
-               CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
+               CLHEP::Hep3Vector VDPos = cal.mu2eToTracker(hit.position());
 
                vdId_[nVd_]     = hit.volumeId();
                vdPdgId_[nVd_]  = hit.simParticle()->pdgId();

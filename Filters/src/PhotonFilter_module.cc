@@ -330,14 +330,14 @@ namespace mu2e {
   bool PhotonFilter::reportResiduals(const CaloCluster& cluster, const HelixSeedCollection& helices, const CaloClusterMC& caloClusterTruth) {
 
 
-    CLHEP::Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cluster.diskID(), cluster.cog3Vector());
+    CLHEP::Hep3Vector gpos = _calorimeter->diskToMu2e(cluster.diskID(), cluster.cog3Vector());
 
-    CLHEP::Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    CLHEP::Hep3Vector tpos = _calorimeter->mu2eToTracker(gpos);
 
-    double offset = _calorimeter->caloInfo().getDouble("diskCaseZLength");
-    offset += _calorimeter->caloInfo().getDouble("BPPipeZOffset");
-    offset += _calorimeter->caloInfo().getDouble("BPHoleZLength");
-    offset += _calorimeter->caloInfo().getDouble("FEEZLength");
+    double offset = _calorimeter->G4Info().get<double>("diskCaseZLength");
+    offset += _calorimeter->G4Info().get<double>("BPPipeZOffset");
+    offset += _calorimeter->G4Info().get<double>("BPHoleZLength");
+    offset += _calorimeter->G4Info().get<double>("FEEZLength");
     offset /= 2.0;
 
     XYZVectorF clusterPos(tpos.x(), tpos.y(), tpos.z() - offset);

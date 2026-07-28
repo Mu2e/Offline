@@ -135,11 +135,11 @@ namespace mu2e {
     stopping_target_ = sth.get();
 
     // get the offset between the calo disks and the tracker system
-    calo_d0_offset_ = calorimeter_->geomUtil().mu2eToTracker(calorimeter_->geomUtil().diskToMu2e(0, CLHEP::Hep3Vector(0., 0., 0.))).z();
-    calo_d1_offset_ = calorimeter_->geomUtil().mu2eToTracker(calorimeter_->geomUtil().diskToMu2e(1, CLHEP::Hep3Vector(0., 0., 0.))).z();
+    calo_d0_offset_ = calorimeter_->mu2eToTracker(calorimeter_->diskToMu2e(0, CLHEP::Hep3Vector(0., 0., 0.))).z();
+    calo_d1_offset_ = calorimeter_->mu2eToTracker(calorimeter_->diskToMu2e(1, CLHEP::Hep3Vector(0., 0., 0.))).z();
 
     // get the target position in the tracker system
-    target_pos_ = calorimeter_->geomUtil().mu2eToTracker(stopping_target_->centerInMu2e());
+    target_pos_ = calorimeter_->mu2eToTracker(stopping_target_->centerInMu2e());
 
   }
 

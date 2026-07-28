@@ -253,7 +253,7 @@ namespace mu2e {
       //CaloHitCollection const& CaloHits(*CaloHitsHandle);
 
       //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
-      //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
+      //const double CrMass    = CrDensity*cal.G4Info().crystalVolume();
 
 
 
@@ -290,7 +290,7 @@ namespace mu2e {
        {
            CaloHit const& hit            = CaloHits.at(ic);
            int diskId                    = cal.crystal(hit.id()).diskID();
-           CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
+           CLHEP::Hep3Vector crystalPos  = cal.mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
            CaloHit const& caloHit        = *(hit.readouts().at(0));
 
 
@@ -319,7 +319,7 @@ namespace mu2e {
              while (grandMother->hasParent()) grandMother = grandMother->parent();
              GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
 
-             CLHEP::Hep3Vector hitSimPos = cal.geomUtil().mu2eToDiskFF(diskId,hitSim.position().at(ip)); //in disk FF frame
+             CLHEP::Hep3Vector hitSimPos = cal.mu2eToDiskFF(diskId,hitSim.position().at(ip)); //in disk FF frame
 
              _motId[_nSim]      = mother->id().asInt();
              _motPdgId[_nSim]   = mother->pdgId();

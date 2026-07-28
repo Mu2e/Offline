@@ -192,14 +192,14 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       calorimeter_ = ch.get();
 
-      if (calorimeter_->nCrystals()<1 || calorimeter_->caloInfo().getInt("nSiPMPerCrystal")<1) return;
+      if (calorimeter_->nCrystals()<1 || calorimeter_->G4Info().get<int>("nSiPMPerCrystal")<1) return;
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill)
       {
         waveformSize = (ewMarker.eventLength() - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       }
 
-      int nWaveforms   = calorimeter_->nCrystals()*calorimeter_->caloInfo().getInt("nSiPMPerCrystal");
+      int nWaveforms   = calorimeter_->nCrystals()*calorimeter_->G4Info().get<int>("nSiPMPerCrystal");
       if (waveformSize<1) throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] digitization size too short " << std::endl;
       bool resetWaveform(false);
       std::vector<double> waveform(waveformSize,0.0);

@@ -11,7 +11,7 @@
 
 namespace mu2e {
 
-   void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, CLHEP::Hep3Vector& pos)
+   void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, const CLHEP::Hep3Vector& pos)
    {
        if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
 

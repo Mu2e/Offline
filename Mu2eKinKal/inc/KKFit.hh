@@ -345,10 +345,10 @@ namespace mu2e {
 
   template <class KTRAJ> std::shared_ptr<SensorLine> KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
-    CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
+    CLHEP::Hep3Vector cog = calo.mu2eToTracker(calo.diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
     VEC3 ffcog(cog);
-    double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
+    double lcrystal = calo.G4Info().get<double>("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the SensorLine trajectory from this information: signal goes towards the sipm
@@ -580,7 +580,7 @@ namespace mu2e {
 
 
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const {
-    double crystalLength = calo.caloInfo().getDouble("crystalZLength");
+    double crystalLength = calo.G4Info().get<double>("crystalZLength");
     auto const& ptraj = kktrk.fitTraj();
     auto cccol = cchandle.product();
     double edep(-1.0);
@@ -588,9 +588,9 @@ namespace mu2e {
     // loop over disks to decide which are worth testing
     std::array<bool,2> test{false,false};
     for(unsigned idisk=0; idisk < 2; ++idisk){
-      auto ffpos = calo.geomUtil().mu2eToTracker(calo.disk(idisk).geomInfo().frontFaceCenter());
-      double rmin = calo.disk(idisk).geomInfo().innerEnvelopeR() - maxCaloDoca_;
-      double rmax = calo.disk(idisk).geomInfo().outerEnvelopeR() + maxCaloDoca_;
+      auto ffpos = calo.mu2eToTracker(calo.disk(idisk).diskInfo().frontFaceCenter());
+      double rmin = calo.disk(idisk).diskInfo().innerEnvelopeR() - maxCaloDoca_;
+      double rmax = calo.disk(idisk).diskInfo().outerEnvelopeR() + maxCaloDoca_;
       // test at both faces; if the track is in the right area, test the clusters on this disk
       // Replace this with an intersection with the calo face TODO
       for(int iface=0; iface<2; ++iface){
@@ -740,7 +740,7 @@ namespace mu2e {
       // calculate the unbiased time residual
       Residual ctres = calohit->residual(0);
       // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
-      double backz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().backFaceCenter()).z();
+      double backz = calo.mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).diskInfo().backFaceCenter()).z();
       // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
       float clen = backz-ca.sensorPoca().Z();
       float trklen = clen/ca.particleTraj().direction(ca.particleToca()).Z();

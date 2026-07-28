@@ -67,16 +67,16 @@ namespace mu2e {
     const int  verbosity            = config.getInt("calorimeter.verbosityLevel",1);
 
     const unsigned nDisks           = cal.nDisks();
-    const double caloDiskRadiusIn   = cal.caloInfo().getDouble("caloDiskRadiusIn");
-    const double caloDiskRadiusOut  = cal.caloInfo().getDouble("caloDiskRadiusOut");
-    const double caloFEBRadiusOut   = cal.caloInfo().getDouble("caloFEBRadiusOut");
-    const double mother_z0          = cal.caloInfo().getDouble("caloMotherZ0");
-    const double mother_z1          = cal.caloInfo().getDouble("caloMotherZ1");
+    const double caloDiskRadiusIn   = cal.G4Info().get<double>("caloDiskRadiusIn");
+    const double caloDiskRadiusOut  = cal.G4Info().get<double>("caloDiskRadiusOut");
+    const double caloFEBRadiusOut   = cal.G4Info().get<double>("caloFEBRadiusOut");
+    const double mother_z0          = cal.G4Info().get<double>("caloMotherZ0");
+    const double mother_z1          = cal.G4Info().get<double>("caloMotherZ1");
     const double mother_zlength     = mother_z1-mother_z0;
     const double mother_zCenter     = (mother_z1+mother_z0)/2.0;
-    const double FEBOffset          = cal.caloInfo().getDouble("FEBToDiskZOffset");
+    const double FEBOffset          = cal.G4Info().get<double>("FEBToDiskZOffset");
     const auto   FEBPhiMinMax       = calcFEBPhiRange(cal);
-    const bool   hasCrates          = cal.caloInfo().getBool("hasCrates");
+    const bool   hasCrates          = cal.G4Info().get<bool>("hasCrates");
     const bool   hasCable           = ds.hasCableRunCal() && hasCrates;
 
 
@@ -115,10 +115,10 @@ namespace mu2e {
     // Disk and FEB volumes
     std::vector<VolumeInfo> calorimeterDisk(nDisks), calorimeterFEB(nDisks);
     for (size_t idisk=0;idisk<nDisks;++idisk) {
-      G4ThreeVector posDisk           = cal.disk(idisk).geomInfo().origin() - posDiskMother;
+      G4ThreeVector posDisk           = cal.disk(idisk).diskInfo().origin() - posDiskMother;
       calorimeterDisk[idisk]          = caloBuildDisk(config,idisk);
 
-      G4RotationMatrix* rot           = reg.add(new G4RotationMatrix(cal.disk(idisk).geomInfo().rotation()));
+      G4RotationMatrix* rot           = reg.add(new G4RotationMatrix(cal.disk(idisk).diskInfo().rotation()));
       calorimeterDisk[idisk].physical = caloPlacement(calorimeterDisk[idisk], caloMotherInfo, rot, posDisk, false, 0, config, doSurfaceCheck, verbosity);
       helper.addVolInfo(calorimeterDisk[idisk]);
 
@@ -195,11 +195,11 @@ namespace mu2e {
     const bool doSurfaceCheck  = geomOptions->doSurfaceCheck("calorimeterEnvelope");
     const int  verbosity       = config.getInt("calorimeter.verbosityLevel",1);
 
-    const bool hasFrontPanel   = cal.caloInfo().getBool("hasFrontPanel");
-    const bool hasBackPanel    = cal.caloInfo().getBool("hasBackPanel");
-    const double vdThickness   = cal.caloInfo().getDouble("vdThickness");
-    const double R0disk        = cal.caloInfo().getDouble("caloDiskRadiusIn");
-    const double R1disk        = cal.caloInfo().getDouble("caloDiskRadiusOut");
+    const bool hasFrontPanel   = cal.G4Info().get<bool>("hasFrontPanel");
+    const bool hasBackPanel    = cal.G4Info().get<bool>("hasBackPanel");
+    const double vdThickness   = cal.G4Info().get<double>("vdThickness");
+    const double R0disk        = cal.G4Info().get<double>("caloDiskRadiusIn");
+    const double R1disk        = cal.G4Info().get<double>("caloDiskRadiusOut");
 
     G4Material* vacuumMaterial = materialFinder.get("calorimeter.vacuumMaterial");
 
@@ -241,7 +241,7 @@ namespace mu2e {
     auto volumePtr = findCaloSolid(fullDisk.logical,"CaloCrystalCsI_"+std::to_string(idisk), volumeNodes);
     volumeNodes.push_back(fullDisk.logical);
 
-    //navigate the nodes to calculate the total translation, and add half crystal size to match the originToCrystalOrigin value in geomInfo
+    //navigate the nodes to calculate the total translation, and add half crystal size to match the originToCrystalOrigin value in diskInfo
     double  zTranslation(0);
     for (size_t i=1;i<volumeNodes.size();++i) {
       for (size_t j=0;j<volumeNodes[i]->GetNoDaughters();++j) {
@@ -253,18 +253,18 @@ namespace mu2e {
     }
     if (volumePtr) zTranslation -= dynamic_cast<G4Box*>(volumePtr->GetSolid())->GetZHalfLength();
 
-    double delta1 = 2*zHalftot-cal.disk(idisk).geomInfo().size().z();
-    double delta2 = zTranslation-cal.disk(idisk).geomInfo().originToCrystalOrigin().z();
+    double delta1 = 2*zHalftot-cal.disk(idisk).diskInfo().size().z();
+    double delta2 = zTranslation-cal.disk(idisk).diskInfo().originToCrystalOrigin().z();
 
     if (std::abs(delta1) > 1e-3)  G4cout << __func__ <<"PANIC..... geometry description in Geant4 and DiskMaker do NOT match  - disk size: "
-                                         << 2*zHalftot<<" vs "<<cal.disk(idisk).geomInfo().size().z()<<G4endl;
+                                         << 2*zHalftot<<" vs "<<cal.disk(idisk).diskInfo().size().z()<<G4endl;
 
     if (std::abs(delta2) > 1e-3)  G4cout << __func__ <<"PANIC..... geometry description in Geant4 and DiskMaker do NOT match  - originToCrystalOrigin: "
-                                         << zTranslation<<" vs "<<cal.disk(idisk).geomInfo().originToCrystalOrigin().z()<<G4endl;
+                                         << zTranslation<<" vs "<<cal.disk(idisk).diskInfo().originToCrystalOrigin().z()<<G4endl;
 
     if (verbosity){
-      G4cout << __func__ <<" Compare disk size             Geant4 / CaloInfo "<<2*zHalftot<<" / "<<cal.disk(idisk).geomInfo().size().z()<<G4endl;
-      G4cout << __func__ <<" Compare originToCrystalOrigin Geant4 / CaloInfo "<<zTranslation<<" / "<<cal.disk(idisk).geomInfo().originToCrystalOrigin().z()<<G4endl;
+      G4cout << __func__ <<" Compare disk size             Geant4 / CaloInfo "<<2*zHalftot<<" / "<<cal.disk(idisk).diskInfo().size().z()<<G4endl;
+      G4cout << __func__ <<" Compare originToCrystalOrigin Geant4 / CaloInfo "<<zTranslation<<" / "<<cal.disk(idisk).diskInfo().originToCrystalOrigin().z()<<G4endl;
     }
 
     return fullDisk;
@@ -293,27 +293,27 @@ namespace mu2e {
     const bool doSurfaceCheck                = geomOptions->doSurfaceCheck     ("calorimeterPipe");
     const int  verbosity                     = config.getInt                   ("calorimeter.verbosityLevel",1);
 
-    const double FPInnerRadius               = cal.caloInfo().getDouble("FPInnerRadius");
-    const double FPOuterRadius               = cal.caloInfo().getDouble("FPOuterRadius");
-    const double FPCarbonDZ                  = cal.caloInfo().getDouble("FPCarbonZLength")/2.0;
-    const double FPFoamDZ                    = cal.caloInfo().getDouble("FPFoamZLength")/2.0;
-    const double FPCoolPipeTorRadius         = cal.caloInfo().getDouble("FPCoolPipeTorRadius");
-    const double FPCoolPipeRadius            = cal.caloInfo().getDouble("FPCoolPipeRadius");
-    const double FPCoolPipeThickness         = cal.caloInfo().getDouble("FPCoolPipeThickness");
+    const double FPInnerRadius               = cal.G4Info().get<double>("FPInnerRadius");
+    const double FPOuterRadius               = cal.G4Info().get<double>("FPOuterRadius");
+    const double FPCarbonDZ                  = cal.G4Info().get<double>("FPCarbonZLength")/2.0;
+    const double FPFoamDZ                    = cal.G4Info().get<double>("FPFoamZLength")/2.0;
+    const double FPCoolPipeTorRadius         = cal.G4Info().get<double>("FPCoolPipeTorRadius");
+    const double FPCoolPipeRadius            = cal.G4Info().get<double>("FPCoolPipeRadius");
+    const double FPCoolPipeThickness         = cal.G4Info().get<double>("FPCoolPipeThickness");
     const double FPCoolPipeRadiusIn          = FPCoolPipeRadius-FPCoolPipeThickness;
 
-    const int nPipes                         = cal.caloInfo().getInt    ("nPipes");
-    const double pipeRadius                  = cal.caloInfo().getDouble ("pipeRadius");
-    const double pipeThickness               = cal.caloInfo().getDouble ("pipeThickness");
-    const double pipeInitSeparation          = cal.caloInfo().getDouble ("pipeInitSeparation");
-    const std::vector<double> pipeTorRadius  = cal.caloInfo().getVDouble("pipeTorRadius");
-    const std::vector<double> largeTorPhi    = cal.caloInfo().getVDouble("largeTorPhi");
-    const std::vector<double> smallTorPhi    = cal.caloInfo().getVDouble("smallTorPhi");
-    const std::vector<double> yposition      = cal.caloInfo().getVDouble("yposition");
-    const std::vector<double> straightEndPhi = cal.caloInfo().getVDouble("straightEndPhi");
-    const double radSmTor                    = cal.caloInfo().getDouble ("radSmTor");
-    const double xsmall                      = cal.caloInfo().getDouble ("xsmall");
-    const double xdistance                   = cal.caloInfo().getDouble ("xdistance");
+    const int nPipes                         = cal.G4Info().get<int>    ("nPipes");
+    const double pipeRadius                  = cal.G4Info().get<double> ("pipeRadius");
+    const double pipeThickness               = cal.G4Info().get<double> ("pipeThickness");
+    const double pipeInitSeparation          = cal.G4Info().get<double> ("pipeInitSeparation");
+    const std::vector<double> pipeTorRadius  = cal.G4Info().get<std::vector<double>>("pipeTorRadius");
+    const std::vector<double> largeTorPhi    = cal.G4Info().get<std::vector<double>>("largeTorPhi");
+    const std::vector<double> smallTorPhi    = cal.G4Info().get<std::vector<double>>("smallTorPhi");
+    const std::vector<double> yposition      = cal.G4Info().get<std::vector<double>>("yposition");
+    const std::vector<double> straightEndPhi = cal.G4Info().get<std::vector<double>>("straightEndPhi");
+    const double radSmTor                    = cal.G4Info().get<double> ("radSmTor");
+    const double xsmall                      = cal.G4Info().get<double> ("xsmall");
+    const double xdistance                   = cal.G4Info().get<double> ("xdistance");
 
     const double frontPanelHalfThick         = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
     const double ZposCarbon2                 = frontPanelHalfThick-FPCarbonDZ;
@@ -475,33 +475,33 @@ namespace mu2e {
     G4Material* outerRingMaterial         = materialFinder.get("calorimeter.outerRingMaterial");
     G4Material* coolPipeMaterial          = materialFinder.get("calorimeter.coolPipeMaterial");
 
-    const double vdThickness              = cal.caloInfo().getDouble("vdThickness");
-    const double crystalDXY               = cal.caloInfo().getDouble("crystalXYLength")/2.0;
-    const double crystalDZ                = cal.caloInfo().getDouble("crystalZLength")/2.0;
-    const double crystalCapDZ             = cal.caloInfo().getDouble("crystalCapZLength")/2.0;
-    const double wrapperHalfThick         = cal.caloInfo().getDouble("wrapperThickness")/2.0;
+    const double vdThickness              = cal.G4Info().get<double>("vdThickness");
+    const double crystalDXY               = cal.G4Info().get<double>("crystalXYLength")/2.0;
+    const double crystalDZ                = cal.G4Info().get<double>("crystalZLength")/2.0;
+    const double crystalCapDZ             = cal.G4Info().get<double>("crystalCapZLength")/2.0;
+    const double wrapperHalfThick         = cal.G4Info().get<double>("wrapperThickness")/2.0;
     const double wrapperDXY               = crystalDXY + 2*wrapperHalfThick;
     const double wrapperDZ                = crystalDZ+crystalCapDZ;
-    const std::vector<int> caphriCystalId = cal.caloInfo().getVInt("caphriCrystalId");
+    const std::vector<int> caphriCystalId = cal.G4Info().get<std::vector<int>>("caphriCrystalId");
 
     const double diskCaseDZ               = wrapperDZ;
-    const double diskInAlRingRIn          = cal.caloInfo().getDouble("diskInAlRingRIn");
-    const double diskInAlRingDZ           = cal.caloInfo().getDouble("diskInAlRingZLength")/2.0;
-    const double diskInCFRingRIn          = cal.caloInfo().getDouble("diskInCFRingRIn");
-    const double diskInCFRingROut         = cal.caloInfo().getDouble("diskInCFRingROut");
-    const double diskCaseRingROut         = cal.caloInfo().getDouble("diskCaseRingROut");
-    const double diskOutRailROut          = cal.caloInfo().getDouble("diskOutRailROut") - vdThickness;
-    const double diskOutRailDZ            = cal.caloInfo().getDouble("diskOutRailZLength")/2.0;
+    const double diskInAlRingRIn          = cal.G4Info().get<double>("diskInAlRingRIn");
+    const double diskInAlRingDZ           = cal.G4Info().get<double>("diskInAlRingZLength")/2.0;
+    const double diskInCFRingRIn          = cal.G4Info().get<double>("diskInCFRingRIn");
+    const double diskInCFRingROut         = cal.G4Info().get<double>("diskInCFRingROut");
+    const double diskCaseRingROut         = cal.G4Info().get<double>("diskCaseRingROut");
+    const double diskOutRailROut          = cal.G4Info().get<double>("diskOutRailROut") - vdThickness;
+    const double diskOutRailDZ            = cal.G4Info().get<double>("diskOutRailZLength")/2.0;
 
-    const double FPCoolPipeRadius         = cal.caloInfo().getDouble("FPCoolPipeRadius");
-    const double FPCoolPipeThickness      = cal.caloInfo().getDouble("FPCoolPipeThickness");
+    const double FPCoolPipeRadius         = cal.G4Info().get<double>("FPCoolPipeRadius");
+    const double FPCoolPipeThickness      = cal.G4Info().get<double>("FPCoolPipeThickness");
     const double coolPipeZpos             = (diskCaseDZ - 2*FPCoolPipeRadius - 2.0*diskOutRailDZ)/2.0 + FPCoolPipeRadius;
 
-    const std::vector<double> stepsInX    = cal.caloInfo().getVDouble("stepsInsideX");
-    const std::vector<double> stepsInY    = cal.caloInfo().getVDouble("stepsInsideY");
-    const std::vector<double> stepsOutX   = cal.caloInfo().getVDouble("stepsOutsideX");
-    const std::vector<double> stepsOutY   = cal.caloInfo().getVDouble("stepsOutsideY");
-    const double diskStepThickness        = cal.caloInfo().getDouble ("diskStepThickness");
+    const std::vector<double> stepsInX    = cal.G4Info().get<std::vector<double>>("stepsInsideX");
+    const std::vector<double> stepsInY    = cal.G4Info().get<std::vector<double>>("stepsInsideY");
+    const std::vector<double> stepsOutX   = cal.G4Info().get<std::vector<double>>("stepsOutsideX");
+    const std::vector<double> stepsOutY   = cal.G4Info().get<std::vector<double>>("stepsOutsideY");
+    const double diskStepThickness        = cal.G4Info().get<double> ("diskStepThickness");
 
 
     //------------------------------------------------------------
@@ -694,36 +694,36 @@ namespace mu2e {
     G4Material* pipeMaterial         = materialFinder.get("calorimeter.coolPipeMaterial");
     G4Material* stripMaterial        = materialFinder.get("calorimeter.BPStripMaterial");
 
-    const double BPInnerRadius       = cal.caloInfo().getDouble("FPInnerRadius"); //same as front plate
-    const double BPOuterRadius       = cal.caloInfo().getDouble("BPOuterRadius");
-    const double diskCrystalRIn      = cal.caloInfo().getDouble("diskCrystalRIn");
-    const double diskCrystalROut     = cal.caloInfo().getDouble("diskCrystalROut");
+    const double BPInnerRadius       = cal.G4Info().get<double>("FPInnerRadius"); //same as front plate
+    const double BPOuterRadius       = cal.G4Info().get<double>("BPOuterRadius");
+    const double diskCrystalRIn      = cal.G4Info().get<double>("diskCrystalRIn");
+    const double diskCrystalROut     = cal.G4Info().get<double>("diskCrystalROut");
 
-    const double crystalDXY          = cal.caloInfo().getDouble("crystalXYLength")/2.0;
-    const double wrapperDXY          = crystalDXY + cal.caloInfo().getDouble("wrapperThickness");
-    const double RODX                = cal.caloInfo().getDouble("readoutXLength")/2.0;
-    const double RODY                = cal.caloInfo().getDouble("readoutYLength")/2.0;
-    const double RODZ                = cal.caloInfo().getDouble("readoutZLength")/2.0;
-    const double holeDX              = cal.caloInfo().getDouble("BPHoleXLength")/2.0;
-    const double holeDY              = cal.caloInfo().getDouble("BPHoleYLength")/2.0;
-    const double holeDZ              = cal.caloInfo().getDouble("BPHoleZLength")/2.0;
+    const double crystalDXY          = cal.G4Info().get<double>("crystalXYLength")/2.0;
+    const double wrapperDXY          = crystalDXY + cal.G4Info().get<double>("wrapperThickness");
+    const double RODX                = cal.G4Info().get<double>("readoutXLength")/2.0;
+    const double RODY                = cal.G4Info().get<double>("readoutYLength")/2.0;
+    const double RODZ                = cal.G4Info().get<double>("readoutZLength")/2.0;
+    const double holeDX              = cal.G4Info().get<double>("BPHoleXLength")/2.0;
+    const double holeDY              = cal.G4Info().get<double>("BPHoleYLength")/2.0;
+    const double holeDZ              = cal.G4Info().get<double>("BPHoleZLength")/2.0;
     const double stripDY             = wrapperDXY-holeDY-1.0;
-    const double stripDZ             = cal.caloInfo().getDouble("BPStripThickness")/2.0;
-    const double FEEDX               = cal.caloInfo().getDouble("FEEXLength")/2.0;
-    const double FEEDY               = cal.caloInfo().getDouble("FEEYLength")/2.0;
-    const double FEEDZ               = cal.caloInfo().getDouble("FEEZLength")/2.0;
+    const double stripDZ             = cal.G4Info().get<double>("BPStripThickness")/2.0;
+    const double FEEDX               = cal.G4Info().get<double>("FEEXLength")/2.0;
+    const double FEEDY               = cal.G4Info().get<double>("FEEYLength")/2.0;
+    const double FEEDZ               = cal.G4Info().get<double>("FEEZLength")/2.0;
 
-    const double FEEBoxThickness     = cal.caloInfo().getDouble("FEEBoxThickness");
+    const double FEEBoxThickness     = cal.G4Info().get<double>("FEEBoxThickness");
     const double FEEBoxDX            = holeDX + 2*FEEBoxThickness;
     const double FEEBoxDY            = FEEDY + 2*FEEBoxThickness;
     const double FEEBoxDZ            = FEEDZ + 2*FEEBoxThickness;
 
-    const double BPPipeRadiusHigh    = cal.caloInfo().getDouble("BPPipeRadiusHigh");
-    const double BPPipeRadiusLow     = cal.caloInfo().getDouble("BPPipeRadiusLow");
-    const double BPPipeThickness     = cal.caloInfo().getDouble("BPPipeThickness");
+    const double BPPipeRadiusHigh    = cal.G4Info().get<double>("BPPipeRadiusHigh");
+    const double BPPipeRadiusLow     = cal.G4Info().get<double>("BPPipeRadiusLow");
+    const double BPPipeThickness     = cal.G4Info().get<double>("BPPipeThickness");
     const double BPPipeTorRadiusHigh = BPOuterRadius - BPPipeRadiusHigh;
     const double BPPipeTorRadiusLow  = BPOuterRadius - 3.0*BPPipeRadiusHigh;
-    const double BPPipeDZOffset      = cal.caloInfo().getDouble("BPPipeZOffset")/2.0;
+    const double BPPipeDZOffset      = cal.G4Info().get<double>("BPPipeZOffset")/2.0;
     const double BPFEEDZ             = FEEBoxDZ + BPPipeDZOffset + BPPipeRadiusHigh;
 
 
@@ -770,7 +770,7 @@ namespace mu2e {
     for(unsigned ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
     {
       G4int id = nTotCrystal+ic;
-      CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).idealLocalPosition();
+      CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
       unitPosition.setZ(0.0);
 
       caloPlacement(holeBack, backPlate, 0, unitPosition, true, id, config, doSurfaceCheck, verbosity);
@@ -803,7 +803,7 @@ namespace mu2e {
 
     for (unsigned ic=0; ic <cal.disk(idisk).nCrystals(); ++ic) {
       G4int id = nTotCrystal+ic;
-      CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).idealLocalPosition();
+      CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
       unitPosition.setZ(-BPFEEDZ + FEEBoxDZ);
 
       caloPlacement(FEEBox, backPlateFEE, 0, unitPosition, true, id, config, doSurfaceCheck, verbosity);
@@ -820,7 +820,7 @@ namespace mu2e {
     //----
     double yminStrip(diskCrystalROut);
     for(unsigned ic=0; ic <cal.disk(idisk).nCrystals(); ++ic) {
-      CLHEP::Hep3Vector position = cal.disk(idisk).crystal(ic).idealLocalPosition();
+      CLHEP::Hep3Vector position = cal.disk(idisk).crystal(ic).localPosition();
       yminStrip = std::min(yminStrip,position.y()-wrapperDXY);
     }
 
@@ -925,10 +925,10 @@ namespace mu2e {
     const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("calorimeterCrate");
     const int  verbosity           = config.getInt("calorimeter.verbosityLevel",1);
 
-    const int    nCrates           = cal.caloInfo().getInt("nCrates");
-    const double vdThickness       = cal.caloInfo().getDouble("vdThickness");
-    const double caloDiskRadiusOut = cal.caloInfo().getDouble("caloDiskRadiusOut");
-    const auto   cratePhiAngle     = cal.caloInfo().getVDouble("cratePhiAngles");
+    const int    nCrates           = cal.G4Info().get<int>("nCrates");
+    const double vdThickness       = cal.G4Info().get<double>("vdThickness");
+    const double caloDiskRadiusOut = cal.G4Info().get<double>("caloDiskRadiusOut");
+    const auto   cratePhiAngle     = cal.G4Info().get<std::vector<double>>("cratePhiAngles");
 
     // get me a lil' crate
     VolumeInfo crateBox = caloBuildCrate(config,idisk);
@@ -986,14 +986,14 @@ namespace mu2e {
        }
      }
 
-     double delta = dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2 - cal.disk(idisk).geomInfo().FEBZLength();
+     double delta = dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2 - cal.disk(idisk).diskInfo().FEBZLength();
 
      if (std::abs(delta) > 1e-3)  G4cout << __func__ <<"PANIC..... geometry description in Geant4 and DiskMaker do NOT match  - FEB size: "
                                          <<dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2<<" vs "
-                                         <<cal.disk(idisk).geomInfo().FEBZLength()<<G4endl;
+                                         <<cal.disk(idisk).diskInfo().FEBZLength()<<G4endl;
 
      if (verbosity) G4cout << __func__ <<" Compare FEB size  Geant4 / CaloInfo "<<dynamic_cast<G4Tubs*>(fullFEB.solid)->GetZHalfLength()*2
-                                <<" / "<<cal.disk(idisk).geomInfo().FEBZLength()<<G4endl;
+                                <<" / "<<cal.disk(idisk).diskInfo().FEBZLength()<<G4endl;
 
      return fullFEB;
   }
@@ -1027,22 +1027,22 @@ namespace mu2e {
     G4Material* activeStripMaterial  = materialFinder.get("calorimeter.activeStripMaterial");
     G4Material* passiveStripMaterial = materialFinder.get("calorimeter.passiveStripMaterial");
 
-    const int nBoards                = cal.caloInfo().getInt   ("nBoards");
-    const double crateDX             = cal.caloInfo().getDouble("crateXLength")/2.0;
-    const double crateDY             = cal.caloInfo().getDouble("crateYLength")/2.0;
-    const double crateDZ             = cal.caloInfo().getDouble("crateZLength")/2.0;
-    const double crateFShieldDisp    = cal.caloInfo().getDouble("crateFShieldDeltaZ");
-    const double crateFShieldThick   = cal.caloInfo().getDouble("crateFShieldThickness");
-    const double crateBottomThick    = cal.caloInfo().getDouble("crateBShieldThickness");
-    const double crateBottomLength   = cal.caloInfo().getDouble("crateBShieldLength");
-    const double crateTopThick       = cal.caloInfo().getDouble("crateTThickness");
-    const double crateSideThick      = cal.caloInfo().getDouble("crateSThickness");
-    const double crateFShieldDY      = cal.caloInfo().getDouble("crateFShieldYLength")/2.0;
+    const int nBoards                = cal.G4Info().get<int>   ("nBoards");
+    const double crateDX             = cal.G4Info().get<double>("crateXLength")/2.0;
+    const double crateDY             = cal.G4Info().get<double>("crateYLength")/2.0;
+    const double crateDZ             = cal.G4Info().get<double>("crateZLength")/2.0;
+    const double crateFShieldDisp    = cal.G4Info().get<double>("crateFShieldDeltaZ");
+    const double crateFShieldThick   = cal.G4Info().get<double>("crateFShieldThickness");
+    const double crateBottomThick    = cal.G4Info().get<double>("crateBShieldThickness");
+    const double crateBottomLength   = cal.G4Info().get<double>("crateBShieldLength");
+    const double crateTopThick       = cal.G4Info().get<double>("crateTThickness");
+    const double crateSideThick      = cal.G4Info().get<double>("crateSThickness");
+    const double crateFShieldDY      = cal.G4Info().get<double>("crateFShieldYLength")/2.0;
 
-    const double radiatorDY          = cal.caloInfo().getDouble("radiatorThickness")/2.0;
-    const double radiatorDZ          = cal.caloInfo().getDouble("radiatorZLength")/2.0;
-    const double activeStripDY       = cal.caloInfo().getDouble("activeStripThickness")/2.0;
-    const double passiveStripDY      = cal.caloInfo().getDouble("passiveStripThickness")/2.0;
+    const double radiatorDY          = cal.G4Info().get<double>("radiatorThickness")/2.0;
+    const double radiatorDZ          = cal.G4Info().get<double>("radiatorZLength")/2.0;
+    const double activeStripDY       = cal.G4Info().get<double>("activeStripThickness")/2.0;
+    const double passiveStripDY      = cal.G4Info().get<double>("passiveStripThickness")/2.0;
     const double crateFullDZ         = crateDZ+crateFShieldDisp/2.0+crateFShieldThick/2.0;
     const double crateFullDY         = crateDY+crateBottomThick/2.0;
     const double crateBoxInDY        = crateDY-crateTopThick/2.0;
@@ -1151,8 +1151,8 @@ namespace mu2e {
     G4Material* cableMaterial     = findMaterialOrThrow(ds.calCableRunMaterial());
     G4Material* cableCoreMaterial = findMaterialOrThrow(ds.materialCableRunCalCore());
 
-    const double mother_z0        = cal.caloInfo().getDouble("caloMotherZ0");
-    const double mother_z1        = cal.caloInfo().getDouble("caloMotherZ1");
+    const double mother_z0        = cal.G4Info().get<double>("caloMotherZ0");
+    const double mother_z1        = cal.G4Info().get<double>("caloMotherZ1");
     const double mother_zlength   = mother_z1-mother_z0;
     const double crRin            = ds.upRInCableRunCal();
     const double crRout           = ds.upROutCableRunCal();
@@ -1162,7 +1162,7 @@ namespace mu2e {
 
     //length of the cable run = distance between disk for first gaps, ditance betweenm end of feb and mother volume for last gap
     G4Tubs*  FEB             = dynamic_cast<G4Tubs*>(FEBvol.solid);
-    G4double distFEBtoNext   = (idisk+1 < cal.nDisks()) ? cal.disk(idisk+1).geomInfo().origin().z() - cal.disk(idisk).geomInfo().origin().z()
+    G4double distFEBtoNext   = (idisk+1 < cal.nDisks()) ? cal.disk(idisk+1).diskInfo().origin().z() - cal.disk(idisk).diskInfo().origin().z()
                                                        : mother_zlength/2.0 - FEBvol.physical->GetTranslation().z()-FEB->GetZHalfLength();
     G4double cableHalfLength = (idisk+1 < cal.nDisks()) ? 0.5*distFEBtoNext - FEB->GetZHalfLength() : 0.5*distFEBtoNext;
 
@@ -1255,9 +1255,9 @@ namespace mu2e {
   // utility to make list of vertexes for extruded polygon solid
   std::vector<G4double> calcFEBPhiRange(const DiskCalorimeter& cal)
   {
-    G4double crateXLength  = cal.caloInfo().getDouble("crateXLength");
-    G4double crateRin      = cal.caloInfo().getDouble("caloDiskRadiusOut");
-    auto cratePhis         = cal.caloInfo().getVDouble("cratePhiAngles");
+    G4double crateXLength  = cal.G4Info().get<double>("crateXLength");
+    G4double crateRin      = cal.G4Info().get<double>("caloDiskRadiusOut");
+    auto cratePhis         = cal.G4Info().get<std::vector<double>>("cratePhiAngles");
 
     for (auto& val : cratePhis) val *= CLHEP::degree;
     G4double cratePhiSpan  = atan(crateXLength/2.0/crateRin);

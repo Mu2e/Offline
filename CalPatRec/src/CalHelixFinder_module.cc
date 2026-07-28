@@ -416,9 +416,9 @@ namespace mu2e {
     if(HfResult._timeClusterPtr->hasCaloCluster()) {
       CLHEP::Hep3Vector gpos,tpos;
 
-      gpos   = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
+      gpos   = _hfinder._calorimeter->diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskID(),
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
-      tpos   = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
+      tpos   = _hfinder._calorimeter->mu2eToTracker(gpos);
 
       hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
 
