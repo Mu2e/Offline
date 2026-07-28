@@ -41,6 +41,8 @@ int main(int argc, char** argv) {
                 "print the cat 3 DbService tables");
   cli.addSwitch("", "cidtables", "e", "cidtables", false,
                 "print the cat 2 DbService CID tables (cid name)");
+  cli.addSwitch("", "json", "j", "json", false,
+                "with -q or -e, fetch content in JSON format");
 
 
   // Parse command line
@@ -93,6 +95,7 @@ int main(int argc, char** argv) {
   std::string blob_subsystem = cli.getString("", "blob");
   bool dbtables = cli.getBool("", "dbtables");
   bool cidtables = cli.getBool("", "cidtables");
+  bool json = cli.getBool("", "json");
 
   // If blob subsystem or dbtables is specified, we need to fetch configs
   bool need_configs =
@@ -103,31 +106,29 @@ int main(int argc, char** argv) {
   RunInfo::RunVec runvec =
       tool.listRuns(runsel, need_configs, transitions, subruns);
 
-  // Handle dbtables output: concatenated cat-3 DbService table values
-  // for machine reading.  No labels or adornment - just the values,
-  // looping over every config in every run.
+  // Handle dbtables output: cat-3 DbService table values, collected across all
+  // configs of each run by RunInfo::dbTables3.  With -j the merged content is
+  // printed as formatted JSON; otherwise the values are printed one per line
+  // for machine reading (no labels or adornment).
   if (dbtables) {
     for (auto const& rr : runvec) {
-      for (const auto& config : rr.configs()) {
-        std::string tables = config.dbTables3(false);
-        if (!tables.empty()) {
-          std::cout << tables << "\n";
-        }
+      std::string tables = rr.dbTables3(json);
+      if (!tables.empty()) {
+        std::cout << tables << "\n";
       }
     }
     return 0;
   }
 
-  // Handle cidtables output: cat-2 DbService CID table entries, printed as
-  // "cid name" one pair per line.  The runTool only emits the non-JSON
-  // format; the JSON format is reserved for the python wrapper.
+  // Handle cidtables output: cat-2 DbService CID table entries, collected by
+  // RunInfo::dbTables2 (which restricts to the "TRG" config that holds them).
+  // With -j the content is fetched in JSON format and printed as formatted
+  // JSON; otherwise it is printed as "cid name" one pair per line.
   if (cidtables) {
     for (auto const& rr : runvec) {
-      for (const auto& config : rr.configs()) {
-        std::string tables = config.dbTables2(false);
-        if (!tables.empty()) {
-          std::cout << tables << "\n";
-        }
+      std::string tables = rr.dbTables2(json);
+      if (!tables.empty()) {
+        std::cout << tables << "\n";
       }
     }
     return 0;
