@@ -48,6 +48,11 @@ std::string RunInfo::dbTables3(bool qjson) const {
         continue;
       }
       for (auto it = part.begin(); it != part.end(); ++it) {
+        if (merged.contains(it.key())) {
+          throw cet::exception("RUNINFO_DUPLICATE_TABLE")
+              << "RunInfo::dbTables3() found duplicate table key \""
+              << it.key() << "\" across run configs\n";
+        }
         merged[it.key()] = it.value();
       }
     }
