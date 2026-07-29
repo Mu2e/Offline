@@ -4,6 +4,7 @@
 //  original author: D. Brown (LBNL) 2024
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -40,8 +41,9 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
         fhicl::Atom<art::InputTag> upstreamTag {Name("UpstreamKalSeedCollection"), Comment("Upstream KalSeed collection") };
-        fhicl::Atom<art::InputTag> downstreamTag {Name("DownstreamKalSeedCollection"), Comment("Downstream KalSeed collection") };
+        fhicl::Atom<art::InputTag> dnstreamTag {Name("DownstreamKalSeedCollection"), Comment("Downstream KalSeed collection") };
         fhicl::Atom<std::string> surface{ Name("Surface"), Comment("Surface to compare fits at")};
+        fhicl::OptionalAtom<bool> ptrs{ Name("PtrCollection"), Comment("Inputs are KalSeedPtr collections")};
         fhicl::Atom<double> maxdt{ Name("MaxDeltaT"), Comment("Maximum time difference at comparison surface")};
         fhicl::Atom<double> maxdp{ Name("MaxDeltaP"), Comment("Maximum scalar momentum difference at comparison surface")};
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
@@ -53,9 +55,10 @@ namespace mu2e {
       void endJob() override;
     private:
       int debug_;
+      art::InputTag upstreamTag_, dnstreamTag_;
       SurfaceId sid_;
+      bool ptrs_;
       double maxdt_, maxdp_;
-      art::ProductToken<KalSeedCollection> upstreamtoken_, downstreamtoken_;
       std::unique_ptr<KalSeedSelector> selector_;
       bestpair selbest_;
       unsigned nevts_=0, nref_=0, nmultref_=0;
@@ -63,31 +66,58 @@ namespace mu2e {
 
   SelectReflections::SelectReflections(const Parameters& config) : art::EDFilter{config},
     debug_(config().debug()),
+    upstreamTag_(config().upstreamTag()),
+    dnstreamTag_(config().dnstreamTag()),
     sid_(config().surface()),
+    ptrs_(config().ptrs()),
     maxdt_(config().maxdt()),
     maxdp_(config().maxdp()),
-    upstreamtoken_ { consumes<KalSeedCollection> (config().upstreamTag()) },
-    downstreamtoken_ { consumes<KalSeedCollection> (config().downstreamTag()) },
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
-    selbest_(static_cast<bestpair>(config().selectbest())) {
+    selbest_(static_cast<bestpair>(config().selectbest()))
+    {
       produces<KalSeedPtrCollection> ();
+      if(ptrs_){
+        consumes<KalSeedPtrCollection> (upstreamTag_);
+        consumes<KalSeedPtrCollection> (dnstreamTag_);
+      } else {
+        consumes<KalSeedCollection> (upstreamTag_);
+        consumes<KalSeedCollection> (dnstreamTag_);
+      }
     }
 
   bool SelectReflections::filter(art::Event& event) {
     ++nevts_;
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
-    auto const& upksch = event.getValidHandle<KalSeedCollection>(upstreamtoken_);
-    auto const& upksc = *upksch;
-    auto const& downksch = event.getValidHandle<KalSeedCollection>(downstreamtoken_);
-    auto const& downksc = *downksch;
-    if(debug_ > 1) std::cout << "Upstream " << upksc.size() << " , Downstream " << downksc.size() << " KalSeeds" << std::endl;
+
+    // input
+    KalSeedPtrCollection upksptrs, dnksptrs;
+    art::Handle<KalSeedCollection> upksh,dnksh;;
+
+    if(ptrs_){
+      auto upksptrsh = event.getValidHandle<KalSeedPtrCollection>(upstreamTag_);
+      upksptrs = *upksptrsh;
+      auto dnksptrsh = event.getValidHandle<KalSeedPtrCollection>(dnstreamTag_);
+      dnksptrs = *dnksptrsh;
+    } else {
+      upksh = event.getHandle<KalSeedCollection>(upstreamTag_);
+      for(size_t iks = 0; iks < upksh->size(); ++iks){
+        upksptrs.emplace_back(upksh,iks);
+      }
+      dnksh = event.getHandle<KalSeedCollection>(dnstreamTag_);
+      for(size_t iks = 0; iks < dnksh->size(); ++iks){
+        dnksptrs.emplace_back(dnksh,iks);
+      }
+    }
+
+    if(debug_ > 1) std::cout << "Upstream " << upksptrs.size() << " , Downstream " << dnksptrs.size() << " KalSeeds" << std::endl;
     bool keep(false);
-    if(upksc.size() > 0 && downksc.size() > 0){
-      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned>> matches; // matched up and downstream track, with (downstream) mom, dt and dmom
-      for(size_t iup = 0; iup <upksc.size(); ++iup){
-        auto const& upks = upksc[iup];
-        if(selector_->select(upks)){
+    if(upksptrs.size() > 0 && dnksptrs.size() > 0){
+      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned>> matches; // matched up and dnstream track, with (dnstream) mom, dt and dmom
+      for(size_t iup = 0; iup <upksptrs.size(); ++iup){
+        auto const& upks = *upksptrs[iup];
+        double t0;
+        if(upks.t0Segment(t0)->momentum3().Z() < 0 && selector_->select(upks)){
           if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
           // find the appropriate intersection for comparison
           auto uptrkiinter = upks.intersections().end();
@@ -101,28 +131,28 @@ namespace mu2e {
           }
           // if no intersections found, skip testing for a match with this track
           if(uptrkiinter == upks.intersections().end())continue;
-          // otherwise, search for a matching downstream track
-          for(size_t idown = 0; idown <downksc.size(); ++idown){
-            auto const& downks = downksc[idown];
-            if(selector_->select(downks)){
-              if(debug_ > 2)std::cout << "Selected downstream track " << std::endl;
+          // otherwise, search for a matching dnstream track
+          for(size_t idown = 0; idown <dnksptrs.size(); ++idown){
+            auto const& dnks = *dnksptrs[idown];
+            if(dnks.t0Segment(t0)->momentum3().Z() > 0 && selector_->select(dnks)){
+              if(debug_ > 2)std::cout << "Selected dnstream track " << std::endl;
               // find the appropriate intersection for comparison
-              auto downtrkiinter = downks.intersections().end();
-              for(auto downiinter = downks.intersections().begin(); downiinter != downks.intersections().end(); ++downiinter){
+              auto downtrkiinter = dnks.intersections().end();
+              for(auto downiinter = dnks.intersections().begin(); downiinter != dnks.intersections().end(); ++downiinter){
                 auto const& downinter = *downiinter;
                 if(downinter.surfaceId() == sid_ && downinter.momentum3().Z() > 0.0){ // correct surface and direction
-                  if(debug_ > 1) std::cout << "Found downstream intersection mom " << downinter.momentum3() << " time " << downinter.time() << std::endl;
+                  if(debug_ > 1) std::cout << "Found dnstream intersection mom " << downinter.momentum3() << " time " << downinter.time() << std::endl;
                   downtrkiinter = downiinter;
                   break;
                 }
               }
-              if(downtrkiinter != downks.intersections().end()){
+              if(downtrkiinter != dnks.intersections().end()){
                 // potentially matching tracks: compare time and momentum
                 double dt = fabs(uptrkiinter->time() - downtrkiinter->time());
                 double dmom = fabs(uptrkiinter->mom() - downtrkiinter->mom());
                 if( dt < maxdt_ && dmom < maxdp_){
                   if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
-                  matches.emplace_back(iup,idown,downtrkiinter->mom(),dt,dmom,upks.nHits()+downks.nHits());
+                  matches.emplace_back(iup,idown,downtrkiinter->mom(),dt,dmom,upks.nHits()+dnks.nHits());
                 }
               }
             }
@@ -140,7 +170,7 @@ namespace mu2e {
           double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(debug_ > 1)std::cout << "Match " << imatch << " has downstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << std::endl;
+            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << std::endl;
             if(selbest_ == mom && std::get<2>(match) > value){
               ibest = imatch;
               value = std::get<2>(match);
@@ -158,11 +188,17 @@ namespace mu2e {
         }
       }
       if(ibest > -1){
-        if(debug_ > 0) std::cout << "Found Reflecting particle candidate, downstream momentum " << std::get<2>(matches[ibest])
+        if(debug_ > 0) std::cout << "Found Reflecting particle candidate, dnstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
             << " delta P " << std::get<4>(matches[ibest]) << std::endl;
-        mkseeds->emplace_back(upksch,std::get<0>(matches[ibest])); // store the upstream track first by convention
-        mkseeds->emplace_back(downksch,std::get<1>(matches[ibest]));
+
+        if(ptrs_){
+          mkseeds->emplace_back(upksptrs[std::get<0>(matches[ibest])]); // store the upstream track first by convention
+          mkseeds->emplace_back(dnksptrs[std::get<1>(matches[ibest])]);
+        } else {
+          mkseeds->emplace_back(upksh,std::get<0>(matches[ibest])); // store the upstream track first by convention
+          mkseeds->emplace_back(dnksh,std::get<1>(matches[ibest]));
+        }
         keep = true;
       }
     }
