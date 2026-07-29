@@ -1,6 +1,5 @@
 cet_make_library(
     SOURCE
-      src/CaloUtil.cc
       src/DiskCalorimeter.cc
       src/Disk.cc
       src/DiskInfo.cc

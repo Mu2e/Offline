@@ -480,7 +480,7 @@ namespace mu2e {
     const double crystalDZ                = cal.G4Info().get<double>("crystalZLength")/2.0;
     const double crystalCapDZ             = cal.G4Info().get<double>("crystalCapZLength")/2.0;
     const double wrapperHalfThick         = cal.G4Info().get<double>("wrapperThickness")/2.0;
-    const double wrapperDXY               = crystalDXY + 2*wrapperHalfThick;
+    const double wrapperDXY               = crystalDXY + 2*wrapperHalfThick - 1e-5;
     const double wrapperDZ                = crystalDZ+crystalCapDZ;
     const std::vector<int> caphriCystalId = cal.G4Info().get<std::vector<int>>("caphriCrystalId");
 
