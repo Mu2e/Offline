@@ -135,7 +135,6 @@ std::string mu2e::RunConfig::dbTables3(bool qjson) const {
     for (auto const& p : pairs) {
       // A duplicate key would silently overwrite the earlier value, losing
       // data, so refuse to continue if one is found.
-      std::cout << "DEB " << p.first << "\n";
       if (out.contains(p.first)) {
         throw cet::exception("RUNCONFIG_DUPLICATE_KEY")
             << " RunConfig::dbTables3 found duplicate DBServiceTables key "
