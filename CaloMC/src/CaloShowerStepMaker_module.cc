@@ -97,7 +97,6 @@ namespace mu2e {
              fhicl::Atom<art::InputTag>    physVolInfoInput        { Name("physVolInfoInput"),        Comment("Physics volume token names") };
              fhicl::Atom<unsigned>         numZSlices              { Name("numZSlices"),              Comment("Number of crystal longitudinal slices ") };
              fhicl::Atom<float>            deltaTime               { Name("deltaTime"),               Comment("Max time difference to be inside a ShowerStep") };
-             fhicl::Atom<bool>             usePhysVolInfo          { Name("usePhysVolInfo"),          Comment("Use Physical Info volume names") };
              fhicl::Sequence<std::string>  caloMaterial            { Name("caloMaterial"),            Comment("List of calo material names") };
              fhicl::Atom<bool>             compressData            { Name("compressData"),            Comment("Compress stepPointMC and SimParticles in crystal") };
              fhicl::Atom<double>           eDepThreshold           { Name("eDepThreshold"),           Comment("Threshold on energy deposited by SimParticle to keep it") };
@@ -128,7 +127,6 @@ namespace mu2e {
          std::vector<std::string>                 calorimeterStepPoints_;
          art::InputTag                            physVolInfoInput_;
          std::set<const PhysicalVolumeInfo*>      mapPhysVol_;
-         bool                                     usePhysVol_;
          std::vector<std::string>                 caloMaterial_;
          int                                      numZSlices_;
          double                                   deltaTime_;
@@ -156,7 +154,6 @@ namespace mu2e {
      art::EDProducer{config},
      calorimeterStepPoints_(config().caloStepPointCollection()),
      physVolInfoInput_     (config().physVolInfoInput()),
-     usePhysVol_           (config().usePhysVolInfo()),
      caloMaterial_         (config().caloMaterial()),
      numZSlices_           (config().numZSlices()),
      deltaTime_            (config().deltaTime()),

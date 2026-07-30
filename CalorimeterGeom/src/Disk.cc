@@ -1,5 +1,5 @@
 //
-// Create a disk and fills it with crystals.
+// Create a disk and fills it with crystals. Crystal numbering is all local here
 //
 // Original author B Echenard
 //

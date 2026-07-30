@@ -14,7 +14,8 @@ namespace mu2e {
     ProditionsEntity(Calorimeter::cxname),
     disks_(),
     crystals_(),
-    G4Info_()
+    G4Info_(),
+    trackerCenter_()
   {
     rebuildCrystalPtrs();
   }
@@ -22,7 +23,8 @@ namespace mu2e {
   DiskCalorimeter::DiskCalorimeter(const DiskCalorimeter& rhs) :
     ProditionsEntity(rhs),
     disks_(rhs.disks_),
-    G4Info_(rhs.G4Info_)
+    G4Info_(rhs.G4Info_),
+    trackerCenter_(rhs.trackerCenter_)
   {
     rebuildCrystalPtrs();
   }
@@ -30,7 +32,8 @@ namespace mu2e {
   DiskCalorimeter::DiskCalorimeter(DiskCalorimeter&& rhs) noexcept :
     ProditionsEntity(std::move(rhs)),
     disks_(std::move(rhs.disks_)),
-    G4Info_(std::move(rhs.G4Info_))
+    G4Info_(std::move(rhs.G4Info_)),
+    trackerCenter_(std::move(rhs.trackerCenter_))
   {
     rebuildCrystalPtrs();
   }

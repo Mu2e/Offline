@@ -58,7 +58,6 @@ namespace mu2e {
        calo_->G4Info_.set("caloFEBRadiusOut",       config.getDouble("calorimeter.caloFEBRadiusOut") );    //outer radius of FEB enveloppe
        calo_->G4Info_.set("caloMotherZ0",           config.getDouble("calorimeter.caloMotherZ0") );        //upstream Z of calorimeter enveloppe volume
        calo_->G4Info_.set("caloMotherZ1",           config.getDouble("calorimeter.caloMotherZ1") );        //downstream Z of calorimeter enveloppe volume
-       calo_->G4Info_.set("caloMotherXorig",        config.getDouble("mu2e.solenoidOffset") );             //x coordinate center of calo mother volume
        calo_->G4Info_.set("vdThickness",            config.getDouble("calorimeter.vdThickness") );         //virtual detector thickness
 
        calo_->G4Info_.set("diskInAlRingRIn",        config.getDouble("calorimeter.diskInAlRingRIn") );     //inner radius of Al ring inside disk
@@ -255,10 +254,14 @@ namespace mu2e {
               Crystal& thisCrystal = thisDisk.crystal(icry);
               calo_->crystals_.push_back(&thisCrystal);
 
-              //precompute the neighbors in the global frame
+              //set ID and pre-compute neighbors - all need to be in global frame
               thisCrystal.setID(icry+crystalOffset);
-              thisCrystal.setNeighbors(thisDisk.neighbors(icry,1));
-              thisCrystal.setNextNeighbors(thisDisk.neighbors(icry,2));
+              auto neighbors = thisDisk.neighbors(icry,1); //local
+              auto nextNeighbors = thisDisk.neighbors(icry,2); //local
+              for (auto& n : neighbors){ n+=crystalOffset;} //global
+              for (auto& n : nextNeighbors){ n+=crystalOffset;} //global
+              thisCrystal.setNeighbors(neighbors); //this is local
+              thisCrystal.setNextNeighbors(nextNeighbors);//this is local
 
               //pre-compute the crystal position in the mu2e (global) frame
               CLHEP::Hep3Vector globalPosition = thisDisk.diskInfo().origin() + thisDisk.diskInfo().inverseRotation()*(thisCrystal.localPosition());
