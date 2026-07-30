@@ -268,13 +268,14 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->tracker()->front().center().Z(),debug_);
-    if(trackerFront.debug() > 2)std::cout << "extrapolating to Tracker " << std::endl;
+    if(debug_ > 2)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
+    double tstart = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     static const SurfaceId TrackerSID("TT_Front");
     ktrk.extrapolate(tdir,trackerFront);
-    // the last piece appended should cover the necessary range
-    auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto trkfrontinter = KinKal::intersect(ftraj,kkg_h->tracker()->front(),ktraj.range(),intertol_,tdir);
+    TimeRange testrange = tdir == TimeDir::forwards ? TimeRange(tstart, ftraj.range().end())
+      : TimeRange(ftraj.range().begin(),tstart);
+    auto trkfrontinter = KinKal::intersect(ftraj,kkg_h->tracker()->front(),testrange,intertol_,tdir);
     if(trkfrontinter.onsurface_){ // dont worry about bounds here
       ktrk.addIntersection(TrackerSID,trkfrontinter);
       return true;
@@ -287,21 +288,22 @@ namespace mu2e {
     ExtrapolateToZ TSDA(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->DS()->upstreamAbsorber().center().Z(),debug_);
     if(TSDA.debug() > 2)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
+    double tstart = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     static const SurfaceId TSDASID("TSDA");
     ktrk.extrapolate(tdir,TSDA);
-    // if we reflected we're done. Otherwize, save the TSDA intersection
-    double tend = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto epos = ftraj.position3(tend);
-    bool retval = epos.Z() < TSDA.zVal();
-    if(retval){
-      auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto tsdainter = KinKal::intersect(ftraj,kkg_h->DS()->upstreamAbsorber(),ktraj.range(),intertol_,tdir);
-      if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
+    TimeRange testrange = tdir == TimeDir::forwards ? TimeRange(tstart, ftraj.range().end())
+      : TimeRange(ftraj.range().begin(),tstart);
+    // test for an intersection with TSDA downstream surface
+    auto tsdainter = KinKal::intersect(ftraj,kkg_h->DS()->upstreamAbsorber(),testrange,intertol_,tdir);
+    if(tsdainter.onsurface_){
+      ktrk.addIntersection(TSDASID,tsdainter);
+      return true;
     }
-    return retval;
+    return false;
   }
 
-  //extrapolate to the OPA (DS entrance). only 1 of these is possible
+  //extrapolate to the OPA (DS entrance). only 1 of these is currently possible
+  // muons can intersect multiple times: TODO
   template <class KTRAJ> void KKExtrap::extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& ftraj = ktrk.fitTraj();

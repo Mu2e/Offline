@@ -145,6 +145,7 @@ namespace mu2e {
                       // potentially matching tracks: compare time and momentum
                       double dt = fabs(upinter->time() - dninter->time());
                       double dmom = fabs(upimom.R() - dnimom.R());
+                      if(debug_ > 2) std::cout << "Testing intersection track pair, dt " << dt << " dmom " << dmom << std::endl;
                       if( dt < maxdt_ && dmom < maxdp_){
                         if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
                         matches.emplace_back(iup,idn,dnimom.R(),dt,dmom,upks.nHits()+dnks.nHits());
@@ -156,7 +157,7 @@ namespace mu2e {
                 // match just using t0
                 double dt = fabs(upt0 - dnt0);
                 double dmom = fabs(dnmom.R() - upmom.R());
-                if(debug_ > 2) std::cout << "Testing track pair, dt " << dt << " dmom " << dmom << std::endl;
+                if(debug_ > 2) std::cout << "Testing t0 track pair, dt " << dt << " dmom " << dmom << std::endl;
                 if( dt < maxdt_ && dmom < maxdp_){
                   if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
                   matches.emplace_back(iup,idn,dnmom.R(),dt,dmom,upks.nHits()+dnks.nHits());
