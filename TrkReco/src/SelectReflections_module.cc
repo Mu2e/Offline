@@ -42,7 +42,7 @@ namespace mu2e {
         fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
         fhicl::Atom<art::InputTag> upstreamTag {Name("UpstreamKalSeedCollection"), Comment("Upstream KalSeed collection") };
         fhicl::Atom<art::InputTag> dnstreamTag {Name("DownstreamKalSeedCollection"), Comment("Downstream KalSeed collection") };
-        fhicl::Atom<std::string> surface{ Name("Surface"), Comment("Surface to compare fits at")};
+        fhicl::OptionalAtom<std::string> surface{ Name("Surface"), Comment("Surface to compare fits at")};
         fhicl::OptionalAtom<bool> ptrs{ Name("PtrCollection"), Comment("Inputs are KalSeedPtr collections")};
         fhicl::Atom<double> maxdt{ Name("MaxDeltaT"), Comment("Maximum time difference at comparison surface")};
         fhicl::Atom<double> maxdp{ Name("MaxDeltaP"), Comment("Maximum scalar momentum difference at comparison surface")};
@@ -57,6 +57,7 @@ namespace mu2e {
       int debug_;
       art::InputTag upstreamTag_, dnstreamTag_;
       SurfaceId sid_;
+      bool sidmatch_;
       bool ptrs_;
       double maxdt_, maxdp_;
       std::unique_ptr<KalSeedSelector> selector_;
@@ -68,7 +69,6 @@ namespace mu2e {
     debug_(config().debug()),
     upstreamTag_(config().upstreamTag()),
     dnstreamTag_(config().dnstreamTag()),
-    sid_(config().surface()),
     ptrs_(config().ptrs()),
     maxdt_(config().maxdt()),
     maxdp_(config().maxdp()),
@@ -83,10 +83,14 @@ namespace mu2e {
         consumes<KalSeedCollection> (upstreamTag_);
         consumes<KalSeedCollection> (dnstreamTag_);
       }
+      std::string sidname;
+      sidmatch_ = config().surface(sidname);
+      if(sidmatch_)sid_ = SurfaceId(sidname);
     }
 
   bool SelectReflections::filter(art::Event& event) {
     ++nevts_;
+    const static SurfaceId usid;
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
 
@@ -116,43 +120,46 @@ namespace mu2e {
       std::vector<std::tuple<size_t, size_t,double, double, double, unsigned>> matches; // matched up and dnstream track, with (dnstream) mom, dt and dmom
       for(size_t iup = 0; iup <upksptrs.size(); ++iup){
         auto const& upks = *upksptrs[iup];
-        double t0;
-        if(upks.t0Segment(t0)->momentum3().Z() < 0 && selector_->select(upks)){
+        double upt0;
+        auto upmom = upks.t0Segment(upt0)->momentum3();
+        if(upmom.Z() < 0 && selector_->select(upks)){
           if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
-          // find the appropriate intersection for comparison
-          auto uptrkiinter = upks.intersections().end();
-          for(auto upiinter = upks.intersections().begin(); upiinter != upks.intersections().end(); ++upiinter){
-            auto const& upinter = *upiinter;
-            if(upinter.surfaceId() == sid_ && upinter.momentum3().Z() > 0.0){ // correct surface and direction
-              if(debug_ > 1) std::cout << "Found upstream intersection mom " << upinter.momentum3() << " time " << upinter.time() << std::endl;
-              uptrkiinter = upiinter;
-              break;
-            }
-          }
-          // if no intersections found, skip testing for a match with this track
-          if(uptrkiinter == upks.intersections().end())continue;
-          // otherwise, search for a matching dnstream track
-          for(size_t idown = 0; idown <dnksptrs.size(); ++idown){
-            auto const& dnks = *dnksptrs[idown];
-            if(dnks.t0Segment(t0)->momentum3().Z() > 0 && selector_->select(dnks)){
+          auto upinters = upks.intersections(sid_);
+          // search for a matching dnstream track
+          for(size_t idn = 0; idn <dnksptrs.size(); ++idn){
+            auto const& dnks = *dnksptrs[idn];
+            double dnt0;
+            auto dnmom = dnks.t0Segment(dnt0)->momentum3();
+            if(dnmom.Z() > 0 && selector_->select(dnks)){
               if(debug_ > 2)std::cout << "Selected dnstream track " << std::endl;
-              // find the appropriate intersection for comparison
-              auto downtrkiinter = dnks.intersections().end();
-              for(auto downiinter = dnks.intersections().begin(); downiinter != dnks.intersections().end(); ++downiinter){
-                auto const& downinter = *downiinter;
-                if(downinter.surfaceId() == sid_ && downinter.momentum3().Z() > 0.0){ // correct surface and direction
-                  if(debug_ > 1) std::cout << "Found dnstream intersection mom " << downinter.momentum3() << " time " << downinter.time() << std::endl;
-                  downtrkiinter = downiinter;
-                  break;
+              if(sidmatch_) {
+                // find the appropriate intersection for comparison
+                auto dninters = dnks.intersections(sid_);
+                for(auto upinter : upinters){
+                  auto upimom = upinter->momentum3();
+                  for(auto dninter : dninters){
+                    auto dnimom = dninter->momentum3();
+                    if(upimom.Z()*dnimom.Z() > 0.0){ // same direction
+                      if(debug_ > 1) std::cout << "Same-direction upstream intersection mom " << upimom << " time " << upinter->time()
+                        << " dnstream intersection mom " << dnimom << " time " << dninter->time() << std::endl;
+                      // potentially matching tracks: compare time and momentum
+                      double dt = fabs(upinter->time() - dninter->time());
+                      double dmom = fabs(upimom.R() - dnimom.R());
+                      if( dt < maxdt_ && dmom < maxdp_){
+                        if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
+                        matches.emplace_back(iup,idn,dnimom.R(),dt,dmom,upks.nHits()+dnks.nHits());
+                      }
+                    }
+                  }
                 }
-              }
-              if(downtrkiinter != dnks.intersections().end()){
-                // potentially matching tracks: compare time and momentum
-                double dt = fabs(uptrkiinter->time() - downtrkiinter->time());
-                double dmom = fabs(uptrkiinter->mom() - downtrkiinter->mom());
+              } else {
+                // match just using t0
+                double dt = fabs(upt0 - dnt0);
+                double dmom = fabs(dnmom.R() - upmom.R());
+                if(debug_ > 2) std::cout << "Testing track pair, dt " << dt << " dmom " << dmom << std::endl;
                 if( dt < maxdt_ && dmom < maxdp_){
                   if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
-                  matches.emplace_back(iup,idown,downtrkiinter->mom(),dt,dmom,upks.nHits()+dnks.nHits());
+                  matches.emplace_back(iup,idn,dnmom.R(),dt,dmom,upks.nHits()+dnks.nHits());
                 }
               }
             }

@@ -9,10 +9,7 @@ namespace mu2e {
       auto const& kinter = kseed.intersections().front();
       auto mom = kinter.mom();
       auto fcon = kseed.fitConsistency();
-      unsigned nactive =0;
-      for (auto const& hit : kseed.hits()){
-        if (hit.strawHitState() > WireHitState::inactive) ++nactive;
-      }
+      unsigned nactive = kseed.nHits(true);
       return mom >= minmom_ && mom <= maxmom_ && fcon >= minfcon_ && nactive >= minnactive_;
     } else
       return false;
