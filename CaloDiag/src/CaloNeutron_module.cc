@@ -278,7 +278,7 @@ namespace mu2e {
 
             for (const auto& step : steps)
             {
-                CLHEP::Hep3Vector Pos = cal.geomUtil().mu2eToTracker(step.position());
+                CLHEP::Hep3Vector Pos = cal.mu2eToTracker(step.position());
 
                 _cryId[_nCry]   = step.volumeId();
                 _cryEdep[_nCry] = step.totalEDep();
@@ -299,7 +299,7 @@ namespace mu2e {
 
             for (const auto& step : steps)
             {
-                CLHEP::Hep3Vector Pos = cal.geomUtil().mu2eToTracker(step.position());
+                CLHEP::Hep3Vector Pos = cal.mu2eToTracker(step.position());
                 _ROId[_nRO]=step.volumeId();
                 _ROEdep[_nRO]=step.totalEDep();
                 _ROPosX[_nRO]=Pos.x();
@@ -317,7 +317,7 @@ namespace mu2e {
 
             for (const auto& step : steps)
             {
-                CLHEP::Hep3Vector Pos = cal.geomUtil().mu2eToTracker(step.position());
+                CLHEP::Hep3Vector Pos = cal.mu2eToTracker(step.position());
                 _ROCardId[_nROCard]=step.volumeId();
                 _ROCardEdep[_nROCard]=step.totalEDep();
                 _ROCardPosX[_nROCard]=Pos.x();
@@ -335,7 +335,7 @@ namespace mu2e {
 
             for (const auto& step : steps)
             {
-                CLHEP::Hep3Vector Pos = cal.geomUtil().mu2eToTracker(step.position());
+                CLHEP::Hep3Vector Pos = cal.mu2eToTracker(step.position());
                 _CrateId[_nCrate]=step.volumeId();
                 _CrateEdep[_nCrate]=step.totalEDep();
                 _CratePosX[_nCrate]=Pos.x();
@@ -363,7 +363,7 @@ namespace mu2e {
 
               double hitTime         = fmod(hit.time(),_mbtime);
 
-              CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
+              CLHEP::Hep3Vector VDPos = cal.mu2eToTracker(hit.position());
               //CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());
 
               _vdId[_nVd]    = hit.volumeId();

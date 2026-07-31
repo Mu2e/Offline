@@ -19,7 +19,7 @@ namespace mu2e {
                   w_(imax,0),pos_(0,0,0)
                {};
 
-               void add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, CLHEP::Hep3Vector& pos);
+               void add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, const CLHEP::Hep3Vector& pos);
                void reset(unsigned i);
                void printBucket(unsigned i);
 

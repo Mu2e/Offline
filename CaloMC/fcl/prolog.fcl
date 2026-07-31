@@ -38,7 +38,6 @@ CaloMC : { @table::CaloMC
       numZSlices              : 20
       deltaTime               : 0.2
       caloStepPointCollection : ["g4run:calorimeter"]
-      usePhysVolInfo          : false
       physVolInfoInput        : "g4run"
       caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
       compressData            : true

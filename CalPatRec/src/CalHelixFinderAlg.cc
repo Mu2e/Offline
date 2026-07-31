@@ -252,8 +252,8 @@ namespace mu2e {
       return;
     }
     //fill the calorimeter cluster info
-    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
-    Hep3Vector  tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    Hep3Vector  gpos = _calorimeter->diskToMu2e(cl->diskID(),cl->cog3Vector());
+    Hep3Vector  tpos = _calorimeter->mu2eToTracker(gpos);
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
     fCaloY           = tpos.y();
@@ -272,8 +272,8 @@ namespace mu2e {
     // if (cl == NULL)   return false;
 
     // //fill the calorimeter cluster info
-    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskID(),cl->cog3Vector());
-    // Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    // Hep3Vector         gpos = _calorimeter->diskToMu2e(cl->diskID(),cl->cog3Vector());
+    // Hep3Vector         tpos = _calorimeter->mu2eToTracker(gpos);
     // fCaloTime = cl->time();
     // fCaloX    = tpos.x();
     // fCaloY    = tpos.y();
