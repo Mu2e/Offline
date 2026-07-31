@@ -154,7 +154,7 @@ class PrintModule : public art::EDAnalyzer {
         fhicl::Name("helixSeedPrinter")};
     fhicl::Table<ProductPrinter::Config> cosmicTrackSeedPrinter{
         fhicl::Name("cosmicTrackSeedPrinter")};
-    fhicl::Table<ProductPrinter::Config> kalSeedPrinter{
+    fhicl::Table<ProductPrinter::KSConfig> kalSeedPrinter{
         fhicl::Name("kalSeedPrinter")};
     fhicl::Table<ProductPrinter::Config> stmWaveformDigiPrinter{
         fhicl::Name("stmWaveformDigiPrinter")};

@@ -13,6 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/TrkReco/inc/KalSeedSelector.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 // C++
@@ -63,6 +64,7 @@ namespace mu2e {
       using Parameters = art::EDFilter::Table<Config>;
       explicit SelectSameTrack(const Parameters& config);
       bool filter(art::Event& evt) override;
+      void endJob() override;
     private:
       int debug_;
       double maxdt_, maxdp_, minhf_;
@@ -71,6 +73,8 @@ namespace mu2e {
       art::ProductToken<KalSeedCollection> primarytoken_, secondarytoken_;
       std::unique_ptr<KalSeedSelector> selector_;
       bestpair selbest_;
+      bool samelist_ = false;
+      unsigned nevts_=0, nref_=0, nmultref_=0;
   };
 
   SelectSameTrack::SelectSameTrack(const Parameters& config) : art::EDFilter{config},
@@ -85,9 +89,11 @@ namespace mu2e {
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
     selbest_(static_cast<bestpair>(config().selectbest())) {
       produces<KalSeedPtrCollection> ();
+      samelist_ = config().primaryTag() == config().secondaryTag();
     }
 
   bool SelectSameTrack::filter(art::Event& event) {
+    ++nevts_;
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
     auto const& priksch = event.getValidHandle<KalSeedCollection>(primarytoken_);
@@ -106,7 +112,7 @@ namespace mu2e {
           auto pritrkiinter = priks.intersections().end();
           for(auto priiinter = priks.intersections().begin(); priiinter != priks.intersections().end(); ++priiinter){
             auto const& priinter = *priiinter;
-            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() > 0.0){ // correct surface and direction
+            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() >= 0.0){ // correct surface and direction
               if(debug_ > 1) std::cout << "Found primary intersection mom " << priinter.momentum3() << " time " << priinter.time() << std::endl;
               pritrkiinter = priiinter;
               break;
@@ -115,7 +121,8 @@ namespace mu2e {
           // if no intersections found, skip testing for a match with this track
           if(pritrkiinter == priks.intersections().end())continue;
           // otherwise, search for a matching secondary track
-          for(size_t isec = 0; isec <secksc.size(); ++isec){
+          size_t secstart = samelist_ ? ipri+1 : 0;
+          for(size_t isec = secstart; isec <secksc.size(); ++isec){
             auto const& secks = secksc[isec];
             if(selector_->select(secks)){
               if(debug_ > 2)std::cout << "Selected secondary track " << std::endl;
@@ -160,9 +167,11 @@ namespace mu2e {
       // if there are >1 matches select the best
       int ibest = -1;
       if(matches.size() >0 ){
+        ++nref_;
         ibest = 0;
         if(matches.size()>1){
-          if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
+          ++nmultref_;
+          if(debug_ > 1) std::cout << "Selecting best matching track from " << matches.size() << " candidates " << std::endl;
           double value = std::numeric_limits<double>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
@@ -183,7 +192,7 @@ namespace mu2e {
         }
       }
       if(ibest > -1){
-        if(debug_ > 0) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
+        if(debug_ > 1) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
           << " delta t " << matches[ibest].dt_
           << " delta P " << matches[ibest].dmom_
           << " hitfrac " << matches[ibest].hfrac_
@@ -195,6 +204,9 @@ namespace mu2e {
     }
     event.put(std::move(mkseeds));
     return keep;
+  }
+  void SelectSameTrack::endJob() {
+    if(debug_ > 0)std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " overlapping tracks with " << nmultref_ << " multiple matches" << std::endl;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectSameTrack)
