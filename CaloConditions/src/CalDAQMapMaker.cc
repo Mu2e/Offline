@@ -52,12 +52,14 @@ namespace mu2e {
         throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid rawId" << rid << endl;
       }
 
-      if(oid >= CaloConst::_nChannel) {
+      if(oid != CaloConst::_invalid && oid >= CaloConst::_nChannel) {
         throw cet::exception("CALDAQMAPMAKER_RANGE") << "CalDAQMapMaker read invalid offlineId " << oid << endl;
       }
 
       raw2Offline[rid] = CaloSiPMId(oid);
-      offline2Raw[oid] = CaloRawSiPMId(rid);
+      if(oid < CaloConst::_nChannel) {
+        offline2Raw[oid] = CaloRawSiPMId(rid);
+      }
       ++nRead;
     }
 

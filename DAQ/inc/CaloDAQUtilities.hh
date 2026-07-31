@@ -33,7 +33,8 @@ public:
     MaxSampleIndex = 5,
     BoardID = 6,
     ChannelID = 7,
-    ErrorFlags = 8
+    ErrorFlags = 8,
+    InvalidChannel = 9
   };
 
   std::string getCaloHitErrorName(CaloHitError error) {
@@ -56,6 +57,8 @@ public:
       return "ChannelID";
     case ErrorFlags:
       return "ErrorFlags";
+    case InvalidChannel:
+      return "InvalidChannel";
     default:
       return "Unknown";
     }

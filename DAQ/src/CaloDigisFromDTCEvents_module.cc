@@ -195,6 +195,19 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
         // Fill the CaloDigiCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         uint16_t SiPMID = (useOfflineID_ ? calodaqconds.offlineId(rawId).id() : rawId.id());
+
+        //Check that the channel is valid in the offline world
+        if (SiPMID >= mu2e::CaloConst::_nChannel){
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloDigiFromDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
+                      << ", Board " << thisHitPacket.BoardID << " Ch " << thisHitPacket.ChannelID
+                      << " offlineID " << SiPMID <<  std::endl;
+          }
+          failure_counter[mu2e::CaloDAQUtilities::CaloHitError::InvalidChannel]++;
+          total_hits_bad++;
+          continue;
+        }
+
         if (useDTCROCID_)
           SiPMID = dtcID * 120 + iROC * 20 + thisHitPacket.ChannelID;
         // Constructor: CaloDigi(int SiPMID, int t0, const std::vector<int>& waveform, size_t
