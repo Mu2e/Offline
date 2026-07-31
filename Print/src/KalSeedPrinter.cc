@@ -1,4 +1,3 @@
-
 #include "Offline/Print/inc/KalSeedPrinter.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
