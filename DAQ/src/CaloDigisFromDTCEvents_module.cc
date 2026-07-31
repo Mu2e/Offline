@@ -197,7 +197,7 @@ void art::CaloDigiFromDTCEvents::analyze_calorimeter_(
         uint16_t SiPMID = (useOfflineID_ ? calodaqconds.offlineId(rawId).id() : rawId.id());
 
         //Check that the channel is valid in the offline world
-        if (SiPMID >= mu2e::CaloConst::_nChannel){
+        if (useOfflineID_ && SiPMID >= mu2e::CaloConst::_nChannel){
           if (diagLevel_ > 1) {
             std::cout << "[CaloDigiFromDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
                       << ", Board " << thisHitPacket.BoardID << " Ch " << thisHitPacket.ChannelID
