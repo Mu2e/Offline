@@ -315,9 +315,21 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         // Fill the CaloHitCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
-        uint16_t crystalID = offlineId.crystal().id();
         uint16_t SiPMID = offlineId.id();
 
+        //Check that the channel is valid in the offline world
+        if (SiPMID >= mu2e::CaloConst::_nChannel){
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloHitsFromDataDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
+                      << ", Board " << thisHitPacket.BoardID << " Ch " << thisHitPacket.ChannelID
+                      << " offlineID " << SiPMID <<  std::endl;
+          }
+          failure_counter[mu2e::CaloDAQUtilities::CaloHitError::InvalidChannel]++;
+          total_hits_bad++;
+          continue;
+        }
+
+        uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
         float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
