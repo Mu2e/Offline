@@ -62,6 +62,7 @@ namespace mu2e {
       double maxdt_, maxdp_;
       std::unique_ptr<KalSeedSelector> selector_;
       bestpair selbest_;
+      bool samelist_ = false;
       unsigned nevts_=0, nref_=0, nmultref_=0;
   };
 
@@ -86,6 +87,7 @@ namespace mu2e {
       std::string sidname;
       sidmatch_ = config().surface(sidname);
       if(sidmatch_)sid_ = SurfaceId(sidname);
+      samelist_ = config().upstreamTag() == config().dnstreamTag();
     }
 
   bool SelectReflections::filter(art::Event& event) {
@@ -117,7 +119,7 @@ namespace mu2e {
     if(debug_ > 1) std::cout << "Upstream " << upksptrs.size() << " , Downstream " << dnksptrs.size() << " KalSeeds" << std::endl;
     bool keep(false);
     if(upksptrs.size() > 0 && dnksptrs.size() > 0){
-      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned>> matches; // matched up and dnstream track, with (dnstream) mom, dt and dmom
+      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned,unsigned> > matches; // match properties: iup,idn,dnmom,dt,dmom,dnnhits+upnhits,ninter
       for(size_t iup = 0; iup <upksptrs.size(); ++iup){
         auto const& upks = *upksptrs[iup];
         double upt0;
@@ -125,12 +127,13 @@ namespace mu2e {
         if(upmom.Z() < 0 && selector_->select(upks)){
           if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
           auto upinters = upks.intersections(sid_);
-          // search for a matching dnstream track
-          for(size_t idn = 0; idn <dnksptrs.size(); ++idn){
+          // search for a matching dnstream track. Skip self-references
+          size_t dnstart = samelist_ ? iup+1 : 0;
+          for(size_t idn = dnstart; idn <dnksptrs.size(); ++idn){
             auto const& dnks = *dnksptrs[idn];
             double dnt0;
             auto dnmom = dnks.t0Segment(dnt0)->momentum3();
-            if(dnmom.Z() > 0 && selector_->select(dnks)){
+            if(dnmom.Z() > 0 && dnks.particle() == upks.particle() && selector_->select(dnks)){
               if(debug_ > 2)std::cout << "Selected dnstream track " << std::endl;
               if(sidmatch_) {
                 // find the appropriate intersection for comparison
@@ -139,16 +142,30 @@ namespace mu2e {
                   auto upimom = upinter->momentum3();
                   for(auto dninter : dninters){
                     auto dnimom = dninter->momentum3();
-                    if(upimom.Z()*dnimom.Z() > 0.0){ // same direction
+                    if(upimom.Z()*dnimom.Z() > 0.0){ // same direction at this surface
                       if(debug_ > 1) std::cout << "Same-direction upstream intersection mom " << upimom << " time " << upinter->time()
                         << " dnstream intersection mom " << dnimom << " time " << dninter->time() << std::endl;
                       // potentially matching tracks: compare time and momentum
                       double dt = fabs(upinter->time() - dninter->time());
                       double dmom = fabs(upimom.R() - dnimom.R());
-                      if(debug_ > 2) std::cout << "Testing intersection track pair, dt " << dt << " dmom " << dmom << std::endl;
+                      if(debug_ > 2) std::cout << "Testing intersection dt " << dt << " dmom " << dmom << std::endl;
                       if( dt < maxdt_ && dmom < maxdp_){
-                        if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
-                        matches.emplace_back(iup,idn,dnimom.R(),dt,dmom,upks.nHits()+dnks.nHits());
+                        if(debug_ > 1) std::cout << "Found intersection matching, dt " << dt << " dmom " << dmom << std::endl;
+                        // don't insert duplicates
+                        bool alreadyfound(false);
+                        for(auto& match: matches){
+                          if(iup == std::get<0>(match) && idn == std::get<1>(match)){
+                            // already found: take the best deltaT
+                            if(debug_ > 1) std::cout << "Found 2nd intersection matching" << std::endl;
+                            if(dt < std::get<3>(match)){
+                              std::get<3>(match) = dt;
+                              std::get<4>(match) = dmom;
+                              std::get<6>(match) = 2;
+                            }
+                            break;
+                          }
+                        }
+                        if(!alreadyfound)matches.emplace_back(iup,idn,dnimom.R(),dt,dmom,upks.nHits()+dnks.nHits(),1);
                       }
                     }
                   }
@@ -159,8 +176,8 @@ namespace mu2e {
                 double dmom = fabs(dnmom.R() - upmom.R());
                 if(debug_ > 2) std::cout << "Testing t0 track pair, dt " << dt << " dmom " << dmom << std::endl;
                 if( dt < maxdt_ && dmom < maxdp_){
-                  if(debug_ > 1) std::cout << "Found matching track pair, dt " << dt << " dmom " << dmom << std::endl;
-                  matches.emplace_back(iup,idn,dnmom.R(),dt,dmom,upks.nHits()+dnks.nHits());
+                  if(debug_ > 1) std::cout << "Found t0 matching track pair, dt " << dt << " dmom " << dmom << std::endl;
+                  matches.emplace_back(iup,idn,dnmom.R(),dt,dmom,upks.nHits()+dnks.nHits(),1);
                 }
               }
             }
@@ -174,11 +191,11 @@ namespace mu2e {
         ibest = 0;
         if(matches.size()>1){
           ++nmultref_;
-          if(debug_ > 0) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << " according to " << selbest_ << " event " << event.id() << std::endl;
+          if(debug_ > 0) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates according to " << selbest_ << " event " << event.id() << std::endl;
           double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << std::endl;
+            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " ninter " << std::get<6>(match) << std::endl;
             if(selbest_ == mom && std::get<2>(match) > value){
               ibest = imatch;
               value = std::get<2>(match);
@@ -198,7 +215,7 @@ namespace mu2e {
       if(ibest > -1){
         if(debug_ > 0) std::cout << "Found Reflecting particle candidate, dnstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
-            << " delta P " << std::get<4>(matches[ibest]) << std::endl;
+            << " delta P " << std::get<4>(matches[ibest]) << " inters " std::get<6>(matches[ibest]) <<<< std::endl;
 
         if(ptrs_){
           mkseeds->emplace_back(upksptrs[std::get<0>(matches[ibest])]); // store the upstream track first by convention
