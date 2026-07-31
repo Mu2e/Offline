@@ -7,4 +7,4 @@ services.ProditionsService.crvStatus.useDb           : true
 services.DbService.purpose                           : Sim_best
 services.DbService.version                           : v1_5
 #comment out this line, if displaying simulated events
-services.DbService.textFile                          : ["Offline/CRVConditions/data/status_extracted_20260630.txt","Offline/CRVConditions/data/calib_extracted_20260630.txt"]
+services.DbService.textFile                          : ["Offline/CRVConditions/data/status_extracted_20260716.txt","Offline/CRVConditions/data/calib_extracted_20260716.txt"]

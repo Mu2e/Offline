@@ -15,7 +15,16 @@ cet_build_plugin(ParticleIDRead art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::ParticleID
-      
+
+      Offline::RecoDataProducts
+)
+
+cet_build_plugin(TrackDtDt art::module
+    REG_SOURCE src/TrackDtDt_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::Mu2eUtilities
+      Offline::ParticleID
       Offline::RecoDataProducts
 )
 

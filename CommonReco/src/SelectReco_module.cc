@@ -30,6 +30,7 @@
 #include "Offline/RecoDataProducts/inc/KKLoopHelix.hh"
 #include "Offline/RecoDataProducts/inc/KKCentralHelix.hh"
 #include "Offline/RecoDataProducts/inc/KKLine.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // Utilities
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
@@ -53,17 +54,18 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<int>  debug                   { Name("debugLevel"),                     Comment("Debug Level"), 0};
-        fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
-        fhicl::Atom<art::InputTag> CrvCCC         { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollections")};
-        fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),            Comment("StrawDigiCollection")};
-        fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),             Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
-        fhicl::Atom<art::InputTag> CDC            { Name("CaloDigiCollection"),             Comment("CaloDigiCollection")};
-        fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),              Comment("CrvDigiCollection")};
-        fhicl::Sequence<art::InputTag> KalSeeds   { Name("KalSeedCollections"),             Comment("KalSeedCollections")};
+        fhicl::Atom<int>  debug                     { Name("debugLevel"),                     Comment("Debug Level"), 0};
+        fhicl::Atom<art::InputTag> CCC              { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
+        fhicl::Atom<art::InputTag> CrvCCC           { Name("CrvCoincidenceClusterCollection"),Comment("CrvCoincidenceClusterCollections")};
+        fhicl::Atom<art::InputTag> SDC              { Name("StrawDigiCollection"),            Comment("StrawDigiCollection")};
+        fhicl::Atom<art::InputTag> CHC              { Name("ComboHitCollection"),             Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
+        fhicl::Atom<art::InputTag> CDC              { Name("CaloDigiCollection"),             Comment("CaloDigiCollection")};
+        fhicl::Atom<art::InputTag> CRVDC            { Name("CrvDigiCollection"),              Comment("CrvDigiCollection")};
+        fhicl::Sequence<art::InputTag> KalSeeds     { Name("KalSeedCollections"),             Comment("KalSeedCollections")};
+        fhicl::Sequence<art::InputTag> TimeClusters { Name("TimeClusterCollections"),         Comment("TimeClusterCollections")};
 // selection parameters
-        fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save (MeV)")};
-        fhicl::Atom<bool> saveNearby              { Name("SaveNearbyDigis"),                Comment("Save StrawDigis near the fit")};
+        fhicl::Atom<double> CCME                    { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save (MeV)")};
+        fhicl::Atom<bool> saveNearby                { Name("SaveNearbyDigis"),                Comment("Save StrawDigis near the fit")};
 
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -81,6 +83,7 @@ namespace mu2e {
       int debug_;
       art::InputTag ccct_, sdct_, chct_, cdct_, crvcct_, crvdct_;
       std::vector<art::InputTag> kscts_;
+      std::vector<art::InputTag> tccts_;
       double ccme_;
       bool saveunused_;
   };
@@ -95,6 +98,7 @@ namespace mu2e {
     crvcct_(config().CrvCCC()),
     crvdct_(config().CRVDC()),
     kscts_(config().KalSeeds()),
+    tccts_(config().TimeClusters()),
     ccme_(config().CCME()),
     saveunused_(config().saveNearby())
    {
@@ -106,6 +110,10 @@ namespace mu2e {
       consumes<CrvDigiCollection>(crvdct_);
       consumes<CrvCoincidenceClusterCollection>(crvcct_);
       consumesMany<KalSeedCollection>();
+      for (auto const& tcct : tccts_) {
+        consumes<TimeClusterCollection>(tcct);
+      }
+
       produces <IndexMap>("StrawDigiMap");
       produces <IndexMap>("CrvDigiMap");
       produces <CaloDigiCollection>();
@@ -115,10 +123,15 @@ namespace mu2e {
       produces <StrawDigiCollection>();
       produces <StrawDigiADCWaveformCollection>();
       produces <RecoCount>();
+      for (auto const& tcct : tccts_) {
+        produces<TimeClusterCollection>(tcct.label());
+      }
 
       if (debug_ > 0) {
         std::cout << "Using KalSeed collections from ";
         for (auto const& kff : kscts_) std::cout << kff << " " << std::endl;
+        std::cout << "Using TimeCluster collections from ";
+        for (auto const& tcc : tccts_) std::cout << tcc << " " << std::endl;
       }
     }
 
@@ -134,7 +147,7 @@ namespace mu2e {
   }
 
   void SelectReco::fillTrk( art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs, RecoCount& nrec) {
-   // Tracker-reated data products
+    // Tracker-reated data products
     auto sdch = event.getValidHandle<StrawDigiCollection>(sdct_);
     auto const& sdc = *sdch;
     auto sdadcch = event.getValidHandle<StrawDigiADCWaveformCollection>(sdct_);
@@ -144,10 +157,35 @@ namespace mu2e {
     // create products related to the reconstruction output
     std::unique_ptr<StrawDigiCollection> ssdc(new StrawDigiCollection);
     std::unique_ptr<StrawDigiADCWaveformCollection> ssdadcc(new StrawDigiADCWaveformCollection);
+    std::vector<std::unique_ptr<TimeClusterCollection>> stccs;
+    stccs.reserve(tccts_.size());
     // index maps between original collections and pruned collections
     std::unique_ptr<IndexMap> sdim(new IndexMap);
     // straw digi indices that are referenced by the tracks, or are 'close to' the track
     SDIS sdindices;
+
+    // save configured TimeCluster collections and keep referenced content
+    for (auto const& tcct : tccts_) {
+      std::unique_ptr<TimeClusterCollection> stcc(new TimeClusterCollection);
+      auto tcch = event.getHandle<TimeClusterCollection>(tcct);
+      if (tcch.isValid()) {
+        auto const& tcc = *tcch;
+        stcc->reserve(tcc.size());
+        for (auto const& tc : tcc) {
+          for (auto const& hitIndex : tc.hits()) {
+            auto const ich = static_cast<size_t>(hitIndex);
+            (void)chc.at(ich); // bounds check vs input ComboHitCollection
+            sdindices.insert(static_cast<StrawDigiIndex>(ich));
+          }
+          if (tc.hasCaloCluster()) {
+            ccptrs.insert(tc.caloCluster());
+          }
+          stcc->push_back(tc);
+        }
+      }
+      stccs.push_back(std::move(stcc));
+    }
+
     // loop over input KalSeeds
     for (auto const& ksct : kscts_){
       auto ksch = event.getHandle<KalSeedCollection>(ksct);
@@ -179,6 +217,9 @@ namespace mu2e {
     event.put(std::move(sdim),"StrawDigiMap");
     event.put(std::move(ssdc));
     event.put(std::move(ssdadcc));
+    for (size_t i = 0; i < tccts_.size(); ++i) {
+      event.put(std::move(stccs.at(i)), tccts_.at(i).label());
+    }
   }
 
   void SelectReco::fillStrawHitCounts(ComboHitCollection const& chc, RecoCount& nrec) {

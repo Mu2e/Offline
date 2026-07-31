@@ -41,10 +41,24 @@ namespace mu2e {
     c.getVectorDouble("stoppingTarget.radii", _rOut);
     _rIn = c.getDouble("stoppingTarget.holeRadius", 0);
 
+    // Optional per-foil hole radii.  When present this takes precedence over
+    // the scalar stoppingTarget.holeRadius; when absent the scalar is used for
+    // every foil, so existing geometry files are unaffected.
+    c.getVectorDouble("stoppingTarget.holeRadii", _holeRadii,
+                      std::vector<double>());
+
     // Downstream code counts on this so test it here.
     if ( _rOut.size() < 1 ){
       throw cet::exception("GEOM")
         << "Specified a stopping target with no foils!\n";
+    }
+
+    // A length mismatch would silently mis-assign holes to foils, so reject it.
+    if ( !_holeRadii.empty() && _holeRadii.size() != _rOut.size() ){
+      throw cet::exception("GEOM")
+        << "stoppingTarget.holeRadii has " << _holeRadii.size()
+        << " entries but stoppingTarget.radii has " << _rOut.size()
+        << "; they must match.\n";
     }
 
     // halfThicknesses can be repeated from last element specified
@@ -184,7 +198,7 @@ namespace mu2e {
                                                              z),
                                            CLHEP::Hep3Vector(_xCos[i],_yCos[i],zCos),
                                            _rOut[i],
-                                           _rIn,
+                                           _holeRadii.empty() ? _rIn : _holeRadii[i],
                                            _halfThicknesses[i],
                                            _materials[i],
                                            _detSysOrigin
@@ -275,6 +289,14 @@ namespace mu2e {
     for (unsigned int itf=0; itf<_rOut.size(); itf++)
       cout <<" "<<_rOut[itf];
     cout <<std::endl;
+    if ( _holeRadii.empty() ){
+      std::cout <<"Hole Radius=" <<_rIn <<" (scalar, all foils)" <<std::endl;
+    } else {
+      std::cout <<"Hole Radii= (per-foil vector, n=" <<_holeRadii.size() <<")" <<std::endl;
+      for (unsigned int itf=0; itf<_holeRadii.size(); itf++)
+        cout <<" "<<_holeRadii[itf];
+      cout <<std::endl;
+    }
     std::cout <<"1/2 Thicknesses="<<std::endl;
     for (unsigned int itf=0; itf<_rOut.size(); itf++)
       cout <<" "<<_halfThicknesses[itf];

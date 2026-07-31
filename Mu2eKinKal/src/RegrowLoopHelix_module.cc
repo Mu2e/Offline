@@ -9,7 +9,7 @@
 #include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Tuple.h"
 #include "fhiclcpp/types/OptionalAtom.h"
-#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
@@ -95,13 +95,14 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
     fhicl::Atom<bool> extend {Name("Extend"), Comment("Extend the fit") };
+    fhicl::Atom<std::string> mustRegrow{ Name("MustRegrow"), Comment("Required track regrowing success for event to pass")};
 
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
 
-  class RegrowLoopHelix : public art::EDProducer {
+  class RegrowLoopHelix : public art::EDFilter {
     public:
-      using Parameters = art::EDProducer::Table<RegrowLoopHelixConfig>;
+      using Parameters = art::EDFilter::Table<RegrowLoopHelixConfig>;
       using KTRAJ = KinKal::LoopHelix;
       using PKTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using PKTRAJPTR = std::unique_ptr<PKTRAJ>;
@@ -136,9 +137,11 @@ namespace mu2e {
       using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
       using DOMAINCOL = std::set<DOMAINPTR>;
 
+      enum regrown {none=0,any,all}; // states for event testing
+
       explicit RegrowLoopHelix(const Parameters& settings);
-      void beginRun(art::Run& run) override;
-      void produce(art::Event& event) override;
+      bool beginRun(art::Run& run) override;
+      bool filter(art::Event& event) override;
       void endJob() override;
     private:
       int debug_;
@@ -158,9 +161,10 @@ namespace mu2e {
       bool has_cccol_, has_kseedcol_, has_kseedptrcol_;
       std::unique_ptr<KKExtrap> extrap_;
       PDGCode::type tpart_ = PDGCode::unknown;
+      regrown mustregrow_; // requirement on tracks to regrow for the event to pass
   };
 
-  RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDProducer(settings),
+  RegrowLoopHelix::RegrowLoopHelix(const Parameters& settings) : art::EDFilter(settings),
   debug_(settings().debug()),
   config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
@@ -192,16 +196,26 @@ namespace mu2e {
     if(has_cccol_) cccol_T_ = art::ProductToken<CaloClusterCollection>(consumes<CaloClusterCollection>(settings().caloClusterCollection().value()));
     int type;
     if(settings().fitParticle(type))tpart_ = static_cast<PDGCode::type>(type);
+
+    if(settings().mustRegrow() == "None")
+      mustregrow_ = none;
+    else if(settings().mustRegrow() == "Any")
+      mustregrow_ = any;
+    else if(settings().mustRegrow() == "All")
+      mustregrow_ = all;
+    else
+      throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: invalid regrow success requirement " << settings().mustRegrow() << " : Enter 'None', 'Any' or 'All'" << endl;
   }
 
-  void RegrowLoopHelix::beginRun(art::Run& run)
+  bool RegrowLoopHelix::beginRun(art::Run& run)
   {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    return true;
   }
 
-  void RegrowLoopHelix::produce(art::Event& event)
+  bool RegrowLoopHelix::filter(art::Event& event)
   {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
@@ -249,8 +263,9 @@ namespace mu2e {
     for (auto const& kseedptr : kseedptrs) {
       auto const& kseed = *kseedptr;
       if(!kseed.loopHelixFit())throw cet::exception("RECO")<<"mu2e::RegrowLoopHelix: passed KalSeed from non-LoopHelix fit " << endl;
+      auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
       // regrow the components from the seed
-      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory(tpart_);
+      PKTRAJPTR trajptr = kseed.loopHelixFitTrajectory(tpart);
       KKSTRAWHITCOL strawhits;
       strawhits.reserve(kseed.hits().size());
       KKSTRAWXINGCOL strawxings;
@@ -276,7 +291,6 @@ namespace mu2e {
       // require hits and consistent BField domains
       if(goodhits && (domains.size() > 0 || !config_.bfcorr_)){
       // create the KKTrack from these
-        auto tpart = tpart_ != PDGCode::unknown ? static_cast<PDGCode>(std::copysign(static_cast<int>(tpart_),static_cast<int>(kseed.particle()))) : kseed.particle(); // optionally override the particle type
         auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,tpart,trajptr,strawhits,strawxings,calohits,paramhits, domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowLoopHelix: successful track refit" << std::endl;
@@ -327,11 +341,18 @@ namespace mu2e {
         }
       }
     }
+    // select events based on regrowing success
+    bool accept(true);
+    if(mustregrow_ == all)
+      accept = ktrkcol->size() == kseedptrs.size();
+    else if(mustregrow_ == any)
+      accept = ktrkcol->size() > 0;
     // store output
     event.put(move(ktrkcol));
     event.put(move(rgkseedcol));
     if(fillMCAssns_)event.put(move(rgksmca));
     if(copyKalSeedMCs_)event.put(move(rgksmcc));
+    return accept;
   }
 
   void RegrowLoopHelix::endJob()

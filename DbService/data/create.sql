@@ -40,6 +40,7 @@ GRANT UPDATE ON val.tables_tid_seq TO manager_role;
 CREATE TABLE val.calibrations
   (cid SERIAL, 
   tid INTEGER NOT NULL,
+  chash TEXT NOT NULL DEFAULT '',
   create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
   create_user TEXT NOT NULL,  
   CONSTRAINT calibrations_pk PRIMARY KEY (cid), 

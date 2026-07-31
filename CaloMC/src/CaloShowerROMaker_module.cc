@@ -6,11 +6,10 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/CaloMC/inc/CaloPhotonPropagation.hh"
+#include "Offline/CaloConditions/inc/CalSimParams.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -35,8 +34,6 @@
 #include <vector>
 #include <utility>
 
-#include "TFile.h"
-#include "TH2.h"
 
 namespace {
 
@@ -95,9 +92,6 @@ namespace mu2e {
              fhicl::Atom<float>              digitizationStart        { Name("digitizationStart"),        Comment("Minimum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationEnd          { Name("digitizationEnd"),          Comment("Maximum time of hit to be digitized") };
              fhicl::Atom<float>              digitizationBuffer       { Name("digitizationBuffer"),       Comment("Digi time buffer for photon propagation inside crystal") };
-             fhicl::Atom<float>              crystalNonUniformity     { Name("crystalNonUniformity"),     Comment("LRU parameter 0") };
-             fhicl::Atom<float>              pePerMeVCsI              { Name("readoutPEPerMeVCsI"),       Comment("Number of pe / MeV for Readout for CsI") };
-             fhicl::Atom<float>              pePerMeVLyso             { Name("readoutPEPerMeVLyso"),      Comment("Number of pe / MeV for Readout for LYSO") };
              fhicl::Atom<bool>               LRUCorrection            { Name("LRUCorrection"),            Comment("Include LRU corrections") };
              fhicl::Atom<bool>               BirksCorrection          { Name("BirksCorrection"),          Comment("Include Birks corrections") };
              fhicl::Atom<bool>               PEStatCorrection         { Name("PEStatCorrection"),         Comment("Include PE Poisson fluctuations") };
@@ -112,9 +106,6 @@ namespace mu2e {
             digitizationStart_   (config().digitizationStart()),
             digitizationEnd_     (config().digitizationEnd()),
             digitizationBuffer_  (config().digitizationBuffer()),
-            crystalNonUniformity_(config().crystalNonUniformity()),
-            pePerMeVCsI_         (config().pePerMeVCsI()),
-            pePerMeVLyso_        (config().pePerMeVLyso()),
             LRUCorrection_       (config().LRUCorrection()),
             BirksCorrection_     (config().BirksCorrection()),
             PEStatCorrection_    (config().PEStatCorrection()),
@@ -133,7 +124,6 @@ namespace mu2e {
              produces<CaloShowerSimCollection>();
          }
 
-         void beginJob() override;
          void beginRun(art::Run& aRun) override;
          void produce(art::Event& e) override;
 
@@ -141,20 +131,18 @@ namespace mu2e {
       private:
          using StepHandles = std::vector<art::ValidHandle<CaloShowerStepCollection>>;
 
-         void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const EventWindowMarker&,
-                                  const ProtonBunchTimeMC&, float timeFromProtonsToDRMarker);
-         float LRUCorrection     (int crystalID, float normalizedPosZ, float edepInit);
+         void  makeReadoutHits   (const StepHandles&, CaloShowerROCollection&, CaloShowerSimCollection&, const CalSimParams&,
+                                  const EventWindowMarker&, const ProtonBunchTimeMC&, float timeFromProtonsToDRMarker);
+         float LRUCorrection     (float normalizedPosZ, float edepInit, float lru);
          void  dumpCaloShowerSim (const CaloShowerSimCollection& caloShowerSims);
 
+         ProditionsHandle<CalSimParams> calCrystalConds_;
          std::vector<art::ProductToken<CaloShowerStepCollection>> crystalShowerTokens_;
          art::InputTag           ewMarkerTag_;
          art::InputTag           pbtmcTag_;
          float                   digitizationStart_;
          float                   digitizationEnd_;
          float                   digitizationBuffer_;
-         float                   crystalNonUniformity_;
-         float                   pePerMeVCsI_;
-         float                   pePerMeVLyso_;
          bool                    LRUCorrection_;
          bool                    BirksCorrection_;
          bool                    PEStatCorrection_;
@@ -163,23 +151,9 @@ namespace mu2e {
          CLHEP::HepRandomEngine& engine_;
          CLHEP::RandPoissonQ     randPoisson_;
          CaloPhotonPropagation   photonProp_;
-         TH2F*                   hTime_;
-         TH1F                    *hEtot_,*hECorrtot_,*hStot_;
   };
 
 
-  //-----------------------------------------------
-  void CaloShowerROMaker::beginJob()
-  {
-      if (diagLevel_ > 1)
-      {
-          art::ServiceHandle<art::TFileService> tfs;
-          hTime_      = tfs->make<TH2F>("hTIme",     "Photon prop time",       40,0,200,50,0,20);
-          hEtot_      = tfs->make<TH1F>("hEtot",     "Total E dep",           150,     0,   150);
-          hECorrtot_  = tfs->make<TH1F>("hECorrtot", "Total E dep corr",      150,     0,   150);
-          hStot_      = tfs->make<TH1F>("hStot",     "Total Compress steps",  100,     0,   1000);
-      }
-  }
 
   //-----------------------------------------------
   void CaloShowerROMaker::beginRun(art::Run& aRun)
@@ -206,6 +180,8 @@ namespace mu2e {
       const EventTiming &eventTiming = eventTimingHandle.get(event.id());
       float timeFromProtonsToDRMarker = eventTiming.timeFromProtonsToDRMarker(); //fixed time between CFO first tick and event start
 
+      const auto& calCrystalConds = calCrystalConds_.get(event.id());
+
       // Containers to hold the output hits.
       auto CaloShowerROs  = std::make_unique<CaloShowerROCollection>();
       auto caloShowerSims = std::make_unique<CaloShowerSimCollection>();
@@ -215,7 +191,7 @@ namespace mu2e {
                      back_inserter(newCrystalShowerTokens),
                      [&event](const auto& token) {return event.getValidHandle(token);});
 
-      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, ewMarker, pbtmc, timeFromProtonsToDRMarker );
+      makeReadoutHits(newCrystalShowerTokens, *CaloShowerROs, *caloShowerSims, calCrystalConds, ewMarker, pbtmc, timeFromProtonsToDRMarker );
 
       // Add the output hit collection to the event
       event.put(std::move(CaloShowerROs));
@@ -227,16 +203,16 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------------------------------
   void CaloShowerROMaker::makeReadoutHits(const StepHandles& crystalShowerHandles, CaloShowerROCollection& CaloShowerROs,
-                                          CaloShowerSimCollection& caloShowerSims, const EventWindowMarker& ewMarker,
-                                          const ProtonBunchTimeMC& pbtmc, float timeFromProtonsToDRMarker)
+                                          CaloShowerSimCollection& caloShowerSims, const CalSimParams& calCrystalConds,
+                                          const EventWindowMarker& ewMarker, const ProtonBunchTimeMC& pbtmc,
+                                          float timeFromProtonsToDRMarker)
   {
       GlobalConstantsHandle<ParticleDataList>  pdt;
 
       float mbtime = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
 
-      const Calorimeter& cal       = *(GeomHandle<Calorimeter>());
-      const int   nROs             = cal.caloInfo().getInt("nSiPMPerCrystal");
-      const float crystallength    = cal.caloInfo().getDouble("crystalZLength");
+      const Calorimeter& cal    = *(GeomHandle<Calorimeter>());
+      const float crystalLength = cal.caloInfo().getDouble("crystalZLength");
 
       std::map<int,std::vector<StepEntry>> simEntriesMap;
       diagSummary diagSum;
@@ -269,44 +245,42 @@ namespace mu2e {
               size_t idx = std::distance(caloShowerSteps.begin(), istep);
               art::Ptr<CaloShowerStep> stepPtr = art::Ptr<CaloShowerStep>(showerHandle,idx);
 
-              int   crystalID  = step.volumeG4ID();
-              int   SiPMIDBase = CrystalId(crystalID).SiPMId(CaloConst::SiPM0);
+              auto  crystalID  = CrystalId(step.volumeG4ID());
+              int   SiPMIDBase = crystalID.SiPMId(CaloConst::SiPM0);
               float posZ       = step.position().z();
+              float lru        = calCrystalConds.LRU(crystalID);
+              auto  pePerMeVs  = calCrystalConds.pePerMeVs(crystalID);
 
               float edep_corr(step.energyDepG4());
               if (BirksCorrection_) edep_corr = step.energyDepBirks();
-              if (LRUCorrection_)   edep_corr = LRUCorrection(crystalID, posZ/crystallength, edep_corr);
-
-              bool isCaphri = CrystalId(crystalID).isCaphri();
-              float pePerMeV = isCaphri ? pePerMeVLyso_ : pePerMeVCsI_;
+              if (LRUCorrection_)   edep_corr = LRUCorrection(posZ/crystalLength, edep_corr, lru);
 
               // Generate individual PEs and their arrival times
-              for (int i=0; i<nROs; ++i)
+              for (int i=0; i<CaloConst::_nSiPMPerCrystal; ++i)
               {
                   int SiPMID = SiPMIDBase + i;
-                  int NPE    = randPoisson_.fire(edep_corr*pePerMeV);
+                  int NPE    = randPoisson_.fire(edep_corr*pePerMeVs[i]);
                   if (NPE==0) continue;
 
                   std::vector<float> PETime(NPE,hitTime);
                   if (addTravelTime_)
                   {
-                      for (auto& time : PETime) time += photonProp_.propTimeSimu(crystallength-posZ);
+                      for (auto& time : PETime) time += photonProp_.propTimeSimu(crystalLength-posZ);
                   }
                   CaloShowerROs.push_back(CaloShowerRO(SiPMID,stepPtr,PETime));
 
                   if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::generatePE] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<std::endl;
                   if (diagLevel_ > 2) {std::cout<<"Time hit "<<std::endl; for (auto time : PETime) std::cout<<time<<" "; std::cout<<std::endl;}
-                  if (diagLevel_ > 1) for (const auto& time : PETime) hTime_->Fill(crystallength-posZ,time-hitTime);
 
                   diagSum.totNPE     += NPE;
-                  diagSum.totEdepNPE += double(NPE)/pePerMeV/2.0; //average between the two RO
+                  diagSum.totEdepNPE += double(NPE)/pePerMeVs[i]/2.0; //average between the two RO
               }
               diagSum.totEdep     += step.energyDepG4();
               diagSum.totEdepCorr += edep_corr;
               diagSum.totSteps    += step.nCompress();
 
               //Produce an MC object that include the step and additional information for each original step
-              simEntriesMap[crystalID].push_back(StepEntry(stepPtr,edep_corr,hitTime));
+              simEntriesMap[crystalID.id()].push_back(StepEntry(stepPtr,edep_corr,hitTime));
           }
 
           auto sortFunctor = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
@@ -344,10 +318,6 @@ namespace mu2e {
 
       if (diagLevel_ > 1)
       {
-         hEtot_->Fill(diagSum.totEdep);
-         hECorrtot_->Fill(diagSum.totEdepCorr);
-         hStot_->Fill(diagSum.totSteps);
-
          std::set<int> crIds;
          for (const auto& css : caloShowerSims) crIds.insert(css.crystalID());
 
@@ -367,11 +337,11 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------------------------------
-  // apply a correction of type Energy = (a*(Z/HL-1)+1)*energy where Z position along the crystal, HL is the crystal half-length
-  // and a is the level of non-uniformity (e.g. 5%)
-  float CaloShowerROMaker::LRUCorrection(int crystalID, float normalizedPosZ, float edepInit)
+  // apply a correction of type Energy = (1+a*(Z/L-1/2))*energy where Z position along the crystal, L is the crystal length
+  // and a is the level of non-uniformity taken as (response(z=1)-response(z=0))/response(z=1/2).
+  float CaloShowerROMaker::LRUCorrection(float normalizedPosZ, float edepInit, float lru)
   {
-      float factor = crystalNonUniformity_*(normalizedPosZ-1.0)+1.0;
+      float factor = lru*(normalizedPosZ - 0.5) + 1.0;
       float edep   = edepInit*factor;
 
       if (diagLevel_ > 2) std::cout<<"[CaloShowerROMaker::LRUCorrection] before / after LRU -> edep_corr = "

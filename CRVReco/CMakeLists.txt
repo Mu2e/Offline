@@ -86,8 +86,8 @@ cet_build_plugin(CrvWidebandTriggerFilter art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CrvTimingStudies art::module
-    REG_SOURCE src/CrvTimingStudies_module.cc
+cet_build_plugin(CrvTimeOffsets art::module
+    REG_SOURCE src/CrvTimeOffsets_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CRVReco

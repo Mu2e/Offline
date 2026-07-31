@@ -54,6 +54,22 @@ class RunInfo {
   // Convenience accessor for run number
   int runNumber() const { return _run_record.runNumber(); }
 
+  // Collect the cat-2 DbService CID table entries across the configs for this
+  // run.  Only the "TRG" config holds the CID tables, so this returns the
+  // cleaned content from that config (empty if there is no TRG config or it
+  // has no entries).
+  // If qjson=true  -> returns a JSON array of {"cid":..., "name":...} objects.
+  // If qjson=false -> returns one "cid name" pair per line.
+  std::string dbTables2(bool qjson = false) const;
+
+  // Collect the cat-3 DbService table key-value pairs across all configs for
+  // this run, merging the contributions from every config into a single
+  // collection.
+  // If qjson=true  -> returns a single merged JSON object with all pairs
+  //                   (an empty object "{}" if nothing was found).
+  // If qjson=false -> returns one VALUE per line (flat list).
+  std::string dbTables3(bool qjson = false) const;
+
   // Check if run is done and return status code
   // Returns:
   //   0 = still running
