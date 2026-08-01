@@ -10,24 +10,42 @@
 // A particle with no such ancestor (e.g. a cross-disk secondary or a
 // pileup particle arriving from outside) is its own calo-entrant.
 //
+// caloHitMC() points back to the hit this assignment was computed for,
+// so the product is self-describing: consumers join through the Ptr
+// (or verify it) instead of trusting that their configured
+// CaloHitMCCollection is the one the producer read. The collection is
+// also index-parallel to that CaloHitMCCollection by construction.
+//
 // Grouping deposits by entrant recovers true shower membership for
 // clustering truth definitions. Analysis-level choices (purity cuts,
 // ambiguity handling, cluster ID assignment) are deliberately left to
 // consumers; this product records only the ancestry facts.
 //
-// The collection is index-parallel to the CaloHitMCCollection it was
-// produced from.
-//
 
 #include "canvas/Persistency/Common/Ptr.h"
+#include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
+#include <utility>
 #include <vector>
 
 namespace mu2e
 {
-   struct CaloHitEntrant
+   class CaloHitEntrant
    {
-      std::vector<art::Ptr<SimParticle>> entrants;
+      public:
+         CaloHitEntrant() = default;
+         CaloHitEntrant(art::Ptr<CaloHitMC> caloHitMC,
+                        std::vector<art::Ptr<SimParticle>> entrants) :
+            caloHitMC_(std::move(caloHitMC)),
+            entrants_ (std::move(entrants))
+         {}
+
+         const art::Ptr<CaloHitMC>&                caloHitMC() const {return caloHitMC_;}
+         const std::vector<art::Ptr<SimParticle>>& entrants () const {return entrants_;}
+
+      private:
+         art::Ptr<CaloHitMC>                caloHitMC_;
+         std::vector<art::Ptr<SimParticle>> entrants_;
    };
 
    using CaloHitEntrantCollection = std::vector<mu2e::CaloHitEntrant>;
