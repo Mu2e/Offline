@@ -18,3 +18,4 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/crystalPos.txt ${CURRENT_BINARY_
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CalorimeterGeom)
