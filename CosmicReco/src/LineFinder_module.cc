@@ -329,7 +329,7 @@ void LineFinder::addClusterToSeed(CosmicTrackSeed& tseed) {
   constexpr double t0_match_window = 50.; // ns, loose time window for matching
   for(size_t i_cl = 0; i_cl < _cccol->size(); ++i_cl) {
     const CaloCluster& cl = _cccol->at(i_cl);
-    const CLHEP::Hep3Vector cl_pos = _calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskToMu2e(cl.diskID(), cl.cog3Vector()));
+    const CLHEP::Hep3Vector cl_pos = _calorimeter->mu2eToTracker(_calorimeter->diskToMu2e(cl.diskID(), cl.cog3Vector()));
     const double cl_time = cl.time();
     // Get the expected time at the calo disk based on the line seed
     const double speed = CLHEP::c_light; // assume speed of the particle is close to the speed of light
