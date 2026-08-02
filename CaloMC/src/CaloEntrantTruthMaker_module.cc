@@ -18,8 +18,13 @@
 // CaloCluster::diskID(). The per-cluster hit lists themselves are NOT
 // positionally matched (the MC list keeps only truth-matched hits and is
 // re-sorted by MC energy), so no hit-by-hit pairing is attempted; only
-// the disk, a cluster-level property, is taken. CaloHitMC entries whose
-// disk cannot be determined either way get null (unresolved) entrants.
+// the disk, a cluster-level property, is taken. That is only sound for
+// disk-local clusters, which is verified against the reco hits' crystals:
+// a mixed-disk cluster (possible under cluster-association strategy 2,
+// which does not enforce same-disk membership) throws rather than
+// receiving a guessed disk. Configure the cluster tags only when the
+// fallback is actually needed. CaloHitMC entries whose disk cannot be
+// determined either way get null (unresolved) entrants.
 //
 // Grouping hits by entrant collapses secondary shower products
 // (bremsstrahlung photons etc.) into their parent shower, recovering
@@ -107,7 +112,7 @@ namespace mu2e {
       // CaloClusterTruthMatch (one CaloClusterMC per CaloCluster, input
       // order); the per-cluster hit lists are filtered and re-sorted, so
       // they are never paired positionally here.
-      std::map<size_t, int> hitmcDisk;
+      std::map<size_t, std::pair<int, size_t>> hitmcDisk; // HMC key -> (disk, first claiming cluster)
       if (useClusterFallback_)
       {
           const auto& clusters   = *event.getValidHandle(caloClusterToken_);
@@ -121,6 +126,26 @@ namespace mu2e {
           for (size_t ic = 0; ic < clusters.size(); ++ic)
           {
               const int disk = clusters[ic].diskID();
+
+              // The cluster-wide disk is only meaningful for a disk-local
+              // cluster. Association strategy 2 (ClusterAssociator) can merge
+              // proto-clusters across disks while CaloCluster keeps only the
+              // seed's disk; the filtered, re-sorted MC list cannot recover
+              // per-hit disks for such a cluster, so fail closed instead of
+              // assigning a guessed disk.
+              for (const auto& hit : clusters[ic].caloHitsPtrVector())
+              {
+                  if (hit.isNull()) continue;
+                  const int hitDisk = cal.crystal(hit->crystalID()).diskID();
+                  if (hitDisk != disk)
+                  {
+                      throw cet::exception("CALOENTRANT")
+                          << "cluster " << ic << " is not disk-local: diskID " << disk
+                          << " but hit crystal " << hit->crystalID() << " is on disk "
+                          << hitDisk << "; the cluster-wide disk fallback cannot label it\n";
+                  }
+              }
+
               for (const auto& hmc : clusterMCs[ic].caloHitMCs())
               {
                   if (hmc.isNull()) continue;
@@ -131,7 +156,21 @@ namespace mu2e {
                           << " but caloHitMCTag resolves to " << hitMCHandle.id()
                           << "; caloClusterMCTag and caloHitMCTag are inconsistent\n";
                   }
-                  hitmcDisk[hmc.key()] = disk;
+                  if (hmc.key() >= hitMCs.size())
+                  {
+                      throw cet::exception("CALOENTRANT")
+                          << "CaloClusterMC " << ic << " references CaloHitMC key " << hmc.key()
+                          << " outside collection size " << hitMCs.size() << "\n";
+                  }
+                  const auto ins = hitmcDisk.emplace(hmc.key(), std::make_pair(disk, ic));
+                  if (!ins.second && ins.first->second.first != disk)
+                  {
+                      throw cet::exception("CALOENTRANT")
+                          << "CaloHitMC key " << hmc.key() << " (ProductID " << hmc.id()
+                          << ") is claimed by cluster " << ins.first->second.second
+                          << " on disk " << ins.first->second.first
+                          << " and by cluster " << ic << " on disk " << disk << "\n";
+                  }
               }
           }
       }
@@ -142,7 +181,7 @@ namespace mu2e {
       {
           if (chmc.crystalID() >= 0) return cal.crystal(chmc.crystalID()).diskID();
           const auto found = hitmcDisk.find(idx);
-          return (found != hitmcDisk.end()) ? found->second : -1;
+          return (found != hitmcDisk.end()) ? found->second.first : -1;
       };
 
       // Pass 1: record which disks each SimParticle deposited in. Keyed by
@@ -195,6 +234,14 @@ namespace mu2e {
               auto it = entrantCache.find(key);
               if (it == entrantCache.end())
               {
+                  if (!sim.isAvailable())
+                  {
+                      throw cet::exception("CALOENTRANT")
+                          << "CaloEntrantTruthMaker: depositor SimParticle (ProductID " << sim.id()
+                          << ", key " << sim.key() << ") cannot be read from this file"
+                          << " - its SimParticle collection was dropped;"
+                          << " cannot walk the parent chain\n";
+                  }
                   art::Ptr<SimParticle> entrant = sim;
                   for (auto p = sim->parent(); p.isNonnull(); p = p->parent())
                   {
