@@ -196,7 +196,7 @@ namespace mu2e {
         ibest = 0;
         if(matches.size()>1){
           ++nmultref_;
-          if(debug_ > 0) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates according to " << selbest_ << " event " << event.id() << std::endl;
+          if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates according to " << selbest_ << " event " << event.id() << std::endl;
           double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
