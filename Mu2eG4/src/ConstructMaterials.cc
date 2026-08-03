@@ -1,4 +1,4 @@
-//
+ //
 // Construct materials requested by the run-time configuration system.
 //
 
@@ -278,7 +278,7 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "IPAPolyethylene");
     {
-      G4Material* IPAPolyethylene = new G4Material( mat.name, 1.05*CLHEP::g/CLHEP::cm3, 2);
+      G4Material* IPAPolyethylene = new G4Material( mat.name, 0.954*CLHEP::g/CLHEP::cm3, 2);
       IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_H"), 0.11);
       IPAPolyethylene->AddMaterial( findMaterialOrThrow("G4_C"), 0.89); // Carbon doped Polytehylene, additional carbon 2-5% from MDS (DeWal DW 402B),  density measured by S. Krave 6/22/2021
     }
@@ -1336,7 +1336,9 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow("IPAPolystyrene");
     {
-      G4double IPAEffectiveDensity = 0.426*CLHEP::g/CLHEP::cm3; //explicit density
+      // We used an explicity density here
+      // Reflects the corrected density for End Ring material
+      G4double IPAEffectiveDensity = 0.426*CLHEP::g/CLHEP::cm3; //explicit density refer to Doc-57487-v3
       G4Material* IPAPolystyrene = new G4Material( mat.name, IPAEffectiveDensity, 2);
       IPAPolystyrene->AddElement( getElementOrThrow("C"), 8);
       IPAPolystyrene->AddElement( getElementOrThrow("H"), 8);
@@ -1920,7 +1922,7 @@ namespace mu2e {
             != conductors.end() ) {
           G4NistManager::Instance()->SetDensityEffectCalculatorFlag(theMaterial, true);
           if (config_.debug().diagLevel() > 0) {
-           G4cout << "ConstructMaterials::" <<  __func__
+            G4cout << "ConstructMaterials::" <<  __func__
                    << " Using correction in calculations for "
                    << theMaterial->GetName()
                    << ", its free electron density is "

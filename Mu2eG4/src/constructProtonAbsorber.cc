@@ -1614,7 +1614,9 @@ namespace mu2e {
             ostringstream wirename ; wirename << "IPAsupport_set" << iS << "_wire" << ++iW ;
 
             const double rStartOfWire = pabs1rOut0+(supportWire.originInMu2e().z()-zstartOfIPA)/pabs1len*(pabs1rOut1-pabs1rOut0);
-            std::cout << "Set " << iSet << ", Wire " << iWire << ": rStartOfWire = " << rStartOfWire << "\n"; // will be used for debugging
+            if ( verbosityLevel > 0){
+              std::cout << "Set " << iSet << ", Wire " << iWire << ": rStartOfWire = " << rStartOfWire << "\n";
+            }
             const double wirePhi = iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() + wire_angle_offset ;
             CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) *
                                                  std::cos(wirePhi),
