@@ -3,7 +3,6 @@
 // See docDb 51487 for full documentation
 // Remaining TODOs for future development:
 //  - Include the commented out includes correctly
-//  - Implement the makeADCPlot functionality correctly
 //  - Implement different sampling frequencies correctly
 //  - Remove the implementation of stepPositionTolerance, it is a hack to address a position resolution I did not have time to fully address
 // Original author: Pawel Plesniak
@@ -68,7 +67,6 @@ namespace mu2e {
       fhicl::Atom<double> risingEdgeDecayConstant{ Name("risingEdgeDecayConstant"), Comment("Rising edge decay time [us]")};
       fhicl::OptionalAtom<int> microspillBufferLengthCount{ Name("microspillBufferLengthCount"), Comment("Number of microspills to buffer ahead for, in number of microspills")};
       fhicl::OptionalAtom<bool> makeTTree{ Name("makeTTree"), Comment("Controls whether to make the TTree with branches chargeCollected, chargeDecayed, ADC, eventId, time")};
-      fhicl::OptionalAtom<bool> makeADCPlot{ Name("makeADCPlot"), Comment("Controls whether to make a plot of the generated ADC values")};
       fhicl::OptionalAtom<double> timeOffset{ Name("timeOffset"), Comment("For debugging, adds the named time offset in [ns], used for testing analysis algorithms")};
       fhicl::OptionalAtom<uint> resetEventNumber{ Name("resetEventNumber"), Comment("Simulates the off-spill period by resetting the inter-event last decayed charge to zero")};
       fhicl::OptionalAtom<uint> verbosityLevel{ Name("verbosityLevel"), Comment("Controls verbosity")};
@@ -91,7 +89,6 @@ namespace mu2e {
     double noiseSD = 0;                                                                                         // Standard deviation of ADC noise [mV]
     double risingEdgeDecayConstant = 0;                                                                         // [us]
     bool makeTTree = false;                                                                                     // Controls whether an analysis TTree is made
-    bool makeADCPlot = false;                                                                                   // Controls whether the ADC graph is made
     double timeOffset = 0.0;                                                                                    // Used for debugging [ns]
     uint resetEventNumber = 0;                                                                                  // Event ID at which to reset the charge amplitude
     int verbosityLevel = 0;                                                                                     // How much output to generate
@@ -231,13 +228,6 @@ namespace mu2e {
           ttree->Branch("eventId", &eventId, "eventId/i");
           ttree->Branch("time", &time, "time/i");
         };
-        makeADCPlot = conf().makeADCPlot() ? *(conf().makeADCPlot()) : false;
-        if (makeADCPlot) {
-          throw cet::exception("IMPLEMENT", "makeADCPlot functionality not yet implemented correctly\n");
-          art::ServiceHandle<art::TFileService> tfs;
-          TTree* adcTree = tfs->make<TTree>("adcTree", "HPGeWaveformsFromStepPointMCs ADC Tree");
-          adcTree->Branch("ADC", &ADC, "ADC/D");
-        };
 
         // Assign optional variables
         resetEventNumber = conf().resetEventNumber() ? *(conf().resetEventNumber()) : 0;
@@ -254,7 +244,6 @@ namespace mu2e {
       std::cout << std::left << "\t\t" << std::setw(60) << "risingEdgeDecayConstant [us]"         << risingEdgeDecayConstant                  << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "microspillBufferLengthCount"          << microspillBufferLengthCount              << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "makeTTree"                            << makeTTree                                << std::endl;
-      std::cout << std::left << "\t\t" << std::setw(60) << "makeADCPlot"                          << makeADCPlot                              << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "timeOffset [ns]"                      << timeOffset                               << std::endl;
       std::cout << std::left << "\t\t" << std::setw(60) << "resetEventNumber"                     << resetEventNumber                         << std::endl;
       std::cout << "\tDerived parameters: " << std::endl;
@@ -364,30 +353,6 @@ namespace mu2e {
         ttree->Fill();
       };
     };
-
-    // Make the ADC plot if appropriate
-    if (makeADCPlot) {
-      // NOTE - THIS DOES NOT CURRENTLY FUNCTION, AND I DO NOT HAVE TIME TO FIX IT RIGHT NOW
-      std::stringstream histsuffix;
-      histsuffix.str("");
-      histsuffix << "_evt" << event.event();
-
-      art::ServiceHandle<art::TFileService> tfs;
-      std::vector<double> _adc_double = std::vector<double>(_adcs.begin(), _adcs.end());
-      TGraph* g_adcs = tfs->make<TGraph>(nADCs, _adc_double.data());
-      g_adcs->SetName(("g_adcs"+histsuffix.str()).c_str());
-      // g_adcs->SetTitle("ADC Values");
-      // for (uint i = 0; i < nADCs; i++)
-      //   g_adcs->SetPoint(i, i, _adcs[i]);
-    };
-
-    // Add the STMWaveformDigi to the event
-    event.put(std::move(outputDigis));
-
-    // Update the event time for the next waveform
-    eventTime += nADCs;
-    return;
-  };
 
   void HPGeWaveformsFromStepPointMCs::depositCharge(const StepPointMC& step) {
     // Define variables that couldn't be constructed in the class constructor
