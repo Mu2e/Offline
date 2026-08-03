@@ -37,7 +37,6 @@ physics : {
       risingEdgeDecayConstant : @local::HPGeDigitization.DecayConstant
       microspillBufferLengthCount : @local::HPGeDigitization.microspillBufferLengthCount
       makeTTree : false
-      makeADCPlot : false # Note - this does not work, I don't have the time to fix this.
       timeOffset : 0
       resetEventNumber : @local::HPGeDigitization.resetEventNumber
       verbosityLevel : 1
