@@ -66,7 +66,7 @@ namespace mu2e {
     z(conf().z()),
     E(conf().E()) {
       produces<GenParticleCollection>();
-      if (E < std::numeric_limits<double>::epsilon())
+      if (E <= 0.0)
         throw cet::exception("RANGE") << "Energy must be greater than zero, exiting.";
       px = conf().px() ? *conf().px() : 0;
       py = conf().py() ? *conf().py() : 0;

@@ -13,8 +13,6 @@
 // Original author: Ivan Logashenko
 // Adapted by: Pawel Plesniak
 
-// TODO before upload - validate that the code works and generates the same particle trace as the SimParticleAndVDBacktrace module
-
 // stdlib includes
 #include <cmath>
 #include <iostream>
@@ -152,16 +150,12 @@ namespace mu2e {
     auto stepHandle = event.getHandle< std::vector<StepPointMC> >(StepPointMCsToken);
     if (!stepHandle || stepHandle->empty()) {
       consecutiveEmptyFileCounter++;
+      if (consecutiveEmptyFileCounter > consecutiveEmptyFileThreshold) {
+        throw cet::exception("LogicError", "Too many consecutive empty files, are you sure you have the correct data product name?\n");
+      };
       return;
     };
     auto simHandle = event.getHandle< SimParticleCollection >(SimParticlemvToken);
-    if (!simHandle || simHandle->empty()) {
-      consecutiveEmptyFileCounter++;
-      return;
-    };
-    if (consecutiveEmptyFileCounter > consecutiveEmptyFileThreshold) {
-      throw cet::exception("LogicError", "Too many consecutive empty files, stopping the job");
-    };
 
     auto const& StepPointMCs = *stepHandle;
     auto const& SimParticles = *simHandle;
@@ -173,6 +167,9 @@ namespace mu2e {
 
       // Get the associated particle
       const SimParticle& particle = SimParticles.at(step.trackId());
+      if particle.isNull() {
+        throw cet::exception("LogicError", "SimParticle is null for trackId: ", step.trackId(), "\n");
+      }
       addToTree(particle, ttree);
     };
     return;

@@ -52,7 +52,7 @@ namespace mu2e {
       StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
       enabledVDs(conf().enabledVDs()) {
         // Create list of unique enabled virtual detectors, preserving the order
-        std::vector<int> unqiueEnabledVDsVec;;
+        std::vector<int> unqiueEnabledVDsVec;
         std::unordered_set<int> uniqueEnabledVDsSet;
         for (const int & enabledVD : enabledVDs) {
           if (uniqueEnabledVDsSet.find(enabledVD) == uniqueEnabledVDsSet.end()) {

@@ -7,7 +7,7 @@
 # Original author : Pawel Plesniak
 # Note - edit the parameters in this prolog.fcl, aside from which detector is being used which is stored in the generate module
 
-process_name: HPGeAbsorberSpectrumShift
+process_name: LaBrAbsorberSpectrumShift
 source : {
   module_type : EmptyEvent
   maxEvents : @local::Efficiency.NPhotons

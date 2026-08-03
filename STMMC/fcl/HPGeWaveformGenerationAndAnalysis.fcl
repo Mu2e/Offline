@@ -4,7 +4,7 @@
 #  2. concatenateWaveformsHPGe - concatenates microspill waveforms into spill waveforms
 #  3. (optional) ZSHPGe - zero-suppresses the concatenated waveforms
 #  4. MWDHPGe - performs moving window deconvolution on the concatenated (or zero-suppressed) waveforms
-#  5. Ou1tputs the MWD digis to a ROOT file
+#  5. Outputs the MWD digis to a ROOT file
 # Note - each module is documented in the _module.cc file. This is the clearest way to understand what each module does and what parameters it takes.
 # Usage:
 #  1. Select which data you want to run with or without zero suppression by replacing "@nil" in trigger_paths (keeping the [BRAKCETS]!) with the single analyer you want to run, e.g. trigger_paths: [digitization_path_ZS]
@@ -100,7 +100,7 @@ outputs : {
     SelectEvents: @nil # Populate me!
     outputCommands: [
         "drop *_*_*_*",
-        "keep mu2e::STMPHDigis_PHHPGe_*_HPGeReco"
+        "keep mu2e::STMPHDigis_MWDHPGe_*_HPGeReco"
     ]
   }
 }

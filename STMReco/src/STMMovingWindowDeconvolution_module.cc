@@ -148,7 +148,7 @@ namespace mu2e {
     uint eventId = 0, waveformID = 0;
 
     // Summary data
-    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0, processedADCs;
+    uint processedEvents = 0, processedWaveforms = 0, foundPeaks = 0, processedADCs = 0;
 
     // Debugging variables
     double waveform_time_microspill_frame = 0.0;
@@ -202,7 +202,7 @@ namespace mu2e {
   void STMMovingWindowDeconvolution::beginJob() {
     if (verbosityLevel) {
       std::cout << std::endl;
-      std::cout << "=======================================STM HPGe digitization parameters=======================================" << std::endl;
+      std::cout << "==============================================STM MWD parameters==============================================" << std::endl;
       std::cout << "\tAlgorithm parameters" << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "tau"            << tau           << std::endl;
       std::cout << std::left << "\t\t" << std::setw(15) << "M"              << M             << std::endl;

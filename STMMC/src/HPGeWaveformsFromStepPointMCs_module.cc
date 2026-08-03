@@ -151,7 +151,7 @@ namespace mu2e {
     double lastEventEndDecayedCharge = 0;                                                                       // Carry over the charge stored in the crystal from the previous event
     double lastEventEndIntegratedCharge = 0;                                                                    // Carry over for integrated charge stored in the preamplifier
     int microspillBufferLengthCount = 0;                                                                        // Buffer to store the charge deposits that are allocated to this event but happen after the microspill ends e.g. 844keV
-    const int defaultMicrospillBufferLengthCount = 2;                                                           // Default value for the microspill buffer length
+    int defaultMicrospillBufferLengthCount = 2;                                                           // Default value for the microspill buffer length
 
     // TTree and storage variables
     TTree* ttree;                                                                                               // ttree variable
@@ -168,7 +168,6 @@ namespace mu2e {
     std::vector<int16_t> _adcs;                                                                                 // Buffer for storing the ADC values to put into the STMWaveformDigi
 
     // Debugging variables
-    double waveform_time = 0.0;                                                                                  // Time of start of waveform for debugging. TODO - REMOVE ME!
     int32_t kept_events = 0, dropped_events = 0;                                                            // Counters for debugging
 
     // Offline utilities
@@ -193,8 +192,8 @@ namespace mu2e {
 
         // Assign optional variables
         microspillBufferLengthCount = conf().microspillBufferLengthCount() ? *(conf().microspillBufferLengthCount()) : defaultMicrospillBufferLengthCount;
-        if (defaultMicrospillBufferLengthCount < 1)
-          throw cet::exception("RANGE", "defaultMicrospillBufferLengthCount has to be at least 1!\n");
+        if (microspillBufferLengthCount < 2)
+          throw cet::exception("RANGE", "microspillBufferLengthCount has to be at least 1!\n");
         verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
 
         // Determine the number of ADC values in each STMWaveformDigi. Increase the number by one due to truncation. At 320MHz, this will be 543 ADC values per microbunch
@@ -309,9 +308,6 @@ namespace mu2e {
     _adcs.clear();
     _adcs.insert(_adcs.end(), nADCs, 0);
 
-    // Reset waveform time for debugging
-    waveform_time = 0.0;
-
     // Get the hits in the detector
     std::vector<StepPointMC> StepsEle = event.getProduct(StepPointMCsTokenEle);
     std::vector<StepPointMC> StepsMu = event.getProduct(StepPointMCsTokenMu);
@@ -325,15 +321,12 @@ namespace mu2e {
         // Add a collection of charge depositions to _charge
         for(const StepPointMC& step : StepsEle) {
            if (step.ionizingEdep() != 0) depositCharge(step);
-           if (step.time() < waveform_time) waveform_time = step.time();
         }
         for(const StepPointMC& step : StepsMu) {
            if (step.ionizingEdep() != 0) depositCharge(step);
-           if (step.time() < waveform_time) waveform_time = step.time();
         }
         for(const StepPointMC& step : Steps1809) {
            if (step.ionizingEdep() != 0) depositCharge(step);
-           if (step.time() < waveform_time) waveform_time = step.time();
         }
     } else {
         dropped_events++;

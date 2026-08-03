@@ -1,14 +1,6 @@
 # Defines standard paramaters used in STM simulation modules
 # Adapted by: Pawel Plesniak
 
-# TODOs before Pawel uploads:
-# - Review all parameters for correctness
-# - Add comments where necessary
-# - Verify that all necessary parameters are included
-# - Simplify the ROOTAnalysisDump data product names by defining them separately here, once the simulation generats them correctly
-# - SimParticlemv -> SimParticles
-# - StepPointMCsTag -> StepPointMCs
-
 #include "Offline/STMReco/fcl/prolog.fcl"
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
 BEGIN_PROLOG
