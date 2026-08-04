@@ -12,7 +12,6 @@
 #include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
 #include "Offline/CRVConditions/inc/CRVStatusCache.hh"
 #include "Offline/DAQConditions/inc/EventTimingCache.hh"
-#include "Offline/DAQConditions/inc/EventTimingCache.hh"
 
 #include "Offline/CaloConditions/inc/CalSimParamsCache.hh"
 #include "Offline/CaloConditions/inc/CalDAQMapCache.hh"

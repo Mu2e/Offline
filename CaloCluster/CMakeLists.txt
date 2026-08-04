@@ -26,8 +26,10 @@ cet_build_plugin(CaloClusterMaker art::module
       art_root_io::TFileService_service
       Offline::CaloCluster
       
+      Offline::CaloConditions
       Offline::CalorimeterGeom
       Offline::GeometryService
+      Offline::ProditionsService
       Offline::RecoDataProducts
 )
 

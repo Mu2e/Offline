@@ -15,8 +15,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------------------
   void AlignedCalorimeterMaker::alignCalorimeter(AlignedCalorimeterMaker::ptr_t ptr,
-                                                 const std::vector<CalAlignParams>& disk_align_params,
-                                                 const std::vector<CalAlignParams>& crystal_align_params)
+                                                 const std::vector<CalAlignParams>& disk_align_params)
   {
     DiskCalorimeter& cal = *ptr;
 
@@ -33,17 +32,6 @@ namespace mu2e {
       if (std::abs(disk_align.rz()) > 1e-6) rotation.rotateZ(disk_align.rz());
 
       diskcc.moveDisk(shift,rotation);
-    }
-
-    //Do the same for the crystals
-    for (auto& crystal : cal.crystals()) {
-      auto crystalcc = const_cast<Crystal*>(crystal);
-      auto& diskcc   = const_cast<Disk&>(cal.disk(crystalcc->diskID()));
-
-      const auto& crystal_align = crystal_align_params.at(crystal->ID());
-      CLHEP::Hep3Vector  shift(crystal_align.dx(),crystal_align.dy(),crystal_align.dz());
-
-      diskcc.moveCrystal(crystal->localID(),shift);
     }
   }
 
@@ -66,12 +54,24 @@ namespace mu2e {
     }
 
     std::vector<CalAlignParams> align_params;
-    uint16_t index,nRead(0);
-    float dx,dy,dz,rx,ry,rz;
+    uint16_t nRead(0);
+    std::string line;
+    while (std::getline(ordFile, line)) {
+      uint16_t index;
+      float dx,dy,dz,rx,ry,rz;
 
-    while (!ordFile.eof()){
-      ordFile >> index >> dx >> dy >> dz >> rx >> ry >> rz;
-      if (ordFile.eof()) break;
+      std::istringstream iss(line);
+      if (!(iss >> index >> dx >> dy >> dz >> rx >> ry >> rz)) {
+        throw cet::exception("ALIGNEDCAL_RANGE")
+        << "invalid format at line "<<nRead+1<<"\n";
+      }
+
+      // Check that there is nothing left on the line
+      float extra;
+      if (iss >> extra) {
+        throw cet::exception("ALIGNEDCAL_RANGE")
+        << "invalid format at line "<<nRead+1<<"\n";
+      }
 
       if (index >= nRowMax) {
         throw cet::exception("ALIGNEDCAL_RANGE") << "AlignedCalorimeterMaker read invalid offlineId "
@@ -86,6 +86,7 @@ namespace mu2e {
         << "AlignedCalorimeterMaker read the wrong number of id's "
         << nRead << ", expected " << nRowMax << "\n";
     }
+
     return align_params;
   }
 
@@ -133,18 +134,13 @@ namespace mu2e {
       std::cout << "AlignedCalorimeterMaker::fromFcl now zero aligning Calorimeter\n";
 
     auto disk_align_params = readFile(_config.filenameDisk(), CaloConst::_nDisk);
-    //auto crystal_align_params = readFile(_config.filenameCrystal(), CaloConst::_nCrystal);
-    std::vector<CalAlignParams> crystal_align_params(CaloConst::_nCrystal,CalAlignParams(0,0,0,0,0,0,0));
-
-    alignCalorimeter(ptr, disk_align_params, crystal_align_params);
+    alignCalorimeter(ptr, disk_align_params);
 
     return ptr;
   }
 
   //-----------------------------------------------------------------------------------------
-  AlignedCalorimeterMaker::ptr_t AlignedCalorimeterMaker::fromDb(
-      CalAlignDisk::cptr_t    cad_p,
-      CalAlignCrystal::cptr_t cac_p)
+  AlignedCalorimeterMaker::ptr_t AlignedCalorimeterMaker::fromDb(CalAlignDisk::cptr_t cad_p)
   {
     GeomHandle<DiskCalorimeter> cal_h;
     auto  ptr = std::make_shared<DiskCalorimeter>(*cal_h);
@@ -153,10 +149,7 @@ namespace mu2e {
       std::cout << "AlignedCalorimeterMaker::fromDb now aligning Calorimeter \n";
 
     auto disk_align_params = readDb(cad_p, CaloConst::_nDisk);
-    //auto crystal_align_params = readDb(cac_p, CaloConst::_nCrystal);
-    std::vector<CalAlignParams> crystal_align_params(CaloConst::_nCrystal,CalAlignParams(0,0,0,0,0,0,0));
-
-    alignCalorimeter(ptr, cad_p->rows(), cac_p->rows());
+    alignCalorimeter(ptr, cad_p->rows());
 
     return ptr;
   }

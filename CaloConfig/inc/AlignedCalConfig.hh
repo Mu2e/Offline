@@ -1,5 +1,5 @@
-#ifndef CaloConditions_AlignedCalConfig_hh
-#define CaloConditions_AlignedCalConfig_hh
+#ifndef CaloConfig_AlignedCalConfig_hh
+#define CaloConfig_AlignedCalConfig_hh
 //
 // Initialize AlignedCal from fcl
 //

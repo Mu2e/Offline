@@ -1,5 +1,5 @@
-#ifndef TrackerConditions_AlignedCalorimeterCache_hh
-#define TrackerConditions_AlignedCalorimeterCache_hh
+#ifndef CaloConditions_AlignedCalorimeterCache_hh
+#define CaloConditions_AlignedCalorimeterCache_hh
 //
 // hold a set of run-dependent conditions objects
 // and update them when needed
@@ -21,7 +21,6 @@ namespace mu2e {
       void initialize() {
         if (_useDb) {
           _tadisk_p = std::make_unique<DbHandle<CalAlignDisk>>();
-          _tacrys_p = std::make_unique<DbHandle<CalAlignCrystal>>();
         }
       }
 
@@ -30,9 +29,7 @@ namespace mu2e {
         ProditionsEntity::set_t cids;
         if (_useDb) {
           _tadisk_p->get(eid);
-          _tacrys_p->get(eid);
           cids.insert(_tadisk_p->cid());
-          cids.insert(_tacrys_p->cid());
         }
         return cids;
       }
@@ -42,14 +39,13 @@ namespace mu2e {
         iov.setMax(); // start with full IOV range
         if (_useDb) {
           iov.overlap(_tadisk_p->iov());
-          iov.overlap(_tacrys_p->iov());
         }
         return iov;
       }
 
       ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
         if(_useDb) {
-          return _maker.fromDb(_tadisk_p->getPtr(eid),_tacrys_p->getPtr(eid));
+          return _maker.fromDb(_tadisk_p->getPtr(eid));
         } else {
           return _maker.fromFcl();
         }
@@ -59,9 +55,7 @@ namespace mu2e {
     private:
       bool _useDb;
       AlignedCalorimeterMaker _maker;
-
-      std::unique_ptr<DbHandle<CalAlignDisk>>    _tadisk_p;
-      std::unique_ptr<DbHandle<CalAlignCrystal>> _tacrys_p;
+      std::unique_ptr<DbHandle<CalAlignDisk>> _tadisk_p;
   };
 }
 #endif

@@ -1,5 +1,5 @@
-#ifndef CalConditions_AlignedCalorimeterMaker_hh
-#define CalConditions_AlignedCalorimeterMaker_hh
+#ifndef CaloConditions_AlignedCalorimeterMaker_hh
+#define CaloConditions_AlignedCalorimeterMaker_hh
 //
 // Make AlignedCalorimeter from fcl or (eventually) database
 //
@@ -16,10 +16,9 @@ namespace mu2e {
     public:
       AlignedCalorimeterMaker(const AlignedCalConfig& config):_config(config) {}
       void alignCalorimeter(ptr_t ptr,
-                            const std::vector<CalAlignParams>& disk_align_params,
-                            const std::vector<CalAlignParams>& crystal_align_params);
+                            const std::vector<CalAlignParams>& disk_align_params);
       ptr_t fromFcl();
-      ptr_t fromDb(CalAlignDisk::cptr_t cad_p, CalAlignCrystal::cptr_t cac_p);
+      ptr_t fromDb(CalAlignDisk::cptr_t cad_p);
 
     private:
       std::vector<CalAlignParams> readFile(const std::string& fileName, uint16_t nRowMax);

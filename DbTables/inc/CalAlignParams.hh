@@ -2,6 +2,8 @@
 #define DbTables_CalAlignParams_hh
 //
 //  Rigid body alignment parameters for calorimeter
+//  dx,dy,dz = displacement of the disk in mm
+//  rx,ry,rz are rotations along the x,y,z axes in radians
 //
 namespace mu2e {
   class CalAlignParams {

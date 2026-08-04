@@ -81,17 +81,5 @@ namespace mu2e {
       {}
   };
 
-  class CalAlignCrystal : public CalAlignElement {
-    public:
-      constexpr static const char* cxname = "CalAlignCrystal";
-      CalAlignCrystal() :
-          CalAlignElement(cxname, "cal.aligncrystal", CaloConst::_nCrystal)
-      {}
-      CalAlignCrystal(const char* name, const char* dbname) :
-        CalAlignElement(name, dbname,  CaloConst::_nCrystal)
-      {}
-  };
-
-
 }
 #endif
