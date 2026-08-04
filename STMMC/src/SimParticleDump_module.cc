@@ -165,12 +165,16 @@ namespace mu2e {
       // Filter by virtual detector ID if requested
       if (step.virtualDetectorId() != FilterVirtualDetectorId) continue;
 
-      // Get the associated particle
-      const SimParticle& particle = SimParticles.at(step.trackId());
-      if particle.isNull() {
-        throw cet::exception("LogicError", "SimParticle is null for trackId: ", step.trackId(), "\n");
+      auto particle_it = SimParticles.find(step.trackId());
+
+      if (particle_it != SimParticles.end()) {
+          const SimParticle& particle = particle_it->second;
+          addToTree(particle, ttree);
       }
-      addToTree(particle, ttree);
+      else {
+        std::string err_msg = "Error retrieving the relevant SimParticle for a StepPointMC in event " + std::to_string(event.id().event()) + ".\n";
+        throw cet::exception("LogicError", err_msg.c_str());
+      };
     };
     return;
   };

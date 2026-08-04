@@ -354,6 +354,14 @@ namespace mu2e {
       };
     };
 
+    // Add the STMWaveformDigi to the event
+    event.put(std::move(outputDigis));
+
+    // Update the event time for the next waveform
+    eventTime += nADCs;
+    return;
+  };
+
   void HPGeWaveformsFromStepPointMCs::depositCharge(const StepPointMC& step) {
     // Define variables that couldn't be constructed in the class constructor
     const CLHEP::Hep3Vector holeHemisphereCenter(0.0, 0.0, crystalHoleZStart); // Crystal hole position in local crystal co-ordinates
