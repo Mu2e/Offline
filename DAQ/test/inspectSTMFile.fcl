@@ -19,14 +19,14 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-         verbosityLevel : 2
+         verbosityLevel : 1
          saveSTMFragSummary : true
-         saveRawWithHeaderWaveform_HPGe: false
-         saveRawWaveform_HPGe: true
-         saveZSWaveform_HPGe: true
-         saveRawWithHeaderWaveform_LaBr: false
-         saveRawWaveform_LaBr: true
-         saveZSWaveform_LaBr: true
+         saveRawWaveformsWithHeaderHPGe: false
+         saveRawWaveformsHPGe: true
+         saveZSWaveformsHPGe: true
+         saveRawWaveformsWithHeaderLaBr: false
+         saveRawWaveformsLaBr: true
+         saveZSWaveformsLaBr: true
 	}
 
        makeSTMBinary : { 
@@ -47,6 +47,9 @@ physics : {
     stmPrint : {
       module_type : STMPrintFragments
       stmTag : "daq:ContainerSTM"
+      printEverything: false
+      printInnerFragments: false
+      printPayloads : false
     }
 
    }
@@ -68,7 +71,7 @@ services.TimeTracker.printSummary: true
 outputs : {
    stmOutput : {
       module_type : RootOutput
-      fileName : "dig.stm.art"
+      fileName : "data/dig.stm.art"
       outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
    }
 }
