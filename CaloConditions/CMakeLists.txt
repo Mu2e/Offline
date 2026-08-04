@@ -9,6 +9,8 @@ cet_make_library(
       src/AlignedCalorimeterMaker.cc
     LIBRARIES PUBLIC
       
+      CLHEP::CLHEP
+      cetlib_except::cetlib_except
       Offline::CaloConfig
       Offline::CalorimeterGeom
       Offline::ConfigTools

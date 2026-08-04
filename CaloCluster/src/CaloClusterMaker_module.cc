@@ -67,6 +67,7 @@ namespace mu2e {
      private:
         art::ProductToken<CaloProtoClusterCollection>  mainToken_;
         art::ProductToken<CaloProtoClusterCollection>  splitToken_;
+        ProditionsHandle<Calorimeter>                  alignedCal_h;
         double                                         deltaTime_;
         double                                         maxDistSplit_;
         double                                         maxDistMain_;
@@ -83,8 +84,7 @@ namespace mu2e {
   //---------------------------------------------------------------------------------------------------------------
   void CaloClusterMaker::produce(art::Event& event)
   {
-      ProditionsHandle<Calorimeter> alignedCalH;
-      const Calorimeter& alignedCal = alignedCalH.get(event.id());
+      const Calorimeter& alignedCal = alignedCal_h.get(event.id());
 
       const auto& caloClustersMain  = *event.getValidHandle(mainToken_);
       const auto& caloClustersSplit = *event.getValidHandle(splitToken_);

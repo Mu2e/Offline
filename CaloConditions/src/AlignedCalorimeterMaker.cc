@@ -9,6 +9,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <cmath>
 
 
 namespace mu2e {
@@ -27,9 +29,9 @@ namespace mu2e {
 
       CLHEP::Hep3Vector  shift(disk_align.dx(),disk_align.dy(),disk_align.dz());
       CLHEP::HepRotation rotation(CLHEP::HepRotation::IDENTITY);
-      if (std::abs(disk_align.rx()) > 1e-6) rotation.rotateX(disk_align.rx());
-      if (std::abs(disk_align.ry()) > 1e-6) rotation.rotateY(disk_align.ry());
-      if (std::abs(disk_align.rz()) > 1e-6) rotation.rotateZ(disk_align.rz());
+      rotation.rotateX(disk_align.rx());
+      rotation.rotateY(disk_align.ry());
+      rotation.rotateZ(disk_align.rz());
 
       diskcc.moveDisk(shift,rotation);
     }
@@ -62,14 +64,14 @@ namespace mu2e {
 
       std::istringstream iss(line);
       if (!(iss >> index >> dx >> dy >> dz >> rx >> ry >> rz)) {
-        throw cet::exception("ALIGNEDCAL_RANGE")
+        throw cet::exception("ALIGNEDCAL_FORMAT")
         << "invalid format at line "<<nRead+1<<"\n";
       }
 
       // Check that there is nothing left on the line
-      float extra;
-      if (iss >> extra) {
-        throw cet::exception("ALIGNEDCAL_RANGE")
+      iss >> std::ws;
+      if (!iss.eof()) {
+        throw cet::exception("ALIGNEDCAL_FORMAT")
         << "invalid format at line "<<nRead+1<<"\n";
       }
 
@@ -149,7 +151,7 @@ namespace mu2e {
       std::cout << "AlignedCalorimeterMaker::fromDb now aligning Calorimeter \n";
 
     auto disk_align_params = readDb(cad_p, CaloConst::_nDisk);
-    alignCalorimeter(ptr, cad_p->rows());
+    alignCalorimeter(ptr, disk_align_params);
 
     return ptr;
   }
