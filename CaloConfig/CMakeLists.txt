@@ -3,6 +3,7 @@ cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
       inc/CalCalibConfig.hh
       inc/CalDAQMapConfig.hh
       inc/CalSimParamsConfig.hh
+      inc/AlignedCalConfig.hh
     LIBRARIES INTERFACE
       
 )

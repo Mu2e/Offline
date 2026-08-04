@@ -29,6 +29,7 @@ Proditions : {
    calDAQConditions : @local::CalDAQConditions
    calCalib : @local::CalCalib
    calSimParams : @local::CalSimParams
+   alignedCalorimeter : @local::alignedCalorimeter
    verbose : 0
 }
 

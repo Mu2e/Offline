@@ -25,6 +25,7 @@
 #include "Offline/DbTables/inc/CalTimeCalib.hh"
 #include "Offline/DbTables/inc/CalCosmicT0Align.hh"
 #include "Offline/DbTables/inc/CalSimCrystals.hh"
+#include "Offline/DbTables/inc/CalAlignElement.hh"
 
 #include "Offline/DbTables/inc/TrkAlignElement.hh"
 #include "Offline/DbTables/inc/TrkAlignElementSim.hh"
@@ -129,6 +130,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalEnergyCalibInfo());
   } else if (name=="CalTimeCalib") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalTimeCalib());
+  } else if (name=="CalAlignDisk") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::CalAlignDisk());
   } else if (name=="CalCosmicT0Align") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicT0Align());
   } else if (name=="CalSimCrystals") {
