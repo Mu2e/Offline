@@ -19,7 +19,7 @@ namespace mu2e {
 class KalSeedPrinter : public ProductPrinter {
  public:
   KalSeedPrinter() {}
-  bool ptrcol_;
+  bool ptrcol_ = false;
   KalSeedPrinter(const KSConfig& ksconf) : ProductPrinter(ksconf), ptrcol_(ksconf.ptrcol()) {}
 
   // all the ways to request a printout

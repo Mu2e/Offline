@@ -112,7 +112,7 @@ namespace mu2e {
           auto pritrkiinter = priks.intersections().end();
           for(auto priiinter = priks.intersections().begin(); priiinter != priks.intersections().end(); ++priiinter){
             auto const& priinter = *priiinter;
-            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() > 0.0){ // correct surface and direction
+            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() >= 0.0){ // correct surface and direction
               if(debug_ > 1) std::cout << "Found primary intersection mom " << priinter.momentum3() << " time " << priinter.time() << std::endl;
               pritrkiinter = priiinter;
               break;
@@ -121,8 +121,8 @@ namespace mu2e {
           // if no intersections found, skip testing for a match with this track
           if(pritrkiinter == priks.intersections().end())continue;
           // otherwise, search for a matching secondary track
-          for(size_t isec = 0; isec <secksc.size(); ++isec){
-            if(samelist_ && isec == ipri)continue; // skip the same track if we're testing the list for duplicates
+          size_t secstart = samelist_ ? ipri+1 : 0;
+          for(size_t isec = secstart; isec <secksc.size(); ++isec){
             auto const& secks = secksc[isec];
             if(selector_->select(secks)){
               if(debug_ > 2)std::cout << "Selected secondary track " << std::endl;
@@ -170,6 +170,7 @@ namespace mu2e {
         ++nref_;
         ibest = 0;
         if(matches.size()>1){
+          ++nmultref_;
           if(debug_ > 1) std::cout << "Selecting best matching track from " << matches.size() << " candidates " << std::endl;
           double value = std::numeric_limits<double>::max();
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
@@ -191,7 +192,7 @@ namespace mu2e {
         }
       }
       if(ibest > -1){
-        if(debug_ > 0) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
+        if(debug_ > 1) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
           << " delta t " << matches[ibest].dt_
           << " delta P " << matches[ibest].dmom_
           << " hitfrac " << matches[ibest].hfrac_
@@ -205,7 +206,7 @@ namespace mu2e {
     return keep;
   }
   void SelectSameTrack::endJob() {
-    std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " overlaping tracks with " << nmultref_ << " multiple matchess" << std::endl;
+    if(debug_ > 0)std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " overlapping tracks with " << nmultref_ << " multiple matches" << std::endl;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectSameTrack)
