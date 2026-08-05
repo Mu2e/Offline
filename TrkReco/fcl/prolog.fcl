@@ -13,6 +13,15 @@ TrkReco: {
     comboHitCollTag    : "makeSH"
     strawDigiMCCollTag : "compressDigiMCs"
   }
+# standard track selection
+  TrkSel : {
+    tool_type : SimpleKalSeedSelector
+    MinMomentum : 40.0 # MeV/c
+    MaxMomentum : 300.0 #MeV/c
+    MinFitConsistency : 1e-7
+    MinDeltaNHitFraction : 0.0
+    MinActiveHits : 15
+  }
 }
 
 TrkReco: { @table::TrkReco
@@ -136,23 +145,25 @@ TrkReco: { @table::TrkReco
     }
   }
   filters : {
-# standard config for reflection selection
+    # t0 segment selection needs very wide time window
+    SelectT0Reflections: {
+      module_type : SelectReflections
+      MaxDeltaT : 200 # ns
+      MaxDeltaP : 10 # MeV
+      Selector : @local::TrkReco.TrkSel
+      SelectBestPair : 2 # select pair with best momentum match
+      ReflectionTestLocation : 0 # test at any location
+      debugLevel : 0
+    }
+    # tight selection at tracker front
     SelectReflections: {
       module_type : SelectReflections
-      MaxDeltaT : 10 # ns
-      MaxDeltaP : 10 # MeV
-      # optionally only merge selected candidates
-      # a simple selector is used here, but any selector implemented as a tool can be used
-      Selector : {
-        tool_type : SimpleKalSeedSelector
-        MinMomentum : 40.0 # MeV/c
-        MaxMomentum : 300.0 #MeV/c
-        MinFitConsistency : 0.0
-        MinDeltaNHitFraction : 0.0
-        MinActiveHits : 15
-      }
-      SelectBestPair : 3 # select pair with highest # of active hits
-      debugLevel : 0
+      MaxDeltaT : 5 # ns
+      MaxDeltaP : 5 # MeV
+      Selector : @local::TrkReco.TrkSel
+      SelectBestPair : 3 # select pair with hightest # of active hits
+            ReflectionTestLocation : 3 # test at upstream and downstream locations
+      Surface : "TT_Front"
     }
 
     SelectSameTrack: {
@@ -161,14 +172,7 @@ TrkReco: { @table::TrkReco
       MaxDeltaT : 10
       MaxDeltaP : 10
       MinHitFrac : 0.6
-      Selector : {
-        tool_type : SimpleKalSeedSelector
-        MinMomentum : 40.0 # MeV/c
-        MaxMomentum : 300.0 #MeV/c
-        MinFitConsistency : 1e-6
-        MinDeltaNHitFraction : 0.0
-        MinActiveHits : 15
-      }
+      Selector : @local::TrkReco.TrkSel
       SelectBestPair : 3 # highest hit overlap
       ComparisonDirection : "Downstream"
       ComparisonSurface : TT_Front

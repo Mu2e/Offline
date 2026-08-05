@@ -36,7 +36,7 @@ namespace mu2e {
   class SelectReflections : public art::EDFilter {
     public:
       enum bestpair {mom=0, deltat,deltap, nactive}; // selection options for defining the best pair
-      enum reftrk {unknown=0, dn=1, up=2, both=3}; // which track reflected (upstream or downstream)
+      enum refloc {any=0, dn=1, up=2, both=3}; // which upstream track location (upstream or downstream) was used to test reflection
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
@@ -44,12 +44,12 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> upstreamTag {Name("UpstreamKalSeedCollection"), Comment("Upstream KalSeed collection") };
         fhicl::Atom<art::InputTag> dnstreamTag {Name("DownstreamKalSeedCollection"), Comment("Downstream KalSeed collection") };
         fhicl::OptionalAtom<std::string> surface{ Name("Surface"), Comment("Surface to compare fits at")};
-        fhicl::OptionalAtom<bool> ptrs{ Name("PtrCollection"), Comment("Inputs are KalSeedPtr collections")};
+        fhicl::Atom<bool> ptrs{ Name("PtrCollection"), Comment("Inputs are KalSeedPtr collections"),false};
         fhicl::Atom<double> maxdt{ Name("MaxDeltaT"), Comment("Maximum time difference at comparison surface")};
         fhicl::Atom<double> maxdp{ Name("MaxDeltaP"), Comment("Maximum scalar momentum difference at comparison surface")};
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
         fhicl::Atom<int> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
-        fhicl::Atom<int> reftrksel{ Name("ReflectingTrack"), Comment("Which track is required to reflect to select: 0=either, 1= downstream, 2=upstream, 3=both ")};
+        fhicl::Atom<int> reflocsel{ Name("ReflectionTestLocation"), Comment("Reflection test location on upstream track: 0=any, 1= downstream, 2=upstream, 3=both ")};
       };
       using Parameters = art::EDFilter::Table<Config>;
       explicit SelectReflections(const Parameters& config);
@@ -66,7 +66,7 @@ namespace mu2e {
       bestpair selbest_;
       bool samelist_ = false;
       unsigned nevts_=0, nref_=0, nmultref_=0;
-      reftrk rtrk_;
+      refloc rtrk_;
   };
 
   SelectReflections::SelectReflections(const Parameters& config) : art::EDFilter{config},
@@ -78,7 +78,7 @@ namespace mu2e {
     maxdp_(config().maxdp()),
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
     selbest_(static_cast<bestpair>(config().selectbest())),
-    rtrk_(static_cast<reftrk>(config().reftrksel()))
+    rtrk_(static_cast<refloc>(config().reflocsel()))
     {
       produces<KalSeedPtrCollection> ();
       if(ptrs_){
@@ -90,19 +90,22 @@ namespace mu2e {
       }
       std::string sidname;
       sidmatch_ = config().surface(sidname);
-      if(sidmatch_)sid_ = SurfaceId(sidname);
+      if(sidmatch_){
+        sid_ = SurfaceId(sidname);
+      } else {
+        if(rtrk_ != any) throw cet::exception("RECO")<<"Explicit SID incompatible with t0 segment selection"<< std::endl;
+      }
       samelist_ = config().upstreamTag() == config().dnstreamTag();
     }
 
   bool SelectReflections::filter(art::Event& event) {
     ++nevts_;
-    const static SurfaceId usid;
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
 
     // input
     KalSeedPtrCollection upksptrs, dnksptrs;
-    art::Handle<KalSeedCollection> upksh,dnksh;;
+    art::Handle<KalSeedCollection> upksh,dnksh;
 
     if(ptrs_){
       auto upksptrsh = event.getValidHandle<KalSeedPtrCollection>(upstreamTag_);
@@ -123,17 +126,16 @@ namespace mu2e {
     if(debug_ > 1) std::cout << "Upstream " << upksptrs.size() << " , Downstream " << dnksptrs.size() << " KalSeeds" << std::endl;
     bool keep(false);
     if(upksptrs.size() > 0 && dnksptrs.size() > 0){
-      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned,unsigned> > matches; // match properties: iup,idn,dnt0mom,dt,dmom,dnnhits+upnhits,reftrk
+      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned,unsigned> > matches; // match properties: iup,idn,dnt0mom,dt,dmom,dnnhits+upnhits,refloc
       for(size_t iup = 0; iup <upksptrs.size(); ++iup){
         auto const& upks = *upksptrs[iup];
         double upt0;
         auto upt0mom = upks.t0Segment(upt0)->momentum3();
         if(upt0mom.Z() < 0 && selector_->select(upks)){
           if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
-          auto upinters = upks.intersections(sid_);
+          auto upinters = sidmatch_ ? upks.intersections(sid_) : KalSeed::InterIterCol();
           // search for a matching dnstream track. Skip self-references
-          size_t dnstart = samelist_ ? iup+1 : 0;
-          for(size_t idn = dnstart; idn <dnksptrs.size(); ++idn){
+          for(size_t idn = 0; idn <dnksptrs.size(); ++idn){
             auto const& dnks = *dnksptrs[idn];
             double dnt0;
             auto dnt0mom = dnks.t0Segment(dnt0)->momentum3();
@@ -142,6 +144,7 @@ namespace mu2e {
               if(sidmatch_) {
                 // find the appropriate intersection for comparison
                 auto dninters = dnks.intersections(sid_);
+                if(debug_ > 2)std::cout << "Searching " << upinters.size() << " upstream and " << dninters.size() << " downstream intersections" <<  std::endl;
                 for(auto upinter : upinters){
                   auto upimom = upinter->momentum3();
                   for(auto dninter : dninters){
@@ -166,6 +169,7 @@ namespace mu2e {
                               std::get<4>(match) = dmom;
                               std::get<6>(match) = both;
                             }
+                            alreadyfound = true;
                             break;
                           }
                         }
@@ -182,7 +186,7 @@ namespace mu2e {
                 if(debug_ > 2) std::cout << "Testing t0 track pair, dt " << dt << " dmom " << dmom << std::endl;
                 if( dt < maxdt_ && dmom < maxdp_){
                   if(debug_ > 1) std::cout << "Found t0 matching track pair, dt " << dt << " dmom " << dmom << std::endl;
-                  matches.emplace_back(iup,idn,dnt0mom.R(),dt,dmom,upks.nHits()+dnks.nHits(),unknown);
+                  matches.emplace_back(iup,idn,dnt0mom.R(),dt,dmom,upks.nHits()+dnks.nHits(),any);
                 }
               }
             }
@@ -200,7 +204,7 @@ namespace mu2e {
           double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " ninter " << std::get<6>(match) << std::endl;
+            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " refloc " << std::get<6>(match) << std::endl;
             if(selbest_ == mom && std::get<2>(match) > value){
               ibest = imatch;
               value = std::get<2>(match);
@@ -220,9 +224,9 @@ namespace mu2e {
       if(ibest > -1){
         if(debug_ > 0) std::cout << "Found Reflecting particle candidate, dnstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
-            << " delta P " << std::get<4>(matches[ibest]) << " reftrk " << std::get<6>(matches[ibest]) << std::endl;
+            << " delta P " << std::get<4>(matches[ibest]) << " refloc " << std::get<6>(matches[ibest]) << std::endl;
 
-        if(rtrk_ == unknown || std::get<6>(matches[ibest]) == both || std::get<6>(matches[ibest]) == rtrk_){
+        if(rtrk_ == any || std::get<6>(matches[ibest]) == both || std::get<6>(matches[ibest]) == rtrk_){
           if(ptrs_){
             mkseeds->emplace_back(upksptrs[std::get<0>(matches[ibest])]); // store the upstream track first by convention
             mkseeds->emplace_back(dnksptrs[std::get<1>(matches[ibest])]);
