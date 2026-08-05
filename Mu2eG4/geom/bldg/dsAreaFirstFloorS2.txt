@@ -1,0 +1,69 @@
+string building.dsArea.firstFloor.S2.name     = "dsAreaFirstFloorS2";
+string building.dsArea.firstFloor.S2.material = "CONCRETE_MARS";
+double building.dsArea.firstFloor.S2.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.firstFloor.S2.offsetFromFloorSurface.y = 7658.10;
+double building.dsArea.firstFloor.S2.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.firstFloor.S2.yHalfThickness           = 114.3;
+vector<double> building.dsArea.firstFloor.S2.xPositions = {
+-2921.00, // 0
+38163.50, // 1
+38163.50, // 2
+32689.80, // 3
+32689.80, // 4
+29895.80, // 5
+29895.80, // 6
+38163.50, // 7
+38163.50, // 8
+29794.20, // 9
+29794.20, // 10
+35585.40, // 11
+35585.40, // 12
+38163.50, // 13
+38163.50, // 14
+38430.20, // 15
+38430.20, // 16
+31153.10, // 17
+31153.10, // 18
+31419.80, // 19
+31419.80, // 20
+13233.40, // 21
+13233.40, // 22
+12014.20, // 23
+12014.20, // 24
+-2921.00 // 25
+};
+vector<double> building.dsArea.firstFloor.S2.yPositions = {
+-12014.3, // 0
+-12014.3, // 1
+-14427.10, // 2
+-14427.10, // 3
+-12090.40, // 4
+-12090.40, // 5
+-14427.20, // 6
+-14427.20, // 7
+-14732.00, // 8
+-14732.00, // 9
+-17475.20, // 10
+-17475.20, // 11
+-14732.10, // 12
+-14732.10, // 13
+-17678.40, // 14
+-17678.40, // 15
+-18288.00, // 16
+-18288.00, // 17
+-25298.40, // 18
+-25298.40, // 19
+-25908.00, // 20
+-25908.00, // 21
+-19431.00, // 22
+-19431.00, // 23
+-25908.00, // 24
+-25908.00 // 25
+};
+int building.dsArea.firstFloor.S2.Notch.numberOfNotches  = 1;
+vector<double> building.dsArea.firstFloor.S2.Notch.halfDims.1 = {76.2,127.,3350};
+vector<double> building.dsArea.firstFloor.S2.Notch.position.1 = {18000.,-12801.6,-2159.};
+string building.dsArea.firstFloor.S2.Notch.orientation.1 = "500";
+// Local Variables:
+// mode:c++
+// End:

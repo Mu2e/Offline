@@ -18,8 +18,8 @@ vector<double> building.central.stairwell.upper.wall.w.xPositions = {
 
 vector<double> building.central.stairwell.upper.wall.w.yPositions = {
   -13589,       // h
-  -19140.8,     // h0
-  -19140.8,     // h1
+  -23376.1,     // h0
+  -23376.1,     // h1
   -13589        // h2
 };
 

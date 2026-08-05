@@ -16,8 +16,8 @@ vector<double> building.tsArea.stairwell.xPositions = {
   3784.6,   // S0
   4089.4,   // S1
   4089.4,   // S2
-  11366.5,   // S3
-  11366.5,   // s4
+  11617.2,   // S3
+  11617.2,   // s4
   3784.6   // s5
 };
 

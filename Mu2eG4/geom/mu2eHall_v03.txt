@@ -64,10 +64,10 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/backfillPsHatchS2.txt"
 //#include "Mu2eG4/geom/bldg/backfillTSarea-W1.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt"
-//#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt"
 //#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchLower.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper1.txt"
-//#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
+#include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper3.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt"
 #include "Offline/Mu2eG4/geom/bldg/centralStairwellLowerCeiling.txt"
@@ -109,6 +109,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorInteriorDoorFrame.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaElevatorShield.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt"
+#include "Offline/Mu2eG4/geom/bldg/dsAreaFirstFloorS2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaTrenchFloor.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaHatchBlock.txt"
@@ -307,6 +308,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/exteriorWallNWExtension2_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaUpperWallW_v08.txt"
 #include "Offline/Mu2eG4/geom/bldg/dsAreaUpperWallE_v08.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtExtMonStairsGap.txt"
 
 vector<string> bldg.prefix.list = {
    "building.beamline",
@@ -362,6 +364,8 @@ vector<string> bldg.prefix.list = {
    "building.backfill.psHatch.S2",
    "building.backfill.TSarea-W.1Lower",
    "building.backfill.TSarea-W.1UpperNotchUpper1",
+   "building.backfill.TSarea-W.1UpperNotchUpper2",
+   "building.backfill.TSarea-W.1UpperNotchUpper3",
    "building.backfill.TSarea-W.2",
    "building.backfill.TSarea-W.2Upper",
    "building.central.stairwell.lower.ceiling",
@@ -398,6 +402,7 @@ vector<string> bldg.prefix.list = {
    "building.dsArea.elevator.interior.lower.N",
    "building.dsArea.elevator.shield",
    "building.dsArea.firstFloor.S",
+   "building.dsArea.firstFloor.S2",
    "building.dsArea.trench.cover",
    "building.dsArea.trench.floor",
    "building.dsArea.upper",
@@ -576,7 +581,8 @@ vector<string> rotated.prefix.list = {
    "building.extMon.stairs.wallN",
    "building.extMon.stairs.wallS",
    "building.dsArea.elevator.interior.lower.E",
-   "building.dsArea.elevator.interior.door.frame"
+   "building.dsArea.elevator.interior.door.frame",
+   "dirt.extMon.stairs.gap"
 };
 
 //   "building.tempDirt.backfill.psArea.baselevel",
@@ -653,7 +659,13 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellLower3.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle2.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle3.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle4.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellMiddle5.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtCentralStairwellUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeCeiling.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsArea.txt"
@@ -670,6 +682,7 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaElevator.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaElevatorUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaFirstFloorS.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtDsAreaFirstFloorS2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtDsAreaUpperSE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeStair04.txt"
@@ -783,7 +796,13 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.slab2.NW",
   "dirt.beamline.upper",
   "dirt.central.stairwell.lower",
+  "dirt.central.stairwell.lower2",
+  "dirt.central.stairwell.lower3",
   "dirt.central.stairwell.middle",
+  "dirt.central.stairwell.middle2",
+  "dirt.central.stairwell.middle3",
+  "dirt.central.stairwell.middle4",
+  "dirt.central.stairwell.middle5",
   "dirt.central.stairwell.upper",
   "dirt.escape.ceiling",
   "dirt.dsArea",
@@ -800,6 +819,7 @@ vector<string> dirt.prefix.list = {
   "dirt.dsArea.elevator",
   "dirt.dsArea.elevator.upper",
   "dirt.dsArea.firstFloor.S",
+  "dirt.dsArea.firstFloor.S2",
   "dirt.dsArea.upper",
   "dirt.dsArea.upper.SE",
   "dirt.extMon",
