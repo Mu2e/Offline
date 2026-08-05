@@ -35,10 +35,14 @@
 #include "Production/JobConfig/pileup/STM/prolog.fcl"
 
 common_training_config : { # Common training configuration for all particles
-  # Campaign/version tag embedded in every generated file name (summary CSV, model .bin files, and
+  # Campaign/version tag embedded in every generated file name (summary .txt, model .dat files, and
   # the recommended ROOT dump name). Lets several campaigns coexist in one directory and lets the
-  # generator recover the version from the summary file name. Required.
+  # generator recover the version from the summary file name. Required, and must not contain '.'
+  # (the file-name parser splits on dots).
   versionTag : "MDC2025ai"
+  # Run number for the Mu2e-convention sequencer field, zero-padded to 6 digits in every generated
+  # file name (e.g. "001200"). Paired there with the 8-digit dataSourceTag enumeration. Required.
+  runNumber : 1200
   trainingFromROOTFile : true # If true, VDResamplerConfigure emits a VDResamplerTrainFromRoot job
                               # (EmptyEvent source, reads InputRootFile below). If false, it emits a
                               # VDResamplerTrain job that reads the ART data source instead.

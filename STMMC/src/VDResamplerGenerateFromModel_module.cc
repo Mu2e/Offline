@@ -115,17 +115,17 @@ namespace mu2e {
         };
         fhicl::Atom<std::string> stage1ModelFile{
           Name("stage1ModelFile"),
-          Comment("CSV filename for the stage-1 model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the stage-1 model parameters"),
           ""
         };
         fhicl::Atom<std::string> stage2ModelFile{
           Name("stage2ModelFile"),
-          Comment("CSV filename for the stage-2 model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the stage-2 model parameters"),
           ""
         };
         fhicl::Atom<std::string> allAtOnceModelFile{
           Name("allAtOnceModelFile"),
-          Comment("CSV filename for the all-at-once 6D model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the all-at-once 6D model parameters"),
           ""
         };
         fhicl::Atom<std::string> SBDMstage1Method{

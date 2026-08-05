@@ -1986,11 +1986,14 @@ namespace mu2e {
         const std::string& filename
     )
     {
-        // Dispatch based on file extension
-        bool isBin = filename.size() >= 4 &&
-                     filename.compare(filename.size() - 4, 4, ".bin") == 0;
-        bool isCsv = filename.size() >= 4 &&
-                     filename.compare(filename.size() - 4, 4, ".csv") == 0;
+        // Dispatch based on file extension. ".dat" is the current binary extension; ".bin" is its
+        // legacy spelling and stays accepted so existing checkpoints keep loading. The human-
+        // readable dump remains ".csv".
+        auto hasExt = [&filename](const char* ext) {
+            return filename.size() >= 4 && filename.compare(filename.size() - 4, 4, ext) == 0;
+        };
+        bool isBin = hasExt(".dat") || hasExt(".bin");
+        bool isCsv = hasExt(".csv");
         if (isBin) {
             std::ifstream bin(filename, std::ios::binary);
             if (!bin) {
@@ -2951,7 +2954,7 @@ namespace mu2e {
         } else {
             throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                 << "Unrecognized file extension in \"" << filename
-                << "\"; expected \".bin\" or \".csv\".";
+                << "\"; expected \".dat\" (or legacy \".bin\") for binary, or \".csv\" for text.";
         }
     }
 

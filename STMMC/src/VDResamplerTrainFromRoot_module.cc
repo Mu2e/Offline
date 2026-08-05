@@ -38,12 +38,12 @@ namespace mu2e {
         fhicl::Atom<std::string> InputRootFile{ Name("InputRootFile"), Comment("Input ROOT file with TTree") };
         fhicl::Atom<std::string> TreeName{      Name("TreeName"),      Comment("Name of the TTree in the ROOT file"), "VDResamplerTrainingSetup/ttree" };
         fhicl::Atom<bool>        SBDMuseTwoStageTraining{    Name("SBDMuseTwoStageTraining"),    Comment("If true, train two-stage model; if false, train all 6 dimensions at once."), true };
-        fhicl::Atom<std::string> SBDMallAtOnceModelFile{    Name("SBDMallAtOnceModelFile"),    Comment("CSV filename for the all-at-once 6D model"),  "" };
-        fhicl::Atom<std::string> SBDMstage1ModelFile{        Name("SBDMstage1ModelFile"),        Comment("CSV filename for the stage-1 model"),         "" };
-        fhicl::Atom<std::string> SBDMstage2ModelFile{        Name("SBDMstage2ModelFile"),        Comment("CSV filename for the stage-2 model"),         "" };
-        fhicl::Atom<std::string> SBDMloadCheckPointAllAtOnceModelFile{ Name("SBDMloadCheckPointAllAtOnceModelFile"), Comment("Load checkpoint CSV for all-at-once model"), "" };
-        fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Load checkpoint CSV for stage-1 model"),    "" };
-        fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Load checkpoint CSV for stage-2 model"),    "" };
+        fhicl::Atom<std::string> SBDMallAtOnceModelFile{    Name("SBDMallAtOnceModelFile"),    Comment("Model output filename (.dat) for the all-at-once 6D model"),  "" };
+        fhicl::Atom<std::string> SBDMstage1ModelFile{        Name("SBDMstage1ModelFile"),        Comment("Model output filename (.dat) for the stage-1 model"),         "" };
+        fhicl::Atom<std::string> SBDMstage2ModelFile{        Name("SBDMstage2ModelFile"),        Comment("Model output filename (.dat) for the stage-2 model"),         "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointAllAtOnceModelFile{ Name("SBDMloadCheckPointAllAtOnceModelFile"), Comment("Checkpoint file to load for the all-at-once model (.dat, or legacy .bin/.csv)"), "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Checkpoint file to load for the stage-1 model (.dat, or legacy .bin/.csv)"),    "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Checkpoint file to load for the stage-2 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
         fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("Virtual detector ID to select"),    116 };
         fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector"),      37700.39 };

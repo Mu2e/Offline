@@ -1,16 +1,17 @@
 // VDResamplerConfigure_module.cc
 // Makes one pass of the data set and determines which particles need training for the resampler,
 // then generates ONE self-contained training fcl per (source, particle). "dataSourceTag" tags the
-// data source and, together with the plan's versionTag and the VD id, is embedded in every
-// generated file name so several campaigns/sources/detectors coexist in one directory:
+// data source and, together with the plan's versionTag, runNumber and the VD id, is embedded in
+// every generated file name so several campaigns/sources/detectors coexist in one directory:
 //   train fcl : <TrainModule>_<ver>_VD<id>_<src>_pdg<pdgTok>.fcl
-//   model     : SBDMmodel_<role>_<ver>_VD<id>_<src>_pdg<pdgTok>.bin   (see VDResamplerNameHelper)
+//   model     : nts.mu2e.VDResamplerModel_VD<id>_pdg<pdgTok>_<role>.<ver>.<run6>_<src8>.dat
+//               (see VDResamplerNameHelper)
 // A breakdown of the per-particle hit counts is written to
-//   VDResamplerConfigure_<ver>_VD<id>_<src>_HitSummary.csv
-// which the generator (VDResamplerGenerateMix) parses to recover ver/id/src and rebuild the model
-// names via the SAME shared helper. Per-particle training config (momentum basis, curriculum, ...)
-// is resolved from the training plan; common_training_config supplies the shared VD geometry,
-// versionTag, and the training-source selection (trainingFromROOTFile).
+//   etc.mu2e.VDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
+// which the generator (VDResamplerGenerateMix) parses to recover ver/id/src/run and rebuild the
+// model names via the SAME shared helper. Per-particle training config (momentum basis, curriculum,
+// ...) is resolved from the training plan; common_training_config supplies the shared VD geometry,
+// versionTag, runNumber, and the training-source selection (trainingFromROOTFile).
 // Yongyi Wu, Mar. 2026
 
 // stdlib includes
@@ -64,6 +65,14 @@ namespace mu2e {
     // entry does NOT set SBDMuseTwoStageTraining we default to two-stage iff nHits > this. When the
     // plan sets SBDMuseTwoStageTraining explicitly, that value wins and this is not consulted.
     constexpr int kTwoStageTrainingHitThreshold = 10000;
+
+    // Directory prefix for a generated file name. An empty directory means "no prefix", so the
+    // file lands in the current working directory — on the grid, the job's local sandbox. A
+    // non-empty directory gets exactly one trailing '/', whether or not it already had one.
+    inline std::string dirPrefix(const std::string& dir) {
+      if (dir.empty()) return dir;
+      return (dir.back() == '/') ? dir : dir + "/";
+    }
 
     // fhicl key for a pdgId: negatives can't start with '-', so use 'm<abs>'
     // (matching the model-file token convention), positives use the bare number.
@@ -194,9 +203,9 @@ namespace mu2e {
         // VirtualDetectorID (and VDz0/VDr) are NOT module parameters: they come from the training
         // plan's common_training_config, the single source of truth used both to filter hits here
         // and to configure the generated training fcls.
-        fhicl::Atom<std::string> VDResamplerDir{Name("VDResamplerDir"), Comment("Directory to store the generated csv files")};
+        fhicl::Atom<std::string> VDResamplerDir{Name("VDResamplerDir"), Comment("Directory to store the generated summary (.txt) and model files. Defaults to empty, meaning no directory is prefixed and files land in the current working directory — on the grid, the job's local sandbox."), ""};
         fhicl::Atom<std::string> fclDir{Name("fclDir"), Comment("Directory to store the generated fhicl files"), ""};
-        fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files (MuBeam, EleBeam, TgtStp1809, or Neutrals)")};
+        fhicl::Atom<std::string> dataSourceTag{Name("dataSourceTag"), Comment("A tag to distinguish different data sources, will be appended to the generated fcl and csv files (EleBeam, MuBeam, TargetStops1809, or Neutrals)")};
         fhicl::Atom<int> trainingThreshold{Name("trainingThreshold"), Comment("Minimum number of hits for a particle type to be included in the training"), 100};
         fhicl::Atom<std::string> trainingPlanFile{Name("trainingPlanFile"), Comment("Required fhicl guideline file with per-(source,pdg) training configuration (e.g. stage1Method). See resolveStage1Method for the lookup order.")};
         fhicl::Atom<bool> doROOTDump{Name("doROOTDump"), Comment("Whether to dump the VD hit info into a ROOT file for debugging and analysis"), true};
@@ -223,6 +232,7 @@ namespace mu2e {
       double VDr = 0.0;
       bool trainingFromROOT = true;   // common_training_config.trainingFromROOTFile (required)
       std::string versionTag;         // common_training_config.versionTag (required); embedded in file names
+      int runNumber = 0;              // common_training_config.runNumber (required); 6-digit field in file names
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, px = 0.0, py = 0.0, pz = 0.0, mass = 0.0, E = 0.0, time = 0.0;
@@ -262,11 +272,13 @@ namespace mu2e {
           << "common_training_config in " << trainingPlanFile << " is missing required key '" << key << "'.";
     };
     requireCommon("versionTag");
+    requireCommon("runNumber");
     requireCommon("trainingFromROOTFile");
     requireCommon("VirtualDetectorID");
     requireCommon("VDz0");
     requireCommon("VDr");
     versionTag        = commonConfig.get<std::string>("versionTag");
+    runNumber         = commonConfig.get<int>("runNumber");
     trainingFromROOT  = commonConfig.get<bool>("trainingFromROOTFile");
     VirtualDetectorID = static_cast<VolumeId_type>(commonConfig.get<int>("VirtualDetectorID"));
     VDz0 = commonConfig.get<double>("VDz0");
@@ -346,13 +358,13 @@ namespace mu2e {
     log << "====================================\n";
     log << "Number of thrown events: " << nThrownEvents << "\n";
 
-    // store a summary of the number of hits for each particle type in a csv file for reference,
-    // all particles are included, but the particle types with hits below the training threshold are
-    // marked with an asterisk in the TrainingMode column to indicate they are NOT trained.
-    // Summary name embeds versionTag + VD id + dataSourceTag (see VDResamplerNameHelper). The
-    // generator parses all three back out of this file name, so it MUST be built via the shared helper.
+    // store a summary of the number of hits for each particle type in a comma-separated .txt file
+    // for reference, all particles are included, but the particle types with hits below the training
+    // threshold are marked with an asterisk in the TrainingMode column to indicate they are NOT trained.
+    // Summary name embeds versionTag + VD id + dataSourceTag + runNumber (see VDResamplerNameHelper).
+    // The generator parses all four back out of this file name, so it MUST be built via the shared helper.
     std::string summaryFile =
-      VDResamplerDir + "/" + VDResampler::summaryFileName(versionTag, VirtualDetectorID, dataSourceTag);
+      dirPrefix(VDResamplerDir) + VDResampler::summaryFileName(versionTag, VirtualDetectorID, dataSourceTag, runNumber);
     std::string fclFilePath = fclDir.empty() ? VDResamplerDir : fclDir;
     std::ofstream sumOutFile(summaryFile);
     if (!sumOutFile)
@@ -362,7 +374,7 @@ namespace mu2e {
     // outside this module). Log the recommended, version-consistent name so it matches the models.
     mf::LogInfo("VDResamplerConfigure::endJob")
         << "Recommended TFileService.fileName for this job's ROOT dump: "
-        << VDResampler::rootDumpFileName(versionTag, VirtualDetectorID, dataSourceTag)
+        << VDResampler::rootDumpFileName(versionTag, VirtualDetectorID, dataSourceTag, runNumber)
         << " (set services.TFileService.fileName to keep it version-consistent).";
 
     // trainingPlan / commonConfig were loaded (and their required keys validated) in the
@@ -433,7 +445,7 @@ namespace mu2e {
       const std::string moduleName  = trainModule + tag;
       const std::string pathName    = "trainPathVD" + vdStr + "pdg" + pdgIdstr;
       // fcl file name mirrors the training module actually used (…TrainFromRoot_… vs …Train_…).
-      const std::string fclFile = fclFilePath + "/" + trainModule + "_" + VDResampler::sanitizeTag(versionTag)
+      const std::string fclFile = dirPrefix(fclFilePath) + trainModule + "_" + VDResampler::sanitizeTag(versionTag)
                                 + "_VD" + vdStr + "_" + sanitizedDataSourceTag + "_pdg" + pdgIdstr + ".fcl";
 
       std::ofstream fclOutFile(fclFile);
@@ -479,20 +491,20 @@ namespace mu2e {
                    << ind << "SimParticlemvTag : \"" << simTag << "\"\n";
       }
 
-      // Model output files (.bin, full double precision), named via the shared helper so the
+      // Model output files (.dat, full double precision), named via the shared helper so the
       // generator reconstructs identical paths. Under a resampler stage-1 method the 1-D pTotal
       // model is NOT trained (the generator draws pTotal directly), so omit stage1's file — the
       // train module trains stage1 only when that path is non-empty. Always train stage2.
-      const std::string modelDir = VDResamplerDir + "/";
+      const std::string modelDir = dirPrefix(VDResamplerDir);
       if (useTwoStageTraining) {
         if (stage1Method == "DIFFUSION")
           fclOutFile << ind << "SBDMstage1ModelFile : \""
-                     << modelDir << VDResampler::modelFileName("stage1", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+                     << modelDir << VDResampler::modelFileName("stage1", versionTag, VirtualDetectorID, dataSourceTag, pdg, runNumber) << "\"\n";
         fclOutFile << ind << "SBDMstage2ModelFile : \""
-                   << modelDir << VDResampler::modelFileName("stage2", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+                   << modelDir << VDResampler::modelFileName("stage2", versionTag, VirtualDetectorID, dataSourceTag, pdg, runNumber) << "\"\n";
       } else {
         fclOutFile << ind << "SBDMallAtOnceModelFile : \""
-                   << modelDir << VDResampler::modelFileName("allAtOnce", versionTag, VirtualDetectorID, dataSourceTag, pdg) << "\"\n";
+                   << modelDir << VDResampler::modelFileName("allAtOnce", versionTag, VirtualDetectorID, dataSourceTag, pdg, runNumber) << "\"\n";
       }
 
       // VD geometry — always from the plan (single source of truth).

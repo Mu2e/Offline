@@ -73,7 +73,7 @@ struct TrainState {
     int trainingEpochs              = 0;
     int trainingSize                = -1;
     std::vector<int> saveEpochs;
-    bool saveAlsoCsv                = false; // if true, also write a CSV alongside every binary save
+    bool saveAlsoCsv                = false; // if true, also write a human-readable .csv dump alongside every binary (.dat) save
 
     // Automatic curriculum planner. When autoPlanner is true, each curriculum phase
     // trains until its (smoothed) loss converges instead of for a fixed epoch count;
@@ -328,20 +328,33 @@ inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string&
 }
 
 // ---------------------------------------------------------------------------
-// ensureBinExtension — warn and fix a model file path that doesn't end in .bin
+// ensureBinExtension — warn and fix a model file path that doesn't end in .dat
+//
+// ".dat" is the current binary extension. ".bin" is its legacy spelling: still
+// accepted (so existing plans keep working) but warned about, since every model
+// written from here on should be ".dat". Anything else is rewritten to ".dat".
 // ---------------------------------------------------------------------------
 inline std::string ensureBinExtension(const std::string& path, const std::string& fieldName,
                                        const std::string& moduleName)
 {
     if (path.empty()) return path;
-    if (path.size() >= 4 && path.substr(path.size() - 4) == ".bin") return path;
+    auto hasExt = [&path](const char* ext) {
+        return path.size() >= 4 && path.substr(path.size() - 4) == ext;
+    };
+    if (hasExt(".dat")) return path;
+    if (hasExt(".bin")) {
+        mf::LogWarning(moduleName)
+            << fieldName << " ends with the legacy \".bin\" extension (\"" << path
+            << "\"); it is still accepted, but new models should use \".dat\".";
+        return path;
+    }
     std::string fixed = path;
-    if (fixed.size() >= 4 && fixed.substr(fixed.size() - 4) == ".csv")
-        fixed = fixed.substr(0, fixed.size() - 4) + ".bin";
+    if (hasExt(".csv"))
+        fixed = fixed.substr(0, fixed.size() - 4) + ".dat";
     else
-        fixed += ".bin";
+        fixed += ".dat";
     mf::LogWarning(moduleName)
-        << fieldName << " does not end with \".bin\" (got \"" << path
+        << fieldName << " does not end with \".dat\" (got \"" << path
         << "\"); correcting to \"" << fixed << "\".";
     return fixed;
 }
@@ -708,9 +721,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                         CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg,
                         const std::string& moduleName)
 {
-    // Ensure all model output file paths end with .bin.  Checkpoint *load* paths
-    // (ckpt*File) are left untouched: loadModel() auto-detects the format by
-    // extension, so legacy .csv checkpoints must keep their original names.
+    // Ensure all model output file paths end with .dat (legacy .bin is accepted
+    // with a warning).  Checkpoint *load* paths (ckpt*File) are left untouched:
+    // loadModel() auto-detects the format by extension, so legacy .bin/.csv
+    // checkpoints must keep their original names.
     s.allAtOnceModelFile = ensureBinExtension(s.allAtOnceModelFile, "SBDMallAtOnceModelFile",  moduleName);
     s.stage1ModelFile    = ensureBinExtension(s.stage1ModelFile,    "SBDMstage1ModelFile",     moduleName);
     s.stage2ModelFile    = ensureBinExtension(s.stage2ModelFile,    "SBDMstage2ModelFile",     moduleName);
@@ -1525,10 +1539,13 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         return;
     }
 
-    // Strip trailing ".csv" or ".bin" for checkpoint naming
+    // Strip a trailing ".dat" (or the legacy ".bin"/".csv") for checkpoint naming, so derived
+    // names come out as "<base>.epoch7.dat" rather than "<base>.dat.epoch7.dat".
     auto stripExt = [](const std::string& f) -> std::string {
-        if (f.size() > 4 && (f.substr(f.size() - 4) == ".csv" || f.substr(f.size() - 4) == ".bin"))
-            return f.substr(0, f.size() - 4);
+        if (f.size() > 4) {
+            const std::string ext = f.substr(f.size() - 4);
+            if (ext == ".dat" || ext == ".bin" || ext == ".csv") return f.substr(0, f.size() - 4);
+        }
         return f;
     };
 
@@ -1665,7 +1682,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 model.train(data, 1, s.currentSamplesDrawnPerEpoch, s.currentBiasLowSigma, s.currentTLowBound,
                             s.currentTFocusLow, s.currentTFocusHigh, s.currentTFocusFraction, s.currentPeakWindows);
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), e) != s.saveEpochs.end()) {
-                    model.saveModel(base + ".epoch" + std::to_string(e) + ".bin", basisTag);
+                    model.saveModel(base + ".epoch" + std::to_string(e) + ".dat", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(base + ".epoch" + std::to_string(e) + ".csv");
                 }
@@ -1792,20 +1809,20 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 // Best-in-phase checkpoints. Raw = the single lowest-loss epoch;
                 // smoothed = lowest moving-average loss (robust to per-epoch noise).
                 if (tracer.rawImproved) {
-                    model.saveModel(phaseTag + ".bestRaw.bin", basisTag);
+                    model.saveModel(phaseTag + ".bestRaw.dat", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(phaseTag + ".bestRaw.csv");
                 }
                 if (tracer.smoothedImproved) {
                     // Capture the smoothed-best in memory for resume-from-best, and on disk.
                     model.snapshotNetwork();
-                    model.saveModel(phaseTag + ".bestSmoothed.bin", basisTag);
+                    model.saveModel(phaseTag + ".bestSmoothed.dat", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(phaseTag + ".bestSmoothed.csv");
                 }
                 // Honor explicit checkpoint epochs (indexed by global epoch count).
                 if (std::find(s.saveEpochs.begin(), s.saveEpochs.end(), globalEpoch) != s.saveEpochs.end()) {
-                    model.saveModel(base + ".epoch" + std::to_string(globalEpoch) + ".bin", basisTag);
+                    model.saveModel(base + ".epoch" + std::to_string(globalEpoch) + ".dat", basisTag);
                     if (s.saveAlsoCsv)
                         model.saveModelCsv(base + ".epoch" + std::to_string(globalEpoch) + ".csv");
                 }
@@ -1816,7 +1833,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
 
             // Phase-final snapshot: the literal final-epoch state, saved BEFORE any
             // resume-from-best restore so ".final" always means "last epoch trained".
-            model.saveModel(phaseTag + ".final.bin", basisTag);
+            model.saveModel(phaseTag + ".final.dat", basisTag);
             if (s.saveAlsoCsv)
                 model.saveModelCsv(phaseTag + ".final.csv");
 
@@ -1862,10 +1879,22 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 return; // abort: surface the bad plan instead of advancing
             }
         }
+        // What lands in outFile is the LAST PHASE'S SMOOTHED-BEST state, not the final epoch: the
+        // resume-from-best block above calls restoreNetwork() unconditionally at the end of every
+        // phase, so by the time we get here the in-memory model has already been rewound to that
+        // phase's smoothed-best (network + Adam moments + EMA + dim weights). The literal last-epoch
+        // state is preserved separately as "<phaseTag>.final.dat". The one exception is a phase in
+        // which no epoch ever improved the smoothed loss — hasNetworkSnapshot() is then false, no
+        // restore happened, and what follows is the final-epoch state instead.
+        if (!model.hasNetworkSnapshot())
+            mf::LogWarning(moduleName)
+                << "No smoothed-best snapshot exists after the last phase (no epoch improved the "
+                << "smoothed loss), so " << outFile << " holds the FINAL-EPOCH state rather than "
+                << "the smoothed-best one. Check the phase's loss trace and planner settings.";
         model.saveModel(outFile, basisTag);
         if (s.saveAlsoCsv)
             model.saveModelCsv(base + ".csv");
-        mf::LogInfo(moduleName) << "Training completed (auto planner), saved to " << outFile;
+        mf::LogInfo(moduleName) << "Training completed (auto planner), saved smoothed-best state to " << outFile;
     };
 
     // Per-stage normalization mean/stdev orderings MUST match the vectors built in

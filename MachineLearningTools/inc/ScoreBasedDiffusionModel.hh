@@ -545,11 +545,12 @@ namespace mu2e{
             std::vector<double>* noisedZscoreOut = nullptr // receives the noised start state x_t0 (z-score)
         );
 
-        // Save the model to a binary file (.bin) preserving full double precision.
+        // Save the model to a binary file (.dat) preserving full double precision.
         // This is the default save format. Use saveModelCsv for human-readable output.
         //
         // Parameters:
-        //   filename - Path to the binary file (default: "DiffusionModel.bin")
+        //   filename - Path to the binary file (default: "DiffusionModel.bin"; callers in the
+        //              VDResampler pipeline always pass an explicit ".dat" name)
         //   basisTag - Opaque application-level integer (default 0) round-tripped
         //              verbatim through save/load. This class never interprets it;
         //              callers (e.g. VDResampler) use it to record which momentum
