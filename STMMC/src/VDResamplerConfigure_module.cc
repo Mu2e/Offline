@@ -52,6 +52,7 @@
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"     // summaryFileName / modelFileName / rootDumpFileName
 
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -237,7 +238,11 @@ namespace mu2e {
       int pdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, px = 0.0, py = 0.0, pz = 0.0, mass = 0.0, E = 0.0, time = 0.0;
       VolumeId_type virtualdetectorId = 0;
-      int nThrownEvents = 0;
+      // Rejected-HIT counters (not events): analyze() loops over StepPointMCs, so one art event
+      // can contribute several. Split by reason — a hit on a different VD says nothing about the
+      // flux on ours, while a backward-going hit on our VD does.
+      int nRejectedHitsWrongVD = 0;   // virtualdetectorId != VirtualDetectorID
+      int nRejectedHitsBackward = 0;  // right VD, but pz <= 0 (upstream-going)
       TTree* ttree = nullptr;
       std::map<int, int> pdgIds; // <id, count>
   };
@@ -333,12 +338,22 @@ namespace mu2e {
           ttree->Fill();
       }
 
-      if (virtualdetectorId != VirtualDetectorID || pz <= 0)
+      // Filter hits on the virtual detector ID and pz, counting the two rejection reasons
+      // separately. The wrong-VD case is checked first, so a hit is attributed to exactly one
+      // reason and the two counters sum to the total number of rejected hits.
+      if (virtualdetectorId != VirtualDetectorID)
       {
-        // mf::LogWarning("VDResamplerConfigure") << "Thrown event\n"
+        // mf::LogWarning("VDResamplerConfigure") << "Rejected hit (wrong VD)\n"
         //                                        << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
-        nThrownEvents += 1;
-        continue; // Filter hits based on the virtual detector ID and pz
+        nRejectedHitsWrongVD += 1;
+        continue;
+      }
+      if (pz <= 0)
+      {
+        // mf::LogWarning("VDResamplerConfigure") << "Rejected hit (backward-going)\n"
+        //                                        << "PDG ID = " << pdgId << ", VDID = " << virtualdetectorId << ", z = " << step.position().z() << ", pz = " << pz;
+        nRejectedHitsBackward += 1;
+        continue;
       }
 
       // Count the number of hits for each particle type for the summary
@@ -356,7 +371,15 @@ namespace mu2e {
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";
     log << "====================================\n";
-    log << "Number of thrown events: " << nThrownEvents << "\n";
+    // Hit-level counts, matching the per-particle counts above (analyze() loops over StepPointMCs,
+    // so one art event can contribute several). Accepted + rejected = every hit examined.
+    int nAcceptedHits = 0;
+    for (const auto& part : pdgIds) nAcceptedHits += part.second;
+    const int nRejectedHits = nRejectedHitsWrongVD + nRejectedHitsBackward;
+    log << "Accepted hits (VD" << VirtualDetectorID << ", pz>0): " << nAcceptedHits << "\n";
+    log << "Rejected hits: " << nRejectedHits
+        << " (wrong VD: " << nRejectedHitsWrongVD
+        << ", backward-going on VD" << VirtualDetectorID << ": " << nRejectedHitsBackward << ")\n";
 
     // store a summary of the number of hits for each particle type in a comma-separated .txt file
     // for reference, all particles are included, but the particle types with hits below the training
@@ -383,14 +406,22 @@ namespace mu2e {
     // EVERY generated job:
     //   true  -> VDResamplerTrainFromRoot module + EmptyEvent source, reading InputRootFile.
     //   false -> VDResamplerTrain module + the ART data source (StepPointMCs/SimParticles tags).
-    // ROOT-source keys (only written when trainingFromROOT). InputRootFile may be @nil (or absent):
-    // a @nil value is present but is NOT an atom, so is_key_to_atom() cleanly distinguishes a real
-    // path from @nil/absent without exceptions. When unset, the fcl gets a placeholder + reminder.
+    // ROOT-source keys (only written when trainingFromROOT). InputRootFile may be @nil or absent,
+    // in which case the generated fcl gets a placeholder + reminder instead of a path. fhicl
+    // reports a @nil value as a present atom, so has_key/is_key_to_atom cannot distinguish it from
+    // a real path — only the string conversion can, and it throws. Let the get<> attempt itself be
+    // the test and treat a failure as "not set".
     const std::string treeName = commonConfig.get<std::string>("TreeName", "VDResamplerTrainingSetup/ttree");
-    const bool inputRootFileSet =
-      commonConfig.has_key("InputRootFile") && commonConfig.is_key_to_atom("InputRootFile");
-    const std::string inputRootFile =
-      inputRootFileSet ? commonConfig.get<std::string>("InputRootFile") : std::string();
+    std::string inputRootFile;
+    bool inputRootFileSet = false;
+    if (commonConfig.has_key("InputRootFile")) {
+      try {
+        inputRootFile = commonConfig.get<std::string>("InputRootFile");
+        inputRootFileSet = !inputRootFile.empty();
+      } catch (const fhicl::exception&) {
+        inputRootFileSet = false;  // @nil (or any non-string value): treat as unset
+      }
+    }
     // ART-source tags (only written when !trainingFromROOT).
     const std::string stepTag = commonConfig.get<std::string>("StepPointMCsTag", "compressDetStepMCsSTM116:");
     const std::string simTag  = commonConfig.get<std::string>("SimParticlemvTag", "compressDetStepMCsSTM116:");
