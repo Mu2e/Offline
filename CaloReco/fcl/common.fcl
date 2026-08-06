@@ -5,9 +5,29 @@ BEGIN_PROLOG
   HitMakerMinPeakADC           : 16
   pulseFileName                : "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root"
   pulseHistName                : "h_waveform"
-  readoutPEPerMeVCsI           : 30.0
-  readoutPEPerMeVLyso          : 500.0
   MeVToADC                     : 16.0
   ADCToMeV                     : 0.0625
+
+  CaloPulseCache:{
+     fileName      : "OfflineData/ConditionsService/CsI-waveform-2020-02-12.root"
+     histName      : "h_waveform"
+     digiSampling  : @local::HitMakerDigiSampling
+  }
+
+  #See doc-db 35519 for noise level discussion
+  CaloNoiseCache :
+  {
+     generate       : false
+     dumpGenerated  : false
+     histoFileName  : "CaloMC/data/ReadoutNoise.root"
+     histoPrefix    : "histo_"
+     pulseCache     : @local::CaloPulseCache
+     elecNphotPerNs : 0.18
+     rinNphotPerNs  : 0.25
+     darkNphotPerNs : 0.00
+     digiSampling   : @local::HitMakerDigiSampling
+  }
+
+
 END_PROLOG
 

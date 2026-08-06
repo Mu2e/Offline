@@ -18,8 +18,7 @@ CaloReco : {
 
    TemplateProcessor :
    {
-      pulseFileName      : @local::pulseFileName
-      pulseHistName      : @local::pulseHistName
+      pulseCache         : {@table::CaloPulseCache}
       windowPeak         : 3
       minPeakAmplitude   : 24
       numNoiseBins       : 5

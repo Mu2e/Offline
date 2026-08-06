@@ -1,8 +1,6 @@
 cet_make_library(
     SOURCE
-      src/CaloNoiseSimGenerator.cc
       src/CaloPhotonPropagation.cc
-      src/CaloWFExtractor.cc
       src/ShowerStepUtil.cc
       src/CaloDigiWrapper.cc
       src/CaloDigiWrapperCollection.cc

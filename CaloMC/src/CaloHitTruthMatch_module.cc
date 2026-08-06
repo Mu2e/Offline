@@ -13,7 +13,7 @@
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/MCRelationship.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -34,16 +34,16 @@ namespace mu2e {
          {
              using Name    = fhicl::Name;
              using Comment = fhicl::Comment;
-             fhicl::Atom<art::InputTag>  caloShowerSimCollection { Name("caloShowerSimCollection"), Comment("Name of caloShowerSim Collection") };
-             fhicl::Atom<art::InputTag>  caloHitCollection       { Name("caloHitCollection"),       Comment("Name of CaloHit collection") };
-             fhicl::Atom<art::InputTag>  primaryParticle         { Name("primaryParticle"),         Comment("PrimaryParticle producer")};
-             fhicl::Atom<std::string>    pulseFileName           { Name("pulseFileName"),           Comment("Calo pulse file name") };
-             fhicl::Atom<std::string>    pulseHistName           { Name("pulseHistName"),           Comment("Calo pulse hist name") };
-             fhicl::Atom<double>         digiSampling            { Name("digiSampling"),            Comment("Digitization time sampling") };
-             fhicl::Atom<double>         deltaTimeMinus          { Name("deltaTimeMinus"),          Comment("Max time (ns) a MC hit may precede the reco hit to be matched"), 100.0 };
-             fhicl::Atom<double>         minAmplitude            { Name("minAmplitude"),            Comment("Minimum amplitude of waveform to define hit length") };
-             fhicl::Atom<bool>           fillDetailedMC          { Name("fillDetailedMC"),          Comment("Fill SimParticle - SimShower Assn map")};
-             fhicl::Atom<int>            diagLevel               { Name("diagLevel"),               Comment("Diag Level"),0 };
+             using CPG     = CaloPulseUtil::Config;
+             fhicl::Table<CPG>          pulseCache              { Name("pulseCache"),              Comment("Pulse cache maker config") };
+             fhicl::Atom<art::InputTag> caloShowerSimCollection { Name("caloShowerSimCollection"), Comment("Name of caloShowerSim Collection") };
+             fhicl::Atom<art::InputTag> caloHitCollection       { Name("caloHitCollection"),       Comment("Name of CaloHit collection") };
+             fhicl::Atom<art::InputTag> primaryParticle         { Name("primaryParticle"),         Comment("PrimaryParticle producer")};
+             fhicl::Atom<double>        digiSampling            { Name("digiSampling"),            Comment("Digitizer sampling time (ns) ") };
+             fhicl::Atom<double>        deltaTimeMinus          { Name("deltaTimeMinus"),          Comment("Max time (ns) a MC hit may precede the reco hit to be matched"), 100.0 };
+             fhicl::Atom<double>        minAmplitude            { Name("minAmplitude"),            Comment("Minimum amplitude of waveform to define hit length") };
+             fhicl::Atom<bool>          fillDetailedMC          { Name("fillDetailedMC"),          Comment("Fill SimParticle - SimShower Assn map")};
+             fhicl::Atom<int>           diagLevel               { Name("diagLevel"),               Comment("Diag Level"),0 };
          };
 
 
@@ -52,8 +52,7 @@ namespace mu2e {
            caloShowerSimToken_ {consumes<CaloShowerSimCollection>(config().caloShowerSimCollection())},
            caloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
-           pulseFileName_      (config().pulseFileName()),
-           pulseHistName_      (config().pulseHistName()),
+           pulseCache_         (config().pulseCache()),
            digiSampling_       (config().digiSampling()),
            deltaTimeMinus_     (config().deltaTimeMinus()),
            minAmplitude_       (config().minAmplitude()),
@@ -78,8 +77,7 @@ namespace mu2e {
          const art::ProductToken<CaloShowerSimCollection> caloShowerSimToken_;
          const art::ProductToken<CaloHitCollection>       caloHitToken_;
          const art::ProductToken<PrimaryParticle>         ppToken_;
-         std::string                                      pulseFileName_;
-         std::string                                      pulseHistName_;
+         CaloPulseUtil::Config                            pulseCache_;
          double                                           digiSampling_;
          double                                           deltaTimeMinus_;
          double                                           minAmplitude_;
@@ -95,8 +93,8 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void CaloHitTruthMatch::beginRun(art::Run&)
   {
-      CaloPulseShape cps(pulseFileName_,pulseHistName_,digiSampling_);
-      cps.buildShapes();
+      CaloPulseUtil cps(pulseCache_);
+      cps.buildCache();
 
       wf_       = cps.digitizedPulse(0);
       wfBinMax_ = std::distance(wf_.begin(),std::max_element(wf_.begin(),wf_.end()));

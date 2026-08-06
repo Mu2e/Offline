@@ -15,10 +15,12 @@
 // --> the first peak is never a pile-up
 //
 
-#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
-#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
+#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
+#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "TH2.h"
 #include <vector>
 
@@ -33,8 +35,8 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<std::string> pulseFileName     { Name("pulseFileName"),    Comment("Calo pulse file name") };
-            fhicl::Atom<std::string> pulseHistName     { Name("pulseHistName"),    Comment("Calo pulse hist name") };
+            using CPG     = CaloPulseUtil::Config;
+            fhicl::Table<CPG>        pulseCache        { Name("pulseCache"),       Comment("Pulse cache maker config") };
             fhicl::Atom<unsigned>    windowPeak        { Name("windowPeak"),       Comment("Number of bins around central value to inspect") };
             fhicl::Atom<double>      minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
             fhicl::Atom<double>      minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
