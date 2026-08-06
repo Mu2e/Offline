@@ -150,6 +150,7 @@ namespace mu2e {
                 if(debug_ > 2)std::cout << "Searching " << upinters.size() << " upstream and " << dninters.size() << " downstream intersections" <<  std::endl;
                 for(auto upinter : upinters){
                   auto upimom = upinter->momentum3();
+                  int rtrk = upimom.Z() > 0 ? dn : up; // direction of the upstream track at match test intersection point
                   for(auto dninter : dninters){
                     auto dnimom = dninter->momentum3();
                     if(upimom.Z()*dnimom.Z() > 0.0){ // same direction at this surface
@@ -162,7 +163,6 @@ namespace mu2e {
                       if( dt < maxdt_ && dmom < maxdp_){
                         if(debug_ > 1) std::cout << "Found intersection matching, dt " << dt << " dmom " << dmom << std::endl;
                         // don't insert duplicates
-                        int rtrk = dnt0mom.Z()*dnimom.Z() < 0 ? dn : up; // direction of the upstream track where it matched
                         bool alreadyfound(false);
                         for(auto& match: matches){
                           if(iup == std::get<0>(match) && idn == std::get<1>(match)){
