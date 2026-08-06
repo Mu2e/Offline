@@ -16,16 +16,8 @@ namespace mu2e {
   }
 
   bool SimpleKalSeedSelector::isBetter(KalSeed const& current,KalSeed const& test) const {
-    unsigned ncurrent =0;
-    for (auto const& hit : current.hits()){
-      if (hit.strawHitState() > WireHitState::inactive) ++ncurrent;
-    }
-
-    unsigned ntest =0;
-    for (auto const& hit : test.hits()){
-      if (hit.strawHitState() > WireHitState::inactive) ++ntest;
-    }
-
+    unsigned ncurrent = current.nHits(true);
+    unsigned ntest = test.nHits(true);
     if(ntest + ncurrent == 0) return test.fitConsistency() > current.fitConsistency();
     float nhitfrac = 2*float(ntest - ncurrent)/float(ntest + ncurrent);
     if(fabs(nhitfrac) > minsignhit_){

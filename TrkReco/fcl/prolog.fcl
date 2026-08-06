@@ -18,7 +18,7 @@ TrkReco: {
     tool_type : SimpleKalSeedSelector
     MinMomentum : 40.0 # MeV/c
     MaxMomentum : 300.0 #MeV/c
-    MinFitConsistency : 1e-7
+    MinFitConsistency : 1e-6
     MinDeltaNHitFraction : 0.0
     MinActiveHits : 15
   }
@@ -148,21 +148,21 @@ TrkReco: { @table::TrkReco
     # t0 segment selection needs very wide time window
     SelectT0Reflections: {
       module_type : SelectReflections
-      MaxDeltaT : 200 # ns
+      MaxDeltaT : 200 # ns. Allow large differences to accomodate upstream reflection transit time
       MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
       SelectBestPair : 2 # select pair with best momentum match
-      ReflectionTestLocation : 0 # test at any location
+      ReflectionTestDirection : 0 # test for reflection in any direction
       debugLevel : 0
     }
     # tight selection at tracker front
     SelectReflections: {
       module_type : SelectReflections
       MaxDeltaT : 5 # ns
-      MaxDeltaP : 5 # MeV
+      MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
       SelectBestPair : 3 # select pair with hightest # of active hits
-            ReflectionTestLocation : 3 # test at upstream and downstream locations
+      ReflectionTestDirection : 3 # test both directions of upstream track
       Surface : "TT_Front"
     }
 

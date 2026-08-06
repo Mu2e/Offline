@@ -36,7 +36,7 @@ namespace mu2e {
   class SelectReflections : public art::EDFilter {
     public:
       enum bestpair {mom=0, deltat,deltap, nactive}; // selection options for defining the best pair
-      enum refloc {any=0, dn=1, up=2, both=3}; // which upstream track location (upstream or downstream) was used to test reflection
+      enum refdir {any=0, dn=1, up=2, both=3}; // which upstream track fit direction (upstream or downstream) was used to test reflection
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
@@ -49,7 +49,7 @@ namespace mu2e {
         fhicl::Atom<double> maxdp{ Name("MaxDeltaP"), Comment("Maximum scalar momentum difference at comparison surface")};
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
         fhicl::Atom<int> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
-        fhicl::Atom<int> reflocsel{ Name("ReflectionTestLocation"), Comment("Reflection test location on upstream track: 0=any, 1= downstream, 2=upstream, 3=both ")};
+        fhicl::Atom<int> refdirsel{ Name("ReflectionTestDirection"), Comment("Upstream track direction to test for reflection: 0=any, 1= downstream, 2=upstream, 3=both ")};
       };
       using Parameters = art::EDFilter::Table<Config>;
       explicit SelectReflections(const Parameters& config);
@@ -64,9 +64,8 @@ namespace mu2e {
       double maxdt_, maxdp_;
       std::unique_ptr<KalSeedSelector> selector_;
       bestpair selbest_;
-      bool samelist_ = false;
       unsigned nevts_=0, nref_=0, nmultref_=0;
-      refloc rtrk_;
+      refdir rtrk_;
   };
 
   SelectReflections::SelectReflections(const Parameters& config) : art::EDFilter{config},
@@ -78,8 +77,10 @@ namespace mu2e {
     maxdp_(config().maxdp()),
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
     selbest_(static_cast<bestpair>(config().selectbest())),
-    rtrk_(static_cast<refloc>(config().reflocsel()))
+    rtrk_(static_cast<refdir>(config().refdirsel()))
     {
+      if(config().selectbest() < mom || config().selectbest() > nactive)throw cet::exception("RECO")<<"Invalid best pair selection option " << config().selectbest() << std::endl;
+      if(config().refdirsel() < mom || config().refdirsel() > nactive)throw cet::exception("RECO")<<"Invalid reflection direction test option " << config().refdirsel() << std::endl;
       produces<KalSeedPtrCollection> ();
       if(ptrs_){
         consumes<KalSeedPtrCollection> (upstreamTag_);
@@ -95,7 +96,6 @@ namespace mu2e {
       } else {
         if(rtrk_ != any) throw cet::exception("RECO")<<"Explicit SID incompatible with t0 segment selection"<< std::endl;
       }
-      samelist_ = config().upstreamTag() == config().dnstreamTag();
     }
 
   bool SelectReflections::filter(art::Event& event) {
@@ -113,11 +113,14 @@ namespace mu2e {
       auto dnksptrsh = event.getValidHandle<KalSeedPtrCollection>(dnstreamTag_);
       dnksptrs = *dnksptrsh;
     } else {
+      // must use Handles, not ValidHandles for optional collections as there's no default constructor for ValidHandle
       upksh = event.getHandle<KalSeedCollection>(upstreamTag_);
+      if(!upksh.isValid())throw cet::exception("RECO")<<"No collection founnd for upstream track " << upstreamTag_ << std::endl;
       for(size_t iks = 0; iks < upksh->size(); ++iks){
         upksptrs.emplace_back(upksh,iks);
       }
       dnksh = event.getHandle<KalSeedCollection>(dnstreamTag_);
+      if(!dnksh.isValid())throw cet::exception("RECO")<<"No collection founnd for dnstream track " << dnstreamTag_ << std::endl;
       for(size_t iks = 0; iks < dnksh->size(); ++iks){
         dnksptrs.emplace_back(dnksh,iks);
       }
@@ -126,7 +129,7 @@ namespace mu2e {
     if(debug_ > 1) std::cout << "Upstream " << upksptrs.size() << " , Downstream " << dnksptrs.size() << " KalSeeds" << std::endl;
     bool keep(false);
     if(upksptrs.size() > 0 && dnksptrs.size() > 0){
-      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned,unsigned> > matches; // match properties: iup,idn,dnt0mom,dt,dmom,dnnhits+upnhits,refloc
+      std::vector<std::tuple<size_t, size_t,double, double, double, unsigned,int> > matches; // match properties: iup,idn,dnt0mom,dt,dmom,dnnhits+upnhits,refdir
       for(size_t iup = 0; iup <upksptrs.size(); ++iup){
         auto const& upks = *upksptrs[iup];
         double upt0;
@@ -134,7 +137,7 @@ namespace mu2e {
         if(upt0mom.Z() < 0 && selector_->select(upks)){
           if(debug_ > 2)std::cout << "Selected upstream track " << std::endl;
           auto upinters = sidmatch_ ? upks.intersections(sid_) : KalSeed::InterIterCol();
-          // search for a matching dnstream track. Skip self-references
+          // search for a matching dnstream track
           for(size_t idn = 0; idn <dnksptrs.size(); ++idn){
             auto const& dnks = *dnksptrs[idn];
             double dnt0;
@@ -159,21 +162,23 @@ namespace mu2e {
                       if( dt < maxdt_ && dmom < maxdp_){
                         if(debug_ > 1) std::cout << "Found intersection matching, dt " << dt << " dmom " << dmom << std::endl;
                         // don't insert duplicates
+                        int rtrk = dnt0mom.Z()*dnimom.Z() < 0 ? dn : up; // direction of the upstream track where it matched
                         bool alreadyfound(false);
                         for(auto& match: matches){
                           if(iup == std::get<0>(match) && idn == std::get<1>(match)){
-                            // already found: take the best deltaT
-                            if(debug_ > 1) std::cout << "Found 2nd intersection matching" << std::endl;
+                            alreadyfound = true;
+                            if(std::get<6>(match) != rtrk){
+                              std::get<6>(match) = both; // matched the opposite direction as before
+                              if(debug_ > 1) std::cout << "Found additional matching intersection in opposite direction" << std::endl;
+                            } else if(debug_ > 1) std::cout << "Found additional matching intersection in same direction" << std::endl;
+                            // choose the match values with the best dt
                             if(dt < std::get<3>(match)){
                               std::get<3>(match) = dt;
                               std::get<4>(match) = dmom;
-                              std::get<6>(match) = both;
                             }
-                            alreadyfound = true;
-                            break;
+                            if(std::get<6>(match) == both)break; // stop if we've found intersections in both upstream and downstream directions of the upstream track
                           }
                         }
-                        int rtrk = dnt0mom.Z()*dnimom.Z() < 0 ? dn : up; // which track reflected
                         if(!alreadyfound)matches.emplace_back(iup,idn,dnimom.R(),dt,dmom,upks.nHits()+dnks.nHits(),rtrk);
                       }
                     }
@@ -204,7 +209,7 @@ namespace mu2e {
           double value = (selbest_ == deltat || selbest_ == deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " refloc " << std::get<6>(match) << std::endl;
+            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " refdir " << std::get<6>(match) << std::endl;
             if(selbest_ == mom && std::get<2>(match) > value){
               ibest = imatch;
               value = std::get<2>(match);
@@ -224,7 +229,7 @@ namespace mu2e {
       if(ibest > -1){
         if(debug_ > 0) std::cout << "Found Reflecting particle candidate, dnstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
-            << " delta P " << std::get<4>(matches[ibest]) << " refloc " << std::get<6>(matches[ibest]) << std::endl;
+            << " delta P " << std::get<4>(matches[ibest]) << " refdir " << std::get<6>(matches[ibest]) << std::endl;
 
         if(rtrk_ == any || std::get<6>(matches[ibest]) == both || std::get<6>(matches[ibest]) == rtrk_){
           if(ptrs_){
