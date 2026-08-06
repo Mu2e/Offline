@@ -42,7 +42,7 @@ common_training_config : { # Common training configuration for all particles
   versionTag : "MDC2025ai"
   # Run number for the Mu2e-convention sequencer field, zero-padded to 6 digits in every generated
   # file name (e.g. "001200"). Paired there with the 8-digit dataSourceTag enumeration. Required.
-  runNumber : 1200
+  runNumber : 1430
   trainingFromROOTFile : true # If true, VDResamplerConfigure emits a VDResamplerTrainFromRoot job
                               # (EmptyEvent source, reads InputRootFile below). If false, it emits a
                               # VDResamplerTrain job that reads the ART data source instead.
