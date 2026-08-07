@@ -1,3 +1,4 @@
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 #include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
 #include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -25,8 +26,7 @@ namespace mu2e {
       chiThreshold_    (config.chiThreshold()),
       refitLeadingEdge_(config.refitLeadingEdge()),
       diagLevel_       (config.diagLevel()),
-      fmutil_          (config.pulseFileName(),config.pulseHistName(),minPeakAmplitude_,
-                        config.digiSampling(),minDTPeaks_,config.fitPrintLevel()),
+      fmutil_          (config.pulseCache(),minPeakAmplitude_,minDTPeaks_,config.fitPrintLevel()),
       chi2_            (999.),
       ndf_             (-1),
       resAmp_          (),

@@ -1,10 +1,9 @@
 #include "cetlib_except/exception.h"
-#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 
 #include "TFile.h"
 #include "TH2F.h"
-
 #include <memory>
 #include <vector>
 #include <iostream>
@@ -12,7 +11,18 @@
 
 namespace mu2e {
 
-   CaloPulseShape::CaloPulseShape(const std::string& fileName, const std::string& histName, double digiSampling) :
+   CaloPulseUtil::CaloPulseUtil(const Config& config) :
+      fileName_(config.fileName()),
+      histName_(config.histName()),
+      nSteps_(100),
+      digiStep_(config.digiSampling()/double(nSteps_)),
+      nBinShape_(0),
+      pulseVec_(),
+      deltaT_(0.),
+      digitizedPulse_()
+   {}
+
+   CaloPulseUtil::CaloPulseUtil(const std::string& fileName, const std::string& histName, double digiSampling) :
       fileName_(fileName),
       histName_(histName),
       nSteps_(100),
@@ -24,9 +34,8 @@ namespace mu2e {
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
-   void CaloPulseShape::buildShapes()
+   void CaloPulseUtil::buildCache()
    {
-
        pulseVec_.clear();
 
        ConfigFileLookupPolicy resolveFullPath;
@@ -35,7 +44,7 @@ namespace mu2e {
        std::unique_ptr<TH1F> pshape(nullptr);
        TFile pulseFile(fullFileName.c_str());
        if (pulseFile.IsOpen()) pshape.reset((TH1F*) pulseFile.Get(histName_.c_str()));
-       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseShape:: Hitsogram "<<histName_.c_str()
+       if (!pshape) throw cet::exception("CALOPULSEUTIL")<<"CaloPulseUtil:: Histogram "<<histName_.c_str()
                                                     <<" from file "<<fileName_.c_str()<<" does not exist";
        pshape->SetDirectory(0);
        pulseFile.Close();
@@ -55,13 +64,15 @@ namespace mu2e {
 
        deltaT_ = 0.0;
        // find difference between peak time and t0 for digitized waveform.
-       for (int i=1;i<nBinShape_;++i) {if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break; deltaT_ +=nSteps_*digiStep_;}
-
+       for (int i=1;i<nBinShape_;++i) {
+         if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break;
+         deltaT_ +=nSteps_*digiStep_;
+       }
    }
 
    //----------------------------------------------------------------------------
    // forward shift in waveform = backward shift in time origin
-   const std::vector<double>& CaloPulseShape::digitizedPulse(double hitTime) const
+   const std::vector<double>& CaloPulseUtil::digitizedPulse(double hitTime) const
    {
        int shiftBin = nSteps_ - int(hitTime/digiStep_)%nSteps_;
        for (int i=0;i<nBinShape_;++i) digitizedPulse_[i] = pulseVec_[shiftBin+i*nSteps_];
@@ -69,7 +80,7 @@ namespace mu2e {
    }
 
    //----------------------------------------------------------------------------
-   double CaloPulseShape::evaluate(double tDifference) const
+   double CaloPulseUtil::evaluate(double tDifference) const
    {
        double t = tDifference+deltaT_;
        int ibin = nSteps_ + int(t*nSteps_/digiStep_/nSteps_);
@@ -80,13 +91,13 @@ namespace mu2e {
    }
 
    //----------------------------------------------------------------------------
-   double CaloPulseShape::fromPeakToT0(double timePeak) const
+   double CaloPulseUtil::fromPeakToT0(double timePeak) const
    {
        return timePeak-deltaT_-0.5*digiStep_*nSteps_;
    }
 
    //--------------------------------
-   void CaloPulseShape::diag(bool fullDiag) const
+   void CaloPulseUtil::diag(bool fullDiag) const
    {
        std::cout<<"Number of digi bins "<<nBinShape_<<std::endl;
 
@@ -100,6 +111,4 @@ namespace mu2e {
        for (auto& h : pulseVec_) std::cout<<h<<" ";
        std::cout<<std::endl;
    }
-
-
 }
