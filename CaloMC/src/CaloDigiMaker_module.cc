@@ -10,8 +10,6 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-#include "art_root_io/TFileService.h"
-#include "art_root_io/TFileDirectory.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloConditions/inc/CalSimParams.hh"
@@ -73,7 +71,7 @@ namespace mu2e {
             pbtmcTag_          (config().pbtmcTag()),
             digitizationStart_ (config().digitizationStart()),
             digitizationEnd_   (config().digitizationEnd()),
-            digiSampling_      (config().digiSampling()),
+            digiSampling_      (config().pulseCache().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
             startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
@@ -93,7 +91,7 @@ namespace mu2e {
              //check that StartTimeBuffer is shorter than BlindTime_
              if (startTimeBuffer_ > digitizationStart_) throw cet::exception("CALODIGIMAKER")
                << "digitizationStart too small to accommodate start time buffer";
-          }
+         }
 
          void produce(art::Event& e)   override;
          void beginRun(art::Run& aRun) override;
@@ -180,6 +178,8 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       calorimeter_ = ch.get();
 
+      const int NoiseWFID(0); // will get this from proditions later;
+
       if (calorimeter_->nCrystals()<1 || calorimeter_->G4Info().get<int>("nSiPMPerCrystal")<1) return;
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill) {
@@ -201,7 +201,7 @@ namespace mu2e {
             const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
             generateSpotNoise(waveform,scaleFactor);
           }
-          buildOutputDigi(iRO, waveform, noiseSampler_.pedestal(), caloDigiColl);
+          buildOutputDigi(iRO, waveform, noiseSampler_.pedestal(NoiseWFID), caloDigiColl);
      }
   }
 

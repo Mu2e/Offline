@@ -1,5 +1,5 @@
-#ifndef CaloPulseUtil_HH
-#define CaloPulseUtil_HH
+#ifndef Mu2eUtilities_CaloPulseUtil_hh
+#define Mu2eUtilities_CaloPulseUtil_hh
 
 // Calculate the values of the digitized pulse shape as a function of the hit time.
 // The value stored are the integral of the waveform over the digitization bin width.

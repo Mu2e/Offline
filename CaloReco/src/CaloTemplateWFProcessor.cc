@@ -26,7 +26,7 @@ namespace mu2e {
       chiThreshold_    (config.chiThreshold()),
       refitLeadingEdge_(config.refitLeadingEdge()),
       diagLevel_       (config.diagLevel()),
-      fmutil_          (config.pulseCache(),minDTPeaks_,config.fitPrintLevel()),
+      fmutil_          (config.pulseCache(),minPeakAmplitude_,minDTPeaks_,config.fitPrintLevel()),
       chi2_            (999.),
       ndf_             (-1),
       resAmp_          (),

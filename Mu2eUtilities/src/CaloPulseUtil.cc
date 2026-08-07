@@ -44,7 +44,7 @@ namespace mu2e {
        std::unique_ptr<TH1F> pshape(nullptr);
        TFile pulseFile(fullFileName.c_str());
        if (pulseFile.IsOpen()) pshape.reset((TH1F*) pulseFile.Get(histName_.c_str()));
-       if (!pshape) throw cet::exception("CATEGORY")<<"CaloPulseUtil:: Hitsogram "<<histName_.c_str()
+       if (!pshape) throw cet::exception("CALOPULSEUTIL")<<"CaloPulseUtil:: Histogram "<<histName_.c_str()
                                                     <<" from file "<<fileName_.c_str()<<" does not exist";
        pshape->SetDirectory(0);
        pulseFile.Close();

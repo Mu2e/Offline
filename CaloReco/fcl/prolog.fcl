@@ -18,7 +18,7 @@ CaloReco : {
 
    TemplateProcessor :
    {
-      pulseCache         : {@table::CaloPulseCache}
+      pulseCache         : @local::CaloPulseCache
       windowPeak         : 3
       minPeakAmplitude   : 24
       numNoiseBins       : 5
@@ -26,7 +26,6 @@ CaloReco : {
       psdThreshold       : 0.1
       chiThreshold       : 1.0
       refitLeadingEdge   : false
-      digiSampling       : @local::HitMakerDigiSampling
       fitPrintLevel      : -1
       fitStrategy        : 1
       diagLevel          : 0

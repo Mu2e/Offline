@@ -2,8 +2,8 @@ cet_make_library(
     SOURCE
       src/BinnedSpectrum.cc
       src/BuildLinearFitMatrixSums.cc
-      src/CaloPulseUtil.cc
       src/CaloNoiseUtil.cc
+      src/CaloPulseUtil.cc
       src/checkSimParticleCollection.cc
       src/compressPdgId.cc
       src/ConversionSpectrum.cc

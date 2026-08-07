@@ -1,15 +1,10 @@
-#ifndef CaloNoiseUtil_HH
-#define CaloNoiseUtil_HH
+#ifndef Mu2eUtilities_CaloNoiseUtil_hh
+#define Mu2eUtilities_CaloNoiseUtil_hh
 //
 // Cache and provide noise waveforms for readouts
 //
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "art/Framework/Services/Optional/RandomNumberGenerator.h"
-#include "Offline/SeedService/inc/SeedService.hh"
-
 #include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
-
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -43,11 +38,11 @@ namespace mu2e {
 
         CaloNoiseUtil(const Config& config, CLHEP::HepRandomEngine& engine);
 
-        void             prepare(int histoID, double peToADC);
-        std::span<float> noiseSegment(int histoID, size_t istart, size_t ilength);
-        int              pedestal();
-        void             printCache();
-        void             dumpNoise(const std::string& name, const std::vector<float>& wave);
+        void              prepare(int histoID, double peToADC);
+        std::span<double> noiseSegment(int histoID, size_t istart, size_t ilength);
+        int               pedestal(int histoID) const;
+        void              printCache() const;
+        void              dumpNoise(const std::string& name, const std::vector<double>& wave);
 
 
      private:
@@ -60,15 +55,13 @@ namespace mu2e {
         double                digiSampling_;
         double                noiseRinDark_;
         double                noiseElec_;
-        double                minPeakADC_;
         CLHEP::RandPoissonQ   randPoisson_;
         CLHEP::RandGaussQ     randGauss_;
         CLHEP::RandFlat       randFlat_;
         CaloPulseUtil         pulseCache_;
         bool                  dumpGenerated_;
-        int                   histoBaseID_;
-        int                   pedestal_;
-        std::map<int,std::vector<float>> noiseMap_;
+        std::map<int,double>  pedestal_;
+        std::map<int,std::vector<double>> noiseMap_;
 
         static constexpr int base = 10000;
    };

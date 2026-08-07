@@ -64,7 +64,7 @@ CaloMC : {
       caloShowerSimCollection : CaloShowerROMaker
       caloHitCollection       : CaloHitMaker
       primaryParticle         : FindMCPrimary
-      pulseCache              : { @table::CaloPulseCache  }
+      pulseCache              : @local::CaloPulseCache
       digiSampling            : @local::HitMakerDigiSampling
       minAmplitude            : 2
       fillDetailedMC          : false

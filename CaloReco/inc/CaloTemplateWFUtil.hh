@@ -12,7 +12,7 @@ namespace mu2e {
 
      public:
         CaloTemplateWFUtil(const CaloPulseUtil::Config& configPulseCache, double minPeakAmplitude,
-                           double minDTPeaks, int printLevel=-1);
+                           double minDTPeaks, int printLevel);
 
         void                        initialize    ();
         void                        setXYVector   (const std::vector<double>& xvec, const std::vector<double>& yvec);

@@ -14,6 +14,8 @@
 #include <vector>
 #include <iostream>
 #include <numeric>
+#include <cmath>
+#include <sstream>
 
 
 namespace mu2e {
@@ -30,8 +32,7 @@ namespace mu2e {
       randFlat_      {engine},
       pulseCache_    {config.pulseCache()},
       dumpGenerated_ {config.dumpGenerated()},
-      histoBaseID_   {-1},
-      pedestal_      {0},
+      pedestal_      {},
       noiseMap_      {}
    {}
 
@@ -39,25 +40,23 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    void CaloNoiseUtil::prepare(int histoID, double peToADC)
    {
-       int baseID = histoID / base;
-       if (baseID == histoBaseID_) return;
-       if (generate_) generateCache(baseID, peToADC);
-       else           fillCache(baseID);
+      if (generate_) generateCache(histoID, peToADC);
    }
 
    //----------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseUtil::fillCache(int histoBaseID)
+   void CaloNoiseUtil::fillCache(int histoID)
    {
+      int histoBaseID = histoID/base;
+
       // Cache is for all baseID, clear it
       noiseMap_.clear();
-      histoBaseID_ = histoBaseID;
 
       // Refill the cache with all histos sharing the same baseID
       ConfigFileLookupPolicy resolveFullPath;
       std::string fullFileName = resolveFullPath(fileName_);
 
       TFile file(fullFileName.c_str());
-      if (!file.IsOpen()) throw cet::exception("NOISEREADER")<<"Filename"<<fullFileName.c_str()<<" does not exist\n";
+      if (!file.IsOpen()) throw cet::exception("CALONOISEUTIL")<<"Filename"<<fullFileName.c_str()<<" does not exist\n";
 
       TIter next(file.GetListOfKeys());
       TKey* key;
@@ -76,12 +75,12 @@ namespace mu2e {
 
         int hid;
         if (!(iss >> hid) || !iss.eof())
-          throw cet::exception("NOISEREADER")<<"Hitsogram "<<name.c_str()<<" is invalid\n";
+          throw cet::exception("CALONOISEUTIL")<<"Histogram "<<name.c_str()<<" is invalid\n";
 
         // Only take histos in the right batch to reduce memory footprint
         // the batch is defined as histogrm id/base
 
-        if (hid/base != histoBaseID/base) continue;
+        if (hid/base != histoBaseID) continue;
 
         const float* array = histo->GetArray();
         noiseMap_[hid].assign(array + 1, array + histo->GetNbinsX() + 1);
@@ -89,92 +88,98 @@ namespace mu2e {
         // estimate pedestal, take a single value for every waveform
         // (pedestals will be stored somewhere else later)
 
-        float sum = 0.0;
+        double sum = 0.0;
         for (int i = 1; i <= histo->GetNbinsX(); ++i) sum += histo->GetBinContent(i);
-        pedestal_ = std::trunc(sum /histo->GetNbinsX() );
+        pedestal_[hid] = std::trunc(sum /histo->GetNbinsX() );
       }
    }
 
 
    //----------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseUtil::generateCache(int histoBaseID, double peToADC)
+   void CaloNoiseUtil::generateCache(int histoID, double peToADC)
    {
-       // Cache is for all baseID, clear it
-       noiseMap_.clear();
-       histoBaseID_ = histoBaseID;
-       constexpr unsigned noiseSize{10000};
-       std::vector<float> waveform(noiseSize,0.0);
+      // Clear from cache all non basedID entries
+      int histoBaseID = histoID/base;
+      std::erase_if(noiseMap_, [&](const auto& pair) {return pair.first/base != histoBaseID;});
 
-       pulseCache_.buildCache();
-       const auto&        pulse         = pulseCache_.digitizedPulse(0.0);
-       const unsigned     pulseSize     = pulse.size();
-       const unsigned     bufferSize    = int(0.75*pulseSize);
-       const double       totalTime     = (noiseSize+bufferSize)*digiSampling_;
-       const int          noiseLevelPE  = int(totalTime*noiseRinDark_);
+      constexpr unsigned noiseSize{10000};
+      std::vector<double> waveform(noiseSize,0.0);
 
-       //Generate the radiation induced noise (RIN)
-       const int nPh = randPoisson_(noiseLevelPE);
-       for (int i=0;i<nPh;++i) {
-           double t0 = randFlat_.fire(0.0,totalTime);
-           const auto& wf = pulseCache_.digitizedPulse(t0);
-           int i0 = int(t0/digiSampling_) - bufferSize;
-           int l0 = (i0<0) ? -i0 : 0;
-           int l1 = std::min(pulseSize,noiseSize-i0);
-           for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l];
-       }
-       for (auto& wf : waveform) wf *= peToADC;
+      pulseCache_.buildCache();
+      const auto&        pulse         = pulseCache_.digitizedPulse(0.0);
+      const unsigned     pulseSize     = pulse.size();
+      const unsigned     bufferSize    = int(0.75*pulseSize);
+      const double       totalTime     = (noiseSize+bufferSize)*digiSampling_;
+      const int          noiseLevelPE  = int(totalTime*noiseRinDark_);
 
-       //add electronics noise
-       double noiseADC = noiseElec_*digiSampling_*peToADC;
-       for (auto& val : waveform) val += randGauss_.fire(0.0,noiseADC);
+      //Generate the radiation induced noise (RIN)
+      const int nPh = randPoisson_(noiseLevelPE);
+      for (int i=0;i<nPh;++i) {
+          double t0 = randFlat_.fire(0.0,totalTime);
+          const auto& wf = pulseCache_.digitizedPulse(t0);
+          int i0 = int(t0/digiSampling_) - bufferSize;
+          int l0 = (i0<0) ? -i0 : 0;
+          int l1 = std::min(pulseSize,noiseSize-i0);
+          for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l];
+      }
+      for (auto& wf : waveform) wf *= peToADC;
 
-       noiseMap_.emplace(histoBaseID, waveform);
+      //add electronics noise
+      double noiseADC = noiseElec_*digiSampling_*peToADC;
+      for (auto& val : waveform) val += randGauss_.fire(0.0,noiseADC);
 
-       //estimate pedestal for this waveform - set it to theoretical value for the time being
-       pedestal_ = std::trunc(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*peToADC);
+      noiseMap_.emplace(histoBaseID, waveform);
 
-       if (dumpGenerated_){
-         dumpNoise("caloNoise.root",waveform);
-         dumpGenerated_ = false;
-       }
+      //estimate pedestal for this waveform - set it to theoretical value for the time being
+      pedestal_[histoID] = std::trunc(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*peToADC);
+
+      if (dumpGenerated_){
+        dumpNoise("caloNoise.root",waveform);
+        dumpGenerated_ = false;
+      }
    }
 
-
    //----------------------------------------------------------------------------------------------------------------------
-   std::span<float> CaloNoiseUtil::noiseSegment(int histoID, size_t istart, size_t ilength)
+   std::span<double> CaloNoiseUtil::noiseSegment(int histoID, size_t istart, size_t ilength)
    {
-     int baseID = histoID/base;
+     auto iter = noiseMap_.find(histoID);
+     if (iter == noiseMap_.end()) {
 
-     if (baseID != histoBaseID_) {
-       if (generate_)  throw cet::exception("CaloNoiseUtil")
-            << "noiseSegment called before prepare() for baseID " << histoID/base << "\n";
-       else fillCache(baseID);
+       if (generate_)
+         throw cet::exception("CALONOISEUTIL")
+         << "noiseSegment called before prepare() for histoID " << histoID << "\n";
+
+        fillCache(histoID);
+        iter = noiseMap_.find(histoID);
+        if (iter == noiseMap_.end())
+          throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid\n";
      }
 
-     auto iter = noiseMap_.find(histoID);
-     if (iter == noiseMap_.end())
-       throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid\n";
      auto& vec = iter->second;
-
      if (ilength >= vec.size())
        throw cet::exception("CALONOISEUTIL")<<"noise length request too long\n";
 
      size_t irandom = size_t(randFlat_.fire(0.,vec.size()-ilength));
-     return std::span<float>(vec.data() + irandom, ilength);
+     return std::span<double>(vec.data() + irandom, ilength);
    }
 
    //----------------------------------------------------------------------------------------------------------------------
-   int CaloNoiseUtil::pedestal() {return pedestal_;}
+   int CaloNoiseUtil::pedestal(int histoID) const {
+     auto iter = pedestal_.find(histoID);
+     if (iter == pedestal_.end())
+          throw cet::exception("CALONOISEUTIL")<<"phistoID "<<histoID<<" is invalid for pedestal\n";
+     return iter->second;;
+   }
 
    //----------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseUtil::printCache()
+   void CaloNoiseUtil::printCache() const
    {
      std::cout<<"CaloNoiseUtil cache\n";
      for (const auto& kv : noiseMap_) std::cout<<"Histo id "<<kv.first<<"  noise waveform length "<<kv.second.size()<<"\n";
    }
 
    //------------------------------------------------------------------------------------------------------------------
-   void CaloNoiseUtil::dumpNoise(const std::string& fname, const std::vector<float>& wave)
+   void CaloNoiseUtil::dumpNoise(const std::string& fname, const std::vector<double>& wave)
    {
       TFile outfile(fname.c_str(), "RECREATE");
 

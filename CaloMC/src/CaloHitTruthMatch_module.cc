@@ -53,7 +53,7 @@ namespace mu2e {
            caloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
            pulseCache_         (config().pulseCache()),
-           digiSampling_       (config().digiSampling()),
+           digiSampling_       (config().pulseCache().digiSampling()),
            deltaTimeMinus_     (config().deltaTimeMinus()),
            minAmplitude_       (config().minAmplitude()),
            fillDetailedMC_     (config().fillDetailedMC()),
@@ -160,15 +160,20 @@ namespace mu2e {
       for (std::size_t ihit=0; ihit < caloHits.size(); ++ihit) {
           const CaloHit& hit          = caloHits[ihit];
           const auto&    sortedHits   = caloHitMap.at(hit.crystalID());
-          const auto&    sortedSims   = caloShowerSimsMap.at(hit.crystalID());
           const auto     hitIt        = std::find(sortedHits.begin(),sortedHits.end(),&hit);
           const auto     hitNextIt    = std::next(hitIt);
           const auto     hitPtr       = art::Ptr<CaloHit>(caloHitHandle,ihit);
 
-          if (diagLevel_ > 2)
-             for (const auto* shower : sortedSims)
+          const auto&    sortedSimsIt = caloShowerSimsMap.find(hit.crystalID());
+          const auto&    sortedSims   = sortedSimsIt == caloShowerSimsMap.end() ?
+                                        std::vector<const CaloShowerSim*>{} : sortedSimsIt->second;
+
+          if (diagLevel_ > 2){
+             if (sortedSims.empty()) std::cout<<"No shower sims for "<<hit.crystalID()<<" !!\n";
+                for (const auto shower : sortedSims)
                 std::cout<<"[CaloHitTruthMatch] Sim shower id/time/energy="<<shower->crystalID()
                          <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
+          }
 
           // Maximum time difference for an MC hit to be associated, given the reco hit amplitude and the next reco hit time
           std::size_t nbin(wfBinMax_);

@@ -14,7 +14,7 @@ namespace mu2e {
    void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time,
                             double momentum, const CLHEP::Hep3Vector& pos)
    {
-       if (i > imax_) throw cet::exception("Rethrow")
+       if (i > imax_) throw cet::exception("SHOWERSTEPUTIL")
                       << "[CaloMC/ShowerStepUtil] Index out of bound "
                       << i << "\n";
 
@@ -37,7 +37,7 @@ namespace mu2e {
 
    void ShowerStepUtil::reset(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")
+       if (i > imax_) throw cet::exception("SHOWERSTEPUTIL")
                       << "[CaloMC/ShowerStepUtil] Index out of bound "
                       << i << "\n";
 
@@ -51,7 +51,7 @@ namespace mu2e {
 
    CLHEP::Hep3Vector& ShowerStepUtil::pos(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")
+       if (i > imax_) throw cet::exception("SHOWERSTEPUTIL")
                       << "[CaloMC/ShowerStepUtil] Index out of bound "
                       << i << "\n";
 
@@ -64,7 +64,7 @@ namespace mu2e {
 
    void ShowerStepUtil::printBucket(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")
+       if (i > imax_) throw cet::exception("SHOWERSTEPUTIL")
                       << "[CaloMC/ShowerStepUtil] Index out of bound "
                       << i << "\n";
        std::cout<<"Entries= "<<n_[i]<<" Energy = "<<eDepG4_[i]
