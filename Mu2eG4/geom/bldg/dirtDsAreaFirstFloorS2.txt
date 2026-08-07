@@ -42,8 +42,8 @@ vector<double> dirt.dsArea.firstFloor.S2.xPositions = {
 };
 
 vector<double> dirt.dsArea.firstFloor.S2.yPositions = {
--12014.3, // 0
--12014.3, // 1
+-12014.2, // 0
+-12014.2, // 1
 -14427.10, // 2
 -14427.10, // 3
 -12090.40, // 4

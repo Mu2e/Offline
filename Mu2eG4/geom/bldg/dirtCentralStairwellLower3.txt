@@ -7,10 +7,10 @@ string dirt.central.stairwell.lower3.name     = "dirtCentralStairwellLower3";
 string dirt.central.stairwell.lower3.material = "MBOverburden";
 
 double dirt.central.stairwell.lower3.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.central.stairwell.lower3.offsetFromFloorSurface.y = 1260.5;
+double dirt.central.stairwell.lower3.offsetFromFloorSurface.y = 1260.45;
 double dirt.central.stairwell.lower3.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.central.stairwell.lower3.yHalfThickness           = 1260.4;
+double dirt.central.stairwell.lower3.yHalfThickness           = 1260.45;
 
 vector<double> dirt.central.stairwell.lower3.xPositions = {
   9956.8,   // g1

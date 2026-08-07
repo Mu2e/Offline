@@ -10,8 +10,8 @@ double building.central.stairwell.upper.wall.w2.offsetFromMu2eOrigin.z   = -3581
 double building.central.stairwell.upper.wall.w2.yHalfThickness           = 876.3;
 
 vector<double> building.central.stairwell.upper.wall.w2.xPositions = {
-  11617.325,  // h
-  11617.325, // h0
+  11617.2,  // h
+  11617.2, // h0
   12014.2,   // h1
   12014.2    // h2
 };
