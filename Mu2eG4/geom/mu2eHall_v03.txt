@@ -690,7 +690,6 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtEscapeStair11.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtExtMon_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtExtMonCeiling_v02.txt"
-#include "Offline/Mu2eG4/geom/bldg/dirtExtMonUpper_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMon_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea_v02.txt"
