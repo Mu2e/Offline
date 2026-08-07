@@ -13,19 +13,19 @@
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
 
-#include "Offline/CaloConditions/inc/CalSimParams.hh"
-#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
-#include "Offline/Mu2eUtilities/inc/CaloNoiseUtil.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/DAQConditions/inc/EventTiming.hh"
+#include "Offline/CaloConditions/inc/CalSimParams.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerRO.hh"
+#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
+#include "Offline/Mu2eUtilities/inc/CaloNoiseUtil.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
-#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -182,18 +182,16 @@ namespace mu2e {
 
       if (calorimeter_->nCrystals()<1 || calorimeter_->G4Info().get<int>("nSiPMPerCrystal")<1) return;
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
-      if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill)
-      {
+      if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill) {
         waveformSize = (ewMarker.eventLength() - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       }
 
       int nWaveforms   = calorimeter_->nCrystals()*calorimeter_->G4Info().get<int>("nSiPMPerCrystal");
-      if (waveformSize<1) throw cet::exception("Rethrow")<< "[CaloMC/CaloDigiMaker] digitization size too short " << std::endl;
+      if (waveformSize<1) throw cet::exception("CALODIGIMAKER")<< "Digitization size too short " << std::endl;
       bool resetWaveform(false);
       std::vector<double> waveform(waveformSize,0.0);
 
-      for (int iRO=0;iRO<nWaveforms;++iRO)
-      {
+      for (int iRO=0;iRO<nWaveforms;++iRO) {
           if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
           bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, pbtmc, calCrystalConds );
           resetWaveform = !isEmpty;
@@ -210,9 +208,9 @@ namespace mu2e {
   //----------------------------------------------------------------------------------------------------------
   void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform, double scaleFactor)
   {
-       const int NoiseWFID(0); // will need this from proditions later;
+       const int NoiseWFID(0); // will get this from proditions later;
 
-       const double minAmplitude(0.01);
+       const double minAmplitude(2);
        noiseSampler_.prepare(NoiseWFID, scaleFactor);
 
        size_t timeSample(0);
@@ -220,8 +218,7 @@ namespace mu2e {
        hitStarts.reserve(16);hitStops.reserve(16);
 
        // First, find the ranges in the waveform with non-zero bins.
-       while (timeSample < waveform.size())
-       {
+       while (timeSample < waveform.size()) {
            if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
 
            size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
@@ -235,8 +232,7 @@ namespace mu2e {
 
        // ranges might overlap and need to be concatenated if this is the case
        size_t iprev(0),ic(1);
-       while (ic < hitStarts.size())
-       {
+       while (ic < hitStarts.size()) {
            if (hitStops[iprev] >= hitStarts[ic]) {hitStops[iprev]=hitStops[ic]; hitStarts[ic]=hitStops[ic]=waveform.size()+1;}
            else                                  {iprev = ic;}
            ++ic;
@@ -246,8 +242,7 @@ namespace mu2e {
        hitStops.erase( std::remove_if(hitStops.begin(), hitStops.end(), pred),hitStops.end());
 
        //Now take a random part of the noise waveform and add it to the waveform content
-       for (size_t ihit=0; ihit<hitStarts.size(); ++ihit)
-       {
+       for (size_t ihit=0; ihit<hitStarts.size(); ++ihit) {
           unsigned istart  = hitStarts[ihit];
           unsigned ilength = hitStops[ihit]-hitStarts[ihit];
           const auto& noiseWF = noiseSampler_.noiseSegment(NoiseWFID,istart,ilength);
@@ -262,14 +257,12 @@ namespace mu2e {
       bool isEmpty = true;
       const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
 
-      for (const auto& CaloShowerRO : CaloShowerROs)
-      {
+      for (const auto& CaloShowerRO : CaloShowerROs) {
           unsigned SiPMID = CaloShowerRO.SiPMID();
           if (SiPMID != iRO) continue;
 
           isEmpty = false;
-          for (const auto PEtime : CaloShowerRO.PETime())
-          {
+          for (const auto PEtime : CaloShowerRO.PETime()) {
               //PE time is given in DR frame, we need to subtract the event window start and the digi Start time
               float       time           = PEtime + pbtmc.pbtime_- digitizationStart_ + timeFromProtonsToDRMarker_ + startTimeBuffer_;
               unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
@@ -300,12 +293,11 @@ namespace mu2e {
        extract(wf,hitStarts,hitStops);
 
        // Build digi for concatenated hits
-       for (size_t ihit=0;ihit<hitStarts.size();++ihit)
-       {
+       for (size_t ihit=0;ihit<hitStarts.size();++ihit) {
            size_t sampleStart = hitStarts[ihit];
            size_t sampleStop  = hitStops[ihit];
            size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_);
-           //t0 is given in the "digitizer time frame"
+           // t0 is given in the "digitizer time frame", might need to give it into ticks - simpli divide by
 
            std::vector<int> wfsample{};
            wfsample.reserve(sampleStop-sampleStart);
@@ -329,8 +321,7 @@ namespace mu2e {
   void CaloDigiMaker::extract(const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const
   {
        size_t timeSample(nBinsPeak_+bufferDigi_);
-       while (timeSample+nBinsPeak_ < wf.size())
-       {
+       while (timeSample+nBinsPeak_ < wf.size()){
            // find starting point
            if (wf[timeSample] < minPeakADC_) {++timeSample; continue;}
 
@@ -351,11 +342,9 @@ namespace mu2e {
            timeSample = sampleStop+1;
        }
 
-
        // Concatenate peaks and remove unused values (flag value to remove past wf.size() since the latter is a legitimate value)
        size_t iprev(0), icurrent(1);
-       while (icurrent < starts.size())
-       {
+       while (icurrent < starts.size()){
            if (stops[iprev] >= starts[icurrent]) {stops[iprev]=stops[icurrent]; starts[icurrent]=stops[icurrent]=wf.size()+1;}
            else                                  {iprev = icurrent;}
            ++icurrent;
@@ -375,8 +364,6 @@ namespace mu2e {
       const auto ADCPerMeV = conds.ADCPerMeVs(crystalID).at(SiPMID.SiPMLocalId());
       return ADCPerMeV / pePerMeV;
   }
-
-
 
   //-------------------------------------------------------------------------------------------------------------------
   void CaloDigiMaker::diag0(unsigned iSiPM, const std::vector<int>& wf)

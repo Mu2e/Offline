@@ -150,17 +150,14 @@ namespace mu2e {
 
       // O(1) shower-pointer -> index lookup for the detailed-MC association (was an O(n) scan per match)
       std::unordered_map<const CaloShowerSim*,std::size_t> showerIndex;
-      if (fillDetailedMC_)
-      {
+      if (fillDetailedMC_) {
           showerIndex.reserve(caloShowerSims.size());
           for (std::size_t i=0; i<caloShowerSims.size(); ++i) showerIndex.emplace(&caloShowerSims[i], i);
       }
 
-      caloHitMCs.reserve(caloHits.size());
-
       // matching per calo hit
-      for (std::size_t ihit=0; ihit < caloHits.size(); ++ihit)
-      {
+      caloHitMCs.reserve(caloHits.size());
+      for (std::size_t ihit=0; ihit < caloHits.size(); ++ihit) {
           const CaloHit& hit          = caloHits[ihit];
           const auto&    sortedHits   = caloHitMap.at(hit.crystalID());
           const auto&    sortedSims   = caloShowerSimsMap.at(hit.crystalID());
@@ -189,14 +186,12 @@ namespace mu2e {
           std::vector<CaloEDepMC> edeps;
           auto showerIt = sortedSims.begin();
           while (showerIt != sortedSims.end() && (*showerIt)->time() < hit.time() - deltaTimeMinus_) ++showerIt;
-          while (showerIt != sortedSims.end() && (*showerIt)->time() < hit.time() + deltaTimePlus)
-          {
+          while (showerIt != sortedSims.end() && (*showerIt)->time() < hit.time() + deltaTimePlus) {
               hitIsMatched = true;
               const CaloShowerSim* showerSim = *showerIt;
               fillEdeps(primaryParticle, edeps, showerSim);
 
-              if (fillDetailedMC_)
-              {
+              if (fillDetailedMC_) {
                   const auto showerSimPtr = art::Ptr<CaloShowerSim>(caloShowerSimHandle, showerIndex.at(showerSim));
                   caloShowerTruthMatch.addSingle(hitPtr, showerSim->sim(), showerSimPtr);
               }
@@ -228,18 +223,15 @@ namespace mu2e {
       auto it = std::find_if(edeps.begin(), edeps.end(),
                              [&](const CaloEDepMC& e){return e.sim() == showerSim->sim();});
 
-      if (it != edeps.end())
-      {
+      if (it != edeps.end()) {
           it->addEDep  (showerSim->energyDep());
           it->addEDepG4(showerSim->energyDepG4());
           it->addTime  (showerSim->time());
           it->addMom   (showerSim->momentumIn());
       }
-      else
-      {
+      else{
           MCRelationship mcrel;
-          for (const auto& spp : primaryParticle.primarySimParticles())
-          {
+          for (const auto& spp : primaryParticle.primarySimParticles()) {
               MCRelationship mcr(spp,showerSim->sim());
               if (mcr > mcrel) mcrel = mcr;
           }

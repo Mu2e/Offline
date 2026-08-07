@@ -45,13 +45,13 @@ CaloMC : {
       caloShowerROCollection  : CaloShowerROMaker
       eventWindowMarker       : EWMProducer
       protonBunchTimeMC       : EWMProducer
-      pulseCache              : { @table::CaloPulseCache  }
-      noiseCache              : { @table::CaloNoiseCache  }
+      pulseCache              : @local::CaloPulseCache
+      noiseCache              : @local::CaloNoiseCache
+      addNoise                : true
       digitizationStart       : @local::HitMakerDigitizationStart
       digitizationEnd         : @local::HitMakerDigitizationEnd
       digiSampling            : @local::HitMakerDigiSampling
       bufferDigi              : 16
-      addNoise                : true
       nBits                   : 12
       minPeakADC              : @local::HitMakerMinPeakADC
       nBinsPeak               : 2

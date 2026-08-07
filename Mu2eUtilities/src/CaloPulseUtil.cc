@@ -21,6 +21,7 @@ namespace mu2e {
       deltaT_(0.),
       digitizedPulse_()
    {}
+
    CaloPulseUtil::CaloPulseUtil(const std::string& fileName, const std::string& histName, double digiSampling) :
       fileName_(fileName),
       histName_(histName),
@@ -63,8 +64,10 @@ namespace mu2e {
 
        deltaT_ = 0.0;
        // find difference between peak time and t0 for digitized waveform.
-       for (int i=1;i<nBinShape_;++i) {if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break; deltaT_ +=nSteps_*digiStep_;}
-
+       for (int i=1;i<nBinShape_;++i) {
+         if (pulseVec_[(i+1)*nSteps_] < pulseVec_[i*nSteps_]) break;
+         deltaT_ +=nSteps_*digiStep_;
+       }
    }
 
    //----------------------------------------------------------------------------
@@ -108,6 +111,4 @@ namespace mu2e {
        for (auto& h : pulseVec_) std::cout<<h<<" ";
        std::cout<<std::endl;
    }
-
-
 }

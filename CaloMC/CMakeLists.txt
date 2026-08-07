@@ -6,6 +6,7 @@ cet_make_library(
       src/CaloDigiWrapperCollection.cc
     LIBRARIES PUBLIC
       
+      Offline::ConfigTools
       Offline::CalorimeterGeom
       Offline::GeometryService
       Offline::Mu2eUtilities
@@ -84,6 +85,8 @@ cet_build_plugin(CaloShowerUpdater art::module
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
+
+install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloReco)
 
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)

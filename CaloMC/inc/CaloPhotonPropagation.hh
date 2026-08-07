@@ -16,7 +16,8 @@ namespace mu2e {
     class CaloPhotonPropagation
     {
         public:
-          CaloPhotonPropagation(const std::string& fileName, const std::string& histName, CLHEP::HepRandomEngine& engine);
+          CaloPhotonPropagation(const std::string& fileName, const std::string& histName,
+                                CLHEP::HepRandomEngine& engine);
 
           void  buildTable();
           float propTimeSimu(float z);        // sampled from the CDF (consumes a random number)

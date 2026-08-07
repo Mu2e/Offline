@@ -204,7 +204,7 @@ namespace mu2e {
 
       simsToKeep.assign(simsToKeepUnique.begin(), simsToKeepUnique.end());
 
-      // Final diag info
+      // Detailed diag info
       if (diagLevel_ > 1)
       {
           std::cout<<"CaloShowerStepMaker summary"<<std::endl;
@@ -247,9 +247,8 @@ namespace mu2e {
 
          for (const auto& step : steps)
          {
-             SimPtr sim = step.simParticle();
-
              inspectedSims.clear();
+             SimPtr sim = step.simParticle();
              while (sim->hasParent())
              {
                  const auto alreadyInspected = simToAncestorMap.find(sim);
@@ -283,10 +282,7 @@ namespace mu2e {
      for (const StepPointMC* step : steps)
      {
          const CLHEP::Hep3Vector pos = cal.mu2eToCrystal(volId, step->position());
-
-         // clamp: a step at/beyond the back face would otherwise index past the last slice
          const unsigned idx = std::min<unsigned>(unsigned(std::max(1e-6, pos.z())/zSliceSize_), numZSlices_-1);
-
          if (buffer.entries(idx)>0 && (step->time()-buffer.t0(idx) > deltaTime_))
          {
              if (diagLevel_ > 2) {std::cout<<"[CaloShowerStepMaker::compressSteps] inserted  "; buffer.printBucket(idx);}

@@ -90,8 +90,7 @@ namespace mu2e {
 
       caloClusterMCs.reserve(caloClusters.size());
 
-      for (std::size_t idx=0; idx<caloClusters.size(); ++idx)
-      {
+      for (std::size_t idx=0; idx<caloClusters.size(); ++idx) {
           const CaloCluster& cluster    = caloClusters[idx];
           const auto         clusterPtr = art::Ptr<CaloCluster>(caloClusterHandle,idx);
 
@@ -100,8 +99,7 @@ namespace mu2e {
 
           // gather the CaloHitMC of every hit in this cluster that carries MC truth
           std::vector<art::Ptr<CaloHitMC>> digis;
-          for (const auto& hitPtr : cluster.caloHitsPtrVector())
-          {
+          for (const auto& hitPtr : cluster.caloHitsPtrVector()) {
               const auto it = hitToMC.find(hitPtr);
               if (it == hitToMC.end()) continue;
 

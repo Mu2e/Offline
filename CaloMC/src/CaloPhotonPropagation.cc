@@ -62,7 +62,7 @@ namespace mu2e {
        }
 
        const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-       lightSpeed_            = 300.0f / cal.G4Info().get<double>("refractiveIndex");   // mm/ns
+       lightSpeed_            = 300.0f / cal.G4Info().get<double>("refractiveIndex"); // mm/ns
    }
 
 

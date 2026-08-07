@@ -11,9 +11,12 @@
 
 namespace mu2e {
 
-   void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, const CLHEP::Hep3Vector& pos)
+   void ShowerStepUtil::add(unsigned i, double eDepG4, double eDepVis, double time,
+                            double momentum, const CLHEP::Hep3Vector& pos)
    {
-       if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
+       if (i > imax_) throw cet::exception("Rethrow")
+                      << "[CaloMC/ShowerStepUtil] Index out of bound "
+                      << i << "\n";
 
        //init buffer if needed
        if (n_[i]==0) {pIn_[i] = momentum; t0_[i] = time;}
@@ -34,7 +37,10 @@ namespace mu2e {
 
    void ShowerStepUtil::reset(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
+       if (i > imax_) throw cet::exception("Rethrow")
+                      << "[CaloMC/ShowerStepUtil] Index out of bound "
+                      << i << "\n";
+
        n_[i]       = 0;
        eDepG4_[i]  = 0;
        eDepVis_[i] = 0;
@@ -45,7 +51,9 @@ namespace mu2e {
 
    CLHEP::Hep3Vector& ShowerStepUtil::pos(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
+       if (i > imax_) throw cet::exception("Rethrow")
+                      << "[CaloMC/ShowerStepUtil] Index out of bound "
+                      << i << "\n";
 
        pos_[0] = x_[i]/w_[i];
        pos_[1] = y_[i]/w_[i];
@@ -56,9 +64,13 @@ namespace mu2e {
 
    void ShowerStepUtil::printBucket(unsigned i)
    {
-       if (i > imax_) throw cet::exception("Rethrow")<< "[CaloMC/ShowerStepUtil] Index out of bound " << i << std::endl;
-       std::cout<<"Entries= "<<n_[i]<<" Energy = "<<eDepG4_[i]<<" Time = "<<time_[i]/w_[i]
-                <<" pos=("<<x_[i]/w_[i]<<","<<y_[i]/w_[i]<<","<<z_[i]/w_[i]<<")  momentum="<<pIn_[i]<<std::endl;
+       if (i > imax_) throw cet::exception("Rethrow")
+                      << "[CaloMC/ShowerStepUtil] Index out of bound "
+                      << i << "\n";
+       std::cout<<"Entries= "<<n_[i]<<" Energy = "<<eDepG4_[i]
+                <<" Time = "<<time_[i]/w_[i]
+                <<" pos=("<<x_[i]/w_[i]<<","<<y_[i]/w_[i]<<","<<z_[i]/w_[i]
+                <<")  momentum="<<pIn_[i]<<"\n";
    }
 
 }

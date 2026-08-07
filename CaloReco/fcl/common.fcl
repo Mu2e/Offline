@@ -19,7 +19,7 @@ BEGIN_PROLOG
   {
      generate       : false
      dumpGenerated  : false
-     histoFileName  : "CaloMC/data/ReadoutNoise.root"
+     histoFileName  : "Offline/CaloReco/data/ReadoutNoise.root"
      histoPrefix    : "histo_"
      pulseCache     : @local::CaloPulseCache
      elecNphotPerNs : 0.18

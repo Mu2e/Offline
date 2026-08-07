@@ -208,11 +208,10 @@ namespace mu2e {
 
       //-----------------------------------------------------------------------
       // store corrected energy deposits for each readout
-      for (const auto& showerHandle : crystalShowerHandles)
-      {
+      for (const auto& showerHandle : crystalShowerHandles) {
           const CaloShowerStepCollection& caloShowerSteps(*showerHandle);
-          for (auto istep = caloShowerSteps.begin(); istep != caloShowerSteps.end(); ++istep)
-          {
+
+          for (auto istep = caloShowerSteps.begin(); istep != caloShowerSteps.end(); ++istep) {
               const CaloShowerStep& step = *istep;
 
               // see doc-db for calo folding description. Note pbtmc.pbtime_ is NEGATIVE!
@@ -237,10 +236,9 @@ namespace mu2e {
               if (LRUCorrection_)   edep_corr = LRUCorrection(posZ/crystalLength, edep_corr, lru);
 
               // Generate individual PEs and their arrival times
-              for (int i=0; i<CaloConst::_nSiPMPerCrystal; ++i)
-              {
+              for (int i=0; i<CaloConst::_nSiPMPerCrystal; ++i) {
                   const int   SiPMID = SiPMIDBase + i;
-                  const float mean   = std::max(0.0f, edep_corr*pePerMeVs[i]);   // guard: negative mean is UB in RandPoissonQ
+                  const float mean   = std::max(0.0f, edep_corr*pePerMeVs[i]);
                   const int   NPE    = PEStatCorrection_ ? randPoisson_.fire(mean) : int(std::lround(mean));
                   if (NPE <= 0) continue;
 
@@ -248,8 +246,7 @@ namespace mu2e {
                   if (addTravelTime_)
                      for (auto& t : PETime) t += photonProp_.propTimeSimu(crystalLength-posZ);
 
-                  if (diagLevel_ > 2)
-                  {
+                  if (diagLevel_ > 2) {
                       std::cout<<"[CaloShowerROMaker] SiPMID:"<<SiPMID<<"  energy / NPE = "<<edep_corr<<"  /  "<<NPE<<"\nTime hit "<<std::endl;
                       for (float t : PETime) std::cout<<t<<" ";
                       std::cout<<std::endl;
@@ -269,8 +266,8 @@ namespace mu2e {
       }
 
       // sort once, after all input handles are processed
-      std::sort(caloShowerROs.begin(),caloShowerROs.end(),
-                [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();});
+      auto sortFct = [](const auto& a, const auto& b){return a.SiPMID() < b.SiPMID();};
+      std::sort(caloShowerROs.begin(),caloShowerROs.end(),sortFct);
 
       //--------------------------------------------------
       // Produce the final MC truth info collecting energy deposits for each SimParticle in each crystal
