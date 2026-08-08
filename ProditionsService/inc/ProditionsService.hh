@@ -30,6 +30,7 @@
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "Offline/CaloConfig/inc/AlignedCalConfig.hh"
 #include "Offline/CaloConfig/inc/CalCalibConfig.hh"
 #include "Offline/CaloConfig/inc/CalSimParamsConfig.hh"
 
@@ -98,6 +99,8 @@ class ProditionsService {
         Name("calCalib"),Comment("calorimeter energy calib") };
     fhicl::Table<CalSimParamsConfig> calSimParams{
         Name("calSimParams"),Comment("calorimeter sim parameters for crystals") };
+    fhicl::Table<AlignedCalConfig> alignedCalorimeter{
+        Name("alignedCalorimeter"), Comment("Calorimeter alignment in reco code")};
   };
 
   // this line is required by art to allow the command line help print

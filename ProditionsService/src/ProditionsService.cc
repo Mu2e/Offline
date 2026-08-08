@@ -3,21 +3,21 @@
 //
 //#include "Offline/AnalysisConditions/inc/TrkQualCatalogCache.hh"
 #include "Offline/DbService/inc/DbHandle.hh"
-#include "Offline/CRVConditions/inc/CRVCalibCache.hh"
-#include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
-#include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
-#include "Offline/CRVConditions/inc/CRVStatusCache.hh"
-#include "Offline/CaloConditions/inc/CalDAQMapCache.hh"
-#include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/DbService/inc/DbService.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsService.hh"
 
+#include "Offline/CRVConditions/inc/CRVCalibCache.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinalCache.hh"
+#include "Offline/CRVConditions/inc/CRVPhotonYieldCache.hh"
+#include "Offline/CRVConditions/inc/CRVStatusCache.hh"
+#include "Offline/DAQConditions/inc/EventTimingCache.hh"
+
 #include "Offline/CaloConditions/inc/CalSimParamsCache.hh"
 #include "Offline/CaloConditions/inc/CalDAQMapCache.hh"
+#include "Offline/CaloConditions/inc/AlignedCalorimeterCache.hh"
 #include "Offline/CaloConditions/inc/CalCalibCache.hh"
 
-#include "Offline/DAQConditions/inc/EventTimingCache.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalibCache.hh"
 #include "Offline/SimulationConditions/inc/SimBookkeeperCache.hh"
 
@@ -101,6 +101,10 @@ ProditionsService::ProditionsService(Parameters const& sTable,
   auto cmc =
       std::make_shared<mu2e::CalSimParamsCache>(_config.calSimParams());
   _caches[cmc->name()] = cmc;
+  auto acc =
+      std::make_shared<mu2e::AlignedCalorimeterCache>(_config.alignedCalorimeter());
+  _caches[acc->name()] = acc;
+
   if (_config.verbose() > 0) {
     cout << "Proditions built caches:" << endl;
     for (auto const& cc : _caches) {
