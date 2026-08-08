@@ -173,7 +173,7 @@ TrkReco: { @table::TrkReco
       MaxDeltaP : 10
       MinHitFrac : 0.6
       Selector : @local::TrkReco.TrkSel
-      SelectBestPair : 3 # highest hit overlap
+      SelectBestPair : "HitFraction" # highest hit overlap
       ComparisonDirection : "Downstream"
       ComparisonSurface : TT_Front
     }

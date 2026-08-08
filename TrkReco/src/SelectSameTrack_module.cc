@@ -15,6 +15,7 @@
 #include "Offline/TrkReco/inc/KalSeedSelector.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 // C++
