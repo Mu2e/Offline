@@ -14,12 +14,15 @@
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/TrkReco/inc/KalSeedSelector.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 // C++
 #include <vector>
 #include <tuple>
 #include <limits>
+#include <map>
+#include <string>
 
 namespace mu2e {
   // sorting function

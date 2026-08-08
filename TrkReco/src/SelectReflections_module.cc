@@ -23,6 +23,8 @@
 #include <vector>
 #include <tuple>
 #include <limits>
+#include <map>
+#include <string>
 
 namespace mu2e {
   class SelectReflections : public art::EDFilter {
@@ -131,7 +133,7 @@ namespace mu2e {
       if(sidmatch_){
         sid_ = SurfaceId(sidname);
       } else {
-        if(refdir_ != RefDir::any) throw cet::exception("RECO")<<"Explicit SID incompatible with t0 segment selection"<< std::endl;
+        if(refdir_ != RefDir::any) throw cet::exception("RECO")<<"T0 segment matching requires 'Any' direction" << std::endl;
       }
     }
 
@@ -245,7 +247,7 @@ namespace mu2e {
           double value = (selbest_ == BestPair::deltat || selbest_ == BestPair::deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " refdir " << std::get<6>(match) << std::endl;
+            if(debug_ > 1)std::cout << "Match " << imatch << " has dnstream momentum " << std::get<2>(match) << " dt " << std::get<3>(match) << " dp " << std::get<4>(match) << " nactive " << std::get<5>(match) << " refdir " << RefDir(std::get<6>(match)) << std::endl;
             if(selbest_ == BestPair::mom && std::get<2>(match) > value){
               ibest = imatch;
               value = std::get<2>(match);
@@ -265,7 +267,7 @@ namespace mu2e {
       if(ibest > -1){
         if(debug_ > 0) std::cout << "Found Reflecting particle candidate, dnstream momentum " << std::get<2>(matches[ibest])
           << " delta t " << std::get<3>(matches[ibest])
-            << " delta P " << std::get<4>(matches[ibest]) << " refdir " << std::get<6>(matches[ibest]) << std::endl;
+            << " delta P " << std::get<4>(matches[ibest]) << " refdir " << RefDir(std::get<6>(matches[ibest])) << std::endl;
 
         if(refdir_ == RefDir::any || std::get<6>(matches[ibest]) == RefDir::both || std::get<6>(matches[ibest]) == refdir_){
           ++nref_;

@@ -161,7 +161,7 @@ TrkReco: { @table::TrkReco
       MaxDeltaT : 5 # ns
       MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
-      SelectBestPair : "NActive" # select pair with hightest # of active hits
+      SelectBestPair : "NActive" # select pair with highest # of active hits
       ReflectionTestDirection : "Any" # test for reflection in any direction
       Surface : "TT_Front"
     }

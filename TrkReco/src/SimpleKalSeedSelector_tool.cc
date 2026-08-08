@@ -1,5 +1,4 @@
 #include "Offline/TrkReco/inc/SimpleKalSeedSelector.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 
 namespace mu2e {
 
