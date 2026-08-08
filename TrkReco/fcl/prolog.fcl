@@ -151,8 +151,8 @@ TrkReco: { @table::TrkReco
       MaxDeltaT : 200 # ns. Allow large differences to accomodate upstream reflection transit time
       MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
-      SelectBestPair : 2 # select pair with best momentum match
-      ReflectionTestDirection : 0 # test for reflection in any direction
+      SelectBestPair : "Momentum" # select pair with best momentum match
+      ReflectionTestDirection : "Any" # test for reflection in any direction
       debugLevel : 0
     }
     # tight selection at tracker front
@@ -161,8 +161,8 @@ TrkReco: { @table::TrkReco
       MaxDeltaT : 5 # ns
       MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
-      SelectBestPair : 3 # select pair with hightest # of active hits
-      ReflectionTestDirection : 3 # test both directions of upstream track
+      SelectBestPair : "NActive" # select pair with hightest # of active hits
+      ReflectionTestDirection : "Any" # test for reflection in any direction
       Surface : "TT_Front"
     }
 
