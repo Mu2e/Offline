@@ -478,20 +478,21 @@ namespace mu2e {
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        CLHEP::Hep3Vector parentInMu2e = cg->geomUtil().origin();
+        CLHEP::Hep3Vector parentInMu2e = cg->G4Info().get<CLHEP::Hep3Vector>("caloOrigin");
 
-        for (const auto& diskPtr : cg->diskPtrs())
+        for (size_t idisk=0;idisk<cg->nDisks();++idisk)
         {
-           const CLHEP::Hep3Vector& sizeDisk = diskPtr->geomInfo().size();
-           CLHEP::Hep3Vector posDiskLocal  = diskPtr->geomInfo().origin() - cg->geomUtil().origin();
-           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
+           const auto& thisDisk = cg->disk(idisk);
+           const CLHEP::Hep3Vector& sizeDisk = thisDisk.diskInfo().size();
+           CLHEP::Hep3Vector posDiskLocal  = thisDisk.diskInfo().origin() - parentInMu2e;
+           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,thisDisk.diskInfo().FEBZOffset());
 
            CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posInnerDisk = posDiskLocal;
 
-           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
-           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,diskPtr->geomInfo().FEBZLength());
+           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,thisDisk.diskInfo().FEBZOffset());
+           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,thisDisk.diskInfo().FEBZLength());
            CLHEP::Hep3Vector  posInnerFEB  = (posBackFEB+posFrontFEB)/2.0;
 
            vd->addVirtualDetector(vdIdDiskSurf, parentInMu2e,0,posFrontDisk);

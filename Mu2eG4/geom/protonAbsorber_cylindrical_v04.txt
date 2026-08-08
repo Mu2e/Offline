@@ -29,6 +29,9 @@ bool   protonabsorber.solid        = false;
 // To make inner part shorter than MECO design
 bool   protonabsorber.isShorterCone = true;
 double protonabsorber.distFromTargetEnd = 625.; //mu2e z positions are 6901-7901 mm
+// Optional: pin the IPA at an absolute z, independent of the stopping
+// target (see MECOStyleProtonAbsorberMaker):
+// double protonabsorber.zStartInMu2e = 6901.;
 double protonabsorber.halfLength   = 500.0;
 
 bool   protonabsorber.ipa.buildSupports = true;

@@ -135,24 +135,45 @@ TrkReco: { @table::TrkReco
       MinNHitOverlap             : 10
     }
   }
+  filters : {
 # standard config for reflection selection
-  SelectReflections: {
-    module_type : SelectReflections
-    Surface : TT_Front
-    MaxDeltaT : 5 # ns
-    MaxDeltaP : 10 # MeV
-    # optionally only merge selected candidates
-    # a simple selector is used here, but any selector implemented as a tool can be used
-    Selector : {
-      tool_type : SimpleKalSeedSelector
-      MinMomentum : 40.0 # MeV/c
-      MaxMomentum : 300.0 #MeV/c
-      MinFitConsistency : 1e-6
-      MinDeltaNHitFraction : 0.0
-      MinActiveHits : 15
+    SelectReflections: {
+      module_type : SelectReflections
+      Surface : TT_Front
+      MaxDeltaT : 5 # ns
+      MaxDeltaP : 10 # MeV
+      # optionally only merge selected candidates
+      # a simple selector is used here, but any selector implemented as a tool can be used
+      Selector : {
+        tool_type : SimpleKalSeedSelector
+        MinMomentum : 40.0 # MeV/c
+        MaxMomentum : 300.0 #MeV/c
+        MinFitConsistency : 1e-6
+        MinDeltaNHitFraction : 0.0
+        MinActiveHits : 15
+      }
+      SelectBestPair : 3 # select pair with highest # of active hits
+      debugLevel : 0
     }
-    SelectBestPair : 3 # select pair with highest # of active hits
-    debugLevel : 0
+
+    SelectSameTrack: {
+      module_type : SelectSameTrack
+      debugLevel : 0
+      MaxDeltaT : 10
+      MaxDeltaP : 10
+      MinHitFrac : 0.6
+      Selector : {
+        tool_type : SimpleKalSeedSelector
+        MinMomentum : 40.0 # MeV/c
+        MaxMomentum : 300.0 #MeV/c
+        MinFitConsistency : 1e-6
+        MinDeltaNHitFraction : 0.0
+        MinActiveHits : 15
+      }
+      SelectBestPair : 3 # highest hit overlap
+      ComparisonDirection : "Downstream"
+      ComparisonSurface : TT_Front
+    }
   }
 }
 END_PROLOG

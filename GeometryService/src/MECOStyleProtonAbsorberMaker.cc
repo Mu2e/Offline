@@ -125,6 +125,14 @@ namespace mu2e {
     // we add space for the virtual detector here
     double targetEnd = _target->centerInMu2e().z() + 0.5*_target->cylinderLength() + 2.*vdHL;;
 
+    // Optional absolute pinning: when protonabsorber.zStartInMu2e is set,
+    // the IPA's upstream end sits at that absolute z regardless of the
+    // stopping target; distFromTargetEnd then only anchors the cone-radius
+    // interpolation. Unset (default): stock target-relative behavior.
+    if ( _config.hasName("protonabsorber.zStartInMu2e") ) {
+      targetEnd = _config.getDouble("protonabsorber.zStartInMu2e") - distFromTargetEnd;
+    }
+
     // distance from target end to ds2-ds3 boundary
     double targetEndToDS2End = _ds->vac_zLocDs23Split() - targetEnd;
 
