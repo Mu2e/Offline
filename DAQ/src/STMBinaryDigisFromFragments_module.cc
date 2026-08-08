@@ -41,11 +41,11 @@ public:
     fhicl::Atom<std::string> rawFile {fhicl::Name("rawFile"), "raw.bin"};
     fhicl::Atom<std::string> zsFile {fhicl::Name("zsFile"), "zs.bin"};
     fhicl::Atom<std::string> phFile {fhicl::Name("phFile"), "ph.bin"};
-    fhicl::Atom<std::string> rawHeaderFile {fhicl::Name("rawHeaderFile"), "rawWithHeader.bin"}; 
+    fhicl::Atom<std::string> rawHeaderFile {fhicl::Name("rawHeaderFile"), "rawWithHeader.bin"};
     fhicl::Atom<std::string> eventFile {fhicl::Name("eventFile"), "event.bin"};
     fhicl::OptionalAtom<int> verbosityLevel{fhicl::Name("verbosityLevel"), fhicl::Comment("Verbosity level")};
   };
-  
+
   explicit STMBinaryDigisFromFragments(const art::EDProducer::Table<Config>& config); // constructor created, config via fcl
   virtual ~STMBinaryDigisFromFragments(); //declares destructor
 
@@ -101,7 +101,7 @@ STMBinaryDigisFromFragments::STMBinaryDigisFromFragments(const art::EDProducer::
   if(!_rawOut || !_zsOut || !_phOut || !_rawHeaderOut || !_eventOut){
     throw cet::exception("FILEOPEN")<< "Failed to open one or more output files\n";
   }
-  
+
 }
 
 STMBinaryDigisFromFragments::~STMBinaryDigisFromFragments(){
@@ -114,16 +114,16 @@ STMBinaryDigisFromFragments::~STMBinaryDigisFromFragments(){
   if( _rawHeaderOut.is_open() )
     _rawHeaderOut.close();
   if( _eventOut.is_open() )
-    _eventOut.close();    
+    _eventOut.close();
 }//Closing files
 
 // ----------------------------------------------------------------------
 
 void STMBinaryDigisFromFragments::produce(Event& event)
 {
-  
+
   ++_totalEvents; //Increment Total Event Counter
-  
+
   //std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
   //std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
   //std::unique_ptr<mu2e::STMPHDigiCollection> ph_digis(new mu2e::STMPHDigiCollection);
@@ -145,25 +145,25 @@ void STMBinaryDigisFromFragments::produce(Event& event)
   size_t localRaw_frags{0};
   size_t localZS_frags{0};
   size_t localPH_frags{0};
-  size_t zeroRaw_frags{0}; 
+  size_t zeroRaw_frags{0};
   size_t zeroZS_frags{0};
   size_t zeroPH_frags{0};
   size_t emptyRaw_frags{0};
   size_t emptyZS_frags{0};
   size_t emptyPH_frags{0};
-  
+
   size_t extractedRawWaveforms{0};
   size_t extractedZSWaveforms{0};
   size_t extractedPHDigis{0};
   //uint16_t ZSfromRaw{0}; //Keep track of ZS length from raw header
   //bool readRawZSinfo{false};
-  
+
   //loop over frags
   for (const auto& frag : *STMFragments) {
     ++_totalFragments; //Increment Total Frag counter
-    
+
     if (_verbosityLevel >=3){ std::cout <<"\nFrag_ID : " << frag.fragmentID() << "\n";}
-      
+
     //Check if this is a container fragment
     if (frag.type() == artdaq::Fragment::ContainerFragmentType){
 
@@ -173,7 +173,7 @@ void STMBinaryDigisFromFragments::produce(Event& event)
       _totalInner += blocks;
 
       //loop over container
-      // i index corresponds to inner frag 
+      // i index corresponds to inner frag
       for (size_t i = 0; i < cont_frag.block_count(); ++i){
 
         auto inner_frag = cont_frag.at(i);
@@ -185,19 +185,19 @@ void STMBinaryDigisFromFragments::produce(Event& event)
 
         if (stm_frag.isRaw()) {
           ++_totalRaw; //Increment job counter
-	  ++localRaw_frags;//Increment event counter
-	    
+          ++localRaw_frags;//Increment event counter
+
           auto payloadPtr = stm_frag.payloadBegin();
           auto payloadWords = stm_frag.payloadWords();
           bool allZeros = true;//Assume raw frag is zero filled
-	  
+
           //Checks for empty frag
           if (payloadWords == 0) {
-	    if(_verbosityLevel >=3){std::cout<< "\nFound an empty frag, i = " << i <<" @Raw\n";}
-	    ++_totalEmptyRaw;//Job counter
-	    ++emptyRaw_frags;//Event counter
+            if(_verbosityLevel >=3){std::cout<< "\nFound an empty frag, i = " << i <<" @Raw\n";}
+            ++_totalEmptyRaw;//Job counter
+            ++emptyRaw_frags;//Event counter
             continue;//stops this loop check and goes to next frag
-            }
+          }
 
           //Check if any data points are not zero
           for (size_t k =0; k < payloadWords; ++k){
@@ -209,172 +209,172 @@ void STMBinaryDigisFromFragments::produce(Event& event)
 
           //Check if zero filled
           if (allZeros){
-	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = " << i << " @Raw\n";}
-	    ++_totalZeroRaw;//Increment counters
-	    ++zeroRaw_frags;//Increment Zero Raw Counter
+            if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = " << i << " @Raw\n";}
+            ++_totalZeroRaw;//Increment counters
+            ++zeroRaw_frags;//Increment Zero Raw Counter
             continue;
           }
 
           //Print first 20 values
-	  if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i <<" @Raw\n";}
+          if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i <<" @Raw\n";}
 
-	  if (_verbosityLevel >= 4){
-	    std::cout << "\nFirst 20 adcs: ";
-	    for (size_t kk = 0; kk < std::min<size_t>(payloadWords,20); ++kk){
-	      std::cout << payloadPtr[kk] << " ,";
-	    }
-	    if(_verbosityLevel >=5){
-	      std::cout << "\nRaw header : Raw Length = " << stm_frag.rawLength()
-			<<" , ZS Length = " << stm_frag.zsLength()
-			<< " , ZS Regions  = " << stm_frag.zsRegions()
-			<< " , i = " << i << " @Raw\n";
-	    }
-	  }
+          if (_verbosityLevel >= 4){
+            std::cout << "\nFirst 20 adcs: ";
+            for (size_t kk = 0; kk < std::min<size_t>(payloadWords,20); ++kk){
+              std::cout << payloadPtr[kk] << " ,";
+            }
+            if(_verbosityLevel >=5){
+              std::cout << "\nRaw header : Raw Length = " << stm_frag.rawLength()
+                <<" , ZS Length = " << stm_frag.zsLength()
+                << " , ZS Regions  = " << stm_frag.zsRegions()
+                << " , i = " << i << " @Raw\n";
+            }
+          }
           //Ideally only good frags get up to here
           //------full data (header + payload)
-	  //Waveform with data creation
-	  auto dataPtr = stm_frag.dataBegin();//Inner variable
-	  auto dataWords = stm_frag.dataWords();
-	  writePayload( _rawHeaderOut , dataPtr, dataWords);
-	  
+          //Waveform with data creation
+          auto dataPtr = stm_frag.dataBegin();//Inner variable
+          auto dataWords = stm_frag.dataWords();
+          writePayload( _rawHeaderOut , dataPtr, dataWords);
+
           //----- payload-only
-	  writePayload(_rawOut, payloadPtr, payloadWords);
-	  ++extractedRawWaveforms;
+          writePayload(_rawOut, payloadPtr, payloadWords);
+          ++extractedRawWaveforms;
 
         }//End of isRaw
-	
+
         else if (stm_frag.isZS()){
           ++_totalZS; //Incremenet ZS counter
-	  ++localZS_frags;
-	  
-	  auto payloadPtr = stm_frag.payloadBegin();
-	  auto payloadWords = stm_frag.payloadWords();
-	  bool allZeros = true; //assumes all adcs are zero
+          ++localZS_frags;
 
-	  //Check if payload is empty
-	  if (payloadWords == 0) {
-	    if (_verbosityLevel >=3){std::cout << "\nFound an empty frag, i = " << i << " @ZS\n";}
-	    ++_totalEmptyZS;
-	    ++emptyZS_frags; //Increment empty ZS counter
-	    continue;
-	  }
-	  //Check if any adc are non-zero
-	  for (size_t k = 0 ; k < payloadWords ; ++k){
-	    if(payloadPtr[k] != 0 ){
-	      allZeros = false;
-	      break;
-	    }
-	  }
-	  //Check if zero filled
-	  if (allZeros) {
-	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = "<< i << " @ZS\n";}
-	    ++_totalZeroZS;
-	    ++zeroZS_frags;
-	    continue;
-	  }
-	  //Print first 20 payload adcs
-	  if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i << " @ZS\n";}
+          auto payloadPtr = stm_frag.payloadBegin();
+          auto payloadWords = stm_frag.payloadWords();
+          bool allZeros = true; //assumes all adcs are zero
 
-	  if (_verbosityLevel >=4){
-	    std::cout << "\nFirst 20 adcs: ";
-	    for (size_t kk = 0 ; kk < std::min<size_t>(payloadWords,20) ; ++kk){
-	      std::cout << payloadPtr[kk] << " , ";
-	    }
-	    std::cout << "i = " << i << " @ZS\n";
-	  }
-	  
-	  //Defintions for payload references
-	  auto dataPtr = stm_frag.dataBegin();
-	  auto dataWords = stm_frag.dataWords();
-	  auto dataEnd = dataPtr + dataWords;
-	  size_t seg = 0;
-	  size_t totalLen = 0;
-	  uint16_t lastZSindex = 0; //keeps track of last recorded index from header -> with respect to what?
-	  uint16_t lastLen = 0; //keeps track of last recorded length from header
+          //Check if payload is empty
+          if (payloadWords == 0) {
+            if (_verbosityLevel >=3){std::cout << "\nFound an empty frag, i = " << i << " @ZS\n";}
+            ++_totalEmptyZS;
+            ++emptyZS_frags; //Increment empty ZS counter
+            continue;
+          }
+          //Check if any adc are non-zero
+          for (size_t k = 0 ; k < payloadWords ; ++k){
+            if(payloadPtr[k] != 0 ){
+              allZeros = false;
+              break;
+            }
+          }
+          //Check if zero filled
+          if (allZeros) {
+            if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = "<< i << " @ZS\n";}
+            ++_totalZeroZS;
+            ++zeroZS_frags;
+            continue;
+          }
+          //Print first 20 payload adcs
+          if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i << " @ZS\n";}
 
-	  writePayload(_zsOut, payloadPtr, payloadWords);
-	  
-	  while (dataPtr + 2 <= dataEnd){
-	    uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
-	    uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
-	    auto adc = dataPtr + 2;
-	    if (adc + current_zs_size > dataEnd){ break;}
-	
-	    ++extractedZSWaveforms;
+          if (_verbosityLevel >=4){
+            std::cout << "\nFirst 20 adcs: ";
+            for (size_t kk = 0 ; kk < std::min<size_t>(payloadWords,20) ; ++kk){
+              std::cout << payloadPtr[kk] << " , ";
+            }
+            std::cout << "i = " << i << " @ZS\n";
+          }
 
-	    if (_verbosityLevel >=6){
-	      //A print check per segment
-	      std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
-			<< "\n" ;
-	    }
-	    
-	    //Update variables
-	    lastZSindex = current_zs_location;
-	    lastLen = current_zs_size;
-	    totalLen += lastLen;
-	    ++seg;
-	    dataPtr = adc + current_zs_size;
-	  }
+          //Defintions for payload references
+          auto dataPtr = stm_frag.dataBegin();
+          auto dataWords = stm_frag.dataWords();
+          auto dataEnd = dataPtr + dataWords;
+          size_t seg = 0;
+          size_t totalLen = 0;
+          uint16_t lastZSindex = 0; //keeps track of last recorded index from header -> with respect to what?
+          uint16_t lastLen = 0; //keeps track of last recorded length from header
 
-	  if (_verbosityLevel >=5){
-	    //Summary
-	    std::cout << "ZS Regions = " << seg
-		      << " , lastZSindex = " << lastZSindex
-		      << " , lastZSLen = " << lastLen
-		      << " , ZS total length = " << totalLen
-		      << " , i =  " << i <<  " @ZS\n";
-	  }
+          writePayload(_zsOut, payloadPtr, payloadWords);
 
-	  //Throw out if ZSLengthfromRaw != totalLen
-	  //if (readRawZSinfo && ZSfromRaw != totalLen){
-	  //throw cet::exception("Mismatch")
-	  //  << "\n=== ZS Length mismatch ===\n"
-	  //  << "ZS length from Raw header " << ZSfromRaw << "\n"
-	  //  << "ZS length calculated from file : " << totalLen << "\n"
-	  //  << "Found at inner frag i : " << i <<"\n";
-	    	  // }
-	  
+          while (dataPtr + 2 <= dataEnd){
+            uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
+            uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
+            auto adc = dataPtr + 2;
+            if (adc + current_zs_size > dataEnd){ break;}
+
+            ++extractedZSWaveforms;
+
+            if (_verbosityLevel >=6){
+              //A print check per segment
+              std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
+            << "\n" ;
+            }
+
+            //Update variables
+            lastZSindex = current_zs_location;
+            lastLen = current_zs_size;
+            totalLen += lastLen;
+            ++seg;
+            dataPtr = adc + current_zs_size;
+          }
+
+          if (_verbosityLevel >=5){
+            //Summary
+            std::cout << "ZS Regions = " << seg
+                << " , lastZSindex = " << lastZSindex
+                << " , lastZSLen = " << lastLen
+                << " , ZS total length = " << totalLen
+                << " , i =  " << i <<  " @ZS\n";
+          }
+
+          //Throw out if ZSLengthfromRaw != totalLen
+          //if (readRawZSinfo && ZSfromRaw != totalLen){
+          //throw cet::exception("Mismatch")
+          //  << "\n=== ZS Length mismatch ===\n"
+          //  << "ZS length from Raw header " << ZSfromRaw << "\n"
+          //  << "ZS length calculated from file : " << totalLen << "\n"
+          //  << "Found at inner frag i : " << i <<"\n";
+                // }
+
         }//End of isZS
-	
+
         else if (stm_frag.isPH()){
-	  ++_totalPH;
-	  ++localPH_frags;
-	  //Check if zero filled
-	  auto payloadPtr = stm_frag.payloadBegin();
-	  auto payloadWords = stm_frag.payloadWords();
-	  bool allZeros = true;
+          ++_totalPH;
+          ++localPH_frags;
+          //Check if zero filled
+          auto payloadPtr = stm_frag.payloadBegin();
+          auto payloadWords = stm_frag.payloadWords();
+          bool allZeros = true;
 
-	  if (payloadWords ==0){
-            if (_verbosityLevel >= 3){std::cout << "\nFound an empty frag, i = " << i<< " @PH\n";}
-	    ++_totalEmptyPH;
-	    ++emptyPH_frags;
-	    continue;
-	  }
+          if (payloadWords ==0){
+                  if (_verbosityLevel >= 3){std::cout << "\nFound an empty frag, i = " << i<< " @PH\n";}
+            ++_totalEmptyPH;
+            ++emptyPH_frags;
+            continue;
+          }
 
-	  //Check if zero filled
-	  for (size_t k = 0; k< payloadWords; ++k) {
-	    if (payloadPtr[k] !=0){
-	      allZeros = false;
-	      break;
-	    }
-	  }
-	  //count if zero filled
-	  if (allZeros){
-	    if (_verbosityLevel >=3){ std::cout<< "\nFound a zero filled frag, i = " << i<< " @PH\n";}
-	    ++_totalZeroPH;
-	    ++zeroPH_frags;
-	    continue;
-	  }
+          //Check if zero filled
+          for (size_t k = 0; k< payloadWords; ++k) {
+            if (payloadPtr[k] !=0){
+              allZeros = false;
+              break;
+            }
+          }
+          //count if zero filled
+          if (allZeros){
+            if (_verbosityLevel >=3){ std::cout<< "\nFound a zero filled frag, i = " << i<< " @PH\n";}
+            ++_totalZeroPH;
+            ++zeroPH_frags;
+            continue;
+          }
 
-	  if (_verbosityLevel >= 3){std::cout << "\nFound a good frag, i = " << i <<" @PH\n";}
-	  
-	  size_t digiWords = stm_frag.payloadWords();	  
+          if (_verbosityLevel >= 3){std::cout << "\nFound a good frag, i = " << i <<" @PH\n";}
+
+          size_t digiWords = stm_frag.payloadWords();
           auto const* digiPtr = stm_frag.payloadBegin();
 
-	  writePayload(_phOut,digiPtr, digiWords);
-	  extractedPHDigis += digiWords;
+          writePayload(_phOut,digiPtr, digiWords);
+          extractedPHDigis += digiWords;
 
-      }//End of isPH and is checks
+        }//End of isPH and is checks
 
         //---Combined stream write w. order preserved ----
         {
@@ -412,7 +412,7 @@ void STMBinaryDigisFromFragments::produce(Event& event)
       }
     }
   } //End of frags loop---George suggestions
-  if (_verbosityLevel >= 2 ){ 
+  if (_verbosityLevel >= 2 ){
     //Event Summary -> tells us what happens per event
     std::cout << "\n========== STM EVENT SUMMARY - (Binary Module) ==========\n";
     std::cout << "Extracted Raw waveforms     : " << extractedRawWaveforms <<"\n";
@@ -423,7 +423,7 @@ void STMBinaryDigisFromFragments::produce(Event& event)
     std::cout << "Raw frags   : " << localRaw_frags << "\n";
     std::cout << "ZS frags    : " << localZS_frags << "\n";
     std::cout << "PH frags    : " << localPH_frags << "\n";
-  
+
     std::cout << "\n--- Filter results ---\n";
     std::cout << "Zero Raw frags   : " << zeroRaw_frags << "\n";
     std::cout << "Zero ZS frags    : " << zeroZS_frags << "\n";
@@ -432,10 +432,10 @@ void STMBinaryDigisFromFragments::produce(Event& event)
     std::cout << "Empty Raw frags  : " << emptyRaw_frags <<"\n";
     std::cout << "Empty ZS frags   : " << emptyZS_frags << "\n";
     std::cout << "Empty PH frags   : " << emptyPH_frags << "\n";
-  
+
     std::cout << "=================================\n";
   }
-  
+
 } // produce()
 
 // ======================================================================

@@ -59,7 +59,7 @@ namespace mu2e {
       produces<STMHitCollection>();
     }
   //Originally had _channel(STMChannel::LaBr)
-  
+
     void MakeSTMHits::produce(art::Event& event) {
     // create output
     unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);
