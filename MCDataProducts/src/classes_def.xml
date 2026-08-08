@@ -195,6 +195,11 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="std::vector<art::Ptr<mu2e::CaloHitMC> >" />
 <class name="art::Wrapper<mu2e::CaloHitMCCollection>"/>
 
+<class name="mu2e::CaloHitEntrant"/>
+<class name="mu2e::CaloHitEntrantCollection"/>
+<class name="std::vector<mu2e::CaloHitEntrant>" />
+<class name="art::Wrapper<mu2e::CaloHitEntrantCollection>"/>
+
 <class name="mu2e::CaloClusterMC" />
 <class name="mu2e::CaloClusterMCCollection" />
 <class name="art::Ptr<mu2e::CaloClusterMC>" />
