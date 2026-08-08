@@ -151,7 +151,7 @@ TrkReco: { @table::TrkReco
       MaxDeltaT : 200 # ns. Allow large differences to accomodate upstream reflection transit time
       MaxDeltaP : 10 # MeV
       Selector : @local::TrkReco.TrkSel
-      SelectBestPair : "Momentum" # select pair with best momentum match
+      SelectBestPair : "DeltaP" # select pair with best momentum match
       ReflectionTestDirection : "Any" # test for reflection in any direction
       debugLevel : 0
     }

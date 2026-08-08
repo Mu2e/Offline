@@ -25,57 +25,57 @@
 #include <limits>
 
 namespace mu2e {
-  // sorting function
-  class SortKalSeeds {
-    public:
-      SortKalSeeds(KalSeedSelector const& sel): sel_(sel) {}
-      bool operator()(KalSeedPtr const& a, KalSeedPtr const& b) const { return sel_.isBetter(*b,*a); }
-    private:
-      KalSeedSelector const& sel_;
-  };
-
-  class BestPairDetail {
-    public:
-      enum enum_type {unknown=0, mom, deltat,deltap, nactive}; // selection options for defining the best pair
-      static std::string const& typeName() {
-        static std::string type("BestPair"); return type;
-      }
-      static std::map<enum_type,std::string> const& names() {
-        static std::map<enum_type,std::string> nam;
-        if ( nam.empty() ) {
-          nam[unknown] = "Unknown";
-          nam[mom] = "Momentum";
-          nam[deltat] = "DeltaT";
-          nam[deltap] = "DeltaP";
-          nam[nactive] = "NActive";
-        }
-        return nam;
-      }
-  };
-  typedef EnumToStringSparse<BestPairDetail> BestPair;
-
-  class RefDirDetail {
-    public:
-      enum enum_type {unknown=0, any, up, dn, both}; // which upstream track fit direction (upstream or downstream) was used to test reflection
-      static std::string const& typeName() {
-        static std::string type("RefDir"); return type;
-      }
-      static std::map<enum_type,std::string> const& names() {
-        static std::map<enum_type,std::string> nam;
-        if ( nam.empty() ) {
-          nam[unknown] = "Unknown";
-          nam[any] = "Any";
-          nam[up] = "Upstream";
-          nam[dn] = "Downstream";
-          nam[both] = "Both";
-        }
-        return nam;
-      }
-  };
-  typedef EnumToStringSparse<RefDirDetail> RefDir;
-
   class SelectReflections : public art::EDFilter {
     public:
+      // sorting function
+      class SortKalSeeds {
+        public:
+          SortKalSeeds(KalSeedSelector const& sel): sel_(sel) {}
+          bool operator()(KalSeedPtr const& a, KalSeedPtr const& b) const { return sel_.isBetter(*b,*a); }
+        private:
+          KalSeedSelector const& sel_;
+      };
+
+      class BestPairDetail {
+        public:
+          enum enum_type {unknown=0, mom, deltat,deltap, nactive}; // options for defining the best pair
+          static std::string const& typeName() {
+            static std::string type("BestPair"); return type;
+          }
+          static std::map<enum_type,std::string> const& names() {
+            static std::map<enum_type,std::string> nam;
+            if ( nam.empty() ) {
+              nam[unknown] = "Unknown";
+              nam[mom] = "Momentum";
+              nam[deltat] = "DeltaT";
+              nam[deltap] = "DeltaP";
+              nam[nactive] = "NActive";
+            }
+            return nam;
+          }
+      };
+
+      typedef EnumToStringSparse<BestPairDetail> BestPair;
+      class RefDirDetail {
+        public:
+          enum enum_type {unknown=0, any, up, dn, both}; // which track direction (upstream or downstream) was used to test reflection
+          static std::string const& typeName() {
+            static std::string type("RefDir"); return type;
+          }
+          static std::map<enum_type,std::string> const& names() {
+            static std::map<enum_type,std::string> nam;
+            if ( nam.empty() ) {
+              nam[unknown] = "Unknown";
+              nam[any] = "Any";
+              nam[up] = "Upstream";
+              nam[dn] = "Downstream";
+              nam[both] = "Both";
+            }
+            return nam;
+          }
+      };
+      typedef EnumToStringSparse<RefDirDetail> RefDir;
+
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
@@ -238,7 +238,6 @@ namespace mu2e {
       // if there are >1 matches select the best
       int ibest = -1;
       if(matches.size() >0 ){
-        ++nref_;
         ibest = 0;
         if(matches.size()>1){
           ++nmultref_;
@@ -269,6 +268,7 @@ namespace mu2e {
             << " delta P " << std::get<4>(matches[ibest]) << " refdir " << std::get<6>(matches[ibest]) << std::endl;
 
         if(refdir_ == RefDir::any || std::get<6>(matches[ibest]) == RefDir::both || std::get<6>(matches[ibest]) == refdir_){
+          ++nref_;
           if(ptrs_){
             mkseeds->emplace_back(upksptrs[std::get<0>(matches[ibest])]); // store the upstream track first by convention
             mkseeds->emplace_back(dnksptrs[std::get<1>(matches[ibest])]);
@@ -285,7 +285,7 @@ namespace mu2e {
   }
 
   void SelectReflections::endJob() {
-    std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " reflections with " << nmultref_ << " multiple reflections" << std::endl;
+    std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " reflections matching " << refdir_ << " and " << nmultref_ << " multiple reflections" << std::endl;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectReflections)
