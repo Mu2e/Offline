@@ -183,7 +183,7 @@ namespace mu2e {
     // extraplate the fit through the IPA. This will add material effects for each intersection. It will continue till the
     // track exits the IPA
     ExtrapolateIPA extrapIPA(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->DS()->innerProtonAbsorberPtr(),debug_);
-    if(extrapIPA.debug() > 2)std::cout << "extrapolating to IPA " << std::endl;
+    if(debug_ > 2)std::cout << "extrapolating to IPA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
     static const SurfaceId IPASID("IPA");
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
@@ -195,14 +195,14 @@ namespace mu2e {
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         auto const& IPA = kkg_h->DS()->innerProtonAbsorberPtr();
         KKIPAXINGPTR ipaxingptr = std::make_shared<KKIPAXING>(IPA,IPASID,*kkmat_h->IPAMaterial(),extrapIPA.intersection(),reftrajptr,ipathick_,extrapIPA.interTolerance());
-        if(extrapIPA.debug() > 2){
+        if(debug_ > 2){
           double dmom, paramomvar, perpmomvar;
           ipaxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "IPA Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
           std::cout << " before append mom = " << reftrajptr->momentum();
         }
         ktrk.addIPAXing(ipaxingptr,tdir);
-        if(extrapIPA.debug() > 2){
+        if(debug_ > 2){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
@@ -212,10 +212,10 @@ namespace mu2e {
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     double endz = ftraj.position3(endtime).Z() - extrapIPA.zmid(); // z relative to the IPA center
     if(endz * startz < 0.0){
-      if(extrapIPA.debug() > 1)std::cout <<"Exiting opposite side IPA" << std::endl;
+      if(debug_ > 1)std::cout <<"Exiting opposite side IPA" << std::endl;
       return true;
     } else {
-      if(extrapIPA.debug() > 1)std::cout <<"Exiting same side IPA" << std::endl;
+      if(debug_ > 1)std::cout <<"Exiting same side IPA" << std::endl;
       return false;
     }
   }
@@ -232,14 +232,14 @@ namespace mu2e {
     auto const& ftraj = ktrk.fitTraj();
     double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     double startz = ftraj.position3(starttime).Z() - extrapST.zmid();
-    if(extrapST.debug() > 2)std::cout << "extrapolating to ST " << std::endl;
+    if(debug_ > 2)std::cout << "extrapolating to ST " << std::endl;
     do {
       ktrk.extrapolate(tdir,extrapST);
       if(extrapST.intersection().good()){
         // we have a good intersection. Use this to create a Shell material Xing
         auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
         KKSTXINGPTR stxingptr = std::make_shared<KKSTXING>(extrapST.foil(),extrapST.foilId(),*kkmat_h->STMaterial(),extrapST.intersection(),reftrajptr,stthick_,extrapST.interTolerance());
-        if(extrapST.debug() > 2){
+        if(debug_ > 2){
           double dmom, paramomvar, perpmomvar;
           stxingptr->materialEffects(dmom,paramomvar,perpmomvar);
           std::cout << "ST Xing dmom " << dmom << " para momsig " << sqrt(paramomvar) << " perp momsig " << sqrt(perpmomvar) << std::endl;
@@ -247,7 +247,7 @@ namespace mu2e {
         }
         // Add the xing. This truncates the fit
         ktrk.addSTXing(stxingptr,tdir);
-        if(extrapST.debug() > 2){
+        if(debug_ > 2){
           auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
           std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
         }
@@ -257,10 +257,10 @@ namespace mu2e {
     double endtime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     double endz = ftraj.position3(endtime).Z() - extrapST.zmid(); // z relative to the ST center
     if(endz * startz < 0.0){
-      if(extrapST.debug() > 1)std::cout <<"Exiting opposite side ST" << std::endl;
+      if(debug_ > 1)std::cout <<"Exiting opposite side ST" << std::endl;
       return true;
     } else {
-      if(extrapST.debug() > 1)std::cout <<"Exiting same side ST" << std::endl;
+      if(debug_ > 1)std::cout <<"Exiting same side ST" << std::endl;
       return false;
     }
   }
@@ -268,13 +268,14 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateTracker(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     ExtrapolateToZ trackerFront(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->tracker()->front().center().Z(),debug_);
-    if(trackerFront.debug() > 2)std::cout << "extrapolating to Tracker " << std::endl;
+    if(debug_ > 2)std::cout << "extrapolating to Tracker " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
+    double tstart = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     static const SurfaceId TrackerSID("TT_Front");
     ktrk.extrapolate(tdir,trackerFront);
-    // the last piece appended should cover the necessary range
-    auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-    auto trkfrontinter = KinKal::intersect(ftraj,kkg_h->tracker()->front(),ktraj.range(),intertol_,tdir);
+    TimeRange testrange = tdir == TimeDir::forwards ? TimeRange(tstart, ftraj.range().end())
+      : TimeRange(ftraj.range().begin(),tstart);
+    auto trkfrontinter = KinKal::intersect(ftraj,kkg_h->tracker()->front(),testrange,intertol_,tdir);
     if(trkfrontinter.onsurface_){ // dont worry about bounds here
       ktrk.addIntersection(TrackerSID,trkfrontinter);
       return true;
@@ -285,23 +286,24 @@ namespace mu2e {
   template <class KTRAJ> bool KKExtrap::extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     ExtrapolateToZ TSDA(maxdt_,maxdtstep_,btol_,intertol_,kkg_h->DS()->upstreamAbsorber().center().Z(),debug_);
-    if(TSDA.debug() > 2)std::cout << "extrapolating to TSDA " << std::endl;
+    if(debug_ > 2)std::cout << "extrapolating to TSDA " << std::endl;
     auto const& ftraj = ktrk.fitTraj();
+    double tstart = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
     static const SurfaceId TSDASID("TSDA");
     ktrk.extrapolate(tdir,TSDA);
-    // if we reflected we're done. Otherwize, save the TSDA intersection
-    double tend = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    auto epos = ftraj.position3(tend);
-    bool retval = epos.Z() < TSDA.zVal();
-    if(retval){
-      auto const& ktraj = tdir == TimeDir::forwards ? ftraj.back() : ftraj.front();
-      auto tsdainter = KinKal::intersect(ftraj,kkg_h->DS()->upstreamAbsorber(),ktraj.range(),intertol_,tdir);
-      if(tsdainter.onsurface_)ktrk.addIntersection(TSDASID,tsdainter);
+    TimeRange testrange = tdir == TimeDir::forwards ? TimeRange(tstart, ftraj.range().end())
+      : TimeRange(ftraj.range().begin(),tstart);
+    // test for an intersection with TSDA downstream surface
+    auto tsdainter = KinKal::intersect(ftraj,kkg_h->DS()->upstreamAbsorber(),testrange,intertol_,tdir);
+    if(tsdainter.onsurface_){
+      ktrk.addIntersection(TSDASID,tsdainter);
+      return true;
     }
-    return retval;
+    return false;
   }
 
-  //extrapolate to the OPA (DS entrance). only 1 of these is possible
+  //extrapolate to the OPA (DS entrance). only 1 of these is currently possible
+  // muons can intersect multiple times: TODO
   template <class KTRAJ> void KKExtrap::extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& ftraj = ktrk.fitTraj();
