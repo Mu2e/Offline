@@ -1,5 +1,5 @@
 #include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
-#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 
 #include "TMinuit.h"
 #include "TF1.h"
@@ -22,7 +22,7 @@ namespace
 {
     unsigned              npTot_(0),npFcn_(0),npBkg_(0),x0_(0),x1_(0);
     std::vector<double>   xvec_{},yvec_{};
-    mu2e::CaloPulseShape* pulseCachePtr_=(nullptr);
+    mu2e::CaloPulseUtil* pulseCachePtr_=(nullptr);
 
     double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
@@ -57,9 +57,9 @@ namespace
 namespace mu2e {
 
 
-   CaloTemplateWFUtil::CaloTemplateWFUtil(const std::string& pulseFileName, const std::string& pulseHistName,
-                                          double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel) :
-      pulseCache_(CaloPulseShape(pulseFileName, pulseHistName, digiSampling)),
+   CaloTemplateWFUtil::CaloTemplateWFUtil(const CaloPulseUtil::Config& configPulseCache, double minPeakAmplitude,
+                                          double minDTPeaks, int printLevel) :
+      pulseCache_(CaloPulseUtil(configPulseCache)),
       minPeakAmplitude_(minPeakAmplitude),
       minDTPeaks_(minDTPeaks),
       fitStrategy_(1),
@@ -80,7 +80,7 @@ namespace mu2e {
 
 
    //-----------------------------------------------------------------------------------------------------
-   void   CaloTemplateWFUtil::initialize ()                                                                 {pulseCache_.buildShapes();}
+   void   CaloTemplateWFUtil::initialize ()                                                                 {pulseCache_.buildCache();}
    void   CaloTemplateWFUtil::reset      ()                                                                 {param_.clear(); paramErr_.clear(); nParTot_=0; npTot_ = 0;}
    void   CaloTemplateWFUtil::setXYVector(const std::vector<double>& xvec, const std::vector<double>& yvec) {xvec_ = xvec; yvec_ = yvec; x0_=0; x1_ = xvec_.size();}
    void   CaloTemplateWFUtil::setPar     (const std::vector<double>& par)                                   {param_ = par; nParTot_ = npTot_ = par.size();}

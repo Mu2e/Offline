@@ -1,5 +1,5 @@
-#ifndef CaloPulseShape_HH
-#define CaloPulseShape_HH
+#ifndef Mu2eUtilities_CaloPulseUtil_hh
+#define Mu2eUtilities_CaloPulseUtil_hh
 
 // Calculate the values of the digitized pulse shape as a function of the hit time.
 // The value stored are the integral of the waveform over the digitization bin width.
@@ -15,21 +15,32 @@
 // 1) digitizedPulse(hitTime) returns a waveform with hitTime corresponding to low edge of first bin
 // 2) evaluate(deltaTime) return value of digitized bin at a given time difference with peak time value
 //
-//  NOTE: uncomment the pline creation if the discontinuities in the second order derivative arising from the
-//        linear piecewise approxmiation are problematic for the minimization
+
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include <vector>
 #include <string>
 
 namespace mu2e {
 
-    class CaloPulseShape
+    class CaloPulseUtil
     {
        public:
-          CaloPulseShape(const std::string& fileName, const std::string& histName, double digiSampling);
-          ~CaloPulseShape() {};
+          struct Config
+          {
+              using Name    = fhicl::Name;
+              using Comment = fhicl::Comment;
+              fhicl::Atom<std::string> fileName       { Name("fileName"),  Comment("Pulse file name") };
+              fhicl::Atom<std::string> histName       { Name("histName"),  Comment("Pulse histogram name") };
+              fhicl::Atom<double>      digiSampling   { Name("digiSampling"),   Comment("Digitizer sampling time (ns) ") };
+          };
 
-          void buildShapes();
+          CaloPulseUtil(const Config& config);
+          CaloPulseUtil(const std::string& fileName, const std::string& histName, double digiSampling);
+          ~CaloPulseUtil() = default;
+
+          void buildCache();
 
           const std::vector<double>& digitizedPulse  (double hitTime)        const;
           double                     evaluate        (double timeDifference) const;
