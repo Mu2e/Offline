@@ -56,10 +56,10 @@ namespace mu2e {
              fhicl::Atom<float>         digitizationStart    { Name("digitizationStart"),      Comment("Start of digitization window relative to nominal pb time") };
              fhicl::Atom<float>         digitizationEnd      { Name("digitizationEnd"),        Comment("End of digitization window relative to nominal pb time")};
              fhicl::Atom<bool>          addNoise             { Name("addNoise"),               Comment("Add noise to waveform") };
-             fhicl::Atom<float>         digiSampling         { Name("digiSampling"),           Comment("Digitization time sampling") };
              fhicl::Atom<int>           nBits                { Name("nBits"),                  Comment("ADC Number of bits") };
              fhicl::Atom<unsigned>      nBinsPeak            { Name("nBinsPeak"),              Comment("Window size for finding local maximum to digitize wf") };
              fhicl::Atom<int>           minPeakADC           { Name("minPeakADC"),             Comment("Minimum ADC hits of local peak to digitize") };
+             fhicl::Atom<float>         minNoiseAmp          { Name("minNoiseAmp"),            Comment("Minimum noise amplitude to add noise") };
              fhicl::Atom<unsigned>      bufferDigi           { Name("bufferDigi"),             Comment("Number of timeStamps for the buffer digi") };
              fhicl::Atom<int>           diagLevel            { Name("diagLevel"),              Comment("Diag Level"),0 };
          };
@@ -73,11 +73,12 @@ namespace mu2e {
             digitizationEnd_   (config().digitizationEnd()),
             digiSampling_      (config().pulseCache().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
-            startTimeBuffer_   (config().digiSampling()*config().bufferDigi()),
+            startTimeBuffer_   (config().pulseCache().digiSampling()*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
             pulseCache_        (CaloPulseUtil(config().pulseCache())),
             nBinsPeak_         (config().nBinsPeak()),
             minPeakADC_        (config().minPeakADC()),
+            minNoiseAmp_       (config().minNoiseAmp()),
             engine_            (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
             addNoise_          (config().addNoise()),
             noiseSampler_      (config().noiseCache(), engine_),
@@ -101,7 +102,7 @@ namespace mu2e {
 
        void   makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&, const CalSimParams&);
        bool   fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ProtonBunchTimeMC&, const CalSimParams&);
-       void   generateSpotNoise (std::vector<double>& waveform, double scaleFactor);
+       void   AddWFNoise        (std::vector<double>& waveform, int noiseWFID);
        void   buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection&);
        void   extract           (const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const;
        double readoutScaleFactor(unsigned iRO, const CalSimParams& conds) const;
@@ -122,6 +123,7 @@ namespace mu2e {
        CaloPulseUtil           pulseCache_;
        unsigned                nBinsPeak_;
        int                     minPeakADC_;
+       float                   minNoiseAmp_;
        CLHEP::HepRandomEngine& engine_;
        bool                    addNoise_;
        CaloNoiseUtil           noiseSampler_;
@@ -178,8 +180,6 @@ namespace mu2e {
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       calorimeter_ = ch.get();
 
-      const int NoiseWFID(0); // will get this from proditions later;
-
       if (calorimeter_->nCrystals()<1 || calorimeter_->G4Info().get<int>("nSiPMPerCrystal")<1) return;
       int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill) {
@@ -195,35 +195,36 @@ namespace mu2e {
           if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
           bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, pbtmc, calCrystalConds );
           resetWaveform = !isEmpty;
-
           if (isEmpty) continue;
+
+          double pedestal(0);
           if (addNoise_) {
+            const int NoiseWFID(0); // will get this from proditions later;
             const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
-            generateSpotNoise(waveform,scaleFactor);
+            noiseSampler_.prepare(NoiseWFID, scaleFactor);
+
+            AddWFNoise(waveform,NoiseWFID);
+            pedestal = noiseSampler_.pedestal(NoiseWFID);
           }
-          buildOutputDigi(iRO, waveform, noiseSampler_.pedestal(NoiseWFID), caloDigiColl);
+
+          buildOutputDigi(iRO, waveform, pedestal, caloDigiColl);
      }
   }
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::generateSpotNoise(std::vector<double>& waveform, double scaleFactor)
+  void CaloDigiMaker::AddWFNoise(std::vector<double>& waveform, int NoiseWFID)
   {
-       const int NoiseWFID(0); // will get this from proditions later;
-
-       const double minAmplitude(2);
-       noiseSampler_.prepare(NoiseWFID, scaleFactor);
-
        size_t timeSample(0);
        std::vector<size_t> hitStarts{}, hitStops{};
        hitStarts.reserve(16);hitStops.reserve(16);
 
        // First, find the ranges in the waveform with non-zero bins.
        while (timeSample < waveform.size()) {
-           if (waveform[timeSample] < minAmplitude) {++timeSample; continue;}
+           if (waveform[timeSample] < minNoiseAmp_) {++timeSample; continue;}
 
            size_t sampleStart = (timeSample > bufferDigi_) ? timeSample - bufferDigi_ : 0;
            size_t sampleStop(timeSample);
-           while (sampleStop < waveform.size() && waveform[sampleStop] > minAmplitude) ++sampleStop;
+           while (sampleStop < waveform.size() && waveform[sampleStop] > minNoiseAmp_) ++sampleStop;
 
            hitStarts.push_back(sampleStart);
            hitStops.push_back(sampleStop);

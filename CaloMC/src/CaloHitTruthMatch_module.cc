@@ -164,15 +164,15 @@ namespace mu2e {
           const auto     hitNextIt    = std::next(hitIt);
           const auto     hitPtr       = art::Ptr<CaloHit>(caloHitHandle,ihit);
 
-          const auto&    sortedSimsIt = caloShowerSimsMap.find(hit.crystalID());
-          const auto&    sortedSims   = sortedSimsIt == caloShowerSimsMap.end() ?
-                                        std::vector<const CaloShowerSim*>{} : sortedSimsIt->second;
+          static const std::vector<const CaloShowerSim*> noSims;
+          const auto it = caloShowerSimsMap.find(hit.crystalID());
+          const auto& sortedSims = (it == caloShowerSimsMap.end()) ? noSims : it->second;
 
           if (diagLevel_ > 2){
              if (sortedSims.empty()) std::cout<<"No shower sims for "<<hit.crystalID()<<" !!\n";
-                for (const auto shower : sortedSims)
-                std::cout<<"[CaloHitTruthMatch] Sim shower id/time/energy="<<shower->crystalID()
-                         <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
+             for (const auto shower : sortedSims)
+               std::cout<<"[CaloHitTruthMatch] Sim shower id/time/energy="<<shower->crystalID()
+                        <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
           }
 
           // Maximum time difference for an MC hit to be associated, given the reco hit amplitude and the next reco hit time

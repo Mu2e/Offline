@@ -50,10 +50,10 @@ CaloMC : {
       addNoise                : true
       digitizationStart       : @local::HitMakerDigitizationStart
       digitizationEnd         : @local::HitMakerDigitizationEnd
-      digiSampling            : @local::HitMakerDigiSampling
       bufferDigi              : 16
       nBits                   : 12
       minPeakADC              : @local::HitMakerMinPeakADC
+      minNoiseAmp             : 2
       nBinsPeak               : 2
       diagLevel               : 0
    }

@@ -33,6 +33,7 @@ namespace mu2e {
       pulseCache_    {config.pulseCache()},
       dumpGenerated_ {config.dumpGenerated()},
       pedestal_      {},
+      peToADC_       {},
       noiseMap_      {}
    {}
 
@@ -41,14 +42,19 @@ namespace mu2e {
    void CaloNoiseUtil::prepare(int histoID, double peToADC)
    {
       if (generate_) generateCache(histoID, peToADC);
+      else           fillCache(histoID);
    }
 
    //----------------------------------------------------------------------------------------------------------------------
    void CaloNoiseUtil::fillCache(int histoID)
    {
-      int histoBaseID = histoID/base;
+      //need to check that the cache is not already constructed for a histoID
+      if (noiseMap_.find(histoID) != noiseMap_.end()) return;
+
+std::cout<<"Fill Cache noise\n";
 
       // Cache is for all baseID, clear it
+      int histoBaseID = histoID/base;
       noiseMap_.clear();
 
       // Refill the cache with all histos sharing the same baseID
@@ -98,6 +104,15 @@ namespace mu2e {
    //----------------------------------------------------------------------------------------------------------------------
    void CaloNoiseUtil::generateCache(int histoID, double peToADC)
    {
+      // If a histo is alredy there with the correct peToADC, then return. If the
+      // histo is there but the peToADC is missing or different this is an error
+      if (noiseMap_.find(histoID) != noiseMap_.end()){
+        auto it = peToADC_.find(histoID);
+        if (it != peToADC_.end() && std::abs(it->second - peToADC)<0.01) return;
+        throw cet::exception("CALONOISEUTIL")<<"Same histoID can't have two differnt peToADC\n";
+      }
+
+std::cout<<"Generate Cache noise\n";
       // Clear from cache all non basedID entries
       int histoBaseID = histoID/base;
       std::erase_if(noiseMap_, [&](const auto& pair) {return pair.first/base != histoBaseID;});
@@ -127,11 +142,12 @@ namespace mu2e {
       //add electronics noise
       double noiseADC = noiseElec_*digiSampling_*peToADC;
       for (auto& val : waveform) val += randGauss_.fire(0.0,noiseADC);
-
-      noiseMap_.emplace(histoBaseID, waveform);
+      noiseMap_[histoID] = std::move(waveform);
 
       //estimate pedestal for this waveform - set it to theoretical value for the time being
       pedestal_[histoID] = std::trunc(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*peToADC);
+
+      peToADC_[histoID] = peToADC;
 
       if (dumpGenerated_){
         dumpNoise("caloNoise.root",waveform);
@@ -143,17 +159,8 @@ namespace mu2e {
    std::span<double> CaloNoiseUtil::noiseSegment(int histoID, size_t istart, size_t ilength)
    {
      auto iter = noiseMap_.find(histoID);
-     if (iter == noiseMap_.end()) {
-
-       if (generate_)
-         throw cet::exception("CALONOISEUTIL")
-         << "noiseSegment called before prepare() for histoID " << histoID << "\n";
-
-        fillCache(histoID);
-        iter = noiseMap_.find(histoID);
-        if (iter == noiseMap_.end())
-          throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid\n";
-     }
+     if (iter == noiseMap_.end())
+        throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid\n";
 
      auto& vec = iter->second;
      if (ilength >= vec.size())
@@ -167,8 +174,8 @@ namespace mu2e {
    int CaloNoiseUtil::pedestal(int histoID) const {
      auto iter = pedestal_.find(histoID);
      if (iter == pedestal_.end())
-          throw cet::exception("CALONOISEUTIL")<<"phistoID "<<histoID<<" is invalid for pedestal\n";
-     return iter->second;;
+          throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid for pedestal\n";
+     return iter->second;
    }
 
    //----------------------------------------------------------------------------------------------------------------------

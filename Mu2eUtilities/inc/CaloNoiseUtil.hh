@@ -61,6 +61,7 @@ namespace mu2e {
         CaloPulseUtil         pulseCache_;
         bool                  dumpGenerated_;
         std::map<int,double>  pedestal_;
+        std::map<int,double>  peToADC_;
         std::map<int,std::vector<double>> noiseMap_;
 
         static constexpr int base = 10000;
