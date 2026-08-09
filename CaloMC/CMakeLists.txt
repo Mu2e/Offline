@@ -85,6 +85,16 @@ cet_build_plugin(CaloShowerUpdater art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(CaloEntrantTruthMaker art::module
+    REG_SOURCE src/CaloEntrantTruthMaker_module.cc
+    LIBRARIES REG
+
+      Offline::CalorimeterGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
 
 install_source(SUBDIRS src)
