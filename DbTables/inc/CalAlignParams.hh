@@ -4,12 +4,13 @@
 //  Rigid body alignment parameters for calorimeter
 //  dx,dy,dz = displacement of the disk in mm
 //  rx,ry,rz are rotations along the x,y,z axes w.r.t disk center in radians
-//  Order of operation is irrelevant since rotation is perfomed around disk center
+//  Applied as Rz·Ry·Rx about the disk center; for small alignment rotations
+//  the order is immaterial to first order
 //
 namespace mu2e {
   class CalAlignParams {
     public:
-      CalAlignParams(int index, float dx, float dy, float dz,
+      CalAlignParams(unsigned index, float dx, float dy, float dz,
                      float rx, float ry, float rz) :
         _index(index), _dx(dx), _dy(dy), _dz(dz),
         _rx(rx), _ry(ry), _rz(rz)

@@ -17,8 +17,8 @@ namespace mu2e {
       typedef std::shared_ptr<CalAlignElement>       ptr_t;
       typedef std::shared_ptr<const CalAlignElement> cptr_t;
 
-      CalAlignElement(const char* Name, const char* DbName, size_t nrows) :
-          DbTable(Name, DbName, "index,dx,dy,dz,rx,ry,rz"), _nrows(nrows)
+      CalAlignElement(const char* name, const char* dbName, size_t nrows) :
+          DbTable(name, dbName, "index,dx,dy,dz,rx,ry,rz"), _nrows(nrows)
       {}
 
       const CalAlignParams& rowAt(const std::size_t index) const {
@@ -49,11 +49,11 @@ namespace mu2e {
         CalAlignParams const& r = _rows.at(irow);
         sstream << r.index() << ",";
         sstream << std::fixed
-                << std::setprecision(3);
+                << std::setprecision(6);
         sstream << r.dx() << ",";
         sstream << r.dy() << ",";
         sstream << r.dz() << ",";
-        sstream << std::fixed << std::setprecision(3);
+        sstream << std::fixed << std::setprecision(6);
         sstream << r.rx() << ",";
         sstream << r.ry() << ",";
         sstream << r.rz() << ",";

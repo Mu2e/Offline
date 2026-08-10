@@ -38,6 +38,7 @@ namespace mu2e {
         DbIoV iov;
         iov.setMax(); // start with full IOV range
         if (_useDb) {
+          _tadisk_p->get(eid);
           iov.overlap(_tadisk_p->iov());
         }
         return iov;

@@ -22,10 +22,7 @@ namespace mu2e {
     DiskCalorimeter& cal = *ptr;
 
     for (auto& disk : cal.disks()) {
-      // Use the const_cast bazooka here - this is the only place where
-      // Disk parameters should be modified by an external agent
-      auto& diskcc = const_cast<Disk&>(disk);
-      const auto& disk_align = disk_align_params.at(diskcc.id());
+      const auto& disk_align = disk_align_params.at(disk.id());
 
       CLHEP::Hep3Vector  shift(disk_align.dx(),disk_align.dy(),disk_align.dz());
       CLHEP::HepRotation rotation(CLHEP::HepRotation::IDENTITY);
@@ -33,7 +30,7 @@ namespace mu2e {
       rotation.rotateY(disk_align.ry());
       rotation.rotateZ(disk_align.rz());
 
-      diskcc.moveDisk(shift,rotation);
+      disk.moveDisk(shift,rotation);
     }
   }
 
