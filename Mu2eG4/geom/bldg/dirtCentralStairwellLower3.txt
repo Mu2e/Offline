@@ -12,11 +12,13 @@ double dirt.central.stairwell.lower3.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.central.stairwell.lower3.yHalfThickness           = 1260.45;
 
+// the face at 9956.8 abuts CentralStairwellLowerStairs; add 1 um to prevent
+// conflict as that volume's rotation angle is not exactly pi/2
 vector<double> dirt.central.stairwell.lower3.xPositions = {
-  9956.8,   // g1
+  9956.801,   // g1
   11617.2,   // g2
   11617.2,    // g3
-  9956.8   // g4
+  9956.801   // g4
 };
 
 vector<double> dirt.central.stairwell.lower3.yPositions = {
