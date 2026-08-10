@@ -3,9 +3,10 @@
 //
 // Cache and provide noise waveforms for readouts
 //
-// Call prepare cache beore using it - peToADC needed if data are regenerated
-// Throw if histoID is already used for a different peToADC - each peToADC require a __different__ noise histoID
+// Call prepare cache before using it - peToADC needed if data are regenerated
+// When regenerating, throw if histoID is already used for a different peToADC - each peToADC requires a __different__ noise histoID
 // Return a view of the vector to add noise for efficiency reasons - invalid if cache is modified in the meantime
+// TODO: fix tolerance on PeToADC ratio
 //
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"

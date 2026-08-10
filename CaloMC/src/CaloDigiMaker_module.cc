@@ -202,6 +202,7 @@ namespace mu2e {
             const int NoiseWFID(0); // will get this from proditions later;
             const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
             noiseSampler_.prepare(NoiseWFID, scaleFactor);
+            if (diagLevel_>2) noiseSampler_.printCache();
 
             addWFNoise(waveform,NoiseWFID);
             pedestal = noiseSampler_.pedestal(NoiseWFID);
