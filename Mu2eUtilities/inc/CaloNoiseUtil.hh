@@ -3,6 +3,10 @@
 //
 // Cache and provide noise waveforms for readouts
 //
+// Call prepare cache beore using it - peToADC needed if data are regenerated
+// Throw if histoID is already used for a different peToADC - each peToADC require a __different__ noise histoID
+// Return a view of the vector to add noise for efficiency reasons - invalid if cache is modified in the meantime
+//
 #include "fhiclcpp/types/Atom.h"
 #include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 #include "CLHEP/Random/RandPoissonQ.h"
@@ -40,7 +44,7 @@ namespace mu2e {
 
         void              prepare(int histoID, double peToADC);
         std::span<double> noiseSegment(int histoID, size_t istart, size_t ilength);
-        int               pedestal(int histoID) const;
+        double            pedestal(int histoID) const;
         void              printCache() const;
         void              dumpNoise(const std::string& name, const std::vector<double>& wave);
 

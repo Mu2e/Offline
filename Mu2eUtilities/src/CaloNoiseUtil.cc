@@ -51,8 +51,6 @@ namespace mu2e {
       //need to check that the cache is not already constructed for a histoID
       if (noiseMap_.find(histoID) != noiseMap_.end()) return;
 
-std::cout<<"Fill Cache noise\n";
-
       // Cache is for all baseID, clear it
       int histoBaseID = histoID/base;
       noiseMap_.clear();
@@ -84,7 +82,7 @@ std::cout<<"Fill Cache noise\n";
           throw cet::exception("CALONOISEUTIL")<<"Histogram "<<name.c_str()<<" is invalid\n";
 
         // Only take histos in the right batch to reduce memory footprint
-        // the batch is defined as histogrm id/base
+        // the batch is defined as histogram id/base
 
         if (hid/base != histoBaseID) continue;
 
@@ -104,15 +102,14 @@ std::cout<<"Fill Cache noise\n";
    //----------------------------------------------------------------------------------------------------------------------
    void CaloNoiseUtil::generateCache(int histoID, double peToADC)
    {
-      // If a histo is alredy there with the correct peToADC, then return. If the
+      // If a histo is already there with the correct peToADC, then return. If the
       // histo is there but the peToADC is missing or different this is an error
       if (noiseMap_.find(histoID) != noiseMap_.end()){
         auto it = peToADC_.find(histoID);
         if (it != peToADC_.end() && std::abs(it->second - peToADC)<0.01) return;
-        throw cet::exception("CALONOISEUTIL")<<"Same histoID can't have two differnt peToADC\n";
+        throw cet::exception("CALONOISEUTIL")<<"Same histoID can't have two different peToADC\n";
       }
 
-std::cout<<"Generate Cache noise\n";
       // Clear from cache all non basedID entries
       int histoBaseID = histoID/base;
       std::erase_if(noiseMap_, [&](const auto& pair) {return pair.first/base != histoBaseID;});
@@ -156,6 +153,7 @@ std::cout<<"Generate Cache noise\n";
    }
 
    //----------------------------------------------------------------------------------------------------------------------
+   // Return a view of noise vector for efficiency - invalid if cache modified in the meantime -> use locally
    std::span<double> CaloNoiseUtil::noiseSegment(int histoID, size_t istart, size_t ilength)
    {
      auto iter = noiseMap_.find(histoID);
@@ -171,7 +169,8 @@ std::cout<<"Generate Cache noise\n";
    }
 
    //----------------------------------------------------------------------------------------------------------------------
-   int CaloNoiseUtil::pedestal(int histoID) const {
+   double CaloNoiseUtil::pedestal(int histoID) const
+   {
      auto iter = pedestal_.find(histoID);
      if (iter == pedestal_.end())
           throw cet::exception("CALONOISEUTIL")<<"histoID "<<histoID<<" is invalid for pedestal\n";
