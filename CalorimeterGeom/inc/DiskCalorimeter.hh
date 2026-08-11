@@ -39,6 +39,7 @@ namespace mu2e {
       size_t            nDisks()            const override {return disks_.size();}
       const Disk&       disk(unsigned i)    const override {return disks_.at(i);}
       const Disks&      disks()             const override {return disks_;}
+            Disks&      disks()                   override {return disks_;}
 
       size_t            nCrystals()         const override {return crystals_.size();}
       const Crystal&    crystal(unsigned i) const override {return *crystals_.at(i);}

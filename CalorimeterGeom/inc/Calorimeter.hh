@@ -30,6 +30,7 @@ namespace mu2e {
       virtual size_t            nDisks()            const = 0;
       virtual const Disk&       disk(unsigned i)    const = 0;
       virtual const Disks&      disks()             const = 0;
+      virtual       Disks&      disks()                   = 0;
 
       virtual size_t            nCrystals()         const = 0;
       virtual const Crystal&    crystal(unsigned i) const = 0;
