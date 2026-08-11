@@ -102,7 +102,7 @@ namespace mu2e {
 
        void   makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&, const CalSimParams&);
        bool   fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ProtonBunchTimeMC&, const CalSimParams&);
-       void   AddWFNoise        (std::vector<double>& waveform, int noiseWFID);
+       void   addWFNoise        (std::vector<double>& waveform, int noiseWFID);
        void   buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection&);
        void   extract           (const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const;
        double readoutScaleFactor(unsigned iRO, const CalSimParams& conds) const;
@@ -202,8 +202,9 @@ namespace mu2e {
             const int NoiseWFID(0); // will get this from proditions later;
             const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
             noiseSampler_.prepare(NoiseWFID, scaleFactor);
+            if (diagLevel_>2) noiseSampler_.printCache();
 
-            AddWFNoise(waveform,NoiseWFID);
+            addWFNoise(waveform,NoiseWFID);
             pedestal = noiseSampler_.pedestal(NoiseWFID);
           }
 
@@ -212,7 +213,7 @@ namespace mu2e {
   }
 
   //----------------------------------------------------------------------------------------------------------
-  void CaloDigiMaker::AddWFNoise(std::vector<double>& waveform, int NoiseWFID)
+  void CaloDigiMaker::addWFNoise(std::vector<double>& waveform, int noiseWFID)
   {
        size_t timeSample(0);
        std::vector<size_t> hitStarts{}, hitStops{};
@@ -246,7 +247,7 @@ namespace mu2e {
        for (size_t ihit=0; ihit<hitStarts.size(); ++ihit) {
           unsigned istart  = hitStarts[ihit];
           unsigned ilength = hitStops[ihit]-hitStarts[ihit];
-          const auto& noiseWF = noiseSampler_.noiseSegment(NoiseWFID,istart,ilength);
+          const auto& noiseWF = noiseSampler_.noiseSegment(noiseWFID,istart,ilength);
           for (unsigned i=0;i<ilength;++i) waveform[istart+i] += noiseWF[i];
        }
   }

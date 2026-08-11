@@ -39,7 +39,6 @@ namespace mu2e {
              fhicl::Atom<art::InputTag> caloShowerSimCollection { Name("caloShowerSimCollection"), Comment("Name of caloShowerSim Collection") };
              fhicl::Atom<art::InputTag> caloHitCollection       { Name("caloHitCollection"),       Comment("Name of CaloHit collection") };
              fhicl::Atom<art::InputTag> primaryParticle         { Name("primaryParticle"),         Comment("PrimaryParticle producer")};
-             fhicl::Atom<double>        digiSampling            { Name("digiSampling"),            Comment("Digitizer sampling time (ns) ") };
              fhicl::Atom<double>        deltaTimeMinus          { Name("deltaTimeMinus"),          Comment("Max time (ns) a MC hit may precede the reco hit to be matched"), 100.0 };
              fhicl::Atom<double>        minAmplitude            { Name("minAmplitude"),            Comment("Minimum amplitude of waveform to define hit length") };
              fhicl::Atom<bool>          fillDetailedMC          { Name("fillDetailedMC"),          Comment("Fill SimParticle - SimShower Assn map")};

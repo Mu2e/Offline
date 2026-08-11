@@ -65,7 +65,6 @@ CaloMC : {
       caloHitCollection       : CaloHitMaker
       primaryParticle         : FindMCPrimary
       pulseCache              : @local::CaloPulseCache
-      digiSampling            : @local::HitMakerDigiSampling
       minAmplitude            : 2
       fillDetailedMC          : false
       diagLevel               : 0
