@@ -237,6 +237,36 @@ namespace mu2e {
         //         }
         //       }
 
+        // Optional virtual detectors on the upstream face of the front-end
+        // board (FEB) of every second tracker plane, plus one behind the last
+        // plane.  Off unless a geometry explicitly asks for them.
+        if ( c.getBool("hasTrackerFEBVirtualDetectors",false) ){
+          TubsParams planeEnvelope = tracker.g4Tracker()->getPlaneEnvelopeParams();
+          double dzplane = planeEnvelope.zHalfLength();
+          for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
+            Hep3Vector vdTracker_FEB_offset(0.,0.,0.);
+            double zplane;
+            double z_Tracker_FEB;
+            if (ipln < StrawId::_nplanes){
+              zplane = tracker.getPlane(ipln).origin().z();
+              z_Tracker_FEB = zplane-dzplane-vdHL;
+            }
+            else{
+              zplane = -tracker.getPlane(0).origin().z();
+              z_Tracker_FEB = zplane+dzplane+vdHL;
+            }
+            vdTracker_FEB_offset.setZ(z_Tracker_FEB);
+
+            if ( verbosityLevel > 0 ) {
+              cout << " z_Tracker_FEB_" << ipln/2 << "=" << z_Tracker_FEB
+                   << " zplane=" << zplane << " dzplane=" << dzplane << endl;
+            }
+
+            int vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
+            vd->addVirtualDetector( vdId, ttOffset, 0, vdTracker_FEB_offset);
+          }
+        }
+
         // Global position is in Mu2e coordinates; local position in the detector system.
         double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
         double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
