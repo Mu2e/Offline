@@ -34,6 +34,8 @@ namespace mu2e {
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
         fhicl::Atom<std::string> CRVMaterialName{ Name("CRVMaterialName"), Comment("CRV module MaterialName") };
+        // Global default ionization eloss mode (0=mpv, 1=moyalmean, 2=bethemean). Per-material overrides
+        // use a trailing token in TrackerConditions/data/MaterialsList.data (KinKal 3.7.0+).
         fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
         fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
         fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
@@ -45,6 +47,7 @@ namespace mu2e {
       auto IPAMaterial() const { return matdbinfo_->findDetMaterial(ipamatname_); }
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
       auto CRVMaterial() const { return matdbinfo_->findDetMaterial(crvmatname_); }
+      auto material(std::string const& name) const { return matdbinfo_->findDetMaterial(name); }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;

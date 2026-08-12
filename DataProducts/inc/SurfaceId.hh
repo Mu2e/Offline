@@ -18,6 +18,7 @@ namespace mu2e {
         TT_Front=0, TT_Mid, TT_Back, TT_Inner, TT_Outer, // tracker VD equivalents
         DS_Front=80, DS_Back, DS_Inner, DS_Outer,
         IPA_Legacy, //introduced for backwards compatibility with MDS1
+        DS_CryoInner, DS_CryoOuter, DS_ShieldInner, DS_ShieldOuter, DS_Coil,
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
@@ -31,18 +32,21 @@ namespace mu2e {
         CRV_E1=230, CRV_E2,                                   // CRV-TS Extension
         CRV_U =240,                                           // CRV-Upstream
         CRV_D1=250, CRV_D2, CRV_D3, CRV_D4,                   // CRV-Downstream
-        CRV_C1=260, CRV_C2                                    // CRV-Cryo-Outer
+        CRV_C1=260, CRV_C2,                                   // CRV-Cryo-Outer
+        CRV_C3=262, CRV_C4,                                   // legacy MDC2020/crv_counters_v07-v09; retire once those datasets are no longer used
+        CRV_M1=270, CRV_M2, CRV_M3, CRV_M4, CRV_M5, CRV_M6, CRV_M7, CRV_M8, // CRV-Muon-Taggers (Mu2e/Offline PR #1864)
+        CRV_StrongBack=280,                                   // CRV module Al strongback (tracker-side support plate)
+        DS_HatchConcrete=300                                  // detector-area hatch concrete block approximation
       };
-
-    // Update this counter whenever you add/remove surface IDs from the enum above.
-    static constexpr std::size_t nSurfaceIds = 47;
-
-    static std::string const& typeName();
-    static std::map<enum_type,std::string> const& names();
+      // Update this counter whenever you add/remove surface IDs from the enum above.
+      static constexpr std::size_t nSurfaceIds = 64;
+      static std::string const& typeName();
+      static std::map<enum_type,std::string> const& names();
   };
   using SurfaceIdEnum = EnumToStringSparse<SurfaceIdDetail>;
   class SurfaceId {
     public:
+      static constexpr int allIndices_ = -1; // index wildcard
       using enum_type = SurfaceIdDetail::enum_type;
       // copy the constructors
       SurfaceId() : index_(0) {}
@@ -54,14 +58,14 @@ namespace mu2e {
       int index() const { return index_; }
       auto const& name() const { return sid_.name(); }
 
-      bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ < 0 || other.index_ < 0; }
-      bool indexCompare(SurfaceId const& other) const { return index_<0 || other.index_ < 0 ? false : index_ < other.index_; }
+      bool indexMatch(SurfaceId const& other) const { return index_ == other.index_ || index_ == allIndices_ || other.index_ == allIndices_; }
+      bool indexCompare(SurfaceId const& other) const { return index_== allIndices_ || other.index_ == allIndices_ ? false : index_ < other.index_; }
       bool operator == (SurfaceId const& other ) const { return sid_ == other.sid_ && indexMatch(other) ; }
       bool operator != (SurfaceId const& other ) const { return sid_ != other.sid_ || !indexMatch(other) ; }
       bool operator < (SurfaceId const& other ) const { return sid_ == other.sid_ ? indexCompare(other) : sid_ < other.sid_; }
-    private:
+      private:
       SurfaceIdEnum sid_;
-      int index_; // index.  Negative value is a wild card for matching
+      int index_; // index
   };
   using SurfaceIdCollection = std::vector<SurfaceId>;
   // printout

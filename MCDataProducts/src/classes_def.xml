@@ -40,6 +40,8 @@
  <class name="art::Wrapper<mu2e::SpectrumConfig::RestrictedVar>"/>
  <class name="std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>"/>
  <class name="art::Wrapper<std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>>"/>
+ <class name="std::pair<std::string,mu2e::SpectrumConfig::RestrictedVar>"/>
+ <class name="art::Wrapper<std::pair<std::string,mu2e::SpectrumConfig::RestrictedVar>>"/>
 
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
@@ -192,6 +194,11 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="std::vector<mu2e::CaloHitMC>" />
 <class name="std::vector<art::Ptr<mu2e::CaloHitMC> >" />
 <class name="art::Wrapper<mu2e::CaloHitMCCollection>"/>
+
+<class name="mu2e::CaloHitEntrant"/>
+<class name="mu2e::CaloHitEntrantCollection"/>
+<class name="std::vector<mu2e::CaloHitEntrant>" />
+<class name="art::Wrapper<mu2e::CaloHitEntrantCollection>"/>
 
 <class name="mu2e::CaloClusterMC" />
 <class name="mu2e::CaloClusterMCCollection" />

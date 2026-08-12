@@ -195,14 +195,27 @@ void mu2e::DbUtil::writeFile(std::string const& fn,
 // the database csv should have a newline at the end of the last line
 std::vector<std::string> mu2e::DbUtil::splitCsvLines(const std::string& csv) {
   std::vector<std::string> lines;
-  boost::split(lines, csv, boost::is_any_of("\n"), boost::token_compress_off);
-  if (!lines.back().empty()) {  // the last \n leads to a blank line at the end
+  bool in_quotes{false};
+  std::string current_line;
+  for (char c : csv) {
+    if (c == '"') {
+        in_quotes = !in_quotes;
+        current_line += c;
+    } else if (c == '\n' && !in_quotes) {
+        lines.push_back(current_line);
+        current_line.clear();
+    } else {
+        current_line += c;
+    }
+  }
+  if (!current_line.empty()) {  // the last \n leads to a blank line at the end
     throw cet::exception("DBUTIL_NO_TERMINAL_NEWLINE")
         << "DbUtil::splitCsvLines csv did not have terminal newline\n";
   }
-  lines.pop_back();  // remove empty line
+
   return lines;
 }
+
 
 // ****************************************************************
 // split a line by csv rules, including quotes

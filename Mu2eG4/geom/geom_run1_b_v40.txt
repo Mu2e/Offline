@@ -1,0 +1,25 @@
+// Run1B v40: 1.75 cm thick mobile target, 1.75 cm thick Al TS5 endcap plate with 135 mm hole added, otherwise a normal Run 1A config
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+// Use the pion degrader as a Run 1B target
+bool   degrader.build               = true;
+double degrader.rotation            = 60.0; // in the beam
+string degrader.filter.materialName = "StoppingTarget_Al"; // stopping target material
+double degrader.filter.halfLength   = 8.75; // 1.75 cm plate
+double degrader.filter.rIn          = 0.0;
+double degrader.filter.rOut         = 150.0; // 150 mm radius disk
+double degrader.supportArm.offsetz  = 245.0;
+double degrader.supportArm.dz       = 186.0;
+
+// Use the TSdA as an aluminum collimator, helping Run 1B
+bool hasTSdA             = true;
+double tsda.z0           = 4195;
+double tsda.r4           = 600;                 // cover the TS5
+double tsda.rin          = 135.;                // 135 mm hole for normal beam to pass through
+double tsda.halfLength4  = 8.75;                // 1.75 cm plate
+string tsda.materialName = "StoppingTarget_Al"; // stopping target material to capture in the stops finder
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

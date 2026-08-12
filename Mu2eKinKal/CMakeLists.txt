@@ -85,6 +85,23 @@ cet_build_plugin(RegrowKinematicLine art::module
       Offline::TrkReco
 )
 
+cet_build_plugin(KKTruthSeed art::module
+    REG_SOURCE src/KKTruthSeed_module.cc
+    LIBRARIES REG
+      Offline::Mu2eKinKal
+
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::TrkReco
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgSeed.dat   ${CURRENT_BINARY_DIR} data/TrainBkgSeed.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgTrigger.dat   ${CURRENT_BINARY_DIR} data/TrainBkgTrigger.dat   COPYONLY)

@@ -62,23 +62,31 @@ namespace mu2e {
       this->initialize<ConversionSpectrum>(elow,ehi,bin,ehi,bin);
     }else if (spectrumShape == "ejectedProtons") {
       // should be kinetic energy
-      double elow = 0.;
+      double elow = psphys.get<double>("elow", 0.);
       // cut off at muon mass
-      double ehi =  GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
+      double ehi =  psphys.get<double>("ehi", GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass());
       double bin = (ehi - elow)/psphys.get<unsigned>("nbins");
       this->initialize<EjectedProtonSpectrum>(elow, ehi, bin);
     }else if (spectrumShape == "RMC") {
       double elow = psphys.get<double>("elow");
       double ehi = psphys.get<double>("ehi");
       double res = psphys.get<double>("spectrumResolution");
-      bool kMaxUserSet = psphys.get<bool>  ("kMaxUserSet",false);
-      double kMaxUser = psphys.get<double>("kMaxUser",0);
-      const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit("Al");
-      const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit("Al");
-      const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit("Al");
-      const double mmu = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
-      const double kMaxMax =mmu - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
-      this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMaxUserSet, kMaxUser, kMaxMax);
+      std::string material = psphys.get<std::string>("material", "Al"); // RMC material, defaulting to aluminum
+      const bool phase_space = psphys.get<bool>("phaseSpaceShape", false);
+      if(phase_space) {
+        const int nKnockout = psphys.get<int>("nKnockout");
+        const double kMax  = GlobalConstantsHandle<PhysicsParams>()->getRMCKMaxKnockout(material, nKnockout);
+        this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMax, nKnockout);
+      } else { // Closure approximation
+        const double bindingEnergyFit = GlobalConstantsHandle<PhysicsParams>()->getRMCbindingEnergyFit(material);
+        const double recoilEnergyFit  = GlobalConstantsHandle<PhysicsParams>()->getRMCrecoilEnergyFit(material);
+        const double deltaMassFit     = GlobalConstantsHandle<PhysicsParams>()->getRMCdeltaMassFit(material);
+        const double mmu = GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::mu_minus).mass();
+        const double kMaxMax =mmu - bindingEnergyFit - recoilEnergyFit - deltaMassFit;
+        bool kMaxUserSet = psphys.get<bool>  ("kMaxUserSet",false);
+        double kMaxUser = psphys.get<double>("kMaxUser",0);
+        this->initialize<MuonCaptureSpectrum>(elow, ehi, res, kMaxUserSet, kMaxUser, kMaxMax);
+      }
     }else if (spectrumShape == "Bistirlich") {
       double elow = psphys.get<double>("elow");
       double ehi = psphys.get<double>("ehi");

@@ -34,6 +34,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/RecoCount.hh"
+#include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 // Utilities
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
@@ -60,25 +61,26 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<int>  debug                   { Name("debugLevel"),                     Comment("Debug Level"), 0};
-        fhicl::Atom<bool> trkOnly                 { Name("TrkOnly"), Comment("Ignore cal and crv"), false};
-        fhicl::Atom<bool> saveEnergySteps         { Name("SaveEnergySteps"),                  Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
-        fhicl::Atom<bool> saveUnused              { Name("SaveUnusedDigiMCs"),                  Comment("Save StrawDigiMCs from particles used in any fit"), true};
-        fhicl::Atom<bool> saveAllUnused           { Name("SaveAllUnusedDigiMCs"),                  Comment("Save all StrawDigiMCs from particles used in any fit"), false};
-        fhicl::Atom<art::InputTag> PP             { Name("PrimaryParticle"),                  Comment("PrimaryParticle")};
-        fhicl::Atom<art::InputTag> CCC            { Name("CaloClusterCollection"),          Comment("CaloClusterCollection")};
-        fhicl::Sequence<art::InputTag> CrvCCCs    { Name("CrvCoincidenceClusterCollections"),Comment("CrvCoincidenceClusterCollections")};
-        fhicl::Atom<art::InputTag> SDC            { Name("StrawDigiCollection"),                  Comment("StrawDigiCollection")};
-        fhicl::Atom<art::InputTag> CHC            { Name("ComboHitCollection"),                  Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
-        fhicl::Atom<art::InputTag> CDC            { Name("CaloDigiCollection"),                  Comment("CaloDigiCollection")};
-        fhicl::Atom<art::InputTag> SDMCC          { Name("StrawDigiMCCollection"),          Comment("StrawDigiMCCollection")};
-        fhicl::Atom<art::InputTag> CRVDC          { Name("CrvDigiCollection"),                  Comment("CrvDigiCollection")};
-        fhicl::Atom<art::InputTag> CRVDMCC        { Name("CrvDigiMCCollection"),                  Comment("CrvDigiMCCollection")};
-        fhicl::Atom<art::InputTag> PBTMC          { Name("PBTMC"),                  Comment("ProtonBunchTimeMC")};
-        fhicl::Atom<art::InputTag> EWM            { Name("EventWindowMarker"), Comment("EventWindowMarker")};
-        fhicl::Sequence<std::string> KalSeeds     { Name("KalSeedCollections"),                  Comment("KalSeedCollections")};
-        fhicl::Atom<art::InputTag> VDSPC          { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
-        fhicl::Atom<double> CCME                  { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save digis (MeV)")};
+        fhicl::Atom<int>  debug                     { Name("debugLevel"),                      Comment("Debug Level"), 0};
+        fhicl::Atom<bool> trkOnly                   { Name("TrkOnly"),                         Comment("Ignore cal and crv"), false};
+        fhicl::Atom<bool> saveEnergySteps           { Name("SaveEnergySteps"),                 Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
+        fhicl::Atom<bool> saveUnused                { Name("SaveUnusedDigiMCs"),               Comment("Save StrawDigiMCs from particles used in any fit"), true};
+        fhicl::Atom<bool> saveAllUnused             { Name("SaveAllUnusedDigiMCs"),            Comment("Save all StrawDigiMCs from particles used in any fit"), false};
+        fhicl::Atom<art::InputTag> PP               { Name("PrimaryParticle"),                 Comment("PrimaryParticle")};
+        fhicl::Atom<art::InputTag> CCC              { Name("CaloClusterCollection"),           Comment("CaloClusterCollection")};
+        fhicl::Sequence<art::InputTag> CrvCCCs      { Name("CrvCoincidenceClusterCollections"),Comment("CrvCoincidenceClusterCollections")};
+        fhicl::Atom<art::InputTag> SDC              { Name("StrawDigiCollection"),             Comment("StrawDigiCollection")};
+        fhicl::Atom<art::InputTag> CHC              { Name("ComboHitCollection"),              Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
+        fhicl::Atom<art::InputTag> CDC              { Name("CaloDigiCollection"),              Comment("CaloDigiCollection")};
+        fhicl::Atom<art::InputTag> SDMCC            { Name("StrawDigiMCCollection"),           Comment("StrawDigiMCCollection")};
+        fhicl::Atom<art::InputTag> CRVDC            { Name("CrvDigiCollection"),               Comment("CrvDigiCollection")};
+        fhicl::Atom<art::InputTag> CRVDMCC          { Name("CrvDigiMCCollection"),             Comment("CrvDigiMCCollection")};
+        fhicl::Atom<art::InputTag> PBTMC            { Name("PBTMC"),                           Comment("ProtonBunchTimeMC")};
+        fhicl::Atom<art::InputTag> EWM              { Name("EventWindowMarker"),               Comment("EventWindowMarker")};
+        fhicl::Sequence<std::string> KalSeeds       { Name("KalSeedCollections"),              Comment("KalSeedCollections")};
+        fhicl::Sequence<art::InputTag> TimeClusters { Name("TimeClusterCollections"),          Comment("TimeClusterCollections")};
+        fhicl::Atom<art::InputTag> VDSPC            { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
+        fhicl::Atom<double> CCME                    { Name("CaloClusterMinE"),                 Comment("Minimum energy CaloCluster to save digis (MeV)")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit SelectRecoMC(const Parameters& conf);
@@ -103,7 +105,7 @@ namespace mu2e {
       bool _saveallenergy, _saveunused, _saveallunused;
       art::InputTag _pp, _ccc, _sdc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _ewm, _vdspc;
       std::vector<std::string> _kscs, _hscs;
-    std::vector<art::InputTag> _crvcccs;
+      std::vector<art::InputTag> _tccs, _crvcccs;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
@@ -132,6 +134,7 @@ namespace mu2e {
     _ewm(config().EWM()),
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
+    _tccs(config().TimeClusters()),
     _crvcccs(config().CrvCCCs()),
     _ccme(config().CCME())
     {
@@ -150,6 +153,9 @@ namespace mu2e {
       consumes<CrvDigiMCCollection>(_crvdmcc);
       consumes<ProtonBunchTimeMC>(_pbtmc);
       consumes<EventWindowMarker>(_ewm);
+      for (const auto& i_tc : _tccs) {
+        consumes<TimeClusterCollection>(i_tc);
+      }
       produces <IndexMap>("StrawDigiMap");
       if (!_trkonly){
         produces <IndexMap>("CrvDigiMap");
@@ -165,6 +171,7 @@ namespace mu2e {
       produces <StrawDigiCollection>();
       produces <StrawDigiADCWaveformCollection>();
       produces <RecoCount>();
+
 
       if (_debug > 0)
       {
@@ -435,6 +442,25 @@ namespace mu2e {
     std::set<art::Ptr<SimParticle> > simps;
     // add the MC primary SimParticles
     for(auto const& spp : pp.primarySimParticles()) simps.insert(spp);
+
+    // save configured TimeCluster collections and preserve referenced straw/calo content
+    for (auto const& tcTag : _tccs) {
+      auto tcch = event.getHandle<TimeClusterCollection>(tcTag);
+      if (!tcch.isValid()) continue;
+      auto const& tcc = *tcch;
+
+      for (auto const& tc : tcc) {
+        for (auto const& hitIndex : tc.hits()) {
+          auto const ich = static_cast<size_t>(hitIndex);
+          (void)chc.at(ich); // bounds check
+          sdindices.insert(static_cast<StrawDigiIndex>(ich));
+        }
+        if (tc.hasCaloCluster()) {
+          ccptrs.insert(tc.caloCluster());
+        }
+      }
+    }
+
     // loop over input KalFinalFit products
     for (auto const& ksc : _kscs) {
       // get all products from this

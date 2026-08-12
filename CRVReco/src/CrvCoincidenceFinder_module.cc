@@ -61,6 +61,7 @@ namespace mu2e
       fhicl::Atom<double> maxTimeInterval{Name("maxTimeInterval"), Comment("maximum time interval of hits on one readout side considered for hit position calculation")};
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
       fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missing pulses for channels with the following channel statuses")};
+      fhicl::Atom<bool>   ignoreSecondaryPulses{Name("ignoreSecondaryPulses"), Comment("ignore secondary pulses in a waveform.")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -84,6 +85,7 @@ namespace mu2e
 
     mu2e::ProditionsHandle<mu2e::CRVStatus> _sipmStatus;
     std::vector<int>                        _compensateChannelStatus;
+    bool                                    _ignoreSecondaryPulses;
 
     int         _totalEvents;
     int         _totalEventsCoincidence;
@@ -154,8 +156,7 @@ namespace mu2e
     };
 
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
-                           std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
-                           const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection);
+                           std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection);
     void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered, unsigned int readoutSide);
     void findClusters(std::list<CrvHit> &hits, std::vector<std::vector<CrvHit> > &clusters, double clusterMaxTimeDifference,
                       bool combineOppositeSides=false, double timeDifferenceOppositeSides=0);
@@ -174,6 +175,7 @@ namespace mu2e
     _maxTimeInterval(conf().maxTimeInterval()),
     _timeOffset(conf().timeOffset()),
     _compensateChannelStatus(conf().compensateChannelStatus()),
+    _ignoreSecondaryPulses(conf().ignoreSecondaryPulses()),
     _totalEvents(0),
     _totalEventsCoincidence(0)
   {
@@ -291,6 +293,8 @@ namespace mu2e
     {
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
 
+      if(_ignoreSecondaryPulses && crvRecoPulse->GetSequenceIndex()>0) continue;
+
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
       int sectorNumber, moduleNumber, layerNumber, barNumber;
@@ -400,7 +404,7 @@ namespace mu2e
       std::vector<std::vector<CrvHit> > coincidenceClusters;
       findClusters(coincidenceHits, coincidenceClusters, clusterMaxTimeDifference, combineOppositeSides, timeDifferenceOppositeSides);
 
-      clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection, crvRecoPulseCollection);
+      clusterProperties(crvSectorType, coincidenceClusters, crvCoincidenceClusterCollection);
     }//loop over all sector types
 
     ++_totalEvents;
@@ -417,8 +421,7 @@ namespace mu2e
 
 
   void CrvCoincidenceFinder::clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
-                                               std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection,
-                                               const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection)
+                                               std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection)
   {
     //loop through all clusters
     for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)

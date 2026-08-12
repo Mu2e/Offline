@@ -237,6 +237,36 @@ namespace mu2e {
         //         }
         //       }
 
+        // Optional virtual detectors on the upstream face of the front-end
+        // board (FEB) of every second tracker plane, plus one behind the last
+        // plane.  Off unless a geometry explicitly asks for them.
+        if ( c.getBool("hasTrackerFEBVirtualDetectors",false) ){
+          TubsParams planeEnvelope = tracker.g4Tracker()->getPlaneEnvelopeParams();
+          double dzplane = planeEnvelope.zHalfLength();
+          for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
+            Hep3Vector vdTracker_FEB_offset(0.,0.,0.);
+            double zplane;
+            double z_Tracker_FEB;
+            if (ipln < StrawId::_nplanes){
+              zplane = tracker.getPlane(ipln).origin().z();
+              z_Tracker_FEB = zplane-dzplane-vdHL;
+            }
+            else{
+              zplane = -tracker.getPlane(0).origin().z();
+              z_Tracker_FEB = zplane+dzplane+vdHL;
+            }
+            vdTracker_FEB_offset.setZ(z_Tracker_FEB);
+
+            if ( verbosityLevel > 0 ) {
+              cout << " z_Tracker_FEB_" << ipln/2 << "=" << z_Tracker_FEB
+                   << " zplane=" << zplane << " dzplane=" << dzplane << endl;
+            }
+
+            int vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
+            vd->addVirtualDetector( vdId, ttOffset, 0, vdTracker_FEB_offset);
+          }
+        }
+
         // Global position is in Mu2e coordinates; local position in the detector system.
         double zFrontGlobal = tracker.g4Tracker()->mother().position().z()-tracker.g4Tracker()->mother().tubsParams().zHalfLength()-vdHL;
         double zBackGlobal  = tracker.g4Tracker()->mother().position().z()+tracker.g4Tracker()->mother().tubsParams().zHalfLength()+vdHL;
@@ -435,20 +465,21 @@ namespace mu2e {
         int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
         int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-        CLHEP::Hep3Vector parentInMu2e = cg->geomUtil().origin();
+        CLHEP::Hep3Vector parentInMu2e = cg->G4Info().get<CLHEP::Hep3Vector>("caloOrigin");
 
-        for (const auto& diskPtr : cg->diskPtrs())
+        for (size_t idisk=0;idisk<cg->nDisks();++idisk)
         {
-           const CLHEP::Hep3Vector& sizeDisk = diskPtr->geomInfo().size();
-           CLHEP::Hep3Vector posDiskLocal  = diskPtr->geomInfo().origin() - cg->geomUtil().origin();
-           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
+           const auto& thisDisk = cg->disk(idisk);
+           const CLHEP::Hep3Vector& sizeDisk = thisDisk.diskInfo().size();
+           CLHEP::Hep3Vector posDiskLocal  = thisDisk.diskInfo().origin() - parentInMu2e;
+           CLHEP::Hep3Vector posCrateLocal = posDiskLocal + CLHEP::Hep3Vector(0.0,0.0,thisDisk.diskInfo().FEBZOffset());
 
            CLHEP::Hep3Vector  posFrontDisk = posDiskLocal - CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posBackDisk  = posDiskLocal + CLHEP::Hep3Vector (0,0,sizeDisk.z()/2.0-vdHL);
            CLHEP::Hep3Vector  posInnerDisk = posDiskLocal;
 
-           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,diskPtr->geomInfo().FEBZOffset());
-           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,diskPtr->geomInfo().FEBZLength());
+           CLHEP::Hep3Vector  posFrontFEB  = posFrontDisk  - CLHEP::Hep3Vector(0.0,0.0,thisDisk.diskInfo().FEBZOffset());
+           CLHEP::Hep3Vector  posBackFEB   = posFrontFEB   + CLHEP::Hep3Vector (0,0,thisDisk.diskInfo().FEBZLength());
            CLHEP::Hep3Vector  posInnerFEB  = (posBackFEB+posFrontFEB)/2.0;
 
            vd->addVirtualDetector(vdIdDiskSurf, parentInMu2e,0,posFrontDisk);

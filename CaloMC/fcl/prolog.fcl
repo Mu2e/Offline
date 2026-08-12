@@ -7,44 +7,19 @@
 
 BEGIN_PROLOG
 
+
 CaloMC : {
 
-   #See doc-db 35519 for noise level discussion
-   NoiseGenerator :
-   {
-      noiseWFSize             : 10000
-      pulseFileName           : @local::pulseFileName
-      pulseHistName           : @local::pulseHistName
-      elecNphotPerNs          : 0.18
-# Run2 values
-#      rinNphotPerNs           : 0.36
-#      darkNphotPerNs          : 0.60
-      rinNphotPerNs           : 0.25
-      darkNphotPerNs          : 0.00
-      digiSampling            : @local::HitMakerDigiSampling
-      nMaxFragment            : 1000
-      minPeakADC              : @local::HitMakerMinPeakADC
-      readoutPEPerMeV         : @local::readoutPEPerMeVCsI
-      MeVToADC                : @local::MeVToADC
-      diagLevel               : 0
-   }
-}
-
-CaloMC : { @table::CaloMC
    CaloShowerStepMaker  :
    {
       module_type             : CaloShowerStepMaker
       numZSlices              : 20
       deltaTime               : 0.2
       caloStepPointCollection : ["g4run:calorimeter"]
-      usePhysVolInfo          : false
-      physVolInfoInput        : "g4run"
-      caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092","CarbonFiber"]
       compressData            : true
       eDepThreshold           : 0
       diagLevel               : 0
    }
-
 
    CaloShowerROMaker :
    {
@@ -57,9 +32,6 @@ CaloMC : { @table::CaloMC
       digitizationStart        : @local::HitMakerDigitizationStart
       digitizationEnd          : @local::HitMakerDigitizationEnd
       digitizationBuffer       : 10
-      crystalNonUniformity     : 0.05
-      readoutPEPerMeVCsI       : @local::readoutPEPerMeVCsI
-      readoutPEPerMeVLyso      : @local::readoutPEPerMeVLyso
       LRUCorrection            : true
       BirksCorrection          : true
       PEStatCorrection         : true
@@ -73,21 +45,16 @@ CaloMC : { @table::CaloMC
       caloShowerROCollection  : CaloShowerROMaker
       eventWindowMarker       : EWMProducer
       protonBunchTimeMC       : EWMProducer
-      pulseFileName           : @local::pulseFileName
-      pulseHistName           : @local::pulseHistName
+      pulseCache              : @local::CaloPulseCache
+      noiseCache              : @local::CaloNoiseCache
+      addNoise                : true
       digitizationStart       : @local::HitMakerDigitizationStart
       digitizationEnd         : @local::HitMakerDigitizationEnd
-      addNoise                : true
-      addRandomNoise          : false
-      NoiseGenerator          : { @table::CaloMC.NoiseGenerator  }
-      digiSampling            : @local::HitMakerDigiSampling
+      bufferDigi              : 16
       nBits                   : 12
       minPeakADC              : @local::HitMakerMinPeakADC
+      minNoiseAmp             : 2
       nBinsPeak               : 2
-      bufferDigi              : 16
-      readoutPEPerMeVCsI      : @local::readoutPEPerMeVCsI
-      readoutPEPerMeVLyso     : @local::readoutPEPerMeVLyso
-      MeVToADC                : @local::MeVToADC
       diagLevel               : 0
    }
 
@@ -97,11 +64,8 @@ CaloMC : { @table::CaloMC
       caloShowerSimCollection : CaloShowerROMaker
       caloHitCollection       : CaloHitMaker
       primaryParticle         : FindMCPrimary
-      pulseFileName           : @local::pulseFileName
-      pulseHistName           : @local::pulseHistName
-      digiSampling            : @local::HitMakerDigiSampling
-      minAmplitude            : 32
-      MeVToADC                : @local::MeVToADC
+      pulseCache              : @local::CaloPulseCache
+      minAmplitude            : 2
       fillDetailedMC          : false
       diagLevel               : 0
    }

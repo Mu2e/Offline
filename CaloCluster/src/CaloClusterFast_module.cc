@@ -118,7 +118,7 @@ namespace mu2e {
           ++iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
-          std::queue<int> crystalToVisit;
+          std::queue<unsigned> crystalToVisit;
           std::vector<bool> isVisited(cal.nCrystals());
 
           //put the first hit in the cluster list
@@ -134,7 +134,8 @@ namespace mu2e {
               isVisited[visitId]=true;
 
               auto neighborsId = cal.crystal(visitId).neighbors();
-              if (extendSearch_) std::copy(cal.nextNeighbors(visitId).begin(), cal.nextNeighbors(visitId).end(), std::back_inserter(neighborsId));
+              auto nn = cal.crystal(visitId).nextNeighbors();
+              if (extendSearch_) std::copy(nn.begin(), nn.end(), std::back_inserter(neighborsId));
 
               for (const auto& iId : neighborsId)
               {
@@ -145,7 +146,7 @@ namespace mu2e {
                   for (auto it=iterStart; it != iterStop; ++it)
                   {
                       if (*it==hits.size()) continue;
-                      if (caloHits[*it].crystalID() != iId) continue;
+                      if (caloHits[*it].crystalID() != static_cast<int>(iId)) continue;
 
                       if (caloHits[*it].energyDep() > ExpandCut_) crystalToVisit.push(iId);
                       clusterList.push_back(*it);
@@ -155,7 +156,7 @@ namespace mu2e {
                crystalToVisit.pop();
            }
 
-           auto functorEnergy = [&caloHits](int a, int b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
+           auto functorEnergy = [&caloHits](auto a, auto b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
            std::sort(clusterList.begin(),clusterList.end(),functorEnergy);
 
            fillCluster(cal, caloHitsHandle, caloHits, clusterList, caloClusters );

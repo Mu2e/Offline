@@ -1,5 +1,4 @@
 #include "Offline/TrkReco/inc/SimpleKalSeedSelector.hh"
-#include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 
 namespace mu2e {
 
@@ -9,26 +8,15 @@ namespace mu2e {
       auto const& kinter = kseed.intersections().front();
       auto mom = kinter.mom();
       auto fcon = kseed.fitConsistency();
-      unsigned nactive =0;
-      for (auto const& hit : kseed.hits()){
-        if (hit.strawHitState() > WireHitState::inactive) ++nactive;
-      }
+      unsigned nactive = kseed.nHits(true);
       return mom >= minmom_ && mom <= maxmom_ && fcon >= minfcon_ && nactive >= minnactive_;
     } else
       return false;
   }
 
   bool SimpleKalSeedSelector::isBetter(KalSeed const& current,KalSeed const& test) const {
-    unsigned ncurrent =0;
-    for (auto const& hit : current.hits()){
-      if (hit.strawHitState() > WireHitState::inactive) ++ncurrent;
-    }
-
-    unsigned ntest =0;
-    for (auto const& hit : test.hits()){
-      if (hit.strawHitState() > WireHitState::inactive) ++ntest;
-    }
-
+    unsigned ncurrent = current.nHits(true);
+    unsigned ntest = test.nHits(true);
     if(ntest + ncurrent == 0) return test.fitConsistency() > current.fitConsistency();
     float nhitfrac = 2*float(ntest - ncurrent)/float(ntest + ncurrent);
     if(fabs(nhitfrac) > minsignhit_){

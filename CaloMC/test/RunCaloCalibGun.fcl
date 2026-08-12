@@ -91,5 +91,3 @@ physics.producers.EWMProducer.SpillType : 0
 physics.producers.muonTimeMap.applyToGenIds : [ "StoppedParticleReactionGun", "dioTail", "ExternalRMC", "InternalRMC",
                  "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", "MuCapPhotonGenTool", "MuCapGammaRayGenTool" ]
 physics.producers.protonTimeMap.ignoredGenIds : ["unknown", "particleGun", "cosmicToy", "cosmicDYB", "cosmic", "CosmicCRY", "pbarFlat", "CosmicCORSIKA"]
-
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"

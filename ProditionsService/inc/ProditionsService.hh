@@ -11,7 +11,7 @@
 #include "Offline/CRVConfig/inc/CRVOrdinalConfig.hh"
 #include "Offline/CRVConfig/inc/CRVPhotonYieldConfig.hh"
 #include "Offline/CRVConfig/inc/CRVStatusConfig.hh"
-#include "Offline/CaloConfig/inc/CaloDAQMapConfig.hh"
+#include "Offline/CaloConfig/inc/CalDAQMapConfig.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsCache.hh"
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
@@ -30,7 +30,9 @@
 
 #include "Offline/AnalysisConfig/inc/MVACatalogConfig.hh"
 #include "Offline/SimulationConfig/inc/SimBookkeeperConfig.hh"
+#include "Offline/CaloConfig/inc/AlignedCalConfig.hh"
 #include "Offline/CaloConfig/inc/CalCalibConfig.hh"
+#include "Offline/CaloConfig/inc/CalSimParamsConfig.hh"
 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
@@ -87,16 +89,18 @@ class ProditionsService {
         Name("alignedTracker"), Comment("Tracker alignment in reco code")};
     fhicl::Table<AlignedTrackerConfig> alignedTrackerSim{
         Name("alignedTrackerSim"), Comment("Tracker alignment in sim code")};
-    fhicl::Table<CaloDAQMapConfig> caloDAQConditions{
-        Name("caloDAQConditions"), Comment("DAQ channel maps for calorimeter")};
     fhicl::Table<MVACatalogConfig> trkQualCatalog{
         Name("trkQualCatalog"), Comment("Catalog of TrkQual trainings")};
     fhicl::Table<SimBookkeeperConfig> simbookkeeper{
         Name("simbookkeeper"), Comment("simulation bookkeeping")};
+    fhicl::Table<CalDAQMapConfig> calDAQConditions{
+        Name("calDAQConditions"), Comment("DAQ channel maps for calorimeter")};
     fhicl::Table<CalCalibConfig> calCalib{
-          Name("calCalib"),
-          Comment("calorimeter energy calib") };
-
+        Name("calCalib"),Comment("calorimeter energy calib") };
+    fhicl::Table<CalSimParamsConfig> calSimParams{
+        Name("calSimParams"),Comment("calorimeter sim parameters for crystals") };
+    fhicl::Table<AlignedCalConfig> alignedCalorimeter{
+        Name("alignedCalorimeter"), Comment("Calorimeter alignment in reco code")};
   };
 
   // this line is required by art to allow the command line help print
