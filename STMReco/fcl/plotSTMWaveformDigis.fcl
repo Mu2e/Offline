@@ -46,14 +46,6 @@ physics: {
       xAxis : "sample_number"
     }
 
-    plotPHWaveformDigisHPGe : {
-      module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:phHPGe"
-      subtractPedestal : false
-      verbosityLevel : 0
-      xAxis : "sample_number"
-    }
-
     plotRawWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "makeSTMDigis:rawLaBr"
