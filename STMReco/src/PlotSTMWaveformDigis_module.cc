@@ -122,12 +122,20 @@ namespace mu2e {
         //None empty waveforms go in here
         _hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
 
-        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
-        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
+        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);//nanoSecondPerCount
+        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(),
+                                          binning.nbins(), binning.low(), binning.high());
         TH1F* hWaveformOffset = nullptr; // Standby
 
         hWaveform->GetYaxis()->SetTitle("ADCs");
-        hWaveform->GetXaxis()->SetTitle("Sample Number");
+        if (_xAxis == "sample_number"){
+          hWaveform->GetXaxis()->SetTitle("Sample Number");
+
+        } else if (_xAxis == "waveform_time [nsec]"){
+          hWaveform->GetXaxis()->SetTitle("Waveform Time");
+        } else if (_xAxis == "event_time"){
+          hWaveform->GetXaxis()->SetTitle("Event Time[nsec]");
+        }
 
         if (plotZSOffsetWaveforms){
           //For offset waveforms -> Better organize this area
@@ -147,7 +155,7 @@ namespace mu2e {
 
           hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle2.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
           hWaveformOffset->GetYaxis()->SetTitle("ADCs");
-          hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + trigtimeOffset");
+          hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + Time Offset)");
           // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform
           //double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform
           //double xmax = hWaveformOffset->GetXaxis()->GetXmax();//gets xman from waveform
@@ -156,9 +164,8 @@ namespace mu2e {
 
         for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
 
-
           const auto adc = waveform.adcs().at(i_adc);
-          auto content = adc;
+          auto content = adc; //y-axis
           if (_subtractPedestal) {
             content -= pedestal;
           }
