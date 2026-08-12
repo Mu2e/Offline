@@ -205,9 +205,9 @@ void STMPrintFragments::analyze(const Event& event)
                     << ", PhysicalWords : " << physicalWords << "\n"
                     << ", stmDataWords : " << stmDataWords << "\n";
           size_t seg = 0;
-          size_t totalLen= 0;
-          uint16_t lastZSindex = 0;
-          uint16_t lastLen = 0;
+          //size_t totalLen= 0;
+          //uint16_t lastZSindex = 0;
+          //uint16_t lastLen = 0;
 
           while (dataPtr+2 <= dataEnd){
             uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
