@@ -14,7 +14,7 @@ source : {
 
 services : {
   @table::Services.Core
-  TFileService : { fileName : "stmWaveformDigis.root" }
+  TFileService : { fileName : "data/stmWaveformDigis.root" }
 }
 
 physics: {
@@ -28,6 +28,14 @@ physics: {
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
+    }
+
+    plotRawWaveformDigisTimeHPGe : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis: "waveform_time"
     }
     
     plotZSWaveformDigisHPGe : {
@@ -61,19 +69,11 @@ physics: {
       verbosityLevel : 0
       xAxis : "sample_number"
     }
-
-    plotPHWaveformDigisLaBr : {
-      module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:phLaBr"
-      subtractPedestal : false
-      verbosityLevel : 0
-      xAxis : "sample_number"
-     }
      
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigisHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotRawWaveformDigisEvTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
   end_paths: [anaPath]
 }
 

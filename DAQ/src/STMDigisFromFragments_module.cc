@@ -557,7 +557,7 @@ void STMDigisFromFragments::produce(Event& event)
           }
 
           //Throw out if ZSLengthfromRaw != totalLen, throw out if length mismatch
-          if (readZSinfoFromRawHeader && stm_frag.zsPrescaled() == 0){
+          if (readZSinfoFromRawHeader){
             if (expectedZSLength != totalLen){
               throw cet::exception("STM_UNPACKING")
                 << "\n=== ZS Length count mismatch ===\n"
@@ -626,15 +626,23 @@ void STMDigisFromFragments::produce(Event& event)
 
           if (_verbosityLevel >= 3){std::cout << "\nFound a good frag, i = " << i <<" @PH\n";}
 
-          if ( stm_frag.isHPGe() ){ ++ _totalGoodPHHPGe; ++goodPHHPGeFrags; }
-          else if ( stm_frag.isLaBr() ) { ++ _totalGoodPHLaBr; ++goodPHLaBrFrags; }
-
           size_t digiWords = stm_frag.payloadWords();
           auto const* digiPtr = stm_frag.payloadBegin();
 
-          for (size_t i_PH = 0; i_PH < digiWords ; ++i_PH){
-            int16_t PH = digiPtr[i_PH];
-            mu2e::STMPHDigi PH_digi(0, PH);
+          if (digiWords % 2 !=0){
+             if (_verbosityLevel >=3){
+               std::cout << "Found a malformmed frag of PH Digis" << std::endl;
+             }
+            continue;
+          }
+
+          if ( stm_frag.isHPGe() ){ ++ _totalGoodPHHPGe; ++goodPHHPGeFrags; }
+          else if ( stm_frag.isLaBr() ) { ++ _totalGoodPHLaBr; ++goodPHLaBrFrags; }
+
+          for (size_t i_PH = 0; i_PH + 1 < digiWords ; i_PH += 2){
+            uint32_t time = static_cast<uint16_t>(digiPtr[i_PH]);
+            int16_t PH = digiPtr[i_PH + 1];
+            mu2e::STMPHDigi PH_digi(time, PH);
 
             if( stm_frag.isHPGe() ){
               ph_HPGe_digis->emplace_back(PH_digi); }
