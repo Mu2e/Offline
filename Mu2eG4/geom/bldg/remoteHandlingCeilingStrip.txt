@@ -21,8 +21,8 @@ vector<double> building.remote.handling.ceiling.strip.xPositions = {
   3708.4,   // RHCS08
   3708.4,   // RHCS09
   1544.32,   // RHCS10
-  -4140.2,   // RHCS11
-  -4140.2,   // RHCS12
+  -4749.8,   // RHCS11
+  -4749.8,   // RHCS12
   -11709.4   // RHCS13
 };
 
