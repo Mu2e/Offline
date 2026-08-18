@@ -47,20 +47,20 @@ physics : {
     stmPrint : {
       module_type : STMPrintFragments
       stmTag : "daq:ContainerSTM"
-      printEverything: false
-      printInnerFragments: false
-      printPayloads : false
+      printEverything : false
+      printInnerFrags : false
+      printPayloads   : false
     }
 
    }
 
    t1 : [ makeSTMDigis ]
-   #e1 : [ stmOutput ]
+   e1 : [ stmOutput ]
    #e1 : [ ]
    #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
-   #end_paths      : [e1]
+   end_paths      : [e1]
 
 }
 
@@ -71,7 +71,7 @@ services.TimeTracker.printSummary: true
 outputs : {
    stmOutput : {
       module_type : RootOutput
-      fileName : "data/dig.stm.art"
+      fileName : "dig.stm.art"
       outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
    }
 }

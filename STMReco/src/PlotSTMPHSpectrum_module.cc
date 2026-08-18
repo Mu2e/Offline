@@ -61,7 +61,7 @@ namespace mu2e {
     // create histograms
     _phSpectrum=tfs->make<TH1D>("phSpectrum", "PH Spectrum;PulseHeight;Count", 10000, -10000, 0); //bins,min,max
     _twoDhist=tfs->make<TH2F>("phEvent","Pulse Height vs events;Event Bins; Pulse Height", // (name, title;xtitle;ytitle, nbinsX, xlow, xup, nbinsY, ylow, yup)
-                              2000,-1000,1000,     // X-axis scale
+                              10,0,10,     // X-axis scale
                               10000,-10000,0);   // Y-axis scale
   }
 

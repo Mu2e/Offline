@@ -20,6 +20,7 @@ namespace mu2e {
     STMFragmentSummary() : _nContainerFrags(0), _nInnerFrags(0),
                            _nRawFragsFlaggedBad(0), _nRawFragsFlaggedMissing(0),
                            _nZSFragsSkippedDueToRawFlag(0), _nPHFragsSkippedDueToRawFlag(0),
+                           _nPrescaledRawFrags(0),_nPrescaledZSFrags(0),
                            _nGoodRawFrags(0),_nGoodZSFrags(0),_nGoodPHFrags(0),
                            _nZeroRawFrags(0),_nZeroZSFrags(0),_nZeroPHFrags(0),
                            _nEmptyRawFrags(0),_nEmptyZSFrags(0),_nEmptyPHFrags(0){};
@@ -27,12 +28,14 @@ namespace mu2e {
     STMFragmentSummary(size_t nContainerFrags, size_t nInnerFrags,
                        size_t nRawFragsFlaggedBad, size_t nRawFragsFlaggedMissing,
                        size_t nZSFragsSkippedDueToRawFlag, size_t nPHFragsSkippedDueToRawFlag,
+                       size_t nPrescaledRawFrags, size_t nPrescaledZSFrags,
                        size_t nGoodRawFrags,size_t nGoodZSFrags, size_t nGoodPHFrags,
                        size_t nZeroRawFrags, size_t nZeroZSFrags, size_t nZeroPHFrags,
                        size_t nEmptyRawFrags, size_t nEmptyZSFrags, size_t nEmptyPHFrags) :
       _nContainerFrags(nContainerFrags), _nInnerFrags(nInnerFrags),
       _nRawFragsFlaggedBad(nRawFragsFlaggedBad), _nRawFragsFlaggedMissing(nRawFragsFlaggedMissing),
       _nZSFragsSkippedDueToRawFlag(nZSFragsSkippedDueToRawFlag), _nPHFragsSkippedDueToRawFlag(nPHFragsSkippedDueToRawFlag),
+      _nPrescaledRawFrags(nPrescaledRawFrags),_nPrescaledZSFrags(nPrescaledZSFrags),
       _nGoodRawFrags(nGoodRawFrags),_nGoodZSFrags(nGoodZSFrags),_nGoodPHFrags(nGoodPHFrags),
       _nZeroRawFrags(nZeroRawFrags),_nZeroZSFrags(nZeroZSFrags),_nZeroPHFrags(nZeroPHFrags),
       _nEmptyRawFrags(nEmptyRawFrags),_nEmptyZSFrags(nEmptyZSFrags),_nEmptyPHFrags(nEmptyPHFrags) {};
@@ -48,16 +51,10 @@ namespace mu2e {
     size_t nZSFragsSkippedDueToRawFlag() const { return _nZSFragsSkippedDueToRawFlag; }
     size_t nPHFragsSkippedDueToRawFlag() const { return _nPHFragsSkippedDueToRawFlag; }
 
-    // Skip decisions
-    /* ->Maybe add later, for now just want general skipped summary
-    size_t nZSFragsSkippedDueToBadFlag() const { return _nZSFragsSkippedDueToBadRaw; }
-    size_t nZSFragsSkippedDueToMissingRaw() const { return _nZSFragsSkippedDueToMissingRaw{}; }
-
-    size_t nPHFragsSkippedDueToBadRaw() const {return _nPHFragsSkippedDueToBadRaw; }
-    size_t nPHFragsSkippedDueToMissingRaw() const { return _nPHFragsSkippedDueToMissingRaw; }
-    */
-
     // Filter/Classifications results
+    size_t nPrescaledRawFrags() const {return _nPrescaledRawFrags; }
+    size_t nPrescaledZSFrags() const{return _nPrescaledZSFrags; }
+
     size_t nGoodRawFrags() const { return _nGoodRawFrags; }
     size_t nGoodZSFrags() const { return _nGoodZSFrags; }
     size_t nGoodPHFrags() const { return _nGoodPHFrags; }
@@ -83,15 +80,10 @@ namespace mu2e {
     size_t _nZSFragsSkippedDueToRawFlag{};
     size_t _nPHFragsSkippedDueToRawFlag{};
 
-    /* ->Maybe add later, for now just want general skipped summary
-    size_t _nZSFragsSkippedDueToBadRaw{};
-    size_t _nZSFragsSkippedDueToMissingRaw{};
-
-    size_t _nPHFragsSkippedDueToBadRaw{};
-    size_t _nPHFragsSkippedDueToMissingRaw{};
-    */
-
     // Filter/Classifications results
+    size_t _nPrescaledRawFrags{};
+    size_t _nPrescaledZSFrags{};
+
     size_t _nGoodRawFrags{};
     size_t _nGoodZSFrags{};
     size_t _nGoodPHFrags{};

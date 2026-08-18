@@ -37,7 +37,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
         fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
-        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"adcs_time\", or \"event_time\"")} ;
+        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"waveform_time\", or \"event_time\"")} ;
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -130,11 +130,10 @@ namespace mu2e {
         hWaveform->GetYaxis()->SetTitle("ADCs");
         if (_xAxis == "sample_number"){
           hWaveform->GetXaxis()->SetTitle("Sample Number");
-
-        } else if (_xAxis == "waveform_time [nsec]"){
-          hWaveform->GetXaxis()->SetTitle("Waveform Time");
+        } else if (_xAxis == "waveform_time"){
+          hWaveform->GetXaxis()->SetTitle("Waveform Time [nsec]");
         } else if (_xAxis == "event_time"){
-          hWaveform->GetXaxis()->SetTitle("Event Time[nsec]");
+          hWaveform->GetXaxis()->SetTitle("Event Time [nsec]");
         }
 
         if (plotZSOffsetWaveforms){
@@ -151,15 +150,9 @@ namespace mu2e {
           }
           histtitle2 << ", offset: " << zs_offset;
 
-          //histtitle2 << histtitle2.str() << instance << " , offset : " << zs_offset;
-
           hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle2.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
           hWaveformOffset->GetYaxis()->SetTitle("ADCs");
           hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + Time Offset)");
-          // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform
-          //double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform
-          //double xmax = hWaveformOffset->GetXaxis()->GetXmax();//gets xman from waveform
-          //hWaveformOffset->SetBins(n_bins, xmin + zs_offset, xmax + zs_offset);// shifts the xmin and xmax by offset, keeps numbers of bins
         }//PlotZSOffset
 
         for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){

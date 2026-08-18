@@ -116,11 +116,14 @@ void STMPrintFragments::analyze(const Event& event)
         const auto frag_id = inner_frag->fragmentID();
         const auto stmDataBegin = stm_frag.dataBegin();
         const auto stmDataWords = stm_frag.dataWords();
-        const auto stmDataEnd = stmDataBegin + stmDataWords;
 
         const auto stmPayloadBegin = stm_frag.payloadBegin();
         const auto stmPayloadWords = stm_frag.payloadWords();
         const auto physicalWords = inner_frag->dataSizeBytes() / sizeof(int16_t);
+
+        // Pick smallest of the two so we don't read beyond
+        size_t const wordsToPrint = std::min<size_t>(stmDataWords, physicalWords);
+        const auto stmDataEnd = stmDataBegin + wordsToPrint;
 
         //Always print
         std::cout << "Frag_ID = " << frag_id << std::endl;
@@ -197,7 +200,10 @@ void STMPrintFragments::analyze(const Event& event)
 
           auto dataPtr = stm_frag.dataBegin();
           auto dataWords = stm_frag.dataWords();
-          auto dataEnd = dataPtr + dataWords;
+
+          // Limit what you read here
+          size_t const wordsToRead = std::min<size_t>(dataWords, physicalWords);
+          auto dataEnd = dataPtr + wordsToRead;
 
           std::cout << "\n=== ZS Payload Dump ===\n"
                     << "Frag # : " << frag_counter << "\n"
@@ -205,17 +211,14 @@ void STMPrintFragments::analyze(const Event& event)
                     << ", PhysicalWords : " << physicalWords << "\n"
                     << ", stmDataWords : " << stmDataWords << "\n";
           size_t seg = 0;
-          //size_t totalLen= 0;
-          //uint16_t lastZSindex = 0;
-          //uint16_t lastLen = 0;
 
-          while (dataPtr+2 <= dataEnd){
+          while (dataEnd - dataPtr >= 2){
             uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
             uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
             std::cout << "Currnent ZS Index : " << current_zs_location
                       << ", current ZS Length : " << current_zs_size << "\n" ;
             auto adc = dataPtr + 2;
-            if (adc + current_zs_size > dataEnd){
+            if (current_zs_size > static_cast<size_t>(dataEnd - adc)){
               std::cout << "Malformed or truncated ZS Region: Declared size extends beyond fragment data " << "\n";
               break;
             }

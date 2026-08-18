@@ -14,7 +14,7 @@ source : {
 
 services : {
   @table::Services.Core
-  TFileService : { fileName : "data/stmWaveformDigis.root" }
+  TFileService : { fileName : "stmWaveformDigis.root" }
 }
 
 physics: {
@@ -65,7 +65,7 @@ physics: {
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotRawWaveformDigisEvTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
   end_paths: [anaPath]
 }
 

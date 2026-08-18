@@ -113,6 +113,7 @@ private:
     size_t _totalRawFragsFlaggedBadAndMissing{0};
     size_t _totalRawFragsWithInvalidHeaders{0};
     size_t _totalRawFragsWithInvalidAnchors{0};
+    size_t _totalPHCountMismatch{0};
 
     // Detector Summary variables
     size_t _totalEventsWithBothDetectors{0};
@@ -144,6 +145,7 @@ private:
     size_t _totalPHFragsSkippedDueToRawFlagHPGe{0};// We want to skip PH if raw is flagged bad/missing
     size_t _totalRawFragsPrescaledHPGe{0};// track how many raw fragments were prescaled
     size_t _totalZSFragsPrescaledHPGe{0};// track how many zs fragments were prescaled
+    size_t _totalPHCountMismatchHPGe{0};
 
     // LaBr job-level variables
     size_t _totalContainersLaBr{0};
@@ -169,6 +171,7 @@ private:
     size_t _totalPHFragsSkippedDueToRawFlagLaBr{0};// We want to skip PH if raw is flagged bad/missing
     size_t _totalRawFragsPrescaledLaBr{0};// track how many raw fragments were prescaled
     size_t _totalZSFragsPrescaledLaBr{0};// track how many ZS fragments were prescaled
+    size_t _totalPHCountMismatchLaBr{0};
 
     // Used to set and verify the state of the raw parent fragment for zs fragments, event based
     struct RawParentState {
@@ -226,6 +229,7 @@ private:
         size_t phFragsSkippedDueToRawFlag{0};
         size_t setsSkippedDueToRawFlag{0};
         size_t setsSkippedDueToInvalidHeaders{0};
+        size_t phCountMismatch{0};
 
     };
 
@@ -267,15 +271,15 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
 // =========================
 void STMDigisFromFragments::produce(Event& event)
 {
-    // extra frag counters for this event
+    // Extra frag counters for this event
     size_t containerFragsThisEvent{0};
+    size_t innerFragsThisEvent{0};
     size_t containerFragsHPGeThisEvent{0};
     size_t containerFragsLaBrThisEvent{0};
-    size_t innerFragsThisEvent{0};
     size_t innerFragsHPGeThisEvent{0};
     size_t innerFragsLaBrThisEvent{0};
     // Quality of frags
-    //size_t unknownFragsThisEvent{0};
+    size_t unknownFragsThisEvent{0};
     size_t badHPGeFragsThisEvent{0};
     size_t missingHPGeFragsThisEvent{0};
     size_t badLaBrFragsThisEvent{0};
@@ -323,7 +327,7 @@ void STMDigisFromFragments::produce(Event& event)
     art::Handle<artdaq::Fragments> STMFragmentsHandle;
     event.getByLabel(_stmFragmentsTag, STMFragmentsHandle);
     const auto& STMFragments = STMFragmentsHandle.product();
-    uint16_t outerFragID;
+    uint16_t outerFragID{0};
 
     // Loop over outer fragments
     for (const auto& frag : *STMFragments) {
@@ -341,10 +345,12 @@ void STMDigisFromFragments::produce(Event& event)
             if (container_frag.isHPGeContainer()) {
                 if  (_verbosityLevel > 2) { std::cout << "Processing HPGe container fragment with ID: " << outerFragID << "\n"; }
                 ++_totalContainersHPGe; eventHasHPGe = true; _totalInnerFragsHPGe += blocks;
+                innerFragsHPGeThisEvent += blocks;
                 ++containerFragsHPGeThisEvent;
             } else if (container_frag.isLaBrContainer()) {
                 if  (_verbosityLevel > 2) { std::cout << "Processing LaBr container fragment with ID: " << outerFragID << "\n"; }
                 ++_totalContainersLaBr; eventHasLaBr = true; _totalInnerFragsLaBr += blocks;
+                innerFragsLaBrThisEvent += blocks;
                 ++containerFragsLaBrThisEvent;
             } else {
                 if (_verbosityLevel > 0) {
@@ -443,15 +449,12 @@ void STMDigisFromFragments::produce(Event& event)
                         continue;
                     }
 
-                    //Check if raw fragment is prescaled to determine whether to skip checks
+                    // Check if raw fragment is prescaled to determine whether to skip checks
+                    // If the fragment is prescaled we do not save the waveform
+                    // If the fragment is prescaled we also do not want to check its payload
+                    // We do want relevant infrormation for the zs and ph
                     headerState.rawPrescaled = stm_frag.rawPrescaled();
                     headerState.rawPrescaleValue = stm_frag.rawPrescaleValue();
-
-                    if (headerState.rawPrescaled) {
-                        ++eventMetrics.raw.prescaled;
-                        ++_totalRawFragsPrescaled;
-                        isHPGe ? ++_totalRawFragsPrescaledHPGe : ++_totalRawFragsPrescaledLaBr;
-                    }
 
                     // Extract rest of the raw header information
                     // Even if raw is prescaled we still want to save zs info just in case
@@ -464,10 +467,35 @@ void STMDigisFromFragments::produce(Event& event)
                     headerState.expectedZSRegions = stm_frag.zsRegions();
                     headerState.expectedPHCount = stm_frag.phCount();
 
+                    if (headerState.rawPrescaled) {
+                        ++eventMetrics.raw.prescaled;
+                        ++_totalRawFragsPrescaled;
+                        isHPGe ? ++_totalRawFragsPrescaledHPGe : ++_totalRawFragsPrescaledLaBr;
 
-                    // Check if raw frag is empty
+                        parentState.ptr = {};
+                        parentState.available = false;
+                        continue;
+                    }
+
                     auto payloadPtr = stm_frag.payloadBegin();
                     auto payloadWords = stm_frag.payloadWords();
+
+                    // 22 Header Words + adcs < = dataWords
+                    // This check comes after ensuring raw is not prescaled
+                    if (stm::RawHeader::WORDS + payloadWords > stm_frag.dataWords()) {
+                        // this is an invalid-header case
+                        ++_totalRawFragsWithInvalidHeaders;
+                        isHPGe ? ++_totalRawFragsWithInvalidHeadersHPGe : ++_totalRawFragsWithInvalidHeadersLaBr;
+                        ++eventMetrics.rawFragsWithInvalidHeaders;
+                        ++eventMetrics.setsSkippedDueToInvalidHeaders;
+                        ++_totalUnreadInnerFrags;
+                        headerState.skipCurrentSet = true;
+                        parentState.available = false;
+                        continue;
+                    }
+
+                    // Ideally by here we know the raw frag is good and its payload can be checked
+                    // Check if raw frag is empty
                     bool allZeros = true;
                     if (payloadWords == 0) {
                         if (_verbosityLevel > 2){
@@ -500,7 +528,7 @@ void STMDigisFromFragments::produce(Event& event)
                         isHPGe? ++_totalZeroRawFragsHPGe: ++_totalZeroRawFragsLaBr;
                         continue;
                     }
-                    // At this point the raw fragment has payload words and is no zero filled
+                    // At this point the raw fragment has payload words and is non zero filled
                     // We continue processing this raw fragment
                     if (_verbosityLevel > 2) {
                         std::cout << "\nFound a good raw fragment at Event : " << _totalEvents << "\n"
@@ -533,14 +561,14 @@ void STMDigisFromFragments::produce(Event& event)
 
                     // Save waveforms based on fcl configurations
                     // Save Raw Waveform With Header Info - HPGe
-                    if (_saveRawWaveformsWithHeaderHPGe && isHPGe && !headerState.rawPrescaled){
+                    if (_saveRawWaveformsWithHeaderHPGe && isHPGe){
                         auto dataPtr = stm_frag.dataBegin();
                         auto dataWords = stm_frag.dataWords();
                         stm_waveform.set_data(dataWords,dataPtr);
                         rawWaveformDigisWithHeaderHPGe->emplace_back(stm_waveform);
                     }
                     // Save Raw Waveform and Save parent Ptr - HPGe
-                    if (_saveRawWaveformsHPGe && isHPGe && !headerState.rawPrescaled){
+                    if (_saveRawWaveformsHPGe && isHPGe){
                         stm_waveform.set_data(payloadWords, payloadPtr);
                         rawWaveformDigisHPGe->emplace_back(stm_waveform);
 
@@ -551,14 +579,14 @@ void STMDigisFromFragments::produce(Event& event)
                         parentState.available = true;
                     }
                     // Save Raw Waveform With Header Info - LaBr
-                    if (_saveRawWaveformsWithHeaderLaBr && isLaBr && !headerState.rawPrescaled){
+                    if (_saveRawWaveformsWithHeaderLaBr && isLaBr){
                         auto dataPtr = stm_frag.dataBegin();
                         auto dataWords = stm_frag.dataWords();
                         stm_waveform.set_data(dataWords,dataPtr);
                         rawWaveformDigisWithHeaderLaBr->emplace_back(stm_waveform);
                     }
                     // Save Raw Waveform and Save parent Ptr - LaBr
-                    if (_saveRawWaveformsLaBr && isLaBr && !headerState.rawPrescaled){
+                    if (_saveRawWaveformsLaBr && isLaBr){
                         stm_waveform.set_data(payloadWords, payloadPtr);
                         rawWaveformDigisLaBr->emplace_back(stm_waveform);
 
@@ -683,7 +711,6 @@ void STMDigisFromFragments::produce(Event& event)
                         << "Data Words % 4 : " << dataWords % 4 << "\n"
                         << "--ZS Frag\n";
                     }
-
 
                     while (dataPtr + 2 <= dataEndPtr){
                       if (zsInfoWasExtracted && regionCounter >= zsRegions) {
@@ -893,9 +920,33 @@ void STMDigisFromFragments::produce(Event& event)
 
                     // Check if PH Pair count matches expected count from raw header
                     size_t const nPairsInFragment = payloadWords / 2;
+
+                    // Add a print out to compare the two if there is a mismatch
+                    // Maybe add an if (nPairsInfragment != phCount)
+                    // Include a counter for this -> future decide whether to throw or not
+                    if (extractedPHInfo && nPairsInFragment != phCount) {
+                        if (_verbosityLevel > 2) {
+                            std::cout << "\nPH Count Comparison\n"
+                            << "Number of PH pairs we read in fragment : " << nPairsInFragment <<"\n"
+                            << "Number of PH pars from raw header      : " << phCount << "\n";
+                        }
+                        ++_totalPHCountMismatch;
+                        isHPGe ? ++_totalPHCountMismatchHPGe : ++_totalPHCountMismatchLaBr;
+                        ++eventMetrics.phCountMismatch;
+                    }
+
                     // Here you either read the lowest pair count from raw header or what is in fragment
                     // If not you read what what is in the fragment anyway
                     size_t const nPairsToRead = extractedPHInfo ? std::min<size_t>(nPairsInFragment, phCount) : nPairsInFragment;
+                    if (_verbosityLevel > 2) {
+                        std::cout << "\nPH Pair Count We Will Processes : " << nPairsToRead << "\n"
+                        << "Pair Count coming from Fragment   : " << (nPairsInFragment < phCount ? "Yes" : "No") << "\n"
+                        << "Pair Count coming from Raw Header : " << (phCount < nPairsInFragment ? "Yes" : "No") << "\n";
+                    }
+
+                    if (nPairsToRead ==0){
+                        continue;
+                    }
 
                     // Check if zero filled
                     // Since its a (time,PH) pair we will check every second entry for the PH value
@@ -958,6 +1009,7 @@ void STMDigisFromFragments::produce(Event& event)
                 else {
                     // fallback for unreadable fragment
                     ++_totalUnreadInnerFrags; //Job Summary Counter
+                    ++unknownFragsThisEvent;
                     if (_verbosityLevel > 0 ) {
                         std::cout << "Encountered an unreadable inner fragment " << "\n"
                         << "Frag Index  : " << i << "\n"
@@ -1012,6 +1064,7 @@ void STMDigisFromFragments::produce(Event& event)
             containerFragsHPGeThisEvent,innerFragsHPGeThisEvent,
             badHPGeFragsThisEvent, missingHPGeFragsThisEvent,
             HPGeEventMetrics.zsFragsSkippedDueToRawFlag, HPGeEventMetrics.phFragsSkippedDueToRawFlag,
+            HPGeEventMetrics.raw.prescaled, HPGeEventMetrics.zs.prescaled,
             HPGeEventMetrics.raw.good, HPGeEventMetrics.zs.good, HPGeEventMetrics.ph.good,
             HPGeEventMetrics.raw.zero, HPGeEventMetrics.zs.zero, HPGeEventMetrics.ph.zero,
             HPGeEventMetrics.raw.empty, HPGeEventMetrics.zs.empty, HPGeEventMetrics.ph.empty
@@ -1021,6 +1074,7 @@ void STMDigisFromFragments::produce(Event& event)
             containerFragsLaBrThisEvent,innerFragsLaBrThisEvent,
             badLaBrFragsThisEvent, missingLaBrFragsThisEvent,
             LaBrEventMetrics.zsFragsSkippedDueToRawFlag, LaBrEventMetrics.phFragsSkippedDueToRawFlag,
+            LaBrEventMetrics.raw.prescaled, LaBrEventMetrics.zs.prescaled,
             LaBrEventMetrics.raw.good, LaBrEventMetrics.zs.good, LaBrEventMetrics.ph.good,
             LaBrEventMetrics.raw.zero, LaBrEventMetrics.zs.zero, LaBrEventMetrics.ph.zero,
             LaBrEventMetrics.raw.empty, LaBrEventMetrics.zs.empty, LaBrEventMetrics.ph.empty
@@ -1088,18 +1142,22 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Bad and Missing Raw Frags (LaBr)              : " << LaBrEventMetrics.rawFragsFlaggedBadAndMissing << "\n";
         // Extra Filters
         std::cout << "\n=== Extra Filters ===\n";
-        std::cout << "Raw Frags With Invalid Headers (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidHeaders;
-        std::cout << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors;
-        std::cout << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag;
-        std::cout << "PH Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.phFragsSkippedDueToRawFlag;
-        std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (HPGe)            : " << HPGeEventMetrics.setsSkippedDueToRawFlag;
-        std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (HPGe)  : " << HPGeEventMetrics.setsSkippedDueToInvalidHeaders;
+        std::cout << "Container Frags                                           : " << containerFragsThisEvent << "\n";
+        std::cout << "Inner Frags This Event                                    : " << innerFragsThisEvent << "\n";
+        std::cout << "Unknown Frags                                             : " << unknownFragsThisEvent << "\n";
+        std::cout << "Raw Frags With Invalid Headers (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidHeaders << "\n";
+        std::cout << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
+        std::cout << "PH Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.phFragsSkippedDueToRawFlag << "\n";
+        std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (HPGe)            : " << HPGeEventMetrics.setsSkippedDueToRawFlag << "\n";
+        std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (HPGe)  : " << HPGeEventMetrics.setsSkippedDueToInvalidHeaders << "\n";
         std::cout << "\n";
-        std::cout << "Raw Frags With Invalid Headers (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidHeaders;
-        std::cout << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag;
-        std::cout << "PH Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.phFragsSkippedDueToRawFlag;
-        std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (LaBr)            : " << LaBrEventMetrics.setsSkippedDueToRawFlag;
-        std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (LaBr)  : " << LaBrEventMetrics.setsSkippedDueToInvalidHeaders;
+        std::cout << "Raw Frags With Invalid Headers (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidHeaders << "\n";
+        std::cout << "Raw Frags With Inavlid Anchors (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
+        std::cout << "PH Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.phFragsSkippedDueToRawFlag << "\n";
+        std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (LaBr)            : " << LaBrEventMetrics.setsSkippedDueToRawFlag << "\n";
+        std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (LaBr)  : " << LaBrEventMetrics.setsSkippedDueToInvalidHeaders << "\n";
         std::cout << "=================================\n";
 
     }
@@ -1162,7 +1220,7 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total Raw Prescaled Frags                       : " << _totalRawFragsPrescaled << "\n";
         std::cout << "Total ZS Prescaled Frags                        : " << _totalZSFragsPrescaled << "\n";
         std::cout << "Total Raw Frags Flagged Bad Only                : " << _totalRawFragsFlaggedBadOnly << "\n";
-        std::cout << "Total Raw Frags Flagged Missing Only             : " << _totalRawFragsFlaggedMissingOnly << "\n";
+        std::cout << "Total Raw Frags Flagged Missing Only            : " << _totalRawFragsFlaggedMissingOnly << "\n";
         std::cout << "Total Raw Frags Flagged Bad And Missing         : " << _totalRawFragsFlaggedBadAndMissing << "\n";
         std::cout << "\n";
         std::cout << "Total RAW Frags seen (HPGe)                     : " << _totalRawFragsSeenHPGe << "\n";
@@ -1202,8 +1260,7 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total Empty PH  Frags (HPGe)                    : " << _totalEmptyPHFragsHPGe << "\n";
         std::cout << "\n";
         std::cout << "Total Raw Prescaled Frags (HPGe)                : " << _totalRawFragsPrescaledHPGe << "\n";
-        // Raw Prescaled Frags can still be considered good -> data simply was not sent
-        // Still be classified as good for now, however we do not save the waveform
+        // Raw Prescaled Frags should be classified as their own data for now
         std::cout << "Total ZS Prescaled Frags (HPGe)                 : " << _totalZSFragsPrescaledHPGe << "\n";
         std::cout << "Total Raw Frags Flagged Bad Only (HPGe)         : " << _totalRawFragsFlaggedBadOnlyHPGe << "\n";
         std::cout << "Total Raw Frags Flagged Missing Only (HPGe)     : " << _totalRawFragsFlaggedMissingOnlyHPGe << "\n";
@@ -1236,10 +1293,13 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Invalid Raw Anchors                             : " << _totalRawFragsWithInvalidAnchors << "\n";
         std::cout << "Invalid Raw Anchors (HPGe)                      : " << _totalRawFragsWithInvalidAnchorsHPGe << "\n";
         std::cout << "Invalid Raw Anchors (LaBr)                      : " << _totalRawFragsWithInvalidAnchorsLaBr << "\n";
-        std::cout << "ZS Skipped Due to Raw Flag (HPGe)               : " << _totalZSFragsSkippedDueToRawFlagHPGe << "\n";
-        std::cout << "ZS Skipped Due to Raw Flag (LaBr)               : " << _totalZSFragsSkippedDueToRawFlagLaBr << "\n";
-        std::cout << "PH Skipped Due to Raw Flag (HPGe)               : " << _totalPHFragsSkippedDueToRawFlagHPGe << "\n";
-        std::cout << "PH Skipped Due to Raw Flag (LaBr)               : " << _totalPHFragsSkippedDueToRawFlagLaBr << "\n";
+        std::cout << "ZS Skipped Due To Raw Flags (HPGe)              : " << _totalZSFragsSkippedDueToRawFlagHPGe << "\n";
+        std::cout << "ZS Skipped Due To Raw Flags (LaBr)              : " << _totalZSFragsSkippedDueToRawFlagLaBr << "\n";
+        std::cout << "PH Skipped Due To Raw Flags (HPGe)              : " << _totalPHFragsSkippedDueToRawFlagHPGe << "\n";
+        std::cout << "PH Skipped Due To Raw Flags (LaBr)              : " << _totalPHFragsSkippedDueToRawFlagLaBr << "\n";
+        std::cout << "PH Count Mismatches Encountered                 : " << _totalPHCountMismatch << "\n";
+        std::cout << "PH Count Mismatches Encountered (HPGe)          : " << _totalPHCountMismatchHPGe << "\n";
+        std::cout << "PH Count Mismatches Encountered (LaBr)          : " << _totalPHCountMismatchLaBr << "\n";
 
 
         std::cout << "\n===========================================================\n";
