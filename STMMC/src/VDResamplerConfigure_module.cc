@@ -4,10 +4,10 @@
 // data source and, together with the plan's versionTag, runNumber and the VD id, is embedded in
 // every generated file name so several campaigns/sources/detectors coexist in one directory:
 //   train fcl : <TrainModule>_<ver>_VD<id>_<src>_pdg<pdgTok>.fcl
-//   model     : nts.mu2e.VDResamplerModel_VD<id>_pdg<pdgTok>_<role>.<ver>.<run6>_<src8>.dat
+//   model     : nts.mu2e.STMVDResamplerModel_VD<id>_pdg<pdgTok>_<role>.<ver>.<run6>_<src8>.dat
 //               (see VDResamplerNameHelper)
 // A breakdown of the per-particle hit counts is written to
-//   etc.mu2e.VDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
+//   etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
 // which the generator (VDResamplerGenerateMix) parses to recover ver/id/src/run and rebuild the
 // model names via the SAME shared helper. Per-particle training config (momentum basis, curriculum,
 // ...) is resolved from the training plan; common_training_config supplies the shared VD geometry,

@@ -179,7 +179,7 @@ particle_training_config : {
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TgtStp1809 : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh" # almost instantaneous emission, so no significant long tail
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_config
     }
     # few events from Neutrals, but if needed use the single stage
@@ -210,7 +210,7 @@ particle_training_config : {
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TgtStp1809 : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh" # almost instantaneous emission, so no significant long tail
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_config
     }
     # probably not needed in Neutrals. go to default if needed
@@ -236,7 +236,7 @@ particle_training_config : {
     # likely from scattering. to avoid issue potentially from sampling a extremely narrow peak, do the 2-stage
     # sampling with mid-range resolution
     TgtStp1809 : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh" # almost instantaneous emission, so no significant long tail
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_avg_structure_config
     }
     # hard to produce samples for the same POT, low stat so single stage
@@ -254,17 +254,17 @@ particle_training_config : {
   pdg_2112 : {
     # coarse single-stage training for neutrons from the EleBeam, no significant tTrans tail so V2 momentum basis is sufficient
     EleBeam : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh"
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_config
     }
     # many more events in the MuBeam neutron sample, so use a 2-stage finer structure model. no significant tTrans tail so stay with V2 momentum basis
     MuBeam : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh"
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_fine_structure_config
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TgtStp1809 : {
-      SBDMmomentumBasis : "V2_PtotSlopesAsinh"
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_config
     }
     # hard to produce samples for the same POT, low stat so single stage

@@ -6,10 +6,10 @@
 // where the sequencer is <run6>_<src8>: a 6-digit run number and the 8-digit enumeration of the
 // data source. Every artifact embeds versionTag, run number and dataSourceTag so several campaigns
 // can coexist in one directory AND the generator can recover all three from a summary file name:
-//   summary : etc.mu2e.VDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
-//   model   : nts.mu2e.VDResamplerModel_VD<id>_pdg<pdgTok>_<role>.<ver>.<run6>_<src8>.dat
+//   summary : etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
+//   model   : nts.mu2e.STMVDResamplerModel_VD<id>_pdg<pdgTok>_<role>.<ver>.<run6>_<src8>.dat
 //             (role: stage1/stage2/allAtOnce)
-//   ROOT    : nts.mu2e.VDResamplerConfigure_VD<id>_hitDump.<ver>.<run6>_<src8>.root
+//   ROOT    : nts.mu2e.STMVDResamplerConfigure_VD<id>_hitDump.<ver>.<run6>_<src8>.root
 //             (recommended TFileService name; module-external)
 // <pdgTok> is 'm<abs>' for negative pdgIds; <id> is the VD id; <src8> is dataSourceIndex() of the
 // dataSourceTag. The summary keeps its CSV *content* (comma-separated) under the .txt extension;
@@ -107,7 +107,7 @@ inline std::string checkedVersionTag(const std::string& versionTag) {
 
 inline std::string summaryFileName(const std::string& versionTag, int virtualDetectorID,
                                    const std::string& dataSourceTag, int runNumber) {
-  return "etc.mu2e.VDResamplerConfigure_VD" + std::to_string(virtualDetectorID) + "_hitSummary."
+  return "etc.mu2e.STMVDResamplerConfigure_VD" + std::to_string(virtualDetectorID) + "_hitSummary."
        + checkedVersionTag(versionTag) + "." + sequencerField(runNumber, dataSourceTag) + ".txt";
 }
 
@@ -115,25 +115,25 @@ inline std::string summaryFileName(const std::string& versionTag, int virtualDet
 inline std::string modelFileName(const std::string& role, const std::string& versionTag,
                                  int virtualDetectorID, const std::string& dataSourceTag,
                                  int pdgId, int runNumber) {
-  return "nts.mu2e.VDResamplerModel_VD" + std::to_string(virtualDetectorID)
+  return "nts.mu2e.STMVDResamplerModel_VD" + std::to_string(virtualDetectorID)
        + "_pdg" + pdgFileToken(pdgId) + "_" + role + "."
        + checkedVersionTag(versionTag) + "." + sequencerField(runNumber, dataSourceTag) + ".dat";
 }
 
 inline std::string rootDumpFileName(const std::string& versionTag, int virtualDetectorID,
                                     const std::string& dataSourceTag, int runNumber) {
-  return "nts.mu2e.VDResamplerConfigure_VD" + std::to_string(virtualDetectorID) + "_hitDump."
+  return "nts.mu2e.STMVDResamplerConfigure_VD" + std::to_string(virtualDetectorID) + "_hitDump."
        + checkedVersionTag(versionTag) + "." + sequencerField(runNumber, dataSourceTag) + ".root";
 }
 
 // Recover (versionTag, virtualDetectorID, dataSourceTag, runNumber) from a summary file name of the
-// form ".../etc.mu2e.VDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt". Strips any
+// form ".../etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt". Strips any
 // directory prefix and returns false if the pattern does not match.
 //
 // The name is split on '.' into exactly five fields: tier, "mu2e", description, version, sequencer
 // (the ".txt" extension is stripped first). That is unambiguous because versionTag is dot-free (see
 // checkedVersionTag) — but the description field may itself contain underscores, so within it we
-// anchor on the fixed "VDResamplerConfigure_VD" prefix and "_hitSummary" suffix. The source is
+// anchor on the fixed "STMVDResamplerConfigure_VD" prefix and "_hitSummary" suffix. The source is
 // recovered by decoding the 8-digit index back through the enumeration, so an index written by a
 // newer build with extra sources will fail here rather than resolve to the wrong source.
 inline bool parseSummaryFileName(const std::string& path, std::string& versionTag,
@@ -159,8 +159,8 @@ inline bool parseSummaryFileName(const std::string& path, std::string& versionTa
   if (fields.size() != 5) return false;
   if (fields[0] != "etc" || fields[1] != "mu2e") return false;
 
-  // <desc> = "VDResamplerConfigure_VD<id>_hitSummary"
-  const std::string pre = "VDResamplerConfigure_VD";
+  // <desc> = "STMVDResamplerConfigure_VD<id>_hitSummary"
+  const std::string pre = "STMVDResamplerConfigure_VD";
   const std::string suf = "_hitSummary";
   const std::string& desc = fields[2];
   if (desc.size() <= pre.size() + suf.size()) return false;

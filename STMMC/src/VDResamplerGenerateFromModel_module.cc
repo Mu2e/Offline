@@ -47,6 +47,8 @@
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
+#include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
+#include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -189,12 +191,21 @@ namespace mu2e {
           Comment("Whether to dump generated samples into a ROOT tree"),
           false
         };
+        fhicl::Atom<bool> doValidationPlots{
+          Name("doValidationPlots"),
+          Comment("Whether to write per-dimension generated-vs-mother comparison histograms and "
+                  "their W1/JSD/TV/KS metrics into the ROOT file. Requires doROOTDump, and requires "
+                  "resamplerSourceRootFile (the mother distribution is read from it) regardless of "
+                  "SBDMstage1Method."),
+          false
+        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
 
       explicit VDResamplerGenerateFromModel(const Parameters& conf);
       void produce(art::Event& event) override;
+      void endJob() override;
 
     private:
 
@@ -213,6 +224,7 @@ namespace mu2e {
       double VDz0_;
       double VDr_;
       bool doROOTDump_;
+      bool doValidationPlots_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
 
       std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel_;
@@ -236,6 +248,9 @@ namespace mu2e {
       double t0_ = VDResampler::kT0;
       double tScale_ = VDResampler::kTScale;
       double p0_ = VDResampler::kP0;
+
+      // Per-dimension generated-vs-mother comparison, written when doValidationPlots_.
+      VDResampler::ValidationPlots validationPlots_;
 
       // Variables for optional ROOT dump.
       TTree* outTree_ = nullptr;
@@ -266,7 +281,8 @@ namespace mu2e {
       sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
       VDz0_(conf().VDz0()),
       VDr_(conf().VDr()),
-      doROOTDump_(conf().doROOTDump()) {
+      doROOTDump_(conf().doROOTDump()),
+      doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
 
@@ -367,7 +383,37 @@ namespace mu2e {
       outTree_->Branch("py", &py_gen_, "py/D");
       outTree_->Branch("pz", &pz_gen_, "pz/D");
       outTree_->Branch("E", &E_gen_, "E/D");
+
+      // Validation plots live in this same ROOT file, so they are booked here, under the
+      // dump, reusing its TFileService handle.
+      if (doValidationPlots_) {
+        // The mother distribution comes from the source ROOT file. For a DIFFUSION stage-1
+        // job nothing else needs that file, so it is optional there — but validation cannot
+        // run without a reference, hence it is mandatory whenever the plots are requested.
+        const std::string srcFile = conf().resamplerSourceRootFile();
+        if (srcFile.empty())
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "doValidationPlots requires resamplerSourceRootFile: it supplies the mother "
+            << "distribution the generated samples are compared against.";
+
+        // basis_ and pdgId_ are settled above from the loaded model(s), so the plot set is
+        // booked for exactly the basis that will be generated.
+        const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+        validationPlots_.book(
+          tfs->mkdir("validation"),
+          "pdg" + VDResampler::pdgFileToken(pdgId_), basis_, pdgId_,
+          srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
+          "VDResamplerGenerateFromModel");
+      }
+    } else if (doValidationPlots_) {
+      throw cet::exception("VDResamplerGenerateFromModel")
+        << "doValidationPlots requires doROOTDump (the comparison histograms are written "
+        << "into the ROOT dump file).";
     }
+  }
+
+  void VDResamplerGenerateFromModel::endJob() {
+    validationPlots_.finalize();
   }
 
   void VDResamplerGenerateFromModel::produce(art::Event& event) {
@@ -408,6 +454,12 @@ namespace mu2e {
 
     if (doROOTDump_) {
       outTree_->Fill();
+    }
+    // booked() is true only when validation was requested, so it is the standing record of
+    // that decision — no separate flag check is needed.
+    if (validationPlots_.booked()) {
+      // g holds the model's own transformed output; the *_gen_ values are its inversion.
+      validationPlots_.fillGenerated(g, x_gen_, y_gen_, t_gen_, px_gen_, py_gen_, pz_gen_);
     }
   }
 
