@@ -1,6 +1,7 @@
 // ====================================================================
 //
 // STMDigisFromFragments: create all types of STMDigis from STMFragments
+// Note that for the STM, a single art event contains many EWTs
 //
 // ======================================================================
 
@@ -13,6 +14,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
 #include <artdaq-core/Data/ContainerFragment.hh>
@@ -265,6 +267,8 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
     if (_saveRawWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollection>("rawLaBr"); }
     if (_saveZSWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollection>("zsLaBr"); }
     produces<mu2e::STMPHDigiCollection>("phLaBr");
+
+    produces<mu2e::STMEventHeaderCollection>();
 }
 
 // Start of Event processing
@@ -302,6 +306,9 @@ void STMDigisFromFragments::produce(Event& event)
     if (_saveRawWaveformsLaBr){
         rawParentLaBr.productID = event.getProductID<mu2e::STMWaveformDigiCollection>("rawLaBr");
     }
+
+    // STM Event Headers
+    std::unique_ptr<mu2e::STMEventHeaderCollection> stmEventHeaders(new mu2e::STMEventHeaderCollection);
 
     // Frag Summaries
     std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryHPGe(new mu2e::STMFragmentSummaryCollection);
@@ -372,6 +379,10 @@ void STMDigisFromFragments::produce(Event& event)
                 mu2e::STMWaveformDigi stm_waveform;
 
                 if (stm_frag.isRaw()){
+                  uint8_t mode = 0; // TODO: this goes to the Mu2eEventHeader but I'm not sure where we get it from in the STMFragment
+                  mu2e::STMEventHeader stm_event_header(stm_frag.eventWindowTag(), mode, stm_frag.adcClock(), stm_frag.dtcClock());
+                  stmEventHeaders->emplace_back(stm_event_header);
+
                     ++_totalRawFragsSeen;
                     // Determine which detector this raw fragment is in
                     bool const isHPGe = stm_frag.isHPGe();
@@ -1174,6 +1185,8 @@ void STMDigisFromFragments::produce(Event& event)
 
     }
 
+    // save the STMEventHeaders
+    event.put(std::move(stmEventHeaders));
     // Frag Summary
     if (_saveSTMFragSummary) {
         event.put(std::move(stmFragSummaryHPGe), "stmFragSummaryHPGe");
