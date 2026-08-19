@@ -19,14 +19,13 @@ namespace mu2e {
 
   public:
  // Initialise all variables
-    STMWaveformDigi() : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
+    STMWaveformDigi() : _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
     // Constructor for timing plus trig offset
-    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), \
+    STMWaveformDigi(uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), \
 _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
     // Basic constructor
-    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
-    int16_t                     DetID  () const { return _DetID; } // TODO: remove DetID (we keep track of which detector through the collection names)
     uint64_t                    EWT    () const { return _EWT; } // TODO: want this in a separate class (EventWindowMarker?)
     uint64_t                    DTCtime() const { return _DTCtime; } // TODO: "  "   "
     uint64_t                    ADCtime() const { return _ADCtime; } // TODO: "  "   "
@@ -37,7 +36,6 @@ _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
     bool hasParent() const { return _parent.isNonnull(); }
     void setParent(art::Ptr<STMWaveformDigi> const& parent) {_parent = parent; }
   private:
-    int16_t  _DetID;
     uint64_t _EWT;
     uint64_t _DTCtime;
     uint64_t _ADCtime;
