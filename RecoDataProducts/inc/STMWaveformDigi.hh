@@ -26,10 +26,10 @@ _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
     // Basic constructor
     STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
-    int16_t                     DetID  () const { return _DetID; }
-    uint64_t                    EWT    () const { return _EWT; }
-    uint64_t                    DTCtime() const { return _DTCtime; }
-    uint64_t                    ADCtime() const { return _ADCtime; }
+    int16_t                     DetID  () const { return _DetID; } // TODO: remove DetID (we keep track of which detector through the collection names)
+    uint64_t                    EWT    () const { return _EWT; } // TODO: want this in a separate class (EventWindowMarker?)
+    uint64_t                    DTCtime() const { return _DTCtime; } // TODO: "  "   "
+    uint64_t                    ADCtime() const { return _ADCtime; } // TODO: "  "   "
     uint32_t                    trigTimeOffset() const { return _trigTimeOffset; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
     void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); }

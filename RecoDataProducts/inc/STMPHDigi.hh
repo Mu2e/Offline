@@ -27,6 +27,7 @@ namespace mu2e {
     int16_t _energy; // uncalibrated energy [ADC units]
   };
 
+  // TODO: change typedef to std::map<uint64_t, std::vector<STMPHDigi> >
   typedef std::vector<STMPHDigi> STMPHDigiCollection;
 
   bool lessByTime(const STMPHDigi& a, const STMPHDigi& b) {

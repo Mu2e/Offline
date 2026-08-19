@@ -397,6 +397,7 @@ void STMDigisFromFragments::produce(Event& event)
                     parentState.available = false;
                     parentState.index = 0;
                     ++eventMetrics.raw.seen;
+                    // TODO: set EWT = header_frag.eventWindowTag();
 
                     // check header+adcs is not less than expected header length (22)
                     if(stm_frag.dataWords() < stm::RawHeader::WORDS){
@@ -566,6 +567,8 @@ void STMDigisFromFragments::produce(Event& event)
                         auto dataWords = stm_frag.dataWords();
                         stm_waveform.set_data(dataWords,dataPtr);
                         rawWaveformDigisWithHeaderHPGe->emplace_back(stm_waveform);
+                        // TODO:
+                        // rawWaveformDigisWithHeaderHPGe->emplace(std::make_pair(EWT, std::vector<STMWaveformDigi>(stm_waveform));
                     }
                     // Save Raw Waveform and Save parent Ptr - HPGe
                     if (_saveRawWaveformsHPGe && isHPGe){
@@ -613,6 +616,7 @@ void STMDigisFromFragments::produce(Event& event)
                     // Determine which detector this ZS fragment belongs to
                     bool const isHPGe = stm_frag.isHPGe();
                     bool const isLaBr = stm_frag.isLaBr();
+                    // TODO: std::vector<STMWaveformDigis> zs_waveforms;
 
                     // Double check that the fragment belongs to one of the expected detectors
                     if (!isHPGe && !isLaBr){
@@ -838,6 +842,7 @@ void STMDigisFromFragments::produce(Event& event)
                         // Emplacing
                         if (isHPGe && _saveZSWaveformsHPGe) {
                             // emplacing HPGe waveform digi
+                          //TODO: change to the temporary zs_waveforms defined earlier
                             zsWaveformDigisHPGe->emplace_back(zsDigi);
                             if (_verbosityLevel > 2 && zsDigi.hasParent()) {
                                 std::cout << "\nZS HPGe Parent Raw index  : " << zsDigi.parent().key()
@@ -859,12 +864,17 @@ void STMDigisFromFragments::produce(Event& event)
                     isHPGe ? ++_totalGoodZSFragsHPGe : ++_totalGoodZSFragsLaBr;
                     ++eventMetrics.zs.good;
 
+                    // TODO: emplace into the map
+                    // zs_waveform_map->emplace(std::make_pair(EWT, zs_waveforms));
+
                 }// End of ZS fragmment check
                 else if (stm_frag.isPH()){
                     ++_totalPHFragsSeen;
                     // Determine which detector this PH fragment belongs to
                     bool const isHPGe = stm_frag.isHPGe();
                     bool const isLaBr = stm_frag.isLaBr();
+
+                    // TODO: make a temporary std::vector<PHDigis>
 
                     if (!isHPGe && !isLaBr) {
                         ++_totalUnreadInnerFrags;
@@ -986,6 +996,7 @@ void STMDigisFromFragments::produce(Event& event)
 
                         // Emplace Back (Always On)
                         if (isHPGe) {
+                          // TODO: change to fill the temporary ph_digis vector
                         phDigisHPGe->emplace_back(PH_digi);
                         }
                         if (isLaBr) {
@@ -1004,6 +1015,7 @@ void STMDigisFromFragments::produce(Event& event)
                     ++_totalGoodPHFrags;
                     isHPGe ? ++_totalGoodPHFragsHPGe : ++_totalGoodPHFragsLaBr;
                     ++eventMetrics.ph.good;
+                    // TODO: insert into PHDigi map
 
                 }// End of PH fragment check
                 else {

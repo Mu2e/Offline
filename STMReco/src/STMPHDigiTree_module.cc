@@ -90,6 +90,7 @@ namespace mu2e {
         ttree->Branch("event", &evt_, "event/I");
         ttree->Branch("run", &run_, "run/I");
         ttree->Branch("subrun", &subrun_, "subrun/I");
+        // TODO: add branch for EWT
 
         // Set up histogram
         std::string phSpectrumTitle = "PH Spectrum (" + _channel.name() + ")" ; // Builds title PH Spectrum (HPGe/ LaBr)
@@ -103,6 +104,7 @@ namespace mu2e {
 
         // We fill here information
         // you can reference event and get ifno
+      // TODO: change to art_event
         evt_ = event.event();
         run_ = event.run();
         subrun_=event.subRun();
@@ -110,6 +112,11 @@ namespace mu2e {
         // Get handle for PH Digis
         auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
         const auto& phDigis = *phDigisHandle;
+        // TODO: now a map
+        //        for (const auto& i_phDigiMap : phDigiMap) {
+        // uint64_t evt_ = i_phDigiMap->first;
+        // const auto& phDigis = i_phMap->second;
+        // can continue as below
         for (const auto& phDigi : phDigis){
             pulseHeight_= phDigi.energy();
             uncalibratedTime_ = phDigi.time();
