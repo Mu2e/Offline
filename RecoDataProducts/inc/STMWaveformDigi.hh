@@ -19,16 +19,10 @@ namespace mu2e {
 
   public:
  // Initialise all variables
-    STMWaveformDigi() : _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
-    // Constructor for timing plus trig offset
-    STMWaveformDigi(uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), \
-_trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+    STMWaveformDigi() : _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
     // Basic constructor
-    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
-    uint64_t                    EWT    () const { return _EWT; } // TODO: want this in a separate class (EventWindowMarker?)
-    uint64_t                    DTCtime() const { return _DTCtime; } // TODO: "  "   "
-    uint64_t                    ADCtime() const { return _ADCtime; } // TODO: "  "   "
     uint32_t                    trigTimeOffset() const { return _trigTimeOffset; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
     void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); }
@@ -36,9 +30,6 @@ _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
     bool hasParent() const { return _parent.isNonnull(); }
     void setParent(art::Ptr<STMWaveformDigi> const& parent) {_parent = parent; }
   private:
-    uint64_t _EWT;
-    uint64_t _DTCtime;
-    uint64_t _ADCtime;
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
     art::Ptr<STMWaveformDigi> _parent; // get parent raw waveform for zs
