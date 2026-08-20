@@ -291,11 +291,11 @@ namespace mu2e {
   }
 
   void VDResamplerTrainFromRoot::endJob() {
-    // Open ROOT file and read training data
-    TFile fin(inputRootFile_.c_str(), "READ");
-    if (!fin.IsOpen())
+    // Open ROOT file and read training data. TFile::Open is used to handle xroot:// paths.
+    auto fin = std::unique_ptr<TFile>{TFile::Open(inputRootFile_.c_str(), "READ")};
+    if (!fin || fin->IsZombie())
       throw cet::exception("VDResamplerTrainFromRoot") << "Cannot open ROOT file: " << inputRootFile_;
-    TTree* ttree = dynamic_cast<TTree*>(fin.Get(treeName_.c_str()));
+    TTree* ttree = dynamic_cast<TTree*>(fin->Get(treeName_.c_str()));
     if (!ttree)
       throw cet::exception("VDResamplerTrainFromRoot") << "Cannot find TTree: " << treeName_;
 
@@ -329,7 +329,7 @@ namespace mu2e {
       VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
       VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
     }
-    fin.Close();
+    fin->Close();
 
     // Single summary warning for any pz fallbacks accumulated over the TTree loop.
     if (pzFallback_.count > 0) {

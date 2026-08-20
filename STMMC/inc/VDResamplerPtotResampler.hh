@@ -64,10 +64,11 @@ inline void forEachAcceptedHitRoot(
     unsigned long virtualDetectorID, int pdgID, const std::string& moduleName,
     const std::function<void(double,double,double,double,double,double,double)>& cb)
 {
-    TFile fin(file.c_str(), "READ");
-    if (!fin.IsOpen())
+    // TFile::Open is used to handle xroot:// paths.
+    auto fin = std::unique_ptr<TFile>{TFile::Open(file.c_str(), "READ")};
+    if (!fin || fin->IsZombie())
         throw cet::exception(moduleName) << "Cannot open ROOT file: " << file;
-    TTree* ttree = dynamic_cast<TTree*>(fin.Get(tree.c_str()));
+    TTree* ttree = dynamic_cast<TTree*>(fin->Get(tree.c_str()));
     if (!ttree)
         throw cet::exception(moduleName) << "Cannot find TTree: " << tree;
 
@@ -90,7 +91,7 @@ inline void forEachAcceptedHitRoot(
             continue;
         cb(x, y, z, time, px, py, pz);
     }
-    fin.Close();
+    fin->Close();
 }
 
 // ---------------------------------------------------------------------------
