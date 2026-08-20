@@ -40,9 +40,6 @@ namespace art
     class STMDigisFromFragments;
 }
 using art::STMDigisFromFragments;
-// can make easier but lets be explicit for now
-//using STMWaveformDigiMap = std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>;
-
 class art::STMDigisFromFragments : public EDProducer
 {
 public:
@@ -282,15 +279,15 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
 
     //change products to be maps of event headers
     // HPGe
-    if (_saveRawWaveformsWithHeaderHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawWithHeaderHPGe"); }
-    if (_saveRawWaveformsHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawHPGe"); }
-    if (_saveZSWaveformsHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("zsHPGe"); }
-    produces<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>>("phHPGe");
+    if (_saveRawWaveformsWithHeaderHPGe){produces<mu2e::STMWaveformDigiCollectionMap>("rawWithHeaderHPGe"); }
+    if (_saveRawWaveformsHPGe){produces<mu2e::STMWaveformDigiCollectionMap>("rawHPGe"); }
+    if (_saveZSWaveformsHPGe){produces<mu2e::STMWaveformDigiCollectionMap>("zsHPGe"); }
+    produces<mu2e::STMPHDigiCollectionMap>("phHPGe");
     // LaBr
-    if (_saveRawWaveformsWithHeaderLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawWithHeaderLaBr"); }
-    if (_saveRawWaveformsLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawLaBr"); }
-    if (_saveZSWaveformsLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("zsLaBr"); }
-    produces<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>>("phLaBr");
+    if (_saveRawWaveformsWithHeaderLaBr){ produces<mu2e::STMWaveformDigiCollectionMap>("rawWithHeaderLaBr"); }
+    if (_saveRawWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollectionMap>("rawLaBr"); }
+    if (_saveZSWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollectionMap>("zsLaBr"); }
+    produces<mu2e::STMPHDigiCollectionMap>("phLaBr");
 }
 
 // Start of Event processing

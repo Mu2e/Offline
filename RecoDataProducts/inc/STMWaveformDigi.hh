@@ -10,8 +10,10 @@
 #include <vector>
 #include <array>
 #include <Rtypes.h>
+#include <map>
 
 #include "Offline/DataProducts/inc/STMChannel.hh"
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
@@ -35,5 +37,6 @@ namespace mu2e {
     art::Ptr<STMWaveformDigi> _parent; // get parent raw waveform for zs
   };
   typedef std::vector<STMWaveformDigi> STMWaveformDigiCollection;
+  typedef std::map<STMEventHeader,STMWaveformDigiCollection> STMWaveformDigiCollectionMap;
 }
 #endif
