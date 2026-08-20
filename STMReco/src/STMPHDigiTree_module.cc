@@ -2,6 +2,7 @@
 
 // stdlib includes
 #include <limits>
+#include <map>
 
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -20,11 +21,6 @@
 // message handling
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// Offline includes
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
-
 // Offline includes I added
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
@@ -34,6 +30,7 @@
 #include "TTree.h"
 #include "TH1D.h"
 
+
 // Mu2e type definitions
 
 namespace mu2e {
@@ -42,7 +39,7 @@ namespace mu2e {
           using Name=fhicl::Name;
           using Comment=fhicl::Comment;
           struct Config {
-            fhicl::Atom<art::InputTag> phDigiTag{ Name("phDigiTag"), Comment("Input Tag for STMPHDigiCollection")};
+            fhicl::Atom<art::InputTag> phDigiTag{ Name("phDigiTag"), Comment("Input Tag for STMPHDigiCollectionMap")};
             // Already seperates by detector name -> makeSTMDigis:phHPGe or phLaBr
           };
           using Parameters = art::EDAnalyzer::Table<Config>;
@@ -53,18 +50,24 @@ namespace mu2e {
           void beginJob() override;
           //void endJob() override;
 
-          // Token for STM PH Digis
-          art::ProductToken<STMPHDigiCollection> _stmPHDigisToken;
+          // New token for map
+          art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisMapToken;
           STMChannel _channel;
 
           // Store STM PH Digi information
-          int16_t pulseHeight_ = 0;
-          uint32_t uncalibratedTime_ = 0;
+          int16_t pulseHeight = 0;
+          uint32_t uncalibratedTime = 0;
 
           // Store file information
-          Int_t evt_;
-          Int_t run_;
-          Int_t subrun_;
+          Int_t art_evt;
+          Int_t run;
+          Int_t subrun;
+
+          // Store from EventHeader
+          uint64_t ewt = 0;
+          uint8_t evtMode = 0;
+          uint64_t adcClock = 0;
+          uint64_t dtcClock = 0;
 
           // Tree reference
           TTree* ttree = nullptr;
@@ -75,7 +78,7 @@ namespace mu2e {
 
     STMPHDigiTree::STMPHDigiTree(const Parameters& config) :
         art::EDAnalyzer{config},
-        _stmPHDigisToken(consumes<STMPHDigiCollection>(config().phDigiTag())),
+        _stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().phDigiTag())),
         _channel(STMUtils::getChannel(config().phDigiTag()))
         {}
 
@@ -83,14 +86,19 @@ namespace mu2e {
         // Set up TTree here
         art::ServiceHandle<art::TFileService> tfs;
         ttree = tfs->make<TTree>("ttree", "Detector ttree");
-        ttree->Branch("pulse_height", &pulseHeight_, "pulse_height/S");
-        ttree->Branch("uncalibrated_time", &uncalibratedTime_, "uncalibrated_time/i");
+        ttree->Branch("pulse_height", &pulseHeight, "pulse_height/S");
+        ttree->Branch("uncalibrated_time", &uncalibratedTime, "uncalibrated_time/i");
 
         // Event Information
-        ttree->Branch("event", &evt_, "event/I");
-        ttree->Branch("run", &run_, "run/I");
-        ttree->Branch("subrun", &subrun_, "subrun/I");
-        // TODO: add branch for EWT
+        ttree->Branch("art_event", &art_evt, "art_event/I");
+        ttree->Branch("run", &run, "run/I");
+        ttree->Branch("subrun", &subrun, "subrun/I");
+
+        // EventHeader information
+        ttree->Branch("EWT", &ewt, "EWT/l");
+        ttree->Branch("event_mode", &evtMode, "event_mode/b");
+        ttree->Branch("adc_clock", &adcClock, "adc_clock/l");
+        ttree->Branch("dtc_clock", &dtcClock, "dtc_clock/l");
 
         // Set up histogram
         std::string phSpectrumTitle = "PH Spectrum (" + _channel.name() + ")" ; // Builds title PH Spectrum (HPGe/ LaBr)
@@ -101,32 +109,36 @@ namespace mu2e {
     };
 
     void STMPHDigiTree::analyze(const art::Event& event) {
-
-        // We fill here information
-        // you can reference event and get ifno
-      // TODO: change to art_event
-        evt_ = event.event();
-        run_ = event.run();
-        subrun_=event.subRun();
+        // We fill art based information here
+        art_evt = event.event();
+        run = event.run();
+        subrun = event.subRun();
 
         // Get handle for PH Digis
-        auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
-        const auto& phDigis = *phDigisHandle;
-        // TODO: now a map
-        //        for (const auto& i_phDigiMap : phDigiMap) {
-        // uint64_t evt_ = i_phDigiMap->first;
-        // const auto& phDigis = i_phMap->second;
-        // can continue as below
-        for (const auto& phDigi : phDigis){
-            pulseHeight_= phDigi.energy();
-            uncalibratedTime_ = phDigi.time();
+        auto phDigisMapHandle = event.getValidHandle(_stmPHDigisMapToken);
+        const auto& phDigiMap = *phDigisMapHandle;
+        for (const auto& i_phDigiMap : phDigiMap){
+            // get EventHeader
+            const auto& header = i_phDigiMap.first;
+            // store related info
+            ewt = header.eventWindowTag();
+            evtMode = header.eventMode();
+            adcClock = header.adcClock();
+            dtcClock = header.dtcClock();
 
-            // Fill one row per PH Digi
-            ttree->Fill();
-            _phSpectrum->Fill(pulseHeight_);
+            // get PH Digi Collection
+            const auto& phDigis = i_phDigiMap.second;
 
+            // Second loop for PH Digis
+            for (const auto& phDigi : phDigis){
+                pulseHeight = phDigi.energy();
+                uncalibratedTime = phDigi.time();
+                // fill tree
+                ttree->Fill();
+                // fill histogram
+                _phSpectrum->Fill(pulseHeight);
+            }
         }
-
     } // end of analyze
 
 }; // end namespace mu2e
