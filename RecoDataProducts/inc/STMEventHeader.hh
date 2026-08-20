@@ -18,13 +18,17 @@ namespace mu2e
     uint64_t adcClock() const { return _adcClock; }
     uint64_t dtcClock() const { return _dtcClock; }
 
+    // other represents comparison, seperate by EWT
+    bool operator<(STMEventHeader const& other) const {
+    return eventWindowTag() < other.eventWindowTag();
+    }
+
   private:
     Mu2eEventHeader _mu2eEventHeader;
     uint64_t _adcClock;
     uint64_t _dtcClock;
   };
   typedef std::vector<STMEventHeader> STMEventHeaderCollection;
-
 }  // namespace mu2e
 
 

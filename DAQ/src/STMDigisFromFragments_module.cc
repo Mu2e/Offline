@@ -15,6 +15,7 @@
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
+
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/STMFragment.hh"
 #include <artdaq-core/Data/ContainerFragment.hh>
@@ -29,6 +30,7 @@
 #include <fstream>
 #include <vector>
 #include <stdbool.h>
+#include <map>
 
 // This is version 2
 // Meant to clean up and make the code more maintainable and readable
@@ -38,6 +40,8 @@ namespace art
     class STMDigisFromFragments;
 }
 using art::STMDigisFromFragments;
+// can make easier but lets be explicit for now
+//using STMWaveformDigiMap = std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>;
 
 class art::STMDigisFromFragments : public EDProducer
 {
@@ -207,7 +211,11 @@ private:
         bool rawHeaderIsValid{false};
         bool skipCurrentSet{false};
 
-        uint64_t EWT{0};
+        // save the following now for mapping
+        uint64_t eventWindowTag{0};
+        uint8_t eventMode{0}; // Not sure what this is right now
+        uint64_t adcClock{0};
+        uint64_t dtcClock{0};
     };
 
     struct FragmentCounters {
@@ -259,6 +267,7 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
         produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryHPGe");
         produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryLaBr");
     }
+    /*
     // HPGe
     if (_saveRawWaveformsWithHeaderHPGe){ produces<mu2e::STMWaveformDigiCollection>("rawWithHeaderHPGe"); }
     if (_saveRawWaveformsHPGe){ produces<mu2e::STMWaveformDigiCollection>("rawHPGe"); }
@@ -269,8 +278,19 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
     if (_saveRawWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollection>("rawLaBr"); }
     if (_saveZSWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollection>("zsLaBr"); }
     produces<mu2e::STMPHDigiCollection>("phLaBr");
+    */
 
-    produces<mu2e::STMEventHeaderCollection>();
+    //change products to be maps of event headers
+    // HPGe
+    if (_saveRawWaveformsWithHeaderHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawWithHeaderHPGe"); }
+    if (_saveRawWaveformsHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawHPGe"); }
+    if (_saveZSWaveformsHPGe){produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("zsHPGe"); }
+    produces<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>>("phHPGe");
+    // LaBr
+    if (_saveRawWaveformsWithHeaderLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawWithHeaderLaBr"); }
+    if (_saveRawWaveformsLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("rawLaBr"); }
+    if (_saveZSWaveformsLaBr){ produces<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>("zsLaBr"); }
+    produces<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>>("phLaBr");
 }
 
 // Start of Event processing
@@ -302,31 +322,45 @@ void STMDigisFromFragments::produce(Event& event)
     DetectorSpecificEventMetrics HPGeEventMetrics;
 
     // Set product ID
+
+    /*
     if (_saveRawWaveformsHPGe){
         rawParentHPGe.productID = event.getProductID<mu2e::STMWaveformDigiCollection>("rawHPGe");
     }
     if (_saveRawWaveformsLaBr){
         rawParentLaBr.productID = event.getProductID<mu2e::STMWaveformDigiCollection>("rawLaBr");
     }
-
-    // STM Event Headers
-    std::unique_ptr<mu2e::STMEventHeaderCollection> stmEventHeaders(new mu2e::STMEventHeaderCollection);
+    */
 
     // Frag Summaries
     std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryHPGe(new mu2e::STMFragmentSummaryCollection);
     std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryLaBr(new mu2e::STMFragmentSummaryCollection);
 
+    /*
     // HPGe
     std::unique_ptr<mu2e::STMWaveformDigiCollection> rawWaveformDigisWithHeaderHPGe(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMWaveformDigiCollection> rawWaveformDigisHPGe(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMWaveformDigiCollection> zsWaveformDigisHPGe(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMPHDigiCollection> phDigisHPGe(new mu2e::STMPHDigiCollection);
 
-    // LaBr waveforms
+    // LaBr
     std::unique_ptr<mu2e::STMWaveformDigiCollection> rawWaveformDigisWithHeaderLaBr(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMWaveformDigiCollection> rawWaveformDigisLaBr(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMWaveformDigiCollection> zsWaveformDigisLaBr(new mu2e::STMWaveformDigiCollection);
     std::unique_ptr<mu2e::STMPHDigiCollection> phDigisLaBr(new mu2e::STMPHDigiCollection);
+    */
+
+    // map start - keep explicit for now
+    // HPGe
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisWithHeaderHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> zsWaveformDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>> phDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>);
+    // LaBr
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisWithHeaderLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> zsWaveformDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
+    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>> phDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>);
 
     // booleans for tracking what detectors are present in the event
     bool eventHasHPGe{false};
@@ -381,10 +415,6 @@ void STMDigisFromFragments::produce(Event& event)
                 mu2e::STMWaveformDigi stm_waveform;
 
                 if (stm_frag.isRaw()){
-                  uint8_t mode = 0; // TODO: this goes to the Mu2eEventHeader but I'm not sure where we get it from in the STMFragment
-                  mu2e::STMEventHeader stm_event_header(stm_frag.eventWindowTag(), mode, stm_frag.adcClock(), stm_frag.dtcClock());
-                  stmEventHeaders->emplace_back(stm_event_header);
-
                     ++_totalRawFragsSeen;
                     // Determine which detector this raw fragment is in
                     bool const isHPGe = stm_frag.isHPGe();
@@ -410,8 +440,11 @@ void STMDigisFromFragments::produce(Event& event)
                     parentState.available = false;
                     parentState.index = 0;
                     ++eventMetrics.raw.seen;
-                    // TODO: set EWT = header_frag.eventWindowTag();
-                    headerState.EWT = 0;
+                    // reset eventHeader related variables
+                    headerState.eventWindowTag = 0;
+                    headerState.eventMode = 0;
+                    headerState.adcClock = 0;
+                    headerState.dtcClock = 0;
 
                     // check header+adcs is not less than expected header length (22)
                     if(stm_frag.dataWords() < stm::RawHeader::WORDS){
@@ -482,8 +515,18 @@ void STMDigisFromFragments::produce(Event& event)
                     headerState.expectedZSRegions = stm_frag.zsRegions();
                     headerState.expectedPHCount = stm_frag.phCount();
 
-                    // extracted EWT
-                    headerState.EWT = stm_frag.eventWindowTag();
+                    // extract EWT, mode/spillFlags, adcClock, dtcClock
+                    headerState.eventWindowTag = stm_frag.eventWindowTag();
+                    headerState.eventMode = stm_frag.spillFlag();
+                    headerState.adcClock = stm_frag.adcClock();
+                    headerState.dtcClock = stm_frag.dtcClock();
+
+                    // create stmEventHeader
+                    mu2e::STMEventHeader stm_event_header(
+                        headerState.eventWindowTag,
+                        headerState.eventMode,
+                        headerState.adcClock,
+                        headerState.dtcClock);
 
                     if (headerState.rawPrescaled) {
                         ++eventMetrics.raw.prescaled;
@@ -582,43 +625,49 @@ void STMDigisFromFragments::produce(Event& event)
                     if (_saveRawWaveformsWithHeaderHPGe && isHPGe){
                         auto dataPtr = stm_frag.dataBegin();
                         auto dataWords = stm_frag.dataWords();
+                        // set stm_waveform
                         stm_waveform.set_data(dataWords,dataPtr);
-                        //rawWaveformDigisWithHeaderHPGe->emplace_back(stm_waveform);
-                        // TODO:
-                        rawWaveformDigisWithHeaderHPGe->emplace(std::make_pair(headerState.EWT, std::vector<STMWaveformDigi>(stm_waveform));
-                        // rawWaveformDigisWithHeaderHPGe->emplace(std::make_pair(EWT, std::vector<STMWaveformDigi>(stm_waveform));
+                        // use map
+                        (*rawWaveformDigisWithHeaderHPGe)[stm_event_header].push_back(stm_waveform);
                     }
                     // Save Raw Waveform and Save parent Ptr - HPGe
                     if (_saveRawWaveformsHPGe && isHPGe){
+                        // set stm_waveform
                         stm_waveform.set_data(payloadWords, payloadPtr);
-                        //rawWaveformDigisHPGe->emplace_back(stm_waveform);
-                        rawWaveformDigisHPGe->emplace(std::make_pair(headerState.EWT, std::vector<STMWaveformDigi>(stm_waveform));
+
+                        // Give map a key and value, key is stmHeader,
+                        // *rawwaveformDigisHPGe is the map
+                        // stm_event_header is the collection stored under this header
+                        // .push_back(stm_waveform) adds waveform to the collection
+                        (*rawWaveformDigisHPGe)[stm_event_header].push_back(stm_waveform);
 
                         //Save raw parent index
-                        parentState.index = rawWaveformDigisHPGe->size() - 1;
-                        parentState.ptr = art::Ptr<mu2e::STMWaveformDigi>(parentState.productID, parentState.index,
-                            event.productGetter(parentState.productID));
-                        parentState.available = true;
+                        //parentState.index = rawWaveformDigisHPGe->size() - 1;
+                        //parentState.ptr = art::Ptr<mu2e::STMWaveformDigi>(parentState.productID, parentState.index,
+                        //    event.productGetter(parentState.productID));
+                        //parentState.available = true;
                     }
                     // Save Raw Waveform With Header Info - LaBr
                     if (_saveRawWaveformsWithHeaderLaBr && isLaBr){
                         auto dataPtr = stm_frag.dataBegin();
                         auto dataWords = stm_frag.dataWords();
+                        // set stm_waveform
                         stm_waveform.set_data(dataWords,dataPtr);
-                        //rawWaveformDigisWithHeaderLaBr->emplace_back(stm_waveform);
-                        rawWaveformDigisWithHeaderLaBr->emplace(std::make_pair(headerState.EWT, std::vector<STMWaveformDigi>(stm_waveform));
+                        // set map here
+                        (*rawWaveformDigisWithHeaderLaBr)[stm_event_header].push_back(stm_waveform);
                     }
                     // Save Raw Waveform and Save parent Ptr - LaBr
                     if (_saveRawWaveformsLaBr && isLaBr){
+                        // set stm_waveform
                         stm_waveform.set_data(payloadWords, payloadPtr);
-                        //rawWaveformDigisLaBr->emplace_back(stm_waveform);
-                        rawWaveformDigisLaBr->emplace(std::make_pair(headerState.EWT, std::vector<STMWaveformDigi>(stm_waveform));
+                        // set map here
+                        (*rawWaveformDigisLaBr)[stm_event_header].push_back(stm_waveform);
 
                         //Save raw parent index
-                        parentState.index = rawWaveformDigisLaBr->size() - 1;
-                        parentState.ptr = art::Ptr<mu2e::STMWaveformDigi>(parentState.productID, parentState.index,
-                        event.productGetter(parentState.productID));
-                        parentState.available = true;
+                        //parentState.index = rawWaveformDigisLaBr->size() - 1;
+                        //parentState.ptr = art::Ptr<mu2e::STMWaveformDigi>(parentState.productID, parentState.index,
+                        //event.productGetter(parentState.productID));
+                        //parentState.available = true;
                     }
                     if (_verbosityLevel > 2) {
                       std::cout << "Raw with frag index" << i
@@ -637,9 +686,6 @@ void STMDigisFromFragments::produce(Event& event)
                     // Determine which detector this ZS fragment belongs to
                     bool const isHPGe = stm_frag.isHPGe();
                     bool const isLaBr = stm_frag.isLaBr();
-                    // TODO: std::vector<STMWaveformDigis> zs_waveforms;
-                    std::vector<STMWaveformDigis> zs_waveformsHPGe;
-                    std::vector<STMWaveformDigis> zs_waveformsLaBr;
 
                     // Double check that the fragment belongs to one of the expected detectors
                     if (!isHPGe && !isLaBr){
@@ -674,7 +720,19 @@ void STMDigisFromFragments::produce(Event& event)
                     uint16_t zsLength = headerState.expectedZSLength;
                     uint16_t rawPrescaleValue = headerState.rawPrescaleValue;
                     uint16_t zsPrescaleValue = headerState.zsPrescaleValue;
-                    uint64_t zsEWT = headerState.EWT;
+
+                    // Extract for eventHeader (EWT, mode/spillFlag, adcClock, dtcClock)
+                    uint64_t zsEWT = headerState.eventWindowTag;
+                    uint8_t zsMode = headerState.eventMode;
+                    uint64_t zsAdcClock = headerState.adcClock;
+                    uint64_t zsdtcClock = headerState.dtcClock;
+
+                    // create stmEventHeader
+                    mu2e::STMEventHeader stm_event_header(
+                        zsEWT,
+                        zsMode,
+                        zsAdcClock,
+                        zsdtcClock);
 
                     // Decide Here to skip based on previous raw fragment information
                     if (skipCurrentSet){
@@ -858,19 +916,17 @@ void STMDigisFromFragments::produce(Event& event)
                         << "--ZS Frag\n";
                     }
                     for (auto& region : regions) {
+                        // set waveform digi with offset and adcs
                         mu2e::STMWaveformDigi zsDigi(region.offset, region.adcs);
-                        if(parentState.available){
+                        //if(parentState.available){
                             // Set parent pointer if available
-                            zsDigi.setParent(parentState.ptr);
-                        }
-                        //std::vector<STMWaveformDigis> zs_waveformsHPGe;
-                        //std::vector<STMWaveformDigis> zs_waveformsLaBr;
+                          //  zsDigi.setParent(parentState.ptr);
+                        //}
 
                         // Emplacing
                         if (isHPGe && _saveZSWaveformsHPGe) {
-                            // emplacing HPGe waveform digi
-                          //TODO: change to the temporary zs_waveforms defined earlier
-                          zs_waveformsHPGe->emplace_back(zsDigi);
+                          // set map for HPGe
+                            (*zsWaveformDigisHPGe)[stm_event_header].push_back(zsDigi);
                           //zsWaveformDigisHPGe->emplace_back(zsDigi);
                             if (_verbosityLevel > 2 && zsDigi.hasParent()) {
                                 std::cout << "\nZS HPGe Parent Raw index  : " << zsDigi.parent().key()
@@ -878,8 +934,8 @@ void STMDigisFromFragments::produce(Event& event)
                             }
 
                         } else if (isLaBr && _saveZSWaveformsLaBr) {
-                            // emplacing LaBr waveform digi
-                           zs_WaveformDigisLaBr->emplace_back(zsDigi);
+                            // set map for LaBr
+                           (*zsWaveformDigisLaBr)[stm_event_header].push_back(zsDigi);
                             //zsWaveformDigisLaBr->emplace_back(zsDigi);
                             if (_verbosityLevel > 2 && zsDigi.hasParent()) {
                                 std::cout << "\nZS LaBr Parent Raw index  : " << zsDigi.parent().key()
@@ -893,25 +949,12 @@ void STMDigisFromFragments::produce(Event& event)
                     isHPGe ? ++_totalGoodZSFragsHPGe : ++_totalGoodZSFragsLaBr;
                     ++eventMetrics.zs.good;
 
-                    // TODO: emplace into the map
-                    //zsWaveformDigisLaBr
-                    if (isHPGe){
-                      zsWaveformDigisHPGe->empalce(std::make_pair<zsEWT, zs_WaveformDigisLaBr);
-                    } else if (isLaBr){
-                      zsWaveformDigisLaBr->empalce(std::make_pair<zsEWT, zs_WaveformsDigisHPGe);
-                    // zs_waveform_map->emplace(std::make_pair(EWT, zs_waveforms));
-                    }
-
                 }// End of ZS fragmment check
                 else if (stm_frag.isPH()){
                     ++_totalPHFragsSeen;
                     // Determine which detector this PH fragment belongs to
                     bool const isHPGe = stm_frag.isHPGe();
                     bool const isLaBr = stm_frag.isLaBr();
-
-                    // TODO: make a temporary std::vector<PHDigis>
-                    std::vector<PHDigisHPGe> temp_phHPGe;
-                    std::vector<PHDigisLaBr> temp_phLaBr;
 
                     if (!isHPGe && !isLaBr) {
                         ++_totalUnreadInnerFrags;
@@ -927,7 +970,19 @@ void STMDigisFromFragments::produce(Event& event)
                     bool skipCurrentSet = headerState.skipCurrentSet;
                     bool extractedPHInfo = headerState.containsPHInfo;
                     uint16_t phCount = headerState.expectedPHCount;
-                    uint16_t phEWT = headerState.EWT;
+
+                    // Extract for eventHeader (EWT, mode/spillFlag, adcClock, dtcClock)
+                    uint64_t phEWT = headerState.eventWindowTag;
+                    uint8_t phMode = headerState.eventMode;
+                    uint64_t phAdcClock = headerState.adcClock;
+                    uint64_t phdtcClock = headerState.dtcClock;
+
+                    // Construct stmEventHeader for PH fragment
+                    mu2e::STMEventHeader stm_event_header(
+                        phEWT,
+                        phMode,
+                        phAdcClock,
+                        phdtcClock);
 
                     // Skip if Raw Fragment was Bad or Missing
                     if (skipCurrentSet) {
@@ -1034,13 +1089,12 @@ void STMDigisFromFragments::produce(Event& event)
 
                         // Emplace Back (Always On)
                         if (isHPGe) {
-                          // TODO: change to fill the temporary ph_digis vector
-                          temp_phHPGe->emplace_back(PH_digi);
                           //phDigisHPGe->emplace_back(PH_digi);
+                          (*phDigisHPGe)[stm_event_header].emplace_back(PH_digi);
                         }
                         if (isLaBr) {
-                          temp_phLaBr->emplace_back(PH_digi);
-                             //phDigisLaBr->emplace_back(PH_digi);
+                          //phDigisLaBr->emplace_back(PH_digi);
+                          (*phDigisLaBr)[stm_event_header].emplace_back(PH_digi);
                         }
                     }
 
@@ -1055,15 +1109,6 @@ void STMDigisFromFragments::produce(Event& event)
                     ++_totalGoodPHFrags;
                     isHPGe ? ++_totalGoodPHFragsHPGe : ++_totalGoodPHFragsLaBr;
                     ++eventMetrics.ph.good;
-
-                    // std::vector<PHDigisHPGe> temp_phHPGe;
-                    // std::vector<PHDigisLaBr> temp_phLaBr;
-                    // TODO: insert into PHDigi map
-                    if (isHPGe){
-                      phDigisHPGe->emplace(std::make_pair(phEWT, std::vector<PHDigisHPGe>(temp_phHPGe)));
-                    } else if (isLaBR){
-                      phDigisLaBr->emplace(std::make_pair(phEWT, std::vector<PHDigisLaBr>(temp_phLaBr)));
-                    }
 
                 }// End of PH fragment check
                 else {
@@ -1221,9 +1266,6 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "=================================\n";
 
     }
-
-    // save the STMEventHeaders
-    event.put(std::move(stmEventHeaders));
     // Frag Summary
     if (_saveSTMFragSummary) {
         event.put(std::move(stmFragSummaryHPGe), "stmFragSummaryHPGe");

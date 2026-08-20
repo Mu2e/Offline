@@ -470,6 +470,10 @@
  <class name="mu2e::STMEventHeader"/>
  <class name="mu2e::STMEventHeaderCollection"/>
  <class name="art::Wrapper<mu2e::STMEventHeaderCollection>"/>
+ <class name="std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>>"/>
+ <class name="std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>>"/>
 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
