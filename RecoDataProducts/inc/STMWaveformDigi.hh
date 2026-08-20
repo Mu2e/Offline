@@ -10,26 +10,21 @@
 #include <vector>
 #include <array>
 #include <Rtypes.h>
+#include <map>
 
 #include "Offline/DataProducts/inc/STMChannel.hh"
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
   class STMWaveformDigi {
 
   public:
- // Initialise all variables                                                                                                                                                                              
-    STMWaveformDigi() : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
-    // Constructor for timing plus trig offset                                                                                                                                                               
-    STMWaveformDigi(int16_t DetID, uint64_t EWT, uint64_t DTCtime, uint64_t ADCtime, uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(DetID), _EWT(EWT), _DTCtime(DTCtime), _ADCtime(ADCtime), \
-_trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
-    // Basic constructor                                                                                                                                                                                     
-    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _DetID(0), _EWT(0), _DTCtime(0), _ADCtime(0), _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
+ // Initialise all variables
+    STMWaveformDigi() : _trigTimeOffset(0), _adcs(std::vector<int16_t>()) {};
+    // Basic constructor
+    STMWaveformDigi(uint32_t trigTimeOffset, std::vector<int16_t> &adcs) : _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
 
-    int16_t                     DetID  () const { return _DetID; }
-    uint64_t                    EWT    () const { return _EWT; }
-    uint64_t                    DTCtime() const { return _DTCtime; }
-    uint64_t                    ADCtime() const { return _ADCtime; }
     uint32_t                    trigTimeOffset() const { return _trigTimeOffset; }
     const std::vector<int16_t>& adcs   () const { return _adcs; }
     void set_data ( size_t n_data, int16_t const* data ) { _adcs.resize(n_data); std::copy(data, data+n_data, _adcs.begin()); }
@@ -37,14 +32,11 @@ _trigTimeOffset(trigTimeOffset), _adcs(adcs) {};
     bool hasParent() const { return _parent.isNonnull(); }
     void setParent(art::Ptr<STMWaveformDigi> const& parent) {_parent = parent; }
   private:
-    int16_t  _DetID;
-    uint64_t _EWT;
-    uint64_t _DTCtime;
-    uint64_t _ADCtime;
     uint32_t _trigTimeOffset; // time offset from EWT? to first ADC value [ct]
     std::vector<int16_t> _adcs; // vector of ADC values for the waveform
     art::Ptr<STMWaveformDigi> _parent; // get parent raw waveform for zs
   };
   typedef std::vector<STMWaveformDigi> STMWaveformDigiCollection;
+  typedef std::map<STMEventHeader,STMWaveformDigiCollection> STMWaveformDigiCollectionMap;
 }
 #endif

@@ -37,7 +37,7 @@ namespace mu2e {
       struct Config {
         fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
         fhicl::Atom<bool> subtractPedestal{ Name("subtractPedestal"), Comment("True/False whether to subtract the pedestal before plotting")};
-        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"adcs_time\", or \"event_time\"")} ;
+        fhicl::Atom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit: \"sample_number\", \"waveform_time\", or \"event_time\"")} ;
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Verbosity level")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -122,12 +122,19 @@ namespace mu2e {
         //None empty waveforms go in here
         _hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
 
-        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);
-        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(), binning.nbins(),binning.low(),binning.high());
+        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);//nanoSecondPerCount
+        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(),
+                                          binning.nbins(), binning.low(), binning.high());
         TH1F* hWaveformOffset = nullptr; // Standby
 
         hWaveform->GetYaxis()->SetTitle("ADCs");
-        hWaveform->GetXaxis()->SetTitle("Sample Number");
+        if (_xAxis == "sample_number"){
+          hWaveform->GetXaxis()->SetTitle("Sample Number");
+        } else if (_xAxis == "waveform_time"){
+          hWaveform->GetXaxis()->SetTitle("Waveform Time [nsec]");
+        } else if (_xAxis == "event_time"){
+          hWaveform->GetXaxis()->SetTitle("Event Time [nsec]");
+        }
 
         if (plotZSOffsetWaveforms){
           //For offset waveforms -> Better organize this area
@@ -143,22 +150,15 @@ namespace mu2e {
           }
           histtitle2 << ", offset: " << zs_offset;
 
-          //histtitle2 << histtitle2.str() << instance << " , offset : " << zs_offset;
-
           hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle2.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
           hWaveformOffset->GetYaxis()->SetTitle("ADCs");
-          hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + trigtimeOffset");
-          // int n_bins = hWaveformOffset->GetNbinsX(); //Grabs already contained nbins from waveform
-          //double xmin = hWaveformOffset->GetXaxis()->GetXmin();// gets xmin from waveform
-          //double xmax = hWaveformOffset->GetXaxis()->GetXmax();//gets xman from waveform
-          //hWaveformOffset->SetBins(n_bins, xmin + zs_offset, xmax + zs_offset);// shifts the xmin and xmax by offset, keeps numbers of bins
+          hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + Time Offset)");
         }//PlotZSOffset
 
         for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
 
-
           const auto adc = waveform.adcs().at(i_adc);
-          auto content = adc;
+          auto content = adc; //y-axis
           if (_subtractPedestal) {
             content -= pedestal;
           }
