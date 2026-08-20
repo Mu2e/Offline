@@ -1,6 +1,7 @@
 //
 // Analyzer module to create a histogram of the STMPHDigi uncalibrated energies
 //
+
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Handle.h"
@@ -13,9 +14,11 @@
 #include "art_root_io/TFileService.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/Mu2eUtilities/inc/STMUtils.hh"
 
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
+#include <map>
 // root
 #include "TH2F.h"
 #include "TH1F.h"
@@ -35,7 +38,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollection")};
+        fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollectionMap")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMPHSpectrum(const Parameters& conf);
@@ -45,39 +48,47 @@ namespace mu2e {
     void analyze(const art::Event& e) override;
 
     TH2F* _twoDhist; //Histograms of Energy vs binned event
-    int eventCount = 0;
-    
+    int artEventCount = 0;
+
     TH1D* _phSpectrum;
-    art::ProductToken<STMPHDigiCollection> _stmPHDigisToken;
+    art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisMapToken;
+    STMChannel _channel;
   };
 
   PlotSTMPHSpectrum::PlotSTMPHSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmPHDigisToken(consumes<STMPHDigiCollection>(config().stmPHDigisTag()))
+    _stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisTag())),
+    _channel(STMUtils::getChannel(config().stmPHDigisTag()))
   { }
 
   void PlotSTMPHSpectrum::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
     // create histograms
-    _phSpectrum=tfs->make<TH1D>("phSpectrum", "PH Spectrum;PulseHeight;Count", 10000, -10000, 0); //bins,min,max
-    _twoDhist=tfs->make<TH2F>("phEvent","Pulse Height vs events;Event Bins; Pulse Height", // (name, title;xtitle;ytitle, nbinsX, xlow, xup, nbinsY, ylow, yup)
+    std::string phSpectrumTitle = "PH Spectrum (" +_channel.name() + ")"; // Builds title for PH Spectrum
+    _phSpectrum=tfs->make<TH1D>("phSpectrum", (phSpectrumTitle + ";Pulse Height;Count").c_str(), 10000, -10000, 0); //bins,min,max
+
+    _twoDhist=tfs->make<TH2F>("phEvent",("Pulse Height vs Art Events (" + _channel.name() + ");Event Bins; Pulse Height").c_str(), // (name, title;xtitle;ytitle, nbinsX, xlow, xup, nbinsY, ylow, yup)
                               10,0,10,     // X-axis scale
                               10000,-10000,0);   // Y-axis scale
   }
 
   void PlotSTMPHSpectrum::analyze(const art::Event& event) {
-
-    auto phDigisHandle = event.getValidHandle(_stmPHDigisToken);
-    const auto& phDigis = *phDigisHandle;
-    int binBlock = eventCount/100;
-    
-    for (const auto& phDigi : phDigis) {
-      auto energy = phDigi.energy();
-      _phSpectrum->Fill(energy);
-      _twoDhist->Fill(binBlock, energy);
+    // get map handle
+    auto phDigisMapHandle = event.getValidHandle(_stmPHDigisMapToken);
+    const auto& phDigiMap = *phDigisMapHandle;
+    int binBlock = artEventCount/100;
+    for (const auto& i_phDigiMap : phDigiMap){
+        // get PH Digi Collection
+        const auto& phDigis = i_phDigiMap.second;
+        for (const auto& phDigi : phDigis) {
+            // get uncalibrated energy (adc)
+            auto energy = phDigi.energy();
+            _phSpectrum->Fill(energy);
+            _twoDhist->Fill(binBlock, energy);
+            }
+        }
+    ++artEventCount;
     }
-    ++eventCount;
-  }
 }
 
 DEFINE_ART_MODULE(mu2e::PlotSTMPHSpectrum)
