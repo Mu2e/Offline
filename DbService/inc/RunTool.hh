@@ -37,6 +37,17 @@ class RunTool {
  private:
   // read the database via query_engine
   DbReader _reader;
+
+  // Memoized flags() results -- online.run_type/online.run_transition_type
+  // are job-constant, so the first query's result is reused for the
+  // lifetime of this RunTool instance rather than re-querying on every
+  // call. Matters because flags() is called once or twice per run from
+  // runJson() (and, with -a, from printRun()) -- unmemoized, that's two
+  // extra database round-trips per run in the JSON run-listing path.
+  std::map<int, std::string> _runFlagsCache;
+  std::map<int, std::string> _transitionFlagsCache;
+  bool _runFlagsCached = false;
+  bool _transitionFlagsCached = false;
 };
 
 }  // namespace mu2e

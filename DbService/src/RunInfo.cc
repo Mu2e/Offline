@@ -3,10 +3,11 @@
 #include "Offline/GeneralUtilities/inc/TimeUtility.hh"
 
 #include "cetlib_except/exception.h"
-#include "nlohmann/json.hpp"
 
 #include <ctime>
 #include <string>
+
+#include "nlohmann/json.hpp"
 
 using namespace mu2e;
 
@@ -36,10 +37,23 @@ std::string RunInfo::dbTables2(bool qjson) const {
 // requested the individual per-config objects are merged into a single JSON
 // object (an empty object "{}" if nothing is found).
 std::string RunInfo::dbTables3(bool qjson) const {
+  // TRG/Gateway/CFO/DQM configs are excluded from the cat-3 merge -- they
+  // don't carry relevant DBServiceTables content, and including them is what
+  // originally produced colliding keys across configs (see
+  // RUNINFO_DUPLICATE_TABLE below). Shared by both branches deliberately:
+  // this used to live only in the qjson branch below, which meant `runTool
+  // -q` (text) and `runTool -q -j` (JSON) silently reported different table
+  // sets for the same run -- a single predicate used by both means that
+  // can't happen again by the two conditions drifting apart.
+  auto excluded = [](const RunConfig& config) {
+    return config.subsystem() == "TRG" || config.subsystem() == "Gateway" ||
+           config.subsystem() == "CFO" || config.subsystem() == "DQM";
+  };
+
   if (qjson) {
     nlohmann::json merged = nlohmann::json::object();
     for (auto const& config : _configs) {
-      if (config.subsystem() == "TRG" || config.subsystem() == "Gateway" || config.subsystem() == "CFO" || config.subsystem() == "DQM") {
+      if (excluded(config)) {
         continue;
       }
       std::string tables = config.dbTables3(qjson);
@@ -53,8 +67,8 @@ std::string RunInfo::dbTables3(bool qjson) const {
       for (auto it = part.begin(); it != part.end(); ++it) {
         if (merged.contains(it.key())) {
           throw cet::exception("RUNINFO_DUPLICATE_TABLE")
-              << "RunInfo::dbTables3() found duplicate table key \""
-              << it.key() << "\" across run configs\n";
+              << "RunInfo::dbTables3() found duplicate table key \"" << it.key()
+              << "\" across run configs\n";
         }
         merged[it.key()] = it.value();
       }
@@ -65,6 +79,9 @@ std::string RunInfo::dbTables3(bool qjson) const {
   // Non-JSON: concatenate the per-config values, one per line.
   std::string result;
   for (auto const& config : _configs) {
+    if (excluded(config)) {
+      continue;
+    }
     std::string tables = config.dbTables3(qjson);
     if (!tables.empty()) {
       result += tables;

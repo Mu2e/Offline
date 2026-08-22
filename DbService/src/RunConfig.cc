@@ -1,11 +1,13 @@
 #include "Offline/DbService/inc/RunConfig.hh"
+
 #include "cetlib_except/exception.h"
-#include "nlohmann/json.hpp"
+
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
 
+#include "nlohmann/json.hpp"
 
 namespace {
 
@@ -68,7 +70,7 @@ void walkCID(const json& node,
   }
 }
 
-}
+}  // namespace
 
 // ---------------------------------------------------------------------------
 // mu2e::RunConfig::dbTables2

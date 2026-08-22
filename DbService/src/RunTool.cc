@@ -6,10 +6,11 @@
 #include "Offline/GeneralUtilities/inc/splitString.hh"
 
 #include "cetlib_except/exception.h"
-#include "nlohmann/json.hpp"
 
 #include <algorithm>
 #include <iomanip>
+
+#include "nlohmann/json.hpp"
 
 using namespace mu2e;
 
@@ -23,6 +24,14 @@ RunTool::RunTool() {
 
 //**************************************************
 std::map<int, std::string> RunTool::flags(FlagType ftype) {
+  // Memoized -- see the cache members' comment in RunTool.hh for why.
+  if (ftype == FlagType::run && _runFlagsCached) {
+    return _runFlagsCache;
+  }
+  if (ftype == FlagType::transition && _transitionFlagsCached) {
+    return _transitionFlagsCache;
+  }
+
   std::map<int, std::string> flags;
   // run query url, answer returned in csv
   int rc;
@@ -55,6 +64,15 @@ std::map<int, std::string> RunTool::flags(FlagType ftype) {
                     sv[1]});  // Fallback to description if name not available
     }
   }
+
+  if (ftype == FlagType::run) {
+    _runFlagsCache = flags;
+    _runFlagsCached = true;
+  } else if (ftype == FlagType::transition) {
+    _transitionFlagsCache = flags;
+    _transitionFlagsCached = true;
+  }
+
   return flags;
 }
 
