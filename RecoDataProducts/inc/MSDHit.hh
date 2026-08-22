@@ -36,4 +36,3 @@ typedef std::vector<mu2e::MSDHit> MSDHitCollection;
 } // namespace mu2e
 
 #endif /* RecoDataProducts_MSDHit_hh */
-

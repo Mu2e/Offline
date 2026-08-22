@@ -38,7 +38,7 @@ void plotDummyDigis(std::string filename = "stmWaveformDigis.root") {
 //No need to redefine the histograms from before
   TCanvas* c2 = new TCanvas();
   c2->SetTitle("STMWaveformDigis Super Imposed");
-   
+
   hRawWaveform->SetLineColor(kGreen);
   hRawWaveform->SetLineWidth(3);
 
@@ -62,7 +62,7 @@ void plotDummyDigis(std::string filename = "stmWaveformDigis.root") {
 //New Canvas where the histogram plots the number of bins from the other two
   TCanvas* c3 = new TCanvas();
   c3->SetTitle("Number of bins from hPHWaveform and hZSWaveform");
-  
+
   TH1F* hDigiSize = new TH1F("hDigiSize","Number of bins in histograms",1000,0,1000);
   hDigiSize->Fill(hPHWaveform->GetNbinsX());
   hDigiSize->Fill(hZSWaveform->GetNbinsX());
@@ -74,4 +74,3 @@ void plotDummyDigis(std::string filename = "stmWaveformDigis.root") {
  // c4->DrawClonePad();
 
 }
-
