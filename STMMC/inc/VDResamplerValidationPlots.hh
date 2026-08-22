@@ -34,7 +34,22 @@
 // each hit through forwardTransformSample for the model's basis. The generated
 // distribution is filled one sample at a time from the module's produce().
 //
-// Header-only; depends on ROOT (TH1D/TTree/TDirectory) and the VDResampler transforms.
+// Alongside the per-dimension 1D comparison, a set of 2D CORRELATION views is booked for
+// both sides, so the generated and the training pictures can be read side by side:
+//   <pz>_vs_r, pt_vs_r, pr_vs_r, pphi_vs_r, pt_vs_pz, y_vs_x, <pz>_vs_t
+// where <pz> is pTot for the V2/V3 pTotal+slopes bases -- there the momentum structure lives
+// in pTotal rather than pz -- and pz for V1.
+// For photons three further time-vs-energy views zoom on the STM lines of interest
+// (1809, 844 and 347 keV, each +/- 15 keV).
+// The 2D views carry NO metrics -- W1/JSD/TV/KS and chi2/NDF are defined here for the 1D
+// marginals only -- and are NOT rebinned. They are made comparable by eye in two steps:
+// each is normalized to unit volume over its side's WHOLE sample (flow bins included, so a
+// zoomed window is not rescaled by the fraction of the sample that happens to fall in it),
+// and both sides of a pair are then given the same stored z-range, so equal colour means
+// equal density. Palette is left to the drawing script (gStyle is a draw-time global that
+// does not persist in the file); kInferno is the intended one.
+//
+// Header-only; depends on ROOT (TH1D/TH2D/TTree/TDirectory) and the VDResampler transforms.
 // Yongyi Wu, Aug. 2026
 
 #include <algorithm>
@@ -49,6 +64,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TTree.h"
 
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
@@ -261,6 +277,148 @@ inline std::vector<DimSpec> perDimensionSpecs(MomentumBasis basis, int pdgId) {
 }
 
 // ---------------------------------------------------------------------------
+// 2D correlation views
+//
+// The quantities the 2D views plot are DERIVED from the six physical values both sides
+// already produce; nothing new has to be read or generated. Derived2D holds them so the
+// mother and generated fill paths compute them identically, from one place.
+//   r    : in-plane radius about the detector axis, sqrt((x-x0)^2 + y^2), measured about
+//          the ACTUAL x0/y0 the transform was built with rather than a nominal centre, so
+//          it stays correct if the geometry ever moves.
+//   pt   : transverse momentum sqrt(px^2 + py^2).
+//   pr / pphi : the local cylindrical projection of (px,py) about (dx,dy) -- the same
+//          decomposition the V1 basis uses, via the shared cartesianToLocalPolar.
+//   Ek   : kinetic energy in keV, sqrt(|p|^2 + m^2) - m. keV (not MeV) because the STM
+//          lines these views zoom on are quoted in keV. The rest mass is not looked up
+//          here: it is passed into book() by the module, which already holds it from the
+//          GlobalConstantsService ParticleDataList (pdt->particle(pdgId).mass()), so the
+//          conditions DB stays the single source of truth for it.
+//   pTot : |p|, the z-axis variable for the V2/V3 bases.
+// ---------------------------------------------------------------------------
+struct Derived2D {
+    double r = 0.0, pt = 0.0, pr = 0.0, pphi = 0.0, pTot = 0.0, ek = 0.0;
+};
+
+inline Derived2D computeDerived2D(double x, double y, double px, double py, double pz,
+                                  double x0, double y0, double massMeV)
+{
+    Derived2D d;
+    const double dx = x - x0, dy = y - y0;
+    d.r    = std::sqrt(dx * dx + dy * dy);
+    d.pt   = std::sqrt(px * px + py * py);
+    cartesianToLocalPolar(px, py, dx, dy, d.r, d.pr, d.pphi);
+    d.pTot = std::sqrt(px * px + py * py + pz * pz);
+    d.ek   = 1000. * (std::sqrt(d.pTot * d.pTot + massMeV * massMeV) - massMeV);
+    return d;
+}
+
+// Which derived (or physical) quantity an axis of a 2D view plots.
+enum class Var2D { kR, kPt, kPr, kPphi, kPz, kPTot, kX, kY, kT, kEk };
+
+// One 2D view: name, the two variables, and each axis' binning.
+struct Dim2DSpec {
+    std::string name;        // named <y>_vs_<x>, e.g. "pt_vs_r" for pt on y against r on x
+    std::string xTitle, yTitle;
+    Var2D  xVar = Var2D::kR, yVar = Var2D::kPt;
+    int    xbins = 0;  double xlo = 0.0, xhi = 0.0;
+    int    ybins = 0;  double ylo = 0.0, yhi = 0.0;
+};
+
+// The 2D views for this basis and species. Unlike the 1D hists these are binned once, at
+// book time, and never rebinned: a generation job's sample count is not known that early,
+// so the binning is fixed at the finer end of what is useful -- an over-fine 2D view is
+// still readable, while an over-coarse one has already thrown the structure away.
+inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId) {
+    const bool isNeutron = (pdgId == 2112);
+    const bool isPhoton  = (pdgId == 22);
+    const double pmax  = isNeutron ? 50. : 8.;
+    const int    pnbin = 1000;
+    const double pbin  = pmax / pnbin;             // the 1D momentum bin width
+    const int    p2bin = pnbin / 5;                // 2D views use 5x coarser momentum bins
+
+    // "<width> MeV", the per-bin width quoted in the momentum axis labels.
+    auto perMeV = [](double w) {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "%.03f MeV", w);
+        return std::string(buf);
+    };
+    const std::string pPer = perMeV(5 * pbin);
+
+    // The V2/V3 bases carry the momentum structure in pTotal, so the r- and t-correlated
+    // views are drawn against pTot there and against pz for V1 -- and the histogram is
+    // NAMED for whichever it holds, so a plot is never mislabelled.
+    const bool isV2 = (basis != MomentumBasis::V1_CylindricalTransformed);
+    const Var2D  zVar  = isV2 ? Var2D::kPTot : Var2D::kPz;
+    const std::string zName = isV2 ? "pTot" : "pz";
+
+    std::vector<Dim2DSpec> specs;
+    specs.push_back({zName + "_vs_r", "r [mm] per 5mm", zName + " per " + pPer,
+                     Var2D::kR, zVar, 400, 0., 2000., p2bin, 0., pmax});
+    specs.push_back({"pt_vs_r", "r [mm] per 5mm", "pt per " + pPer,
+                     Var2D::kR, Var2D::kPt, 400, 0., 2000., p2bin, 0., pmax});
+    // pr and pphi are SIGNED projections, so unlike pt/pTot they need a two-sided y range:
+    // a range starting at 0 would silently drop the inward- / backward-going half of the
+    // population into the underflow.
+    specs.push_back({"pr_vs_r", "r [mm] per 5mm", "pr per " + pPer,
+                     Var2D::kR, Var2D::kPr, 400, 0., 2000., 2 * p2bin, -pmax, pmax});
+    specs.push_back({"pphi_vs_r", "r [mm] per 5mm", "pphi per " + pPer,
+                     Var2D::kR, Var2D::kPphi, 400, 0., 2000., 2 * p2bin, -pmax, pmax});
+    specs.push_back({"pt_vs_pz", "pz per " + pPer, "pt per " + pPer,
+                     Var2D::kPz, Var2D::kPt, p2bin, 0., pmax, p2bin, 0., pmax});
+    specs.push_back({"y_vs_x", "x [mm] per 10mm", "y [mm] per 10mm",
+                     Var2D::kX, Var2D::kY, 400, -3904. - 2000., -3904. + 2000.,
+                     400, -2000., 2000.});
+    // Neutrons arrive late and slow, so their time-momentum view needs a far wider window.
+    if (isNeutron)
+        specs.push_back({zName + "_vs_t", "t [ns] per 100ns", zName + " per " + perMeV(25 * pbin),
+                         Var2D::kT, zVar, 500, 0., 50000., p2bin, 0., 5 * pmax});
+    else
+        specs.push_back({zName + "_vs_t", "t [ns] per 1ns", zName + " per " + pPer,
+                         Var2D::kT, zVar, 500, 0., 500., p2bin, 0., pmax});
+
+    // Photon line zooms: time vs energy in a +/- 15 keV window about each STM line of
+    // interest. 1 keV in E gives 30 bins across the window -- enough occupancy per bin for
+    // the 2D structure to show at realistic generated statistics; 10 ns in t covers the
+    // full 0-5000 ns spill the 1D time plot uses, so a line's time profile is visible in
+    // the same view.
+    if (isPhoton) {
+        const double kLines[] = {1809., 844., 347.};   // keV, in STM order of interest
+        const double kHalf = 15.;                      // keV, half-window about each line
+        const double kEkBin = 1.0;                     // keV per energy bin
+        for (double line : kLines) {
+            char nameBuf[64];
+            snprintf(nameBuf, sizeof(nameBuf), "t_vs_Ek_%gkeV", line);
+            specs.push_back({nameBuf,
+                             "E [keV] per 1keV", "t [ns] per 10ns",
+                             Var2D::kEk, Var2D::kT,
+                             static_cast<int>(std::lround(2 * kHalf / kEkBin)),
+                             line - kHalf, line + kHalf,
+                             500, 0., 5000.});
+        }
+    }
+    return specs;
+}
+
+// Value of `v` for one sample, from its physical values and the derived quantities.
+inline double var2DValue(Var2D v, const Derived2D& d,
+                         double x, double y, double t, double pz)
+{
+    switch (v) {
+        case Var2D::kR:    return d.r;
+        case Var2D::kPt:   return d.pt;
+        case Var2D::kPr:   return d.pr;
+        case Var2D::kPphi: return d.pphi;
+        case Var2D::kPTot: return d.pTot;
+        case Var2D::kEk:   return d.ek;
+        case Var2D::kPz:   return pz;
+        case Var2D::kX:    return x;
+        case Var2D::kY:    return y;
+        case Var2D::kT:    return t;
+    }
+    return 0.0;
+}
+
+// ---------------------------------------------------------------------------
 // ValidationPlots — one comparison set (mother vs generated) for a single
 //   (source, pdgId, basis) triple.
 //
@@ -290,9 +448,11 @@ public:
     // TFileDirectory the hists are created in — give each set its own subdirectory so
     // several (source, pdg) sets can coexist in one TFileService file. `ip` must be the
     // SAME transform parameters generation uses, otherwise mother and generated live in
-    // different coordinate systems.
+    // different coordinate systems. `massMeV` is the species' rest mass, used only to turn
+    // |p| into the kinetic energy the 2D line-zoom views plot; pass the module's own
+    // pdt->particle(pdgId).mass() so the ParticleDataList stays its single source.
     void book(const art::TFileDirectory& dir, const std::string& label,
-              MomentumBasis basis, int pdgId,
+              MomentumBasis basis, int pdgId, double massMeV,
               const std::string& sourceFile, const std::string& sourceTree,
               unsigned long virtualDetectorID, const InverseParams& ip,
               const std::string& moduleName)
@@ -302,6 +462,12 @@ public:
         pdgId_      = pdgId;
         moduleName_ = moduleName;
         specs_      = perDimensionSpecs(basis, pdgId);
+        specs2D_    = correlationDimSpecs(basis, pdgId);
+        // The 2D views' r and pr/pphi are measured about the SAME detector axis the
+        // transform uses, so both sides share one origin and one mass.
+        x0_   = ip.x0;
+        y0_   = ip.y0;
+        mass_ = massMeV;
 
         mother_.reserve(specs_.size());
         generated_.reserve(specs_.size());
@@ -315,6 +481,27 @@ public:
                                                 s.nbins, s.lo, s.hi));
             mother_.back()->Sumw2();
             generated_.back()->Sumw2();
+        }
+
+        // 2D correlation views, one mother/generated pair each. Same naming convention as
+        // the 1D pairs, so a drawing script finds them the same way.
+        mother2D_.reserve(specs2D_.size());
+        generated2D_.reserve(specs2D_.size());
+        for (const Dim2DSpec& s : specs2D_) {
+            const std::string title = label + " " + s.name;
+            auto makeOne = [&](const char* role) {
+                TH2D* h = dir.make<TH2D>((s.name + "_" + role).c_str(),
+                                         (title + " (" + role + ")").c_str(),
+                                         s.xbins, s.xlo, s.xhi, s.ybins, s.ylo, s.yhi);
+                // Unlike the 1D hists, whose axis titles wait for the rebin factor, these are
+                // never rebinned, so their titles are final at book time.
+                h->GetXaxis()->SetTitle(s.xTitle.c_str());
+                h->GetYaxis()->SetTitle(s.yTitle.c_str());
+                h->Sumw2();
+                return h;
+            };
+            mother2D_.push_back(makeOne("mother"));
+            generated2D_.push_back(makeOne("generated"));
         }
         // Metric summary, one row per dimension, written by finalize().
         metricTree_ = dir.make<TTree>("validationMetrics",
@@ -353,6 +540,7 @@ public:
             const DimSpec& s = specs_[i];
             generated_[i]->Fill(s.transformed ? trans[s.slot] : phys[s.slot]);
         }
+        fill2D(generated2D_, x, y, t, px, py, pz);
         ++nGenerated_;
     }
 
@@ -439,11 +627,56 @@ public:
                    << " chi2/NDF=" << m.chi2 << "/" << m.ndf << "=" << m.chi2ndf();
         }
 
+        // The 2D views are normalized (to unit volume, on both sides) but not rebinned and
+        // not scored: they are read by eye, and the rebin factor above is chosen for the
+        // metrics of the 1D marginals, which do not apply here.
+        //
+        // Both sides of a pair then get the SAME z-range, so equal colour means equal
+        // density when the two are put next to each other -- without this ROOT autoscales
+        // each pad to its own max and the comparison is visually meaningless. Unlike a
+        // palette (a draw-time gStyle global), SetMinimum/SetMaximum are STORED on the
+        // histogram, so the matched range travels with the ROOT file to whatever draws it.
+        // The floor is pinned at 0 rather than left to autoscale, so an empty bin reads as
+        // the bottom of the scale in both plots.
+        for (size_t i = 0; i < specs2D_.size(); ++i) {
+            normalizeToUnitVolume(*mother2D_[i]);
+            normalizeToUnitVolume(*generated2D_[i]);
+
+            // GetMaximum() with no argument returns the largest bin content (the plotted
+            // range only, which is what the colour scale has to cover).
+            const double zmax = std::max(mother2D_[i]->GetMaximum(),
+                                         generated2D_[i]->GetMaximum());
+            for (TH2D* h : {mother2D_[i], generated2D_[i]}) {
+                h->SetMinimum(0.0);
+                // An all-empty pair would give zmax=0 and an inverted range; leave those to
+                // ROOT rather than storing min==max.
+                if (zmax > 0.0) h->SetMaximum(zmax);
+            }
+        }
+        if (!specs2D_.empty())
+            report << "\n  " << specs2D_.size() << " 2D correlation view(s) written "
+                   << "(mother/generated pairs, unit-normalized, no metrics).";
+
         mf::LogInfo(moduleName_) << report.str();
         return out;
     }
 
 private:
+    // Fill every 2D view of one side with a single sample. The derived quantities are
+    // computed once and shared across the views, and the same code serves both sides, so
+    // mother and generated can never disagree on how a quantity was formed.
+    void fill2D(std::vector<TH2D*>& hists,
+                double x, double y, double t, double px, double py, double pz)
+    {
+        if (hists.empty()) return;
+        const Derived2D d = computeDerived2D(x, y, px, py, pz, x0_, y0_, mass_);
+        for (size_t i = 0; i < specs2D_.size(); ++i) {
+            const Dim2DSpec& s = specs2D_[i];
+            hists[i]->Fill(var2DValue(s.xVar, d, x, y, t, pz),
+                           var2DValue(s.yVar, d, x, y, t, pz));
+        }
+    }
+
     // "counts per <width><unit> (normalized)". %g trims trailing zeros.
     static std::string binWidthLabel(double width, const std::string& unit) {
         char buf[128];
@@ -480,6 +713,10 @@ private:
                     const DimSpec& s = specs_[i];
                     mother_[i]->Fill(s.transformed ? trans[s.slot] : phys[s.slot]);
                 }
+                // The 2D views take the SAME inverted physical values as the 1D ones (see
+                // above): comparing generated samples against the raw step quantities would
+                // show the VDz0 projection rather than a model defect.
+                fill2D(mother2D_, xm, ym, tm, pxm, pym, pzm);
                 ++nMother_;
             });
 
@@ -506,6 +743,17 @@ private:
         if (integral > 0.0) h.Scale(1.0 / integral);
     }
 
+    // The 2D counterpart, normalizing over the WHOLE sample rather than the plotted range:
+    // the flow bins are included in the integral (0..n+1 on both axes), so a bin's content
+    // is its fraction of ALL entries that side recorded. This matters most for the photon
+    // line zooms, whose +/- 15 keV window holds a tiny and DIFFERENT fraction of each side's
+    // sample -- normalizing per-window would divide the two by unrelated denominators and
+    // silently rescale any real difference in how much yield each side puts in the line.
+    static void normalizeToUnitVolume(TH2D& h) {
+        const double integral = h.Integral(0, h.GetNbinsX() + 1, 0, h.GetNbinsY() + 1);
+        if (integral > 0.0) h.Scale(1.0 / integral);
+    }
+
     bool booked_ = false;
     std::string label_;
     std::string moduleName_ = "VDResamplerValidationPlots";
@@ -517,6 +765,16 @@ private:
     // pointers and are never deleted here.
     std::vector<TH1D*> mother_;
     std::vector<TH1D*> generated_;
+
+    // 2D correlation views, in specs2D_ order; owned by the TFileDirectory as above.
+    std::vector<Dim2DSpec> specs2D_;
+    std::vector<TH2D*> mother2D_;
+    std::vector<TH2D*> generated2D_;
+    // Detector-axis origin and rest mass the derived 2D quantities are formed with; taken
+    // from the SAME InverseParams the transform uses and the module's ParticleDataList
+    // mass, so both sides agree.
+    double x0_ = 0.0, y0_ = 0.0, mass_ = 0.0;
+
     TTree* metricTree_ = nullptr;
 
     long nMother_ = 0;

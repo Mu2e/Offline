@@ -402,6 +402,7 @@ namespace mu2e {
         validationPlots_.book(
           tfs->mkdir("validation"),
           "pdg" + VDResampler::pdgFileToken(pdgId_), basis_, pdgId_,
+          pdt_->particle(pdgId_).mass(),
           srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
           "VDResamplerGenerateFromModel");
       }

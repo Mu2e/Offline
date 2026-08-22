@@ -627,6 +627,7 @@ namespace mu2e {
         particle.validationPlots = std::make_unique<VDResampler::ValidationPlots>();
         particle.validationPlots->book(
           validationDir->mkdir(label), label, basis, pdgId,
+          pdt_->particle(pdgId).mass(),
           resamplerRootFile, resamplerTreeName,
           static_cast<unsigned long>(virtualDetectorID_), ip, "VDResamplerGenerateMix");
       }
