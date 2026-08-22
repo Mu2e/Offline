@@ -39,6 +39,9 @@ std::string RunInfo::dbTables3(bool qjson) const {
   if (qjson) {
     nlohmann::json merged = nlohmann::json::object();
     for (auto const& config : _configs) {
+      if (config.subsystem() == "TRG" || config.subsystem() == "Gateway" || config.subsystem() == "CFO" || config.subsystem() == "DQM") {
+        continue;
+      }
       std::string tables = config.dbTables3(qjson);
       if (tables.empty()) {
         continue;

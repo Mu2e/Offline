@@ -111,11 +111,26 @@ int main(int argc, char** argv) {
   // printed as formatted JSON; otherwise the values are printed one per line
   // for machine reading (no labels or adornment).
   if (dbtables) {
-    for (auto const& rr : runvec) {
-      std::string tables = rr.dbTables3(json);
-      if (!tables.empty()) {
-        std::cout << tables << "\n";
+    // RunInfo::dbTables3()/RunConfig::dbTables3() throw (RUNINFO_DUPLICATE_TABLE /
+    // RUNCONFIG_DUPLICATE_KEY) when a run's configs disagree on a table key --
+    // a rare user misconfiguration, but still a fatal condition: merging past
+    // it would silently drop data. Left uncaught, that throw escapes as an
+    // unhandled exception and aborts the process (core dump). Catch it here,
+    // narrowly, and report it the way every other error path in this tool
+    // does: a message on stderr and a non-zero exit, not a crash. Still fails
+    // fast on the first bad run in the selection, same as before -- dbtables
+    // isn't meant to be queried over many runs at once, so partial-result
+    // handling across runs isn't worth the complexity here.
+    try {
+      for (auto const& rr : runvec) {
+        std::string tables = rr.dbTables3(json);
+        if (!tables.empty()) {
+          std::cout << tables << "\n";
+        }
       }
+    } catch (std::exception const& e) {
+      std::cerr << e.what() << std::endl;
+      return 1;
     }
     return 0;
   }
