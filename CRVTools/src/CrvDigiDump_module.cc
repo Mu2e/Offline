@@ -81,7 +81,7 @@ namespace mu2e {
       UChar_t status_dtcID_[maxROCs_];   // DTC ID (small number)
       UChar_t status_statusByte_[maxROCs_]; // Status byte (0-255)
       UChar_t status_linkStatus_[maxROCs_]; // Link status from subevent header
-      UChar_t status_linkLatency_[maxROCs_]; // Link latency from subevent header
+      UShort_t status_linkLatency_[maxROCs_]; // Link latency from subevent header
       Bool_t status_valid_[maxROCs_];    // Valid flag
   };
 
@@ -135,7 +135,7 @@ namespace mu2e {
     statusTree_->Branch("dtcID", status_dtcID_, "dtcID[nStatus]/b");          // UChar_t
     statusTree_->Branch("headerStatus", status_statusByte_, "headerStatus[nStatus]/b"); // UChar_t
     statusTree_->Branch("linkStatus", status_linkStatus_, "linkStatus[nStatus]/b"); // UChar_t
-    statusTree_->Branch("linkLatency", status_linkLatency_, "linkLatency[nStatus]/b"); // UChar_t
+    statusTree_->Branch("linkLatency", status_linkLatency_, "linkLatency[nStatus]/s"); // UShort_t
 
     // ROC header information (same indexing as status)
     statusTree_->Branch("wordCount", status_roc_controllerEventWordCount_, "wordCount[nStatus]/s"); // UShort_t
