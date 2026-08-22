@@ -6,6 +6,7 @@
 #include "Offline/GeneralUtilities/inc/splitString.hh"
 
 #include "cetlib_except/exception.h"
+#include "nlohmann/json.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -55,6 +56,35 @@ std::map<int, std::string> RunTool::flags(FlagType ftype) {
     }
   }
   return flags;
+}
+
+//**************************************************
+// Both flag types as one JSON object: {"run_flags": [{"id":.., "name":..}, ..],
+// "transition_flags": [...]}. A single object, not an array -- this is a
+// fixed pair of categories, not a list of independent records (compare
+// runJson(), where an array is right because a run listing is a list).
+std::string RunTool::flagsJson() {
+  nlohmann::json out = nlohmann::json::object();
+
+  nlohmann::json runFlags = nlohmann::json::array();
+  for (auto const& pp : flags(FlagType::run)) {
+    nlohmann::json f = nlohmann::json::object();
+    f["id"] = pp.first;
+    f["name"] = pp.second;
+    runFlags.push_back(f);
+  }
+  out["run_flags"] = runFlags;
+
+  nlohmann::json transitionFlags = nlohmann::json::array();
+  for (auto const& pp : flags(FlagType::transition)) {
+    nlohmann::json f = nlohmann::json::object();
+    f["id"] = pp.first;
+    f["name"] = pp.second;
+    transitionFlags.push_back(f);
+  }
+  out["transition_flags"] = transitionFlags;
+
+  return out.dump(1, ' ');
 }
 
 //**************************************************
@@ -384,4 +414,70 @@ void RunTool::printRun(const RunInfo& info) {
     }
     tzset();
   }
+}
+
+//**************************************************
+// Same content as printRun, as a serialized JSON object. configs/
+// transitions/subruns are always present as arrays (empty if not fetched/
+// not present) rather than omitted, so a consumer can rely on a fixed
+// schema shape regardless of which of -c/-a/-s were passed -- unlike the
+// text format, which only prints a section when it's non-empty.
+//
+// Unlike printRun's text format, this decodes run type_name in addition to
+// transition type_name (printRun only decodes the latter) -- both are one
+// flags() lookup away, and a JSON consumer benefits from not having to
+// separately call -f and cross-reference run/transition type ids by hand.
+//
+// Subrun start/stop times are emitted as the raw Unix timestamps rather
+// than the fixed America/Chicago-localized strings printRun renders --
+// unambiguous for a machine reader, and avoids that function's global TZ
+// environment-variable save/set/restore dance entirely.
+std::string RunTool::runJson(const RunInfo& info) {
+  const RunRecord& runRecord = info.runRecord();
+
+  std::map<int, std::string> runTypes = flags(FlagType::run);
+  std::map<int, std::string> transitionTypes = flags(FlagType::transition);
+
+  nlohmann::json out = nlohmann::json::object();
+  out["run"] = runRecord.runNumber();
+  out["type_id"] = runRecord.runTypeId();
+  auto rit = runTypes.find(runRecord.runTypeId());
+  out["type_name"] = (rit != runTypes.end()) ? rit->second : "";
+  out["create_time"] = runRecord.createTime();
+
+  nlohmann::json configs = nlohmann::json::array();
+  for (auto const& config : info.configs()) {
+    nlohmann::json c = nlohmann::json::object();
+    c["subsystem"] = config.subsystem();
+    c["version"] = config.version();
+    c["create_time"] = config.createTime();
+    configs.push_back(c);
+  }
+  out["configs"] = configs;
+
+  nlohmann::json transitions = nlohmann::json::array();
+  for (auto const& trans : info.transitions()) {
+    nlohmann::json t = nlohmann::json::object();
+    t["type_id"] = trans.typeId();
+    auto tit = transitionTypes.find(trans.typeId());
+    t["type_name"] = (tit != transitionTypes.end()) ? tit->second : "";
+    t["transition_time"] = trans.transitionTime();
+    transitions.push_back(t);
+  }
+  out["transitions"] = transitions;
+
+  nlohmann::json subruns = nlohmann::json::array();
+  for (auto const& subrun : info.subruns()) {
+    nlohmann::json s = nlohmann::json::object();
+    s["subrun"] = subrun.subrunNumber();
+    s["events"] = subrun.nEvents();
+    s["min_ewt"] = subrun.minEwt();
+    s["max_ewt"] = subrun.maxEwt();
+    s["start_time_unix"] = subrun.startTimeUnix();
+    s["stop_time_unix"] = subrun.stopTimeUnix();
+    subruns.push_back(s);
+  }
+  out["subruns"] = subruns;
+
+  return out.dump(1, ' ');
 }

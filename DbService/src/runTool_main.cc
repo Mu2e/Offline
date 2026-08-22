@@ -7,6 +7,8 @@
 #include "Offline/DbService/inc/RunTool.hh"
 #include "Offline/GeneralUtilities/inc/ParseCLI.hh"
 
+#include "nlohmann/json.hpp"
+
 #include <iomanip>
 #include <iostream>
 
@@ -42,7 +44,7 @@ int main(int argc, char** argv) {
   cli.addSwitch("", "cidtables", "e", "cidtables", false,
                 "print the cat 2 DbService CID tables (cid name)");
   cli.addSwitch("", "json", "j", "json", false,
-                "with -q or -e, fetch content in JSON format");
+                "output content in JSON format");
 
 
   // Parse command line
@@ -60,6 +62,13 @@ int main(int argc, char** argv) {
 
   // Handle flags request
   if (cli.getBool("", "flags")) {
+    // JSON shaping lives on RunTool::flagsJson(), not here, so it's callable
+    // from the Python/SWIG binding too, not just this CLI -- see its comment.
+    if (cli.getBool("", "json")) {
+      std::cout << tool.flagsJson() << "\n";
+      return 0;
+    }
+
     std::map<int, std::string> flags;
 
     flags = tool.flags(RunTool::FlagType::run);
@@ -152,14 +161,37 @@ int main(int argc, char** argv) {
 
   // Handle JSON blob output for specific subsystem
   if (!blob_subsystem.empty()) {
+    // Two separate output paths, not a shared one -- see below for why.
+    nlohmann::json blobArr = nlohmann::json::array();  // used only when json
+
     for (auto const& rr : runvec) {
-      std::cout << "Run " << rr.runNumber() << ":\n";
+      if (!json) {
+        std::cout << "Run " << rr.runNumber() << ":\n";
+      }
       bool found = false;
       for (const auto& config : rr.configs()) {
         if (config.subsystem() == blob_subsystem) {
           found = true;
           // Get the settings string (already cleaned in RunTool.cc)
           std::string settings = config.settings();
+
+          if (json) {
+            // settings is already valid JSON text (a jsonb column) -- parse
+            // and re-dump it through a real JSON library rather than the
+            // human-readable formatter below. That formatter intentionally
+            // unescapes \n into real newlines for readability, which is a
+            // deliberate choice for the human-facing default, but it means
+            // that output is NOT valid JSON (an unescaped control character
+            // inside a JSON string isn't legal) -- hence a genuinely
+            // separate path here rather than reusing/tweaking it.
+            nlohmann::json entry = nlohmann::json::object();
+            entry["run"] = rr.runNumber();
+            entry["subsystem"] = blob_subsystem;
+            entry["found"] = true;
+            entry["settings"] = nlohmann::json::parse(settings);
+            blobArr.push_back(entry);
+            break;
+          }
 
           // Replace literal \n with actual newlines
           size_t pos = 0;
@@ -226,10 +258,36 @@ int main(int argc, char** argv) {
         }
       }
       if (!found) {
-        std::cout << "  Subsystem '" << blob_subsystem
-                  << "' not found in configs\n";
+        if (json) {
+          nlohmann::json entry = nlohmann::json::object();
+          entry["run"] = rr.runNumber();
+          entry["subsystem"] = blob_subsystem;
+          entry["found"] = false;
+          entry["settings"] = nullptr;
+          blobArr.push_back(entry);
+        } else {
+          std::cout << "  Subsystem '" << blob_subsystem
+                    << "' not found in configs\n";
+        }
       }
     }
+
+    if (json) {
+      std::cout << blobArr.dump(1, ' ') << "\n";
+    }
+  } else if (json) {
+    // Normal run listing, JSON: one array of per-run objects.
+    // RunTool::runJson() returns std::string (not nlohmann::json -- see its
+    // own comment for why), so each run's JSON text is parsed back in here
+    // to assemble a single valid array, rather than concatenating one
+    // document per run the way -q/-e do (fine there since dbtables isn't
+    // meant to be queried as a list; not fine here, since a run listing
+    // routinely is).
+    nlohmann::json arr = nlohmann::json::array();
+    for (auto const& rr : runvec) {
+      arr.push_back(nlohmann::json::parse(tool.runJson(rr)));
+    }
+    std::cout << arr.dump(1, ' ') << "\n";
   } else {
     // Normal print
     for (auto const& rr : runvec) {
