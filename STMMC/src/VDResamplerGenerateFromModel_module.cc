@@ -152,7 +152,7 @@ namespace mu2e {
         fhicl::Atom<unsigned long> VirtualDetectorID{
           Name("VirtualDetectorID"),
           Comment("VD id selection for the resampler source (must match training)."),
-          0
+          116
         };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
