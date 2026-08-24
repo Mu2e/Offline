@@ -5,7 +5,7 @@
 #include "Offline/CaloReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
-CaloCosmicEnecalib : {			   
+CaloCosmicEnecalib : {
     module_type : CaloCosmicEnecalib
     diagLevel : 0
     useMeV : false
@@ -16,6 +16,18 @@ CaloCosmicEnecalib : {
     CaloClusterTag : CaloClusterMaker
     CaloHitTag : CaloHitMaker
     OutCalibFile : "MIPfile.dat"
+}
+
+CaloCosmicEnergy : {
+    module_type : CaloCosmicEnergy
+    diagLevel : 0
+    CutNCryHit : 3
+    CutEnergyDep : 10.
+    CutChi2Norm : 2.5
+    CaloClusterTag : CaloClusterMaker
+    CaloHitTag : CaloHitMaker
+    OutCalibFile : "calib_parameters.dat"
+    OutCalibFileAsym : "npe_noise.dat"
 }
 
 

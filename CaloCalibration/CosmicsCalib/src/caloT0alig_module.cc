@@ -153,6 +153,10 @@ void caloT0alig::beginJob() {
 
   if (_fileT0.is_open()) {
     while (_fileT0 >> iChanT0 >> TvalT0) {
+      if (iChanT0 < 0 || iChanT0 >= nROchan){
+        throw cet::exception("caloT0alig")
+          << "ERROR! Read invalid channel " << iChanT0 << "from file " << Config().fileT0() << std::endl;
+      }
       Toff[iChanT0] = TvalT0;
       if (_diagLevel > 1)
         std::cout << "IdxT0 " << iChanT0 << " Toff " << Toff[iChanT0] << " " << std::endl;
@@ -178,6 +182,11 @@ void caloT0alig::beginJob() {
 
     if (_fileTcor.is_open()) {
       while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
+        if (iChan < 0 || iChan >= nROchan){
+          throw cet::exception("caloT0alig")
+            << "ERROR! Read invalid channel " << iChan << "from file " << Config().fileTcor() << std::endl;
+        }
+
         Tcor[iChan] = Tval;
         if (_diagLevel > 1)
           std::cout << "Idx " << iChan << " Tcor " << Tcor[iChan] << " " << Tmea << std::endl;
@@ -425,10 +434,11 @@ bool caloT0alig::filter(art::Event& event) {
     } // If enough good cells
   } // Loop on disks
 
-  return retval;
 
   if (_diagLevel > 0)
     std::cout << "caloT0alig: end of event " << std::endl;
+
+  return retval;
 
 } // End of filter
 
