@@ -304,7 +304,7 @@ namespace mu2e {
       if(strawhits.back()->hitState().active())nactive++;
       // create the straw Xing for the associated straw, including the hit reference
     }
-    if(kseed.caloCluster()){
+    if(usecalo_ && kseed.caloCluster()){
       makeCaloHit(kseed.caloCluster(),calo,*ptraj,calohits);
     }
     for (auto const& paramhit : kseed.paramHits()){

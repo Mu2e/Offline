@@ -630,7 +630,7 @@ Mu2eKinKal : {
     }
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"]
+      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back","TT_Mid","TT_Back"]
       AddHits : false
       SaveDomains : true
       SaveTrajectory : Full
