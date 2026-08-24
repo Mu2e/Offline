@@ -88,7 +88,7 @@ private:
   int _ncryCut;
   std::string _iteration;
   std::ifstream _fileT0;
-  std::ifstream _fileTcor;
+  std::string _fileTcorName;
   int _diagLevel;
   int _nProcessed;
   int _nFiltered;
@@ -115,16 +115,12 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}, _caloHitTag(config().caloHitCollection()),
     _caloClusterTag(config().caloClusterCollection()), _cluHits(config().cluHits()),
     _cryEmin(config().cryEmin()), _ncryCut(config().ncryCut()), _iteration(config().iteration()),
-    _fileT0(config().fileT0()), _fileTcor(config().fileTcor()), _diagLevel(config().diagLevel()),
+    _fileT0(config().fileT0()), _fileTcorName(config().fileTcor()), _diagLevel(config().diagLevel()),
     _nProcessed(0), _nFiltered(0) {
 
   if (!_fileT0.is_open()) {
     throw cet::exception("caloT0alig")
-        << "ERROR! Cannot open output file " << config().fileT0() << std::endl;
-  }
-  if (!_fileTcor.is_open()) {
-    throw cet::exception("caloT0alig")
-        << "ERROR! Cannot open output file " << config().fileTcor() << std::endl;
+        << "ERROR! Cannot open input file " << config().fileT0() << std::endl;
   }
 }
 
@@ -180,11 +176,12 @@ void caloT0alig::beginJob() {
     int Nev;
     float Tval, Tmea, Tres, Chi2;
 
+    std::ifstream _fileTcor(_fileTcorName);
     if (_fileTcor.is_open()) {
       while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
         if (iChan < 0 || iChan >= nROchan) {
           throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChan
-                                             << "from file " << Config().fileTcor() << std::endl;
+                                             << "from file " << _fileTcorName << std::endl;
         }
 
         Tcor[iChan] = Tval;
@@ -198,8 +195,10 @@ void caloT0alig::beginJob() {
             << "Wrong number of readout channels: " << nVal << " " << nROchan << std::endl;
       }
     } else {
-      mf::LogError("INPUT-NOT-FOUND")
-          << "Tcor file from previous iteration not found: " << Config().fileTcor() << std::endl;
+      if (!_fileTcor.is_open()) {
+        throw cet::exception("caloT0alig")
+            << "ERROR! Cannot open output file " << _fileTcorName << std::endl;
+      }
     }
   }
 
@@ -458,18 +457,12 @@ void caloT0alig::endJob() {
     return;
   }
 
-  std::string outDir = std::getenv("OUTDIR");
-  if (outDir.length() == 0) {
-    mf::LogError("OUTDIR-NOT-SET")
-        << "Environmental variable for calib output file not set " << std::endl;
-  }
-
   // Temporary output file for next iteration
-  std::ofstream Tfile;
-  std::string outFile = outDir + "/tcorr.dat";
-  if (_diagLevel > 0)
-    std::cout << "Temporary output file: " << outFile << std::endl;
-  Tfile.open(outFile);
+  std::ofstream _fileTcor(_fileTcorName);
+  if (!_fileTcor.is_open()) {
+    throw cet::exception("caloT0alig")
+        << "ERROR! Cannot open output file " << _fileTcorName << std::endl;
+  }
 
   int Nevt;
   float Tmea, Tsig, Chi2, Tval;
@@ -486,10 +479,10 @@ void caloT0alig::endJob() {
     Nevt = hTres[iCha]->GetEntries();
     Tval = Tmea + Tcor[iCha];
 
-    Tfile << iCha << "   " << Tval << "   " << Tmea << "   " << Tsig << "   " << Chi2 << "   "
+    _fileTcor << iCha << "   " << Tval << "   " << Tmea << "   " << Tsig << "   " << Chi2 << "   "
           << Nevt << std::endl;
   }
-  Tfile.close();
+  _fileTcor.close();
 
   // LAST ITERATION:
   // Write output file for DB: rouId Tcor Tsigma Chi2 Nev
