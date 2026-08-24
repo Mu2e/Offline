@@ -159,6 +159,9 @@ void caloT0alig::beginJob() {
       nValT0++;
     }
     _fileT0.close();
+  } else {
+      mf::LogError("INPUT-NOT-FOUND")
+          << "T0 file from previous iteration not found: " << Config().fileT0() << std::endl;
   }
   ///////////////////////////////////////////////////////////////
 
