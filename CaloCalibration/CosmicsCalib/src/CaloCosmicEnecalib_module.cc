@@ -76,7 +76,7 @@ public:
   };
 
   explicit CaloCosmicEnecalib(const art::EDAnalyzer::Table<Config>& config);
-  virtual ~CaloCosmicEnecalib() {};
+  virtual ~CaloCosmicEnecalib(){};
   void beginJob() override;
   void beginRun(art::Run const& run) override;
   void analyze(art::Event const& event) override;
@@ -315,7 +315,7 @@ void CaloCosmicEnecalib::analyze(art::Event const& event) {
             VmaxHit = VmaxHit - baseline;
             sipmID = rawDigiPtr->SiPMID();
           } // caloDigi check
-        } // use MeV or ADC
+        }   // use MeV or ADC
 
         if (_diagLevel > 0)
           std::cout << " Vmax:  " << VmaxHit << std::endl;
@@ -337,7 +337,7 @@ void CaloCosmicEnecalib::analyze(art::Event const& event) {
         } // energy cut
 
       } // loop over hits
-    } // loop over crystals
+    }   // loop over crystals
 
     if (_diagLevel > 0)
       std::cout << "nhits: " << nhits << std::endl;
@@ -439,7 +439,7 @@ void CaloCosmicEnecalib::analyze(art::Event const& event) {
         }
       }
     } // end ncrystal cut
-  } // end loop iClu in ncluster
+  }   // end loop iClu in ncluster
 } // end analyze
 
 void CaloCosmicEnecalib::endJob() {

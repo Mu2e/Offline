@@ -118,15 +118,15 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
     _fileT0(config().fileT0()), _fileTcor(config().fileTcor()), _diagLevel(config().diagLevel()),
     _nProcessed(0), _nFiltered(0) {
 
-      if (!_fileT0.is_open()) {
-        throw cet::exception("caloT0alig")
-          << "ERROR! Cannot open output file " << config().fileT0() << std::endl;
-      }
-      if (!_fileTcor.is_open()) {
-        throw cet::exception("caloT0alig")
-          << "ERROR! Cannot open output file " << config().fileTcor() << std::endl;
-      }
-    }
+  if (!_fileT0.is_open()) {
+    throw cet::exception("caloT0alig")
+        << "ERROR! Cannot open output file " << config().fileT0() << std::endl;
+  }
+  if (!_fileTcor.is_open()) {
+    throw cet::exception("caloT0alig")
+        << "ERROR! Cannot open output file " << config().fileTcor() << std::endl;
+  }
+}
 
 // ===========================================================================
 // Begin job:
@@ -153,9 +153,9 @@ void caloT0alig::beginJob() {
 
   if (_fileT0.is_open()) {
     while (_fileT0 >> iChanT0 >> TvalT0) {
-      if (iChanT0 < 0 || iChanT0 >= nROchan){
-        throw cet::exception("caloT0alig")
-          << "ERROR! Read invalid channel " << iChanT0 << "from file " << Config().fileT0() << std::endl;
+      if (iChanT0 < 0 || iChanT0 >= nROchan) {
+        throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChanT0
+                                           << "from file " << Config().fileT0() << std::endl;
       }
       Toff[iChanT0] = TvalT0;
       if (_diagLevel > 1)
@@ -164,8 +164,8 @@ void caloT0alig::beginJob() {
     }
     _fileT0.close();
   } else {
-      mf::LogError("INPUT-NOT-FOUND")
-          << "T0 file from previous iteration not found: " << Config().fileT0() << std::endl;
+    mf::LogError("INPUT-NOT-FOUND")
+        << "T0 file from previous iteration not found: " << Config().fileT0() << std::endl;
   }
   ///////////////////////////////////////////////////////////////
 
@@ -182,9 +182,9 @@ void caloT0alig::beginJob() {
 
     if (_fileTcor.is_open()) {
       while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
-        if (iChan < 0 || iChan >= nROchan){
-          throw cet::exception("caloT0alig")
-            << "ERROR! Read invalid channel " << iChan << "from file " << Config().fileTcor() << std::endl;
+        if (iChan < 0 || iChan >= nROchan) {
+          throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChan
+                                             << "from file " << Config().fileTcor() << std::endl;
         }
 
         Tcor[iChan] = Tval;
@@ -356,9 +356,9 @@ bool caloT0alig::filter(art::Event& event) {
           }
           nCry[diskId]++;
         } // Disk + energy cuts
-      } // Loop on crystals
-    } // Minimum number of cells in a cluster
-  } // Loop on clusters
+      }   // Loop on crystals
+    }     // Minimum number of cells in a cluster
+  }       // Loop on clusters
 
   for (int iDisk = 0; iDisk < nDisks; iDisk++) {
 
@@ -428,12 +428,11 @@ bool caloT0alig::filter(art::Event& event) {
               hTres[Ival[iDisk][iCha]]->Fill(Tres);
 
             } // Loop on readout channels
-          } // Chi2 cut
-        } // costh cut
-      } // discr cut
-    } // If enough good cells
-  } // Loop on disks
-
+          }   // Chi2 cut
+        }     // costh cut
+      }       // discr cut
+    }         // If enough good cells
+  }           // Loop on disks
 
   if (_diagLevel > 0)
     std::cout << "caloT0alig: end of event " << std::endl;

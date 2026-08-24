@@ -66,12 +66,12 @@ public:
                                           Comment("Name for output .dat MIP calibration file"),
                                           "calib_parameters.dat"};
     fhicl::Atom<std::string> OutCalibFileAsym{Name("OutCalibFileAsym"),
-                                          Comment("Name for output .dat MIP asymmetry file"),
-                                          "npe_noise.dat"};
+                                              Comment("Name for output .dat MIP asymmetry file"),
+                                              "npe_noise.dat"};
   };
 
   explicit CaloCosmicEnergy(const art::EDAnalyzer::Table<Config>& config);
-  virtual ~CaloCosmicEnergy() {};
+  virtual ~CaloCosmicEnergy(){};
   void beginJob() override;
   void beginRun(art::Run const& run) override;
 
@@ -98,11 +98,11 @@ private:
   static constexpr int nCrystals = CaloConst::_nCrystalPerDisk;
   static constexpr int nDisks = CaloConst::_nDisk;
   static constexpr int nROchan = nDisks * nCrystals * nSiPMs;
-  const Calorimeter* cal;         // For calorimeter geometry
-  float cryDim;                   // Total crystal dimension
-  float MaxDxVertical;            // Max Dx value for vertical tracks
+  const Calorimeter* cal;          // For calorimeter geometry
+  float cryDim;                    // Total crystal dimension
+  float MaxDxVertical;             // Max Dx value for vertical tracks
   static constexpr int Erange = 5; // width of energy range in MeV for the sigma asymmetry variable
-  static constexpr int Ebin = 11; // number of ranges for the sigma asymmetry variable
+  static constexpr int Ebin = 11;  // number of ranges for the sigma asymmetry variable
 
   // fcl parameters
   int _diagLevel;
@@ -150,18 +150,17 @@ CaloCosmicEnergy::CaloCosmicEnergy(const art::EDAnalyzer::Table<Config>& config)
     CutEnergyDep(config().CutEnergyDep()), CutChi2Norm(config().CutChi2Norm()),
     _caloClusterToken(consumes<CaloClusterCollection>(config().CaloClusterTag())),
     _caloHitToken(consumes<CaloHitCollection>(config().CaloHitTag())),
-    _outputfile(config().OutCalibFile()),
-    _outputfileAsym(config().OutCalibFileAsym()) {
+    _outputfile(config().OutCalibFile()), _outputfileAsym(config().OutCalibFileAsym()) {
 
-      if (!_outputfile.is_open()) {
-        throw cet::exception("CaloCosmicEnergy")
-          << "ERROR! Cannot open output file " << config().OutCalibFile() << std::endl;
-      }
-      if (!_outputfileAsym.is_open()) {
-        throw cet::exception("CaloCosmicEnergy")
-          << "ERROR! Cannot open output file " << config().OutCalibFileAsym() << std::endl;
-      }
-    }
+  if (!_outputfile.is_open()) {
+    throw cet::exception("CaloCosmicEnergy")
+        << "ERROR! Cannot open output file " << config().OutCalibFile() << std::endl;
+  }
+  if (!_outputfileAsym.is_open()) {
+    throw cet::exception("CaloCosmicEnergy")
+        << "ERROR! Cannot open output file " << config().OutCalibFileAsym() << std::endl;
+  }
+}
 
 void CaloCosmicEnergy::beginRun(art::Run const& run) {
 
@@ -220,10 +219,12 @@ void CaloCosmicEnergy::beginJob() {
   for (int i = 0; i < Ebin; i++) {
     LR[i] = tfdir_alr.make<TH1F>(
         Form("LR_ene_band_%i", i),
-        Form("Ratio Left Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 100, 0.5, 1.5);
+        Form("Ratio Left Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 100, 0.5,
+        1.5);
     ALR[i] = tfdir_alr.make<TH1F>(
         Form("ALR_ene_band_%i", i),
-        Form("Asymmetry Left-Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 200, -1., 1.);
+        Form("Asymmetry Left-Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 200,
+        -1., 1.);
   }
 } // end begin job
 
@@ -497,7 +498,7 @@ void CaloCosmicEnergy::endJob() {
       }
 
     } // end sipms loop
-  } // end crystal loop
+  }   // end crystal loop
   if (_diagLevel > 0) {
     std::cout << " I am redoing fits" << std::endl;
   }
