@@ -41,6 +41,7 @@ physics: {
     plotZSWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
       stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
+      plotZSWithoutOffset : true
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
