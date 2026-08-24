@@ -95,7 +95,8 @@ private:
   const Calorimeter* cal;         // For calorimeter geometry
   float cryDim;                   // Total crystal dimension
   float MaxDxVertical;            // Max Dx value for vertical tracks
-  static constexpr int Ebin = 11; // number of 5 MeV ranges for the sigma asymmetry variable
+  static constexpr int Erange = 5; // width of energy range in MeV for the sigma asymmetry variable
+  static constexpr int Ebin = 11; // number of ranges for the sigma asymmetry variable
 
   // fcl parameters
   int _diagLevel;
@@ -183,7 +184,7 @@ void CaloCosmicEnergy::beginJob() {
     for (int ibin = 0; ibin < Ebin; ibin++) {
       CryALR[iCry][ibin] = new TH1F(Form("Asymmetry_Crystal_%i_band_%i", iCry, ibin),
                                     Form("Asymmetry of crystal %i in band [%i, %i)", iCry,
-                                         (ibin + 1) * 5, (ibin + 1) * 5 + 5),
+                                         (ibin + 1) * Erange, (ibin + 1) * Erange + Erange),
                                     200, -1., 1.);
     }
   }
@@ -201,10 +202,10 @@ void CaloCosmicEnergy::beginJob() {
   for (int i = 0; i < Ebin; i++) {
     LR[i] = tfdir_alr.make<TH1F>(
         Form("LR_ene_band_%i", i),
-        Form("Ratio Left Right Energy band [%i - %i) MeV", i * 5, (i + 1) * 5), 100, 0.5, 1.5);
+        Form("Ratio Left Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 100, 0.5, 1.5);
     ALR[i] = tfdir_alr.make<TH1F>(
         Form("ALR_ene_band_%i", i),
-        Form("Asymmetry Left-Right Energy band [%i - %i) MeV", i * 5, (i + 1) * 5), 200, -1., 1.);
+        Form("Asymmetry Left-Right Energy band [%i - %i) MeV", i * Erange, (i + 1) * Erange), 200, -1., 1.);
   }
 } // end begin job
 
@@ -405,8 +406,8 @@ void CaloCosmicEnergy::analyze(art::Event const& event) {
         int crystal_id = caloClusters[iClu].caloHitsPtrVector()[iCry].get()->crystalID();
         LR_all->Fill((left_sipm - right_sipm) / (left_sipm + right_sipm));
         ALR_all->Fill(sipm_mean_e, (left_sipm - right_sipm) / (left_sipm + right_sipm));
-        if (sipm_mean_e <= 55.) {
-          int whichband = sipm_mean_e / 5;
+        if (sipm_mean_e >= 0. && sipm_mean_e < Ebin * Erange) {
+          int whichband = sipm_mean_e / Erange;
           Energy_band[whichband] += sipm_mean_e;
           counter_energy_band[whichband]++;
           LR[whichband]->Fill(left_sipm / right_sipm);
