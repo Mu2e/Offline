@@ -88,6 +88,7 @@ private:
   int _ncryCut;
   std::string _iteration;
   std::ifstream _fileT0;
+  std::string _fileT0Name;
   std::string _fileTcorName;
   int _diagLevel;
   int _nProcessed;
@@ -115,9 +116,10 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}, _caloHitTag(config().caloHitCollection()),
     _caloClusterTag(config().caloClusterCollection()), _cluHits(config().cluHits()),
     _cryEmin(config().cryEmin()), _ncryCut(config().ncryCut()), _iteration(config().iteration()),
-    _fileT0(config().fileT0()), _fileTcorName(config().fileTcor()), _diagLevel(config().diagLevel()),
+    _fileT0Name(config().fileT0()), _fileTcorName(config().fileTcor()), _diagLevel(config().diagLevel()),
     _nProcessed(0), _nFiltered(0) {
 
+  _fileT0(_fileT0Name());
   if (!_fileT0.is_open()) {
     throw cet::exception("caloT0alig")
         << "ERROR! Cannot open input file " << config().fileT0() << std::endl;
@@ -151,7 +153,7 @@ void caloT0alig::beginJob() {
     while (_fileT0 >> iChanT0 >> TvalT0) {
       if (iChanT0 < 0 || iChanT0 >= nROchan) {
         throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChanT0
-                                           << "from file " << Config().fileT0() << std::endl;
+                                           << "from file " << _fileT0Name << std::endl;
       }
       Toff[iChanT0] = TvalT0;
       if (_diagLevel > 1)
@@ -161,7 +163,7 @@ void caloT0alig::beginJob() {
     _fileT0.close();
   } else {
     mf::LogError("INPUT-NOT-FOUND")
-        << "T0 file from previous iteration not found: " << Config().fileT0() << std::endl;
+        << "T0 file from previous iteration not found: " << _fileT0Name << std::endl;
   }
   ///////////////////////////////////////////////////////////////
 
