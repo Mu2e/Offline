@@ -37,11 +37,19 @@ physics: {
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
       Detector: @local::SimplifyStage2Data.DetectorName.HPGe
     }
+    # HPGeTree throws for Detector: LaBr as the LaBr response is undefined there, so the
+    # LaBr tree is made by LaBrTree instead. Note that its "E" branch is the raw ionizing
+    # energy deposited in the crystal, not a LaBr detector response - see LaBrTree_module.cc.
+    # Stage2LaBr : {
+    #   module_type : HPGeTree
+    #   StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
+    #   SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
+    #   Detector: @local::SimplifyStage2Data.DetectorName.LaBr
+    # }
     Stage2LaBr : {
-      module_type : HPGeTree
+      module_type : LaBrTree
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
-      Detector: @local::SimplifyStage2Data.DetectorName.LaBr
     }
     MWDSpectra : {
       module_type : MWDTree

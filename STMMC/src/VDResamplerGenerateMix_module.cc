@@ -16,6 +16,7 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <numeric>   // std::accumulate, for the endJob hit tallies
 #include <sstream>
 #include <string>
 #include <utility>
@@ -105,6 +106,19 @@ namespace mu2e {
         fhicl::Sequence<double> potsPerFile{
           Name("potsPerFile"),
           Comment("List of POT counts corresponding to hitSummaryFiles")
+        };
+        fhicl::Sequence<bool> useSummaryFile{
+          Name("useSummaryFile"),
+          Comment("Per-source on/off switch, ALIGNED with hitSummaryFiles (same length and order). "
+                  "true: the source is loaded and mixed as normal. false: the source is skipped "
+                  "entirely — its summary is never read, none of its models are loaded, and none of "
+                  "its particles can be generated. Omitting it entirely means every source is "
+                  "enabled. NOTE that disabling a source does NOT reduce the number of particles "
+                  "generated: the job still produces one per event, so the disabled source's share "
+                  "of the events is redistributed to the enabled sources. The generated sample "
+                  "therefore corresponds to MORE POTs than the full mix would for the same event "
+                  "count.See the endJob POT report for the actual corresponding POTs."),
+          std::vector<bool>()
         };
         fhicl::Atom<std::string> ModelFileDir{
           Name("ModelFileDir"),
@@ -199,6 +213,9 @@ namespace mu2e {
       void produce(art::Event& event) override;
       void endJob() override;
 
+      // Log the POT equivalence of the generated sample, plus whatever was excluded from it.
+      void reportPotEquivalence() const;
+
     private:
       struct ParticleModelSet {
         int pdgId = 0;
@@ -221,7 +238,16 @@ namespace mu2e {
         std::string hitSummaryFile;
         double pots = 0.0;
         double sourceWeight = 0.0;
+        // Hits of the species this source has models for — the only ones the mix can generate,
+        // and so the yield the POT equivalence is computed from.
         int trainedHitCount = 0;
+        // Hits of species marked "*" in the summary (no model trained). Never generated and
+        // never weighted; carried only so endJob can report what the sample is missing. Kept
+        // separate from the disabled-source tally: this is a training gap with a known hit
+        // count, whereas a disabled source is a deliberate fcl switch whose summary is never
+        // opened and whose hit count is therefore unknown.
+        int untrainedHitCount = 0;
+        int untrainedSpeciesCount = 0;
         std::vector<ParticleModelSet> particles;
       };
 
@@ -251,8 +277,23 @@ namespace mu2e {
       bool doValidationPlots_ = false;
       GlobalConstantsHandle<ParticleDataList> pdt_;
 
+      // Only the ENABLED sources; a source switched off via useSummaryFile is never loaded, so
+      // it has no entry here at all and cannot be drawn.
       std::vector<SourceSummary> sources_;
       double totalSourceWeight_ = 0.0;
+
+      // POT bookkeeping for the endJob report.
+      //   sourceWeight_i     = (trainedHitCount_i / pots_i) * referencePots_
+      //   totalSourceWeight_ = referencePots_ * SUM_enabled(trainedHitCount_i / pots_i)
+      // so totalSourceWeight_/referencePots_ is the hits-per-POT yield the mix reproduces over
+      // the enabled, trained species, and nGeneratedTotal_ divided by that is the sample's POT
+      // equivalence. referencePots_ is only a common unit scale (it keeps the weights off the
+      // O(1e-11) floor); it cancels out of the POT result.
+      double referencePots_ = 0.0;
+      // fcl index and file name of each source switched off via useSummaryFile. Names only:
+      // a disabled summary is never opened, so its hit count is unknown by construction.
+      std::vector<std::pair<size_t, std::string>> disabledSources_;
+      long nGeneratedTotal_ = 0;
 
       double x0_ = VDResampler::kX0;
       double y0_ = VDResampler::kY0;
@@ -378,6 +419,23 @@ namespace mu2e {
         << "At least one hit summary file must be provided.";
     }
 
+    // Per-source enable flags. An empty sequence (the default) means every source is on;
+    // otherwise it must align 1:1 with hitSummaryFiles, so a flag is never silently applied
+    // to the wrong source.
+    std::vector<bool> useSummaryFile = conf().useSummaryFile();
+    if (useSummaryFile.empty()) {
+      useSummaryFile.assign(nSrc, true);
+    } else if (useSummaryFile.size() != nSrc) {
+      throw cet::exception("VDResamplerGenerateMix")
+        << "useSummaryFile has " << useSummaryFile.size() << " entries but there are " << nSrc
+        << " hitSummaryFiles; they must align 1:1 (omit useSummaryFile to enable every source).";
+    }
+    if (std::count(useSummaryFile.begin(), useSummaryFile.end(), false) == static_cast<long>(nSrc)) {
+      throw cet::exception("VDResamplerGenerateMix")
+        << "useSummaryFile disables all " << nSrc << " source(s); there would be nothing to "
+        << "generate. Enable at least one.";
+    }
+
     // Per-source resampler ROOT files: aligned 1:1 with hitSummaryFiles. Empty by default (no
     // resampler source needed); if provided it must match the number of sources so each source's
     // resampler reads ITS OWN ROOT file.
@@ -415,21 +473,37 @@ namespace mu2e {
       // Each source's mother distribution is read from its OWN resamplerSourceRootFiles
       // entry, so with validation on every source needs one — including sources whose
       // particles are all DIFFUSION stage-1 and would otherwise not need the file at all.
+      // The sequence still has to be full length (it is indexed by source), but only the
+      // ENABLED entries have to be non-empty: a disabled source is never loaded, so it has
+      // no mother distribution to read and no plots to book.
       if (resamplerSourceRootFiles_.size() != nSrc)
         throw cet::exception("VDResamplerGenerateMix")
           << "doValidationPlots requires one resamplerSourceRootFiles entry per source ("
           << nSrc << "); got " << resamplerSourceRootFiles_.size()
           << ". Each source supplies its own mother distribution.";
       for (size_t i = 0; i < nSrc; ++i)
-        if (resamplerSourceRootFiles_[i].empty())
+        if (useSummaryFile[i] && resamplerSourceRootFiles_[i].empty())
           throw cet::exception("VDResamplerGenerateMix")
-            << "doValidationPlots requires a resamplerSourceRootFiles entry for every source, "
-            << "but entry " << i << " (" << hitSummaryFiles[i] << ") is empty.";
+            << "doValidationPlots requires a resamplerSourceRootFiles entry for every enabled "
+            << "source, but entry " << i << " (" << hitSummaryFiles[i] << ") is empty.";
       validationDir = std::make_unique<art::TFileDirectory>((*tfs)->mkdir("validation"));
     }
 
-    double referencePots = 0.0;
+    // Max over the ENABLED sources only: a disabled source is never loaded, so it cannot set
+    // the reference scale. Kept as a member so endJob can recover the hits-per-POT rate.
+    double& referencePots = referencePots_;
     for (size_t i = 0; i < nSrc; ++i) {
+      // A disabled source is skipped before its summary is opened, so none of its models are
+      // resolved or loaded and it contributes nothing to any weight. The source label keeps
+      // the ORIGINAL index i so validation directory names stay tied to the fcl position
+      // rather than shifting when an earlier source is switched off.
+      if (!useSummaryFile[i]) {
+        disabledSources_.emplace_back(i, hitSummaryFiles[i]);
+        mf::LogInfo("VDResamplerGenerateMix")
+          << "Source " << i << " (" << hitSummaryFiles[i] << ") is disabled via useSummaryFile; "
+          << "skipping it entirely — no models loaded, no particles generated from it.";
+        continue;
+      }
       // The i-th source's resampler ROOT file/tree (empty string when none was supplied for it).
       const std::string srcRoot = (i < resamplerSourceRootFiles_.size())
                                    ? resamplerSourceRootFiles_[i] : std::string();
@@ -549,6 +623,12 @@ namespace mu2e {
       const int hitCount = std::stoi(fields[1]);
       const std::string modeToken = fields[2];
       if (modeToken == "*") {
+        // Untrained species: no model exists for it, so the mix can never produce it. Its
+        // hits are deliberately kept OUT of trainedHitCount (which must count only what can
+        // actually be generated), but they are tallied here because they are hits the real
+        // beam would deliver and this job cannot — the endJob POT report needs to say so.
+        source.untrainedHitCount += hitCount;
+        ++source.untrainedSpeciesCount;
         continue;
       }
 
@@ -714,6 +794,9 @@ namespace mu2e {
       fourMomParticle,
       t_gen_
     );
+    // One particle per event, counted here rather than from the event count so the POT
+    // report stays correct if that ever stops being one-to-one.
+    ++nGeneratedTotal_;
 
     event.put(std::move(output));
 
@@ -737,6 +820,79 @@ namespace mu2e {
     for (auto& source : sources_)
       for (auto& particle : source.particles)
         if (particle.validationPlots) particle.validationPlots->finalize();
+
+    reportPotEquivalence();
+  }
+
+  // How many POTs the generated sample corresponds to.
+  //
+  //   sourceWeight_i     = (trainedHitCount_i / pots_i) * referencePots_
+  //   totalSourceWeight_ = referencePots_ * SUM_enabled(trainedHitCount_i / pots_i)
+  // so the hits-per-POT yield the mix reproduces is totalSourceWeight_/referencePots_, and
+  //   POTs = nGeneratedTotal_ / hitsPerPot
+  // referencePots_ is only a unit scale and cancels.
+  //
+  // The figure answers "how many POTs would deliver this many hits OF THE SPECIES THIS JOB
+  // CAN GENERATE", which is not the same as the job's beam exposure whenever something has
+  // been excluded. Two independent exclusions are reported alongside it so the number is
+  // never read as a full-mix POT count:
+  //   * disabled sources  — deliberate, via useSummaryFile. Named only: the summary is never
+  //                         opened, so its hit count is unknown by construction.
+  //   * untrained species — summary rows marked "*", for which no model exists. Quantified,
+  //                         since the summary was read.
+  // Disabling does NOT reduce the particle count (one per event regardless), so the removed
+  // source's share of the events is redistributed to the survivors: the same event count then
+  // maps to MORE POTs than a full mix would, with the enabled species over-represented.
+  void VDResamplerGenerateMix::reportPotEquivalence() const {
+    std::ostringstream report;
+    report << "Generated " << nGeneratedTotal_ << " particle(s) from " << sources_.size()
+           << " enabled source(s).";
+
+    if (nGeneratedTotal_ <= 0) {
+      report << " No POT equivalence can be quoted for an empty sample.";
+      mf::LogInfo("VDResamplerGenerateMix") << report.str();
+      return;
+    }
+
+    // Both are > 0 here: beginJob throws unless totalSourceWeight_ > 0, and referencePots_ is
+    // the max of the enabled sources' pots, each of which loadSourceSummary requires positive.
+    const double hitsPerPot = totalSourceWeight_ / referencePots_;
+    const double pots = static_cast<double>(nGeneratedTotal_) / hitsPerPot;
+    report << "\n  Hits per POT (enabled sources, trained species): " << hitsPerPot
+           << "\n  => the generated sample corresponds to " << pots << " POTs.";
+
+    int untrainedHits = 0, untrainedSpecies = 0;
+    for (const auto& source : sources_) {
+      untrainedHits    += source.untrainedHitCount;
+      untrainedSpecies += source.untrainedSpeciesCount;
+    }
+
+    if (!disabledSources_.empty() || untrainedSpecies > 0) {
+      report << "\n  NOTE: this sample is NOT a full physical mix, so the POT figure above is"
+             << "\n  valid only for the species actually generated. At that POT count the real"
+             << "\n  beam would also deliver the particles listed below, which are absent here:";
+      if (!disabledSources_.empty()) {
+        report << "\n    * " << disabledSources_.size()
+               << " source(s) disabled via useSummaryFile (hit counts unknown — not read):";
+        for (const auto& [index, file] : disabledSources_)
+          report << "\n        [" << index << "] " << file;
+        report << "\n      Their share of the events went to the enabled sources instead, so"
+               << "\n      those species are over-represented and the POT figure is inflated"
+               << "\n      relative to a full mix at the same event count.";
+      }
+      if (untrainedSpecies > 0) {
+        const int trainedHits = std::accumulate(
+          sources_.begin(), sources_.end(), 0,
+          [](int sum, const SourceSummary& s) { return sum + s.trainedHitCount; });
+        const double frac = (trainedHits + untrainedHits > 0)
+          ? 100.0 * untrainedHits / (trainedHits + untrainedHits) : 0.0;
+        report << "\n    * " << untrainedSpecies << " untrained species (marked \"*\") across the"
+               << " enabled sources,\n      totalling " << untrainedHits << " hit(s) = " << frac
+               << "% of those sources' hits.";
+      }
+    }
+
+    mf::LogInfo("VDResamplerGenerateMix") << report.str();
   }
 
 } // namespace mu2e

@@ -133,7 +133,10 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMstage1Method{
           Name("SBDMstage1Method"),
           Comment("V2 two-stage stage-1 pTotal source: DIFFUSION (trained 1-D model) "
-                  "or a non-diffusion resampler INVERSE_CDF / SPLINE_CDF / KDE."),
+                  "or a non-diffusion resampler INVERSE_CDF / SPLINE_CDF / KDE. "
+                  "Applies ONLY when useTwoStageModel is true — an all-at-once 6-D model draws "
+                  "pTotal within its single sample and has no stage-1 to source, so this is "
+                  "ignored (with a warning) in that mode."),
           "DIFFUSION"
         };
         fhicl::Atom<std::string> resamplerSourceRootFile{
@@ -355,6 +358,18 @@ namespace mu2e {
       if (allAtOnceModelFile_.empty()) {
         throw cet::exception("VDResamplerGenerateFromModel")
           << "All-at-once generation requires allAtOnceModelFile.";
+      }
+      // stage1Method_ was parsed above (so a typo is still caught) but nothing in this branch
+      // consults it: a 6-D all-at-once model draws pTotal as part of the single sample, so it
+      // has no stage-1 to source. Setting it to a resampler method here would otherwise be
+      // accepted in silence and produce a plain all-at-once job — say so instead.
+      if (useResampler) {
+        mf::LogWarning("VDResamplerGenerateFromModel")
+          << "SBDMstage1Method=" << conf().SBDMstage1Method() << " is IGNORED when "
+          << "useTwoStageModel is false: an all-at-once 6-D model has no separate stage-1 "
+          << "pTotal step to resample. No pTotal resampler is built, and resamplerSourceRootFile "
+          << "is used only if doValidationPlots is on (for the mother distribution). Set "
+          << "useTwoStageModel: true if you meant to use the configuration.";
       }
 
       allAtOnceModel_ = std::make_unique<ScoreBasedDiffusionModel>(
