@@ -119,7 +119,7 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
     _fileT0Name(config().fileT0()), _fileTcorName(config().fileTcor()), _diagLevel(config().diagLevel()),
     _nProcessed(0), _nFiltered(0) {
 
-  _fileT0(_fileT0Name());
+  _fileT0(_fileT0Name);
   if (!_fileT0.is_open()) {
     throw cet::exception("caloT0alig")
         << "ERROR! Cannot open input file " << config().fileT0() << std::endl;
