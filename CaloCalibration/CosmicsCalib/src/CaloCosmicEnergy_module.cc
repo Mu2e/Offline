@@ -62,6 +62,12 @@ public:
         Name("CaloClusterTag"), Comment("Tag for Calorimeter cluster collection"), art::InputTag()};
     fhicl::Atom<art::InputTag> CaloHitTag{
         Name("CaloHitTag"), Comment("Tag for Calorimeter hit collection"), art::InputTag()};
+    fhicl::Atom<std::string> OutCalibFile{Name("OutCalibFile"),
+                                          Comment("Name for output .dat MIP calibration file"),
+                                          "calib_parameters.dat"};
+    fhicl::Atom<std::string> OutCalibFileAsym{Name("OutCalibFileAsym"),
+                                          Comment("Name for output .dat MIP asymmetry file"),
+                                          "npe_noise.dat"};
   };
 
   explicit CaloCosmicEnergy(const art::EDAnalyzer::Table<Config>& config);
@@ -143,7 +149,19 @@ CaloCosmicEnergy::CaloCosmicEnergy(const art::EDAnalyzer::Table<Config>& config)
     art::EDAnalyzer(config), _diagLevel(config().diagLevel()), CutNCryHit(config().CutNCryHit()),
     CutEnergyDep(config().CutEnergyDep()), CutChi2Norm(config().CutChi2Norm()),
     _caloClusterToken(consumes<CaloClusterCollection>(config().CaloClusterTag())),
-    _caloHitToken(consumes<CaloHitCollection>(config().CaloHitTag())) {}
+    _caloHitToken(consumes<CaloHitCollection>(config().CaloHitTag())),
+    _outputfile(config().OutCalibFile()),
+    _outputfileAsym(config().OutCalibFileAsym()) {
+
+      if (!_outputfile.is_open()) {
+        throw cet::exception("CaloCosmicEnergy")
+          << "ERROR! Cannot open output file " << config().OutCalibFile() << std::endl;
+      }
+      if (!_outputfileAsym.is_open()) {
+        throw cet::exception("CaloCosmicEnergy")
+          << "ERROR! Cannot open output file " << config().OutCalibFileAsym() << std::endl;
+      }
+    }
 
 void CaloCosmicEnergy::beginRun(art::Run const& run) {
 
@@ -428,19 +446,6 @@ void CaloCosmicEnergy::analyze(art::Event const& event) {
 void CaloCosmicEnergy::endJob() {
   std::cout << "CaloCosmicEnergy: entering endjob" << std::endl;
   TGraphErrors *NpeLR, *NpeALR, *sigmaELR, *sigmaEALR, *CryNpeALR[nDisks * nCrystals];
-
-  // opening file.dat
-
-  std::string outDir = std::getenv("OUTDIR");
-  if (outDir.length() == 0) {
-    mf::LogError("OUTDIR-NOT-SET")
-        << "Environmental variable for calib output file not set" << std::endl;
-  }
-  std::string calibfname = outDir + "/calib_parameters.dat";
-  std::string calibfnameAsym = outDir + "/npe_noise.dat";
-
-  _outputfile.open(calibfname, std::ios::out);
-  _outputfileAsym.open(calibfnameAsym, std::ios::out);
 
   // fit params
   int redo[nDisks * nCrystals][nSiPMs];

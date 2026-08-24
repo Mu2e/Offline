@@ -68,6 +68,7 @@ public:
     fhicl::Atom<double> cryEmin{Name("cryEmin"), Comment("Minimum Energy for crystal hits"), 15.};
     fhicl::Atom<int> ncryCut{Name("ncryCut"), Comment("Minimum number of mip-like crystals"), 7};
     fhicl::Atom<std::string> iteration{Name("iteration"), Comment("Iteration"), "first"};
+    fhicl::Atom<std::string> fileT0{Name("fileT0"), Comment("T0 input file")};
     fhicl::Atom<std::string> fileTcor{Name("fileTcor"), Comment("T0 corrections input file")};
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diag Level"), 0};
   };
@@ -86,7 +87,8 @@ private:
   float _cryEmin;
   int _ncryCut;
   std::string _iteration;
-  std::string _fileTcor;
+  std::ifstream _fileT0;
+  std::ifstream _fileTcor;
   int _diagLevel;
   int _nProcessed;
   int _nFiltered;
@@ -113,8 +115,18 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}, _caloHitTag(config().caloHitCollection()),
     _caloClusterTag(config().caloClusterCollection()), _cluHits(config().cluHits()),
     _cryEmin(config().cryEmin()), _ncryCut(config().ncryCut()), _iteration(config().iteration()),
-    _fileTcor(config().fileTcor()), _diagLevel(config().diagLevel()), _nProcessed(0),
-    _nFiltered(0) {}
+    _fileT0(config().fileT0()), _fileTcor(config().fileTcor()), _diagLevel(config().diagLevel()),
+    _nProcessed(0), _nFiltered(0) {
+
+      if (!_fileT0.is_open()) {
+        throw cet::exception("caloT0alig")
+          << "ERROR! Cannot open output file " << config().fileT0() << std::endl;
+      }
+      if (!_fileTcor.is_open()) {
+        throw cet::exception("caloT0alig")
+          << "ERROR! Cannot open output file " << config().fileTcor() << std::endl;
+      }
+    }
 
 // ===========================================================================
 // Begin job:
@@ -139,21 +151,14 @@ void caloT0alig::beginJob() {
   int iChanT0, nValT0 = 0;
   float TvalT0;
 
-  std::string _fileT0 = getenv("MUSE_WORK_DIR");
-  _fileT0.append("/CaloCalibration/CosmicsCalib/data/t0s_allchan_1ns.dat");
-
-  std::ifstream T0File(_fileT0);
-  if (_diagLevel > 0)
-    std::cout << "Opening T0 file " << _fileT0 << std::endl;
-
-  if (T0File.is_open()) {
-    while (T0File >> iChanT0 >> TvalT0) {
+  if (_fileT0.is_open()) {
+    while (_fileT0 >> iChanT0 >> TvalT0) {
       Toff[iChanT0] = TvalT0;
       if (_diagLevel > 1)
         std::cout << "IdxT0 " << iChanT0 << " Toff " << Toff[iChanT0] << " " << std::endl;
       nValT0++;
     }
-    T0File.close();
+    _fileT0.close();
   }
   ///////////////////////////////////////////////////////////////
 
@@ -168,23 +173,21 @@ void caloT0alig::beginJob() {
     int Nev;
     float Tval, Tmea, Tres, Chi2;
 
-    std::ifstream inpFile(_fileTcor);
-
-    if (inpFile.is_open()) {
-      while (inpFile >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
+    if (_fileTcor.is_open()) {
+      while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
         Tcor[iChan] = Tval;
         if (_diagLevel > 1)
           std::cout << "Idx " << iChan << " Tcor " << Tcor[iChan] << " " << Tmea << std::endl;
         nVal++;
       }
-      inpFile.close();
+      _fileTcor.close();
       if (nVal != nROchan) {
         mf::LogError("WRONG-NCHAN")
             << "Wrong number of readout channels: " << nVal << " " << nROchan << std::endl;
       }
     } else {
       mf::LogError("INPUT-NOT-FOUND")
-          << "Tcor file from previous iteration not found: " << _fileTcor << std::endl;
+          << "Tcor file from previous iteration not found: " << Config().fileTcor() << std::endl;
     }
   }
 
