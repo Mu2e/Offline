@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <cctype>
 #include <stdbool.h>
+#include <map>
 
 // root
 #include "TH1F.h"
@@ -52,18 +53,20 @@ namespace mu2e {
     int _zeroLengthCount = 0;
     art::InputTag _stmWaveformDigisTag;
 
-    art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
+    //art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
+    art::ProductToken<STMWaveformDigiCollectionMap> _stmWaveformDigisMapToken;
     bool _subtractPedestal;
     std::string _xAxis;
     int _verbosityLevel;
-    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h; //might have to change
     STMChannel _channel;
   };
 
   PlotSTMWaveformDigis::PlotSTMWaveformDigis(const Parameters& config )  :
     art::EDAnalyzer{config},
     _stmWaveformDigisTag{config().stmWaveformDigisTag()},
-    _stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag())),
+    //_stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(config().stmWaveformDigisTag())),
+    _stmWaveformDigisMapToken(consumes<STMWaveformDigiCollectionMap>(config().stmWaveformDigisTag())),
     _subtractPedestal(config().subtractPedestal()),
     _xAxis(config().xAxis()),
     _verbosityLevel(config().verbosityLevel()),
@@ -89,88 +92,122 @@ namespace mu2e {
 
   void PlotSTMWaveformDigis::analyze(const art::Event& event) {
 
-    //Boolean for whether we get a match for zsHPGe or LaBr
+    // Boolean for whether we get a match for zsHPGe or LaBr
     const std::string instance = std::string(_stmWaveformDigisTag.instance());
     const bool plotZSOffsetWaveforms = (instance == "zsHPGe" || instance == "zsLaBr");// Don't need offset waveforms for raw waveformdigis
 
     if (!plotZSOffsetWaveforms){
-      if (_verbosityLevel >1){ std::cout << "Instance : " << instance << " , not ZS ==> No Offset Waveform will be created" << std::endl;} }
+        if (_verbosityLevel >1){
+            std::cout << "Instance : " << instance << " , not ZS ==> No Offset Waveform will be created" << std::endl;
+        }
+    }
 
+    // STM Energy Calib
     art::ServiceHandle<art::TFileService> tfs;
-    auto waveformsHandle = event.getValidHandle(_stmWaveformDigisToken);
-    std::stringstream histname, histtitle;
-    int count = 0;
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get prodition
     const auto pedestal = stmEnergyCalib.pedestal(_channel);
-    if (_verbosityLevel > 0) {
-      std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
+    if (_verbosityLevel > 0){
+        std::cout << _channel.name() << " Pedestal = " << pedestal << std::endl;
     }
 
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    if (_verbosityLevel > 1){ std::cout<<"size = "<<waveformsHandle->size()<<std::endl; }
 
-    for (const auto& waveform : *waveformsHandle) {
+    // Get handle for waveform handle with map
+    // outer loop is needed now
+    auto waveformsMapHandle = event.getValidHandle(_stmWaveformDigisMapToken);
+    const auto& waveformMap = *waveformsMapHandle;
+    // loop through the maps
+    for (const auto& mu2e_evt : waveformMap){
+        // Could get event information here
+        const auto& eventHeader = mu2e_evt.first;
+        // prodition may go here, not sure yet
+        // Get waveform Digi collection information here
+        const auto& waveforms = mu2e_evt.second; // treat this like a handle
+        if (_verbosityLevel > 1) {
+            std::cout << "Waveform size = " << waveforms.size() << std::endl;
+        }
 
-      histname.str("");
-      histname << "evt" << event.event() << "_waveform" << count;
-      histtitle.str("");
-      histtitle << "Event " << event.event() << " Waveform " << count << " (" << _channel.name() << ")";
+        // reset to zero when looping through new eventwindow tag
+        std::stringstream histname, histtitle;
+        std::stringstream histname2, histtitle2;
+        int count = 0;
 
-      if (waveform.adcs().size() == 0){
-        ++_zeroLengthCount;
-      } else {
-        //None empty waveforms go in here
-        _hist->Fill(waveform.adcs().size()); //_hist was created outside so there should be no problem here
+        // Second loop where rest of information goes
+        for (const auto& waveform : waveforms){
 
-        Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt);//nanoSecondPerCount
-        TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(),
+            // histname in art
+            histname.str("");
+            //histname << "evt" << event.event() << "_waveform" << count;
+            histname << "ewt" << eventHeader.eventWindowTag() << "_waveform" << count << "_event" << event.event();
+            // histitle goes in the plot
+            histtitle.str("");
+            histtitle <<" EWT "<< eventHeader.eventWindowTag() << " Waveform " << count << " (" << _channel.name() << ")";
+
+            if (waveform.adcs().size() == 0){
+                ++_zeroLengthCount;
+            } else {
+                // None empty waveforms go in here
+                _hist->Fill(waveform.adcs().size());
+
+                // Binning
+                Binning binning = STMUtils::getBinning(waveform, _xAxis, nsPerCt); //nanosecondPetCount
+                TH1F* hWaveform = tfs->make<TH1F>(histname.str().c_str(), histtitle.str().c_str(),
                                           binning.nbins(), binning.low(), binning.high());
-        TH1F* hWaveformOffset = nullptr; // Standby
+                TH1F* hWaveformOffset = nullptr; // Standby
 
-        hWaveform->GetYaxis()->SetTitle("ADCs");
-        if (_xAxis == "sample_number"){
-          hWaveform->GetXaxis()->SetTitle("Sample Number");
-        } else if (_xAxis == "waveform_time"){
-          hWaveform->GetXaxis()->SetTitle("Waveform Time [nsec]");
-        } else if (_xAxis == "event_time"){
-          hWaveform->GetXaxis()->SetTitle("Event Time [nsec]");
-        }
+                // Get _xAxis for waveforms
+                hWaveform->GetYaxis()->SetTitle("ADCs");
+                if (_xAxis == "sample_number"){
+                    hWaveform->GetXaxis()->SetTitle("Sample Number");
+                } else if (_xAxis == "waveform_time"){
+                    hWaveform->GetXaxis()->SetTitle("Waveform Time [nsec]");
+                } else if (_xAxis == "event_time"){
+                    hWaveform->GetXaxis()->SetTitle("Event Time [nsec]");
+                }
 
-        if (plotZSOffsetWaveforms){
-          //For offset waveforms -> Better organize this area
-          const auto zs_offset = waveform.trigTimeOffset(); //Grabs stored offset
-          std::stringstream histname2;//New histogram to include the offset waveform from trigTimeOffset
-          std::stringstream histtitle2;
-          histname2 << histname.str() << "_offset" << zs_offset;
-          histtitle2 << instance << "ZS waveform";
-          if (waveform.hasParent()){
-            histtitle2 << ", parent raw index:" << waveform.parent().key();
-          } else {
-            histtitle2 << ", no parent raw waveform";
-          }
-          histtitle2 << ", offset: " << zs_offset;
+                // If the plotZS waveform is turned on
+                if (plotZSOffsetWaveforms) {
+                    // Improve organization of this area (soon)
+                    const auto zs_offset = waveform.trigTimeOffset(); // Grab stored offset
 
-          hWaveformOffset = tfs->make<TH1F>( histname2.str().c_str(), histtitle2.str().c_str(), binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
-          hWaveformOffset->GetYaxis()->SetTitle("ADCs");
-          hWaveformOffset->GetXaxis()->SetTitle("Sample Number (Includes + Time Offset)");
-        }//PlotZSOffset
+                    // descriptor
+                    histname2.str("");
+                    histname2 << "ewt"<< eventHeader.eventWindowTag() << "_waveform" << count << "_offset" << zs_offset << "_event" << event.event();
+                    // title for plot
+                    histtitle2.str("");
+                    histtitle2 << " EWT " << eventHeader.eventWindowTag() << " " << instance << " Waveform " << count << " Offset " << zs_offset << " (" << _channel.name() << ")";
+                    // Fill here
+                    hWaveformOffset = tfs->make<TH1F>(histname2.str().c_str(),histtitle2.str().c_str(),
+                    binning.nbins(), binning.low()+zs_offset, binning.high()+zs_offset );//Shifting bins using offset
 
-        for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
+                    // Get _xAxis for zsWaveforms
+                    hWaveformOffset->GetYaxis()->SetTitle("ADCs");
+                    if (_xAxis == "sample_number") {
+                        hWaveformOffset->GetXaxis()->SetTitle("Sample Number (+Offset)");
+                    } else if (_xAxis == "waveform_time") {
+                        hWaveformOffset->GetXaxis()->SetTitle("Waveform Time [nsec] (+Offset)");
+                    } else if (_xAxis == "event_time") {
+                        hWaveformOffset->GetXaxis()->SetTitle("Event Time [nsec] (+Offset)");
+                    }
+                } // End of ZS plots
 
-          const auto adc = waveform.adcs().at(i_adc);
-          auto content = adc; //y-axis
-          if (_subtractPedestal) {
-            content -= pedestal;
-          }
-
-          hWaveform->SetBinContent(i_adc+1,content);
-          if ( plotZSOffsetWaveforms) { hWaveformOffset->SetBinContent(i_adc+1,content);}
-
-        }
-      }//else
-      ++count;
-    }//for
-  }//analyzer
-}
+                // Fill raw waveforms here
+                for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
+                    const auto adc = waveform.adcs().at(i_adc);
+                    auto content = adc; // y-axis
+                    if (_subtractPedestal){
+                        content -= pedestal;
+                    }
+                    hWaveform->SetBinContent(i_adc+1,content);
+                    if (plotZSOffsetWaveforms){
+                        hWaveformOffset->SetBinContent(i_adc+1, content);
+                    }
+                }// end of raw waveform plot
+                }// else
+                ++count;
+            } // waveform loop
+        }// map loop
+    }// analyzer
+} //nameSpace
 
 DEFINE_ART_MODULE(mu2e::PlotSTMWaveformDigis)
