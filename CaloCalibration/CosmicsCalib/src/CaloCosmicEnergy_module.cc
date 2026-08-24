@@ -71,7 +71,7 @@ public:
   };
 
   explicit CaloCosmicEnergy(const art::EDAnalyzer::Table<Config>& config);
-  virtual ~CaloCosmicEnergy(){};
+  virtual ~CaloCosmicEnergy() {};
   void beginJob() override;
   void beginRun(art::Run const& run) override;
 
@@ -498,7 +498,7 @@ void CaloCosmicEnergy::endJob() {
       }
 
     } // end sipms loop
-  }   // end crystal loop
+  } // end crystal loop
   if (_diagLevel > 0) {
     std::cout << " I am redoing fits" << std::endl;
   }

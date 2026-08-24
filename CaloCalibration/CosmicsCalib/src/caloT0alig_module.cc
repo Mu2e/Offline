@@ -356,9 +356,9 @@ bool caloT0alig::filter(art::Event& event) {
           }
           nCry[diskId]++;
         } // Disk + energy cuts
-      }   // Loop on crystals
-    }     // Minimum number of cells in a cluster
-  }       // Loop on clusters
+      } // Loop on crystals
+    } // Minimum number of cells in a cluster
+  } // Loop on clusters
 
   for (int iDisk = 0; iDisk < nDisks; iDisk++) {
 
@@ -428,11 +428,11 @@ bool caloT0alig::filter(art::Event& event) {
               hTres[Ival[iDisk][iCha]]->Fill(Tres);
 
             } // Loop on readout channels
-          }   // Chi2 cut
-        }     // costh cut
-      }       // discr cut
-    }         // If enough good cells
-  }           // Loop on disks
+          } // Chi2 cut
+        } // costh cut
+      } // discr cut
+    } // If enough good cells
+  } // Loop on disks
 
   if (_diagLevel > 0)
     std::cout << "caloT0alig: end of event " << std::endl;
