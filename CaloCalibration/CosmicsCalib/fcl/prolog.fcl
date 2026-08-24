@@ -1,0 +1,29 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+BEGIN_PROLOG
+
+CaloCosmicEnecalib : {			   
+    module_type : CaloCosmicEnecalib
+    diagLevel : 0
+    useMeV : false
+    CutNCryHit : 3
+    CutEnergyDep : 250.
+    LYSOcut : 500.
+    CutChi2Norm : 2.5
+    CaloClusterTag : CaloClusterMaker
+    CaloHitTag : CaloHitMaker
+    OutCalibFile : "MIPfile.dat"
+}
+
+
+CosmicsCalib: {
+    analyzers: {
+        CaloCosmicEnecalib : @local::CaloCosmicEnecalib
+    }
+}
+
+
+END_PROLOG

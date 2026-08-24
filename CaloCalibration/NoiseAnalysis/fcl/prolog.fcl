@@ -1,0 +1,26 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+BEGIN_PROLOG
+
+CaloBaselineAna : {
+    module_type : BaselineAnalyzer
+    caloDigiTag : CaloDigis
+    verbosity : 0
+    writeTXT : false
+    writeCSV : true
+    writePDF : true
+    thresholdOffset : 100
+    thresholdOffsetPin : 100
+}
+
+NoiseAnalysis: {
+    analyzers: {
+        CaloBaselineAna : @local::CaloCaloBaselineAna
+    }
+}
+
+
+END_PROLOG
