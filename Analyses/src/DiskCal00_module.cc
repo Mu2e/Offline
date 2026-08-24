@@ -19,7 +19,7 @@
 #include "art_root_io/TFileService.h"
 
 // Mu2e includes.
-#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -155,7 +155,7 @@ namespace mu2e {
 
     _hNHits->Fill(cryHits.size());
     maxHits = std::max( cryHits.size(), maxHits );
-    GeomHandle<DiskCalorimeter> calGeom;
+    GeomHandle<Calorimeter> calGeom;
 
     double totalEdep(0.);
     set<int> hit_crystals;
@@ -265,18 +265,17 @@ namespace mu2e {
   }
 
   void DiskCal00::printCalInfo(){
-    DiskCalorimeter const& cal(*GeomHandle<DiskCalorimeter>());
-    int nSiPM = cal.nCrystals()*cal.caloInfo().getInt("nSiPMPerCrystal");
+    Calorimeter const& cal(*GeomHandle<Calorimeter>());
+    int nSiPM = cal.nCrystals()*cal.G4Info().get<int>("nSiPMPerCrystal");
     cout << "Information about the disk Calorimeter: "  << endl;
     cout << "Number of disks:    " << cal.nDisks()      << endl;
     cout << "Number of Readouts: " << nSiPM << " "  << CaloConst::_nSiPMPerCrystal << " " << nSiPM/CaloConst::_nSiPMPerCrystal << endl;
-    cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
+    cout << "Hex side size:      " << 2.0*cal.G4Info().get<double>("crystalXYLength") << endl;
 
-    cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;
-    cout << "Origin:             " << cal.geomUtil().origin()      << endl;
+    cout << "Depth:              " << cal.G4Info().get<double>("crystalZLength")   << endl;
     for (unsigned i=0; i<cal.nDisks(); ++i){
       Disk const& disk = cal.disk(i);
-      cout << "Disk: " << i << " " << "origin: " << disk.geomInfo().origin() << endl;
+      cout << "Disk: " << i << " " << "origin: " << disk.diskInfo().origin() << endl;
     }
   }
 

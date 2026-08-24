@@ -65,8 +65,10 @@ namespace mu2e
       uint8_t GetLinkStatus() const                {return _linkStatus;}
       uint16_t GetLinkLatency() const               {return _linkLatency;}
       std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII> &GetROCHeader() {return _rocHeader;}
+      bool HasROCHeader() const                    {return !_rocHeader.empty();}
 
       // --- MicroBunchStatus accessors (32-bit CRV ROC status word) ---
+      // Bit layout from ROC firmware: https://github.com/Mu2e/CRVFirmware/tree/main/ROC/FPGA1
       // The ROC header is pushed after construction, so these read lazily
       // from _rocHeader[0].  Returns 0 / false when no ROC header is present.
 

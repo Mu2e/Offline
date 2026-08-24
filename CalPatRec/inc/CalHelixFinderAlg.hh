@@ -327,11 +327,11 @@ namespace mu2e {
     void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) {
       _calorimeter = Cal;
-      fCaloOffset = (_calorimeter->caloInfo().getDouble("diskCaseZLength")/2.
-                     + (  _calorimeter->caloInfo().getDouble("BPPipeZOffset")
-                        + _calorimeter->caloInfo().getDouble("BPHoleZLength")
-                        + _calorimeter->caloInfo().getDouble("FEEZLength"))/2.
-                     - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength")
+      fCaloOffset = (_calorimeter->G4Info().get<double>("diskCaseZLength")/2.
+                     + (  _calorimeter->G4Info().get<double>("BPPipeZOffset")
+                        + _calorimeter->G4Info().get<double>("BPHoleZLength")
+                        + _calorimeter->G4Info().get<double>("FEEZLength"))/2.
+                     - _calorimeter->G4Info().get<double>("FPCarbonZLength") - _calorimeter->G4Info().get<double>("FPFoamZLength")
                      );
     }
 //-----------------------------------------------------------------------------

@@ -34,6 +34,8 @@ namespace mu2e {
         fhicl::Atom<std::string> IPAMaterialName{ Name("IPAMaterialName"), Comment("IPA MaterialName") };
         fhicl::Atom<std::string> STMaterialName{ Name("STMaterialName"), Comment("Stopping Target MaterialName") };
         fhicl::Atom<std::string> CRVMaterialName{ Name("CRVMaterialName"), Comment("CRV module MaterialName") };
+        // Global default ionization eloss mode (0=mpv, 1=moyalmean, 2=bethemean). Per-material overrides
+        // use a trailing token in TrackerConditions/data/MaterialsList.data (KinKal 3.7.0+).
         fhicl::Atom<int> elossMode { Name("IonizationEnergyLossMode"), Comment( "Ionization energy loss mode") };
         fhicl::Atom<double> solidScatter{ Name("SolidScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for solids") };
         fhicl::Atom<double> gasScatter{ Name("GasScatteringFraction"), Comment("DahlLynch Scattering model cutoff Fraction for gases") };
@@ -46,11 +48,6 @@ namespace mu2e {
       auto STMaterial() const { return matdbinfo_->findDetMaterial(stmatname_); }
       auto CRVMaterial() const { return matdbinfo_->findDetMaterial(crvmatname_); }
       auto material(std::string const& name) const { return matdbinfo_->findDetMaterial(name); }
-      // True when KinKal's ionization energy loss is the (restricted) Moyal mean, the only mode for
-      // which the KKShellXing unrestricted-Bethe-mean path correction is valid. Set from the
-      // IonizationEnergyLossMode fcl parameter so the correction stays consistent with the KinKal
-      // energy-loss model. See Mu2eKinKal/inc/KKShellXing.hh.
-      bool applyBetheCorrection() const { return betheCorrection_; }
 
       // FileFinder interface
       std::string matElmDictionaryFileName() const override;
@@ -66,7 +63,6 @@ namespace mu2e {
       std::string wallmatname_, gasmatname_, wirematname_,ipamatname_, stmatname_, crvmatname_;
       std::unique_ptr<MatDBInfo> matdbinfo_; // material database
       std::unique_ptr<KKStrawMaterial> smat_; // straw material
-      bool betheCorrection_ = false; // KinKal eloss mode == Moyal mean (gates the KKShellXing Bethe correction)
   };
 }
 #endif

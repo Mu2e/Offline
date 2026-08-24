@@ -1,4 +1,4 @@
-//
+ //
 // Construct materials requested by the run-time configuration system.
 //
 
@@ -1334,6 +1334,15 @@ namespace mu2e {
       CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
     }
 
+    mat = uniqueMaterialOrThrow("IPAPolystyrene");
+    {
+      // We used an explicity density here
+      // Reflects the corrected density for End Ring material
+      G4double IPAEffectiveDensity = 0.426*CLHEP::g/CLHEP::cm3; //explicit density refer to Doc-57487-v3
+      G4Material* IPAPolystyrene = new G4Material( mat.name, IPAEffectiveDensity, 2);
+      IPAPolystyrene->AddElement( getElementOrThrow("C"), 8);
+      IPAPolystyrene->AddElement( getElementOrThrow("H"), 8);
+    }
 
     //G10-FR4 used for printed board of the I-Tracker
     // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html

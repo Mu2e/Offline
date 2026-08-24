@@ -164,6 +164,7 @@ namespace mu2e {
       double addStrawMinDz_;
       int strawNBuffer_;
       bool saveHitCalib_;
+      bool savematxings_; // save generic (post-extrapolation) passive material Xings in the KalSeed
       SurfaceIdCollection ssids_;
   };
 
@@ -198,7 +199,8 @@ namespace mu2e {
     skipStrawCheck_(fitconfig.skipStrawCheck()),
     addStrawMinDz_(fitconfig.addStrawMinDz()),
     strawNBuffer_(fitconfig.strawNBuffer()),
-    saveHitCalib_(fitconfig.saveHitCalib())
+    saveHitCalib_(fitconfig.saveHitCalib()),
+    savematxings_(fitconfig.saveMatXings())
   {
     if (fitconfig.saveTraj() == "T0") {
       savetraj_ = t0seg;
@@ -213,7 +215,7 @@ namespace mu2e {
     }
     // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
     for(auto const& sidname : fitconfig.sampleSurfaces()){
-      ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
+      ssids_.push_back(SurfaceId(sidname,SurfaceId::allIndices_)); // match all elements
     }
   }
 
@@ -302,7 +304,7 @@ namespace mu2e {
       if(strawhits.back()->hitState().active())nactive++;
       // create the straw Xing for the associated straw, including the hit reference
     }
-    if(kseed.caloCluster()){
+    if(usecalo_ && kseed.caloCluster()){
       makeCaloHit(kseed.caloCluster(),calo,*ptraj,calohits);
     }
     for (auto const& paramhit : kseed.paramHits()){
@@ -345,10 +347,10 @@ namespace mu2e {
 
   template <class KTRAJ> std::shared_ptr<SensorLine> KKFit<KTRAJ>::caloAxis(CaloCluster const& cluster, Calorimeter const& calo) const {
     // move cluster COG into the tracker frame.  COG is at the front face of the disk
-    CLHEP::Hep3Vector cog = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
+    CLHEP::Hep3Vector cog = calo.mu2eToTracker(calo.diskFFToMu2e( cluster.diskID(), cluster.cog3Vector()));
     // project this along the crystal axis to the SIPM, which is at the back.  This is the point the time measurement corresponds to
     VEC3 ffcog(cog);
-    double lcrystal = calo.caloInfo().getDouble("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
+    double lcrystal = calo.G4Info().get<double>("crystalZLength"); // text-keyed lookup is very inefficient FIXME!
     VEC3 crystalF2B = VEC3(0.0,0.0,lcrystal); // this should come directly from the calogeometry, TODO
     VEC3 sipmcog = ffcog + crystalF2B;
     // create the SensorLine trajectory from this information: signal goes towards the sipm
@@ -580,7 +582,7 @@ namespace mu2e {
 
 
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const {
-    double crystalLength = calo.caloInfo().getDouble("crystalZLength");
+    double crystalLength = calo.G4Info().get<double>("crystalZLength");
     auto const& ptraj = kktrk.fitTraj();
     auto cccol = cchandle.product();
     double edep(-1.0);
@@ -588,9 +590,9 @@ namespace mu2e {
     // loop over disks to decide which are worth testing
     std::array<bool,2> test{false,false};
     for(unsigned idisk=0; idisk < 2; ++idisk){
-      auto ffpos = calo.geomUtil().mu2eToTracker(calo.disk(idisk).geomInfo().frontFaceCenter());
-      double rmin = calo.disk(idisk).geomInfo().innerEnvelopeR() - maxCaloDoca_;
-      double rmax = calo.disk(idisk).geomInfo().outerEnvelopeR() + maxCaloDoca_;
+      auto ffpos = calo.mu2eToTracker(calo.disk(idisk).diskInfo().frontFaceCenter());
+      double rmin = calo.disk(idisk).diskInfo().innerEnvelopeR() - maxCaloDoca_;
+      double rmax = calo.disk(idisk).diskInfo().outerEnvelopeR() + maxCaloDoca_;
       // test at both faces; if the track is in the right area, test the clusters on this disk
       // Replace this with an intersection with the calo face TODO
       for(int iface=0; iface<2; ++iface){
@@ -740,7 +742,7 @@ namespace mu2e {
       // calculate the unbiased time residual
       Residual ctres = calohit->residual(0);
       // calculate the cluster depth = distance along the crystal axis from the POCA to the back face of this disk (where the SiPM sits)
-      double backz = calo.geomUtil().mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).geomInfo().backFaceCenter()).z();
+      double backz = calo.mu2eToTracker(calo.disk(calohit->caloCluster()->diskID()).diskInfo().backFaceCenter()).z();
       // calculate the distance from POCA to the SiPM, along the crystal (Z) direction, and projected along the track
       float clen = backz-ca.sensorPoca().Z();
       float trklen = clen/ca.particleTraj().direction(ca.particleToca()).Z();
@@ -889,6 +891,23 @@ namespace mu2e {
       double dmom,paramomvar,perpmomvar;
       crvxing->materialEffects(dmom,paramomvar,perpmomvar);
       inters.emplace_back(ktraj.stateEstimate(crvxing->time()),XYZVectorF(ktraj.bnom()),crvxing->surfaceId(),crvxing->intersection(),dmom);
+    }
+    // generic passive material Xings are only filled during extrapolation; saving them in the KalSeed is optional
+    if(savematxings_){
+      for(auto const& matxing : kktrk.materialCylXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
+      for(auto const& matxing : kktrk.materialPlaneXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
     }
     // record other intersections saved in the track
     for(auto const& interpair : kktrk.intersections()) {

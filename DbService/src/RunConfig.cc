@@ -1,11 +1,13 @@
 #include "Offline/DbService/inc/RunConfig.hh"
+
 #include "cetlib_except/exception.h"
-#include "nlohmann/json.hpp"
+
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
 
+#include "nlohmann/json.hpp"
 
 namespace {
 
@@ -68,7 +70,7 @@ void walkCID(const json& node,
   }
 }
 
-}
+}  // namespace
 
 // ---------------------------------------------------------------------------
 // mu2e::RunConfig::dbTables2
@@ -135,7 +137,6 @@ std::string mu2e::RunConfig::dbTables3(bool qjson) const {
     for (auto const& p : pairs) {
       // A duplicate key would silently overwrite the earlier value, losing
       // data, so refuse to continue if one is found.
-      std::cout << "DEB " << p.first << "\n";
       if (out.contains(p.first)) {
         throw cet::exception("RUNCONFIG_DUPLICATE_KEY")
             << " RunConfig::dbTables3 found duplicate DBServiceTables key "

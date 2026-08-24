@@ -282,7 +282,7 @@ namespace mu2e {
       {
         const CaloHit& hit            = CaloHits.at(ic);
         int diskId                    = cal.crystal(hit.crystalID()).diskID();
-        CLHEP::Hep3Vector crystalPos  = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
+        CLHEP::Hep3Vector crystalPos  = cal.mu2eToDiskFF(diskId,cal.crystal(hit.crystalID()).position());  //in disk FF frame
 
         const auto eDepMCs =  caloHitTruth[ic].energyDeposits();
 
@@ -455,7 +455,7 @@ namespace mu2e {
           if ( (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut)
           && hit.volumeId() != VirtualDetectorId::TT_Back) continue;
 
-          CLHEP::Hep3Vector VDPos = cal.geomUtil().mu2eToTracker(hit.position());
+          CLHEP::Hep3Vector VDPos = cal.mu2eToTracker(hit.position());
 
           vdId_[nVd_]     = hit.volumeId();
           vdPdgId_[nVd_]  = hit.simParticle()->pdgId();
