@@ -63,8 +63,39 @@ namespace mu2e
       uint8_t GetDTCID() const                     {return _dtcID;}
       uint64_t GetSubeventEventWindowTag() const   {return _subeventEventWindowTag;}
       uint8_t GetLinkStatus() const                {return _linkStatus;}
-      uint8_t GetLinkLatency() const               {return _linkLatency;}
+      uint16_t GetLinkLatency() const               {return _linkLatency;}
       std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII> &GetROCHeader() {return _rocHeader;}
+      bool HasROCHeader() const                    {return !_rocHeader.empty();}
+
+      // --- MicroBunchStatus accessors (32-bit CRV ROC status word) ---
+      // Bit layout from ROC firmware: https://github.com/Mu2e/CRVFirmware/tree/main/ROC/FPGA1
+      // The ROC header is pushed after construction, so these read lazily
+      // from _rocHeader[0].  Returns 0 / false when no ROC header is present.
+
+      // Full 32-bit word
+      uint32_t GetMicroBunchStatus() const {
+        return _rocHeader.empty() ? 0 : _rocHeader[0].GetMicroBunchStatus();
+      }
+
+      // Bits [0:23] — per-port problem flags (3 groups of 8 ports)
+      uint32_t GetPortFlags() const        {return GetMicroBunchStatus() & 0x00FFFFFFu;}
+
+      // Bit 24 — any FEB micro-bunch number mismatch
+      bool GetFEBuBMismatch() const        {return (GetMicroBunchStatus() >> 24) & 1;}
+      // Bit 25 — any FEB buffer issue
+      bool GetFEBBufferIssue() const       {return (GetMicroBunchStatus() >> 25) & 1;}
+      // Bit 26 — any FEB overflow
+      bool GetFEBOverflow() const          {return (GetMicroBunchStatus() >> 26) & 1;}
+      // Bit 27 — group 1 issue (ports 0-7)
+      bool GetGroup1Issue() const          {return (GetMicroBunchStatus() >> 27) & 1;}
+      // Bit 28 — group 2 issue (ports 8-15)
+      bool GetGroup2Issue() const          {return (GetMicroBunchStatus() >> 28) & 1;}
+      // Bit 29 — group 3 issue (ports 16-23)
+      bool GetGroup3Issue() const          {return (GetMicroBunchStatus() >> 29) & 1;}
+      // Bit 30 — any group micro-bunch match error (includes ROC cross-link mismatch)
+      bool GetuBMatchError() const         {return (GetMicroBunchStatus() >> 30) & 1;}
+      // Bit 31 — any group truncation
+      bool GetTruncation() const           {return (GetMicroBunchStatus() >> 31) & 1;}
 
     private:
 
@@ -77,7 +108,7 @@ namespace mu2e
       // Subevent Packet
       uint64_t                     _subeventEventWindowTag;
       uint8_t                     _linkStatus;
-      uint8_t                     _linkLatency;
+      uint16_t                    _linkLatency;
 
       std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII>  _rocHeader;   //not every DTC link has a ROC attached.
       //actually wanted to use std::optional,
