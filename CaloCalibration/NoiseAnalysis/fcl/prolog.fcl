@@ -18,7 +18,7 @@ CaloBaselineAna : {
 
 NoiseAnalysis: {
     analyzers: {
-        CaloBaselineAna : @local::CaloCaloBaselineAna
+        CaloBaselineAna : @local::CaloBaselineAna
     }
 }
 
