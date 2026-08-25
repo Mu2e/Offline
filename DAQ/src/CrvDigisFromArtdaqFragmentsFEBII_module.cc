@@ -144,8 +144,9 @@ namespace mu2e
         }
 
         //loop through subevents
-        for(size_t iSubEvent=0; auto& dtcSubEvent : dtcSubEvents)
+        for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent)
         {
+          auto& dtcSubEvent=dtcSubEvents.at(iSubEvent);
           mu2e::CRVDataDecoder decoder(dtcSubEvent);
           for(size_t iDataBlock = 0; iDataBlock < decoder.block_count(); ++iDataBlock)
           {
@@ -207,6 +208,10 @@ namespace mu2e
             }
             if(header->GetPacketCount()>0)
             {
+              uint16_t linkID = header->GetLinkID();
+              uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+              if(_useROC4asROC2 && rocID==4) rocID=2;
+
               auto crvRocHeader = decoder.GetCRVROCStatusPacketFEBII(iDataBlock);
               if(crvRocHeader == nullptr)
               {
@@ -224,15 +229,12 @@ namespace mu2e
                 std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cerr << "Error unpacking of CRV Hits" << std::endl;
-                decoder.PrintBlockFEBII(iDataBlock);
+                if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
                 crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                 break;
               }
               for(auto const& crvHit : crvHits)
               {
-                uint16_t linkID = header->GetLinkID();
-                uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
-                if(_useROC4asROC2 && rocID==4) rocID=2;
                 uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                 //the 5th bit indicates special situations
@@ -310,10 +312,6 @@ namespace mu2e
                   //the 5th bit indicates special situations
                   //e.g. fake pulses
                   if(rocPort==0) continue; //zero-block error - error already reported above
-
-                  uint16_t linkID = header->GetLinkID();
-                  uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
-                  if(_useROC4asROC2 && rocID==4) rocID=2;
 
                   if((crvHit.getFpgaChannel() & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                   {
