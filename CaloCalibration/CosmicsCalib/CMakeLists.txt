@@ -35,6 +35,5 @@ cet_build_plugin(CaloT0align art::module
 )
 
 
-#install_headers(SUBDIRS inc)
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloCalibration/CosmicsCalib/fcl)

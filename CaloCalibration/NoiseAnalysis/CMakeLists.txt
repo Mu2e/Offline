@@ -13,6 +13,5 @@ cet_build_plugin(BaselineAnalyzer art::module
     ROOT::Tree
 )
 
-#install_headers(SUBDIRS inc)
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloCalibration/NoiseAnalysis/fcl)
