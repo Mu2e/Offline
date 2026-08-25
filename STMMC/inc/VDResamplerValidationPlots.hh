@@ -58,8 +58,8 @@
 // and both sides of a pair are then given the same stored z-range, so equal colour means
 // equal density. Each view also gets a side-by-side canvas ("c2_<name>") with both panels
 // drawn COLZ, which is what supplies the colour-axis bar needed to read a bin content back
-// off a colour; the stat box there is reduced to the entry count, the one number
-// normalization has not erased. Those canvases are drawn with the kInferno palette (ROOT's
+// off a colour; each panel is labelled with its entry count, the one number normalization has
+// not erased. Those canvases are drawn with the kInferno palette (ROOT's
 // port of matplotlib's inferno: perceptually uniform and colourblind-safe), which is applied
 // at draw time and so is baked into the stored canvas -- the bare histograms alongside it
 // still take whatever palette the viewing session has.
@@ -88,8 +88,8 @@
 #include "TH2D.h"
 #include "THStack.h"
 #include "TLegend.h"
+#include "TLatex.h"
 #include "TPad.h"
-#include "TPaveStats.h"
 #include "TStyle.h"
 #include "TTree.h"
 
@@ -887,9 +887,16 @@ public:
                 // An all-empty pair would give zmax=0 and an inverted range; leave those to
                 // ROOT rather than storing min==max.
                 if (zmax > 0.0) h->SetMaximum(zmax);
-                // Default draw option, so opening one straight from a TBrowser still shows the
-                // colour axis rather than a scatter of dots.
-                h->SetOption("COLZ");
+                // Default draw option for opening this histogram on its own (a TBrowser, or a
+                // script that just calls Draw()): "COL" rather than "COLZ" so it comes up as a
+                // colour map instead of a scatter of dots.
+                //
+                // Deliberately NOT "COLZ": the palette bar is drawn OUTSIDE the frame, in the
+                // pad's right margin, and a bare Draw() uses ROOT's default margin, which has
+                // no room for it -- the bar then lands on top of the plot. A stored option
+                // cannot carry a margin with it, so the only way to get a correctly placed
+                // palette is a pad set up for one, which is what the c2_* canvases below do.
+                h->SetOption("COL");
             }
             // Side-by-side COLZ canvas for this view, built after the normalization and the
             // matched z-range above so both panels share one colour scale.
@@ -1011,11 +1018,10 @@ private:
     // matched z-range from finalize(), so the two bars are identical and a colour means the
     // same density in both panels.
     //
-    // The stat box is reduced to the ENTRY COUNT alone: the name/mean/RMS rows are noise for a
-    // correlation view and sit on top of the data, but the entry count is worth keeping since
-    // normalization has erased every other trace of how much statistics went into each side.
-    // gStyle is set per pad here rather than globally, so drawing these does not disturb the
-    // 1D overlay canvases' own stat settings.
+    // ROOT's stat box is switched off and the ENTRY COUNT is drawn as a plain label instead:
+    // the name/mean/RMS rows are noise for a correlation view, but the entry count is worth
+    // keeping since normalization has erased every other trace of how much statistics went
+    // into each side.
     void write2DComparisonCanvas(const Dim2DSpec& s, TH2D& mother, TH2D& generated) {
         if (!dir_) return;
 
@@ -1026,13 +1032,6 @@ private:
         c->SetCanvasSize(1300, 620);
         // No divider spacing; each pad's own margins below set the gap between them.
         c->Divide(2, 1, 0.0, 0.0);
-
-        // 10 = entries only: every other stat digit (name, mean, RMS, under/overflow, integral,
-        // skewness, kurtosis) is off. gStyle is read when a stat box is CREATED, which happens
-        // lazily at draw time, so it must be in force before either Draw below -- and is
-        // restored afterwards rather than left changed for whatever the job draws next.
-        const int savedOptStat = gStyle->GetOptStat();
-        gStyle->SetOptStat(10);
 
         // kInferno is ROOT's port of matplotlib's inferno: perceptually uniform (equal steps in
         // density read as equal steps in colour), colourblind-safe, and legible printed in
@@ -1070,35 +1069,39 @@ private:
             gPad->SetTopMargin(0.08);
             gPad->SetBottomMargin(0.12);
 
-            h->SetStats(1);
+            // No ROOT stat box at all: the entry count is drawn as a TLatex below. Coaxing
+            // TPaveStats into showing one line proved unreliable -- the box is built lazily at
+            // draw time from global state, and a panel could end up with the full
+            // name/mean/RMS listing regardless of the optStat set here or on the box itself.
+            // One number is not worth that; a label always renders exactly what it is given.
+            h->SetStats(0);
             h->SetTitle((ctitle + " (" + role + ")").c_str());
-            // Draw option passed explicitly AND stored: TH1::Draw("") falls back to the option
-            // set on the histogram (finalize() stores "COLZ"), so the stored one has to agree
-            // with what is wanted here or it silently wins.
-            h->SetOption("COLZ");
+            // The title strip is drawn by the pad, so its size is a pad-level setting; without
+            // this the default title runs into the palette's exponent label.
+            h->SetTitleSize(0.045, "t");
+            // COLZ here (with the right margin set above to hold the bar), while the STORED
+            // option stays "COL" -- this pad is built for a palette, a bare Draw() elsewhere is
+            // not. Passing the option to Draw() rather than through SetOption() is what keeps
+            // those two independent.
             h->Draw("COLZ");
-            gPad->Update();   // creates this pad's TPaveStats, using the optStat set above
 
-            // Style the box only now: TPaveStats does not exist until the Update above builds
-            // it. It is REBUILT here rather than reused -- a box left over from an earlier draw
-            // keeps that draw's contents and would ignore the entries-only optStat, which is
-            // what left one panel with the full name/mean/RMS listing.
-            if (auto* stats = dynamic_cast<TPaveStats*>(h->FindObject("stats"))) {
-                stats->SetOptStat(10);   // entries only, whatever the box was built with
-                // Bottom-left, sitting on the same line as the x-axis title so it occupies the
-                // margin strip rather than covering the distribution.
-                stats->SetX1NDC(gPad->GetLeftMargin());
-                stats->SetX2NDC(gPad->GetLeftMargin() + 0.30);
-                stats->SetY1NDC(0.005);
-                stats->SetY2NDC(gPad->GetBottomMargin() - 0.055);
-                stats->SetFillStyle(0);     // transparent
-                stats->SetBorderSize(0);
-                gPad->Modified();
-            }
+            // Entry count, bottom-left, on the same line as the x-axis title so it sits in the
+            // margin strip rather than over the distribution. GetEntries() is the fill count
+            // and survives the normalization that erased every other absolute number.
+            char entries[64];
+            snprintf(entries, sizeof(entries), "Entries = %.0f", h->GetEntries());
+            TLatex* label = new TLatex();
+            label->SetNDC();
+            label->SetTextSize(0.040);
+            label->SetTextAlign(11);   // left, bottom
+            label->DrawLatex(gPad->GetLeftMargin(), 0.02, entries);
+            label->SetBit(kCanDelete);
+
+            gPad->Modified();
+            gPad->Update();
         }
 
         c->Update();
-        gStyle->SetOptStat(savedOptStat);
         gStyle->SetNumberContours(savedContours);
     }
 
@@ -1233,7 +1236,7 @@ private:
             "W1[#color[8]{#bf{0}},#infty) / JSD[#color[8]{#bf{0}},1] / "
             "TV[#color[8]{#bf{0}},1] / KS[#color[8]{#bf{0}},1] / "
             "#chi^{2}/NDF(#color[8]{#bf{~1}})";
-        TLegend* legRatio = new TLegend(0.18, 0.74, 0.97, 0.88, kMetricHeader);
+        TLegend* legRatio = new TLegend(0.18, 0.80, 0.97, 0.94, kMetricHeader);
         legRatio->SetFillStyle(0);
         legRatio->SetBorderSize(0);
         char entry[512];
