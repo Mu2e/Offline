@@ -244,7 +244,7 @@ namespace mu2e
                   std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                   std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                   std::cerr << "Zero block error!" << std::endl;
-                  decoder.PrintBlockFEBII(iDataBlock);
+                  if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
                   crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::zeroBlockError,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                   continue;
                 }
