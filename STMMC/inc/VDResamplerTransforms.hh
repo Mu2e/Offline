@@ -18,9 +18,45 @@ namespace mu2e {
     // tunable momentum scale
     constexpr double kP0 = 1.0; // MeV/c
 
-    // safety constants for numerical stability in the forward and inverse transforms
+    // safety constants for numerical stability in the forward and inverse transforms.
+    // NOTE kRadiusSafetyEpsilon is a pure numerical guard with several unrelated uses
+    // (an r>eps test in mm before dividing by r to build the local polar frame, and a
+    // floor on pTot in MeV before log). It is NOT the radial clamp — see
+    // kRhoClampEpsilon below, which is a physics/conditioning choice and must be tuned
+    // independently.
     constexpr double kRadiusSafetyEpsilon = 1e-6;
     constexpr double kMinSafeTime = 0.1;
+
+    // Radial clamp for the position transform: rho is capped at 1-kRhoClampEpsilon
+    // before u=atanh(rho). This bounds u at atanh(1-eps) and, more importantly, bounds
+    // the Jacobian du/dr = 1/(VDr(1-rho^2)) ~ 1/(2 eps), which is what couples a fixed
+    // MSE budget in u-space to physical density.
+    //
+    // Motivation: with the historical 1e-6 the Jacobian spanned ~5e5, so equal MSE
+    // effort per unit u badly under-served large radius. A generated-vs-source radial
+    // density ratio showed a smooth ~0.78 -> ~1.18 tilt over rho ~ 0.3 -> 0.85 (i.e.
+    // generated events pushed outward), and reweighting the generated sample by that
+    // radial ratio alone restored the physical x distribution (std dev 1075 -> 1030
+    // against a source 1032), confirming the bias is radial rather than angular.
+    //
+    // Trade-off in eps: larger eps flattens the Jacobian but truncates real area near
+    // the rim (the truncated area fraction is ~2*VDr*eps/VDr = 2 eps for a uniform
+    // disc, and the cut mass piles onto the clamp).
+    //     eps    u_max   1/(1-rho^2)   r cut from a 2000 mm rim   area cut
+    //     1e-6    7.25       5e5              0.002 mm            ~2e-4 %
+    //     1e-4    4.95       5e3              0.2   mm            ~0.02 %
+    //     1e-3    3.80       5e2              2     mm            ~0.2  %
+    //     1e-2    2.65       5e1             20     mm            ~2    %
+    // 1e-4 is the conservative starting point: 100x less Jacobian range for ~0.02% of
+    // the area. If the residual tilt is still significant, 1e-3 is the next step; past
+    // ~3e-2 the physical truncation outweighs the conditioning gain. When changing it,
+    // re-measure both the radial ratio and the fraction of generated events landing on
+    // the clamp (which was 0/100000 at 1e-6 and will grow with eps).
+    //
+    // Changing this changes the forward transform, so a model trained at one value must
+    // be generated at the same value. That is NOT currently enforced or recorded
+    // anywhere, so a mismatch fails silently. Check code versions for consistency.
+    constexpr double kRhoClampEpsilon = 1e-4;
     // Independent floor for pz in divisions (slope basis). Distinct from
     // kRadiusSafetyEpsilon because it guards a different quantity (longitudinal
     // momentum, not transverse radius). If it is ever used, the input pz was
@@ -182,7 +218,8 @@ namespace mu2e {
                                 double& xTrans, double& yTrans)
     {
       double rho = r / VDr;
-      rho = std::min(rho, 1.0 - kRadiusSafetyEpsilon); // avoid rho >= 1
+      // Bounds both u and the Jacobian du/dr; see kRhoClampEpsilon for the trade-off.
+      rho = std::min(rho, 1.0 - kRhoClampEpsilon); // avoid rho >= 1
       const double u = 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(r/VDr)
       const double theta = std::atan2(dy, dx);
       xTrans = u * std::cos(theta);
@@ -191,6 +228,12 @@ namespace mu2e {
 
     // Inverse position transform: (xTrans,yTrans) -> detector-space (x,y) and the
     // local frame (dx,dy,r) needed to rotate momentum back. Shared by all bases.
+    //
+    // Deliberately NOT clamped to the forward map's kRhoClampEpsilon range: tanh already
+    // guarantees rho<1, and a generated u above the forward u_max is better left to land
+    // smoothly within the last fraction of a mm than snapped onto a hard edge, which
+    // would build exactly the rim spike the clamp exists to avoid. The generated-vs-
+    // source radial ratio near rho=1 is the diagnostic for whether that tail matters.
     inline void invertPosition(double xTrans, double yTrans, double x0, double y0,
                                double VDr,
                                double& x, double& y, double& dx, double& dy, double& r)
