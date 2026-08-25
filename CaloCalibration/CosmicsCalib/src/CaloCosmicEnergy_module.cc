@@ -395,13 +395,15 @@ void CaloCosmicEnergy::analyze(art::Event const& event) {
                                               .get()
                                               ->energyDep());
             // normalized tracks by fidpaths.h
-            hSiPMfp[IDs[iCry]][iSiPM]->Fill(caloClusters[iClu]
+            if (path[iCry] > 0){
+              hSiPMfp[IDs[iCry]][iSiPM]->Fill(caloClusters[iClu]
                                                 .caloHitsPtrVector()[whichHit[iCry]]
                                                 .get()
                                                 ->recoCaloDigis()[iSiPM]
                                                 .get()
                                                 ->energyDep() *
                                             cryDim / path[iCry]);
+            }
           }
         }
       } // chi2 cut
@@ -766,7 +768,7 @@ double CaloCosmicEnergy::langaufun(double* x, double* par) {
 float CaloCosmicEnergy::findpath(float m, float q, float x, float y) {
   float xup = 0;
   float yright = 0;
-  float path = 0;
+  float path = -1;
   float xlow = 0;
   float yleft = 0;
 
