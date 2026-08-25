@@ -100,7 +100,7 @@ namespace mu2e {
 
     virtual void beginJob();
     virtual void endJob();
-    virtual void beginRun(const art::Run & run);
+    virtual void beginRun(const art::Run &);
     virtual void beginSubRun(const art::SubRun& sr);
 
     // This is called for each event.
@@ -385,7 +385,7 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------//
-  void ReadTriggerPath::beginRun(const art::Run & run) {
+  void ReadTriggerPath::beginRun(const art::Run &) {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
   }
 

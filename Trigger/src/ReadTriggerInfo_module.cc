@@ -199,7 +199,7 @@ namespace mu2e {
 
     virtual void beginJob();
     virtual void endJob();
-    virtual void beginRun(const art::Run & run);
+    virtual void beginRun(const art::Run &);
     virtual void beginSubRun(const art::SubRun& sr);
 
     // This is called for each event.
@@ -743,7 +743,7 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------//
-  void ReadTriggerInfo::beginRun(const art::Run & run) {
+  void ReadTriggerInfo::beginRun(const art::Run &) {
     // get bfield
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;

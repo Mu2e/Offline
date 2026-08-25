@@ -28,7 +28,7 @@ namespace mu2e
   public:
     explicit DigiFilter(fhicl::ParameterSet const& pset);
     virtual bool filter(art::Event& event) override;
-    virtual bool endRun( art::Run& run ) override;
+    virtual bool endRun( art::Run& ) override;
 
   private:
     art::InputTag   _sdTag;
@@ -119,7 +119,7 @@ namespace mu2e
     return retval;
   }
 
-  bool DigiFilter::endRun( art::Run& run ) {
+  bool DigiFilter::endRun( art::Run& ) {
     if(_debug > 0 && _nevt > 0){
       mf::LogInfo("DigiFilter") << moduleDescription().moduleLabel() << " passed " << _npass << " events out of "
                                 << _nevt << " for a ratio of " << float(_npass)/float(_nevt);

@@ -38,7 +38,7 @@ namespace mu2e {
 
   private:
     bool filter  (art::Event& event) override;
-    bool endRun  (art::Run&   run  ) override;
+    bool endRun  (art::Run&        ) override;
     static bool goodHit (const MSDHit& hit); //uses no member data
 
     // Inputs
@@ -87,7 +87,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  bool MSDHitFilter::endRun(art::Run& run) {
+  bool MSDHitFilter::endRun(art::Run&) {
     // Print a summary of the filter results
     const float rate = (_nevt > 0) ? float(_npass)/float(_nevt) : 0.f;
     TLOG(TLVL_DEBUG + 2) << "passed " << _npass << " events out of " << _nevt << " for a ratio of " << rate;
