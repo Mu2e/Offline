@@ -50,7 +50,9 @@
 // (1809, 844 and 347 keV, each +/- 15 keV).
 // The 2D views carry NO metrics -- W1/JSD/TV/KS and chi2/NDF are defined here for the 1D
 // marginals only. Like the 1D hists they are rebinned once the statistics are known, to
-// ~sqrt(target) bins per axis. They are made comparable by eye in two steps:
+// the same physical bin width each quantity ended up with in the 1D comparison, so a feature
+// is the same number of mm / MeV / ns wide in both. They are made comparable by eye in two
+// steps:
 // each is normalized to unit volume over its side's WHOLE sample (flow bins included, so a
 // zoomed window is not rescaled by the fraction of the sample that happens to fall in it),
 // and both sides of a pair are then given the same stored z-range, so equal colour means
@@ -69,6 +71,7 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -208,7 +211,8 @@ inline DistributionMetrics computeDistributionMetrics(const TH1D& hist, const TH
 // ---------------------------------------------------------------------------
 constexpr int kMinTargetBins = 50;
 constexpr int kMaxTargetBins = 4000;
-// Per-axis floor for the 2D views, whose target is sqrt() of the 1D one (see finalize).
+// Per-axis floor for the 2D views, which otherwise target their quantity's 1D bin width
+// (see rebinFactorForWidth).
 constexpr int kMinTargetBins2D = 25;
 
 inline int targetBinCount(long n) {
@@ -799,6 +803,9 @@ public:
             // is not known until the rebin factor is. TH1::Rebin may drop a partial group of
             // trailing bins, so read the width back off the axis rather than recomputing it.
             const double width = mother_[i]->GetXaxis()->GetBinWidth(1);
+            // Remembered so the 2D views below can match this dimension's achieved bin width
+            // instead of picking their own (see widthFor2DVar).
+            achievedWidth_[s.suffix] = width;
             const std::string yTitle = binWidthLabel(width, s.binWidthUnit);
             for (TH1D* h : {mother_[i], generated_[i]}) {
                 h->GetXaxis()->SetTitle(s.xTitle.c_str());
@@ -849,23 +856,20 @@ public:
         // histogram, so the matched range travels with the ROOT file to whatever draws it.
         // The floor is pinned at 0 rather than left to autoscale, so an empty bin reads as
         // the bottom of the scale in both plots.
-        // A 2D view spreads the same sample over nx*ny bins, so at the statistics that leave a
-        // 1D marginal with ~target bins, the native 2D binning is mostly empty. Splitting the
-        // budget two ways -- sqrt(target) bins per axis -- keeps a 2D cell's mean occupancy
-        // comparable to a 1D bin's. Floored at kMinTargetBins2D because sqrt() of a
-        // low-statistics target collapses to a handful of cells per axis, which erases the
-        // correlation these views exist to show: a sparse 2D plot still reads, an 8x8 one does
-        // not.
-        const int target2D = std::max(kMinTargetBins2D,
-            static_cast<int>(std::lround(std::sqrt(static_cast<double>(target)))));
-
         for (size_t i = 0; i < specs2D_.size(); ++i) {
             // Coarsen BEFORE normalizing and before taking the z-range: both depend on the
-            // final bin contents. Each axis takes an exact divisor (Rebin2D has the same
-            // requirement TH1::Rebin does), and mother and generated take the same pair so
-            // their bin edges stay aligned.
-            const int fx = rebinFactor(specs2D_[i].xbins, target2D);
-            const int fy = rebinFactor(specs2D_[i].ybins, target2D);
+            // final bin contents. Mother and generated take the same factor pair, so their bin
+            // edges stay aligned.
+            //
+            // Each axis targets the SAME PHYSICAL BIN WIDTH its quantity ended up with in the
+            // 1D comparison, so a feature is the same number of mm / MeV / ns wide in both
+            // views. The target width is converted to a bin COUNT and then routed through the
+            // same rebinFactor() the 1D hists use, which is what guarantees the result is an
+            // exact divisor of the native count -- Rebin2D rejects anything else, exactly as
+            // TH1::Rebin does. The achieved width therefore only approximates the 1D one, to
+            // whatever the available divisors allow.
+            const int fx = rebinFactorForWidth(specs2D_[i], true);
+            const int fy = rebinFactorForWidth(specs2D_[i], false);
             if (fx > 1 || fy > 1) {
                 mother2D_[i]->Rebin2D(fx, fy);
                 generated2D_[i]->Rebin2D(fx, fy);
@@ -893,8 +897,8 @@ public:
         }
         if (!specs2D_.empty())
             report << "\n  " << specs2D_.size() << " 2D correlation view(s) written "
-                   << "(mother/generated pairs, rebinned to ~" << target2D
-                   << " bins per axis, unit-normalized, no metrics).";
+                   << "(mother/generated pairs, rebinned to the 1D bin widths, "
+                   << "unit-normalized, no metrics).";
 
         mf::LogInfo(moduleName_) << report.str();
         return out;
@@ -935,6 +939,53 @@ private:
             "px", "py", "pz"
         };
         return kLogY.count(suffix) > 0;
+    }
+
+    // The 1D dimension a 2D axis variable corresponds to, or "" when it has no 1D counterpart.
+    // pTot, pt, pr and pphi are derived quantities with no 1D histogram of their own; pz is the
+    // closest momentum axis in the 1D set, so they borrow its width and stay on the same
+    // momentum scale as everything else.
+    static std::string oneDimSuffixFor(Var2D v) {
+        switch (v) {
+            case Var2D::kX:    return "x";
+            case Var2D::kY:    return "y";
+            case Var2D::kT:    return "t";
+            case Var2D::kPz:   return "pz";
+            case Var2D::kPTot:
+            case Var2D::kPt:
+            case Var2D::kPr:
+            case Var2D::kPphi: return "pz";   // momentum-like: share the pz bin width
+            case Var2D::kR:    return "";     // radius: no 1D hist, keep the native width
+            case Var2D::kEk:   return "";     // keV energy zoom: its own fine scale
+        }
+        return "";
+    }
+
+    // Rebin factor for one axis of a 2D view, chosen to land as close as possible to the bin
+    // width that axis' quantity ended up with in the 1D comparison.
+    //
+    // The width is turned into a target bin COUNT for this axis' range and then passed to the
+    // same rebinFactor() the 1D path uses, so the returned factor is always an exact divisor
+    // of the native count -- which Rebin2D requires. Returns 1 (native binning) when the
+    // variable has no 1D counterpart or its width was never recorded.
+    int rebinFactorForWidth(const Dim2DSpec& s, bool xAxis) const {
+        const std::string suffix = oneDimSuffixFor(xAxis ? s.xVar : s.yVar);
+        const int    nbins = xAxis ? s.xbins : s.ybins;
+        const double lo    = xAxis ? s.xlo   : s.ylo;
+        const double hi    = xAxis ? s.xhi   : s.yhi;
+        if (suffix.empty() || !(hi > lo) || nbins <= 0) return 1;
+
+        const auto it = achievedWidth_.find(suffix);
+        if (it == achievedWidth_.end() || !(it->second > 0.0)) return 1;
+
+        // Floored at kMinTargetBins2D: an axis whose range is much narrower than its 1D
+        // counterpart's (the prompt-peak time views span 500 ns against the 1D t axis' 5000)
+        // would otherwise be cut to a handful of bins by matching absolute widths, which
+        // destroys exactly the structure the zoom exists to show.
+        const int target = std::max(kMinTargetBins2D,
+                                    static_cast<int>(std::lround((hi - lo) / it->second)));
+        if (target <= 0) return 1;
+        return rebinFactor(nbins, target);
     }
 
     // Axis title / label sizing shared by both pads of a comparison canvas. ROOT's defaults
@@ -1281,6 +1332,10 @@ private:
     std::vector<Dim2DSpec> specs2D_;
     std::vector<TH2D*> mother2D_;
     std::vector<TH2D*> generated2D_;
+
+    // Achieved 1D bin width per dimension suffix, filled as finalize() rebins each one. The
+    // 2D views read it back so their axes land on the same physical widths.
+    std::map<std::string, double> achievedWidth_;
 
     // The directory the plot set was booked in, kept so finalize() can write the overlay
     // canvases into the same place. art::TFileDirectory has no default constructor, hence
