@@ -19,7 +19,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
-#include "artdaq-core-mu2e/Data/EventHeader.hh"
 
 #include <memory>
 #include <iostream>
@@ -36,7 +35,7 @@ namespace mu2e
     using  Comment = fhicl::Comment;
 
     struct EventModeConfig {
-      fhicl::Atom<std::string>   eventMode{ Name("eventMode"), Comment("EventMode: OnSpill, OffSpill, Calib, ...")};
+      fhicl::Atom<std::string>   eventMode{ Name("eventMode"), Comment("EventMode: OnSpill or OffSpill")};
       fhicl::Atom<int>           prescale { Name("prescale") , Comment("Prescale factor")};
     };
 
@@ -45,7 +44,7 @@ namespace mu2e
       uint32_t prescale_;
       std::string name_;
       EventMode(EventWindowMarker::SpillType type, int prescale, std::string const& name ) : type_(type),
-      prescale_(static_cast<uint32_t>(std::max(0,prescale))), name_(name) {}
+      prescale_(static_cast<uint32_t>(prescale)), name_(name) {}
     };
 
     struct Config {
@@ -86,11 +85,14 @@ namespace mu2e
       if(mode.eventMode() == "OffSpill") eventMode_.push_back(EventMode(EventWindowMarker::offspill, mode.prescale(),mode.eventMode()));
       else if(mode.eventMode() == "OnSpill") eventMode_.push_back(EventMode(EventWindowMarker::onspill, mode.prescale(),mode.eventMode()));
       else throw cet::exception("TRIGGER") << "Unknown prescale mode " << mode.eventMode();
+      if(mode.prescale() < 1) throw cet::exception("TRIGGER") << "Prescale factor for mode " << mode.eventMode()
+                                                              << " is " << mode.prescale() << "; it must be >= 1, "
+                                                              << "since 0 rejects every event";
       produces<mu2e::PrescaleFilterFraction,art::InSubRun>(mode.eventMode());
     }
   }
 
-  inline bool PrescaleEvent::filter(art::Event & e)
+  bool PrescaleEvent::filter(art::Event & e)
   {
     // Check for the prescale corresponding to the current event mode
     auto ewmH = e.getValidHandle(ewmtoken_);
@@ -101,7 +103,7 @@ namespace mu2e
       if (spillType == ewm.spillType()){
         ++nevt_[imode];
     // Apply the prescale
-        bool retval = mode.prescale_ > 0 ? e.event() % mode.prescale_ == 0 : false;
+        bool retval = e.event() % mode.prescale_ == 0; //prescale_ >= 1 is enforced in the constructor
         if (retval) ++npass_[imode];
         return retval;
       }
@@ -116,10 +118,11 @@ namespace mu2e
       auto ff = std::make_unique<PrescaleFilterFraction>(mode.prescale_, nevt_[imode],npass_[imode]);
       subrun.put(std::move(ff),mode.name_,art::fullSubRun());
       if(debug_ > 0){
-        double frac = mode.prescale_ > 0 ? 1.0/double(mode.prescale_) : 0.0;
-        std::cout << moduleDescription().moduleLabel() << " mode " << mode.name_ << " passed " << npass_[imode] << " events out of " << nevt_[imode]
-          << " for a ratio of " << ((nevt_[imode] > 0) ? double(npass_[imode])/double(nevt_[imode]) : 0.f)
-          << " with an expected fraction of " << frac  << std::endl;
+        const double frac = 1.0/double(mode.prescale_);
+        mf::LogInfo("PrescaleEvent") << moduleDescription().moduleLabel() << " mode " << mode.name_ << " passed " << npass_[imode]
+                                     << " events out of " << nevt_[imode]
+                                     << " for a ratio of " << ((nevt_[imode] > 0) ? double(npass_[imode])/double(nevt_[imode]) : 0.)
+                                     << " with an expected fraction of " << frac;
        }
       // reset
       npass_[imode] = 0; nevt_[imode] = 0;

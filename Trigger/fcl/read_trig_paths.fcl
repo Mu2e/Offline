@@ -6,7 +6,6 @@
 process_name : readTriggerPaths
 
 services : @local::Services.Reco
-services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
 source: { module_type: RootInput }
 services.TFileService.fileName : "nts.user.read_trig_paths.sequencer.root"
 
@@ -21,4 +20,5 @@ physics : {
     trigger_paths : [              ]
 }
 
+# NOTE: reaches into the Production repo, so this fcl needs Production on FHICL_FILE_PATH
 #include "Production/Validation/database.fcl"
