@@ -285,12 +285,12 @@ particle_training_config : {
     # hard to produce samples for the same POT, low stat so single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_coarse_structure_config
+      @table::common_avg_structure_config
     }
     # default 
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_coarse_structure_config
+      @table::common_avg_structure_config
     }
   }
   # ===== neutrons =====

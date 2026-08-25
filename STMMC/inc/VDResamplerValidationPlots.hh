@@ -49,16 +49,18 @@
 // For photons three further time-vs-energy views zoom on the STM lines of interest
 // (1809, 844 and 347 keV, each +/- 15 keV).
 // The 2D views carry NO metrics -- W1/JSD/TV/KS and chi2/NDF are defined here for the 1D
-// marginals only -- and are NOT rebinned. They are made comparable by eye in two steps:
+// marginals only. Like the 1D hists they are rebinned once the statistics are known, to
+// ~sqrt(target) bins per axis. They are made comparable by eye in two steps:
 // each is normalized to unit volume over its side's WHOLE sample (flow bins included, so a
 // zoomed window is not rescaled by the fraction of the sample that happens to fall in it),
 // and both sides of a pair are then given the same stored z-range, so equal colour means
 // equal density. Each view also gets a side-by-side canvas ("c2_<name>") with both panels
 // drawn COLZ, which is what supplies the colour-axis bar needed to read a bin content back
 // off a colour; the stat box there is reduced to the entry count, the one number
-// normalization has not erased. The colour PALETTE itself is a draw-time gStyle global that
-// does not persist in a ROOT file, so it stays the drawing session's choice; kInferno is the
-// intended one.
+// normalization has not erased. Those canvases are drawn with the kInferno palette (ROOT's
+// port of matplotlib's inferno: perceptually uniform and colourblind-safe), which is applied
+// at draw time and so is baked into the stored canvas -- the bare histograms alongside it
+// still take whatever palette the viewing session has.
 //
 // Header-only; depends on ROOT (TH1D/TH2D/TTree/TDirectory) and the VDResampler transforms.
 // Yongyi Wu, Aug. 2026
@@ -84,6 +86,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TPad.h"
+#include "TPaveStats.h"
 #include "TStyle.h"
 #include "TTree.h"
 
@@ -205,6 +208,8 @@ inline DistributionMetrics computeDistributionMetrics(const TH1D& hist, const TH
 // ---------------------------------------------------------------------------
 constexpr int kMinTargetBins = 50;
 constexpr int kMaxTargetBins = 4000;
+// Per-axis floor for the 2D views, whose target is sqrt() of the 1D one (see finalize).
+constexpr int kMinTargetBins2D = 25;
 
 inline int targetBinCount(long n) {
     if (n <= 0) return kMinTargetBins;
@@ -487,25 +492,29 @@ struct Dim2DSpec {
     int    ybins = 0;  double ylo = 0.0, yhi = 0.0;
 };
 
-// The 2D views for this basis and species. Unlike the 1D hists these are binned once, at
-// book time, and never rebinned: a generation job's sample count is not known that early,
-// so the binning is fixed at the finer end of what is useful -- an over-fine 2D view is
-// still readable, while an over-coarse one has already thrown the structure away.
+// The 2D views for this basis and species. These are the NATIVE bin counts, booked fine
+// because a generation job's sample count is not known this early; finalize() coarsens them
+// to the statistics once both counts are in, so an over-fine booking costs nothing while an
+// over-coarse one would have thrown the structure away before it could be recovered.
 inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId) {
     const bool isNeutron = (pdgId == 2112);
     const bool isPhoton  = (pdgId == 22);
     const double pmax  = isNeutron ? 50. : 8.;
     const int    pnbin = 1000;
-    const double pbin  = pmax / pnbin;             // the 1D momentum bin width
     const int    p2bin = pnbin / 5;                // 2D views use 5x coarser momentum bins
 
-    // "<width> MeV", the per-bin width quoted in the momentum axis labels.
-    auto perMeV = [](double w) {
-        char buf[64];
-        snprintf(buf, sizeof(buf), "%.03f MeV", w);
-        return std::string(buf);
-    };
-    const std::string pPer = perMeV(5 * pbin);
+    // Axis titles name the quantity and its unit only -- no per-bin width. finalize() rebins
+    // these views to the statistics, so a width quoted at book time would be wrong by the
+    // rebin factor, and a 2D density is read off the colour axis rather than off a per-bin
+    // count anyway. The width-building code is kept here, commented out, in case the native
+    // widths are wanted back.
+    // const double pbin  = pmax / pnbin;             // the 1D momentum bin width
+    // auto perMeV = [](double w) {
+    //     char buf[64];
+    //     snprintf(buf, sizeof(buf), "%.03f MeV", w);
+    //     return std::string(buf);
+    // };
+    // const std::string pPer = perMeV(5 * pbin);
 
     // The V2/V3 bases carry the momentum structure in pTotal, so the r- and t-correlated
     // views are drawn against pTot there and against pz for V1 -- and the histogram is
@@ -515,28 +524,36 @@ inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId
     const std::string zName = isV2 ? "pTot" : "pz";
 
     std::vector<Dim2DSpec> specs;
-    specs.push_back({zName + "_vs_r", "r [mm] per 5mm", zName + " per " + pPer,
+    // specs.push_back({zName + "_vs_r", "r [mm] per 5mm", zName + " per " + pPer,
+    specs.push_back({zName + "_vs_r", "r [mm]", zName + " [MeV]",
                      Var2D::kR, zVar, 400, 0., 2000., p2bin, 0., pmax});
-    specs.push_back({"pt_vs_r", "r [mm] per 5mm", "pt per " + pPer,
+    // specs.push_back({"pt_vs_r", "r [mm] per 5mm", "pt per " + pPer,
+    specs.push_back({"pt_vs_r", "r [mm]", "pt [MeV]",
                      Var2D::kR, Var2D::kPt, 400, 0., 2000., p2bin, 0., pmax});
     // pr and pphi are SIGNED projections, so unlike pt/pTot they need a two-sided y range:
     // a range starting at 0 would silently drop the inward- / backward-going half of the
     // population into the underflow.
-    specs.push_back({"pr_vs_r", "r [mm] per 5mm", "pr per " + pPer,
+    // specs.push_back({"pr_vs_r", "r [mm] per 5mm", "pr per " + pPer,
+    specs.push_back({"pr_vs_r", "r [mm]", "pr [MeV]",
                      Var2D::kR, Var2D::kPr, 400, 0., 2000., 2 * p2bin, -pmax, pmax});
-    specs.push_back({"pphi_vs_r", "r [mm] per 5mm", "pphi per " + pPer,
+    // specs.push_back({"pphi_vs_r", "r [mm] per 5mm", "pphi per " + pPer,
+    specs.push_back({"pphi_vs_r", "r [mm]", "pphi [MeV]",
                      Var2D::kR, Var2D::kPphi, 400, 0., 2000., 2 * p2bin, -pmax, pmax});
-    specs.push_back({"pt_vs_pz", "pz per " + pPer, "pt per " + pPer,
+    // specs.push_back({"pt_vs_pz", "pz per " + pPer, "pt per " + pPer,
+    specs.push_back({"pt_vs_pz", "pz [MeV]", "pt [MeV]",
                      Var2D::kPz, Var2D::kPt, p2bin, 0., pmax, p2bin, 0., pmax});
-    specs.push_back({"y_vs_x", "x [mm] per 10mm", "y [mm] per 10mm",
+    // specs.push_back({"y_vs_x", "x [mm] per 10mm", "y [mm] per 10mm",
+    specs.push_back({"y_vs_x", "x [mm]", "y [mm]",
                      Var2D::kX, Var2D::kY, 400, -3904. - 2000., -3904. + 2000.,
                      400, -2000., 2000.});
     // Neutrons arrive late and slow, so their time-momentum view needs a far wider window.
     if (isNeutron)
-        specs.push_back({zName + "_vs_t", "t [ns] per 40ns", zName + " per " + perMeV(25 * pbin),
+        // specs.push_back({zName + "_vs_t", "t [ns] per 40ns", zName + " per " + perMeV(25 * pbin),
+        specs.push_back({zName + "_vs_t", "t [ns]", zName + " [MeV]",
                          Var2D::kT, zVar, 500, 0., 20000., p2bin, 0., 5 * pmax});
     else
-        specs.push_back({zName + "_vs_t", "t [ns] per 1ns", zName + " per " + pPer,
+        // specs.push_back({zName + "_vs_t", "t [ns] per 1ns", zName + " per " + pPer,
+        specs.push_back({zName + "_vs_t", "t [ns]", zName + " [MeV]",
                          Var2D::kT, zVar, 500, 0., 500., p2bin, 0., pmax});
 
     // Photon line zooms: time vs energy in a +/- 15 keV window about each STM line of
@@ -552,7 +569,8 @@ inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId
             char nameBuf[64];
             snprintf(nameBuf, sizeof(nameBuf), "t_vs_Ek_%gkeV", line);
             specs.push_back({nameBuf,
-                             "E [keV] per 1keV", "t [ns] per 10ns",
+                             // "E [keV] per 1keV", "t [ns] per 10ns",
+                             "E [keV]", "t [ns]",
                              Var2D::kEk, Var2D::kT,
                              static_cast<int>(std::lround(2 * kHalf / kEkBin)),
                              line - kHalf, line + kHalf,
@@ -661,8 +679,8 @@ public:
                 TH2D* h = dir.make<TH2D>((s.name + "_" + role).c_str(),
                                          (title + " (" + role + ")").c_str(),
                                          s.xbins, s.xlo, s.xhi, s.ybins, s.ylo, s.yhi);
-                // Unlike the 1D hists, whose axis titles wait for the rebin factor, these are
-                // never rebinned, so their titles are final at book time.
+                // Final at book time: these titles name the quantity and unit only, with no
+                // per-bin width to go stale when finalize() rebins the view.
                 h->GetXaxis()->SetTitle(s.xTitle.c_str());
                 h->GetYaxis()->SetTitle(s.yTitle.c_str());
                 h->Sumw2();
@@ -821,9 +839,8 @@ public:
             writeComparisonCanvas(s, *mother_[i], *generated_[i], m);
         }
 
-        // The 2D views are normalized (to unit volume, on both sides) but not rebinned and
-        // not scored: they are read by eye, and the rebin factor above is chosen for the
-        // metrics of the 1D marginals, which do not apply here.
+        // The 2D views are rebinned and normalized but not scored: they are read by eye, and
+        // the W1/JSD/TV/KS metrics above are defined for the 1D marginals only.
         //
         // Both sides of a pair then get the SAME z-range, so equal colour means equal
         // density when the two are put next to each other -- without this ROOT autoscales
@@ -832,7 +849,28 @@ public:
         // histogram, so the matched range travels with the ROOT file to whatever draws it.
         // The floor is pinned at 0 rather than left to autoscale, so an empty bin reads as
         // the bottom of the scale in both plots.
+        // A 2D view spreads the same sample over nx*ny bins, so at the statistics that leave a
+        // 1D marginal with ~target bins, the native 2D binning is mostly empty. Splitting the
+        // budget two ways -- sqrt(target) bins per axis -- keeps a 2D cell's mean occupancy
+        // comparable to a 1D bin's. Floored at kMinTargetBins2D because sqrt() of a
+        // low-statistics target collapses to a handful of cells per axis, which erases the
+        // correlation these views exist to show: a sparse 2D plot still reads, an 8x8 one does
+        // not.
+        const int target2D = std::max(kMinTargetBins2D,
+            static_cast<int>(std::lround(std::sqrt(static_cast<double>(target)))));
+
         for (size_t i = 0; i < specs2D_.size(); ++i) {
+            // Coarsen BEFORE normalizing and before taking the z-range: both depend on the
+            // final bin contents. Each axis takes an exact divisor (Rebin2D has the same
+            // requirement TH1::Rebin does), and mother and generated take the same pair so
+            // their bin edges stay aligned.
+            const int fx = rebinFactor(specs2D_[i].xbins, target2D);
+            const int fy = rebinFactor(specs2D_[i].ybins, target2D);
+            if (fx > 1 || fy > 1) {
+                mother2D_[i]->Rebin2D(fx, fy);
+                generated2D_[i]->Rebin2D(fx, fy);
+            }
+
             normalizeToUnitVolume(*mother2D_[i]);
             normalizeToUnitVolume(*generated2D_[i]);
 
@@ -855,7 +893,8 @@ public:
         }
         if (!specs2D_.empty())
             report << "\n  " << specs2D_.size() << " 2D correlation view(s) written "
-                   << "(mother/generated pairs, unit-normalized, no metrics).";
+                   << "(mother/generated pairs, rebinned to ~" << target2D
+                   << " bins per axis, unit-normalized, no metrics).";
 
         mf::LogInfo(moduleName_) << report.str();
         return out;
@@ -898,6 +937,20 @@ private:
         return kLogY.count(suffix) > 0;
     }
 
+    // Axis title / label sizing shared by both pads of a comparison canvas. ROOT's defaults
+    // (0.035) are sized for a full-canvas plot; on a half-height pad they come out small
+    // enough to be hard to read once the canvas is scaled down in a browser or a slide.
+    static void enlargeAxisTitles(TH1* h) {
+        if (!h) return;
+        for (TAxis* a : {h->GetXaxis(), h->GetYaxis()}) {
+            a->SetTitleSize(0.055);
+            a->SetLabelSize(0.045);
+        }
+        // Keep the enlarged titles clear of the (also enlarged) tick labels.
+        h->GetXaxis()->SetTitleOffset(0.90);
+        h->GetYaxis()->SetTitleOffset(1.10);
+    }
+
     // Build the side-by-side mother/generated canvas for one 2D correlation view.
     //
     // Both panels are drawn COLZ, which is what puts the colour-axis (palette) bar beside each
@@ -916,33 +969,83 @@ private:
         const std::string cname = "c2_" + s.name;
         const std::string ctitle = label_ + " " + s.name;
         TCanvas* c = dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
-        c->SetCanvasSize(1400, 620);
-        c->Divide(2, 1);
+        // Two roughly square panels, width a little over height, side by side.
+        c->SetCanvasSize(1300, 620);
+        // No divider spacing; each pad's own margins below set the gap between them.
+        c->Divide(2, 1, 0.0, 0.0);
 
         // 10 = entries only: every other stat digit (name, mean, RMS, under/overflow, integral,
-        // skewness, kurtosis) is off. This is a GLOBAL, and it has to be in force at Draw time
-        // for the stat box to be built this way, so it is set here and restored below rather
-        // than left changed for whatever the job draws next.
+        // skewness, kurtosis) is off. gStyle is read when a stat box is CREATED, which happens
+        // lazily at draw time, so it must be in force before either Draw below -- and is
+        // restored afterwards rather than left changed for whatever the job draws next.
         const int savedOptStat = gStyle->GetOptStat();
         gStyle->SetOptStat(10);
+
+        // kInferno is ROOT's port of matplotlib's inferno: perceptually uniform (equal steps in
+        // density read as equal steps in colour), colourblind-safe, and legible printed in
+        // greyscale -- none of which ROOT's default rainbow manages. This is a draw-time global
+        // like optStat above, and it is what the drawn canvas is coloured with.
+        //
+        // Not saved/restored the way optStat is: TStyle exposes no getter for the current
+        // palette id (only the expanded colour array), so there is nothing to read back. The
+        // job's later drawing therefore inherits kInferno -- acceptable here because the only
+        // other drawing this class does is the 1D overlays, which carry explicit line and
+        // marker colours and are unaffected by the palette.
+        gStyle->SetPalette(kInferno);
+        // 255 contours instead of ROOT's default 20, so the colour axis reads as a smooth
+        // gradient rather than as visible bands.
+        const int savedContours = gStyle->GetNumberContours();
+        gStyle->SetNumberContours(255);
 
         const std::pair<TH2D*, const char*> panels[2] = {
             {&mother, "mother"}, {&generated, "generated"}
         };
         int pad = 1;
         for (const auto& [h, role] : panels) {
+            const bool isLast = (pad == 2);
             c->cd(pad++);
-            // Room on the right for the COLZ palette bar, which is drawn outside the frame and
-            // would otherwise be clipped at the default margin.
-            gPad->SetRightMargin(0.16);
-            gPad->SetLeftMargin(0.13);
+            // Only the right-hand panel carries the palette bar: finalize() gave the pair a
+            // matched z-range, so the two bars would be identical and the second is wasted
+            // width. The left panel therefore needs only a small right margin, and the two
+            // frames sit close together.
+            gPad->SetRightMargin(isLast ? 0.16 : 0.02);
+            gPad->SetLeftMargin(isLast ? 0.10 : 0.13);
+            gPad->SetTopMargin(0.08);
+            gPad->SetBottomMargin(0.12);
+            // A stat box built on an earlier draw is reused as-is and would ignore the optStat
+            // set above; deleting it forces a rebuild, so BOTH panels get an entries-only box
+            // rather than only whichever was drawn first.
+            if (TObject* old = h->GetListOfFunctions()->FindObject("stats")) {
+                h->GetListOfFunctions()->Remove(old);
+                delete old;
+            }
             h->SetStats(1);
             h->SetTitle((ctitle + " (" + role + ")").c_str());
-            h->Draw("COLZ");
+            h->Draw(isLast ? "COLZ" : "COL");
+            gPad->Update();   // build this pad's stat box while optStat is still 10
+
+            // Place and style the box only now: TPaveStats does not exist until the Update
+            // above creates it. The default sits flush against the frame's right edge, which
+            // on the COLZ panel is exactly where the palette bar is, so the two overlap.
+            // Ending the box at the frame edge (1 - right margin) puts its right side in line
+            // with the palette rather than under it; transparent and border-less so whatever
+            // it covers still reads.
+            if (auto* stats = dynamic_cast<TPaveStats*>(h->FindObject("stats"))) {
+                const double frameRight = 1.0 - gPad->GetRightMargin();
+                const double top = 1.0 - gPad->GetTopMargin() - 0.01;
+                stats->SetX2NDC(frameRight);
+                stats->SetX1NDC(frameRight - 0.26);
+                stats->SetY2NDC(top);
+                stats->SetY1NDC(top - 0.07);
+                stats->SetFillStyle(0);     // transparent
+                stats->SetBorderSize(0);
+                gPad->Modified();
+            }
         }
 
-        c->Update();   // builds the stat boxes and the palette while optStat is still 10
+        c->Update();
         gStyle->SetOptStat(savedOptStat);
+        gStyle->SetNumberContours(savedContours);
     }
 
     // Build the mother-vs-generated overlay canvas for one dimension and write it into the
@@ -973,11 +1076,19 @@ private:
         const std::string ctitle = label_ + " " + s.suffix;
         TCanvas* c = dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
         c->SetCanvasSize(800, 1000);
-        c->Divide(1, 2);
+        // Small inter-pad gap: Divide's default 0.01 leaves each pad its own ~0.1 top and
+        // bottom margin, so ~20% of the canvas height ends up as empty space between the two
+        // plots. The margins are tightened per pad below.
+        c->Divide(1, 2, 0.0, 0.0);
 
         // --- top pad: the two distributions overlaid ---
         c->cd(1);
         gPad->SetLeftMargin(0.15);
+        gPad->SetRightMargin(0.03);
+        // Little below the top plot: the ratio pad supplies the shared x axis. A small amount
+        // is kept rather than zero so the lowest y tick label is not clipped.
+        gPad->SetBottomMargin(0.04);
+        gPad->SetTopMargin(0.03);
         if (useLogY(s.suffix)) gPad->SetLogy(1);
 
         TH1D* hMother = static_cast<TH1D*>(mother.Clone((s.suffix + "_ov_mother").c_str()));
@@ -986,7 +1097,10 @@ private:
             h->SetDirectory(nullptr);   // owned by the canvas, not by the output directory
             h->SetTitle("");
             h->SetStats(0);
-            h->SetMarkerStyle(1);
+            // A visible marker: style 1 is a single pixel, which disappears next to the error
+            // bars now being drawn.
+            h->SetMarkerStyle(kFullCircle);
+            h->SetMarkerSize(0.5);
             h->SetBit(kCanDelete);
         }
         hMother->SetLineColor(kRed + 1);
@@ -995,26 +1109,38 @@ private:
         hGen->SetMarkerColor(kBlue - 4);
 
         THStack* stack = new THStack(("hs_" + s.suffix).c_str(), ctitle.c_str());
-        stack->Add(hMother);
-        stack->Add(hGen);
-        stack->Draw("nostack");
-        stack->GetHistogram()->GetXaxis()->SetTitle(s.xTitle.c_str());
+        stack->Add(hMother, "E");
+        stack->Add(hGen, "E");
+        // "E" per entry above draws each as points with error bars; "nostack" overlays them
+        // rather than summing. Bin errors are what say whether a discrepancy is real or just
+        // the sparser side's statistics.
+        stack->Draw("nostack E");
         stack->GetHistogram()->GetYaxis()->SetTitle(mother.GetYaxis()->GetTitle());
-        stack->GetHistogram()->GetYaxis()->SetTitleOffset(1.2);
+        enlargeAxisTitles(stack->GetHistogram());
+        // The two pads share one x axis, drawn under the ratio pad. Repeating its labels and
+        // title here would only re-open the gap the tightened margins just closed.
+        stack->GetHistogram()->GetXaxis()->SetTitle("");
+        stack->GetHistogram()->GetXaxis()->SetLabelSize(0.0);
         stack->SetBit(kCanDelete);
 
-        // Transparent and inside the frame, so the distribution behind stays readable.
-        TLegend* leg = new TLegend(0.62, 0.72, 0.88, 0.88);
+        // Pushed to the far right of the frame so it clears the distribution, which for these
+        // shapes peaks left of centre. Transparent, so anything behind it still reads.
+        TLegend* leg = new TLegend(0.74, 0.74, 0.97, 0.89);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
-        leg->AddEntry(hMother, "mother (MC truth)", "lp");
-        leg->AddEntry(hGen,    "generated", "lp");
+        leg->AddEntry(hMother, "mother (MC truth)", "lep");
+        leg->AddEntry(hGen,    "generated", "lep");
         leg->Draw("SAME");
         leg->SetBit(kCanDelete);
 
         // --- bottom pad: generated / mother ratio ---
         c->cd(2);
         gPad->SetLeftMargin(0.15);
+        gPad->SetRightMargin(0.03);
+        // Nothing above (it butts against the top pad); the x-axis title and labels for both
+        // plots live below this one.
+        gPad->SetTopMargin(0.03);
+        gPad->SetBottomMargin(0.13);
         gPad->SetLogy(0);
 
         TH1D* ratio = static_cast<TH1D*>(generated.Clone((s.suffix + "_ratio").c_str()));
@@ -1024,15 +1150,18 @@ private:
         ratio->SetStats(0);
         ratio->SetLineColor(kBlue - 4);
         ratio->SetMarkerColor(kBlue - 4);
-        ratio->SetMarkerStyle(1);
+        ratio->SetMarkerStyle(kFullCircle);
+        ratio->SetMarkerSize(0.5);
         ratio->GetXaxis()->SetTitle(s.xTitle.c_str());
         ratio->GetYaxis()->SetTitle("generated / mother");
-        ratio->GetYaxis()->SetTitleOffset(1.2);
+        enlargeAxisTitles(ratio);
         // Ratios rarely exceed ~3; a fixed window keeps the flat-at-1 reference readable
         // instead of letting one wild low-statistics bin set the scale.
         ratio->SetMinimum(0.0);
         ratio->SetMaximum(3.0);
-        ratio->Draw("HIST");
+        // "E" rather than "HIST": TH1::Divide propagates the two sides' bin errors into the
+        // ratio, and a ratio bin is only meaningfully off 1 if its error bar does not cover it.
+        ratio->Draw("E");
         ratio->SetBit(kCanDelete);
 
         // Metrics in the legend header. Green (TLatex #color[8] == kGreen+2) marks the value
