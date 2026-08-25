@@ -244,7 +244,7 @@ particle_training_config : {
     # in the particle summary (2 stage, inverse CDF for stage 1)
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_avg_structure_config
+      @table::common_coarse_structure_config
     }
     # much fewer events than the electron sample, recommend using the electron model
     MuBeam : {

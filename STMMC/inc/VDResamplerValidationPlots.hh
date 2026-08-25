@@ -53,8 +53,12 @@
 // each is normalized to unit volume over its side's WHOLE sample (flow bins included, so a
 // zoomed window is not rescaled by the fraction of the sample that happens to fall in it),
 // and both sides of a pair are then given the same stored z-range, so equal colour means
-// equal density. Palette is left to the drawing script (gStyle is a draw-time global that
-// does not persist in the file); kInferno is the intended one.
+// equal density. Each view also gets a side-by-side canvas ("c2_<name>") with both panels
+// drawn COLZ, which is what supplies the colour-axis bar needed to read a bin content back
+// off a colour; the stat box there is reduced to the entry count, the one number
+// normalization has not erased. The colour PALETTE itself is a draw-time gStyle global that
+// does not persist in a ROOT file, so it stays the drawing session's choice; kInferno is the
+// intended one.
 //
 // Header-only; depends on ROOT (TH1D/TH2D/TTree/TDirectory) and the VDResampler transforms.
 // Yongyi Wu, Aug. 2026
@@ -67,6 +71,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "art_root_io/TFileDirectory.h"
@@ -79,6 +84,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TPad.h"
+#include "TStyle.h"
 #include "TTree.h"
 
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
@@ -404,13 +410,17 @@ inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
     const bool isNeutron = (pdgId == 2112);
     const double pmax  = isNeutron ? 50. : 8.;
     const int    pnbin = 1000;
+    // pz is the beam direction and reaches past the transverse scale pmax is set by; the same
+    // bin width, twice the range.
+    const double pzmax  = 2. * pmax;
+    const int    pznbin = 2 * pnbin;
     const double tmax  = isNeutron ? 20000. : 5000.;
     const int    tnbin = isNeutron ? 2000 : 500;   // 10 ns per bin either way
 
     std::vector<DimSpec> specs;
     specs.push_back({"px", "px [MeV]", " MeV", 2 * pnbin, -pmax, pmax, false, kPx});
     specs.push_back({"py", "py [MeV]", " MeV", 2 * pnbin, -pmax, pmax, false, kPy});
-    specs.push_back({"pz", "pz [MeV]", " MeV", pnbin, 0., pmax, false, kPz});
+    specs.push_back({"pz", "pz [MeV]", " MeV", pznbin, 0., pzmax, false, kPz});
     specs.push_back({"x",  "x [mm]", "mm", 800, -3904. - 2000., -3904. + 2000., false, kX});
     specs.push_back({"y",  "y [mm]", "mm", 800, -2000., 2000., false, kY});
     specs.push_back({"t",  "t [ns]", "ns", tnbin, 0., tmax, false, kT});
@@ -835,7 +845,13 @@ public:
                 // An all-empty pair would give zmax=0 and an inverted range; leave those to
                 // ROOT rather than storing min==max.
                 if (zmax > 0.0) h->SetMaximum(zmax);
+                // Default draw option, so opening one straight from a TBrowser still shows the
+                // colour axis rather than a scatter of dots.
+                h->SetOption("COLZ");
             }
+            // Side-by-side COLZ canvas for this view, built after the normalization and the
+            // matched z-range above so both panels share one colour scale.
+            write2DComparisonCanvas(specs2D_[i], *mother2D_[i], *generated2D_[i]);
         }
         if (!specs2D_.empty())
             report << "\n  " << specs2D_.size() << " 2D correlation view(s) written "
@@ -880,6 +896,53 @@ private:
             "px", "py", "pz"
         };
         return kLogY.count(suffix) > 0;
+    }
+
+    // Build the side-by-side mother/generated canvas for one 2D correlation view.
+    //
+    // Both panels are drawn COLZ, which is what puts the colour-axis (palette) bar beside each
+    // one, so a reader can convert a colour back into a bin content. The pair already carries a
+    // matched z-range from finalize(), so the two bars are identical and a colour means the
+    // same density in both panels.
+    //
+    // The stat box is reduced to the ENTRY COUNT alone: the name/mean/RMS rows are noise for a
+    // correlation view and sit on top of the data, but the entry count is worth keeping since
+    // normalization has erased every other trace of how much statistics went into each side.
+    // gStyle is set per pad here rather than globally, so drawing these does not disturb the
+    // 1D overlay canvases' own stat settings.
+    void write2DComparisonCanvas(const Dim2DSpec& s, TH2D& mother, TH2D& generated) {
+        if (!dir_) return;
+
+        const std::string cname = "c2_" + s.name;
+        const std::string ctitle = label_ + " " + s.name;
+        TCanvas* c = dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
+        c->SetCanvasSize(1400, 620);
+        c->Divide(2, 1);
+
+        // 10 = entries only: every other stat digit (name, mean, RMS, under/overflow, integral,
+        // skewness, kurtosis) is off. This is a GLOBAL, and it has to be in force at Draw time
+        // for the stat box to be built this way, so it is set here and restored below rather
+        // than left changed for whatever the job draws next.
+        const int savedOptStat = gStyle->GetOptStat();
+        gStyle->SetOptStat(10);
+
+        const std::pair<TH2D*, const char*> panels[2] = {
+            {&mother, "mother"}, {&generated, "generated"}
+        };
+        int pad = 1;
+        for (const auto& [h, role] : panels) {
+            c->cd(pad++);
+            // Room on the right for the COLZ palette bar, which is drawn outside the frame and
+            // would otherwise be clipped at the default margin.
+            gPad->SetRightMargin(0.16);
+            gPad->SetLeftMargin(0.13);
+            h->SetStats(1);
+            h->SetTitle((ctitle + " (" + role + ")").c_str());
+            h->Draw("COLZ");
+        }
+
+        c->Update();   // builds the stat boxes and the palette while optStat is still 10
+        gStyle->SetOptStat(savedOptStat);
     }
 
     // Build the mother-vs-generated overlay canvas for one dimension and write it into the
