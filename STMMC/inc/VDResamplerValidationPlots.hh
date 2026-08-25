@@ -908,7 +908,7 @@ private:
         // written by TFileService at close -- calling Write() as well would store it twice.
         const std::string cname = "c_" + s.suffix;
         const std::string ctitle = label_ + " " + s.suffix;
-        TCanvas* c = &dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
+        TCanvas* c = dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
         c->SetCanvasSize(800, 1000);
         c->Divide(1, 2);
 
