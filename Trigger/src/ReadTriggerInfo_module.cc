@@ -32,8 +32,6 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 
 //Data products
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -190,11 +188,9 @@ namespace mu2e {
       fhicl::Atom<size_t>            nCaloTrig          {Name("nCaloTriggers"      ), Comment("Number of calorimeter triggers"            )  };
       fhicl::Atom<size_t>            nCaloCalibTrig     {Name("nCaloCalibTriggers" ), Comment("Number of calorimeter calibration triggers")  };
       fhicl::Atom<art::InputTag>     sdTag              {Name("strawDigiCollection"), Comment("makeSD"                                    ), "makeSD"  };
-      fhicl::Atom<art::InputTag>     chTag              {Name("comboHitCollection" ), Comment("TTmakeSH"                                  ), "TTmakeSH"};
       fhicl::Atom<art::InputTag>     cdTag              {Name("caloDigiCollection" ), Comment("CaloDigiFromShower"                        ), "CaloDigiFromShower"  };
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
-      fhicl::Atom<float>             duty_cycle         {Name("dutyCycle"          ), Comment("Duty cycle"                                ), 0.3};
       fhicl::Atom<string>            processName        {Name("processName"        ), Comment("globalTrigger"                             ), ""  };
     };
 
@@ -238,18 +234,15 @@ namespace mu2e {
     int                       _nCaloTrig;
     int                       _nCaloCalibTrig;
     std::vector<std::string>  _trigPaths;
-    art::InputTag             _trigAlgTag;
     art::InputTag             _sdTag;
-    art::InputTag             _chTag;
     art::InputTag             _cdTag;
     art::InputTag             _genCountTag;
     art::InputTag             _PBITag;
 
-    double                    _duty_cycle;
     string                    _processName;
     int                       _nProcess;
-    double                    _bz0;
-    double                    _nPOT;
+    double                    _bz0   = 0.;
+    double                    _nPOT  = 0.;
 
     std::vector<trigInfo_>    _trigAll;
     std::vector<trigInfo_>    _trigFinal;
@@ -266,16 +259,12 @@ namespace mu2e {
     caloCalibrationHist_      _caloCalibHist;
     occupancyHist_            _occupancyHist;
 
-    const mu2e::Tracker*      _tracker;
-    const mu2e::ComboHitCollection*    _chcol;
-    const art::Event*                  _event;
-    const mu2e::HelixSeedCollection*   _hsCprCol;
-    const mu2e::HelixSeedCollection*   _hsTprCol;
+    const mu2e::Tracker*      _tracker = nullptr;
 
     float  _minPOT, _maxPOT;
     const int _genOccIndex;
 
-    bool _useNGen; //use gen event count for normalization if available
+    bool _useNGen = false; //use gen event count for normalization if available
   };
 
   ReadTriggerInfo::ReadTriggerInfo(const art::EDAnalyzer::Table<Config>& config):
@@ -286,11 +275,9 @@ namespace mu2e {
     _nCaloTrig           (config() .nCaloTrig()      ),
     _nCaloCalibTrig      (config() .nCaloCalibTrig() ),
     _sdTag               (config() .sdTag()          ),
-    _chTag               (config() .chTag()          ),
     _cdTag               (config() .cdTag()          ),
     _genCountTag         (config() .genCountTag()    ),
     _PBITag              (config() .PBITag()         ),
-    _duty_cycle          (config() .duty_cycle()     ),
     _processName         (config() .processName()    ),
     _nProcess            (0                          ),
     _minPOT              (0.                         ),
@@ -359,8 +346,10 @@ namespace mu2e {
 
     art::TFileDirectory trigBDWDir = Tfs->mkdir("trigBDW");
 
-    Hist._hTrigBDW[0] = trigBDWDir.make<TH1F>("hTrigBDW_global"    , "Trigger bandwidth; ; rate [Hz]"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));
-    Hist._hTrigBDW[1] = trigBDWDir.make<TH1F>("hTrigBDW_cumulative", "Cumulative Trigger bandwidth; ; rate [Hz]"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));
+    // NOTE: these hold the accepted-event fraction, not a rate. Converting to Hz needs the
+    // microbunch period and the duty cycle; until that is restored the axis says what is there.
+    Hist._hTrigBDW[0] = trigBDWDir.make<TH1F>("hTrigBDW_global"    , "Trigger bandwidth; ; accepted fraction"           , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));
+    Hist._hTrigBDW[1] = trigBDWDir.make<TH1F>("hTrigBDW_cumulative", "Cumulative Trigger bandwidth; ; accepted fraction", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));
 
   }
   //--------------------------------------------------------------------------------//
@@ -496,6 +485,10 @@ namespace mu2e {
     if(_nTrackTrig > kNTrackTrig) throw cet::exception("BADCONFIG") << "Number of track triggers assumed " << _nTrackTrig << " is greater than the maximum " << kNTrackTrig << "\n";
     if(_nCaloTrig > kNCaloOnly) throw cet::exception("BADCONFIG") << "Number of calo-only triggers assumed " << _nCaloTrig << " is greater than the maximum " << kNCaloOnly << "\n";
     if(_nCaloCalibTrig > kNCaloCalib) throw cet::exception("BADCONFIG") << "Number of calo calibration triggers assumed " << _nCaloCalibTrig << " is greater than the maximum " << kNCaloCalib << "\n";
+    if(_genOccIndex >= kNOcc) throw cet::exception("BADCONFIG") << "Occupancy index 2*nTrackTriggers + nCaloTriggers = " << _genOccIndex << " is greater than the maximum " << kNOcc-1 << "\n";
+    if(size_t(_nTrackTrig) > _nMaxTrig || size_t(_nCaloTrig) > _nMaxTrig || size_t(_nCaloCalibTrig) > _nMaxTrig)
+      throw cet::exception("BADCONFIG") << "nPathIDs (" << _nMaxTrig << ") must be at least as large as each per-type trigger count; "
+                                        << "the per-path label vectors are sized from it\n";
 
     // Initialize the output histograms
     bookHistograms();
@@ -504,7 +497,9 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::endJob() {
     if(_nProcess <= 0) {
-      if(_diagLevel > 0) printf("[ReadTriggerInfo::%s] Setting N(processed) from %i to 1\n", __func__, _nProcess);
+      // _nProcess is the denominator of every efficiency and rejection below
+      mf::LogWarning("ReadTriggerInfo") << "N(processed) is " << _nProcess
+                                        << "; normalising to 1, so every efficiency below is a raw count";
       _nProcess = 1;
     }
 
@@ -550,13 +545,14 @@ namespace mu2e {
     //helix
     if(_diagLevel > 2) printf("[ReadTriggerInfo::%s] Setting helix occupancy histogram titles\n", __func__);
     for (int i=_nTrackTrig; i<_nTrackTrig*2; ++i) {
+      const auto& label = _trigHelix[i-_nTrackTrig].label;
       for (int j=0; j<kNOccVar; ++j) {
         if (_occupancyHist._hOccInfo[i][j] != nullptr)    {
-          std::string title = _trigHelix[i].label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
+          std::string title = label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
           _occupancyHist._hOccInfo[i][j]->SetTitle(title.c_str());
         }
         if (_occupancyHist._h2DOccInfo[i][j] != nullptr)    {
-          std::string title = _trigHelix[i].label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
+          std::string title = label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
           _occupancyHist._h2DOccInfo[i][j]->SetTitle(title.c_str());
         }
       }
@@ -564,13 +560,14 @@ namespace mu2e {
     //calo trig
     if(_diagLevel > 2) printf("[ReadTriggerInfo::%s] Setting calo histogram titles\n", __func__);
     for (int i=_nTrackTrig*2; i<_nTrackTrig*2+_nCaloTrig; ++i) {
+      const auto& label = _trigCaloOnly[i-_nTrackTrig*2].label;
       for (int j=0; j<kNOccVar; ++j) {
         if (_occupancyHist._hOccInfo[i][j] != nullptr)    {
-          std::string title = _trigCaloOnly[i].label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
+          std::string title = label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
           _occupancyHist._hOccInfo[i][j]->SetTitle(title.c_str());
         }
         if (_occupancyHist._h2DOccInfo[i][j] != nullptr)    {
-          std::string title = _trigCaloOnly[i].label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
+          std::string title = label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
           _occupancyHist._h2DOccInfo[i][j]->SetTitle(title.c_str());
         }
       }
@@ -605,10 +602,10 @@ namespace mu2e {
       if (_trigEvtPS[i].counts > 0) _sumHist._hTrigInfo[3]->SetBinContent(i+1, _trigEvtPS[i].counts);
 
       _sumHist._hTrigInfo[4]->GetXaxis()->SetBinLabel(i+1, _trigHelix[i].label.c_str());
-      if (_trigHelix[i].counts > 0) _sumHist._hTrigInfo[4]->SetBinContent(i+1, _trigHelix[i].counts);
+      if (_trigHelix[i].counts > 0) _sumHist._hTrigInfo[4]->SetBinContent(i+1, _nProcess*1.f/_trigHelix[i].counts);
 
       _sumHist._hTrigInfo[5]->GetXaxis()->SetBinLabel(i+1, _trigCaloCalib[i].label.c_str());
-      if (_trigCaloCalib[i].counts > 0) _sumHist._hTrigInfo[5]->SetBinContent(i+1, _trigCaloCalib[i].counts);
+      if (_trigCaloCalib[i].counts > 0) _sumHist._hTrigInfo[5]->SetBinContent(i+1, _nProcess*1.f/_trigCaloCalib[i].counts);
 
       if (_trigFinal[i].counts > 0) {
         _sumHist._hTrigInfo  [6]->GetXaxis()->SetBinLabel(i+1, _trigFinal[i].label.c_str());
@@ -677,7 +674,8 @@ namespace mu2e {
     //order the array with the filter used at the end of each path
     std::sort(_trigFinal.begin(), _trigFinal.end(), [](const auto a, const auto b) {return a.counts < b.counts; });
 
-    double    mean_mb_rate   = 1.;///(mbtime/CLHEP::s)*_duty_cycle;
+    //no conversion to Hz is applied: see the note on the hTrigBDW axis titles
+    const double mean_mb_rate = 1.;
 
     bool      isFirst(true);
     int       index(0);
@@ -718,8 +716,8 @@ namespace mu2e {
 
     NCorrelated = 0;
 
-    const char* label_ref = VecLabels.at(VecLabels.size()-1).c_str();
     if (VecLabels.size()<2) return;
+    const char* label_ref = VecLabels.at(VecLabels.size()-1).c_str();
 
     //    char* label(0);
 
@@ -808,36 +806,12 @@ namespace mu2e {
       }
     }
 
-    //get the helix collections
-    art::Handle<mu2e::HelixSeedCollection>  hsCprH;
-    if (hsCprH.isValid()) {
-      _hsCprCol = hsCprH.product();
-    }else {
-      _hsCprCol = nullptr;
-    }
-
-    art::Handle<mu2e::HelixSeedCollection>  hsTprH;
-    if (hsTprH.isValid()) {
-      _hsTprCol = hsTprH.product();
-    }else {
-      _hsTprCol = nullptr;
-    }
-
     //get the StrawDigi Collection
     art::Handle<mu2e::StrawDigiCollection> sdH;
     event.getByLabel(_sdTag, sdH);
     const StrawDigiCollection* sdCol(0);
     if (sdH.isValid()) {
       sdCol = sdH.product();
-    }
-
-    //get the ComboHitCollection
-    art::Handle<mu2e::ComboHitCollection> chH;
-    event.getByLabel(_chTag, chH);
-    if (chH.isValid()) {
-      _chcol = chH.product();
-    }else {
-      _chcol = nullptr;
     }
 
     //get the CaloDigi Collection
@@ -886,7 +860,6 @@ namespace mu2e {
           }
           int          index_all(i);//0);
           int          index(i);//0);
-          bool         passed(false);
           size_t       nTrigObj(0);
           //fill the Global Trigger bits info
           _trigAll[index_all].label  = moduleLabel;
@@ -901,40 +874,38 @@ namespace mu2e {
             if(_diagLevel > 3) printf("[ReadTriggerInfo::%s] : Helix-filter module (%s) found in path %s\n", __func__, moduleLabel.c_str(), path.c_str());
             _trigHelix[index].label  = moduleLabel;
             ++_trigHelix[index].counts;
-            passed = true;
             nTrigObj=0;
             if(!trigInfo) throw cet::exception("BADINPUTS") << "Trigger info product not found before needed!\n";
+            bool filledOccupancy = false;
             for (auto const hseed: trigInfo->helixes()) {
-              if(hseed) {
-                ++nTrigObj;
-                fillHelixTrigInfo(index, hseed.get(), _helHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo(_nTrackTrig+helix_trig_index, sdCol, cdCol, _occupancyHist);
-                }
+              if(!hseed) continue;
+              ++nTrigObj;
+              fillHelixTrigInfo(index, hseed.get(), _helHist);
+              if (!filledOccupancy) { //occupancy is a per-event quantity: fill it once
+                filledOccupancy = true;
+                fillOccupancyInfo(_nTrackTrig+helix_trig_index, sdCol, cdCol, _occupancyHist);
               }
-              ++helix_trig_index;
             }//end loop over the helix-collection
+            ++helix_trig_index; //one occupancy slot per helix filter, not per helix
             _helHist._hHelInfo[i][120]->Fill(nTrigObj);
 
           } else if (isTrackFilter(moduleLabel)) {
             if(_diagLevel > 3) printf("[ReadTriggerInfo::%s] : Track-filter module (%s) found in path %s\n", __func__, moduleLabel.c_str(), path.c_str());
             _trigTrack[index].label  = moduleLabel;
             ++_trigTrack[index].counts;
-            passed = true;
             nTrigObj=0;
             if(!trigInfo) throw cet::exception("BADINPUTS") << "Trigger info product not found before needed!\n";
+            bool filledOccupancy = false;
             for (auto const kseed: trigInfo->tracks()) {
-              if(kseed) {
-                ++nTrigObj;
-                fillTrackTrigInfo(index, kseed.get(), _trkHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo(track_trig_index, sdCol, cdCol, _occupancyHist);
-                }
+              if(!kseed) continue;
+              ++nTrigObj;
+              fillTrackTrigInfo(index, kseed.get(), _trkHist);
+              if (!filledOccupancy) { //occupancy is a per-event quantity: fill it once
+                filledOccupancy = true;
+                fillOccupancyInfo(track_trig_index, sdCol, cdCol, _occupancyHist);
               }
-              ++track_trig_index;
             }//end loop over the kaseed-collection
+            ++track_trig_index; //one occupancy slot per track filter, not per track
             _trkHist._hTrkInfo[i][40]->Fill(nTrigObj);
             trigFlag_index.push_back(index_all);
 
@@ -944,7 +915,6 @@ namespace mu2e {
           } else if ( moduleLabel.find("caloCalibCosmic") != std::string::npos) {
             _trigCaloCalib[index].label  = moduleLabel;
             ++_trigCaloCalib[index].counts;
-            passed = false;
             nTrigObj=0;
             if(!trigInfo) throw cet::exception("BADINPUTS") << "Trigger info product not found before needed!\n";
             for (auto const cluster : trigInfo->caloClusters()) {
@@ -958,20 +928,19 @@ namespace mu2e {
             if(_diagLevel > 3) printf("[ReadTriggerInfo::%s] : Calo-filter module (%s) found in path %s\n", __func__, moduleLabel.c_str(), path.c_str());
             _trigCaloOnly[index].label  = moduleLabel;
             ++_trigCaloOnly[index].counts;
-            passed = true;
             nTrigObj=0;
             if(!trigInfo) throw cet::exception("BADINPUTS") << "Trigger info product not found before needed!\n";
+            bool filledOccupancy = false;
             for (auto const clseed: trigInfo->caloClusters()) {
-              if(clseed) {
-                ++nTrigObj;
-                fillCaloTrigInfo(calo_trig_index, clseed.get(), _caloTSeedHist);
-                if (passed) {
-                  passed = false;
-                  fillOccupancyInfo   (_nTrackTrig*2+calo_trig_index, sdCol, cdCol, _occupancyHist);
-                }
+              if(!clseed) continue;
+              ++nTrigObj;
+              fillCaloTrigInfo(calo_trig_index, clseed.get(), _caloTSeedHist);
+              if (!filledOccupancy) { //occupancy is a per-event quantity: fill it once
+                filledOccupancy = true;
+                fillOccupancyInfo   (_nTrackTrig*2+calo_trig_index, sdCol, cdCol, _occupancyHist);
               }
-              ++calo_trig_index;
             }//end loop
+            ++calo_trig_index; //one occupancy slot per calo filter, not per cluster
             //_caloTSeedHist._hCaloOnlyInfo[i][20]->Fill(nTrigObj);
             trigFlag_index.push_back(index_all);
           }
@@ -999,10 +968,9 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed* KSeed, trackInfoHist_& Hist) {
     if(!Hist._hTrkInfo[TrkTrigIndex][0]) throw cet::exception("BADCONFIG") << __func__ << ": Track histogram index " << TrkTrigIndex << " not initialized\n";
-    GlobalConstantsHandle<ParticleDataList> pdt;
 
+    if(KSeed->segments().empty()) return; //nothing to characterise without a segment
     int                nsh = (int)KSeed->hits().size();
-    // KalSegment const& fseg = KSeed->segments().front();
     auto& fseg = KSeed->segments().front();
 
     double     ndof  = std::max(1.0,nsh - 5.0);
@@ -1025,8 +993,9 @@ namespace mu2e {
     }
 
     double lambda = fseg.loopHelix().lam();
-    double pitch  = std::abs(lambda)*6.28;
-    double nLoops = (z_max - z_min)/pitch;
+    double pitch  = std::abs(lambda)*2.*M_PI;
+    //without intersections z_min/z_max keep their sentinel seeds, which would make nLoops meaningless
+    double nLoops = (z_max > z_min && pitch > 0.) ? (z_max - z_min)/pitch : -1.;
 
     if (KSeed->caloCluster()) clE = KSeed->caloCluster()->energyDep();
 
@@ -1042,7 +1011,6 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed* HSeed, helixInfoHist_& Hist) {
     if(!Hist._hHelInfo[HelTrigIndex][0]) throw cet::exception("BADCONFIG") << __func__ << ": Helix histogram index " << HelTrigIndex << " not initialized\n";
-    GlobalConstantsHandle<ParticleDataList> pdt;
     HelixTool helTool(HSeed, _tracker);
 
     int        nch       = (int)HSeed->hits().size();
