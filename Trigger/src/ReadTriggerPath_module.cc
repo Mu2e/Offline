@@ -112,11 +112,9 @@ namespace mu2e {
     bool     isTrackFilter            (const std::string& module);
     bool     isHelixFilter            (const std::string& module);
     bool     isCaloFilter             (const std::string& module);
-    bool     isGlobalFilter           (const std::string& module);
     bool     isTrackPath              (const std::string& path, TriggerResultsNavigator& trigNavig);
     bool     isHelixPath              (const std::string& path, TriggerResultsNavigator& trigNavig);
     bool     isCaloPath               (const std::string& path, TriggerResultsNavigator& trigNavig);
-    bool     isGlobalPath             (const std::string& path, TriggerResultsNavigator& trigNavig);
     bool     isMinBiasPath            (const std::string& path);
 
     void     trigPathVal              (const int Index, TriggerResultsNavigator& trigNavig, summaryInfoHist_& Hist);
@@ -131,6 +129,7 @@ namespace mu2e {
 
     size_t                    _nMaxTrig;
     std::vector<std::string>  _trigPaths;
+    std::vector<std::string>  _bookedTrigPaths; //the menu the histograms were booked for
 
     int                       _nProcess;
     double                    _nPOT;
@@ -139,7 +138,7 @@ namespace mu2e {
 
     float  _minPOT, _maxPOT;
 
-    bool _useNGen; //use gen event count for normalization if available
+    bool _useNGen = false; //use gen event count for normalization if available
   };
 
   ReadTriggerPath::ReadTriggerPath(const art::EDAnalyzer::Table<Config>& config):
@@ -162,6 +161,7 @@ namespace mu2e {
   void ReadTriggerPath::bookHistograms() {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     _nMaxTrig = _trigPaths.size();
+    _bookedTrigPaths = _trigPaths;
     if(_nMaxTrig > kMaxTriggers) throw cet::exception("BADCONFIG") << __func__ << ": Input trigger path list size (" << _nMaxTrig << ") is larger than the maximum ("
                                                                    << kMaxTriggers << ")\n";
     art::ServiceHandle<art::TFileService> tfs;
@@ -187,7 +187,7 @@ namespace mu2e {
     const int npot_bins(200);
     Hist._hNPOT         = trigInfoDir.make<TH1F>("hNPOT"              , "N(POT);N(POT)/#mu-bunch", npot_bins, _minPOT, _maxPOT);
 
-    Hist._hTrig2D       = trigInfoDir.make<TH2F>("hTrigOverlap"       , "Trigger overlap: N(x and y)/N(x)", _nMaxTrig, -0.5, _nMaxTrig-0.5, _nMaxTrig, -0.5, _nMaxTrig);
+    Hist._hTrig2D       = trigInfoDir.make<TH2F>("hTrigOverlap"       , "Trigger overlap: N(x and y)/N(x)", _nMaxTrig, -0.5, _nMaxTrig-0.5, _nMaxTrig, -0.5, _nMaxTrig-0.5);
 
     art::TFileDirectory cutflowDir = Tfs->mkdir("cutflowDir");
     art::TFileDirectory potEffDir  = Tfs->mkdir("POTEffDir");
@@ -201,34 +201,21 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isTrackFilter(const std::string& module) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     return module.find("KSFilter") != std::string::npos;
   }
 
   //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isHelixFilter(const std::string& module) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     return module.find("HSFilter") != std::string::npos;
   }
 
   //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isCaloFilter(const std::string& module) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     return module.find("calo") != std::string::npos && module.find("Filter") != std::string::npos;
   }
 
   //--------------------------------------------------------------------------------//
-  bool ReadTriggerPath::isGlobalFilter(const std::string& module) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
-    return (module.find("HSFilter")!= std::string::npos && module.find("CosmicHelix")!= std::string::npos) ||
-      module.find("caloPhotonFilter")!= std::string::npos ||
-      module.find("caloMVANNCEFilter")!= std::string::npos ||
-      module.find("TSFilter")       != std::string::npos;
-  }
-
-  //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isTrackPath(const std::string& path, TriggerResultsNavigator& trigNavig) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     bool passed = false;
     // check if the module labels are available for a more reliable check
     auto modules = trigNavig.triggerModules(path);
@@ -245,7 +232,6 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isHelixPath(const std::string& path, TriggerResultsNavigator& trigNavig) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     bool passed = false;
     // check if the module labels are available for a more reliable check
     auto modules = trigNavig.triggerModules(path);
@@ -263,7 +249,6 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isCaloPath(const std::string& path, TriggerResultsNavigator& trigNavig) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     bool passed = false;
     // check if the module labels are available for a more reliable check
     auto modules = trigNavig.triggerModules(path);
@@ -277,22 +262,7 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------------//
-  bool ReadTriggerPath::isGlobalPath(const std::string& path, TriggerResultsNavigator& trigNavig) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
-    bool passed = false;
-    // check if the module labels are available for a more reliable check
-    auto modules = trigNavig.triggerModules(path);
-    if(modules.size() > 0) {
-      for (auto module : modules) passed |= isGlobalFilter(module);
-    } else { // use the path name to determine if it's a global path
-      passed = false; // FIXME: Determine global path names
-    }
-    return passed;
-  }
-
-  //--------------------------------------------------------------------------------//
   bool ReadTriggerPath::isMinBiasPath(const std::string& path) {
-    if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     return path.find("minBias") != std::string::npos;
   }
 
@@ -301,23 +271,28 @@ namespace mu2e {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     const std::string path = trigNavig.getTrigPathNameByIndex(Index);
     const unsigned lastModule = trigNavig.indexLastModule(path);
+    // indexLastModule returns unsigned(-1) for a path it does not know; using it as a
+    // loop bound below would run ~4e9 iterations, so reject it explicitly
+    if(lastModule == unsigned(-1)) throw cet::exception("BADCONFIG") << __func__ << ": Trigger path " << path << " is not known to the navigator\n";
     auto h = Hist._hTrigModules[Index];
     if(!h) throw cet::exception("BADCONFIG") << __func__ << ": Trigger path index " << Index << " is out of bounds for initialized histograms\n";
     if(h->GetEntries() == 0) h->SetTitle((path + " path cut-flow").c_str());
 
-    // set the bin labels if needed
-    if(h->Integral() <= 0.) {
-      auto modules = trigNavig.triggerModules(path);
-      auto size = modules.size();
-      if(size > 0) {
-        for(unsigned i = 0; i < size; ++i) {
-          h->GetXaxis()->SetBinLabel(h->FindBin(i), (i < size) ? modules[i].c_str() : "Final");
-        }
+    const auto modules = trigNavig.triggerModules(path);
+    const unsigned nModules = modules.size();
+
+    // set the bin labels if needed: one bin per module, plus a final bin for
+    // events that passed the whole chain
+    if(h->Integral() <= 0. && nModules > 0) {
+      for(unsigned i = 0; i <= nModules; ++i) {
+        h->GetXaxis()->SetBinLabel(h->FindBin(i), (i < nModules) ? modules[i].c_str() : "Final");
       }
     }
 
-    // cut-flow along the trigger path
-    for (unsigned i = 0; i < lastModule ; ++i) h->Fill(i);
+    // cut-flow along the trigger path. indexLastModule is the index of the module that
+    // made the decision, and that module did run, so the bound is inclusive
+    for (unsigned i = 0; i <= lastModule ; ++i) h->Fill(i);
+    if(trigNavig.accepted(path)) h->Fill(nModules); //the whole chain passed
   }
 
 
@@ -330,7 +305,10 @@ namespace mu2e {
   void ReadTriggerPath::endJob() {
     if(_diagLevel > 4) printf("[ReadTriggerPath::%s]\n", __func__);
     if(_nProcess <= 0) {
-      if(_diagLevel > 0) printf("[ReadTriggerPath::%s] Setting N(processed) from %i to 1\n", __func__, _nProcess);
+      // _nProcess is the denominator of every efficiency and rejection below, so record
+      // the substitution at a severity a default-configured job actually shows
+      mf::LogWarning("ReadTriggerPath") << "N(processed) is " << _nProcess
+                                        << "; normalising to 1, so every efficiency below is a raw count";
       _nProcess = 1;
     }
     if(_diagLevel > 0) printf("[ReadTriggerPath::%s] N(processed) = %i\n", __func__, _nProcess);
@@ -418,7 +396,7 @@ namespace mu2e {
     sr.getByLabel(_genCountTag, genCountH);
     _useNGen = genCountH.isValid();
     if(_useNGen) _nProcess += genCountH.product()->count();
-    if(_diagLevel > 0) printf("[ReadTriggerPath::%s] use gen count product flag = %o\n", __func__, _useNGen);
+    if(_diagLevel > 0) printf("[ReadTriggerPath::%s] use gen count product flag = %d\n", __func__, _useNGen);
   }
 
   //--------------------------------------------------------------------------------//
@@ -450,7 +428,11 @@ namespace mu2e {
     //check if the histograms have been initialized
     if(!_sumHist._hTrigInfo[0]) bookHistograms();
 
-    if(_trigPaths.size() > _nMaxTrig) throw cet::exception("BADCONFIG") << "Number of triggers assumed (" << _nMaxTrig << ") is less than the observed (" << _trigPaths.size() << ")\n";
+    // the histogram binning and bin labels are fixed by the first menu seen, so any
+    // later change to the menu -- not just a change in its size -- invalidates them
+    if(_trigPaths != _bookedTrigPaths) throw cet::exception("BADCONFIG") << "Trigger menu changed within the job: histograms were booked for "
+                                                                        << _bookedTrigPaths.size() << " paths and this event has " << _trigPaths.size()
+                                                                        << ". Process files with a common menu.\n";
 
     //initialize bin labels
     if(_sumHist._hTrigInfo[0]->Integral() <= 0.) {
@@ -476,7 +458,7 @@ namespace mu2e {
     //fill the histogram with the accepted trigger bits
     _sumHist._hNPOT->Fill(_nPOT);
     bool passed(false), track_passed(false), helix_passed(false), calo_passed(false), minbias_passed(false), unknown(false);
-    unsigned naccept(0), exclusive_idx(-1);
+    unsigned naccept(0), exclusive_idx(0);
     for (unsigned i=0; i< trigNavig.getTrigPaths().size(); ++i) {
       const std::string path = trigNavig.getTrigPathNameByIndex(i);
       if(_diagLevel > 4) {
@@ -511,7 +493,7 @@ namespace mu2e {
         minbias_passed |= is_minbias;
         unknown |= !(is_track || is_helix || is_calo || is_minbias || skip_exclusive);
         if(is_track + is_helix + is_calo + is_minbias > 1) {
-          if(_diagLevel > -1) printf("[ReadTriggerPath::%s] Path %s identified as multiple types: track = %o helix = %o calo = %o minbias = %o\n",
+          if(_diagLevel > -1) printf("[ReadTriggerPath::%s] Path %s identified as multiple types: track = %d helix = %d calo = %d minbias = %d\n",
                                      __func__, path.c_str(), is_track, is_helix, is_calo, is_minbias);
         }
         //Fill the correlation matrix
