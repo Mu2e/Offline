@@ -968,6 +968,21 @@ private:
         return "";
     }
 
+    // Momentum and energy axes are binned kMomentumRefineFactor times finer than the width
+    // rule alone would give. Their structure -- a narrow forward peak in pr/pphi, a line in
+    // Ek -- lives in a small part of the range, so the width that suits a broad spatial axis
+    // like r or x is too coarse to resolve it.
+    static bool isMomentumLike(Var2D v) {
+        switch (v) {
+            case Var2D::kPz: case Var2D::kPTot: case Var2D::kPt:
+            case Var2D::kPr: case Var2D::kPphi: case Var2D::kEk:
+                return true;
+            default:
+                return false;
+        }
+    }
+    static constexpr int kMomentumRefineFactor = 2;
+
     // Rebin factor for one axis of a 2D view, chosen to land as close as possible to the bin
     // width that axis' quantity ended up with in the 1D comparison.
     //
@@ -976,7 +991,8 @@ private:
     // of the native count -- which Rebin2D requires. Returns 1 (native binning) when the
     // variable has no 1D counterpart or its width was never recorded.
     int rebinFactorForWidth(const Dim2DSpec& s, bool xAxis) const {
-        const std::string suffix = oneDimSuffixFor(xAxis ? s.xVar : s.yVar);
+        const Var2D  var   = xAxis ? s.xVar : s.yVar;
+        const std::string suffix = oneDimSuffixFor(var);
         const int    nbins = xAxis ? s.xbins : s.ybins;
         const double lo    = xAxis ? s.xlo   : s.ylo;
         const double hi    = xAxis ? s.xhi   : s.yhi;
@@ -985,12 +1001,16 @@ private:
         const auto it = achievedWidth_.find(suffix);
         if (it == achievedWidth_.end() || !(it->second > 0.0)) return 1;
 
+        // Halving the target width doubles the bin count (see isMomentumLike).
+        const double targetWidth = isMomentumLike(var)
+            ? it->second / kMomentumRefineFactor : it->second;
+
         // Floored at kMinTargetBins2D: an axis whose range is much narrower than its 1D
         // counterpart's (the prompt-peak time views span 500 ns against the 1D t axis' 5000)
         // would otherwise be cut to a handful of bins by matching absolute widths, which
         // destroys exactly the structure the zoom exists to show.
         const int target = std::max(kMinTargetBins2D,
-                                    static_cast<int>(std::lround((hi - lo) / it->second)));
+                                    static_cast<int>(std::lround((hi - lo) / targetWidth)));
         if (target <= 0) return 1;
         return rebinFactor(nbins, target);
     }
@@ -1058,7 +1078,14 @@ private:
         };
         int pad = 1;
         for (const auto& [h, role] : panels) {
-            c->cd(pad++);
+            const int index = pad++;
+            c->cd(index);
+            // Pin each pad to exactly half the canvas. Divide()'s own split does not come out
+            // even -- one pad absorbs the canvas edge and ends up a few percent wider, which
+            // showed as one panel visibly larger than the other. Setting the extents here makes
+            // the two identical by construction.
+            gPad->SetPad((index == 1) ? 0.0 : 0.5, 0.0,
+                         (index == 1) ? 0.5 : 1.0, 1.0);
             // IDENTICAL margins on both pads, so the two frames come out the same width and the
             // panels can be compared directly. Both carry their own palette bar (the right
             // margin is what makes room for it): the bars are identical, since finalize() gave
