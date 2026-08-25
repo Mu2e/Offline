@@ -201,7 +201,7 @@ void CaloCosmicEnergy::beginJob() {
     for (int ibin = 0; ibin < Ebin; ibin++) {
       CryALR[iCry][ibin] = new TH1F(Form("Asymmetry_Crystal_%i_band_%i", iCry, ibin),
                                     Form("Asymmetry of crystal %i in band [%i, %i)", iCry,
-                                         (ibin + 1) * Erange, (ibin + 1) * Erange + Erange),
+                                         ibin * Erange, (ibin + 1) * Erange),
                                     200, -1., 1.);
     }
   }
