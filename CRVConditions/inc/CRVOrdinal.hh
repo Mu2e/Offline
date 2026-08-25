@@ -39,6 +39,16 @@ class CRVOrdinal : virtual public ProditionsEntity {
     return true;
   }
 
+  // check, if a channel exists
+  bool offlineExists(CRVROC& channel) const {
+    if(channel.ROC()>=_offMap.size()) return false;
+    if(channel.FEB()>=_offMap.at(channel.ROC()).size()) return false;
+    if(channel.FEBchannel()>=_offMap.at(channel.ROC()).at(channel.FEB()).size()) return false;
+    std::uint16_t offlineChannel = _offMap.at(channel.ROC()).at(channel.FEB()).at(channel.FEBchannel());
+    if (offlineChannel >= CRVId::nChannels) return false;
+    return true;
+  }
+
   // online numbering triplet for an offline channel number
   const CRVROC& online(std::uint16_t channel) const {
     if (_onMap.at(channel).FEBchannel() >= CRVId::nChanPerFEB) {

@@ -9,7 +9,8 @@ BEGIN_PROLOG
       histBins                  : 401
       histMin                   : 1799.5
       histMax                   : 2200.5
-      maxADCspread              : 5  #if firstSampleOnly: false
+      maxADCspread              : 20
+      maxADCspreadFirstTwoSamples : 3
       tmpDBfileName             : "pedestals.txt"
     }
 

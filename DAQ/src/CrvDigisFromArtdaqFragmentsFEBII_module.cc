@@ -219,7 +219,11 @@ namespace mu2e
                 uint16_t dtcID = header->GetID();
                 if(dtcID<_firstCrvDtcID)
                 {
-                  throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
+                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+                  std::cerr << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidDtcId,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+                  break;
                 }
                 uint16_t linkID = header->GetLinkID();
                 uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
@@ -230,17 +234,26 @@ namespace mu2e
                 //e.g. fake pulses
                 if((crvHit.getFpgaChannel() & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
                 //don't decode them, since there is no match to any offline channel.
-                if(rocPort==0) //corrupted data
+                if(rocPort==0) //one of the indicators of a "zero-block error". TODO: implement a better check for this error
                 {
-                  std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                   std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                  std::cerr << "ROC-port-0 error!" << std::endl;
+                  std::cerr << "Zero block error!" << std::endl;
                   decoder.PrintBlockFEBII(iDataBlock);
-                  //TODO: Add to crvDaqErrors
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::zeroBlockError,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                   continue;
                 }
 
                 mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+                if(!channelMap.offlineExists(onlineChannel))
+                {
+                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+                  std::cerr << "Invalid channel ROC: " << rocID <<"  FEB: " << rocPort << "  FEBchannel: "<< febChannel << std::endl;
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidChannel,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+                  continue;
+                }
 
                 uint16_t offlineChannel = channelMap.offline(onlineChannel);
                 int crvBarIndex = offlineChannel / CRVId::nChanPerBar;
@@ -291,13 +304,10 @@ namespace mu2e
                   uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                   //the 5th bit indicates special situations
                   //e.g. fake pulses
-                  if(rocPort==0) continue; //corrupted data
+                  if(rocPort==0) continue; //zero-block error - error already reported above
 
                   uint16_t dtcID = header->GetID();
-                  if(dtcID<_firstCrvDtcID)
-                  {
-                    throw cet::exception("CrvDigisFromArtdaqFragmentsFEBII") << "DTC ID " << dtcID << " is below first Crv DTC ID=" << _firstCrvDtcID;
-                  }
+                  if(dtcID<_firstCrvDtcID) break; //wrong DTC - error already reported above
                   uint16_t linkID = header->GetLinkID();
                   uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                   if(_useROC4asROC2 && rocID==4) rocID=2;
@@ -305,6 +315,8 @@ namespace mu2e
                   if((crvHit.getFpgaChannel() & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                   {
                     mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+                    if(!channelMap.offlineExists(onlineChannel)) continue; //channel doesn't exists - error already reported above
 
                     uint16_t offlineChannel = channelMap.offline(onlineChannel);
                     int crvBarIndex = offlineChannel / CRVId::nChanPerBar;
