@@ -20,5 +20,4 @@ physics : {
     trigger_paths : [              ]
 }
 
-# NOTE: reaches into the Production repo, so this fcl needs Production on FHICL_FILE_PATH
 #include "Production/Validation/database.fcl"
