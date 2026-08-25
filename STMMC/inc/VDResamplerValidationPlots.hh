@@ -34,6 +34,13 @@
 // each hit through forwardTransformSample for the model's basis. The generated
 // distribution is filled one sample at a time from the module's produce().
 //
+// Every dimension -- transformed AND physical -- additionally gets a ready-made comparison
+// CANVAS ("c_<suffix>") written beside the histograms: the two distributions overlaid on top
+// (log-y where the dynamic range needs it), and the generated/mother ratio underneath with
+// the agreement metrics printed in its legend. The canvases are built from the same rebinned,
+// normalized histograms the metrics are computed from, so a number and the shape behind it
+// are always read together without re-deriving anything downstream.
+//
 // Alongside the per-dimension 1D comparison, a set of 2D CORRELATION views is booked for
 // both sides, so the generated and the training pictures can be read side by side:
 //   <pz>_vs_r, pt_vs_r, pr_vs_r, pphi_vs_r, pt_vs_pz, y_vs_x, <pz>_vs_t
@@ -56,6 +63,8 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -64,8 +73,12 @@
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "TCanvas.h"
 #include "TH1D.h"
 #include "TH2D.h"
+#include "THStack.h"
+#include "TLegend.h"
+#include "TPad.h"
 #include "TTree.h"
 
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
@@ -383,12 +396,16 @@ inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis,
     return specs;
 }
 
-// The six recovered physical quantities. The momentum window is widened for neutrons,
-// whose spectrum extends well past the few-MeV range that covers the other species.
+// The six recovered physical quantities. Two windows are widened for neutrons: the momentum
+// one, whose spectrum extends well past the few-MeV range that covers the other species, and
+// the time one, since neutrons are slow enough to keep arriving long after the prompt species
+// have. Both keep the other species' bin width, so only the range changes, not the resolution.
 inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
     const bool isNeutron = (pdgId == 2112);
     const double pmax  = isNeutron ? 50. : 8.;
     const int    pnbin = 1000;
+    const double tmax  = isNeutron ? 20000. : 5000.;
+    const int    tnbin = isNeutron ? 2000 : 500;   // 10 ns per bin either way
 
     std::vector<DimSpec> specs;
     specs.push_back({"px", "px [MeV]", " MeV", 2 * pnbin, -pmax, pmax, false, kPx});
@@ -396,7 +413,7 @@ inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
     specs.push_back({"pz", "pz [MeV]", " MeV", pnbin, 0., pmax, false, kPz});
     specs.push_back({"x",  "x [mm]", "mm", 800, -3904. - 2000., -3904. + 2000., false, kX});
     specs.push_back({"y",  "y [mm]", "mm", 800, -2000., 2000., false, kY});
-    specs.push_back({"t",  "t [ns]", "ns", 500, 0., 5000., false, kT});
+    specs.push_back({"t",  "t [ns]", "ns", tnbin, 0., tmax, false, kT});
     return specs;
 }
 
@@ -506,8 +523,8 @@ inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId
                      400, -2000., 2000.});
     // Neutrons arrive late and slow, so their time-momentum view needs a far wider window.
     if (isNeutron)
-        specs.push_back({zName + "_vs_t", "t [ns] per 100ns", zName + " per " + perMeV(25 * pbin),
-                         Var2D::kT, zVar, 500, 0., 50000., p2bin, 0., 5 * pmax});
+        specs.push_back({zName + "_vs_t", "t [ns] per 40ns", zName + " per " + perMeV(25 * pbin),
+                         Var2D::kT, zVar, 500, 0., 20000., p2bin, 0., 5 * pmax});
     else
         specs.push_back({zName + "_vs_t", "t [ns] per 1ns", zName + " per " + pPer,
                          Var2D::kT, zVar, 500, 0., 500., p2bin, 0., pmax});
@@ -601,6 +618,7 @@ public:
         basis_      = basis;
         pdgId_      = pdgId;
         moduleName_ = moduleName;
+        dir_        = std::make_unique<art::TFileDirectory>(dir);
         specs_      = perDimensionSpecs(basis, pdgId, stats);
         specs2D_    = correlationDimSpecs(basis, pdgId);
         // The 2D views' r and pr/pphi are measured about the SAME detector axis the
@@ -785,6 +803,12 @@ public:
                    << " (" << mother_[i]->GetNbinsX() << " bins): W1=" << m.w1
                    << " JSD=" << m.jsd << " TV=" << m.tv << " KS=" << m.ks
                    << " chi2/NDF=" << m.chi2 << "/" << m.ndf << "=" << m.chi2ndf();
+
+            // Overlay + ratio canvas for THIS dimension. specs_ holds the transformed
+            // coordinates followed by the physical ones, so every dimension of both families
+            // gets one. Built here, after the rebin/normalize/metrics above, so the canvas
+            // shows exactly the histograms the metrics were computed from.
+            writeComparisonCanvas(s, *mother_[i], *generated_[i], m);
         }
 
         // The 2D views are normalized (to unit volume, on both sides) but not rebinned and
@@ -837,11 +861,136 @@ private:
         }
     }
 
-    // "counts per <width><unit> (normalized)". %g trims trailing zeros.
+    // "counts per <width><unit> (normalized)", the width to 3 significant figures.
     static std::string binWidthLabel(double width, const std::string& unit) {
         char buf[128];
-        snprintf(buf, sizeof(buf), "counts per %g%s (normalized)", width, unit.c_str());
+        snprintf(buf, sizeof(buf), "counts per %.3g%s (normalized)", width, unit.c_str());
         return std::string(buf);
+    }
+
+    // Dimensions drawn on a log-y scale: sharply peaked slope/angular distributions, and the
+    // time and momentum distributions, which span several decades. On a linear scale the
+    // peak flattens everything else into the axis and the tails -- where the model most often
+    // disagrees -- become invisible.
+    static bool useLogY(const std::string& suffix) {
+        static const std::set<std::string> kLogY = {
+            "prTrans", "pphiTrans", "urTrans", "uphiTrans",
+            "urTransAsinh", "uphiTransAsinh",
+            "t", "tTrans", "tTransAsinh",
+            "px", "py", "pz"
+        };
+        return kLogY.count(suffix) > 0;
+    }
+
+    // Build the mother-vs-generated overlay canvas for one dimension and write it into the
+    // plot set's directory.
+    //
+    // Layout is two stacked pads, matching the reference comparison plots:
+    //   top    -- both distributions overlaid (normalized, so directly comparable), log-y for
+    //             the wide-dynamic-range dimensions, with a legend naming the two.
+    //   bottom -- generated/mother bin-by-bin ratio, flat at 1 for a perfect match, with the
+    //             agreement metrics printed in the legend header so the number and the shape
+    //             that produced it are read together.
+    //
+    // Called AFTER both sides have been rebinned and normalized, so the ratio divides
+    // histograms that already share bin edges and total area.
+    //
+    // The clones are owned by the canvas (kCanDelete) rather than leaked or added to the
+    // directory: the canvas is what gets written, and the stored hists must keep their own
+    // identity in the file.
+    void writeComparisonCanvas(const DimSpec& s, const TH1D& mother, const TH1D& generated,
+                               const DistributionMetrics& m)
+    {
+        if (!dir_) return;
+
+        // makeAndRegister (not make): a TCanvas does not attach itself to a TDirectory the
+        // way a TH1 does, so registering is what puts it in the output file. It is then
+        // written by TFileService at close -- calling Write() as well would store it twice.
+        const std::string cname = "c_" + s.suffix;
+        const std::string ctitle = label_ + " " + s.suffix;
+        TCanvas* c = &dir_->makeAndRegister<TCanvas>(cname.c_str(), ctitle.c_str());
+        c->SetCanvasSize(800, 1000);
+        c->Divide(1, 2);
+
+        // --- top pad: the two distributions overlaid ---
+        c->cd(1);
+        gPad->SetLeftMargin(0.15);
+        if (useLogY(s.suffix)) gPad->SetLogy(1);
+
+        TH1D* hMother = static_cast<TH1D*>(mother.Clone((s.suffix + "_ov_mother").c_str()));
+        TH1D* hGen    = static_cast<TH1D*>(generated.Clone((s.suffix + "_ov_generated").c_str()));
+        for (TH1D* h : {hMother, hGen}) {
+            h->SetDirectory(nullptr);   // owned by the canvas, not by the output directory
+            h->SetTitle("");
+            h->SetStats(0);
+            h->SetMarkerStyle(1);
+            h->SetBit(kCanDelete);
+        }
+        hMother->SetLineColor(kRed + 1);
+        hMother->SetMarkerColor(kRed + 1);
+        hGen->SetLineColor(kBlue - 4);
+        hGen->SetMarkerColor(kBlue - 4);
+
+        THStack* stack = new THStack(("hs_" + s.suffix).c_str(), ctitle.c_str());
+        stack->Add(hMother);
+        stack->Add(hGen);
+        stack->Draw("nostack");
+        stack->GetHistogram()->GetXaxis()->SetTitle(s.xTitle.c_str());
+        stack->GetHistogram()->GetYaxis()->SetTitle(mother.GetYaxis()->GetTitle());
+        stack->GetHistogram()->GetYaxis()->SetTitleOffset(1.2);
+        stack->SetBit(kCanDelete);
+
+        // Transparent and inside the frame, so the distribution behind stays readable.
+        TLegend* leg = new TLegend(0.62, 0.72, 0.88, 0.88);
+        leg->SetFillStyle(0);
+        leg->SetBorderSize(0);
+        leg->AddEntry(hMother, "mother (MC truth)", "lp");
+        leg->AddEntry(hGen,    "generated", "lp");
+        leg->Draw("SAME");
+        leg->SetBit(kCanDelete);
+
+        // --- bottom pad: generated / mother ratio ---
+        c->cd(2);
+        gPad->SetLeftMargin(0.15);
+        gPad->SetLogy(0);
+
+        TH1D* ratio = static_cast<TH1D*>(generated.Clone((s.suffix + "_ratio").c_str()));
+        ratio->SetDirectory(nullptr);
+        ratio->Divide(&mother);
+        ratio->SetTitle("");
+        ratio->SetStats(0);
+        ratio->SetLineColor(kBlue - 4);
+        ratio->SetMarkerColor(kBlue - 4);
+        ratio->SetMarkerStyle(1);
+        ratio->GetXaxis()->SetTitle(s.xTitle.c_str());
+        ratio->GetYaxis()->SetTitle("generated / mother");
+        ratio->GetYaxis()->SetTitleOffset(1.2);
+        // Ratios rarely exceed ~3; a fixed window keeps the flat-at-1 reference readable
+        // instead of letting one wild low-statistics bin set the scale.
+        ratio->SetMinimum(0.0);
+        ratio->SetMaximum(3.0);
+        ratio->Draw("HIST");
+        ratio->SetBit(kCanDelete);
+
+        // Metrics in the legend header. Green (TLatex #color[8] == kGreen+2) marks the value
+        // each takes for a PERFECT match: W1/JSD/TV/KS are all distances (0 = identical),
+        // chi2/NDF ~ 1. Showing the scale next to the number saves looking up which way is
+        // good for each metric.
+        static const char* const kMetricHeader =
+            "W1[#color[8]{#bf{0}},#infty) / JSD[#color[8]{#bf{0}},1] / "
+            "TV[#color[8]{#bf{0}},1] / KS[#color[8]{#bf{0}},1] / "
+            "#chi^{2}/NDF(#color[8]{#bf{~1}})";
+        TLegend* legRatio = new TLegend(0.16, 0.74, 0.89, 0.88, kMetricHeader);
+        legRatio->SetFillStyle(0);
+        legRatio->SetBorderSize(0);
+        char entry[512];
+        snprintf(entry, sizeof(entry), "%.3g / %.3f / %.3f / %.2g / %.2f",
+                 m.w1, m.jsd, m.tv, m.ks, m.chi2ndf());
+        legRatio->AddEntry(ratio, entry, "lp");
+        legRatio->Draw("SAME");
+        legRatio->SetBit(kCanDelete);
+
+        c->Update();
     }
 
     // Fill the mother histograms from the source ROOT file, pushing every accepted hit
@@ -930,6 +1079,11 @@ private:
     std::vector<Dim2DSpec> specs2D_;
     std::vector<TH2D*> mother2D_;
     std::vector<TH2D*> generated2D_;
+
+    // The directory the plot set was booked in, kept so finalize() can write the overlay
+    // canvases into the same place. art::TFileDirectory has no default constructor, hence
+    // the unique_ptr rather than a bare member.
+    std::unique_ptr<art::TFileDirectory> dir_;
     // Detector-axis origin and rest mass the derived 2D quantities are formed with; taken
     // from the SAME InverseParams the transform uses and the module's ParticleDataList
     // mass, so both sides agree.

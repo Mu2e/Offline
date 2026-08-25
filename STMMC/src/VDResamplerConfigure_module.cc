@@ -81,6 +81,59 @@ namespace mu2e {
       return "pdg_" + std::string(pdgId < 0 ? "m" : "") + std::to_string(std::abs(pdgId));
     }
 
+    // Resolve common_training_config.versionTag for THIS job's data source.
+    //
+    // Accepts either form, so existing plans keep working:
+    //   * a bare string  -- one campaign tag shared by every source (the original behaviour);
+    //   * a sequence     -- one tag PER SOURCE, indexed by the source's position in
+    //                       VDResampler::dataSourceNames() (EleBeam, MuBeam, TargetStops1809,
+    //                       Neutrals). Sources are re-trained on their own schedules, so tying
+    //                       every source to one tag forced a version bump on all of them
+    //                       whenever any single one was regenerated.
+    //
+    // The sequence is indexed by the ENUMERATED source order, not by the order the entries
+    // happen to be written in, so the list must be as long as dataSourceNames() and an
+    // unenumerated dataSourceTag cannot use the per-source form (it has no index to look up).
+    std::string resolveVersionTag(const fhicl::ParameterSet& commonConfig,
+                                  const std::string& dataSourceTag,
+                                  const std::string& trainingPlanFile)
+    {
+      const std::vector<std::string>& sources = VDResampler::dataSourceNames();
+
+      // The enumerated source list, for the error messages below.
+      auto sourceList = [&sources]() {
+        std::ostringstream os;
+        for (size_t i = 0; i < sources.size(); ++i) os << (i ? ", " : "") << sources[i];
+        return os.str();
+      };
+
+      if (commonConfig.is_key_to_atom("versionTag"))
+        return commonConfig.get<std::string>("versionTag");
+
+      if (!commonConfig.is_key_to_sequence("versionTag"))
+        throw cet::exception("VDResamplerConfigure")
+          << "common_training_config.versionTag in " << trainingPlanFile << " must be either a "
+          << "string (one tag for every source) or a sequence of strings (one tag per source, "
+          << "in dataSourceNames() order: " << sourceList() << ").";
+
+      const std::vector<std::string> tags = commonConfig.get<std::vector<std::string>>("versionTag");
+      if (tags.size() != sources.size())
+        throw cet::exception("VDResamplerConfigure")
+          << "common_training_config.versionTag in " << trainingPlanFile << " has " << tags.size()
+          << " entries but there are " << sources.size() << " enumerated data sources; the "
+          << "per-source form needs exactly one tag per source, in this order: " << sourceList()
+          << ".";
+
+      const int index = VDResampler::dataSourceIndex(dataSourceTag);
+      if (index < 0)
+        throw cet::exception("VDResamplerConfigure")
+          << "dataSourceTag '" << dataSourceTag << "' is not one of the enumerated data sources ("
+          << sourceList() << "), so it has no position in the per-source versionTag list in "
+          << trainingPlanFile << ". Use a single versionTag string for an unenumerated source.";
+
+      return tags[static_cast<size_t>(index)];
+    }
+
     // Resolve a per-particle training entry from the plan ParameterSet. pdgId is the
     // OUTER axis (a particle usually trains similarly across sources); source is the
     // finer override. Fallback order:
@@ -232,7 +285,9 @@ namespace mu2e {
       double VDz0 = 0.0;
       double VDr = 0.0;
       bool trainingFromROOT = true;   // common_training_config.trainingFromROOTFile (required)
-      std::string versionTag;         // common_training_config.versionTag (required); embedded in file names
+      std::string versionTag;         // this source's tag, from common_training_config.versionTag
+                                      // (required; a shared string or a per-source sequence —
+                                      // see resolveVersionTag); embedded in file names
       int runNumber = 0;              // common_training_config.runNumber (required); 6-digit field in file names
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
@@ -282,7 +337,10 @@ namespace mu2e {
     requireCommon("VirtualDetectorID");
     requireCommon("VDz0");
     requireCommon("VDr");
-    versionTag        = commonConfig.get<std::string>("versionTag");
+    // versionTag may be one shared string or one-per-source sequence; either way this job
+    // ends up with the single tag for ITS dataSourceTag, so everything downstream (file
+    // names, the summary the generator parses back) is unchanged.
+    versionTag        = resolveVersionTag(commonConfig, dataSourceTag, trainingPlanFile);
     runNumber         = commonConfig.get<int>("runNumber");
     trainingFromROOT  = commonConfig.get<bool>("trainingFromROOTFile");
     VirtualDetectorID = static_cast<VolumeId_type>(commonConfig.get<int>("VirtualDetectorID"));
