@@ -40,7 +40,7 @@ class CRVOrdinal : virtual public ProditionsEntity {
   }
 
   // check, if a channel exists
-  bool offlineExists(CRVROC& channel) const {
+  bool offlineExists(const CRVROC& channel) const {
     if(channel.ROC()>=_offMap.size()) return false;
     if(channel.FEB()>=_offMap.at(channel.ROC()).size()) return false;
     if(channel.FEBchannel()>=_offMap.at(channel.ROC()).at(channel.FEB()).size()) return false;

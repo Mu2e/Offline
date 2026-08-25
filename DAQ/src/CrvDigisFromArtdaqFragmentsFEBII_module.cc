@@ -180,8 +180,22 @@ namespace mu2e
                 std::cout << "CRV packet does not have subsystem ID 2." << std::endl;
                 std::cout << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
               }
-              crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::wrongSubsystemID,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              if(header->GetPacketCount()>0)  //should only be treated as an error, if there was data content.
+                                              //otherwise it is just a header from an unused dtc link, i.e. normal behavior.
+              {
+                crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::wrongSubsystemID,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              }
               continue;
+            }
+
+            uint16_t dtcID = header->GetID();
+            if(dtcID<_firstCrvDtcID)
+            {
+              std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+              std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+              std::cerr << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
+              crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidDtcId,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              break;
             }
             auto subeventHeader = dtcSubEvent.GetHeader();
             crvStatus->emplace_back(*header, *subeventHeader);
@@ -216,15 +230,6 @@ namespace mu2e
               }
               for(auto const& crvHit : crvHits)
               {
-                uint16_t dtcID = header->GetID();
-                if(dtcID<_firstCrvDtcID)
-                {
-                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                  std::cerr << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
-                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidDtcId,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
-                  break;
-                }
                 uint16_t linkID = header->GetLinkID();
                 uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                 if(_useROC4asROC2 && rocID==4) rocID=2;
@@ -306,8 +311,6 @@ namespace mu2e
                   //e.g. fake pulses
                   if(rocPort==0) continue; //zero-block error - error already reported above
 
-                  uint16_t dtcID = header->GetID();
-                  if(dtcID<_firstCrvDtcID) break; //wrong DTC - error already reported above
                   uint16_t linkID = header->GetLinkID();
                   uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                   if(_useROC4asROC2 && rocID==4) rocID=2;
