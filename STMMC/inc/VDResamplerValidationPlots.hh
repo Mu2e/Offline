@@ -946,9 +946,11 @@ private:
             a->SetTitleSize(0.055);
             a->SetLabelSize(0.045);
         }
-        // Keep the enlarged titles clear of the (also enlarged) tick labels.
+        // Keep the enlarged titles clear of the (also enlarged) tick labels. The y offset is
+        // paired with the pads' 0.18 left margin: larger and the title runs off the canvas,
+        // smaller and it lands on the tick labels.
         h->GetXaxis()->SetTitleOffset(0.90);
-        h->GetYaxis()->SetTitleOffset(1.10);
+        h->GetYaxis()->SetTitleOffset(1.30);
     }
 
     // Build the side-by-side mother/generated canvas for one 2D correlation view.
@@ -1006,41 +1008,38 @@ private:
         };
         int pad = 1;
         for (const auto& [h, role] : panels) {
-            const bool isLast = (pad == 2);
             c->cd(pad++);
-            // Only the right-hand panel carries the palette bar: finalize() gave the pair a
-            // matched z-range, so the two bars would be identical and the second is wasted
-            // width. The left panel therefore needs only a small right margin, and the two
-            // frames sit close together.
-            gPad->SetRightMargin(isLast ? 0.16 : 0.02);
-            gPad->SetLeftMargin(isLast ? 0.10 : 0.13);
+            // IDENTICAL margins on both pads, so the two frames come out the same width and the
+            // panels can be compared directly. Both carry their own palette bar (the right
+            // margin is what makes room for it): the bars are identical, since finalize() gave
+            // the pair a matched z-range, but a panel with a colour axis and one without would
+            // be different widths, which is worse than the duplication.
+            gPad->SetRightMargin(0.16);
+            gPad->SetLeftMargin(0.13);
             gPad->SetTopMargin(0.08);
             gPad->SetBottomMargin(0.12);
-            // A stat box built on an earlier draw is reused as-is and would ignore the optStat
-            // set above; deleting it forces a rebuild, so BOTH panels get an entries-only box
-            // rather than only whichever was drawn first.
-            if (TObject* old = h->GetListOfFunctions()->FindObject("stats")) {
-                h->GetListOfFunctions()->Remove(old);
-                delete old;
-            }
+
             h->SetStats(1);
             h->SetTitle((ctitle + " (" + role + ")").c_str());
-            h->Draw(isLast ? "COLZ" : "COL");
-            gPad->Update();   // build this pad's stat box while optStat is still 10
+            // Draw option passed explicitly AND stored: TH1::Draw("") falls back to the option
+            // set on the histogram (finalize() stores "COLZ"), so the stored one has to agree
+            // with what is wanted here or it silently wins.
+            h->SetOption("COLZ");
+            h->Draw("COLZ");
+            gPad->Update();   // creates this pad's TPaveStats, using the optStat set above
 
-            // Place and style the box only now: TPaveStats does not exist until the Update
-            // above creates it. The default sits flush against the frame's right edge, which
-            // on the COLZ panel is exactly where the palette bar is, so the two overlap.
-            // Ending the box at the frame edge (1 - right margin) puts its right side in line
-            // with the palette rather than under it; transparent and border-less so whatever
-            // it covers still reads.
+            // Style the box only now: TPaveStats does not exist until the Update above builds
+            // it. It is REBUILT here rather than reused -- a box left over from an earlier draw
+            // keeps that draw's contents and would ignore the entries-only optStat, which is
+            // what left one panel with the full name/mean/RMS listing.
             if (auto* stats = dynamic_cast<TPaveStats*>(h->FindObject("stats"))) {
-                const double frameRight = 1.0 - gPad->GetRightMargin();
-                const double top = 1.0 - gPad->GetTopMargin() - 0.01;
-                stats->SetX2NDC(frameRight);
-                stats->SetX1NDC(frameRight - 0.26);
-                stats->SetY2NDC(top);
-                stats->SetY1NDC(top - 0.07);
+                stats->SetOptStat(10);   // entries only, whatever the box was built with
+                // Bottom-left, sitting on the same line as the x-axis title so it occupies the
+                // margin strip rather than covering the distribution.
+                stats->SetX1NDC(gPad->GetLeftMargin());
+                stats->SetX2NDC(gPad->GetLeftMargin() + 0.30);
+                stats->SetY1NDC(0.005);
+                stats->SetY2NDC(gPad->GetBottomMargin() - 0.055);
                 stats->SetFillStyle(0);     // transparent
                 stats->SetBorderSize(0);
                 gPad->Modified();
@@ -1087,12 +1086,16 @@ private:
 
         // --- top pad: the two distributions overlaid ---
         c->cd(1);
-        gPad->SetLeftMargin(0.15);
+        // Wide enough on the left that the enlarged y-axis title clears the tick labels
+        // instead of running off the canvas edge.
+        gPad->SetLeftMargin(0.18);
         gPad->SetRightMargin(0.03);
         // Little below the top plot: the ratio pad supplies the shared x axis. A small amount
         // is kept rather than zero so the lowest y tick label is not clipped.
         gPad->SetBottomMargin(0.04);
-        gPad->SetTopMargin(0.03);
+        // Room for the stack's title strip, which is drawn above the frame: at 0.03 the title
+        // sat on top of the distribution.
+        gPad->SetTopMargin(0.10);
         if (useLogY(s.suffix)) gPad->SetLogy(1);
 
         TH1D* hMother = static_cast<TH1D*>(mother.Clone((s.suffix + "_ov_mother").c_str()));
@@ -1127,9 +1130,10 @@ private:
         stack->GetHistogram()->GetXaxis()->SetLabelSize(0.0);
         stack->SetBit(kCanDelete);
 
-        // Pushed to the far right of the frame so it clears the distribution, which for these
-        // shapes peaks left of centre. Transparent, so anything behind it still reads.
-        TLegend* leg = new TLegend(0.74, 0.74, 0.97, 0.89);
+        // Small and pushed into the top-right corner of the frame, clear of both the title
+        // strip above and the distribution below (these shapes peak left of centre).
+        // Transparent, so anything behind it still reads.
+        TLegend* leg = new TLegend(0.80, 0.78, 0.97, 0.89);
         leg->SetFillStyle(0);
         leg->SetBorderSize(0);
         leg->AddEntry(hMother, "mother (MC truth)", "lep");
@@ -1139,7 +1143,9 @@ private:
 
         // --- bottom pad: generated / mother ratio ---
         c->cd(2);
-        gPad->SetLeftMargin(0.15);
+        // Same left/right margins as the top pad, so the two frames line up vertically and a
+        // feature at a given x sits directly above its ratio.
+        gPad->SetLeftMargin(0.18);
         gPad->SetRightMargin(0.03);
         // Nothing above (it butts against the top pad); the x-axis title and labels for both
         // plots live below this one.
@@ -1176,7 +1182,7 @@ private:
             "W1[#color[8]{#bf{0}},#infty) / JSD[#color[8]{#bf{0}},1] / "
             "TV[#color[8]{#bf{0}},1] / KS[#color[8]{#bf{0}},1] / "
             "#chi^{2}/NDF(#color[8]{#bf{~1}})";
-        TLegend* legRatio = new TLegend(0.16, 0.74, 0.89, 0.88, kMetricHeader);
+        TLegend* legRatio = new TLegend(0.18, 0.74, 0.97, 0.88, kMetricHeader);
         legRatio->SetFillStyle(0);
         legRatio->SetBorderSize(0);
         char entry[512];
