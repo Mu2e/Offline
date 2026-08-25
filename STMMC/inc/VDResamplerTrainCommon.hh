@@ -1667,6 +1667,14 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             // Apply before promoteEMA so the frozen-weights log (if the controller
             // turns off here) reflects the pre-promotion state.
             model.updateUseDimWeightController(udwc);
+            // Then clear the controller back to neutral for the new phase. This phase
+            // changes the per-dimension loss scale, so the inherited dimLossEMA_ is stale
+            // and would produce a large spurious weight excursion while it re-converges;
+            // and since train() applies dimWeights_ even when the controller is off, an
+            // inherited skew would otherwise persist for the rest of the run. Ordered
+            // after updateUseDimWeightController so its frozen-weights log still reports
+            // the values the previous phase actually ended on.
+            model.resetDimWeightController();
             if (s.curriculumPromoteEMA[k])
                 model.promoteEMAToNetwork();
         };

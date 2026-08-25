@@ -1397,8 +1397,14 @@ namespace mu2e {
                 }
                 double emaMean = emaSum / dim_;
                 if (emaMean > 0.0) {
+                    // The raw ratio is unbounded and self-reinforcing, and a dimension
+                    // driven far below 1 stops receiving useful gradient entirely, so the
+                    // result is bounded (see clampDimWeights / the header note). No warning
+                    // here: the controller hitting its bounds during a phase transient is
+                    // expected, and warning every epoch would be noise.
                     for (int i = 0; i < dim_; ++i)
-                        dimWeights_[i] = dimLossEMA_[i] / emaMean;
+                        dimWeights_[i] = std::clamp(dimLossEMA_[i] / emaMean,
+                                                    kDimWeightMin_, kDimWeightMax_);
                 }
                 std::ostringstream woss;
                 woss << "Epoch " << e << " dimWeights: [";
@@ -2282,6 +2288,9 @@ namespace mu2e {
             }
             model.dimLossEMA_ = loadedDimLossEMA;
             model.dimWeights_ = loadedDimWeights;
+            // Checkpoints written before the dim-weight bounds existed can carry
+            // arbitrarily skewed weights; enforce the invariant on restore.
+            model.clampDimWeights("Binary checkpoint restore");
 
             // Restore EMA network
             if (hasEMA && useEMANetwork) {
@@ -2911,6 +2920,9 @@ namespace mu2e {
                     loadedDimWeights.size() == static_cast<size_t>(dim)) {
                     model.dimLossEMA_ = loadedDimLossEMA;
                     model.dimWeights_ = loadedDimWeights;
+                    // Checkpoints written before the dim-weight bounds existed can carry
+                    // arbitrarily skewed weights; enforce the invariant on restore.
+                    model.clampDimWeights("CSV checkpoint restore");
                 } else if (!loadedDimLossEMA.empty()) {
                     mf::LogWarning("ScoreBasedDiffusionModel::loadModel")
                         << "Dim weight controller state size mismatch — resetting to defaults (all-zeros EMA, all-ones weights).";

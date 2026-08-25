@@ -280,6 +280,24 @@ namespace mu2e{
             return useDimWeightController_;
         }
 
+        // Return the controller to its neutral start state: all weights 1.0 and a cleared
+        // loss EMA. Intended to be called at a curriculum phase boundary.
+        //
+        // Two problems this addresses. First, a phase change alters the per-dimension loss
+        // SCALE (lossWeightPower, tLowBound/tFocus, batch size, peak sampling, an EMA
+        // promotion), but dimLossEMA_ carries over with a slow decay — so for many epochs
+        // the weights are a ratio of stale-scale to new-scale numbers, which is what
+        // produces the large jump seen at the start of a phase. Second, because train()
+        // applies dimWeights_ whether or not the controller is adapting, a skew left over
+        // from the previous phase would otherwise stay in force for the rest of the run
+        // (and in the saved model) even when the new phase disables the controller.
+        void resetDimWeightController() {
+            std::fill(dimWeights_.begin(), dimWeights_.end(), 1.0);
+            std::fill(dimLossEMA_.begin(), dimLossEMA_.end(), 0.0);
+            mf::LogInfo("ScoreBasedDiffusionModel::resetDimWeightController")
+                << "Dimensional weight controller reset: dimWeights=1.0, dimLossEMA cleared.";
+        }
+
         void promoteEMAToNetwork() {
             if (!useEMANetwork_) {
                 mf::LogWarning("ScoreBasedDiffusionModel")
@@ -911,6 +929,46 @@ namespace mu2e{
         double learningRate_; // Learning rate for training (default: 1e-3)
 
         // Adaptive dimensional weight controller ---
+        // The raw controller output (dimLossEMA_[i]/mean) is unbounded and self-reinforcing:
+        // a dimension that is already well fit gets a small weight, which suppresses its
+        // gradient, which keeps its loss small. Left unclamped this parks well-fit
+        // dimensions at ~0.05 and effectively stops training them. The bounds below cap
+        // that dynamic range; a dimension at kDimWeightMax_ is merely trained faster, but
+        // one below kDimWeightMin_ is not being trained at all, so the floor is the
+        // important half.
+        static constexpr double kDimWeightMin_ = 0.5; // floor on a dimension's gradient weight
+        static constexpr double kDimWeightMax_ = 2.0; // ceiling on a dimension's gradient weight
+
+        // Enforce [kDimWeightMin_, kDimWeightMax_] on dimWeights_, warning if anything
+        // actually moved. Called both where the controller produces new weights and where
+        // loadModel() restores them from a checkpoint, so the bounds are an invariant of
+        // the object rather than a property of one code path. The load path matters
+        // because checkpoints written before the bounds existed can carry arbitrarily
+        // skewed weights, and train() applies dimWeights_ even when the controller is
+        // switched off — so an unclamped restore would otherwise suppress a dimension's
+        // gradient for a whole run with nothing to re-clamp it.
+        void clampDimWeights(const char* context) {
+            std::ostringstream before;
+            bool changed = false;
+            for (int i = 0; i < dim_; ++i) {
+                const double raw = dimWeights_[i];
+                const double c   = std::clamp(raw, kDimWeightMin_, kDimWeightMax_);
+                if (c != raw) changed = true;
+                before << raw << (i < dim_ - 1 ? ", " : "");
+                dimWeights_[i] = c;
+            }
+            if (changed) {
+                std::ostringstream after;
+                for (int i = 0; i < dim_; ++i)
+                    after << dimWeights_[i] << (i < dim_ - 1 ? ", " : "");
+                mf::LogWarning("ScoreBasedDiffusionModel::clampDimWeights")
+                    << context << ": dimWeights outside ["
+                    << kDimWeightMin_ << ", " << kDimWeightMax_ << "] were clamped. "
+                    << "Before: [" << before.str() << "] After: [" << after.str() << "]. "
+                    << "A weight far below 1 means that dimension was receiving almost no "
+                    << "gradient; check whether the affected dimensions are the poorly fit ones.";
+            }
+        }
         bool   useDimWeightController_; // if true, per-dimension gradient weights are applied during training
         double dimWeightEMADecay_;       // EMA decay rate for per-dimension loss tracking
         std::vector<double> dimLossEMA_; // per-dim raw MSE EMA (size dim_), updated every epoch
