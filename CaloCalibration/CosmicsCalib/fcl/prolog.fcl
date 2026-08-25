@@ -30,10 +30,26 @@ CaloCosmicEnergy : {
     OutCalibFileAsym : "npe_noise.dat"
 }
 
+CaloT0Align : {
+    module_type : CaloT0Align
+    caloHitCollection : CaloHitMaker
+    caloClusterCollection : CaloClusterMaker
+    cluHits : 3
+    cryEmin : 15.
+    ncryCut : 7
+    iteration : "first"
+    fileT0 : "fileT0.dat"
+    fileTcor : "fileTcor.dat"
+    diagLevel : 0
+}
 
 CosmicsCalib: {
+    filters: {
+        CaloT0Align : @local::CaloT0Align
+    }
     analyzers: {
         CaloCosmicEnecalib : @local::CaloCosmicEnecalib
+        CaloCosmicEnergy : @local::CaloCosmicEnergy
     }
 }
 
