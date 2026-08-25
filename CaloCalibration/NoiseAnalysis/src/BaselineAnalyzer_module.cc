@@ -71,7 +71,7 @@ public:
       fhicl::Atom<bool> writePDF {fhicl::Name("writePDF" ) , fhicl::Comment("Write PDF report"), false};
       fhicl::Atom<std::string> PDFfilename {fhicl::Name("PDFfilename" ) , fhicl::Comment("PDF report file name"), ""};
       fhicl::Atom<int> thresholdOffset {fhicl::Name("thresholdOffset" ) , fhicl::Comment("Offset with respect to gaussian mean"), 100};
-      fhicl::Atom<int> thresholdOffsetPin {fhicl::Name("thresholdOffsetPin" ) , fhicl::Comment("Offset with respect to gaussian mean (pin diodes)"), 50};
+      fhicl::Atom<int> thresholdOffsetPin {fhicl::Name("thresholdOffsetPin" ) , fhicl::Comment("Offset with respect to gaussian mean (pin diodes)"), 100};
       fhicl::Atom<int> hotStdDev {fhicl::Name("hotStdDev" ) , fhicl::Comment("StdDev limit for hot channels"), 6};
       fhicl::Atom<int> coldStdDev {fhicl::Name("coldStdDev" ) , fhicl::Comment("StdDev limit for cold channels"), 3};
     };

@@ -53,7 +53,7 @@ physics : {
         writeTXT : false
         writeCSV : true
         writePDF : true
-        thresholdOffset : 50
+        thresholdOffset : 100
         thresholdOffsetPin : 100
     }
 
