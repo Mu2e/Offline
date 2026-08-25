@@ -991,7 +991,11 @@ private:
         // job's later drawing therefore inherits kInferno -- acceptable here because the only
         // other drawing this class does is the 1D overlays, which carry explicit line and
         // marker colours and are unaffected by the palette.
-        gStyle->SetPalette(kInferno);
+        // 57 is kInferno's value in ROOT's EColorPalette. Passed as the number rather than by
+        // name because that enum lives in a header this one does not otherwise need, and
+        // TStyle::SetPalette takes the plain Int_t either way.
+        constexpr int kInfernoPalette = 57;
+        gStyle->SetPalette(kInfernoPalette);
         // 255 contours instead of ROOT's default 20, so the colour axis reads as a smooth
         // gradient rather than as visible bands.
         const int savedContours = gStyle->GetNumberContours();
