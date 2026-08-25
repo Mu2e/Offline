@@ -22,8 +22,8 @@ cet_build_plugin(CaloCosmicEnergy art::module
     ROOT::Tree
 )
 
-cet_build_plugin(caloT0alig art::module
-  REG_SOURCE src/caloT0alig_module.cc
+cet_build_plugin(CaloT0align art::module
+  REG_SOURCE src/CaloT0align_module.cc
   LIBRARIES REG
     art_root_io::TFileService_service
     Offline::CalorimeterGeom

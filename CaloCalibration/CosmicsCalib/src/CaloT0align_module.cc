@@ -54,7 +54,7 @@
 
 namespace mu2e {
 
-class caloT0alig : public art::EDFilter {
+class CaloT0align : public art::EDFilter {
 
 public:
   struct Config {
@@ -73,8 +73,8 @@ public:
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diag Level"), 0};
   };
 
-  explicit caloT0alig(const art::EDFilter::Table<Config>& config);
-  virtual ~caloT0alig() {}
+  explicit CaloT0align(const art::EDFilter::Table<Config>& config);
+  virtual ~CaloT0align() {}
 
   virtual void beginJob();
   virtual void endJob();
@@ -112,7 +112,7 @@ private:
   TH1F *hNhit, *hNhitEcut;
 };
 
-caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
+CaloT0align::CaloT0align(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}, _caloHitTag(config().caloHitCollection()),
     _caloClusterTag(config().caloClusterCollection()), _cluHits(config().cluHits()),
     _cryEmin(config().cryEmin()), _ncryCut(config().ncryCut()), _iteration(config().iteration()),
@@ -121,7 +121,7 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
 
   _fileT0.open(_fileT0Name);
   if (!_fileT0.is_open()) {
-    throw cet::exception("caloT0alig")
+    throw cet::exception("CaloT0align")
         << "ERROR! Cannot open input file " << config().fileT0() << std::endl;
   }
 }
@@ -133,10 +133,10 @@ caloT0alig::caloT0alig(const art::EDFilter::Table<Config>& config) :
 // - Get T0 corrections from previous iterations, if applicable
 // - Histogram booking
 // ===========================================================================
-void caloT0alig::beginJob() {
+void CaloT0align::beginJob() {
 
   if (_diagLevel > 0)
-    std::cout << "caloT0alig: Entering beginJob" << std::endl;
+    std::cout << "CaloT0align: Entering beginJob" << std::endl;
 
   // Read T0-step0 corrections
   // *** TO BE IMPLEMENTED ... waiting for real data ***
@@ -152,7 +152,7 @@ void caloT0alig::beginJob() {
   if (_fileT0.is_open()) {
     while (_fileT0 >> iChanT0 >> TvalT0) {
       if (iChanT0 < 0 || iChanT0 >= nROchan) {
-        throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChanT0
+        throw cet::exception("CaloT0align") << "ERROR! Read invalid channel " << iChanT0
                                            << "from file " << _fileT0Name << std::endl;
       }
       Toff[iChanT0] = TvalT0;
@@ -182,7 +182,7 @@ void caloT0alig::beginJob() {
     if (_fileTcor.is_open()) {
       while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
         if (iChan < 0 || iChan >= nROchan) {
-          throw cet::exception("caloT0alig") << "ERROR! Read invalid channel " << iChan
+          throw cet::exception("CaloT0align") << "ERROR! Read invalid channel " << iChan
                                              << "from file " << _fileTcorName << std::endl;
         }
 
@@ -198,7 +198,7 @@ void caloT0alig::beginJob() {
       }
     } else {
       if (!_fileTcor.is_open()) {
-        throw cet::exception("caloT0alig")
+        throw cet::exception("CaloT0align")
             << "ERROR! Cannot open output file " << _fileTcorName << std::endl;
       }
     }
@@ -246,14 +246,14 @@ void caloT0alig::beginJob() {
 //   histogram for each readout channel
 // - Filters good events
 // ===========================================================================
-bool caloT0alig::filter(art::Event& event) {
+bool CaloT0align::filter(art::Event& event) {
 
   bool retval(false); // preset to fail
 
   ++_nProcessed;
 
   if (_nProcessed % 10000 == 0 && _diagLevel > 0)
-    std::cout << "caloT0alig: Processing run/event " << event.run() << " " << event.id().event()
+    std::cout << "CaloT0align: Processing run/event " << event.run() << " " << event.id().event()
               << std::endl;
 
   //
@@ -436,7 +436,7 @@ bool caloT0alig::filter(art::Event& event) {
   } // Loop on disks
 
   if (_diagLevel > 0)
-    std::cout << "caloT0alig: end of event " << std::endl;
+    std::cout << "CaloT0align: end of event " << std::endl;
 
   return retval;
 
@@ -447,10 +447,10 @@ bool caloT0alig::filter(art::Event& event) {
 // - Writing of temporary output file to be used from next iteration
 // - Last iteration: Writing of calibration file to be uploaded in Condition DB
 // ===========================================================================
-void caloT0alig::endJob() {
+void CaloT0align::endJob() {
 
   if (_diagLevel > 0)
-    std::cout << "caloT0alig: Entering endJob" << std::endl;
+    std::cout << "CaloT0align: Entering endJob" << std::endl;
 
   // Skip output writing when not in a minimization loop (i.e. filter only)
   if (_iteration == "filt") {
@@ -462,7 +462,7 @@ void caloT0alig::endJob() {
   // Temporary output file for next iteration
   std::ofstream _fileTcor(_fileTcorName);
   if (!_fileTcor.is_open()) {
-    throw cet::exception("caloT0alig")
+    throw cet::exception("CaloT0align")
         << "ERROR! Cannot open output file " << _fileTcorName << std::endl;
   }
 
@@ -500,4 +500,4 @@ void caloT0alig::endJob() {
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::caloT0alig);
+DEFINE_ART_MODULE(mu2e::CaloT0align);
