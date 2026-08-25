@@ -504,7 +504,7 @@ namespace mu2e {
         const bool is_helix   = isHelixPath  (path, trigNavig) && !skip_exclusive;
         const bool is_calo    = isCaloPath   (path, trigNavig) && !skip_exclusive;
         const bool is_minbias = isMinBiasPath(path) && !skip_exclusive;
-        passed         |= skip_exclusive;
+        passed          = true;
         track_passed   |= is_track;
         helix_passed   |= is_helix;
         calo_passed    |= is_calo;
@@ -539,7 +539,7 @@ namespace mu2e {
       _sumHist._hTrigInfo[2]->Fill(1);
       _sumHist._hTrigInfo[3]->Fill(1);
     }
-    if(track_passed) { //helix trigger rates
+    if(helix_passed) { //helix trigger rates
       _sumHist._hTrigInfo[2]->Fill(2);
       _sumHist._hTrigInfo[3]->Fill(2);
     }
