@@ -110,8 +110,8 @@ common_avg_structure_config : { # Common set up for samples of midrange, 2 stage
   SBDMhidden : 256
   SBDMlayers : 4
   SBDMtimeEmbeddingDim : 12
-  SBDMinputEmbeddingDims : [26, 20, 20, 26, 26] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
-  SBDMconditionEmbeddingDims : [26]             # pTot
+  SBDMinputEmbeddingDims : [34, 20, 20, 26, 26] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMconditionEmbeddingDims : [34]             # pTot
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-3
   SBDMlogSigMax : 1.0
@@ -144,7 +144,7 @@ common_coarse_structure_config : { # Common coarse setup for samples with fewer 
   SBDMhidden : 256
   SBDMlayers : 4
   SBDMtimeEmbeddingDim : 12
-  SBDMinputEmbeddingDims : [20, 16, 16, 20, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMinputEmbeddingDims : [34, 20, 20, 34, 26, 26] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
   # SBDMconditionEmbeddingDims being [0], omitted 
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-3
@@ -175,10 +175,10 @@ common_coarse_structure_config : { # Common coarse setup for samples with fewer 
 
 common_lowest_structure_config : { # Common lowest quality setup for samples with fewest events ~1k
   SBDMuseTwoStageTraining : false
-  SBDMhidden : 128
+  SBDMhidden : 140 # ~half, but sufficient to be > total input dims
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 8
-  SBDMinputEmbeddingDims : [20, 16, 16, 20, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMinputEmbeddingDims : [30, 16, 16, 28, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
   # SBDMconditionEmbeddingDims being [0], omitted 
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-2
