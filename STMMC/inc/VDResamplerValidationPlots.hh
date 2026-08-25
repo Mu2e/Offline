@@ -178,9 +178,10 @@ inline DistributionMetrics computeDistributionMetrics(const TH1D& hist, const TH
 //     instead of pinning it, so a 1e7-entry comparison keeps fine structure that a fixed
 //     target would erase, while a few-thousand-entry one collapses to a readable ~100
 //     bins. Clamped to [kMinTargetBins, kMaxTargetBins].
-//   rebinFactor: the integer TH1::Rebin group size bringing `nbins` closest to `target`.
-//     TH1::Rebin merges an integer number of bins, so the achieved count only
-//     approximates the target.
+//   rebinFactor: the TH1::Rebin group size bringing `nbins` closest to `target`. It must
+//     be an exact DIVISOR of nbins (ROOT makes a non-divisor a fatal error), so the
+//     achieved bin count only approximates the target -- how closely depends on how many
+//     divisors the native binning happens to have.
 // ---------------------------------------------------------------------------
 constexpr int kMinTargetBins = 50;
 constexpr int kMaxTargetBins = 4000;
@@ -191,9 +192,34 @@ inline int targetBinCount(long n) {
     return std::max(kMinTargetBins, std::min(kMaxTargetBins, static_cast<int>(std::lround(t))));
 }
 
+// TH1::Rebin merges `ngroup` adjacent bins and REQUIRES ngroup to divide nbins exactly. 
+// Otherwise it raises a fatal error. The factor cannot simply be nbins/target
+// rounded: that ratio is almost never a divisor. Search the actual divisors of nbins 
+// instead and take the one whose resulting bin count lands closest to the target.
+//
+// Closeness is judged on the RATIO rather than the difference, because bin counts are
+// compared multiplicatively here.
 inline int rebinFactor(int nbins, int target) {
-    if (target <= 0) return 1;
-    return std::max(1, static_cast<int>(std::lround(static_cast<double>(nbins) / target)));
+    if (target <= 0 || nbins <= 0) return 1;
+    if (target >= nbins) return 1;   // already at or below the target; nothing to merge
+
+    int bestFactor = 1;
+    double bestScore = -1.0;
+    // Divisors come in pairs (f, nbins/f), so scanning to sqrt(nbins) covers all of them.
+    for (int f = 1; f * f <= nbins; ++f) {
+        if (nbins % f != 0) continue;
+        for (int candidate : {f, nbins / f}) {
+            const int resulting = nbins / candidate;
+            const double ratio = (resulting > target)
+                ? static_cast<double>(resulting) / target
+                : static_cast<double>(target) / resulting;
+            if (bestScore < 0.0 || ratio < bestScore) {
+                bestScore = ratio;
+                bestFactor = candidate;
+            }
+        }
+    }
+    return bestFactor;
 }
 
 // ---------------------------------------------------------------------------
