@@ -53,6 +53,7 @@
 // Yongyi Wu, Aug. 2026
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdio>
 #include <sstream>
@@ -243,10 +244,111 @@ struct DimSpec {
 // Physical-quantity slots, in the order fillGenerated takes them.
 enum PhysicalSlot { kPx = 0, kPy = 1, kPz = 2, kX = 3, kY = 4, kT = 5 };
 
+// TransformedDimStats / TransformedStatsBySlot are defined in VDResamplerGenerateCommon.hh
+// (included above), where collectTransformedStats builds them from the loaded models. They
+// live there rather than here because this header includes that one, not the other way
+// round.
+
+// ---------------------------------------------------------------------------
+// Axis sizing from the training statistics.
+//
+// The static ranges below were hand-picked to be safely wide for every sample, which makes
+// them far too wide for most: a distribution occupying 0.2 units of a +/-5 axis lands in a
+// handful of bins and the comparison sees nothing. When the model reports its training
+// statistics, the axis is instead sized to where the population actually is, BEFORE any
+// sample has been generated.
+//
+// The range is the union of two requirements:
+//   * the observed data extent [min, max] — nothing the training set contained should fall
+//     outside the axis, since the model can reproduce it;
+//   * a mean +/- kSigmaSpan sigma band — so a heavy-tailed dimension whose min/max are set
+//     by a couple of outliers still devotes most of the axis to the bulk.
+// Taking the union (widest of the two) means neither a compact-but-outliered distribution
+// nor a broad one gets clipped. A kRangePadding margin is added so the extremes are not
+// exactly on the boundary, and the result is snapped outward to a round number so the axis
+// reads sensibly and the bin edges are not arbitrary.
+//
+// Generated samples CAN fall outside the training extent — the model is not bounded by its
+// training data — so the padded range is deliberately wider than [min,max], and anything
+// beyond it still lands in the flow bins and is counted by the metrics' normalization.
+// ---------------------------------------------------------------------------
+constexpr double kSigmaSpan     = 6.0;   // half-width of the bulk band, in sigma
+constexpr double kRangePadding  = 0.10;  // fractional margin added to the chosen half-width
+constexpr int    kStatsBinCount = 2400;  // native bins for a stats-sized axis (highly composite)
+
+// Snap `x` outward to a multiple of `step` (down for the low edge, up for the high edge),
+// so axis limits read as round numbers rather than -4.8317. Only ever widens.
+inline double snapOutward(double x, double step, bool up) {
+    if (!(step > 0.0) || !std::isfinite(x)) return x;
+    return step * (up ? std::ceil(x / step) : std::floor(x / step));
+}
+
+// A 1/2/5 x 10^k step that divides `width` into roughly kSnapDivisions parts — the
+// granularity the axis edges are snapped to. Tied to the width so a 0.2-wide axis snaps to
+// 0.01 and a 20-wide one to 1, instead of one absolute step suiting neither.
+constexpr int kSnapDivisions = 20;
+inline double niceStep(double width) {
+    if (!(width > 0.0)) return 0.0;
+    const double raw = width / kSnapDivisions;
+    const double decade = std::pow(10.0, std::floor(std::log10(raw)));
+    const double scaled = raw / decade;        // in [1,10)
+    for (const double s : {1.0, 2.0, 5.0})
+        if (scaled <= s) return s * decade;
+    return 10.0 * decade;
+}
+
+// Apply `stats` to a spec's range, leaving nbins/lo/hi untouched when they are unusable.
+// The spec's static range is the fallback, so a model without statistics behaves exactly
+// as before.
+//
+// The two edges are computed and snapped INDEPENDENTLY rather than as a half-width about a
+// centre: these distributions are frequently asymmetric (log-time sits well off zero, pTot
+// is skewed), and forcing a symmetric range about the midpoint would pad the short side by
+// as much as the long one — for a -4..6 dimension that inflates a 10-wide axis to 20, worse
+// than the static fallback it replaces.
+inline void applyStatsToSpec(DimSpec& spec, const TransformedDimStats& stats) {
+    if (!stats.valid) return;
+    if (!std::isfinite(stats.min) || !std::isfinite(stats.max)) return;
+    if (!std::isfinite(stats.mean) || !std::isfinite(stats.stdev)) return;
+    if (!(stats.max > stats.min)) return;   // degenerate/constant dimension
+
+    // The observed extent is the authority: the model was trained on exactly this data, so
+    // the axis must cover it, and there is no reason to reach beyond it. The sigma band only
+    // TIGHTENS the axis, never widens it — for a dimension whose extent is set by a handful
+    // of far outliers, clipping to the bulk band keeps the bins where the population is (the
+    // outliers then land in the flow bins, still counted by the normalization). Clamping the
+    // band to [min,max] is what keeps a large-sigma dimension from producing an axis wider
+    // than the static fallback it replaces.
+    double lo = stats.min;
+    double hi = stats.max;
+    if (stats.stdev > 0.0) {
+        lo = std::max(lo, stats.mean - kSigmaSpan * stats.stdev);
+        hi = std::min(hi, stats.mean + kSigmaSpan * stats.stdev);
+        // A degenerate band (sigma tiny next to the extent, or a mean far outside it) would
+        // invert or collapse the range; fall back to the full extent in that case.
+        if (!(hi > lo)) { lo = stats.min; hi = stats.max; }
+    }
+
+    const double width = hi - lo;
+    if (!(width > 0.0)) return;
+
+    // Pad each side, then snap outward so the edges are round numbers.
+    const double pad  = kRangePadding * width;
+    const double step = niceStep(width);
+    spec.lo    = snapOutward(lo - pad, step, /*up=*/false);
+    spec.hi    = snapOutward(hi + pad, step, /*up=*/true);
+    spec.nbins = kStatsBinCount;
+}
+
 // The six transformed dimensions for `basis`. Slot order is
 // (xTrans, yTrans, tTrans, m0, m1, m2) — the TRANSFORM's order, not the model's internal
 // (t,x,y,...) data layout.
-inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis) {
+//
+// The ranges here are STATIC FALLBACKS, wide enough for any sample. When `stats` carries a
+// slot's training statistics the axis is re-sized to the actual population (see
+// applyStatsToSpec); slots without statistics keep the fallback.
+inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis,
+                                                const TransformedStatsBySlot* stats = nullptr) {
     const bool asinhSlopes = basisUsesAsinhSlopes(basis);
     const bool asinhTime   = basisUsesAsinhTime(basis);
     const bool isV1        = (basis == MomentumBasis::V1_CylindricalTransformed);
@@ -274,6 +376,10 @@ inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis) {
         specs.push_back({asinhSlopes ? "uphiTransAsinh" : "uphiTrans",
                          asinhSlopes ? "uphiTransAsinh" : "uphiTrans", "", 2000, -6., 6., true, 5});
     }
+
+    if (stats)
+        for (DimSpec& spec : specs)
+            applyStatsToSpec(spec, (*stats)[spec.slot]);
     return specs;
 }
 
@@ -295,8 +401,12 @@ inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
 }
 
 // Full per-dimension comparison list: transformed coordinates + physical quantities.
-inline std::vector<DimSpec> perDimensionSpecs(MomentumBasis basis, int pdgId) {
-    std::vector<DimSpec> specs = transformedDimSpecs(basis);
+// `stats` (optional) re-sizes the TRANSFORMED axes to the model's training population; the
+// physical axes are always the static ranges, since those are in detector units the model
+// statistics say nothing about.
+inline std::vector<DimSpec> perDimensionSpecs(MomentumBasis basis, int pdgId,
+                                              const TransformedStatsBySlot* stats = nullptr) {
+    std::vector<DimSpec> specs = transformedDimSpecs(basis, stats);
     const std::vector<DimSpec> phys = physicalDimSpecs(pdgId);
     specs.insert(specs.end(), phys.begin(), phys.end());
     return specs;
@@ -477,17 +587,21 @@ public:
     // different coordinate systems. `massMeV` is the species' rest mass, used only to turn
     // |p| into the kinetic energy the 2D line-zoom views plot; pass the module's own
     // pdt->particle(pdgId).mass() so the ParticleDataList stays its single source.
+    // `stats` (optional, may be null) carries the model's per-slot training statistics in
+    // TRANSFORM slot order; when given, the transformed axes are sized to that population
+    // instead of the static fallback ranges.
     void book(const art::TFileDirectory& dir, const std::string& label,
               MomentumBasis basis, int pdgId, double massMeV,
               const std::string& sourceFile, const std::string& sourceTree,
               unsigned long virtualDetectorID, const InverseParams& ip,
-              const std::string& moduleName)
+              const std::string& moduleName,
+              const TransformedStatsBySlot* stats = nullptr)
     {
         label_      = label;
         basis_      = basis;
         pdgId_      = pdgId;
         moduleName_ = moduleName;
-        specs_      = perDimensionSpecs(basis, pdgId);
+        specs_      = perDimensionSpecs(basis, pdgId, stats);
         specs2D_    = correlationDimSpecs(basis, pdgId);
         // The 2D views' r and pr/pphi are measured about the SAME detector axis the
         // transform uses, so both sides share one origin and one mass.
@@ -544,6 +658,26 @@ public:
         metricTree_->Branch("nbins",       &brNbins_,       "nbins/I");
         metricTree_->Branch("motherEntries",    &brMotherEntries_,    "motherEntries/L");
         metricTree_->Branch("generatedEntries", &brGeneratedEntries_, "generatedEntries/L");
+
+        // Report which transformed axes were sized from the model statistics and which fell
+        // back to the static range, with the resulting range — an axis that silently kept a
+        // far-too-wide fallback is otherwise only discoverable by looking at the plots.
+        if (stats) {
+            std::ostringstream axes;
+            axes << "ValidationPlots [" << label << "]: transformed axis ranges";
+            for (const DimSpec& s : specs_) {
+                if (!s.transformed) continue;
+                const TransformedDimStats& st = (*stats)[s.slot];
+                axes << "\n  " << s.suffix << ": [" << s.lo << ", " << s.hi << "] in "
+                     << s.nbins << " bins";
+                if (st.valid)
+                    axes << "  (from training stats: mean=" << st.mean << " sigma=" << st.stdev
+                         << " range=[" << st.min << ", " << st.max << "])";
+                else
+                    axes << "  (STATIC FALLBACK — no training statistics for this slot)";
+            }
+            mf::LogInfo(moduleName_) << axes.str();
+        }
 
         fillMother(sourceFile, sourceTree, virtualDetectorID, ip);
         booked_ = true;

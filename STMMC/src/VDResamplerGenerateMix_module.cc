@@ -705,11 +705,19 @@ namespace mu2e {
                                 + "_pdg" + VDResampler::pdgFileToken(pdgId);
         const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
         particle.validationPlots = std::make_unique<VDResampler::ValidationPlots>();
+        // This particle's own models size the transformed axes to their training population.
+        // A two-stage particle whose stage-1 is the pTotal resampler has a null stage1Model,
+        // which collectTransformedStats leaves as an invalid (static-fallback) pTotal slot.
+        const VDResampler::TransformedStatsBySlot stats =
+          VDResampler::collectTransformedStats(particle.allAtOnceModel.get(),
+                                               particle.stage1Model.get(),
+                                               particle.stage2Model.get(), basis);
         particle.validationPlots->book(
           validationDir->mkdir(label), label, basis, pdgId,
           pdt_->particle(pdgId).mass(),
           resamplerRootFile, resamplerTreeName,
-          static_cast<unsigned long>(virtualDetectorID_), ip, "VDResamplerGenerateMix");
+          static_cast<unsigned long>(virtualDetectorID_), ip, "VDResamplerGenerateMix",
+          &stats);
       }
 
       source.trainedHitCount += hitCount;

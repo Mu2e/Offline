@@ -10,6 +10,7 @@
 // Header-only. Yongyi Wu, Jun. 2026
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -50,6 +51,27 @@ struct GeneratedTransformed {
 struct InverseParams {
     double x0, y0, t0, tScale, p0, VDr, VDz0;
 };
+
+// ---------------------------------------------------------------------------
+// Training-data statistics for one TRANSFORMED slot, in raw (pre-z-score) transformed
+// units — the units the validation histograms of the model's own coordinates are binned in.
+// This is ScoreBasedDiffusionModel::DimStats carried across in a form the plotting header
+// can use without depending on the model class.
+//
+// `valid` is false for a slot whose statistics are unavailable: the model predates the
+// stored normalization, or (V2 two-stage) the slot is supplied by the pTotal resampler
+// rather than a diffusion model and so has no dimStats to report. Consumers fall back to a
+// static axis range for such a slot.
+// ---------------------------------------------------------------------------
+struct TransformedDimStats {
+    bool   valid = false;
+    double mean = 0.0, stdev = 0.0, min = 0.0, max = 0.0;
+};
+
+// Statistics for the six transformed slots in TRANSFORM order (xTrans, yTrans, tTrans, m0,
+// m1, m2) — NOT the models' own (t,x,y,...) data order. collectTransformedStats below does
+// that re-ordering.
+using TransformedStatsBySlot = std::array<TransformedDimStats, 6>;
 
 // ---------------------------------------------------------------------------
 // generateAllAtOnce — sample the 6-D all-at-once model; basis from its tag.
@@ -160,6 +182,66 @@ inline void invertGenerated(
             ip.x0, ip.y0, ip.t0, ip.tScale, ip.p0, ip.VDr, ip.VDz0,
             x, y, z, t, px, py, pz, g.basis);
     }
+}
+
+// ---------------------------------------------------------------------------
+// collectTransformedStats — the models' per-dimension training statistics, re-ordered from
+//   each model's own data layout into TRANSFORM slot order (xTrans, yTrans, tTrans, m0, m1,
+//   m2) for the validation plots.
+//
+// The re-ordering is the whole point of this helper. A model's data vector is
+// (t,x,y,...)-ordered while the transform slots are (x,y,t,...)-ordered, and which model
+// supplies which slot depends on the layout:
+//
+//   AllAtOnce6D          dims (t,x,y,m0,m1,m2)  -> slots (1,2,0,3,4,5) from the one model
+//   V1 two-stage         stage1 (t,x,y)         -> slots (1,2,0)
+//                        stage2 (m0,m1,m2)      -> slots (3,4,5)
+//   V2/V3 two-stage      stage2 (t,x,y,m1,m2)   -> slots (1,2,0,4,5)
+//                        stage1 (log pTotal)    -> slot 3, ONLY when stage-1 is a diffusion
+//                                                  model; with a pTotal resampler that slot
+//                                                  has no statistics and stays invalid.
+//
+// A slot left invalid keeps the validation plots' static fallback axis, so a missing or
+// pre-normalization model degrades to the previous behaviour rather than failing.
+//
+// `stage1Model` may be null (V2 resampler path, or a caller with no stage-1 at all).
+inline TransformedStatsBySlot collectTransformedStats(
+    const ScoreBasedDiffusionModel* allAtOnceModel,
+    const ScoreBasedDiffusionModel* stage1Model,
+    const ScoreBasedDiffusionModel* stage2Model,
+    MomentumBasis basis)
+{
+    TransformedStatsBySlot out;
+
+    // Copy one model dimension into one transform slot.
+    auto take = [&out](const ScoreBasedDiffusionModel* model, int modelDim, int slot) {
+        if (!model || !model->hasDataNormalization()) return;
+        const ScoreBasedDiffusionModel::DimStats s = model->dimStats(modelDim);
+        out[slot] = TransformedDimStats{true, s.mean, s.stdev, s.min, s.max};
+    };
+
+    if (allAtOnceModel) {
+        // (t,x,y,m0,m1,m2) -> slots (2,0,1,3,4,5): model dim d holds transform slot map[d].
+        static constexpr int kMap[6] = {2, 0, 1, 3, 4, 5};
+        for (int d = 0; d < 6; ++d) take(allAtOnceModel, d, kMap[d]);
+        return out;
+    }
+
+    if (basis == MomentumBasis::V1_CylindricalTransformed) {
+        // stage1 (t,x,y) -> slots (2,0,1); stage2 (m0,m1,m2) -> slots (3,4,5).
+        static constexpr int kStage1Map[3] = {2, 0, 1};
+        for (int d = 0; d < 3; ++d) take(stage1Model, d, kStage1Map[d]);
+        for (int d = 0; d < 3; ++d) take(stage2Model, d, 3 + d);
+        return out;
+    }
+
+    // V2/V3: stage2 is (t,x,y,ur,uphi) -> slots (2,0,1,4,5).
+    static constexpr int kStage2Map[5] = {2, 0, 1, 4, 5};
+    for (int d = 0; d < 5; ++d) take(stage2Model, d, kStage2Map[d]);
+    // stage-1 is the 1-D log(pTotal/p0) model when diffusion supplies it; when the pTotal
+    // resampler does, stage1Model is null and slot 3 stays invalid by construction.
+    take(stage1Model, 0, 3);
+    return out;
 }
 
 } // namespace VDResampler

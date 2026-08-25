@@ -428,6 +428,45 @@ namespace mu2e{
             return (rawValue - dataMean_[dim]) / dataStdev_[dim];
         }
 
+        // Per-dimension training-data statistics for one STATE dimension, in RAW (transformed,
+        // pre-z-score) units — the units histograms of the model's coordinates are binned in.
+        // mean/stdev come straight from the stored normalization; min/max are the normalized
+        // extremes mapped back through it, so all four describe the same raw axis.
+        //
+        // These are the training set's own summary, recorded at normalizeData() and persisted in
+        // the checkpoint, so a consumer can size an axis to where the population actually is
+        // WITHOUT having generated anything yet.
+        struct DimStats {
+            double mean = 0.0, stdev = 0.0, min = 0.0, max = 0.0;
+        };
+        DimStats dimStats(int dim) const {
+            if (dim < 0 || dim >= dim_)
+                throw cet::exception("ScoreBasedDiffusionModel::dimStats")
+                    << "dim " << dim << " out of range [0, " << dim_ << ")";
+            DimStats s;
+            s.mean  = dataMean_[dim];
+            s.stdev = dataStdev_[dim];
+            // normMin_/normMax_ are in z-score space; undo the z-score to get raw units.
+            s.min = dataMean_[dim] + normMin_[dim] * dataStdev_[dim];
+            s.max = dataMean_[dim] + normMax_[dim] * dataStdev_[dim];
+            return s;
+        }
+
+        // True when the stored normalization is real (normalizeData() ran, or a checkpoint
+        // carrying it was loaded) rather than the constructor's placeholder. The ctor seeds
+        // normMin_/normMax_ to -999/+999, which would otherwise be mistaken for a genuine
+        // (and absurdly wide) data range by anything sizing an axis from dimStats().
+        bool hasDataNormalization() const {
+            if (dataMean_.empty() || dataStdev_.empty()) return false;
+            if (normMin_.empty() || normMax_.empty()) return false;
+            for (int d = 0; d < dim_; ++d) {
+                if (!(dataStdev_[d] > 0.0)) return false;      // unset or degenerate
+                if (!(normMin_[d] < normMax_[d])) return false; // empty/never-filled range
+                if (normMin_[d] <= -999.0 || normMax_[d] >= 999.0) return false; // placeholder
+            }
+            return true;
+        }
+
         // Z-score a raw CONDITION coordinate. The normalization arrays store data dims
         // first (0..dim_-1) then condition dims (dim_..dim_+conditionDim_-1); condIdx is
         // the 0-based index within the conditioning vector. Used to feed an externally

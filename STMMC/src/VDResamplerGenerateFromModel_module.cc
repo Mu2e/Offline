@@ -414,12 +414,17 @@ namespace mu2e {
         // basis_ and pdgId_ are settled above from the loaded model(s), so the plot set is
         // booked for exactly the basis that will be generated.
         const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+        // The models' own training statistics size the transformed axes to where the
+        // population actually is, rather than to the static catch-all ranges.
+        const VDResampler::TransformedStatsBySlot stats =
+          VDResampler::collectTransformedStats(allAtOnceModel_.get(), stage1Model_.get(),
+                                               stage2Model_.get(), basis_);
         validationPlots_.book(
           tfs->mkdir("validation"),
           "pdg" + VDResampler::pdgFileToken(pdgId_), basis_, pdgId_,
           pdt_->particle(pdgId_).mass(),
           srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
-          "VDResamplerGenerateFromModel");
+          "VDResamplerGenerateFromModel", &stats);
       }
     } else if (doValidationPlots_) {
       throw cet::exception("VDResamplerGenerateFromModel")
