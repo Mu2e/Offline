@@ -69,7 +69,8 @@ public:
     fhicl::Atom<int> ncryCut{Name("ncryCut"), Comment("Minimum number of mip-like crystals"), 7};
     fhicl::Atom<std::string> iteration{Name("iteration"), Comment("Iteration"), "first"};
     fhicl::Atom<std::string> fileT0{Name("fileT0"), Comment("T0 input file")};
-    fhicl::Atom<std::string> fileTcor{Name("fileTcor"), Comment("T0 corrections input/output file")};
+    fhicl::Atom<std::string> fileTcor{Name("fileTcor"),
+                                      Comment("T0 corrections input/output file")};
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diag Level"), 0};
   };
 
@@ -116,8 +117,8 @@ CaloT0Align::CaloT0Align(const art::EDFilter::Table<Config>& config) :
     EDFilter{config}, _caloHitTag(config().caloHitCollection()),
     _caloClusterTag(config().caloClusterCollection()), _cluHits(config().cluHits()),
     _cryEmin(config().cryEmin()), _ncryCut(config().ncryCut()), _iteration(config().iteration()),
-    _fileT0Name(config().fileT0()), _fileTcorName(config().fileTcor()), _diagLevel(config().diagLevel()),
-    _nProcessed(0), _nFiltered(0) {}
+    _fileT0Name(config().fileT0()), _fileTcorName(config().fileTcor()),
+    _diagLevel(config().diagLevel()), _nProcessed(0), _nFiltered(0) {}
 
 // ===========================================================================
 // Begin job:
@@ -145,12 +146,12 @@ void CaloT0Align::beginJob() {
   _fileT0.open(_fileT0Name);
   if (!_fileT0.is_open()) {
     throw cet::exception("CaloT0Align")
-        << "ERROR! Cannot open input file " << config().fileT0() << std::endl;
+        << "ERROR! Cannot open input file " << _fileT0Name << std::endl;
   }
   while (_fileT0 >> iChanT0 >> TvalT0) {
     if (iChanT0 < 0 || iChanT0 >= nROchan) {
-      throw cet::exception("CaloT0Align") << "ERROR! Read invalid channel " << iChanT0
-                                         << "from file " << _fileT0Name << std::endl;
+      throw cet::exception("CaloT0Align")
+          << "ERROR! Read invalid channel " << iChanT0 << "from file " << _fileT0Name << std::endl;
     }
     Toff[iChanT0] = TvalT0;
     if (_diagLevel > 1)
@@ -177,7 +178,7 @@ void CaloT0Align::beginJob() {
       while (_fileTcor >> iChan >> Tval >> Tmea >> Tres >> Chi2 >> Nev) {
         if (iChan < 0 || iChan >= nROchan) {
           throw cet::exception("CaloT0Align") << "ERROR! Read invalid channel " << iChan
-                                             << "from file " << _fileTcorName << std::endl;
+                                              << "from file " << _fileTcorName << std::endl;
         }
 
         Tcor[iChan] = Tval;
@@ -474,7 +475,7 @@ void CaloT0Align::endJob() {
     Tval = Tmea + Tcor[iCha];
 
     _fileTcor << iCha << "   " << Tval << "   " << Tmea << "   " << Tsig << "   " << Chi2 << "   "
-          << Nevt << std::endl;
+              << Nevt << std::endl;
   }
   _fileTcor.close();
 

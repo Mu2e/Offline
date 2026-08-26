@@ -136,7 +136,8 @@ mu2e::BaselineAnalyzer::BaselineAnalyzer(const art::EDAnalyzer::Table<Config>& c
   xmin = 2048 - 150;
   xmax = 2048 + 300;
   h2_baselines = tfs->make<TH2D>("h2_baselines", "Baselines;BoardID*100 + ChannelID;Baseline [ADC]",
-                                 CaloConst::_nDIRAC*100, 0, CaloConst::_nDIRAC*100, xmax - xmin, xmin, xmax);
+                                 CaloConst::_nDIRAC * 100, 0, CaloConst::_nDIRAC * 100, xmax - xmin,
+                                 xmin, xmax);
   h1_means = tfs->make<TH1D>("h1_means", "All channels baselines;ADC", int(0.5 * (xmax - xmin)),
                              xmin, xmax);
   h1_sigmas = tfs->make<TH1D>("h1_sigmas", "All channels baseline sigmas;ADC", 100, 0, 10);
@@ -507,7 +508,7 @@ void mu2e::BaselineAnalyzer::WriteReport() {
 
   // Stddev
   can->Clear();
-  g_stddev->GetXaxis()->SetLimits(0, CaloConst::_nDIRAC*100);
+  g_stddev->GetXaxis()->SetLimits(0, CaloConst::_nDIRAC * 100);
   double xmin = g_stddev->GetXaxis()->GetXmin();
   double xmax = g_stddev->GetXaxis()->GetXmax();
   double ymax = g_stddev->GetYaxis()->GetXmax();

@@ -395,14 +395,14 @@ void CaloCosmicEnergy::analyze(art::Event const& event) {
                                               .get()
                                               ->energyDep());
             // normalized tracks by fidpaths.h
-            if (path[iCry] > 0){
+            if (path[iCry] > 0) {
               hSiPMfp[IDs[iCry]][iSiPM]->Fill(caloClusters[iClu]
-                                                .caloHitsPtrVector()[whichHit[iCry]]
-                                                .get()
-                                                ->recoCaloDigis()[iSiPM]
-                                                .get()
-                                                ->energyDep() *
-                                            cryDim / path[iCry]);
+                                                  .caloHitsPtrVector()[whichHit[iCry]]
+                                                  .get()
+                                                  ->recoCaloDigis()[iSiPM]
+                                                  .get()
+                                                  ->energyDep() *
+                                              cryDim / path[iCry]);
             }
           }
         }
