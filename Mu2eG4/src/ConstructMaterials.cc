@@ -448,7 +448,7 @@ namespace mu2e {
     mat = uniqueMaterialOrThrow( "RackSteel" );
     {
       G4Material* RackSteel = new G4Material( mat.name, 8.05*CLHEP::g/CLHEP::cm3, 2);
-      RackSteel->AddMaterial(findMaterialOrThrow("G4_Al"),0.985);
+      RackSteel->AddMaterial(findMaterialOrThrow("G4_Fe"),0.985);
       RackSteel->AddMaterial(findMaterialOrThrow("G4_C"), 0.015);
     }
 
