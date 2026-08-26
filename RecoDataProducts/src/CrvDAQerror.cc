@@ -19,7 +19,10 @@ namespace mu2e
     {CrvDAQerrorCodeDetail::wrongSubsystemID           , "wrongSubsystemID" },
     {CrvDAQerrorCodeDetail::errorUnpackingStatusPacket , "errorUnpackingStatusPacket" },
     {CrvDAQerrorCodeDetail::errorUnpackingCrvHits      , "errorUnpackingCrvHits" },
-    {CrvDAQerrorCodeDetail::byteCountMismatch          , "byteCountMismatch" }
+    {CrvDAQerrorCodeDetail::byteCountMismatch          , "byteCountMismatch" },
+    {CrvDAQerrorCodeDetail::invalidChannel             , "invalidChannel" },
+    {CrvDAQerrorCodeDetail::invalidDtcId               , "invalidDtcId" },
+    {CrvDAQerrorCodeDetail::zeroBlockError             , "zeroBlockError" }
   };
 
   std::map<CrvDAQerrorCodeDetail::enum_type,std::string> const& CrvDAQerrorCodeDetail::names()

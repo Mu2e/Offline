@@ -43,7 +43,8 @@ namespace mu2e
       fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 401};
       fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), 1799.5};
       fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 2200.5};
-      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal"), 5}; //if not firstSampleOnly
+      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal"), 20};
+      fhicl::Atom<double>      maxADCspreadFirstTwoSamples{Name("maxADCspreadFirstTwoSamples"), Comment("maximum spread of ADC values within first two samples to be considered for the pedestal"), 3};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -61,6 +62,7 @@ namespace mu2e
     int                _histBins;
     double             _histMin, _histMax;
     double             _maxADCspread;
+    double             _maxADCspreadFirstTwoSamples;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _pedestalHists;
   };
@@ -75,6 +77,7 @@ namespace mu2e
     _histMin(conf().histMin()),
     _histMax(conf().histMax()),
     _maxADCspread(conf().maxADCspread()),
+    _maxADCspreadFirstTwoSamples(conf().maxADCspreadFirstTwoSamples()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -154,6 +157,8 @@ namespace mu2e
 
       if(_firstSampleOnly)
       {
+        if(fabs(iter->GetADCs().at(0)-iter->GetADCs().at(1))>=_maxADCspreadFirstTwoSamples) continue;
+
         hist->Fill(iter->GetADCs().at(0));
         continue;
       }
