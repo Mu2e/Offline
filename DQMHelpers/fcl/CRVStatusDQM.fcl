@@ -1,0 +1,47 @@
+# Thin offline wrapper around mu2e::CRVStatusDQM.
+#
+# Usage:
+#   mu2e -c Offline/DQMHelpers/fcl/CRVStatusDQM.fcl -s <input-art-file> -n <nevents>
+#
+# Change output filename:
+#   mu2e -c Offline/DQMHelpers/fcl/CRVStatusDQM.fcl -s input.art -T crvStatusDQM.root
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CRVStatusDQM
+
+source : {
+  module_type : RootInput
+  maxEvents   : -1
+}
+
+services : {
+  message : @local::default_message
+  TFileService : {
+    fileName : "crvStatusDQM.root"
+  }
+}
+
+physics : {
+  analyzers : {
+    crvStatusDQM : {
+      module_type       : CRVStatusDQMAnalyzer
+      crvStatusTag      : "CrvDigi"
+      crvDaqErrorTag    : "CrvDigi"
+      outputTag         : "CRVStatusDQM"
+      diagLevel         : 1
+      nBinsLatency      : 1024
+      maxLinkLatency    : 4096.0
+      nBinsTriggerCount : 256
+      maxTriggerCount   : 65535.0
+      nBinsWordCount    : 256
+      maxWordCount      : 65535.0
+      nBinsEwtMismatch  : 201
+      maxEwtMismatch    : 100.0
+    }
+  }
+
+  ana : [ crvStatusDQM ]
+  end_paths : [ ana ]
+}

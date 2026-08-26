@@ -1,6 +1,7 @@
 cet_make_library(
     SOURCE
       src/CRVDigiDQM.cc
+      src/CRVStatusDQM.cc
     LIBRARIES PUBLIC
       Offline::RecoDataProducts
       art_root_io::tfile_support
@@ -10,6 +11,13 @@ cet_make_library(
 
 cet_build_plugin(CRVDigiDQMAnalyzer art::module
     REG_SOURCE src/CRVDigiDQMAnalyzer_module.cc
+    LIBRARIES REG
+      Offline::DQMHelpers
+      art_root_io::TFileService_service
+)
+
+cet_build_plugin(CRVStatusDQMAnalyzer art::module
+    REG_SOURCE src/CRVStatusDQMAnalyzer_module.cc
     LIBRARIES REG
       Offline::DQMHelpers
       art_root_io::TFileService_service

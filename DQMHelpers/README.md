@@ -38,7 +38,37 @@ rolling occupancy, and MicroBunchStatus plots are skipped.
 Reco pulses and coincidences are out of scope; those belong in a future
 `CRVRecoDQM` helper in this package.
 
+## CRVStatusDQM
+
+`mu2e::CRVStatusDQM` books and fills ROC-firmware health histograms from
+`CrvStatus` / `CrvDAQerror`. It does **not** fold `roc==4` onto `roc==2`
+(status is per DTC link). The required online plot is TH2 `errorBitsVsRoc`
+(firmware bits 24–31 vs `dtcId*6+linkId`).
+
+Typical use:
+
+```cpp
+CRVStatusDQM dqm(config);
+dqm.Book(tfs->mkdir("CRVStatusDQM"));
+dqm.Fill(*status, *daqErrors);   // analyze
+dqm.EndSubRun(run, subrun);      // endSubRun
+dqm.WriteGraphs();               // endJob
+```
+
+Empty `CrvStatus` (typical MC) still counts `nEvents` and skips ROC/latency
+fills. `lastEventRocs()` supplies the five artdaq LastPoint scalars
+(`TriggerCount`, `EventWindowTag`, `ActiveFEBCount`, `MicroBunchStatus`,
+`WordCount`) with names `CRV.DTC<n>.ROC<m>.*`.
+
+```text
+mu2e -c Offline/DQMHelpers/fcl/CRVStatusDQM.fcl -s <digi.art>
+```
+
+A missing `CrvStatus` product is tolerated (empty collection). A missing
+`CrvDAQerror` product skips unpack-error histograms.
+
 ## Offline analyzer
+
 
 `CRVDigiDQMAnalyzer` is a thin wrapper:
 
@@ -65,3 +95,13 @@ lives in `Offline/DQMHelpers/inc/CRVCFTime.hh`; the local
 
 Binning FHiCL defaults in `CRVDigiDQM::Config` match the online
 `ps.get(...)` defaults so a cutover on the same file is comparable.
+
+## otsdaq CrvStatusMetrics
+
+`otsdaq-mu2e-crv` `CrvStatusMetrics_module.cc` constructs a
+`mu2e::CRVStatusDQM` member, prefers `CrvStatus`/`CrvDAQerror` products,
+and still publishes the five LastPoint series. If the status product is
+absent it falls back to DTC-fragment decode for LastPoint only.
+`HistoSender` ships `errorBitsVsRoc` (and the other status hists) when
+`sendHists: true`. File-mode FCL: `fcl/RunCrvStatusDQM_vst_raw.fcl`.
+
