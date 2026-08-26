@@ -1,10 +1,18 @@
 //
 // Thin art analyzer that constructs, books, and fills CRVDigiDQM.
+// When fillSectorOccupancy is true (requires GeometryService), endJob
+// fills crvDigisPerChannelAndEvent_CRVsector* from the helper's offline-
+// channel counts using CosmicRayShield sector names.
 //
 // Original Author: R. Mina
 //
 
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
@@ -12,14 +20,19 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 
+#include "TH1F.h"
+#include "TString.h"
+
 #include <algorithm>
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -71,6 +84,26 @@ public:
         Name("fillInclusive"),
         Comment("Also fill ValCrvDigi BarId/SiPM/ADC histograms"),
         true};
+    fhicl::Atom<bool> fillCrvIdRates{
+        Name("fillCrvIdRates"),
+        Comment("Book CRVId rate maps and crvDigisPerChannel"),
+        true};
+    fhicl::Atom<bool> fillSectorOccupancy{
+        Name("fillSectorOccupancy"),
+        Comment("Fill per-sector crvDigisPerChannelAndEvent_* using GeometryService"),
+        false};
+    fhicl::Atom<int> histDigisBins{
+        Name("histDigisBins"),
+        Comment("Bins for crvDigisPerChannelAndEvent_CRVsector*"),
+        200};
+    fhicl::Atom<double> histDigisStart{
+        Name("histDigisStart"),
+        Comment("Low edge for crvDigisPerChannelAndEvent_CRVsector*"),
+        0.0};
+    fhicl::Atom<double> histDigisEnd{
+        Name("histDigisEnd"),
+        Comment("High edge for crvDigisPerChannelAndEvent_CRVsector*"),
+        0.1};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
@@ -78,6 +111,7 @@ public:
   explicit CRVDigiDQMAnalyzer(const Parameters& conf);
 
   void beginJob() override;
+  void beginRun(const art::Run& run) override;
   void analyze(const art::Event& event) override;
   void endJob() override;
 
@@ -88,7 +122,12 @@ private:
   art::InputTag crvStatusTag_;
   std::string outputTag_;
   int diagLevel_;
+  bool fillSectorOccupancy_;
+  int histDigisBins_;
+  double histDigisStart_;
+  double histDigisEnd_;
   CRVDigiDQM dqm_;
+  std::vector<TH1F*> histDigisPerSector_;
 };
 
 CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
@@ -109,6 +148,7 @@ CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
   c.channelsWindowEwts =
       static_cast<std::size_t>(std::max(conf.channelsWindowEwts(), 1));
   c.fillInclusive = conf.fillInclusive();
+  c.fillCrvIdRates = conf.fillCrvIdRates();
   return c;
 }
 
@@ -118,6 +158,10 @@ CRVDigiDQMAnalyzer::CRVDigiDQMAnalyzer(const Parameters& conf) :
     crvStatusTag_(conf().crvStatusTag()),
     outputTag_(conf().outputTag()),
     diagLevel_(conf().diagLevel()),
+    fillSectorOccupancy_(conf().fillSectorOccupancy()),
+    histDigisBins_(std::max(conf().histDigisBins(), 1)),
+    histDigisStart_(conf().histDigisStart()),
+    histDigisEnd_(conf().histDigisEnd()),
     dqm_(makeHelperConfig(conf()))
 {}
 
@@ -125,6 +169,26 @@ void CRVDigiDQMAnalyzer::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
   dqm_.Book(tfs->mkdir(outputTag_));
+}
+
+void CRVDigiDQMAnalyzer::beginRun(const art::Run&)
+{
+  if (!fillSectorOccupancy_ || !histDigisPerSector_.empty()) {
+    return;
+  }
+
+  GeomHandle<CosmicRayShield> CRS;
+  auto const& crvSectors = CRS->getCRSScintillatorShields();
+  histDigisPerSector_.reserve(crvSectors.size());
+
+  art::ServiceHandle<art::TFileService> tfs;
+  for (std::size_t i = 0; i < crvSectors.size(); ++i) {
+    const std::string name =
+        Form("crvDigisPerChannelAndEvent_CRVsector%s",
+             crvSectors.at(i).name("").c_str());
+    histDigisPerSector_.emplace_back(tfs->make<TH1F>(
+        name.c_str(), name.c_str(), histDigisBins_, histDigisStart_, histDigisEnd_));
+  }
 }
 
 void CRVDigiDQMAnalyzer::analyze(const art::Event& event)
@@ -153,6 +217,24 @@ void CRVDigiDQMAnalyzer::analyze(const art::Event& event)
 void CRVDigiDQMAnalyzer::endJob()
 {
   dqm_.WriteGraphs();
+
+  if (fillSectorOccupancy_ && !histDigisPerSector_.empty() && dqm_.nEvents() > 0) {
+    GeomHandle<CosmicRayShield> CRS;
+    auto const& crvCounters = CRS->getAllCRSScintillatorBars();
+    const float invN = 1.0f / static_cast<float>(dqm_.nEvents());
+    const std::size_t nChan = crvCounters.size() * CRVId::nChanPerBar;
+    for (std::size_t channel = 0; channel < nChan; ++channel) {
+      CRSScintillatorBarIndex barIndex(
+          static_cast<int>(channel / CRVId::nChanPerBar));
+      const int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
+      if (sectorNumber < 0 ||
+          static_cast<std::size_t>(sectorNumber) >= histDigisPerSector_.size()) {
+        continue;
+      }
+      histDigisPerSector_.at(static_cast<std::size_t>(sectorNumber))
+          ->Fill(dqm_.nDigisOffline(channel) * invN);
+    }
+  }
 
   if (diagLevel_ > 0) {
     std::cout << "[CRVDigiDQMAnalyzer] Total events: " << dqm_.nEvents()

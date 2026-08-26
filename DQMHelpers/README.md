@@ -24,11 +24,17 @@ dqm.WriteGraphs();               // endJob (TGraph is not auto-saved)
 ```
 
 `CRVReco/src/CrvDQMcollector_module.cc` uses this helper for all per-event
-digi histograms. The collector still owns reco/PE/coincidence products and the
-geometry-indexed rate maps (`crvDigiRates_ROC*`, 2D `crvDigiRates`), which it
-fills incrementally and scales by `1/nEvents` in `endJob`. The per-sector
-`crvDigisPerChannelAndEvent_*` distribution is still filled in `endJob` from
-per-channel counts.
+digi histograms and the CRVId rate maps (`crvDigiRates_ROC*`, 2D
+`crvDigiRates`, `crvDigisPerChannel`). The collector still owns reco/PE/
+coincidence products. Per-sector `crvDigisPerChannelAndEvent_CRVsector*`
+is filled in the collector (and optionally `CRVDigiDQMAnalyzer`) `endJob`
+from the helper's offline-channel counts; GeometryService supplies sector
+names. The helper itself has no GeometryService or Proditions dependency.
+
+`Config::fillCrvIdRates` (default true) books the two rate maps and the
+detector-wide 1D vs offline channel. `WriteGraphs()` scales those three by
+`1/nEvents`. VST `h1_channels` / `h2_channels` are unchanged (folded 25-slot
+map).
 
 Event-window tags for the time-series plots come from
 `CrvStatus::GetEventWindowTag()`. If the status collection is empty (typical
@@ -69,7 +75,6 @@ A missing `CrvStatus` product is tolerated (empty collection). A missing
 
 ## Offline analyzer
 
-
 `CRVDigiDQMAnalyzer` is a thin wrapper:
 
 ```text
@@ -78,6 +83,12 @@ mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s <digi.art>
 
 A missing `CrvStatus` product is tolerated (empty collection). A missing
 `CrvDigi` product skips the event.
+
+`fillSectorOccupancy: false` by default so the stock FCL needs no CRV
+geometry. Set it true (as in `dqm_data_vst.fcl`) to book
+`crvDigisPerChannelAndEvent_CRVsector*` from CosmicRayShield sector names
+and fill them in `endJob`. The collector still skips `notConnected`
+channels via Proditions; the analyzer does not.
 
 ## otsdaq CrvDQM
 

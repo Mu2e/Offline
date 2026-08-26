@@ -32,7 +32,8 @@ int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel)
   return globalFebId(roc, feb) * kNChanPerFEB + febChannel;
 }
 
-CRVDigiDQM::CRVDigiDQM(const Config& config) : config_(config)
+CRVDigiDQM::CRVDigiDQM(const Config& config) :
+    config_(config), nDigisOffline_(CRVId::nChannels, 0)
 {
   if (config_.channelsWindowEwts == 0) {
     config_.channelsWindowEwts = 1;
@@ -122,6 +123,33 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
     hADC_ = dir.make<TH1D>("ADC", "ADC in waveform", 100, 0.0, 3000.0);
   }
 
+  if (config_.fillCrvIdRates) {
+    h_crvDigiRatesROC_.assign(CRVId::nROC, nullptr);
+    for (std::size_t roc = 1; roc <= CRVId::nROC; ++roc) {
+      h_crvDigiRatesROC_[roc - 1] = dir.make<TH1F>(
+          Form("crvDigiRates_ROC%zu", roc),
+          Form("crvDigiRates_ROC%zu;Online channel in ROC;Digis / event", roc),
+          static_cast<int>(CRVId::nFEBPerROC * CRVId::nChanPerFEB),
+          0,
+          static_cast<double>(CRVId::nFEBPerROC * CRVId::nChanPerFEB));
+    }
+    h_crvDigiRates_ = dir.make<TH2F>(
+        "crvDigiRates",
+        "crvDigiRates:FEBchannel:FEB;FEB channel;FEB port",
+        static_cast<int>(CRVId::nChanPerFEB),
+        0,
+        static_cast<double>(CRVId::nChanPerFEB),
+        static_cast<int>(CRVId::nROC * CRVId::nFEBPerROC),
+        0,
+        static_cast<double>(CRVId::nROC * CRVId::nFEBPerROC));
+    h_crvDigisPerChannel_ = dir.make<TH1F>(
+        "crvDigisPerChannel",
+        "Mean digis per event vs offline channel;Offline channel (bar#times4+SiPM);Digis / event",
+        static_cast<int>(CRVId::nChannels),
+        -0.5,
+        static_cast<double>(CRVId::nChannels) - 0.5);
+  }
+
   booked_ = true;
 }
 
@@ -160,6 +188,40 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
     }
 
     h1_tdc_->Fill(digi.GetStartTDC());
+
+    const int barIndex = digi.GetScintillatorBarIndex().asUint();
+    const int sipm = digi.GetSiPMNumber();
+    if (sipm >= 0) {
+      const std::size_t offlineChannel =
+          static_cast<std::size_t>(barIndex) * CRVId::nChanPerBar +
+          static_cast<std::size_t>(sipm);
+      if (offlineChannel < nDigisOffline_.size()) {
+        ++nDigisOffline_[offlineChannel];
+        if (h_crvDigisPerChannel_) {
+          h_crvDigisPerChannel_->Fill(static_cast<float>(offlineChannel));
+        }
+      }
+    }
+
+    if (config_.fillCrvIdRates) {
+      const int rocId = static_cast<int>(roc);
+      const int febIdRaw = static_cast<int>(feb);
+      const int febCh = static_cast<int>(febChannel);
+      if (rocId >= 1 && static_cast<std::size_t>(rocId) <= CRVId::nROC &&
+          febIdRaw >= 1 && static_cast<std::size_t>(febIdRaw) <= CRVId::nFEBPerROC &&
+          febCh >= 0 && static_cast<std::size_t>(febCh) < CRVId::nChanPerFEB) {
+        const int rocChannel =
+            (febIdRaw - 1) * static_cast<int>(CRVId::nChanPerFEB) + febCh;
+        if (!h_crvDigiRatesROC_.empty()) {
+          h_crvDigiRatesROC_[static_cast<std::size_t>(rocId) - 1]->Fill(rocChannel);
+        }
+        const int portIndex =
+            (rocId - 1) * static_cast<int>(CRVId::nFEBPerROC) + febIdRaw - 1;
+        if (h_crvDigiRates_) {
+          h_crvDigiRates_->Fill(febCh, portIndex);
+        }
+      }
+    }
 
     if (config_.fillInclusive) {
       if (hBarId_) {
@@ -438,11 +500,40 @@ void CRVDigiDQM::persistGraph(TGraph* g)
                                 g->GetY());
 }
 
+void CRVDigiDQM::scaleRateHists()
+{
+  if (ratesScaled_ || nEvents_ == 0) {
+    return;
+  }
+  const float invN = 1.0f / static_cast<float>(nEvents_);
+  for (TH1F* h : h_crvDigiRatesROC_) {
+    if (h) {
+      h->Scale(invN);
+    }
+  }
+  if (h_crvDigiRates_) {
+    h_crvDigiRates_->Scale(invN);
+  }
+  if (h_crvDigisPerChannel_) {
+    h_crvDigisPerChannel_->Scale(invN);
+  }
+  ratesScaled_ = true;
+}
+
+int CRVDigiDQM::nDigisOffline(std::size_t channel) const
+{
+  if (channel >= nDigisOffline_.size()) {
+    return 0;
+  }
+  return nDigisOffline_[channel];
+}
+
 void CRVDigiDQM::WriteGraphs()
 {
   if (!booked_ || !dir_) {
     return;
   }
+  scaleRateHists();
   persistGraph(g_digisVsEwt_);
   persistGraph(g_digisAvgVsEwt_);
   for (auto& entry : g_ubStatusVsEwt_) {

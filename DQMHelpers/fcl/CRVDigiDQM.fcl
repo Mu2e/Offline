@@ -1,4 +1,6 @@
 # Thin offline wrapper around mu2e::CRVDigiDQM.
+# fillSectorOccupancy is false: no CosmicRayShield lookup. Enable it only
+# when GeometryService has a CRV geometry (see dqm_data_vst.fcl).
 #
 # Usage:
 #   mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s <input-art-file> -n <nevents>
@@ -45,6 +47,8 @@ physics : {
       avgGraphPoints       : 1000
       channelsWindowEwts   : 50000
       fillInclusive        : true
+      fillCrvIdRates       : true
+      fillSectorOccupancy  : false
     }
   }
 

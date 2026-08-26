@@ -2,16 +2,22 @@
 #define DQMHelpers_inc_CRVDigiDQM_hh
 //
 // Standalone CRV digi DQM helper. Books and fills the histograms used by both
-// the otsdaq online monitor and offline DQM art modules.
+// the otsdaq online monitor and offline DQM art modules. No GeometryService.
 //
-// Channel-ID convention (VST/KPP slot map, not CRVId.hh):
-//   if (roc == 4) roc = 2;                 // DTC link 3 folded onto ROC 2
-//   globalFebId     = (roc-1)*25 + feb;    // 25 FEB slots per ROC
-//   globalChannelId = globalFebId*64 + febChannel;  // 2112 occupancy bins
+// Two channel-ID conventions (kept separate; do not mix):
+//   VST/KPP occupancy (h1_channels / h2_channels):
+//     if (roc == 4) roc = 2;                 // DTC link 3 folded onto ROC 2
+//     globalFebId     = (roc-1)*25 + feb;    // 25 FEB slots per ROC
+//     globalChannelId = globalFebId*64 + febChannel;  // 2112 occupancy bins
+//   CRVId rate maps (crvDigiRates_ROC*, crvDigiRates, crvDigisPerChannel):
+//     raw GetROC()/GetFEB()/GetFEBchannel() (no fold; CRVId 24 FEBs/ROC).
+//     Offline channel = barIndex*4 + SiPM. Scaled by 1/nEvents in WriteGraphs.
+//     Per-sector crvDigisPerChannelAndEvent_* is filled by the art module.
 //
 // Original Author: R. Mina
 //
 
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
@@ -51,6 +57,8 @@ public:
     std::size_t avgGraphPoints{1000};
     std::size_t channelsWindowEwts{50000};
     bool fillInclusive{true};
+    // CRVId-indexed rate maps and offline-channel occupancy (no GeometryService).
+    bool fillCrvIdRates{true};
   };
 
   // VST/KPP readout geography used by the online occupancy plots.
@@ -88,6 +96,13 @@ public:
   TH1D* BarId() const { return hBarId_; }
   TH1D* SiPM() const { return hSiPM_; }
   TH1D* ADC() const { return hADC_; }
+
+  TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }
+  TH2F* crvDigiRates() const { return h_crvDigiRates_; }
+  const std::vector<TH1F*>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }
+  int nDigisOffline(std::size_t channel) const;
+  std::size_t nOfflineChannels() const { return nDigisOffline_.size(); }
+  bool ratesScaled() const { return ratesScaled_; }
 
   const std::map<std::pair<uint8_t, uint8_t>, TH1F*>& dtFebPairs() const
   {
@@ -128,6 +143,7 @@ private:
   void fillTiming(const std::map<uint8_t, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes);
   void fillMicroBunchStatus(const CrvStatusCollection& crvStatus);
   void persistGraph(TGraph* g);
+  void scaleRateHists();
 
   Config config_;
   int nBinsDt_{400};
@@ -149,6 +165,12 @@ private:
   TH1D* hBarId_{nullptr};
   TH1D* hSiPM_{nullptr};
   TH1D* hADC_{nullptr};
+
+  TH1F* h_crvDigisPerChannel_{nullptr};
+  TH2F* h_crvDigiRates_{nullptr};
+  std::vector<TH1F*> h_crvDigiRatesROC_;
+  std::vector<int> nDigisOffline_;
+  bool ratesScaled_{false};
 
   std::map<std::pair<uint8_t, uint8_t>, TH1F*> h1_dtFebPairs_;
   std::map<std::pair<uint8_t, uint8_t>, TH1F*> h1_dtFpgaPairs_;

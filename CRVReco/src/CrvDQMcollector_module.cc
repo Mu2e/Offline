@@ -1,8 +1,8 @@
 //
-// Offline CRV DQM collector. Per-event digi histograms are filled by
-// mu2e::CRVDigiDQM; this module still owns reco/PE/coincidence products
-// and the geometry-indexed digi-rate maps (filled during the event loop,
-// scaled by 1/nEvents in endJob).
+// Offline CRV DQM collector. Per-event digi histograms and CRVId rate maps
+// are filled by mu2e::CRVDigiDQM; this module still owns reco/PE/coincidence
+// products. Per-sector crvDigisPerChannelAndEvent_* is filled in endJob from
+// the helper's offline-channel counts (geometry supplies sector names).
 //
 // Original Author: Ralf Ehrlich
 
@@ -242,18 +242,15 @@ namespace mu2e
     std::pair<int,int> _lastRunSubrun;
 
     std::vector<int>   _nCoincidences;       //for each sector
-    std::vector<int>   _nDigis;              //for each channel; used to fill the per-sector rate distribution in endJob
     std::vector<TH1F*> _histPEs;             //for each channel
     std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
 
     std::vector<TH1F*> _histDigisPerChannelAndEvent;
-    std::vector<TH1F*> _histDigiRatesROC;
     std::vector<TH1F*> _histPEsMPV;
     std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
     std::vector<TH1F*> _histCalibConstants;
-    TH2F*              _hist2DDigiRatesROC;
     TH2F*              _hist2DPEsMPVROC;
     TH1I*              _histCoincidenceClusters;
     TTree*             _treeMetaData;
@@ -293,7 +290,6 @@ namespace mu2e
     _totalEvents(0),
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0),
-    _hist2DDigiRatesROC(nullptr),
     _hist2DPEsMPVROC(nullptr),
     _histCoincidenceClusters(nullptr),
     _treeMetaData(nullptr),
@@ -327,7 +323,8 @@ namespace mu2e
       CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
       int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
 
-      _histDigisPerChannelAndEvent.at(sectorNumber)->Fill(_nDigis.at(channel)*invN);
+      _histDigisPerChannelAndEvent.at(sectorNumber)->Fill(
+          _digiDQM.nDigisOffline(channel) * invN);
 
       float MPV=0;
       float FWHM=0;
@@ -336,12 +333,6 @@ namespace mu2e
       LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2, _PEfitRangeStart, _PEfitRangeEnd, _PEstart);
       _histPEsMPV.at(sectorNumber)->Fill(MPV);
     }
-
-    for(auto *h : _histDigiRatesROC)
-    {
-      if(h) h->Scale(invN);
-    }
-    if(_hist2DDigiRatesROC) _hist2DDigiRatesROC->Scale(invN);
 
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
@@ -377,9 +368,7 @@ namespace mu2e
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
     _histDigisPerChannelAndEvent.reserve(crvSectors.size());
-    _histDigiRatesROC.reserve(CRVId::nROC);
     _nCoincidences.resize(crvSectors.size());
-    _nDigis.resize(crvCounters.size()*CRVId::nChanPerBar);
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
     _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
@@ -415,12 +404,8 @@ namespace mu2e
       _histPEsMPVROC.emplace_back(tfs->make<TH1F>(Form("crvPEsMPV_ROC%zu",ROC),
                                             Form("crvPEsMPV_ROC%zu",ROC),
                                             CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
-      _histDigiRatesROC.emplace_back(tfs->make<TH1F>(Form("crvDigiRates_ROC%zu",ROC),
-                                            Form("crvDigiRates_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
     }
     _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _hist2DDigiRatesROC=tfs->make<TH2F>("crvDigiRates","crvDigiRates:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
     _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters:sectorType",10,0,10);
 
     _treeMetaData=tfs->make<TTree>("crvMetaData","crvMetaData");
@@ -464,28 +449,6 @@ namespace mu2e
         (crvStatusCollection.isValid() && crvStatusCollection.product()!=nullptr) ?
             *crvStatusCollection : emptyStatus;
     _digiDQM.Fill(digis, status);
-
-    for(size_t i=0; i<digis.size(); ++i)
-    {
-      const CrvDigi &digi = digis.at(i);
-      int barIndex = digi.GetScintillatorBarIndex().asUint();
-      int SiPM = digi.GetSiPMNumber();
-      size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
-      if(channel<_nDigis.size()) ++_nDigis.at(channel);
-
-      int ROC=digi.GetROC();
-      int ROCport=digi.GetFEB();
-      int FEBchannel=digi.GetFEBchannel();
-      if(ROC<1 || static_cast<size_t>(ROC)>CRVId::nROC) continue;
-      if(ROCport<1 || static_cast<size_t>(ROCport)>CRVId::nFEBPerROC) continue;
-      if(FEBchannel<0 || static_cast<size_t>(FEBchannel)>=CRVId::nChanPerFEB) continue;
-
-      size_t ROCchannel=(ROCport-1)*CRVId::nChanPerFEB+FEBchannel;
-      if(!_histDigiRatesROC.empty()) _histDigiRatesROC.at(ROC-1)->Fill(ROCchannel);
-
-      size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+ROCport-1;
-      if(_hist2DDigiRatesROC) _hist2DDigiRatesROC->Fill(FEBchannel,portIndex);
-    }
 
     static bool first=true;
     if(first)

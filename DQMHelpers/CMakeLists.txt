@@ -4,6 +4,7 @@ cet_make_library(
       src/CRVStatusDQM.cc
     LIBRARIES PUBLIC
       Offline::RecoDataProducts
+      Offline::DataProducts
       art_root_io::tfile_support
       ROOT::Hist
       ROOT::Gpad
@@ -13,6 +14,8 @@ cet_build_plugin(CRVDigiDQMAnalyzer art::module
     REG_SOURCE src/CRVDigiDQMAnalyzer_module.cc
     LIBRARIES REG
       Offline::DQMHelpers
+      Offline::GeometryService
+      Offline::CosmicRayShieldGeom
       art_root_io::TFileService_service
 )
 
