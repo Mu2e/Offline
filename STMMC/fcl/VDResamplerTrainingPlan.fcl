@@ -41,7 +41,7 @@ common_training_config : { # Common training configuration for all particles
   # (the file-name parser splits on dots).
   # Either a single string (one tag for every source) or a sequence of one tag PER SOURCE. The
   # sequence is indexed by the source's position in VDResamplerNameHelper's dataSourceNames(), so
-  # the entries MUST be in that order and the list must be exactly that long — the trailing
+  # the entries MUST be in that order and the list must be exactly that long - the trailing
   # comments below are only documentation, the position is what selects the tag. Per-source tags
   # let one source be re-trained and version-bumped without forcing a bump on the others.
   versionTag : ["MDC2025ai", # EleBeam
