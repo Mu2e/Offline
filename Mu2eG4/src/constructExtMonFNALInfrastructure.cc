@@ -62,8 +62,7 @@ namespace mu2e {
     //----------------------------------------------------------
     // Pixel Chiller Mother Volume
 
-    // finishNesting() uses the backwards interpretation of rotations
-    G4RotationMatrix* pixelChillerRotationInParentG4 = reg.add(G4RotationMatrix(pixelChillerRotationInParent.inverse()));
+    G4RotationMatrix* pixelChillerRotationInParentG4 = reg.add(G4RotationMatrix(pixelChillerRotationInParent));
     std::vector<double> extMonFNALPixelChillerHalfSize;
     config.getVectorDouble("extMonFNAL.pixelChiller.halfSize", extMonFNALPixelChillerHalfSize);
     const std::string pixelChillerNum = "pixelChiller"+std::to_string(chillerNum);
