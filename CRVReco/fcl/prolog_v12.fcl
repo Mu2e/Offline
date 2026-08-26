@@ -26,9 +26,12 @@ BEGIN_PROLOG
       module_type                            : CrvDQMcollector
       useDQMcollector                        : true
       crvDigiModuleLabel                     : "CrvDigi"
+      crvStatusModuleLabel                   : "CrvDigi"
       #crvRecoPulsesModuleLabel               : "CrvRecoPulses"
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvDaqErrorModuleLabel                 : "CrvDigi"
+      crvDigiDQMDir                          : "CRVDigiDQM"
+      fillInclusiveDigiDQM                   : true
     }
 
     CrvRecoPulses:

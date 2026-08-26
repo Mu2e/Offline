@@ -1,0 +1,53 @@
+# Thin offline wrapper around mu2e::CRVDigiDQM.
+#
+# Usage:
+#   mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s <input-art-file> -n <nevents>
+#
+# Change output filename:
+#   mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s input.art -T crvDigiDQM.root
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : CRVDigiDQM
+
+source : {
+  module_type : RootInput
+  maxEvents   : -1
+}
+
+services : {
+  message : @local::default_message
+  TFileService : {
+    fileName : "crvDigiDQM.root"
+  }
+}
+
+physics : {
+  analyzers : {
+    crvDigiDQM : {
+      module_type          : CRVDigiDQMAnalyzer
+      crvDigiTag           : "CrvDigi"
+      crvStatusTag         : "CrvDigi"
+      outputTag            : "CRVDigiDQM"
+      diagLevel            : 1
+      nBinsDigisPerEvt     : 200
+      maxDigisPerEvt       : 4000
+      nBinsPeakAdc         : 450
+      maxPeakAdc           : 4500
+      nBinsTdc             : 400
+      maxTdc               : 40000
+      cfFraction           : 0.20
+      dtBinSize            : 0.5
+      dtRange              : 100.0
+      minAmplitude         : 10
+      avgBlockSize         : 30
+      avgGraphPoints       : 1000
+      channelsWindowEwts   : 50000
+      fillInclusive        : true
+    }
+  }
+
+  ana : [ crvDigiDQM ]
+  end_paths : [ ana ]
+}

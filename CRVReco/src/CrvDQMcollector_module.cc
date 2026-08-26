@@ -1,5 +1,8 @@
 //
-// A module to find clusters of coincidences of CRV pulses
+// Offline CRV DQM collector. Per-event digi histograms are filled by
+// mu2e::CRVDigiDQM; this module still owns reco/PE/coincidence products
+// and the geometry-indexed digi-rate maps (filled during the event loop,
+// scaled by 1/nEvents in endJob).
 //
 // Original Author: Ralf Ehrlich
 
@@ -13,7 +16,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
@@ -38,6 +43,7 @@
 #include <TH1I.h>
 #include <TTree.h>
 
+#include <bitset>
 #include <string>
 #include <array>
 
@@ -172,9 +178,12 @@ namespace mu2e
       using Comment=fhicl::Comment;
       fhicl::Atom<bool> useDQMcollector{Name("useDQMcollector"), Comment("fill DQM values, histograms, ...")};
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("label of CrvDigi module")};
+      fhicl::Atom<std::string> crvStatusModuleLabel{Name("crvStatusModuleLabel"), Comment("label of CrvStatus module; empty uses crvDigiModuleLabel"), ""};
       //fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
+      fhicl::Atom<std::string> crvDigiDQMDir{Name("crvDigiDQMDir"), Comment("TFileService subdirectory for CRVDigiDQM histograms"), "CRVDigiDQM"};
+      fhicl::Atom<bool> fillInclusiveDigiDQM{Name("fillInclusiveDigiDQM"), Comment("also fill BarId/SiPM/ADC in CRVDigiDQM"), true};
 
       fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
       fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
@@ -196,16 +205,19 @@ namespace mu2e
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
     explicit CrvDQMcollector(const Parameters& config);
-    void analyze(const art::Event& e);
-    void beginRun(const art::Run &run);
-    void endJob();
+    void beginJob() override;
+    void analyze(const art::Event& e) override;
+    void beginRun(const art::Run &run) override;
+    void endJob() override;
 
     private:
     bool        _useDQMcollector;
     std::string _crvDigiModuleLabel;
+    std::string _crvStatusModuleLabel;
     //std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceClusterFinderModuleLabel;
     std::string _crvDaqErrorModuleLabel;
+    std::string _crvDigiDQMDir;
 
     int                _histPEsBins;
     double             _histPEsStart;
@@ -230,8 +242,7 @@ namespace mu2e
     std::pair<int,int> _lastRunSubrun;
 
     std::vector<int>   _nCoincidences;       //for each sector
-    std::vector<int>   _nDigis;              //for each channel
-    std::vector<int>   _nDigisROC;           //for each channel
+    std::vector<int>   _nDigis;              //for each channel; used to fill the per-sector rate distribution in endJob
     std::vector<TH1F*> _histPEs;             //for each channel
     std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
@@ -250,15 +261,20 @@ namespace mu2e
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
     ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
+
+    CRVDigiDQM _digiDQM;
   };
 
   CrvDQMcollector::CrvDQMcollector(const Parameters& conf) :
     art::EDAnalyzer(conf),
     _useDQMcollector(conf().useDQMcollector()),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _crvStatusModuleLabel(conf().crvStatusModuleLabel().empty() ?
+                          conf().crvDigiModuleLabel() : conf().crvStatusModuleLabel()),
     //_crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterFinderModuleLabel(conf().crvCoincidenceClusterFinderModuleLabel()),
     _crvDaqErrorModuleLabel(conf().crvDaqErrorModuleLabel()),
+    _crvDigiDQMDir(conf().crvDigiDQMDir()),
     _histPEsBins(conf().histPEsBins()),
     _histPEsStart(conf().histPEsStart()),
     _histPEsEnd(conf().histPEsEnd()),
@@ -276,14 +292,34 @@ namespace mu2e
     _PEstart(conf().PEstart()),
     _totalEvents(0),
     _totalEventsWithCoincidenceClusters(0),
-    _totalEventsWithDAQerrors(0)
+    _totalEventsWithDAQerrors(0),
+    _hist2DDigiRatesROC(nullptr),
+    _hist2DPEsMPVROC(nullptr),
+    _histCoincidenceClusters(nullptr),
+    _treeMetaData(nullptr),
+    _digiDQM([] (bool fillInclusive) {
+      CRVDigiDQM::Config c;
+      c.fillInclusive = fillInclusive;
+      return c;
+    }(conf().fillInclusiveDigiDQM()))
   {
+  }
+
+  void CrvDQMcollector::beginJob()
+  {
+    art::ServiceHandle<art::TFileService> tfs;
+    _digiDQM.Book(tfs->mkdir(_crvDigiDQMDir));
   }
 
   void CrvDQMcollector::endJob()
   {
+    _digiDQM.WriteGraphs();
+
+    if(_totalEvents<=0) return;
+
     GeomHandle<CosmicRayShield> CRS;
     auto &crvCounters = CRS->getAllCRSScintillatorBars();
+    const float invN = 1.0f/_totalEvents;
     for(size_t channel=0; channel<crvCounters.size()*CRVId::nChanPerBar; ++channel)
     {
       if(_notConnected.at(channel)) continue;
@@ -291,7 +327,7 @@ namespace mu2e
       CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
       int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
 
-      _histDigisPerChannelAndEvent.at(sectorNumber)->Fill((float)(_nDigis.at(channel))/_totalEvents);
+      _histDigisPerChannelAndEvent.at(sectorNumber)->Fill(_nDigis.at(channel)*invN);
 
       float MPV=0;
       float FWHM=0;
@@ -301,15 +337,18 @@ namespace mu2e
       _histPEsMPV.at(sectorNumber)->Fill(MPV);
     }
 
-    art::ServiceHandle<art::TFileService> tfs;
+    for(auto *h : _histDigiRatesROC)
+    {
+      if(h) h->Scale(invN);
+    }
+    if(_hist2DDigiRatesROC) _hist2DDigiRatesROC->Scale(invN);
+
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
       for(size_t FEB=1; FEB<=CRVId::nFEBPerROC; ++FEB)
       for(size_t FEBchannel=0; FEBchannel<CRVId::nChanPerFEB; ++FEBchannel)
       {
         size_t ROCchannel=(FEB-1)*CRVId::nChanPerFEB+FEBchannel;
-
-        _histDigiRatesROC.at(ROC-1)->Fill(ROCchannel,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
 
         float MPV=0;
         float FWHM=0;
@@ -319,8 +358,6 @@ namespace mu2e
         _histPEsMPVROC.at(ROC-1)->Fill(ROCchannel,MPV);
 
         size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+FEB-1;
-
-        _hist2DDigiRatesROC->Fill(FEBchannel,portIndex,(float)(_nDigisROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel))/_totalEvents);
         _hist2DPEsMPVROC->Fill(FEBchannel,portIndex,MPV);
       }
     }
@@ -343,7 +380,6 @@ namespace mu2e
     _histDigiRatesROC.reserve(CRVId::nROC);
     _nCoincidences.resize(crvSectors.size());
     _nDigis.resize(crvCounters.size()*CRVId::nChanPerBar);
-    _nDigisROC.resize(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
     _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
@@ -409,6 +445,8 @@ namespace mu2e
     art::Handle<CrvDAQerrorCollection> crvDaqErrorCollection;
 
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
+    art::Handle<CrvStatusCollection> crvStatusCollection;
+    event.getByLabel(_crvStatusModuleLabel,"",crvStatusCollection);
     //event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(_crvDaqErrorModuleLabel,"",crvDaqErrorCollection);
@@ -417,19 +455,36 @@ namespace mu2e
     auto const& sipmStatus = _sipmStatus.get(event.id());
     auto const& channelMap = _channelMap_h.get(event.id());
 
-    for(size_t i=0; i<crvDigiCollection->size(); ++i)
+    const CrvStatusCollection emptyStatus;
+    const CrvDigiCollection emptyDigis;
+    const CrvDigiCollection& digis =
+        (crvDigiCollection.isValid() && crvDigiCollection.product()!=nullptr) ?
+            *crvDigiCollection : emptyDigis;
+    const CrvStatusCollection& status =
+        (crvStatusCollection.isValid() && crvStatusCollection.product()!=nullptr) ?
+            *crvStatusCollection : emptyStatus;
+    _digiDQM.Fill(digis, status);
+
+    for(size_t i=0; i<digis.size(); ++i)
     {
-      const CrvDigi &digi = crvDigiCollection->at(i);
+      const CrvDigi &digi = digis.at(i);
       int barIndex = digi.GetScintillatorBarIndex().asUint();
       int SiPM = digi.GetSiPMNumber();
       size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
-      ++_nDigis.at(channel);
+      if(channel<_nDigis.size()) ++_nDigis.at(channel);
 
       int ROC=digi.GetROC();
       int ROCport=digi.GetFEB();
       int FEBchannel=digi.GetFEBchannel();
-      size_t channelOnline = (ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB + (ROCport-1)*CRVId::nChanPerFEB + FEBchannel;
-      ++_nDigisROC.at(channelOnline);
+      if(ROC<1 || static_cast<size_t>(ROC)>CRVId::nROC) continue;
+      if(ROCport<1 || static_cast<size_t>(ROCport)>CRVId::nFEBPerROC) continue;
+      if(FEBchannel<0 || static_cast<size_t>(FEBchannel)>=CRVId::nChanPerFEB) continue;
+
+      size_t ROCchannel=(ROCport-1)*CRVId::nChanPerFEB+FEBchannel;
+      if(!_histDigiRatesROC.empty()) _histDigiRatesROC.at(ROC-1)->Fill(ROCchannel);
+
+      size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+ROCport-1;
+      if(_hist2DDigiRatesROC) _hist2DDigiRatesROC->Fill(FEBchannel,portIndex);
     }
 
     static bool first=true;
