@@ -607,7 +607,7 @@ namespace mu2e {
   // Append end of track information to the existing SimParticle.
   void Mu2eG4TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
-    if( _sizeLimit>0 && _currentSize>=_sizeLimit ) return;
+    if( _sizeLimit>0 && _currentSize>_sizeLimit ) return;
 
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
