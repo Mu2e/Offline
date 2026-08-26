@@ -69,21 +69,36 @@ common_training_config : { # Common training configuration for all particles
   VDr : 2000.0
 }
 
-common_fine_structure_config : { # Common fine-structure configuration for particles
-  SBDMuseTwoStageTraining : true
-  stage1Method : "INVERSE_CDF"
+common_prediction_config : {
+  SBDMpredictionTarget : "V"
+}
+
+common_dimWeightController_config : {
+  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
+}
+
+common_EMA_config : {
+  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
+  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
+}
+
+common_autoCurriculum_config : {
+  SBDMautoCurriculumPlanner : true
+  SBDMplannerSmoothWindow : 8
+  SBDMplannerPatience : 16
+  SBDMplannerMinEpochsPerPhase : 25
+}
+
+core_fine_structure_config : {
   SBDMhidden : 256 # hidden slightly larger than all input dims to keep capacity, but fewer layers to reduce training time
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 16
-  SBDMinputEmbeddingDims : [40, 26, 26, 32, 32] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
-  SBDMconditionEmbeddingDims : [40]             # pTot
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-4
   SBDMlogSigMax : 1.0
-  SBDMpredictionTarget : "V"
-  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
-  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
-  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
   # curriculum focus range :                         >0.5,    full, 0.3-0.7, 0.1-0.5, low end
   SBDMtrainingCurriculumEpochs :                 [    500,     500,     500,     500,     500]   # using planner, this is the max
   SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.5,     0.5,     0.3]
@@ -97,28 +112,39 @@ common_fine_structure_config : { # Common fine-structure configuration for parti
   SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 200000,  400000,  400000,  800000,  800000]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true,    true,    true]
   SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false,   false,   false]
-  SBDMautoCurriculumPlanner : true
-  SBDMplannerSmoothWindow : 8
+  @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,   0.001,   0.001,  0.0005,  0.0005]
-  SBDMplannerPatience : 16
-  SBDMplannerMinEpochsPerPhase : 25
 }
 
-common_avg_structure_config : { # Common set up for samples of midrange, 2 stage training
+# fine-structure 1 stage
+common_fine_structure_1_stage_config : {
+  @table::core_fine_structure_config
+  SBDMuseTwoStageTraining : false
+  SBDMinputEmbeddingDims : [40, 26, 26, 40, 32, 32] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  # SBDMconditionEmbeddingDims being [0], omitted 
+}
+
+# fine-structure 2-stage if need fine pTot resolution. 
+# Note this will echo and amplify pTot stat. fluctuations in the training sample, so only use if the training sample is 
+# large enough to support it, or fidelity of pTot distribution is a must. Otherwise, use the 1-stage config above.
+common_fine_structure_2_stage_config : {
+  @table::core_fine_structure_config
   SBDMuseTwoStageTraining : true
-  stage1Method : "INVERSE_CDF" # resolution less ideal
+  stage1Method : "INVERSE_CDF"  
+  SBDMinputEmbeddingDims : [40, 26, 26, 32, 32] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMconditionEmbeddingDims : [40]             # pTot
+}
+
+core_avg_structure_config :{
   SBDMhidden : 256
   SBDMlayers : 4
   SBDMtimeEmbeddingDim : 12
-  SBDMinputEmbeddingDims : [34, 20, 20, 26, 26] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
-  SBDMconditionEmbeddingDims : [34]             # pTot
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-3
   SBDMlogSigMax : 1.0
-  SBDMpredictionTarget : "V"
-  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
-  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
-  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
   # curriculum focus range :                         >0.5,    full, low end
   SBDMtrainingCurriculumEpochs :                 [    500,     500,     500]   # using planner, this is the max
   SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
@@ -132,61 +158,38 @@ common_avg_structure_config : { # Common set up for samples of midrange, 2 stage
   SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 100000,  100000,  200000]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
   SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
-  SBDMautoCurriculumPlanner : true
-  SBDMplannerSmoothWindow : 8
+  @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
-  SBDMplannerPatience : 16
-  SBDMplannerMinEpochsPerPhase : 25
 }
 
-common_coarse_structure_config : { # Common coarse setup for samples with fewer events, mostly same as avg but single stage
+# average number of particles 1-stage
+common_avg_structure_1_stage_config : { 
+  @table::core_avg_structure_config
   SBDMuseTwoStageTraining : false
-  SBDMhidden : 256
-  SBDMlayers : 4
-  SBDMtimeEmbeddingDim : 12
   SBDMinputEmbeddingDims : [34, 20, 20, 34, 26, 26] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
   # SBDMconditionEmbeddingDims being [0], omitted 
-  SBDMnoiseSchedule : "LOGSIG"
-  SBDMlogSigMin : 1e-3
-  SBDMlogSigMax : 1.0
-  SBDMpredictionTarget : "V"
-  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
-  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
-  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
-  # curriculum focus range :                         >0.5,    full, low end
-  SBDMtrainingCurriculumEpochs :                 [    500,     500,     500]   # using planner, this is the max
-  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
-  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
-  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
-  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0]
-  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumBatchSize :              [    256,    1024,    2048]
-  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 100000,  100000,  200000]
-  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
-  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
-  SBDMautoCurriculumPlanner : true
-  SBDMplannerSmoothWindow : 8
-  SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
-  SBDMplannerPatience : 16
-  SBDMplannerMinEpochsPerPhase : 25
 }
 
-common_lowest_structure_config : { # Common lowest quality setup for samples with fewest events ~1k
-  SBDMuseTwoStageTraining : false
+# average number of particles 2-stage
+# signal resampling uses this config if training sample event number is moderate
+common_avg_structure_2_stage_config : {
+  @table::core_avg_structure_config
+  SBDMuseTwoStageTraining : true
+  stage1Method : "INVERSE_CDF" # resolution less ideal
+  SBDMinputEmbeddingDims : [34, 20, 20, 26, 26] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMconditionEmbeddingDims : [34]             # pTot
+}
+
+core_coarse_structure_config :{
   SBDMhidden : 140 # ~half, but sufficient to be > total input dims
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 8
-  SBDMinputEmbeddingDims : [30, 16, 16, 28, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
-  # SBDMconditionEmbeddingDims being [0], omitted 
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-2
   SBDMlogSigMax : 1.0
-  SBDMpredictionTarget : "V"
-  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
-  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
-  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
   # curriculum focus range :                         >0.5,    full, low end
   SBDMtrainingCurriculumEpochs :                 [    500,     500,     500]   # using planner, this is the max
   SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
@@ -200,97 +203,106 @@ common_lowest_structure_config : { # Common lowest quality setup for samples wit
   SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  50000,   50000,  100000]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
   SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
-  SBDMautoCurriculumPlanner : true
-  SBDMplannerSmoothWindow : 8
+  @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
-  SBDMplannerPatience : 16
-  SBDMplannerMinEpochsPerPhase : 25
+}
+
+# Common lowest quality setup for samples with fewest events ~1k
+common_coarse_structure_1_stage_config : {
+  @table::core_coarse_structure_config
+  SBDMuseTwoStageTraining : false
+  SBDMinputEmbeddingDims : [30, 16, 16, 28, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  # SBDMconditionEmbeddingDims being [0], omitted 
 }
 
 particle_training_config : {
   # ===== electrons =====
   pdg_11 : {
-    # full 2-stage training (inverse CDF + curriculum diffusion) for electrons from the EleBeam
+    # enough events to have a fine model; no narrow structure so 1-stage is sufficient
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_config
+      @table::common_fine_structure_1_stage_config
     }
-    # full 2-stage training (inverse CDF + curriculum diffusion) for electrons from the MuBeam, smaller sample size so use the midrange one 
+    # no narrow structure so 1-stage is sufficient 
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_config
+      @table::common_fine_structure_1_stage_config
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
     # few events from Neutrals, but if needed use the single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
     # default 
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_coarse_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
   }
   # ===== positrons =====
   pdg_m11 : {
-    # not as many events in the positron sample, still okay for a mid-range 2-stage
+    # not as many events in the positron sample
     # One other option is to use the electron model; the distribution is arguably identical.
     # Simply copy the trained file, rename it to match pdgId, and manually change the configuration 
-    # in the particle summary (2 stage, inverse CDF for stage 1)
+    # in the particle summary (1-stage, '-' stage 1)
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_coarse_structure_config
+      @table::common_avg_structure_1_stage_config
     }
     # much fewer events than the electron sample, recommend using the electron model
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
     # probably not needed in Neutrals. go to default if needed
     # default 
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
   }
   # ===== photons =====
   pdg_22 : {
-    # full 2-stage training (inverse CDF + curriculum diffusion) for photons from the EleBeam
+    # many events, but backgrounds. no need for 2-stage
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_config
+      @table::common_fine_structure_1_stage_config
+      # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
     }
-    # full 2-stage training (inverse CDF + curriculum diffusion) for photons from the MuBeam, more events in the tTransAsinh tail
+    # 347keV really hard to sample here (~60/1e6). more events in the tTransAsinh tail
+    # should consider a standalone 347 keV. Only background here, 1-stage is sufficient
     MuBeam :  {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_config
+      @table::common_fine_structure_1_stage_config
+      # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
     }
     # for 1809 keV from TargetStopsCat, mostly in the single peak of 1809 keV, and some lower energy events 
     # likely from scattering. to avoid issue potentially from sampling a extremely narrow peak, do the 2-stage
     # sampling with mid-range resolution
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
-      @table::common_avg_structure_config
+      @table::common_avg_structure_2_stage_config
     }
-    # hard to produce samples for the same POT, low stat so single stage
+    # hard to produce samples for the same POT, single stage sufficient
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_avg_structure_config
+      @table::common_avg_structure_1_stage_config
+      # @table::common_avg_structure_2_stage_config # if really want fine pTot structure
     }
     # default 
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_avg_structure_config
+      @table::common_avg_structure_1_stage_config
     }
   }
   # ===== neutrons =====
@@ -298,27 +310,28 @@ particle_training_config : {
     # coarse single-stage training for neutrons from the EleBeam, no significant tTrans tail so V2 momentum basis is sufficient
     EleBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
-    # many more events in the MuBeam neutron sample, so use a 2-stage finer structure model. no significant tTrans tail so stay with V2 momentum basis
+    # many more events in the MuBeam neutron sample. no significant tTrans tail so stay with V2 momentum basis
     MuBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
-      @table::common_fine_structure_config
+      @table::common_fine_structure_1_stage_config
+      # @table::common_fine_structure_2_stage_config # sufficient stat to do this if wanted
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
-      @table::common_lowest_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
-    # hard to produce samples for the same POT, low stat so single stage
+    # single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_coarse_structure_config
+      @table::common_avg_structure_1_stage_config
     }
     # default 
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_coarse_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
   }
   # ===== default =====
@@ -327,7 +340,7 @@ particle_training_config : {
   default : {
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
-      @table::common_coarse_structure_config
+      @table::common_coarse_structure_1_stage_config
     }
   }
 }
