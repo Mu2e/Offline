@@ -1,0 +1,69 @@
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : BaselineAnalyzer
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+  inputCommands: [
+    "keep *",
+    "drop *_*STM*_*_*"
+  ]
+}
+
+services : {
+
+  #@local::Services.Reco
+  GeometryService : {
+    inputFile: "Offline/Mu2eG4/geom/geom_common.txt"
+    bFieldFile: "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+    simulatedDetector : {tool_type: "Mu2e"}
+    KinKalMaterial        : @local::KinKalGeom.KKMaterial
+  }
+  GlobalConstantsService : {inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt"}
+  DbService : @local::DbEmpty
+  ProditionsService : @local::Proditions
+  TimeTracker : {}
+}
+
+physics : {
+
+  filters : {
+  }
+
+  producers : {
+
+    CaloDigis : {
+      module_type : CaloDigisFromDTCEvents
+      dataType : 0
+      diagLevel : 0
+      useOfflineID : true
+    }
+
+  }
+
+  analyzers  : {
+
+    Baselines : {
+        module_type : BaselineAnalyzer
+        caloDigiTag : CaloDigis
+        verbosity : 0
+        writeTXT : false
+        writeCSV : true
+        writePDF : true
+        thresholdOffset : 100
+        thresholdOffsetPin : 100
+    }
+
+  }
+
+  t1 : [ CaloDigis ]
+  e1 : [ Baselines ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+}
+
+services.scheduler.wantSummary: true

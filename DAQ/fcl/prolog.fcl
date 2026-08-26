@@ -15,6 +15,13 @@ DAQ : {
             allowOfflineFallbackWhenPanelMapMissing : false
             forceOfflineAddressing                  : false
         }
+
+        CaloDigis : {
+            module_type : CaloDigisFromDTCEvents
+            dataType : 0
+            diagLevel : 0
+            useOfflineID : true
+        }
     }
 
     filters : {
