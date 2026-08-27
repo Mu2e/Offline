@@ -184,6 +184,7 @@ namespace mu2e
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
       fhicl::Atom<std::string> crvDigiDQMDir{Name("crvDigiDQMDir"), Comment("TFileService subdirectory for CRVDigiDQM histograms"), "CRVDigiDQM"};
       fhicl::Atom<bool> fillInclusiveDigiDQM{Name("fillInclusiveDigiDQM"), Comment("also fill BarId/SiPM/ADC in CRVDigiDQM"), true};
+      fhicl::Atom<bool> crvDigiDQMkppReadout{Name("crvDigiDQMkppReadout"), Comment("KPP cabling: fold ROC 4 onto ROC 2 and book h1/h2_channels"), true};
 
       fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
       fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
@@ -293,11 +294,12 @@ namespace mu2e
     _hist2DPEsMPVROC(nullptr),
     _histCoincidenceClusters(nullptr),
     _treeMetaData(nullptr),
-    _digiDQM([] (bool fillInclusive) {
+    _digiDQM([] (bool fillInclusive, bool kppReadout) {
       CRVDigiDQM::Config c;
       c.fillInclusive = fillInclusive;
+      c.kppReadout = kppReadout;
       return c;
-    }(conf().fillInclusiveDigiDQM()))
+    }(conf().fillInclusiveDigiDQM(), conf().crvDigiDQMkppReadout()))
   {
   }
 

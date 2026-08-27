@@ -7,6 +7,8 @@
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
 #include "Offline/DQMHelpers/inc/CRVCFTime.hh"
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -17,17 +19,17 @@
 
 namespace mu2e {
 
-uint8_t CRVDigiDQM::foldedROC(uint8_t roc)
+uint8_t CRVDigiDQM::foldedROC(uint8_t roc) const
 {
-  return (roc == kFoldFromROC) ? kFoldToROC : roc;
+  return (config_.kppReadout && roc == kFoldFromROC) ? kFoldToROC : roc;
 }
 
-int CRVDigiDQM::globalFebId(uint8_t roc, uint8_t feb)
+int CRVDigiDQM::globalFebId(uint8_t roc, uint8_t feb) const
 {
   return (static_cast<int>(foldedROC(roc)) - 1) * kNFebSlotsPerROC + feb;
 }
 
-int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel)
+int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel) const
 {
   return globalFebId(roc, feb) * kNChanPerFEB + febChannel;
 }
@@ -47,13 +49,42 @@ CRVDigiDQM::CRVDigiDQM(const Config& config) :
   if (nBinsDt_ < 1) {
     nBinsDt_ = 1;
   }
+  if (config_.dtVsFebBinSize > 0) {
+    nBinsDtVsFeb_ =
+        static_cast<int>(2.0 * config_.dtVsFebRange / config_.dtVsFebBinSize);
+  }
+  if (nBinsDtVsFeb_ < 1) {
+    nBinsDtVsFeb_ = 1;
+  }
 }
 
 void CRVDigiDQM::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
-  timingFebDir_ = dir.mkdir("timing_feb");
   timingFpgaDir_ = dir.mkdir("timing_fpga");
+
+  h2_dtVsFeb_ = dir.make<TH2F>(
+      "dtVsFeb",
+      "First-hit time vs median of other FEBs;Global FEB ID;#Deltat [ns]",
+      nFebIdBins(),
+      -0.5,
+      nFebIdBins() - 0.5,
+      nBinsDtVsFeb_,
+      -config_.dtVsFebRange,
+      config_.dtVsFebRange);
+
+  // Per-FEB desync counters: a slipped FEB stands above its neighbours.
+  h_dtOutOfRangePerFeb_ = dir.make<TH1F>(
+      "dtOutOfRangePerFeb",
+      Form("Events with |#Deltat| > %.0f ns;Global FEB ID;Events",
+           config_.dtVsFebRange),
+      nFebIdBins(), -0.5, nFebIdBins() - 0.5);
+
+  h_dtOutOfRangePerFebLastEwt_ = dir.make<TH1F>(
+      "dtOutOfRangePerFebLastEwt",
+      Form("Events with |#Deltat| > %.0f ns (EWT span %zu);Global FEB ID;Events",
+           config_.dtVsFebRange, config_.channelsWindowEwts),
+      nFebIdBins(), -0.5, nFebIdBins() - 0.5);
 
   h1_digisPerEvt_ = dir.make<TH1F>("h1_digisPerEvt",
                                    "Hits / event;Hits / event;Events",
@@ -75,30 +106,34 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
       0,
       config_.maxTdc);
 
-  h1_channels_ = dir.make<TH1F>("h1_channels",
-                                "Channel occupancy;Global channel ID;Hits",
-                                kNGlobalChannelBins,
-                                -0.5,
-                                kNGlobalChannelBins - 0.5);
-  h1_channels_->SetMinimum(0.5);
+  // KPP-only: these axes cover 33 FEB slots, so on full CRV they would be all
+  // overflow. crvDigisPerChannel / crvDigiRates cover the full detector instead.
+  if (config_.kppReadout) {
+    h1_channels_ = dir.make<TH1F>("h1_channels",
+                                  "Channel occupancy;Global channel ID;Hits",
+                                  kNGlobalChannelBins,
+                                  -0.5,
+                                  kNGlobalChannelBins - 0.5);
+    h1_channels_->SetMinimum(0.5);
 
-  h1_channelsLastEwt_ = dir.make<TH1F>(
-      "h1_channelsLastEwt",
-      Form("Channel occupancy (EWT span %zu);Global channel ID;Hits",
-           config_.channelsWindowEwts),
-      kNGlobalChannelBins,
-      -0.5,
-      kNGlobalChannelBins - 0.5);
-  h1_channelsLastEwt_->SetMinimum(0.5);
+    h1_channelsLastEwt_ = dir.make<TH1F>(
+        "h1_channelsLastEwt",
+        Form("Channel occupancy (EWT span %zu);Global channel ID;Hits",
+             config_.channelsWindowEwts),
+        kNGlobalChannelBins,
+        -0.5,
+        kNGlobalChannelBins - 0.5);
+    h1_channelsLastEwt_->SetMinimum(0.5);
 
-  h2_channels_ = dir.make<TH2F>("h2_channels",
-                                "FEB vs channel hit map;Channel;FEB",
-                                kNChanPerFEB,
-                                0.5,
-                                kNChanPerFEB + 0.5,
-                                kNGlobalFebBins,
-                                0.5,
-                                kNGlobalFebBins + 0.5);
+    h2_channels_ = dir.make<TH2F>("h2_channels",
+                                  "FEB vs channel hit map;Channel;FEB",
+                                  kNChanPerFEB,
+                                  0.5,
+                                  kNChanPerFEB + 0.5,
+                                  kNGlobalFebBins,
+                                  0.5,
+                                  kNGlobalFebBins + 0.5);
+  }
 
   g_digisVsEwt_ = dir.make<TGraph>();
   g_digisVsEwt_->SetName("g_digisVsEwt");
@@ -167,7 +202,7 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
 
   const int nDigis = static_cast<int>(crvDigis.size());
   std::vector<uint16_t> eventChannelHits;
-  std::map<uint8_t, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;
+  std::map<int, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;
 
   for (const auto& digi : crvDigis) {
     const uint8_t roc = digi.GetROC();
@@ -175,11 +210,34 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
     const uint8_t febChannel = digi.GetFEBchannel();
 
     const int febId = globalFebId(roc, feb);
-    const int channelId = globalChannelId(roc, feb, febChannel);
+    if (febId > maxFebIdSeen_) {
+      maxFebIdSeen_ = febId;
+    }
+    if (febId < 0 || febId >= nFebIdBins()) {
+      ++nFebIdOutOfAxis_;
+      // Once per job: the axis size comes from Config::kppReadout, so this is
+      // a fixed configuration error, not a per-event condition.
+      if (!warnedOffAxisFeb_) {
+        warnedOffAxisFeb_ = true;
+        mf::LogWarning("CRVDigiDQM")
+            << "digi from ROC " << static_cast<int>(roc)
+            << " FEB " << static_cast<int>(feb) << " gives globalFebId " << febId
+            << ", outside the " << nFebIdBins() << "-bin FEB axis. It and any "
+            << "others like it are hidden in the overflow bin of dtVsFeb"
+            << (config_.kppReadout ? " and h2_channels" : "") << ". "
+            << (config_.kppReadout
+                    ? "KPP is ROC 1-2; set kppReadout=false for a larger CRV."
+                    : "Raise kNFebIdBins.")
+            << " Reported once per job.";
+      }
+    }
 
-    h1_channels_->Fill(channelId);
-    eventChannelHits.push_back(static_cast<uint16_t>(channelId));
-    h2_channels_->Fill(febChannel + 1, febId);
+    if (config_.kppReadout) {
+      const int channelId = globalChannelId(roc, feb, febChannel);
+      h1_channels_->Fill(channelId);
+      eventChannelHits.push_back(static_cast<uint16_t>(channelId));
+      h2_channels_->Fill(febChannel + 1, febId);
+    }
 
     const auto& adcs = digi.GetADCs();
     if (!adcs.empty()) {
@@ -242,14 +300,13 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
       const double absTime_ns =
           cf.time_ns + digi.GetStartTDC() * kDigitizationPeriodNs;
       const uint8_t fpga = febChannel / 16;
-      hitTimes[static_cast<uint8_t>(febId)][fpga].push_back(
-          {absTime_ns, febChannel});
+      hitTimes[febId][fpga].push_back({absTime_ns, febChannel});
     }
 
-    const uint8_t rocFolded = foldedROC(roc);
-    activeROCs_.insert(rocFolded);
-    activeFEBs_.insert(static_cast<uint8_t>(febId));
-    rocFEBMap_[rocFolded].insert(feb);
+    const uint8_t rocId = foldedROC(roc);
+    activeROCs_.insert(rocId);
+    activeFEBs_.insert(febId);
+    rocFEBMap_[rocId].insert(feb);
   }
 
   nDigis_ += static_cast<std::size_t>(nDigis);
@@ -259,7 +316,10 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
 
   if (haveEwt) {
     fillEwtSeries(ewt, nDigis);
-    fillRollingOccupancy(ewt, eventChannelHits);
+    if (config_.kppReadout) {
+      fillRollingOccupancy(ewt, eventChannelHits);
+    }
+    fillRollingDtOutOfRange(ewt);
     fillMicroBunchStatus(crvStatus);
   }
 }
@@ -336,6 +396,10 @@ void CRVDigiDQM::fillEwtSeries(uint64_t ewt, int nDigis)
 void CRVDigiDQM::fillRollingOccupancy(
     uint64_t ewt, const std::vector<uint16_t>& eventChannelHits)
 {
+  if (h1_channelsLastEwt_ == nullptr) {
+    return;
+  }
+
   recentChannelHitsByEwt_.emplace_back(ewt, eventChannelHits);
   for (const auto channelId : recentChannelHitsByEwt_.back().second) {
     if (channelId < kNGlobalChannelBins) {
@@ -357,15 +421,51 @@ void CRVDigiDQM::fillRollingOccupancy(
   }
 }
 
-void CRVDigiDQM::fillTiming(
-    const std::map<uint8_t, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes)
+// Median of sorted values with the entry at sorted position p removed.
+namespace {
+double medianExcluding(const std::vector<double>& sorted, std::size_t p)
 {
-  if (!timingFebDir_ || !timingFpgaDir_) {
+  const std::size_t m = sorted.size() - 1;
+  auto at = [&](std::size_t i) { return sorted[i < p ? i : i + 1]; };
+  if (m % 2 == 1) {
+    return at(m / 2);
+  }
+  return 0.5 * (at(m / 2 - 1) + at(m / 2));
+}
+} // namespace
+
+// Rolling EWT-window twin of the cumulative dtOutOfRangePerFeb pair, for the
+// online monitor: a slip that starts now is not diluted by earlier good data.
+void CRVDigiDQM::fillRollingDtOutOfRange(uint64_t ewt)
+{
+  if (h_dtOutOfRangePerFebLastEwt_ == nullptr) {
     return;
   }
 
-  std::vector<std::pair<uint8_t, double>> febFirstHit;
+  recentDtByEwt_.emplace_back(ewt, dtOutOfRangeThisEvent_);
+  for (const int febId : recentDtByEwt_.back().second) {
+    h_dtOutOfRangePerFebLastEwt_->AddBinContent(febId + 1, 1.0);
+  }
+
+  const uint64_t minKeepEwt =
+      (ewt > config_.channelsWindowEwts) ? ewt - config_.channelsWindowEwts : 0;
+  while (!recentDtByEwt_.empty() && recentDtByEwt_.front().first < minKeepEwt) {
+    for (const int febId : recentDtByEwt_.front().second) {
+      h_dtOutOfRangePerFebLastEwt_->AddBinContent(febId + 1, -1.0);
+    }
+    recentDtByEwt_.pop_front();
+  }
+}
+
+void CRVDigiDQM::fillTiming(
+    const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes)
+{
+  dtOutOfRangeThisEvent_.clear();
+
+  std::vector<std::pair<int, double>> febFirstHit;
   for (const auto& [febId, fpgaMap] : hitTimes) {
+    // TODO: the median hit time may be a more noise-robust FEB reference than
+    // the first hit, which an early dark-noise pulse can hijack.
     double earliest = std::numeric_limits<double>::max();
     for (const auto& [fpga, hits] : fpgaMap) {
       for (const auto& hit : hits) {
@@ -377,25 +477,44 @@ void CRVDigiDQM::fillTiming(
     febFirstHit.push_back({febId, earliest});
   }
 
-  for (std::size_t i = 0; i < febFirstHit.size(); ++i) {
-    for (std::size_t j = i + 1; j < febFirstHit.size(); ++j) {
-      const uint8_t lo = febFirstHit[i].first;
-      const uint8_t hi = febFirstHit[j].first;
-      const double dt = febFirstHit[j].second - febFirstHit[i].second;
-      const auto key = std::make_pair(lo, hi);
-
-      if (h1_dtFebPairs_.find(key) == h1_dtFebPairs_.end()) {
-        const std::string name = Form("dt_feb%02d_feb%02d", lo, hi);
-        const std::string title =
-            Form("#Deltat FEB %02d - FEB %02d;#Deltat [ns];Entries", lo, hi);
-        h1_dtFebPairs_[key] = timingFebDir_->make<TH1F>(name.c_str(),
-                                                        title.c_str(),
-                                                        nBinsDt_,
-                                                        -config_.dtRange,
-                                                        config_.dtRange);
-      }
-      h1_dtFebPairs_[key]->Fill(dt);
+  // Leave-one-out reference isolates the slipped FEB instead of smearing its
+  // partners, which a common reference would do at low FEB multiplicity.
+  if (h2_dtVsFeb_ != nullptr && febFirstHit.size() >= 2) {
+    std::vector<double> sorted;
+    sorted.reserve(febFirstHit.size());
+    for (const auto& entry : febFirstHit) {
+      sorted.push_back(entry.second);
     }
+    std::sort(sorted.begin(), sorted.end());
+
+    for (const auto& entry : febFirstHit) {
+      const std::size_t p = static_cast<std::size_t>(
+          std::lower_bound(sorted.begin(), sorted.end(), entry.second) -
+          sorted.begin());
+      const double dt = entry.second - medianExcluding(sorted, p);
+      h2_dtVsFeb_->Fill(entry.first, dt);
+
+      // Measured on the raw dt, so an arbitrarily large slip is still counted
+      // even when the y-axis would bury it in the overflow bin.
+      const double absDt = std::abs(dt);
+      if (absDt > maxAbsDtSeen_) {
+        maxAbsDtSeen_ = absDt;
+      }
+      if (absDt > config_.dtVsFebRange) {
+        ++nDtOutOfRange_;
+        const int febId = entry.first;
+        if (febId >= 0 && febId < nFebIdBins()) {
+          if (h_dtOutOfRangePerFeb_) {
+            h_dtOutOfRangePerFeb_->Fill(febId);
+          }
+          dtOutOfRangeThisEvent_.push_back(febId);
+        }
+      }
+    }
+  }
+
+  if (!timingFpgaDir_) {
+    return;
   }
 
   for (const auto& [febId, fpgaMap] : hitTimes) {

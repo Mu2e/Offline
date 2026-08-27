@@ -6,6 +6,7 @@ cet_make_library(
       Offline::RecoDataProducts
       Offline::DataProducts
       art_root_io::tfile_support
+      messagefacility::MF_MessageLogger
       ROOT::Hist
       ROOT::Gpad
 )

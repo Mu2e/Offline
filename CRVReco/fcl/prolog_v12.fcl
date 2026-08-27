@@ -32,6 +32,9 @@ BEGIN_PROLOG
       crvDaqErrorModuleLabel                 : "CrvDigi"
       crvDigiDQMDir                          : "CRVDigiDQM"
       fillInclusiveDigiDQM                   : true
+      # KPP cabling: fold ROC4 onto ROC2. Set false once the full
+      # CRV exists, where the fold would merge two real ROCs.
+      crvDigiDQMkppReadout                   : true
     }
 
     CrvRecoPulses:

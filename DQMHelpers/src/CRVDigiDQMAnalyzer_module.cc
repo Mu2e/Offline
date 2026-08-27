@@ -70,6 +70,10 @@ public:
         Name("dtBinSize"), Comment("CF dt histogram bin width [ns]"), 0.5f};
     fhicl::Atom<float> dtRange{
         Name("dtRange"), Comment("CF dt histogram +/- range [ns]"), 100.f};
+    fhicl::Atom<float> dtVsFebBinSize{
+        Name("dtVsFebBinSize"), Comment("dtVsFeb bin width [ns]"), 2.f};
+    fhicl::Atom<float> dtVsFebRange{
+        Name("dtVsFebRange"), Comment("dtVsFeb +/- range [ns]"), 500.f};
     fhicl::Atom<int> minAmplitude{
         Name("minAmplitude"), Comment("Minimum CF amplitude (peak-baseline)"), 10};
     fhicl::Atom<int> avgBlockSize{
@@ -87,6 +91,10 @@ public:
     fhicl::Atom<bool> fillCrvIdRates{
         Name("fillCrvIdRates"),
         Comment("Book CRVId rate maps and crvDigisPerChannel"),
+        true};
+    fhicl::Atom<bool> kppReadout{
+        Name("kppReadout"),
+        Comment("KPP cabling: fold ROC 4 onto ROC 2 and book h1/h2_channels"),
         true};
     fhicl::Atom<bool> fillSectorOccupancy{
         Name("fillSectorOccupancy"),
@@ -142,6 +150,8 @@ CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
   c.cfFraction = conf.cfFraction();
   c.dtBinSize = conf.dtBinSize();
   c.dtRange = conf.dtRange();
+  c.dtVsFebBinSize = conf.dtVsFebBinSize();
+  c.dtVsFebRange = conf.dtVsFebRange();
   c.minAmplitude = conf.minAmplitude();
   c.avgBlockSize = static_cast<std::size_t>(std::max(conf.avgBlockSize(), 1));
   c.avgGraphPoints = static_cast<std::size_t>(std::max(conf.avgGraphPoints(), 1));
@@ -149,6 +159,7 @@ CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
       static_cast<std::size_t>(std::max(conf.channelsWindowEwts(), 1));
   c.fillInclusive = conf.fillInclusive();
   c.fillCrvIdRates = conf.fillCrvIdRates();
+  c.kppReadout = conf.kppReadout();
   return c;
 }
 
