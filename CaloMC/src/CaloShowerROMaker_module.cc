@@ -3,6 +3,7 @@
 // Includes corrections from Birks law, longitudinal response uniformity and photo-statistics fluctuations.
 // The PE are generated individually and corrected for transit time.
 //
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Utilities/InputTag.h"
@@ -159,6 +160,7 @@ namespace mu2e {
   //---------------------------------------------------------------
   void CaloShowerROMaker::produce(art::Event& event)
   {
+    perEventReseed(engine_, event.id(), "CaloShowerROMaker");
       if (diagLevel_ > 0) std::cout << "[CaloShowerROMaker::produce] begin" << std::endl;
 
       const EventWindowMarker& ewMarker = *event.getValidHandle(ewMarkerToken_);

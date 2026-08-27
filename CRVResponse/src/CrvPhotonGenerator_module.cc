@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVPhotonYield.hh"
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
@@ -257,6 +258,7 @@ namespace mu2e
 
   void CrvPhotonGenerator::produce(art::Event& event)
   {
+    perEventReseed(_engine, event.id(), "CrvPhotonGenerator");
     std::unique_ptr<CrvPhotonsCollection> crvPhotonsCollection(new CrvPhotonsCollection);
 
     std::map<std::pair<mu2e::CRSScintillatorBarIndex,int>,std::vector<CrvPhotons::SinglePhoton> > photonMap;

@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
@@ -158,6 +159,7 @@ namespace mu2e
 
   void CrvSiPMChargeGenerator::produce(art::Event& event)
   {
+    perEventReseed(_engine, event.id(), "CrvSiPMChargeGenerator");
     std::unique_ptr<CrvSiPMChargesCollection> crvSiPMChargesCollection(new CrvSiPMChargesCollection);
 
     art::Handle<CrvPhotonsCollection> crvPhotonsCollection;

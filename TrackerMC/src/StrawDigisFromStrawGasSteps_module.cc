@@ -5,6 +5,7 @@
 // Original author David Brown, LBNL
 //
 // framework
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
@@ -454,6 +455,7 @@ namespace mu2e {
     }
 
     void StrawDigisFromStrawGasSteps::produce(art::Event& event) {
+    perEventReseed(_engine, event.id(), "StrawDigisFromStrawGasSteps");
       if ( _printLevel > 1 ) cout << "StrawDigisFromStrawGasSteps: produce() begin; event " << event.id().event() << endl;
       static int ncalls(0);
       ++ncalls;

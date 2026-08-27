@@ -5,6 +5,7 @@
 //
 // ======================================================================
 
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -98,6 +99,7 @@ namespace mu2e {
   }
 
   void EventWindowMarkerProducer::produce(art::Event& event) {
+    perEventReseed(_engine, event.id(), "EventWindowMarkerProducer");
     unique_ptr<EventWindowMarker> marker(new EventWindowMarker);
     unique_ptr<ProtonBunchTimeMC> pbtmc(new ProtonBunchTimeMC);
     unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);

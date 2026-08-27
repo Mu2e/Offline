@@ -4,6 +4,7 @@
 //
 // Original Author: Ralf Ehrlich
 
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "Offline/CRVResponse/inc/MakeCrvWaveforms.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
@@ -151,6 +152,7 @@ namespace mu2e
 
   void CrvWaveformsGenerator::produce(art::Event& event)
   {
+    perEventReseed(_engine, event.id(), "CrvWaveformsGenerator");
     art::Handle<EventWindowMarker> eventWindowMarker;
     event.getByLabel(_eventWindowMarkerTag,eventWindowMarker);
     EventWindowMarker::SpillType spillType = eventWindowMarker->spillType();

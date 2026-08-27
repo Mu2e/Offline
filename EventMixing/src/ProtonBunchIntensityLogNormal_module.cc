@@ -9,6 +9,7 @@
 // Original author: David Brown (LBNL) 19 May 2015
 // Revamp: Andrei Gaponenko, 2018
 
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include <random>
 #include <numbers>
 //#include "gsl/gsl_sf_erf.h"
@@ -53,6 +54,7 @@ namespace mu2e {
 
   private:
     art::InputTag pp_;
+    art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
     std::lognormal_distribution<double> lognd_;
     std::uniform_real_distribution<double> unitflatd_;
@@ -68,7 +70,8 @@ namespace mu2e {
   ProtonBunchIntensityLogNormal::ProtonBunchIntensityLogNormal(const Parameters& conf)
     : art::EDProducer{conf}
     , pp_(conf().PP())
-    , urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , urbg_(engine_)
     , unitflatd_(0.0,1.0)
     , debug_(conf().debug())
     , mean_(conf().extendedMean())
@@ -120,6 +123,7 @@ namespace mu2e {
   }
 
   void ProtonBunchIntensityLogNormal::produce(art::Event& event) {
+    perEventReseed(engine_, event.id(), "ProtonBunchIntensityLogNormal");
     // determine the event type
     auto pph = event.getValidHandle<PrimaryParticle>(pp_);
     auto const& pp = *pph;

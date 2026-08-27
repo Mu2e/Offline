@@ -4,6 +4,7 @@
 // Simulate digitization procedure and produce CaloDigis.
 //
 //
+#include "Offline/SeedService/inc/PerEventReseed.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
@@ -143,6 +144,7 @@ namespace mu2e {
   //---------------------------------------------------------
   void CaloDigiMaker::produce(art::Event& event)
   {
+    perEventReseed(engine_, event.id(), "CaloDigiMaker");
 
       if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiMaker::produce] begin" << std::endl;
 
