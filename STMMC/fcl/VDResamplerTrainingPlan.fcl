@@ -82,11 +82,50 @@ common_EMA_config : {
   SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
 }
 
+# Planner settings. The smoothing window must be long enough that per-epoch loss scatter does not
+# dominate the trend, otherwise the smoothed minimum lands wherever the window happens to start
+# and the planner restores a near-first epoch as the phase "best", discarding the rest. A single
+# outlier epoch (as seen right after a phase switch) must also not be able to drive the smoothed
+# value for the length of the window.
+#
+# minEpochsPerPhase must stay >= smoothWindow + patience (25 + 40 = 65): below smoothWindow the
+# smoothed loss is only a partial-window average, and a phase cannot legitimately end until
+# patience non-improving epochs have accumulated on top of that.
 common_autoCurriculum_config : {
   SBDMautoCurriculumPlanner : true
-  SBDMplannerSmoothWindow : 8
-  SBDMplannerPatience : 16
-  SBDMplannerMinEpochsPerPhase : 25
+  SBDMplannerSmoothWindow : 25
+  SBDMplannerPatience : 40
+  SBDMplannerMinEpochsPerPhase : 65
+}
+
+# ===== per-dataset batch / epoch-size schedules =====
+# Batch size and samplesDrawnPerEpoch depend on the training sample size, not on the structure
+# tier. Every leaf must splice exactly ONE of these alongside its structure table, e.g.
+#     @table::common_fine_structure_1_stage_config
+#     @table::schedule_large_sample
+# FHiCL does not formally support redefining a key at intermediate scope, so a leaf must never
+# re-list these two keys directly - pick a different schedule table, or add one here.
+# Keep the phase-2/3 batch at or below 1024: larger batches average away the gradient signal the
+# sharp structures produce. steps/epoch = samplesDrawnPerEpoch / batch.
+
+schedule_tiny_sample : {   # N <~ 1k
+  SBDMtrainingCurriculumBatchSize :              [     64,     128,     256]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  20000,   20000,   40000]
+}
+
+schedule_small_sample : {  # N ~ 1k - 50k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  50000,   50000,  100000]
+}
+
+schedule_mid_sample : {    # N ~ 50k - 500k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 100000,  100000,  200000]
+}
+
+schedule_large_sample : {  # N >~ 500k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 200000,  200000,  400000]
 }
 
 core_fine_structure_config : {
@@ -99,21 +138,21 @@ core_fine_structure_config : {
   @table::common_prediction_config
   @table::common_dimWeightController_config
   @table::common_EMA_config
-  # curriculum focus range :                         >0.5,    full, 0.3-0.7, 0.1-0.5, low end
-  SBDMtrainingCurriculumEpochs :                 [    500,     500,     500,     500,     500]   # using planner, this is the max
-  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.5,     0.5,     0.3]
-  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    5e-4,    5e-4,    3e-4]
-  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,   false,   false,    true]
-  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.3,     0.1,     0.0]
-  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.7,     0.5,     0.0]
-  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.8,     0.8,     0.0]
-  SBDMtrainingCurriculumBatchSize :              [    512,    4096,    4096,    8192,    8192]
-  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 200000,  400000,  400000,  800000,  800000]
-  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true,    true,    true]
-  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false,   false,   false]
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # curriculum focus range :                         >0.5,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
+  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
+  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
+  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
+  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
+  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
-  SBDMtrainingCurriculumMinDelta :               [  0.001,   0.001,   0.001,  0.0005,  0.0005]
+  SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
 }
 
 # fine-structure 1 stage
@@ -145,17 +184,17 @@ core_avg_structure_config :{
   @table::common_prediction_config
   @table::common_dimWeightController_config
   @table::common_EMA_config
-  # curriculum focus range :                         >0.5,    full, low end
-  SBDMtrainingCurriculumEpochs :                 [    500,     500,     500]   # using planner, this is the max
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # curriculum focus range :                         >0.3,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
   SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
   SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
   SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
-  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0]
+  SBDMtrainingCurriculumTLowBound :              [    0.3,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumBatchSize :              [    256,    1024,    2048]
-  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 100000,  100000,  200000]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
   SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
@@ -190,17 +229,18 @@ core_coarse_structure_config :{
   @table::common_prediction_config
   @table::common_dimWeightController_config
   @table::common_EMA_config
-  # curriculum focus range :                         >0.5,    full, low end
-  SBDMtrainingCurriculumEpochs :                 [    500,     500,     500]   # using planner, this is the max
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # logSigMin is already 1e-2 here, so phase 1 needs no tLowBound warm-up.
+  # curriculum focus range :                         full,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
   SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
   SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
   SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
-  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0]
+  SBDMtrainingCurriculumTLowBound :              [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
-  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
-  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  50000,   50000,  100000]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
   SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
@@ -222,26 +262,31 @@ particle_training_config : {
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
+      @table::schedule_large_sample
     }
-    # no narrow structure so 1-stage is sufficient 
+    # no narrow structure so 1-stage is sufficient
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
+      @table::schedule_mid_sample
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
     # few events from Neutrals, but if needed use the single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
     }
-    # default 
+    # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
   }
   # ===== positrons =====
@@ -253,22 +298,26 @@ particle_training_config : {
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
     }
     # much fewer events than the electron sample, recommend using the electron model
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
     }
     # probably not needed in Neutrals. go to default if needed
-    # default 
+    # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
     }
   }
   # ===== photons =====
@@ -278,6 +327,7 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_large_sample
     }
     # 347keV really hard to sample here (~60/1e6). more events in the tTransAsinh tail
     # should consider a standalone 347 keV. Only background here, 1-stage is sufficient
@@ -285,6 +335,7 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_large_sample
     }
     # for 1809 keV from TargetStopsCat, mostly in the single peak of 1809 keV, and some lower energy events 
     # likely from scattering. to avoid issue potentially from sampling a extremely narrow peak, do the 2-stage
@@ -292,17 +343,20 @@ particle_training_config : {
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_avg_structure_2_stage_config
+      @table::schedule_small_sample
     }
     # hard to produce samples for the same POT, single stage sufficient
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_1_stage_config
       # @table::common_avg_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_small_sample
     }
-    # default 
+    # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
     }
   }
   # ===== neutrons =====
@@ -311,27 +365,32 @@ particle_training_config : {
     EleBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
     # many more events in the MuBeam neutron sample. no significant tTrans tail so stay with V2 momentum basis
     MuBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # sufficient stat to do this if wanted
+      @table::schedule_mid_sample
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
     # single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
     }
-    # default 
+    # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
   }
   # ===== default =====
@@ -341,6 +400,7 @@ particle_training_config : {
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
     }
   }
 }
