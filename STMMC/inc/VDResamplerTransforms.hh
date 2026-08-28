@@ -207,6 +207,57 @@ namespace mu2e {
     };
 
     // ------------------------------------------------------------------------
+    // PeakTag — one monoenergetic line, named by its position on the RAW physical pTotal
+    //   axis. A hit is "in" the line when |pTot - center| <= halfWidth, both in MeV/c.
+    //
+    // WHY A DISCRETE TAG. The stage-2 condition is m0 = log(pTotal/p0), z-scored across the
+    // whole spectrum. For a line at 1.809 MeV a +/-1 keV window is Delta log p ~ 5.5e-4,
+    // which after the z-score is well under 1e-3 sigma. Making p(t | pTot) change character
+    // across a gap that narrow would demand an effective slope of order 1e3 in the condition;
+    // a Fourier condition embedding could only reach that with a base frequency ~1e3, which
+    // would alias everywhere else in the spectrum. The conditional distribution really does
+    // differ — a prompt line photon has a different arrival-time shape from the degraded
+    // continuum at a neighbouring energy — so the clean fix is to hand the network the class
+    // membership directly instead of asking it to infer it from a near-discontinuity.
+    //
+    // The tag is a DETERMINISTIC FUNCTION of pTotal, which is what makes it safe: pTotal is
+    // already drawn (by stage 1 or the resampler) before stage 2 runs, so the tag is available
+    // at generation time with no extra sampling, adds no new marginal to model, and cannot
+    // desynchronize from the condition it was derived from.
+    //
+    // CAVEAT worth knowing when reading generated output. The tag only fires correctly if the
+    // pTotal feeding it reproduces the line. A DIFFUSION stage-1 over log(pTotal/p0) smears a
+    // 1 keV line, so the tagged fraction will not match the truth. The empirical pTotal
+    // resampler (INVERSE_CDF / SPLINE_CDF) preserves the line exactly and is the configuration
+    // this feature is meant for.
+    // ------------------------------------------------------------------------
+    struct PeakTag {
+      double center    = 0.0; // MeV/c, RAW pTotal (not transformed)
+      double halfWidth = 0.0; // MeV/c, inclusive half-window
+    };
+
+    // Index of the class label within the V2 stage-2 condition vector, which is
+    // {log(pTotal/p0)} or {log(pTotal/p0), label}. The label goes LAST so the existing
+    // coordinate keeps index 0 and every normalizeCondition(0, ...) call means what it always
+    // meant. Defined here so the train and generate sides index the same slot by name rather
+    // than by a repeated literal.
+    constexpr int kPeakTagCondIdx = 1;
+
+    // Class label for one hit: 0 = in no configured line (continuum), k+1 = inside tags[k].
+    // Zero-based tag index k maps to label k+1 so that 0 always means "none", which keeps the
+    // label meaningful when no tags are configured at all (every hit is 0).
+    //
+    // Windows are expected to be disjoint; if they do overlap the FIRST match wins, so the
+    // label stays single-valued and the ordering of the configured list decides. Callers that
+    // care validate disjointness up front (see assemblePeakTags).
+    inline int peakTagFor(double pTot, const std::vector<PeakTag>& tags) {
+      for (std::size_t k = 0; k < tags.size(); ++k)
+        if (std::abs(pTot - tags[k].center) <= tags[k].halfWidth)
+          return static_cast<int>(k) + 1;
+      return 0;
+    }
+
+    // ------------------------------------------------------------------------
     // ModelLayout — the role/vector layout of a single saved model, so the
     //   generate side knows how to interpret and invert it from the file alone.
     //   AllAtOnce6D          : one model over (t,x,y, m0,m1,m2) per MomentumBasis.
@@ -223,9 +274,10 @@ namespace mu2e {
     // ------------------------------------------------------------------------
     // Opaque basis-tag packing. The SBDM stores a single int32 it never interprets;
     // VDResampler packs (ModelLayout, PositionBasis, MomentumBasis) into it and
-    // unpacks on load. Encoding: layout*100 + position*10 + momentum, one decade per
-    // field, which caps PositionBasis and MomentumBasis at 10 entries each (3 and 4
-    // today). Widen the strides if that is ever reached.
+    // unpacks on load. Encoding: peakTagged*1000 + layout*100 + position*10 + momentum,
+    // one decade per field, which caps PositionBasis and MomentumBasis at 10 entries each
+    // (3 and 4 today) and ModelLayout at 10 (3 today). Widen the strides if that is ever
+    // reached.
     //
     // This stays backward compatible with the pre-PositionBasis encoding
     // (layout*100 + momentum): an old tag has momentum < 10 in the units place and
@@ -233,23 +285,38 @@ namespace mu2e {
     // position = 0 = V1_Atanh, which IS the map those models were trained with. A
     // pre-tag (v<=6) model still loads as tag 0 = (AllAtOnce6D, V1_Atanh,
     // V1_CylindricalTransformed), preserving the original behaviour.
+    //
+    // The thousands digit is the peak-tag flag: 1 when the model carries the extra
+    // categorical condition dim described by PeakTag, 0 otherwise. Every tag written
+    // before that feature has nothing in the thousands place and so decodes to 0 = not
+    // tagged, again matching how those models were trained. The flag is what lets the
+    // generate side decide, FROM THE CHECKPOINT ALONE, whether stage 2 wants a one- or
+    // two-element condition vector, so a tagged model and an untagged one cannot be fed
+    // the wrong shape.
     // ------------------------------------------------------------------------
+    constexpr int kBasisTagPeakStride     = 1000;
     constexpr int kBasisTagLayoutStride   = 100;
     constexpr int kBasisTagPositionStride = 10;
 
-    inline int packBasisTag(ModelLayout layout, PositionBasis position, MomentumBasis basis) {
-      return static_cast<int>(layout)   * kBasisTagLayoutStride
+    inline int packBasisTag(ModelLayout layout, PositionBasis position, MomentumBasis basis,
+                            bool peakTagged = false) {
+      return (peakTagged ? kBasisTagPeakStride : 0)
+           + static_cast<int>(layout)   * kBasisTagLayoutStride
            + static_cast<int>(position) * kBasisTagPositionStride
            + static_cast<int>(basis);
     }
     inline ModelLayout unpackModelLayout(int tag) {
-      return static_cast<ModelLayout>(tag / kBasisTagLayoutStride);
+      return static_cast<ModelLayout>((tag % kBasisTagPeakStride) / kBasisTagLayoutStride);
     }
     inline PositionBasis unpackPositionBasis(int tag) {
       return static_cast<PositionBasis>((tag % kBasisTagLayoutStride) / kBasisTagPositionStride);
     }
     inline MomentumBasis unpackMomentumBasis(int tag) {
       return static_cast<MomentumBasis>(tag % kBasisTagPositionStride);
+    }
+    // True when the model carries the peak-tag condition dim (see PeakTag).
+    inline bool unpackPeakTagged(int tag) {
+      return (tag / kBasisTagPeakStride) != 0;
     }
 
     // Human-readable enum names and a full basisTag decode, shared by the train and
@@ -280,13 +347,14 @@ namespace mu2e {
       }
       return "unknown";
     }
-    // Decode an opaque basisTag (layout*100 + position*10 + momentum) into
-    // "layout=<...>, basis=<...> (tag <n>)" for logs and error messages.
+    // Decode an opaque basisTag (peakTagged*1000 + layout*100 + position*10 + momentum)
+    // into "layout=<...>, basis=<...> (tag <n>)" for logs and error messages.
     inline std::string basisTagToString(int tag) {
       std::ostringstream os;
       os << "layout=" << modelLayoutName(unpackModelLayout(tag))
          << ", position=" << positionBasisName(unpackPositionBasis(tag))
          << ", basis=" << momentumBasisName(unpackMomentumBasis(tag))
+         << ", peakTagged=" << (unpackPeakTagged(tag) ? "yes" : "no")
          << " (tag " << tag << ")";
       return os.str();
     }

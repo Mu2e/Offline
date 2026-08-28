@@ -23,6 +23,7 @@
 
 // stdlib includes
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -44,6 +45,7 @@
 // Offline includes
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"      // modelFileName / sanitizeTag / dataSourceNames
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"   // parseStage1Method (validation)
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"      // PeakTag (resolvePeakTags)
 
 namespace mu2e {
   namespace VDResampler {
@@ -131,6 +133,8 @@ namespace mu2e {
           "SBDMtrainingCurriculumSamplesDrawnPerEpoch",
           "SBDMtrainingCurriculumUseDimWeightController", "SBDMtrainingCurriculumUsePeakSampling",
           "SBDMtrainingCurriculumPromoteEMA", "SBDMtrainingCurriculumMinDelta",
+          // --- peak tagging (discrete stage-2 condition; also read by the generate side) ---
+          "SBDMpeakTagCenters", "SBDMpeakTagHalfWidths",
           // --- planner ---
           "SBDMautoCurriculumPlanner", "SBDMplannerSmoothWindow", "SBDMplannerPatience",
           "SBDMplannerMinEpochsPerPhase", "SBDMplannerMaxEpochsPerPhase"
@@ -261,6 +265,54 @@ namespace mu2e {
       const std::string method = entry.get<std::string>("stage1Method", "DIFFUSION");
       (void) parseStage1Method(method, moduleContext); // validate; throws on typo
       return method;
+    }
+
+    // Per-particle peak tags (the monoenergetic lines given a discrete stage-2 class label).
+    // Read from the SAME plan entry that supplies the training keys, so the generate side and
+    // the training fcl cannot drift apart: the network input is the line's INDEX in this list,
+    // so a reordered or differently-populated list at generation time would silently relabel
+    // the classes. Deriving both from one plan file is what makes that impossible.
+    //
+    // Absent keys => no tags => the feature is off for this (pdg, source), which is the
+    // default for every species that has no line worth tagging.
+    //
+    // Validation mirrors assemblePeakTags in the train module (equal lengths, positive
+    // half-widths, disjoint windows); it is repeated here rather than shared because the two
+    // live on opposite sides of the pipeline and this one must fire in jobs that never build
+    // a TrainState.
+    inline std::vector<VDResampler::PeakTag> resolvePeakTags(const fhicl::ParameterSet& plan,
+                                                             const std::string& source, int pdgId,
+                                                             const std::string& moduleContext)
+    {
+      const fhicl::ParameterSet entry = resolvePlanEntry(plan, source, pdgId, moduleContext);
+      const std::vector<double> centers =
+        entry.get<std::vector<double>>("SBDMpeakTagCenters", std::vector<double>());
+      const std::vector<double> halfWidths =
+        entry.get<std::vector<double>>("SBDMpeakTagHalfWidths", std::vector<double>());
+
+      if (centers.size() != halfWidths.size())
+        throw cet::exception(moduleContext)
+          << "trainingPlanFile: SBDMpeakTagCenters (" << centers.size() << " entries) and "
+          << "SBDMpeakTagHalfWidths (" << halfWidths.size() << ") must have the same length "
+          << "for pdg " << pdgId << ", source \"" << source << "\".";
+
+      std::vector<VDResampler::PeakTag> tags;
+      for (size_t k = 0; k < centers.size(); ++k) {
+        if (!(centers[k] > 0.0) || !(halfWidths[k] > 0.0))
+          throw cet::exception(moduleContext)
+            << "trainingPlanFile: peak tag " << k << " for pdg " << pdgId << ", source \""
+            << source << "\" has center " << centers[k] << " and half-width " << halfWidths[k]
+            << "; both must be > 0 (MeV/c).";
+        tags.push_back(VDResampler::PeakTag{centers[k], halfWidths[k]});
+      }
+      for (size_t a = 0; a < tags.size(); ++a)
+        for (size_t b = a + 1; b < tags.size(); ++b)
+          if (std::abs(tags[a].center - tags[b].center) <= tags[a].halfWidth + tags[b].halfWidth)
+            throw cet::exception(moduleContext)
+              << "trainingPlanFile: peak tag windows " << a << " and " << b << " for pdg "
+              << pdgId << ", source \"" << source << "\" overlap; they must be disjoint so "
+              << "the class label does not depend on the order they are configured in.";
+      return tags;
     }
 
     // One trained particle recovered from a hit summary. Untrained ('*') rows are not represented:

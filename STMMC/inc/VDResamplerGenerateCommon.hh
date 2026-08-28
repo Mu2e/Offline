@@ -96,15 +96,25 @@ inline GeneratedTransformed generateAllAtOnce(
 // ---------------------------------------------------------------------------
 // generateTwoStage — sample the two-stage pair. Basis is read from stage2's tag.
 //   V1: stage1 {t,x,y}; stage2 {pr,pphi,pz} | {t,x,y}.
-//   V2: stage1 {pTotal} (diffusion model OR resampler); stage2 {t,x,y,ur,uphi} | {pTotal}.
+//   V2: stage1 {pTotal} (diffusion model OR resampler); stage2 {t,x,y,ur,uphi} | {pTotal},
+//       or | {pTotal, peak label} when stage2's tag says it was trained peak-tagged.
 //   stage1Model may be null iff stage1Method != DIFFUSION (resampler supplies pTotal).
 //   resampler is used only on the V2 non-diffusion path.
+//
+// peakTags MUST list the same lines, in the same order, that stage2 was trained with: the
+// label is an index into it, so a different list silently relabels the classes. It is passed
+// in (rather than stored in the checkpoint) because it belongs to the physics configuration
+// shared by training and generation; the checkpoint records only WHETHER tagging is on. The
+// caller is responsible for keeping the two in step — see the count check below, which
+// catches the most likely mistake (a list of the wrong length) but cannot catch a list of
+// the right length naming different energies.
 // ---------------------------------------------------------------------------
 inline GeneratedTransformed generateTwoStage(
     ScoreBasedDiffusionModel* stage1Model, ScoreBasedDiffusionModel& stage2Model,
     Stage1Method stage1Method, const PtotResampler& resampler,
     CLHEP::RandFlat& rf, CLHEP::RandGaussQ& rg,
-    const SamplerSettings& s, double p0, const std::string& moduleName)
+    const SamplerSettings& s, double p0, const std::string& moduleName,
+    const std::vector<PeakTag>& peakTags = {})
 {
     GeneratedTransformed g;
     g.basis    = unpackMomentumBasis(stage2Model.basisTag());
@@ -134,6 +144,7 @@ inline GeneratedTransformed generateTwoStage(
     // stage2 condition is z-scored via stage2's stored condition normalization, so it
     // matches training regardless of the pTotal source.
     double ptot_t;
+    double pTotRaw;
     if (stage1Method == Stage1Method::DIFFUSION) {
         if (!stage1Model)
             throw cet::exception(moduleName)
@@ -143,14 +154,41 @@ inline GeneratedTransformed generateTwoStage(
         if (s1.zscore.size() != 1u)
             throw cet::exception(moduleName)
                 << "V2 stage-1 model returned " << s1.zscore.size() << " values, expected 1.";
-        ptot_t = s1.value[0];
+        ptot_t  = s1.value[0];
+        pTotRaw = p0 * std::exp(ptot_t);
     } else {
         g.rawPtot      = resampler.draw(rf, rg);
         g.rawPtotValid = true;
+        pTotRaw        = g.rawPtot;
         ptot_t         = std::log(std::max(g.rawPtot, kRadiusSafetyEpsilon) / p0);
     }
     g.m0 = ptot_t; // log(pTotal/p0) carried in slot m0
-    const std::vector<double> cond = {stage2Model.normalizeCondition(0, ptot_t)};
+
+    // Stage-2 condition. When the checkpoint says it was trained with a peak class label
+    // (see PeakTag), append that label, computed from the pTotal JUST DRAWN. Deriving it
+    // here rather than sampling it is what keeps it consistent with the condition it
+    // accompanies: the label is a function of pTotal, so it cannot disagree with it.
+    //
+    // Whether to append is decided by the MODEL's own basisTag, not by this job's config, so
+    // a tagged and an untagged checkpoint can be mixed in one job (VDResamplerGenerateMix
+    // routinely holds one model set per particle) and each still gets the condition shape it
+    // was trained on.
+    std::vector<double> cond = {stage2Model.normalizeCondition(0, ptot_t)};
+    if (unpackPeakTagged(stage2Model.basisTag())) {
+        // An empty list here would label every event 0 ("continuum") and quietly undo the
+        // whole point of the tagged model, so it is an error rather than a silent default.
+        if (peakTags.empty())
+            throw cet::exception(moduleName)
+                << "Stage-2 model was trained WITH peak tagging (" << basisTagToString(stage2Model.basisTag())
+                << ") but no peak tags were configured for generation. Configure the same "
+                << "line centers/half-widths that were used to train it, or every generated "
+                << "event would be labelled 0 (no line) and the tagged model would be fed a "
+                << "condition it never saw in training.";
+        const int label = peakTagFor(pTotRaw, peakTags);
+        // normalizeCondition returns a categorical dim verbatim, so this routes the label
+        // through the same call as every other condition coordinate without special-casing.
+        cond.push_back(stage2Model.normalizeCondition(kPeakTagCondIdx, static_cast<double>(label)));
+    }
     const SBDMGeneratedSample s2 = stage2Model.generateSample(
         cond, s.useEMANetworkIfAvailable, s.useHeun, s.useSDE, s.diffusionSteps, s.sdeToOdeSigmaThreshold);
     if (s2.zscore.size() != 5u)

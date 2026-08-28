@@ -141,6 +141,14 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMpeakGMaxes{      Name("SBDMpeakGMaxes"),      Comment("Per-window sampling-fraction ceiling at low sigma (0<gMax<1; sum<1)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMpeakSigma0s{     Name("SBDMpeakSigma0s"),     Comment("Per-window Gaussian sigma-taper scale (~ feature width)"), std::vector<double>() };
         fhicl::Sequence<double> SBDMpeakAlphas{      Name("SBDMpeakAlphas"),      Comment("Per-window 1=unbiased, <1=up-weight"), std::vector<double>() };
+        // Peak TAGGING (distinct from the importance-sampling windows above): gives the V2
+        // stage-2 model an extra discrete condition dim naming which monoenergetic line the
+        // event's pTotal falls on (0 = none, k+1 = the k-th configured line). Use it when a
+        // line's OTHER observables (e.g. arrival time) differ in shape from the neighbouring
+        // continuum, which the z-scored log(pTotal) condition cannot resolve on its own.
+        // Both sequences are in RAW MeV/c and must be the same length; empty = disabled.
+        fhicl::Sequence<double> SBDMpeakTagCenters{    Name("SBDMpeakTagCenters"),    Comment("Per-tag line center in RAW MeV/c on pTotal (e.g. 1.809 for the 1809 keV line)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakTagHalfWidths{ Name("SBDMpeakTagHalfWidths"), Comment("Per-tag inclusive half-window in RAW MeV/c; a hit is tagged when |pTot-center| <= halfWidth. Windows must be disjoint"), std::vector<double>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrainFromRoot(const Parameters& conf);
@@ -234,6 +242,8 @@ namespace mu2e {
     VDResampler::assemblePeakWindows(state_,
         conf().SBDMpeakWindowDims(), conf().SBDMpeakWindowLows(), conf().SBDMpeakWindowHighs(),
         conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrainFromRoot");
+    VDResampler::assemblePeakTags(state_,
+        conf().SBDMpeakTagCenters(), conf().SBDMpeakTagHalfWidths(), "VDResamplerTrainFromRoot");
 
     VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrainFromRoot");
     // Resolve the prediction target up front so the curriculum builder can coerce
@@ -328,8 +338,11 @@ namespace mu2e {
           x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t,
           state_.momentumBasis, &pzFallback_, state_.positionBasis);
 
+      // Raw |p| in MeV/c, used only to evaluate the peak class label (see collectSample).
+      const double pTotRaw = std::sqrt(px*px + py*py + pz*pz);
+
       VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
-      VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
+      VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t, pTotRaw);
     }
     fin->Close();
 

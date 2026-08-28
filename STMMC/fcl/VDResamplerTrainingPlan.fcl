@@ -344,6 +344,20 @@ particle_training_config : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_avg_structure_2_stage_config
       @table::schedule_small_sample
+      # The 1809 keV line's TIMING distribution differs in shape from the lower-energy
+      # (scattered/degraded) events around it: the line is prompt, the continuum is not. That is
+      # a change in p(t | pTot) across a ~1 keV window, i.e. ~5e-4 in log(pTot) and well under
+      # 1e-3 sigma after the z-score -- far too sharp for the continuous pTot condition to
+      # resolve, whatever Fourier depth it is given. So the line is instead named explicitly:
+      # stage 2 gains a discrete condition dim carrying 1 for events on the line and 0 for
+      # everything else, and learns the two timing shapes separately.
+      #
+      # Read by BOTH sides: VDResamplerConfigure passes these through into the training fcl,
+      # and VDResamplerGenerateMix reads this same plan so the generated labels match what was
+      # trained. Add further lines by extending both sequences together (label = position in
+      # the list, starting at 1); windows must be disjoint.
+      SBDMpeakTagCenters :    [1.809] # MeV/c, raw pTotal
+      SBDMpeakTagHalfWidths : [0.001] # +/- 1 keV
     }
     # hard to produce samples for the same POT, single stage sufficient
     Neutrals : {

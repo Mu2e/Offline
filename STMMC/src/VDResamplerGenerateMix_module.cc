@@ -40,7 +40,9 @@
 #include "cetlib_except/exception.h"
 
 // fhicl includes
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 
 // message handling
@@ -48,6 +50,7 @@
 
 // Offline includes
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
@@ -55,6 +58,7 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerConfigureCommon.hh"  // resolvePeakTags (training-plan lookup)
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
 #include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
@@ -156,6 +160,15 @@ namespace mu2e {
                   "label, i.e. 'VDResamplerTrainingSetup/ttree'."),
           std::vector<std::string>({"VDResamplerTrainingSetup/ttree"})
         };
+        fhicl::OptionalAtom<std::string> trainingPlanFile{
+          Name("trainingPlanFile"),
+          Comment("The SAME training plan fhicl that configured the training jobs (e.g. "
+                  "VDResamplerTrainingPlan.fcl). Read here ONLY for the per-(pdg, source) peak-tag "
+                  "lines (SBDMpeakTagCenters / SBDMpeakTagHalfWidths), which the generate side must "
+                  "reproduce exactly because the stage-2 class label is a line's INDEX in that list. "
+                  "Required if any loaded stage-2 model was trained peak-tagged; omit it entirely "
+                  "when none were (generateTwoStage reports the mismatch either way).")
+        };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
           Comment("Whether to use Heun's method for reverse diffusion"),
@@ -229,6 +242,12 @@ namespace mu2e {
         // particle's pdgId) supplies pTotal instead.
         VDResampler::Stage1Method stage1Method = VDResampler::Stage1Method::DIFFUSION;
         VDResampler::PtotResampler ptotResampler;
+        // Monoenergetic lines whose index is the stage-2 class label, resolved per
+        // (pdg, source) from the SAME training plan that configured the training job, so the
+        // labels cannot drift from what the model learnt. Empty unless this particle's
+        // stage-2 model was trained peak-tagged (its basisTag says which, and
+        // generateTwoStage cross-checks the two).
+        std::vector<VDResampler::PeakTag> peakTags;
         // Per-(source, particle) comparison set, allocated only when doValidationPlots is
         // on so a job that does not ask for validation carries no plot state at all.
         std::unique_ptr<VDResampler::ValidationPlots> validationPlots;
@@ -275,6 +294,11 @@ namespace mu2e {
       double VDr_ = 0.0;
       bool doROOTDump_ = false;
       bool doValidationPlots_ = false;
+      // Training plan, loaded once at construction when trainingPlanFile is given. Consulted
+      // only for each particle's peak-tag lines (resolvePeakTags); hasTrainingPlan_ says
+      // whether it was supplied, so a job whose models are all untagged needs no plan at all.
+      bool hasTrainingPlan_ = false;
+      fhicl::ParameterSet trainingPlan_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
 
       // Only the ENABLED sources; a source switched off via useSummaryFile is never loaded, so
@@ -344,6 +368,14 @@ namespace mu2e {
       doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
+
+    // Training plan (optional). Loaded up front so a bad path fails at setup rather than at the
+    // first tagged particle; the per-(pdg, source) lookup happens as each summary is read.
+    std::string planFile;
+    if (conf().trainingPlanFile(planFile) && !planFile.empty()) {
+      trainingPlan_ = ParameterSetFromFile(planFile).pSet();
+      hasTrainingPlan_ = true;
+    }
 
     // Model-file location: either a single directory (ModelFileDir) or a catalog of explicit paths
     // (ModelFileList). The catalog wins when both are set — on the grid each training job writes to
@@ -661,6 +693,44 @@ namespace mu2e {
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile)
         );
 
+        // Peak tags, but only for a model that was actually trained with them (its own
+        // basisTag says so). Resolving them from the training plan for the SAME (pdg, source)
+        // that trained it is what guarantees the labels mean the same thing on both sides.
+        if (VDResampler::unpackPeakTagged(particle.stage2Model->basisTag())) {
+          if (!hasTrainingPlan_)
+            throw cet::exception("VDResamplerGenerateMix")
+              << "Stage-2 model " << stage2ModelFile << " (pdg " << pdgId << ", source \""
+              << sourceTag << "\") was trained with peak tagging, but no trainingPlanFile was "
+              << "given. Point trainingPlanFile at the same plan fhicl used to train it so the "
+              << "line centers/half-widths — and therefore the class labels — match.";
+          particle.peakTags = VDResampler::resolvePeakTags(
+            trainingPlan_, sourceTag, pdgId, "VDResamplerGenerateMix");
+          if (particle.peakTags.empty())
+            throw cet::exception("VDResamplerGenerateMix")
+              << "Stage-2 model " << stage2ModelFile << " (pdg " << pdgId << ", source \""
+              << sourceTag << "\") was trained with peak tagging, but the training plan "
+              << "resolves no SBDMpeakTagCenters for that particle and source. The plan does "
+              << "not match the model it is being used with.";
+
+          // The label is only as sharp as the pTotal it is derived from. A DIFFUSION stage-1
+          // is a continuous model over log(pTotal/p0): it cannot reproduce a line whose width
+          // is a keV, so it spreads those events out, and the tag then fires on a smeared
+          // population rather than on the line. The tagged fraction will not match the truth.
+          //
+          // This is a QUALITY warning, not an error: the stage-2 model is trained and used
+          // correctly either way (its training labels came from true hits), and drawing pTotal
+          // from a diffusion model is a legitimate choice. But peak tagging exists precisely to
+          // preserve a narrow line, so pairing it with the one stage-1 method that cannot is
+          // almost always unintended.
+          if (!useResampler)
+            mf::LogWarning("VDResamplerGenerateMix")
+              << "Particle pdg " << pdgId << " (source \"" << sourceTag << "\") uses a peak-tagged "
+              << "stage-2 model with SBDMstage1Method=DIFFUSION. The stage-1 diffusion model "
+              << "smooths over the narrow line(s) the tags name, so the fraction of events tagged "
+              << "will not match the source. Use a pTotal resampler (INVERSE_CDF / SPLINE_CDF), "
+              << "which draws from the empirical distribution and preserves the line exactly.";
+        }
+
         if (useResampler) {
           // No stage-1 diffusion model; build this particle's pTotal resampler from THIS SOURCE's
           // own ROOT file (aligned with the summary), selecting its own pdgId. The per-source file
@@ -777,7 +847,8 @@ namespace mu2e {
     if (modelSet.useTwoStageModel) {
       g = VDResampler::generateTwoStage(
         modelSet.stage1Model.get(), *modelSet.stage2Model, modelSet.stage1Method,
-        modelSet.ptotResampler, randFlat_, randGaussQ_, settings, p0_, "VDResamplerGenerateMix");
+        modelSet.ptotResampler, randFlat_, randGaussQ_, settings, p0_, "VDResamplerGenerateMix",
+        modelSet.peakTags);
     } else {
       g = VDResampler::generateAllAtOnce(*modelSet.allAtOnceModel, settings, "VDResamplerGenerateMix");
     }

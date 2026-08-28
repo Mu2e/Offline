@@ -152,6 +152,31 @@ struct TrainState {
     // can restore the original value. Parallel to peakWindows.
     std::vector<double> basePeakAlphas;
 
+    // Monoenergetic lines given a discrete CLASS LABEL in the stage-2 condition (see PeakTag
+    // in VDResamplerTransforms.hh for the full rationale). Empty => the feature is off and
+    // stage 2 conditions on log(pTotal/p0) alone, exactly as before.
+    //
+    // These are NOT the same thing as peakWindows above, and the two are independent:
+    //   peakWindows  — importance SAMPLING. Draws in-window training samples more often so a
+    //                  narrow feature gets enough gradient. Edges are in TRANSFORMED units and
+    //                  index a STATE dimension. Changes how the model is trained, not what it
+    //                  is given.
+    //   peakTags     — CONDITIONING. Hands the network the class membership as an input.
+    //                  Centers are in RAW MeV/c on pTotal. Changes what the model is given.
+    // A line typically wants both: the tag tells the network the line exists, the window makes
+    // sure it sees enough of it. They are configured separately because either is useful alone.
+    std::vector<PeakTag> peakTags;
+
+    // True when peak tagging is active: stage 2 gains one extra (categorical) condition dim.
+    // Only meaningful for the V2 two-stage layout, which is the only one that conditions on
+    // pTotal; validateTrainingConfig rejects the combination elsewhere.
+    bool usePeakTags() const { return !peakTags.empty(); }
+
+    // Condition dimensionality of the V2 stage-2 model: log(pTotal/p0), plus the class label
+    // when tagging is on. Single source of truth, so model construction, the normalization
+    // vectors and collectSample cannot disagree about the width.
+    int stage2CondDim() const { return usePeakTags() ? 2 : 1; }
+
     // Welford normalization accumulators for the transformed coordinates. Slots
     // 0,1,2 are always (t, x, y); slots mom0,mom1,mom2 are the three momentum
     // values in the active MomentumBasis:
@@ -455,6 +480,65 @@ inline void assemblePeakWindows(TrainState& s,
 }
 
 // ---------------------------------------------------------------------------
+// assemblePeakTags — build s.peakTags from the two parallel fcl sequences
+//   (SBDMpeakTagCenters / SBDMpeakTagHalfWidths), both in RAW MeV/c on pTotal. Equal lengths
+//   required; empty => peak tagging disabled (stage 2 conditions on pTotal alone).
+//
+// Validation is stricter here than for the sampling windows because a bad tag silently
+// mislabels training data rather than merely mis-weighting it, and the resulting model would
+// look fine while having learnt the wrong class boundaries:
+//   * a non-positive half-width would tag only exact float equality, i.e. essentially nothing;
+//   * overlapping windows would make the label depend on the configured ORDER (peakTagFor
+//     returns the first match), which is not something a user should have to reason about.
+// ---------------------------------------------------------------------------
+inline void assemblePeakTags(TrainState& s,
+    const std::vector<double>& centers, const std::vector<double>& halfWidths,
+    const std::string& moduleName)
+{
+    const size_t K = centers.size();
+    if (halfWidths.size() != K)
+        throw cet::exception(moduleName)
+            << "Peak tag sequence length mismatch: SBDMpeakTagHalfWidths has "
+            << halfWidths.size() << ", expected " << K << " (to match SBDMpeakTagCenters).";
+
+    s.peakTags.clear();
+    for (size_t k = 0; k < K; ++k) {
+        if (!(halfWidths[k] > 0.0))
+            throw cet::exception(moduleName)
+                << "SBDMpeakTagHalfWidths[" << k << "] = " << halfWidths[k]
+                << " must be > 0 (MeV/c); a non-positive half-width tags no events.";
+        if (!(centers[k] > 0.0))
+            throw cet::exception(moduleName)
+                << "SBDMpeakTagCenters[" << k << "] = " << centers[k]
+                << " must be > 0 (MeV/c, raw pTotal).";
+        s.peakTags.push_back(PeakTag{centers[k], halfWidths[k]});
+    }
+
+    // Reject overlaps so the label is order-independent (see above).
+    for (size_t a = 0; a < K; ++a)
+        for (size_t b = a + 1; b < K; ++b) {
+            const double gap = std::abs(s.peakTags[a].center - s.peakTags[b].center);
+            if (gap <= s.peakTags[a].halfWidth + s.peakTags[b].halfWidth)
+                throw cet::exception(moduleName)
+                    << "Peak tag windows " << a << " (" << s.peakTags[a].center << " +/- "
+                    << s.peakTags[a].halfWidth << ") and " << b << " ("
+                    << s.peakTags[b].center << " +/- " << s.peakTags[b].halfWidth
+                    << ") MeV/c overlap; tag windows must be disjoint so the class label "
+                    << "does not depend on the order they are configured in.";
+        }
+
+    if (K > 0) {
+        std::ostringstream os;
+        for (size_t k = 0; k < K; ++k)
+            os << (k ? ", " : "") << "label " << (k + 1) << " = " << s.peakTags[k].center
+               << " +/- " << s.peakTags[k].halfWidth << " MeV/c";
+        mf::LogInfo(moduleName)
+            << "Configured " << K << " peak tag(s) on the stage-2 condition (" << os.str()
+            << "; label 0 = none).";
+    }
+}
+
+// ---------------------------------------------------------------------------
 // validateAndBuildCurriculum
 //   Validates curriculum vectors in state, fills empty ones with defaults,
 //   computes trainingEpochs, phaseBoundaries, and initialises currentBias/tLow.
@@ -700,7 +784,7 @@ inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
                              VDResampler::ModelLayout expected,
                              const std::string& file, const char* slot,
                              MomentumBasis& runMomBasis, PositionBasis& runPosBasis,
-                             bool& runBasisAdopted,
+                             bool& runBasisAdopted, bool expectPeakTagged,
                              const std::string& moduleName) {
     const int tag = model.basisTag();
     mf::LogInfo(moduleName)
@@ -711,6 +795,22 @@ inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
             << " slot has " << basisTagToString(tag) << ", but that slot requires layout "
             << modelLayoutName(expected)
             << ". The checkpoint parameter points at the wrong model file.";
+
+    // Peak tagging is NOT adopted from the checkpoint the way the bases are. It changes the
+    // model's conditionDim, which is baked into the loaded network's first-layer width, so a
+    // mismatch cannot be reconciled by rebuilding the data -- it is a genuine incompatibility
+    // between this fcl and this checkpoint, and the user has to resolve it. Report it plainly
+    // in both directions rather than letting the condition vector silently change length.
+    if (VDResampler::unpackPeakTagged(tag) != expectPeakTagged)
+        throw cet::exception(moduleName)
+            << "Checkpoint " << file << " loaded into the " << slot << " slot was trained "
+            << (VDResampler::unpackPeakTagged(tag) ? "WITH" : "WITHOUT")
+            << " the peak-tag condition dim, but this job is configured to train "
+            << (expectPeakTagged ? "WITH" : "WITHOUT")
+            << " it (SBDMpeakTagCenters is " << (expectPeakTagged ? "non-empty" : "empty")
+            << "). That changes the conditioning dimension and therefore the network's input "
+            << "width, so the checkpoint cannot be resumed under this configuration. Either "
+            << "match SBDMpeakTagCenters to the checkpoint or start from a fresh model.";
 
     // Both bases are adopted from the checkpoint for the same reason: the training data
     // is rebuilt from ROOT in the configured basis, while the loaded network was trained
@@ -773,6 +873,47 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
     s.stage1ModelFile    = ensureBinExtension(s.stage1ModelFile,    "SBDMstage1ModelFile",     moduleName);
     s.stage2ModelFile    = ensureBinExtension(s.stage2ModelFile,    "SBDMstage2ModelFile",     moduleName);
 
+    // Peak tagging lives on the stage-2 condition, and only the V2 two-stage layout has one
+    // (V1 stage 2 conditions on (t,x,y), the all-at-once model on nothing). Configuring tags
+    // in any other layout would silently do nothing, so say so instead.
+    if (s.usePeakTags()) {
+        if (!s.useTwoStageTraining)
+            throw cet::exception(moduleName)
+                << "SBDMpeakTagCenters is configured but SBDMuseTwoStageTraining=false. Peak "
+                << "tagging adds a class label to the stage-2 pTotal condition; the "
+                << "all-at-once model is unconditional and has nowhere to put it.";
+        if (!s.isV2())
+            throw cet::exception(moduleName)
+                << "SBDMpeakTagCenters is configured but the momentum basis is "
+                << momentumBasisName(s.momentumBasis)
+                << ", whose stage 2 conditions on (t,x,y) rather than on pTotal. Peak tagging "
+                << "requires a V2/V3 (pTotal + slopes) basis.";
+
+        // stage1Method itself is a GENERATE-side key and is deliberately not passed into the
+        // training fcl, so it cannot be read here. Its training-time shadow is whether a
+        // stage-1 model is being trained at all: VDResamplerConfigure emits
+        // SBDMstage1ModelFile only for stage1Method=DIFFUSION, and leaves it empty when a
+        // pTotal resampler will supply pTotal instead.
+        //
+        // Training a stage-1 diffusion model alongside peak tags is therefore a sign the two
+        // halves disagree: a continuous model over log(pTotal/p0) cannot reproduce a keV-wide
+        // line, so at generation time the tag would fire on a smeared population and the
+        // tagged fraction would not match the truth. Warn rather than throw — the stage-2
+        // model being trained here is correct regardless (its labels come from true hits), the
+        // stage-1 model may be wanted for other reasons, and the generate modules repeat this
+        // warning where stage1Method is actually known.
+        // Tested on stage1ModelFile rather than s.trainStage1, which is not assigned until the
+        // two-stage branch further below.
+        if (!s.stage1ModelFile.empty())
+            mf::LogWarning(moduleName)
+                << "SBDMpeakTagCenters is configured AND a stage-1 pTotal diffusion model is "
+                << "being trained (SBDMstage1ModelFile is set). Peak tagging exists to preserve "
+                << "a narrow line, but a stage-1 diffusion model smooths over one; if that model "
+                << "is used to draw pTotal at generation time, the tagged fraction will not match "
+                << "the source. Prefer stage1Method INVERSE_CDF / SPLINE_CDF in the training plan "
+                << "for a tagged particle, which needs no stage-1 model at all.";
+    }
+
     // Mode/checkpoint consistency. Each training mode only consults the checkpoint
     // parameter(s) for the slot(s) it actually builds: all-at-once reads ckptAllAtOnceFile
     // and ignores the stage checkpoints; two-stage reads ckptStage1/2File and ignores the
@@ -827,6 +968,31 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             << "EMA promotion requested (SBDMpromoteEMA or SBDMtrainingCurriculumPromoteEMA) "
             << "but SBDMuseEMANetwork is false. Enable the EMA network to use this feature.";
 
+    // Resolve SBDMconditionEmbeddingDims for a model with condDim condition coordinates,
+    // forcing depth 0 on the peak-tag dim. Necessary because the fcl spec is commonly written
+    // in the broadcast form {k}, which would otherwise put depth k on the class label too —
+    // rejected by setCategoricalConditionDim, and meaningless anyway (sin/cos of a small
+    // integer are constants; see categoricalConditionDim in ScoreBasedDiffusionModel.hh).
+    // Expanding the broadcast here, rather than making the user write the per-dim form,
+    // keeps an existing fcl working unchanged when tags are switched on.
+    auto condEmbedFor = [&](int condDim) {
+        std::vector<int> spec = p.conditionEmbeddingDims;
+        const bool tagged = s.usePeakTags() && condDim == s.stage2CondDim();
+        if (!tagged || spec.empty()) return spec;   // {} is already all-zero
+        if (spec.size() == 1u) spec.assign(condDim, spec[0]); // expand broadcast to per-dim
+        if (static_cast<int>(spec.size()) == condDim) {
+            if (spec[kPeakTagCondIdx] != 0)
+                mf::LogInfo(moduleName)
+                    << "SBDMconditionEmbeddingDims requested depth " << spec[kPeakTagCondIdx]
+                    << " on the peak-tag condition dim; forcing it to 0 (a class label has no "
+                    << "sub-O(1) structure for a Fourier embedding to resolve).";
+            spec[kPeakTagCondIdx] = 0;
+        }
+        // A wrong-length spec is left alone for the SBDM constructor to report against the
+        // real condDim, which gives a clearer message than anything this lambda could add.
+        return spec;
+    };
+
     // Helper: build a fresh SBDM with phase-0 (or singleton) hyperparams
     auto makeSBDM = [&](int dim, int condDim) {
         double initLWP = s.nPhase > 1 ? s.curriculumLossWeightPower[0] : p.lossWeightPower;
@@ -834,7 +1000,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
         double initLR  = s.nPhase > 1 ? s.curriculumLearningRate[0]    : p.learningRate;
         bool   initUDWC= s.nPhase > 1 ? s.curriculumUseDimWeightController[0] : p.useDimWeightController;
         return std::make_unique<ScoreBasedDiffusionModel>(
-            rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDims, p.conditionEmbeddingDims,
+            rf, rg, dim, condDim, p.timeEmbeddingDim, p.inputEmbeddingDims, condEmbedFor(condDim),
             p.hidden, p.layers, p.optimizer,
             p.adamBeta1, p.adamBeta2, p.adamEps, p.noiseSchedule,
             p.betaMin, p.betaMax, p.cosineOffset, p.logSigMin, p.logSigMax,
@@ -872,7 +1038,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage1Ptot1D
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage1File, "stage-1", s.momentumBasis, s.positionBasis,
-                    runBasisAdopted, moduleName);
+                    runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -891,15 +1057,23 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage2_5D
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage2File, "stage-2", s.momentumBasis, s.positionBasis,
-                    runBasisAdopted, moduleName);
+                    runBasisAdopted, /*expectPeakTagged=*/s.usePeakTags(), moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
             } else {
                 // V1 stage2: 3-D (pr,pphi,pz) cond 3-D (t,x,y).
-                // V2 stage2: 5-D (t,x,y,ur,uphi) cond 1-D (pTotal).
-                s.stage2Model = s.isV2() ? makeSBDM(5, 1) : makeSBDM(3, 3);
+                // V2 stage2: 5-D (t,x,y,ur,uphi) cond 1-D (pTotal), or 2-D (pTotal, peak
+                //   label) when peak tagging is on -- see stage2CondDim().
+                s.stage2Model = s.isV2() ? makeSBDM(5, s.stage2CondDim()) : makeSBDM(3, 3);
             }
+            // Declare the class-label condition dim on the stage-2 model, whether it was
+            // just constructed or restored from a checkpoint. On the restore path the
+            // checkpoint already carries it (format v8), so this is a no-op that simply
+            // keeps the two paths textually identical; checkModelLayout above has already
+            // established that the checkpoint and this configuration agree.
+            if (s.isV2() && s.usePeakTags())
+                s.stage2Model->setCategoricalConditionDim(kPeakTagCondIdx);
             if (s.trainingSize > 0) s.stage2TrainingData.reserve(s.trainingSize);
             else                    s.stage2TrainingData.reserve(1000);
         }
@@ -909,7 +1083,7 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptAllAtOnceFile));
             checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
                 s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, s.positionBasis,
-                runBasisAdopted, moduleName);
+                runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
@@ -950,9 +1124,15 @@ inline void accumulateNorm(TrainState& s, double t_trans, double x_trans, double
 //     V1: stage1 = {t,x,y};               stage2 = {mom0,mom1,mom2} | {t,x,y}
 //     V2: stage1 = {mom0=log(pTotal/p0)}; stage2 = {t,x,y,mom1=ur,mom2=uphi} | {mom0}
 //   (full vector order: V1 (t,x,y,pr,pphi,pz); V2 (t,x,y,pTotal,ur,uphi).)
+//
+// pTotRaw is the hit's RAW |p| in MeV/c. It is used ONLY to evaluate the peak class label,
+// and only when peak tagging is on. It is passed in rather than recovered as p0*exp(mom0_t)
+// so the label is computed from the same physical quantity the fcl windows are written in,
+// with no log/exp round-trip, and so the V1 path (whose mom0_t is not a pTotal at all) can
+// share this function unchanged.
 // ---------------------------------------------------------------------------
 inline void collectSample(TrainState& s, double t_trans, double x_trans, double y_trans,
-                           double mom0_t, double mom1_t, double mom2_t)
+                           double mom0_t, double mom1_t, double mom2_t, double pTotRaw)
 {
     if (s.useTwoStageTraining) {
         if (s.trainStage1) {
@@ -967,6 +1147,10 @@ inline void collectSample(TrainState& s, double t_trans, double x_trans, double 
             if (s.isV2()) {
                 s2.x    = {t_trans, x_trans, y_trans, mom1_t, mom2_t};
                 s2.cond = {mom0_t};
+                // Class label appended LAST (kPeakTagCondIdx), as a raw small integer; the
+                // model is told this dim is categorical so normalizeData leaves it alone.
+                if (s.usePeakTags())
+                    s2.cond.push_back(static_cast<double>(peakTagFor(pTotRaw, s.peakTags)));
             } else {
                 s2.x    = {mom0_t, mom1_t, mom2_t};
                 s2.cond = {t_trans, x_trans, y_trans};
@@ -1990,10 +2174,16 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             std::vector<double> sdev = isV2
                 ? std::vector<double>{s.t_stdev, s.x_stdev, s.y_stdev, s.mom1_stdev, s.mom2_stdev, s.mom0_stdev}
                 : std::vector<double>{s.mom0_stdev, s.mom1_stdev, s.mom2_stdev, s.t_stdev, s.x_stdev, s.y_stdev};
+            // Peak class label, appended last to match collectSample's condition order.
+            // normalizeData pins this dim's stored normalization to the identity because the
+            // model was told it is categorical, so the 0/1 written here are placeholders that
+            // keep the vector lengths right rather than values that get used.
+            if (isV2 && s.usePeakTags()) { mean.push_back(0.0); sdev.push_back(1.0); }
             s.stage2Model->normalizeData(mean, sdev, s.stage2TrainingData);
             const int tag2 = packBasisTag(isV2 ? ModelLayout::TwoStageStage2_5D
                                                : ModelLayout::AllAtOnce6D,
-                                          s.positionBasis, s.momentumBasis);
+                                          s.positionBasis, s.momentumBasis,
+                                          /*peakTagged=*/isV2 && s.usePeakTags());
             if (diagnosticMode) {
                 runDiagnostics(*s.stage2Model, s.stage2TrainingData, mean, sdev, s.stage2ModelFile);
             } else {

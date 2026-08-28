@@ -479,6 +479,28 @@ namespace mu2e {
         preactivations_.reserve(layers_);
     }
 
+    // Declare which condition coordinate (if any) carries a class label. See the header for
+    // why such a dim is neither z-scored nor Fourier-embedded. Rejecting a non-zero embedding
+    // depth here rather than silently zeroing it keeps the network input layout exactly what
+    // the configuration says it is: the depth feeds the first-layer width, so quietly changing
+    // it would make a checkpoint's geometry disagree with the config that produced it.
+    void ScoreBasedDiffusionModel::setCategoricalConditionDim(int condIdx) {
+        if (condIdx != -1) {
+            if (condIdx < 0 || condIdx >= conditionDim_)
+                throw cet::exception("ScoreBasedDiffusionModel::setCategoricalConditionDim")
+                    << "categorical condition dim " << condIdx << " out of range [0, "
+                    << conditionDim_ << ") (-1 means none)";
+            if (!conditionEmbeddingDims_.empty() && conditionEmbeddingDims_[condIdx] != 0)
+                throw cet::exception("ScoreBasedDiffusionModel::setCategoricalConditionDim")
+                    << "condition dim " << condIdx << " is declared categorical but has Fourier "
+                    << "embedding depth " << conditionEmbeddingDims_[condIdx]
+                    << "; a class label must have depth 0 (its sin/cos columns would be "
+                    << "constants, collinear with the raw label). Set that entry of "
+                    << "conditionEmbeddingDims to 0.";
+        }
+        categoricalConditionDim_ = condIdx;
+    }
+
     // normalize input data
     // note the order in the stdev and mean is always x then cond
     void ScoreBasedDiffusionModel::normalizeData(
@@ -504,6 +526,16 @@ namespace mu2e {
         // store the mean and standard deviation of the original data
         dataMean_ = mean;
         dataStdev_ = stdev;
+        // The categorical (class-label) dim is not standardized, so record the IDENTITY for
+        // it regardless of what the caller passed. Everything downstream reads the stored
+        // normalization rather than re-deriving it — normalizeCondition, dimStats, the
+        // checkpoint — so pinning it to 0/1 here is what keeps them all consistent with the
+        // verbatim values written into the samples below.
+        if (categoricalConditionDim_ >= 0) {
+            const int idx = dim_ + categoricalConditionDim_;
+            dataMean_[idx]  = 0.0;
+            dataStdev_[idx] = 1.0;
+        }
 
         // containers to track the mean and standard deviation of the normalized data
         std::vector<double> normMean(totalDim, 0.0);
@@ -545,13 +577,21 @@ namespace mu2e {
             //now deal with sample.cond
             for (int i = 0; i < conditionDim_; ++i) {
                 const int idx = dim_ + i;
-                if (stdev[idx] == 0.0) {
-                    throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
-                        << "Zero standard deviation encountered at dimension "
-                        << idx;
+                double value;
+                if (i == categoricalConditionDim_) {
+                    // Class label: fed to the network verbatim (see categoricalConditionDim).
+                    // dataMean_/dataStdev_ were forced to 0/1 for this dim above, so the
+                    // stored normalization is the identity and normalizeCondition, dimStats
+                    // and any inverse mapping all agree with what is written here.
+                    value = sample.cond[i];
+                } else {
+                    if (stdev[idx] == 0.0) {
+                        throw cet::exception("ScoreBasedDiffusionModel::normalizeData")
+                            << "Zero standard deviation encountered at dimension "
+                            << idx;
+                    }
+                    value = (sample.cond[i] - mean[idx]) / stdev[idx];
                 }
-
-                double value = (sample.cond[i] - mean[idx]) / stdev[idx];
                 sample.cond[i] = value;
 
                 // update min/max
@@ -567,6 +607,18 @@ namespace mu2e {
 
         for (size_t i = 0; i < totalDim; ++i) {
             normStdev[i] = std::sqrt(M2[i] / static_cast<double>(count));
+            // The categorical dim is deliberately left un-standardized, so its mean and stdev
+            // are whatever the class populations make them. Report them (they are a useful
+            // record of the class mix) but skip the checks below, which would otherwise fire
+            // on every run for a dim that is behaving exactly as intended.
+            if (categoricalConditionDim_ >= 0
+                && static_cast<int>(i) == dim_ + categoricalConditionDim_) {
+                mf::LogInfo("ScoreBasedDiffusionModel::normalizeData")
+                    << "Dimension " << i << " is the categorical (class-label) condition dim: "
+                    << "left un-normalized, observed mean = " << normMean[i]
+                    << ", stdev = " << normStdev[i];
+                continue;
+            }
             mf::LogInfo("ScoreBasedDiffusionModel::normalizeData")
                 << "Dimension " << i << " normalized: mean = " << normMean[i] << ", stdev = " << normStdev[i];
 
@@ -1689,8 +1741,12 @@ namespace mu2e {
         // 7 = appends an opaque int32 basisTag (after diffusionSteps_, before the network
         // weights). This class never interprets it; it is an application-level marker
         // (see saveModel/basisTag()). v<=6 files have no such field and load it as 0.
+        // 8 = appends an int32 categoricalConditionDim (immediately after basisTag): the
+        // index of the one condition coordinate holding a class label, or -1 for none.
+        // v<=7 files predate it and load as -1, i.e. every condition dim z-scored, which
+        // is what those models were trained with.
         out.write("SBDM", 4);
-        wU32(7u);
+        wU32(8u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1729,6 +1785,12 @@ namespace mu2e {
         // subsequent basisTag() query is consistent with what was just written.
         wI32(static_cast<int32_t>(basisTag));
         basisTag_ = basisTag;
+
+        // Index of the class-label condition dim, or -1 for none (format v8+). Unlike
+        // basisTag this is not a caller argument: it is model state that normalizeData()
+        // has already acted on, so it must be persisted for the generate side to feed the
+        // label at the same scale the network was trained on.
+        wI32(static_cast<int32_t>(categoricalConditionDim_));
 
         // Network weights
         wU32(static_cast<uint32_t>(network_.size()));
@@ -1835,6 +1897,9 @@ namespace mu2e {
         // Diffusion process configuration
         out << "diffusionSteps," << diffusionSteps_ << "\n";
         out << "basisTag," << basisTag_ << "\n"; // opaque app-level tag; see saveModel/basisTag()
+        // Index of the class-label condition dim, or -1 for none. A CSV predating this key
+        // reads back as -1, matching the binary v<=7 default.
+        out << "categoricalConditionDim," << categoricalConditionDim_ << "\n";
 
         // Write network architecture header
         out << "\n[NETWORK_PARAMETERS]\n";
@@ -2068,7 +2133,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version < 1 || version > 7)
+            if (version < 1 || version > 8)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -2132,6 +2197,11 @@ namespace mu2e {
             // Opaque application-level basis tag (format v7+). v<=6 files predate it,
             // so default to 0. Set on the constructed model below.
             int basisTag = (version >= 7) ? rI32() : 0;
+
+            // Index of the class-label condition dim (format v8+), or -1 for none. v<=7
+            // files predate it and load as -1: every condition dim z-scored, which is how
+            // those models were trained. Applied to the constructed model below.
+            int categoricalConditionDim = (version >= 8) ? rI32() : -1;
 
             // Network weights
             uint32_t numLayers = static_cast<uint32_t>(checkCount(rU32(), "network layer"));
@@ -2251,6 +2321,12 @@ namespace mu2e {
                 diffusionSteps, false
             );
             model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
+            // Class-label condition dim (-1 for v<=7). Set BEFORE the normalization arrays
+            // are restored below so normalizeCondition/dimStats agree with them immediately;
+            // the setter also re-checks the dim against this file's own conditionDim and
+            // condition embedding depths, so a hand-edited or mismatched checkpoint is
+            // rejected here rather than silently mis-scaling the label at generation time.
+            model.setCategoricalConditionDim(categoricalConditionDim);
 
             // EMA decay semantics fix-up. The constructor rescaled emaNetworkDecayStored
             // as if it were the batch-size-independent base. That is correct for version-4
@@ -2312,6 +2388,7 @@ namespace mu2e {
             mf::LogInfo("ScoreBasedDiffusionModel::loadModel")
                 << "Binary model loaded from " << filename
                 << " (format version " << version << ", basisTag " << basisTag
+                << ", categoricalConditionDim=" << categoricalConditionDim
                 << ", adamStep=" << loadedAdamStep << ", epochs=" << numEpochs << ")";
             return model;
         } else if (isCsv) {
@@ -2340,6 +2417,8 @@ namespace mu2e {
             double lossWeightPower = 2.0;
             int batchSize = 1, diffusionSteps = 1;
             int basisTag = 0; // opaque app-level tag; absent in CSVs predating the feature
+            // Class-label condition dim; absent in CSVs predating it, hence -1 = none.
+            int categoricalConditionDim = -1;
             double gradientClipThreshold = 0.0, learningRate = 0.0;
 
             std::vector<double> dataMean, dataStdev, normMin, normMax;
@@ -2463,6 +2542,7 @@ namespace mu2e {
                     else if (key == "emaNetworkDecay") emaNetworkDecay = std::stod(val);
                     else if (key == "diffusionSteps") diffusionSteps = std::stoi(val);
                     else if (key == "basisTag") basisTag = std::stoi(val);
+                    else if (key == "categoricalConditionDim") categoricalConditionDim = std::stoi(val);
                 }
 
                 // NETWORK PARAMETERS
@@ -2768,7 +2848,8 @@ namespace mu2e {
 
             std::ostringstream logMsg;
             logMsg << "Model loaded successfully from " << filename
-                   << " (format CSV (unversioned), basisTag " << basisTag << ")\n";
+                   << " (format CSV (unversioned), basisTag " << basisTag
+                   << ", categoricalConditionDim " << categoricalConditionDim << ")\n";
             if (optimizerStateLoaded) {
                 logMsg << "  Optimizer state (Adam moments, step=" << loadedAdamStep << ") restored — training can be resumed.\n";
             } else {
@@ -2819,6 +2900,9 @@ namespace mu2e {
                 false // initializeRandomWeights
             );
             model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
+            // Class-label condition dim (-1 if absent); see the binary path for why this is
+            // applied before the normalization arrays are restored.
+            model.setCategoricalConditionDim(categoricalConditionDim);
 
             // Legacy-CSV EMA decay fix-up (mirrors the binary version <= 3 path). When the
             // file predates emaNetworkDecayBase, the stored emaNetworkDecay is the per-step

@@ -489,10 +489,15 @@ namespace mu2e{
         // first (0..dim_-1) then condition dims (dim_..dim_+conditionDim_-1); condIdx is
         // the 0-based index within the conditioning vector. Used to feed an externally
         // sourced condition (e.g. a resampled pTotal) with the exact training z-score.
+        //
+        // The categorical (class-label) dim, if any, is returned verbatim: it was never
+        // z-scored at training time either. Callers can therefore run every condition
+        // coordinate through this function uniformly without special-casing the label.
         double normalizeCondition(int condIdx, double rawValue) const {
             if (condIdx < 0 || condIdx >= conditionDim_)
                 throw cet::exception("ScoreBasedDiffusionModel::normalizeCondition")
                     << "condIdx " << condIdx << " out of range [0, " << conditionDim_ << ")";
+            if (condIdx == categoricalConditionDim_) return rawValue;
             const int idx = dim_ + condIdx;
             return (rawValue - dataMean_[idx]) / dataStdev_[idx];
         }
@@ -619,6 +624,45 @@ namespace mu2e{
         // class assigns no meaning to it; see saveModel.
         int basisTag() const { return basisTag_; }
         void setBasisTag(int tag) { basisTag_ = tag; }
+
+        // CATEGORICAL condition dimension — the index of the ONE condition coordinate (if any)
+        // carrying a small integer CLASS LABEL rather than a physical measurement.
+        //
+        // -1 (the DEFAULT) means there is no such coordinate: every condition dim is an
+        // ordinary continuous measurement, z-scored, which is the historical behaviour and
+        // what every pre-v8 checkpoint loads as. Do not confuse that with a label VALUE of 0,
+        // which means the model does have a categorical dim and this event belongs to no class.
+        //
+        // A single dim suffices however many classes there are: the classes are distinguished
+        // by the VALUE in that dim (0 = none, 1..K = class k), not by one dim per class. That
+        // keeps conditionDim_ — and therefore the checkpoint layout and the first-layer width —
+        // fixed as classes are added.
+        //
+        // The dim is treated differently in exactly two places:
+        //
+        //   1. NOT z-scored. normalizeData() and normalizeCondition() pass it through verbatim
+        //      and store mean=0 / stdev=1 for it. Z-scoring a label is actively harmful:
+        //        * a training file in which every event carries the same label has stdev 0,
+        //          which normalizeData() rejects outright;
+        //        * otherwise the label's value at the network input depends on that label's
+        //          POPULATION FRACTION in the particular training set, so the same physical
+        //          class lands at a different input value in every run, and a value fed at
+        //          generation time is only meaningful against the one checkpoint it came from.
+        //      Raw, class k is the literal value k in every model.
+        //
+        //   2. Fourier embedding depth forced to 0 (the constructor and the loader reject a
+        //      non-zero depth on it). The embedding exists to defeat spectral bias on a
+        //      coordinate with structure finer than O(1); a label has no fine structure, its
+        //      values are already O(1) apart, and sin/cos of a small integer argument are
+        //      constants — columns perfectly collinear with the raw label, costing parameters
+        //      and carrying no information. One raw input suffices: what a label needs from the
+        //      first layer is a bias shift, i.e. one weight column of adequate magnitude, which
+        //      training grows on its own. It is not competing for representational capacity.
+        //
+        // Must be -1 or a valid 0-based index < conditionDim_. Set before normalizeData();
+        // persisted in binary format v8.
+        int categoricalConditionDim() const { return categoricalConditionDim_; }
+        void setCategoricalConditionDim(int condIdx);
 
         // Save the model parameters to a CSV file with annotations for human inspection.
         //
@@ -996,6 +1040,10 @@ namespace mu2e{
         // Opaque application-level tag (default 0). Not interpreted by this class;
         // round-tripped through save/load (binary format v7+). See saveModel/basisTag().
         int basisTag_ = 0;
+
+        // Index of the single class-label condition dim, or -1 for none (the default, and
+        // what every pre-v8 checkpoint loads as). See categoricalConditionDim().
+        int categoricalConditionDim_ = -1;
 
         // Training state
         double runningLoss_;  // Accumulated loss for monitoring during training
