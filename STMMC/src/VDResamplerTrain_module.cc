@@ -54,6 +54,7 @@ namespace mu2e {
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
         fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on"),         22 };
         fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
+        fhicl::Atom<std::string> SBDMpositionBasis{ Name("SBDMpositionBasis"), Comment("Radial position map u(rho), rho=r/VDr: V1_ATANH, V2_NEGLOG, V3_RATIO"), "V1_ATANH" };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
         fhicl::Sequence<int> SBDMinputEmbeddingDims{     Name("SBDMinputEmbeddingDims"),     Comment("Per-state-dim Fourier depth: [] none, [k] broadcast, or length-dim list; each 0 or even >= 2"),     std::vector<int>() };
         fhicl::Sequence<int> SBDMconditionEmbeddingDims{ Name("SBDMconditionEmbeddingDims"), Comment("Per-condition-dim Fourier depth: [] none, [k] broadcast, or length-condDim list; each 0 or even >= 2"), std::vector<int>() };
@@ -180,6 +181,7 @@ namespace mu2e {
     state_.ckptStage2File      = conf().SBDMloadCheckPointStage2ModelFile();
     state_.useTwoStageTraining = conf().SBDMuseTwoStageTraining();
     state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrain");
+    state_.positionBasis       = VDResampler::parsePositionBasis(conf().SBDMpositionBasis(), "VDResamplerTrain");
     state_.virtualDetectorID   = conf().VirtualDetectorID();
     state_.VDz0                = conf().VDz0();
     state_.VDr                 = conf().VDr();
@@ -323,7 +325,7 @@ namespace mu2e {
           VDResampler::kX0, VDResampler::kY0, VDResampler::kT0, VDResampler::kTScale, VDResampler::kP0,
           state_.VDr, state_.VDz0,
           x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t,
-          state_.momentumBasis, &pzFallback_);
+          state_.momentumBasis, &pzFallback_, state_.positionBasis);
 
       VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
       VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);

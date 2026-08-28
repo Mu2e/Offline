@@ -697,9 +697,10 @@ namespace mu2e {
       // exactly which summary produced it — sourceTag alone is one of only four enumerated
       // values, so summaries differing only in version or run would otherwise collide.
       if (validationDir) {
-        const VDResampler::MomentumBasis basis = VDResampler::unpackMomentumBasis(
-          particle.useTwoStageModel ? particle.stage2Model->basisTag()
-                                    : particle.allAtOnceModel->basisTag());
+        const int validationTag = particle.useTwoStageModel ? particle.stage2Model->basisTag()
+                                                            : particle.allAtOnceModel->basisTag();
+        const VDResampler::MomentumBasis momBasis = VDResampler::unpackMomentumBasis(validationTag);
+        const VDResampler::PositionBasis posBasis = VDResampler::unpackPositionBasis(validationTag);
         const std::string label = sourceLabel + "_" + sourceTag + "_" + versionTag
                                 + "_run" + VDResampler::zeroPad(runNumber, 6)
                                 + "_pdg" + VDResampler::pdgFileToken(pdgId);
@@ -711,9 +712,9 @@ namespace mu2e {
         const VDResampler::TransformedStatsBySlot stats =
           VDResampler::collectTransformedStats(particle.allAtOnceModel.get(),
                                                particle.stage1Model.get(),
-                                               particle.stage2Model.get(), basis);
+                                               particle.stage2Model.get(), momBasis);
         particle.validationPlots->book(
-          validationDir->mkdir(label), label, basis, pdgId,
+          validationDir->mkdir(label), label, momBasis, posBasis, pdgId,
           pdt_->particle(pdgId).mass(),
           resamplerRootFile, resamplerTreeName,
           static_cast<unsigned long>(virtualDetectorID_), ip, "VDResamplerGenerateMix",

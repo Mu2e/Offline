@@ -171,6 +171,9 @@ struct TrainState {
     // Active momentum basis (set from fcl by the train modules; default V2).
     MomentumBasis momentumBasis = MomentumBasis::V2_PtotSlopes;
 
+    // Active radial position map (set from fcl; default the historical atanh).
+    PositionBasis positionBasis = PositionBasis::V1_Atanh;
+
     // True for any V2 (pTotal/slopes) basis. V2 changes both the momentum slot
     // meaning and the two-stage split (stage1 = 1-D pTotal, stage2 = 5-D rest).
     bool isV2() const { return momentumBasis != MomentumBasis::V1_CylindricalTransformed; }
@@ -325,6 +328,23 @@ inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string&
     mf::LogWarning(moduleName) << "Unrecognized SBDMmomentumBasis value \"" << b
                                << "\"; falling back to V2_PTOT_SLOPES.";
     return MomentumBasis::V2_PtotSlopes;
+}
+
+// ---------------------------------------------------------------------------
+// parsePositionBasis — convert fhicl string to PositionBasis enum. Selects the radial
+//   map u(rho), rho=r/VDr, used by the position transform; see PositionBasis in
+//   VDResamplerTransforms.hh for the resolution/density trade-offs behind the choice.
+//   V1_ATANH   : u = atanh(rho)     (historical; default, so old plans are unchanged)
+//   V2_NEGLOG  : u = -ln(1-rho)     (finer inner resolution, tightest output range)
+//   V3_RATIO   : u = rho/(1-rho)    (finest inner resolution, widest output range)
+// ---------------------------------------------------------------------------
+inline PositionBasis parsePositionBasis(const std::string& b, const std::string& moduleName) {
+    if (b == "V1_ATANH")  return PositionBasis::V1_Atanh;
+    if (b == "V2_NEGLOG") return PositionBasis::V2_NegLog;
+    if (b == "V3_RATIO")  return PositionBasis::V3_Ratio;
+    mf::LogWarning(moduleName) << "Unrecognized SBDMpositionBasis value \"" << b
+                               << "\"; falling back to V1_ATANH.";
+    return PositionBasis::V1_Atanh;
 }
 
 // ---------------------------------------------------------------------------
@@ -662,15 +682,16 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
 // all-at-once file dropped into a stage slot (or vice versa) loads self-consistently and
 // would otherwise train/diagnose silently on the wrong architecture.
 //
-// Momentum basis handling: the training/diagnostic data is rebuilt from ROOT in
-// s.momentumBasis, and the loaded network was trained in the checkpoint's basis. These MUST
-// agree or the data (and the diagnostic true_dim values) live in a different momentum space
-// than the network expects — e.g. raw ur/uphi vs asinh-wrapped slopes. Rather than force the
-// user to keep SBDMmomentumBasis in sync with the checkpoint by hand, we take the basis FROM
-// the checkpoint: s.momentumBasis is overwritten with the loaded tag's basis (warning if the
-// configured value differed). buildModels runs before the ROOT event loop that consults
-// s.momentumBasis, so this override governs the rebuilt data. When several checkpoints are
-// loaded in one run they must agree; the second call detects a cross-stage disagreement.
+// Basis handling (momentum AND position): the training/diagnostic data is rebuilt from ROOT
+// in s.momentumBasis / s.positionBasis, and the loaded network was trained in the
+// checkpoint's. These MUST agree or the data (and the diagnostic true_dim values) live in a
+// different space than the network expects — e.g. raw ur/uphi vs asinh-wrapped slopes, or a
+// different radial map. Rather than force the user to keep the fcl in sync with the
+// checkpoint by hand, both are taken FROM the checkpoint: s.momentumBasis and
+// s.positionBasis are overwritten with the loaded tag's values (warning if a configured
+// value differed). buildModels runs before the ROOT event loop that consults them, so this
+// override governs the rebuilt data. When several checkpoints are loaded in one run they
+// must agree; the second call detects a cross-stage disagreement in either basis.
 //
 // NOTE: a legacy v<=6 checkpoint predates the tag and reads back as basisTag()==0 ==
 // (AllAtOnce6D, V1_CylindricalTransformed); feeding such a file into a stage slot is
@@ -678,7 +699,8 @@ inline void validateAndBuildCurriculum(TrainState& s, const std::string& moduleN
 inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
                              VDResampler::ModelLayout expected,
                              const std::string& file, const char* slot,
-                             MomentumBasis& runBasis, bool& runBasisAdopted,
+                             MomentumBasis& runMomBasis, PositionBasis& runPosBasis,
+                             bool& runBasisAdopted,
                              const std::string& moduleName) {
     const int tag = model.basisTag();
     mf::LogInfo(moduleName)
@@ -690,26 +712,48 @@ inline void checkModelLayout(const ScoreBasedDiffusionModel& model,
             << modelLayoutName(expected)
             << ". The checkpoint parameter points at the wrong model file.";
 
-    const MomentumBasis ckptBasis = VDResampler::unpackMomentumBasis(tag);
+    // Both bases are adopted from the checkpoint for the same reason: the training data
+    // is rebuilt from ROOT in the configured basis, while the loaded network was trained
+    // in the checkpoint's. A disagreement in EITHER puts the data in a different space
+    // than the network expects -- raw vs asinh-wrapped slopes for the momentum basis,
+    // a different radial map for the position basis -- so both are taken from the file.
+    const MomentumBasis ckptBasis    = VDResampler::unpackMomentumBasis(tag);
+    const PositionBasis ckptPosBasis = VDResampler::unpackPositionBasis(tag);
     if (!runBasisAdopted) {
-        // First loaded checkpoint: adopt its basis for the whole run so the rebuilt data
-        // matches the network. Warn if it differs from the configured SBDMmomentumBasis.
-        if (ckptBasis != runBasis)
+        // First loaded checkpoint: adopt its bases for the whole run so the rebuilt data
+        // matches the network. Warn if either differs from what was configured.
+        if (ckptBasis != runMomBasis)
             mf::LogWarning(moduleName)
                 << "Checkpoint " << file << " was trained in momentum basis "
                 << momentumBasisName(ckptBasis) << ", which differs from the configured "
-                << "SBDMmomentumBasis (" << momentumBasisName(runBasis)
+                << "SBDMmomentumBasis (" << momentumBasisName(runMomBasis)
                 << "). Using the checkpoint's basis so the rebuilt data (and diagnostic "
                 << "true_dim values) match the loaded network.";
-        runBasis = ckptBasis;
+        if (ckptPosBasis != runPosBasis)
+            mf::LogWarning(moduleName)
+                << "Checkpoint " << file << " was trained in position basis "
+                << positionBasisName(ckptPosBasis) << ", which differs from the configured "
+                << "SBDMpositionBasis (" << positionBasisName(runPosBasis)
+                << "). Using the checkpoint's basis so the rebuilt data matches the "
+                << "loaded network.";
+        runMomBasis = ckptBasis;
+        runPosBasis = ckptPosBasis;
         runBasisAdopted = true;
-    } else if (ckptBasis != runBasis) {
-        // A previously loaded checkpoint already fixed the run basis; this one disagrees.
-        throw cet::exception(moduleName)
-            << "Checkpoint " << file << " loaded into the " << slot << " slot has basis "
-            << momentumBasisName(ckptBasis) << ", but another checkpoint in this run uses "
-            << momentumBasisName(runBasis)
-            << ". Stage checkpoints loaded together must share one momentum basis.";
+    } else {
+        // A previously loaded checkpoint already fixed the run bases; this one must agree.
+        if (ckptBasis != runMomBasis)
+            throw cet::exception(moduleName)
+                << "Checkpoint " << file << " loaded into the " << slot << " slot has basis "
+                << momentumBasisName(ckptBasis) << ", but another checkpoint in this run uses "
+                << momentumBasisName(runMomBasis)
+                << ". Stage checkpoints loaded together must share one momentum basis.";
+        if (ckptPosBasis != runPosBasis)
+            throw cet::exception(moduleName)
+                << "Checkpoint " << file << " loaded into the " << slot
+                << " slot has position basis " << positionBasisName(ckptPosBasis)
+                << ", but another checkpoint in this run uses "
+                << positionBasisName(runPosBasis)
+                << ". Stage checkpoints loaded together must share one position basis.";
     }
 }
 
@@ -827,7 +871,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 checkModelLayout(*s.stage1Model,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage1Ptot1D
                              : VDResampler::ModelLayout::AllAtOnce6D,
-                    s.ckptStage1File, "stage-1", s.momentumBasis, runBasisAdopted, moduleName);
+                    s.ckptStage1File, "stage-1", s.momentumBasis, s.positionBasis,
+                    runBasisAdopted, moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -845,7 +890,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                 checkModelLayout(*s.stage2Model,
                     s.isV2() ? VDResampler::ModelLayout::TwoStageStage2_5D
                              : VDResampler::ModelLayout::AllAtOnce6D,
-                    s.ckptStage2File, "stage-2", s.momentumBasis, runBasisAdopted, moduleName);
+                    s.ckptStage2File, "stage-2", s.momentumBasis, s.positionBasis,
+                    runBasisAdopted, moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
@@ -862,7 +908,8 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             s.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
                 ScoreBasedDiffusionModel::loadModel(rf, rg, s.ckptAllAtOnceFile));
             checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
-                s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, runBasisAdopted, moduleName);
+                s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, s.positionBasis,
+                runBasisAdopted, moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
@@ -1920,7 +1967,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                                              : std::vector<double>{s.t_stdev, s.x_stdev, s.y_stdev};
             s.stage1Model->normalizeData(mean, sdev, s.stage1TrainingData);
             const int tag1 = packBasisTag(isV2 ? ModelLayout::TwoStageStage1Ptot1D
-                                               : ModelLayout::AllAtOnce6D, s.momentumBasis);
+                                               : ModelLayout::AllAtOnce6D,
+                                          s.positionBasis, s.momentumBasis);
             if (diagnosticMode) {
                 runDiagnostics(*s.stage1Model, s.stage1TrainingData, mean, sdev, s.stage1ModelFile);
             } else {
@@ -1944,7 +1992,8 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                 : std::vector<double>{s.mom0_stdev, s.mom1_stdev, s.mom2_stdev, s.t_stdev, s.x_stdev, s.y_stdev};
             s.stage2Model->normalizeData(mean, sdev, s.stage2TrainingData);
             const int tag2 = packBasisTag(isV2 ? ModelLayout::TwoStageStage2_5D
-                                               : ModelLayout::AllAtOnce6D, s.momentumBasis);
+                                               : ModelLayout::AllAtOnce6D,
+                                          s.positionBasis, s.momentumBasis);
             if (diagnosticMode) {
                 runDiagnostics(*s.stage2Model, s.stage2TrainingData, mean, sdev, s.stage2ModelFile);
             } else {
@@ -1963,7 +2012,7 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
         std::vector<double> mean = {s.t_mean, s.x_mean, s.y_mean, s.mom0_mean, s.mom1_mean, s.mom2_mean};
         std::vector<double> sdev = {s.t_stdev, s.x_stdev, s.y_stdev, s.mom0_stdev, s.mom1_stdev, s.mom2_stdev};
         s.allAtOnceModel->normalizeData(mean, sdev, s.allAtOnceTrainingData);
-        const int tagA = packBasisTag(ModelLayout::AllAtOnce6D, s.momentumBasis);
+        const int tagA = packBasisTag(ModelLayout::AllAtOnce6D, s.positionBasis, s.momentumBasis);
         if (diagnosticMode) {
             runDiagnostics(*s.allAtOnceModel, s.allAtOnceTrainingData, mean, sdev, s.allAtOnceModelFile);
         } else {

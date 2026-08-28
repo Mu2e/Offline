@@ -191,7 +191,7 @@ namespace mu2e {
     const std::vector<std::string>& trainingKeyOrder() {
       static const std::vector<std::string> order = {
         // --- model architecture ---
-        "SBDMuseTwoStageTraining", "SBDMmomentumBasis",
+        "SBDMuseTwoStageTraining", "SBDMmomentumBasis", "SBDMpositionBasis",
         "SBDMhidden", "SBDMlayers",
         "SBDMtimeEmbeddingDim", "SBDMinputEmbeddingDims", "SBDMconditionEmbeddingDims",
         // --- noise schedule ---

@@ -43,6 +43,7 @@ struct GeneratedTransformed {
     double xTrans = 0.0, yTrans = 0.0, tTrans = 0.0;
     double m0 = 0.0, m1 = 0.0, m2 = 0.0;
     MomentumBasis basis = MomentumBasis::V1_CylindricalTransformed;
+    PositionBasis posBasis = PositionBasis::V1_Atanh;
     double rawPtot = 0.0;
     bool   rawPtotValid = false;
 };
@@ -80,7 +81,8 @@ inline GeneratedTransformed generateAllAtOnce(
     ScoreBasedDiffusionModel& model, const SamplerSettings& s, const std::string& moduleName)
 {
     GeneratedTransformed g;
-    g.basis = unpackMomentumBasis(model.basisTag());
+    g.basis    = unpackMomentumBasis(model.basisTag());
+    g.posBasis = unpackPositionBasis(model.basisTag());
     const SBDMGeneratedSample sample = model.generateSample(
         {}, s.useEMANetworkIfAvailable, s.useHeun, s.useSDE, s.diffusionSteps, s.sdeToOdeSigmaThreshold);
     if (sample.zscore.size() != 6u)
@@ -105,7 +107,8 @@ inline GeneratedTransformed generateTwoStage(
     const SamplerSettings& s, double p0, const std::string& moduleName)
 {
     GeneratedTransformed g;
-    g.basis = unpackMomentumBasis(stage2Model.basisTag());
+    g.basis    = unpackMomentumBasis(stage2Model.basisTag());
+    g.posBasis = unpackPositionBasis(stage2Model.basisTag());
     const bool isV2 = (g.basis != MomentumBasis::V1_CylindricalTransformed);
 
     if (!isV2) {
@@ -171,7 +174,7 @@ inline void invertGenerated(
     if (g.rawPtotValid) {
         const bool asinhSlopes = basisUsesAsinhSlopes(g.basis);
         double dx, dy, r, ur, uphi;
-        invertPosition(g.xTrans, g.yTrans, ip.x0, ip.y0, ip.VDr, x, y, dx, dy, r);
+        invertPosition(g.xTrans, g.yTrans, ip.x0, ip.y0, ip.VDr, g.posBasis, x, y, dx, dy, r);
         z = ip.VDz0;
         t = invertTimeForBasis(g.tTrans, ip.t0, ip.tScale, g.basis);
         v2DecodeSlopes(g.m1, g.m2, asinhSlopes, ur, uphi);
@@ -180,7 +183,7 @@ inline void invertGenerated(
         invertGeneratedSample(
             g.xTrans, g.yTrans, g.tTrans, g.m0, g.m1, g.m2,
             ip.x0, ip.y0, ip.t0, ip.tScale, ip.p0, ip.VDr, ip.VDz0,
-            x, y, z, t, px, py, pz, g.basis);
+            x, y, z, t, px, py, pz, g.basis, g.posBasis);
     }
 }
 

@@ -236,7 +236,8 @@ namespace mu2e {
 
       // Momentum basis + per-model layout, recovered from the loaded model(s)'
       // opaque basisTag() so the inverse transform auto-selects (no fcl needed).
-      VDResampler::MomentumBasis basis_ = VDResampler::MomentumBasis::V1_CylindricalTransformed;
+      VDResampler::MomentumBasis momBasis_ = VDResampler::MomentumBasis::V1_CylindricalTransformed;
+      VDResampler::PositionBasis posBasis_ = VDResampler::PositionBasis::V1_Atanh;
 
       // V2 stage-1 pTotal source. When != DIFFUSION the 1-D stage-1 diffusion model is
       // replaced by ptotResampler_ (built from a required ROOT source file at ctor time).
@@ -317,7 +318,8 @@ namespace mu2e {
       stage2Model_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile_)
       );
-      basis_ = VDResampler::unpackMomentumBasis(stage2Model_->basisTag());
+      momBasis_ = VDResampler::unpackMomentumBasis(stage2Model_->basisTag());
+      posBasis_ = VDResampler::unpackPositionBasis(stage2Model_->basisTag());
       mf::LogInfo("VDResamplerGenerateFromModel")
         << "Loaded stage-2 model " << stage2ModelFile_ << ": "
         << VDResampler::basisTagToString(stage2Model_->basisTag());
@@ -349,7 +351,7 @@ namespace mu2e {
                       stage1ModelFile_, "stage-1");
         // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
         const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
-        if (stage1Basis != basis_)
+        if (stage1Basis != momBasis_)
           throw cet::exception("VDResamplerGenerateFromModel")
             << "Stage-1 and stage-2 models disagree on momentum basis (tags "
             << stage1Model_->basisTag() << " vs " << stage2Model_->basisTag() << ").";
@@ -375,7 +377,8 @@ namespace mu2e {
       allAtOnceModel_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, allAtOnceModelFile_)
       );
-      basis_ = VDResampler::unpackMomentumBasis(allAtOnceModel_->basisTag());
+      momBasis_ = VDResampler::unpackMomentumBasis(allAtOnceModel_->basisTag());
+      posBasis_ = VDResampler::unpackPositionBasis(allAtOnceModel_->basisTag());
       mf::LogInfo("VDResamplerGenerateFromModel")
         << "Loaded all-at-once model " << allAtOnceModelFile_ << ": "
         << VDResampler::basisTagToString(allAtOnceModel_->basisTag());
@@ -411,17 +414,17 @@ namespace mu2e {
             << "doValidationPlots requires resamplerSourceRootFile: it supplies the mother "
             << "distribution the generated samples are compared against.";
 
-        // basis_ and pdgId_ are settled above from the loaded model(s), so the plot set is
+        // momBasis_ and pdgId_ are settled above from the loaded model(s), so the plot set is
         // booked for exactly the basis that will be generated.
         const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
         // The models' own training statistics size the transformed axes to where the
         // population actually is, rather than to the static catch-all ranges.
         const VDResampler::TransformedStatsBySlot stats =
           VDResampler::collectTransformedStats(allAtOnceModel_.get(), stage1Model_.get(),
-                                               stage2Model_.get(), basis_);
+                                               stage2Model_.get(), momBasis_);
         validationPlots_.book(
           tfs->mkdir("validation"),
-          "pdg" + VDResampler::pdgFileToken(pdgId_), basis_, pdgId_,
+          "pdg" + VDResampler::pdgFileToken(pdgId_), momBasis_, posBasis_, pdgId_,
           pdt_->particle(pdgId_).mass(),
           srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
           "VDResamplerGenerateFromModel", &stats);

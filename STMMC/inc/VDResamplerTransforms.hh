@@ -19,44 +19,24 @@ namespace mu2e {
     constexpr double kP0 = 1.0; // MeV/c
 
     // safety constants for numerical stability in the forward and inverse transforms.
-    // NOTE kRadiusSafetyEpsilon is a pure numerical guard with several unrelated uses
-    // (an r>eps test in mm before dividing by r to build the local polar frame, and a
-    // floor on pTot in MeV before log). It is NOT the radial clamp — see
-    // kRhoClampEpsilon below, which is a physics/conditioning choice and must be tuned
-    // independently.
+    // NOTE kRadiusSafetyEpsilon has several unrelated uses (an r>eps test in mm before
+    // dividing by r to build the local polar frame, and a floor on pTot in MeV before
+    // log), so it is deliberately NOT reused as the radial clamp -- see
+    // kRhoClampEpsilon below, which is dimensionless and guards u = r/VDr.
     constexpr double kRadiusSafetyEpsilon = 1e-6;
     constexpr double kMinSafeTime = 0.1;
 
-    // Radial clamp for the position transform: rho is capped at 1-kRhoClampEpsilon
-    // before u=atanh(rho). This bounds u at atanh(1-eps) and, more importantly, bounds
-    // the Jacobian du/dr = 1/(VDr(1-rho^2)) ~ 1/(2 eps), which is what couples a fixed
-    // MSE budget in u-space to physical density.
+    // Radial clamp: rho = r/VDr is capped at 1-kRhoClampEpsilon before the radial map,
+    // so an event exactly on (or numerically past) the rim cannot produce u = inf. This
+    // is a pure numerical guard. It is NOT a fix for the radial mis-modelling described
+    // under PositionBasis: no generated event ever reached the clamp (0/100000
+    // measured), so that was not rim saturation, and tightening or loosening eps does
+    // not address it. Raising it only truncates real area near the rim (the truncated
+    // fraction is ~2 eps for a uniform disc), so it is kept at the historical value.
     //
-    // Motivation: with the historical 1e-6 the Jacobian spanned ~5e5, so equal MSE
-    // effort per unit u badly under-served large radius. A generated-vs-source radial
-    // density ratio showed a smooth ~0.78 -> ~1.18 tilt over rho ~ 0.3 -> 0.85 (i.e.
-    // generated events pushed outward), and reweighting the generated sample by that
-    // radial ratio alone restored the physical x distribution (std dev 1075 -> 1030
-    // against a source 1032), confirming the bias is radial rather than angular.
-    //
-    // Trade-off in eps: larger eps flattens the Jacobian but truncates real area near
-    // the rim (the truncated area fraction is ~2*VDr*eps/VDr = 2 eps for a uniform
-    // disc, and the cut mass piles onto the clamp).
-    //     eps    u_max   1/(1-rho^2)   r cut from a 2000 mm rim   area cut
-    //     1e-6    7.25       5e5              0.002 mm            ~2e-4 %
-    //     1e-4    4.95       5e3              0.2   mm            ~0.02 %
-    //     1e-3    3.80       5e2              2     mm            ~0.2  %
-    //     1e-2    2.65       5e1             20     mm            ~2    %
-    // 1e-4 is the conservative starting point: 100x less Jacobian range for ~0.02% of
-    // the area. If the residual tilt is still significant, 1e-3 is the next step; past
-    // ~3e-2 the physical truncation outweighs the conditioning gain. When changing it,
-    // re-measure both the radial ratio and the fraction of generated events landing on
-    // the clamp (which was 0/100000 at 1e-6 and will grow with eps).
-    //
-    // Changing this changes the forward transform, so a model trained at one value must
-    // be generated at the same value. That is NOT currently enforced or recorded
-    // anywhere, so a mismatch fails silently. Check code versions for consistency.
-    constexpr double kRhoClampEpsilon = 1e-4;
+    // Only PositionBasis::V1_Atanh is at all sensitive to the value, since its
+    // drho/du = 1-rho^2 collapses at the rim; V2_NegLog needs no more than rho < 1.
+    constexpr double kRhoClampEpsilon = 1e-6;
     // Independent floor for pz in divisions (slope basis). Distinct from
     // kRadiusSafetyEpsilon because it guards a different quantity (longitudinal
     // momentum, not transverse radius). If it is ever used, the input pz was
@@ -132,6 +112,101 @@ namespace mu2e {
     };
 
     // ------------------------------------------------------------------------
+    // PositionBasis - the radial boundary-removing map u(rho), rho = r/VDr in [0,1),
+    //   selected PER SPECIES and orthogonal to MomentumBasis. Every variant keeps the
+    //   SAME polar encoding (xTrans,yTrans) = u*(cos theta, sin theta) with
+    //   theta = atan2(dy,dx), so the angular treatment is untouched; only u(rho)
+    //   differs. All are monotone, send rho -> [0,inf), and invert in closed form.
+    //
+    // Two independent effects decide whether a map suits a species. They are easy to
+    // conflate, so state both explicitly:
+    //
+    //   EFFECT 1 - RESOLUTION, drho/du. How far a fixed error in the network's output u
+    //     displaces the physical radius. Where drho/du is large, a given u-error costs
+    //     more in rho. This is about precision, and it is the one that matters when a
+    //     species' structure is concentrated somewhere specific.
+    //
+    //   EFFECT 2 - DENSITY, p(u) = p(rho) drho/du. What the training distribution
+    //     actually looks like in the coordinate the network fits. A density that is flat
+    //     and compactly supported is easy; one with a thin tail is not, because the tail
+    //     is sparsely sampled and a score model generically over-populates it. This is
+    //     about how many samples land where.
+    //
+    //   For a uniform disc p(rho) ~ rho, so BOTH maps give p(u) -> 0 at the origin: that
+    //   is inherited from the geometry, not a property of either map, and cannot be
+    //   fixed by choosing between them. The maps differ in their TAILS.
+    //
+    // History, and what this enum is and is NOT for. A radial mis-modelling was observed
+    //   under V1_Atanh: as a generated/mother ratio in rho it looked like a smooth
+    //   outward tilt (~0.78 -> ~1.18 over rho ~ 0.3-0.85 for pdg11 EleBeam; ~0.92 ->
+    //   ~1.08 for pdg22 EleBeam, milder and largely hidden in the x/y projections since
+    //   those integrate over theta). Reweighting a generated sample by that radial ratio
+    //   alone restored the physical x distribution (std dev 1075 -> 1030 against a
+    //   source 1032), so the bias was radial rather than angular.
+    //
+    //   Plotted over the FULL range in u, however, the ratio is not a monotone tilt at
+    //   all: it is ~0.7 at u~0, peaks ~1.38 at u~1.7, and falls back to ~0.7 by u~2.8 --
+    //   a deficit at BOTH ends with an excess in the middle. That is a distribution
+    //   contracted toward its own mode, i.e. too narrow, which is the signature of a
+    //   weak score field, not of a tail the coordinate made hard to represent. (Had it
+    //   been the latter, the tail would be OVER-populated; it is under-populated.) The
+    //   affected runs were subsequently found to have stopped early with a training loss
+    //   still above 0.99 -- they were simply undertrained. The rho-space view had hidden
+    //   this by compressing the turnover into its last few bins.
+    //
+    //   So: do NOT reach for this enum to fix a radial discrepancy before checking the
+    //   training loss and the planner's stop reason. Its justification is the standing
+    //   Effect 1 argument -- some species want finer resolution at small rho than atanh
+    //   gives -- not that measurement.
+    //
+    //   V1_Atanh  : u = atanh(rho); rho = tanh(u); drho/du = 1-rho^2.
+    //       Effect 1: drho/du = 1 at rho=0, 0.75 at rho=0.5, 0.19 at rho=0.9. Coarsest
+    //         at the centre, finest at the rim.
+    //       Effect 2: for a uniform disc p(u) = tanh(u) sech^2(u), peaking near u~0.66
+    //         with an e^{-2u} tail -- the thinnest tail of the two, and the hardest to
+    //         terminate correctly.
+    //       Retained so existing models stay reproducible, and for species where it is
+    //       known to be adequate.
+    //   V2_NegLog : u = -ln(1-rho); rho = 1-e^{-u}; drho/du = 1-rho = e^{-u}.
+    //       Effect 1: drho/du = 1 at rho=0, 0.50 at rho=0.5, 0.10 at rho=0.9 --
+    //         uniformly SMALLER than atanh away from the origin, i.e. it spends more of
+    //         its u range on the inner region and resolves it ~1.5x more finely at
+    //         rho=0.5.
+    //       Effect 2: for a uniform disc p(u) = (1-e^{-u}) e^{-u}, an e^{-u} tail --
+    //         still exponential, but decaying half as fast as atanh's, so a fatter and
+    //         better-sampled tail.
+    //       Better than V1_Atanh on both effects while keeping the TIGHTEST output
+    //       range of the three (u = 2.3 at rho=0.9, 4.6 at rho=0.99), so it is the
+    //       default recommendation.
+    //   V3_Ratio  : u = rho/(1-rho); rho = u/(1+u); drho/du = (1-rho)^2.
+    //       Effect 1: drho/du = 1 at rho=0, 0.25 at rho=0.5, 0.010 at rho=0.9 -- the
+    //         BEST of the three, ~2x finer than NegLog and ~3x finer than atanh at
+    //         rho=0.5.
+    //       Effect 2: for a uniform disc p(u) = u/(1+u)^3, a POWER-LAW u^{-2} tail --
+    //         also the best of the three, being fatter than either exponential.
+    //       The cost is DYNAMIC RANGE, not either effect: reaching the rim needs large
+    //       outputs (u = 9 at rho=0.9, 99 at rho=0.99), which is a wide span for a
+    //       z-scored network output to cover and interacts with SBDMlogSigMin. Prefer
+    //       it when inner resolution is the binding constraint and the species has
+    //       little mass near the rim; prefer V2_NegLog when it does.
+    //
+    // Note every such map is u ~ rho + O(rho^2) near the origin, so drho/du is exactly 1
+    // at rho=0 for all of them: none improves ABSOLUTE resolution at the very centre,
+    // and for a species whose events sit almost entirely at small rho the choice barely
+    // matters. They differ in how quickly drho/du falls away from the origin, in their
+    // tails, and in the output range they demand.
+    //
+    // A fourth option, u = rho/sqrt(1-rho^2) (drho/du = (1+u^2)^{-3/2}, u^{-3} tail),
+    // sits between NegLog and Ratio on both effects and was not adopted: it adds no
+    // point the three above do not already cover.
+    // ------------------------------------------------------------------------
+    enum class PositionBasis {
+      V1_Atanh  = 0,
+      V2_NegLog = 1,
+      V3_Ratio  = 2
+    };
+
+    // ------------------------------------------------------------------------
     // ModelLayout — the role/vector layout of a single saved model, so the
     //   generate side knows how to interpret and invert it from the file alone.
     //   AllAtOnce6D          : one model over (t,x,y, m0,m1,m2) per MomentumBasis.
@@ -146,21 +221,35 @@ namespace mu2e {
     };
 
     // ------------------------------------------------------------------------
-    // Opaque basis-tag packing. The SBDM stores a single int32 it never
-    // interprets; VDResampler packs (ModelLayout, MomentumBasis) into it and
-    // unpacks on load. Encoding: layout*100 + basis. A pre-tag (v<=6) model loads
-    // as tag 0 = (AllAtOnce6D, V1_CylindricalTransformed), preserving old behavior.
+    // Opaque basis-tag packing. The SBDM stores a single int32 it never interprets;
+    // VDResampler packs (ModelLayout, PositionBasis, MomentumBasis) into it and
+    // unpacks on load. Encoding: layout*100 + position*10 + momentum, one decade per
+    // field, which caps PositionBasis and MomentumBasis at 10 entries each (3 and 4
+    // today). Widen the strides if that is ever reached.
+    //
+    // This stays backward compatible with the pre-PositionBasis encoding
+    // (layout*100 + momentum): an old tag has momentum < 10 in the units place and
+    // nothing in the tens, so it decodes to the same layout and momentum with
+    // position = 0 = V1_Atanh, which IS the map those models were trained with. A
+    // pre-tag (v<=6) model still loads as tag 0 = (AllAtOnce6D, V1_Atanh,
+    // V1_CylindricalTransformed), preserving the original behaviour.
     // ------------------------------------------------------------------------
-    constexpr int kBasisTagLayoutStride = 100;
+    constexpr int kBasisTagLayoutStride   = 100;
+    constexpr int kBasisTagPositionStride = 10;
 
-    inline int packBasisTag(ModelLayout layout, MomentumBasis basis) {
-      return static_cast<int>(layout) * kBasisTagLayoutStride + static_cast<int>(basis);
+    inline int packBasisTag(ModelLayout layout, PositionBasis position, MomentumBasis basis) {
+      return static_cast<int>(layout)   * kBasisTagLayoutStride
+           + static_cast<int>(position) * kBasisTagPositionStride
+           + static_cast<int>(basis);
     }
     inline ModelLayout unpackModelLayout(int tag) {
       return static_cast<ModelLayout>(tag / kBasisTagLayoutStride);
     }
+    inline PositionBasis unpackPositionBasis(int tag) {
+      return static_cast<PositionBasis>((tag % kBasisTagLayoutStride) / kBasisTagPositionStride);
+    }
     inline MomentumBasis unpackMomentumBasis(int tag) {
-      return static_cast<MomentumBasis>(tag % kBasisTagLayoutStride);
+      return static_cast<MomentumBasis>(tag % kBasisTagPositionStride);
     }
 
     // Human-readable enum names and a full basisTag decode, shared by the train and
@@ -174,6 +263,14 @@ namespace mu2e {
       }
       return "unknown";
     }
+    inline const char* positionBasisName(PositionBasis p) {
+      switch (p) {
+        case PositionBasis::V1_Atanh:   return "V1_Atanh";
+        case PositionBasis::V2_NegLog: return "V2_NegLog";
+        case PositionBasis::V3_Ratio:  return "V3_Ratio";
+      }
+      return "unknown";
+    }
     inline const char* momentumBasisName(MomentumBasis b) {
       switch (b) {
         case MomentumBasis::V1_CylindricalTransformed: return "V1_CylindricalTransformed";
@@ -183,11 +280,12 @@ namespace mu2e {
       }
       return "unknown";
     }
-    // Decode an opaque basisTag (layout*100 + basis) into
+    // Decode an opaque basisTag (layout*100 + position*10 + momentum) into
     // "layout=<...>, basis=<...> (tag <n>)" for logs and error messages.
     inline std::string basisTagToString(int tag) {
       std::ostringstream os;
       os << "layout=" << modelLayoutName(unpackModelLayout(tag))
+         << ", position=" << positionBasisName(unpackPositionBasis(tag))
          << ", basis=" << momentumBasisName(unpackMomentumBasis(tag))
          << " (tag " << tag << ")";
       return os.str();
@@ -212,35 +310,65 @@ namespace mu2e {
       r  = std::sqrt(dx * dx + dy * dy);
     }
 
-    // Forward position transform: (dx,dy,r) -> (xTrans,yTrans) via u=atanh(r/VDr)
-    // mapped back through the angle. Shared by all bases.
+    // The radial map u(rho) and its inverse, selected by PositionBasis. Split out from
+    // forwardPosition/invertPosition so the two directions cannot drift apart: they are
+    // exact inverses for every enum value, which invertPosition relies on. Also used by
+    // the validation plots to build the transformed radial coordinate.
+    inline double radialForward(double rho, PositionBasis basis) {
+      switch (basis) {
+        case PositionBasis::V2_NegLog:
+          return -std::log(1.0 - rho);
+        case PositionBasis::V3_Ratio:
+          return rho / (1.0 - rho);
+        case PositionBasis::V1_Atanh:
+        default:
+          return 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(rho)
+      }
+    }
+    inline double radialInverse(double u, PositionBasis basis) {
+      switch (basis) {
+        case PositionBasis::V2_NegLog:
+          return 1.0 - std::exp(-u);
+        case PositionBasis::V3_Ratio:
+          return u / (1.0 + u);
+        case PositionBasis::V1_Atanh:
+        default:
+          return std::tanh(u);
+      }
+    }
+
+    // Forward position transform: (dx,dy,r) -> (xTrans,yTrans) = u(rho)*(cos,sin theta)
+    // with rho = r/VDr. The angular part is identical for every PositionBasis; only the
+    // radial map differs (see PositionBasis for which to use and why).
     inline void forwardPosition(double dx, double dy, double r, double VDr,
+                                PositionBasis basis,
                                 double& xTrans, double& yTrans)
     {
       double rho = r / VDr;
-      // Bounds both u and the Jacobian du/dr; see kRhoClampEpsilon for the trade-off.
-      rho = std::min(rho, 1.0 - kRhoClampEpsilon); // avoid rho >= 1
-      const double u = 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(r/VDr)
+      // Numerical guard only, so rho=1 cannot produce u=inf; see kRhoClampEpsilon.
+      rho = std::min(rho, 1.0 - kRhoClampEpsilon);
+      const double u = radialForward(rho, basis);
       const double theta = std::atan2(dy, dx);
       xTrans = u * std::cos(theta);
       yTrans = u * std::sin(theta);
     }
 
-    // Inverse position transform: (xTrans,yTrans) -> detector-space (x,y) and the
-    // local frame (dx,dy,r) needed to rotate momentum back. Shared by all bases.
+    // Inverse position transform: (xTrans,yTrans) -> detector-space (x,y) and the local
+    // frame (dx,dy,r) needed to rotate momentum back. MUST be given the same
+    // PositionBasis the forward transform used; radialInverse is its exact inverse.
     //
-    // Deliberately NOT clamped to the forward map's kRhoClampEpsilon range: tanh already
-    // guarantees rho<1, and a generated u above the forward u_max is better left to land
-    // smoothly within the last fraction of a mm than snapped onto a hard edge, which
-    // would build exactly the rim spike the clamp exists to avoid. The generated-vs-
+    // Deliberately NOT clamped to the forward map's kRhoClampEpsilon range: every
+    // radialInverse already returns rho<1 by construction, and a generated u above the
+    // forward u_max is better left to land smoothly within the last fraction of a mm
+    // than snapped onto a hard edge, which would build a rim spike. The generated-vs-
     // source radial ratio near rho=1 is the diagnostic for whether that tail matters.
     inline void invertPosition(double xTrans, double yTrans, double x0, double y0,
-                               double VDr,
+                               double VDr, PositionBasis basis,
                                double& x, double& y, double& dx, double& dy, double& r)
     {
       const double u = std::sqrt(xTrans * xTrans + yTrans * yTrans);
       const double theta = std::atan2(yTrans, xTrans);
-      const double rho = std::tanh(u);
+      const double rho = radialInverse(u, basis);
       r  = rho * VDr;
       dx = r * std::cos(theta);
       dy = r * std::sin(theta);
@@ -348,11 +476,12 @@ namespace mu2e {
       const double x0, const double y0, const double t0,
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& xTrans, double& yTrans, double& tTrans,
-      double& prTrans, double& pphiTrans, double& pzTrans)
+      double& prTrans, double& pphiTrans, double& pzTrans,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       double dx, dy, r;
       extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, xTrans, yTrans);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
 
       double pr, pphi;
       cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
@@ -369,10 +498,11 @@ namespace mu2e {
       const double x0, const double y0, const double t0,
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& x, double& y, double& z, double& t,
-      double& px, double& py, double& pz)
+      double& px, double& py, double& pz,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       double dx, dy, r;
-      invertPosition(xTrans, yTrans, x0, y0, VDr, x, y, dx, dy, r);
+      invertPosition(xTrans, yTrans, x0, y0, VDr, posBasis, x, y, dx, dy, r);
       z = VDz0;
       t = invertTime(tTrans, t0, tScale);
 
@@ -399,11 +529,12 @@ namespace mu2e {
       double& xTrans, double& yTrans, double& tTrans,
       double& pTotTrans, double& urTrans, double& uphiTrans,
       const bool asinhSlopes, const bool asinhTime = false,
-      PzFallbackStats* pzStats = nullptr)
+      PzFallbackStats* pzStats = nullptr,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       double dx, dy, r;
       extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, xTrans, yTrans);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
 
       double pr, pphi;
       cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
@@ -435,10 +566,11 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& x, double& y, double& z, double& t,
       double& px, double& py, double& pz,
-      const bool asinhSlopes, const bool asinhTime = false)
+      const bool asinhSlopes, const bool asinhTime = false,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       double dx, dy, r;
-      invertPosition(xTrans, yTrans, x0, y0, VDr, x, y, dx, dy, r);
+      invertPosition(xTrans, yTrans, x0, y0, VDr, posBasis, x, y, dx, dy, r);
       z = VDz0;
       t = asinhTime ? invertTimeAsinh(tTrans, t0, tScale) : invertTime(tTrans, t0, tScale);
 
@@ -478,28 +610,29 @@ namespace mu2e {
       double& xTrans, double& yTrans, double& tTrans,
       double& m0, double& m1, double& m2,
       const MomentumBasis basis = MomentumBasis::V1_CylindricalTransformed,
-      PzFallbackStats* pzStats = nullptr)
+      PzFallbackStats* pzStats = nullptr,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       switch (basis) {
         case MomentumBasis::V2_PtotSlopes:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
-                                   /*asinhSlopes=*/false, /*asinhTime=*/false, pzStats);
+                                   /*asinhSlopes=*/false, /*asinhTime=*/false, pzStats, posBasis);
           break;
         case MomentumBasis::V2_PtotSlopesAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
-                                   /*asinhSlopes=*/true, /*asinhTime=*/false, pzStats);
+                                   /*asinhSlopes=*/true, /*asinhTime=*/false, pzStats, posBasis);
           break;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
-                                   /*asinhSlopes=*/true, /*asinhTime=*/true, pzStats);
+                                   /*asinhSlopes=*/true, /*asinhTime=*/true, pzStats, posBasis);
           break;
         case MomentumBasis::V1_CylindricalTransformed:
         default:
           forwardTransformSampleV1(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                   xTrans, yTrans, tTrans, m0, m1, m2);
+                                   xTrans, yTrans, tTrans, m0, m1, m2, posBasis);
           break;
       }
     }
@@ -511,25 +644,29 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& x, double& y, double& z, double& t,
       double& px, double& py, double& pz,
-      const MomentumBasis basis = MomentumBasis::V1_CylindricalTransformed)
+      const MomentumBasis basis = MomentumBasis::V1_CylindricalTransformed,
+      const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
       switch (basis) {
         case MomentumBasis::V2_PtotSlopes:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/false, /*asinhTime=*/false);
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/false, /*asinhTime=*/false,
+                                  posBasis);
           break;
         case MomentumBasis::V2_PtotSlopesAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/false);
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/false,
+                                  posBasis);
           break;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/true);
+                                  x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/true,
+                                  posBasis);
           break;
         case MomentumBasis::V1_CylindricalTransformed:
         default:
           invertGeneratedSampleV1(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                  x, y, z, t, px, py, pz);
+                                  x, y, z, t, px, py, pz, posBasis);
           break;
       }
     }

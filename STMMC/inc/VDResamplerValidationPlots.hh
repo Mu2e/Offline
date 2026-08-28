@@ -269,8 +269,15 @@ struct DimSpec {
                                 // physical:    index into (px,py,pz,x,y,t)
 };
 
-// Physical-quantity slots, in the order fillGenerated takes them.
-enum PhysicalSlot { kPx = 0, kPy = 1, kPz = 2, kX = 3, kY = 4, kT = 5 };
+// Physical-quantity slots, in the order fillGenerated takes them. kRhoNorm is derived
+// rather than passed in: the normalized in-plane radius rho = r/VDr about the
+// transform's own (x0,y0). See physicalDimSpecs.
+enum PhysicalSlot { kPx = 0, kPy = 1, kPz = 2, kX = 3, kY = 4, kT = 5, kRhoNorm = 6 };
+constexpr int kNPhysicalSlots = 7;
+
+// Transform-side slot for the derived radial coordinate. Past the six real transform
+// slots (0-5), so it never collides with a TransformedStatsBySlot index.
+constexpr int kRhoTransSlot = 6;
 
 // TransformedDimStats / TransformedStatsBySlot are defined in VDResamplerGenerateCommon.hh
 // (included above), where collectTransformedStats builds them from the loaded models. They
@@ -375,7 +382,7 @@ inline void applyStatsToSpec(DimSpec& spec, const TransformedDimStats& stats) {
 // The ranges here are STATIC FALLBACKS, wide enough for any sample. When `stats` carries a
 // slot's training statistics the axis is re-sized to the actual population (see
 // applyStatsToSpec); slots without statistics keep the fallback.
-inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis,
+inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis, PositionBasis posBasis,
                                                 const TransformedStatsBySlot* stats = nullptr) {
     const bool asinhSlopes = basisUsesAsinhSlopes(basis);
     const bool asinhTime   = basisUsesAsinhTime(basis);
@@ -408,6 +415,18 @@ inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis,
     if (stats)
         for (DimSpec& spec : specs)
             applyStatsToSpec(spec, (*stats)[spec.slot]);
+
+    // Transformed radial coordinate u = radialForward(r/VDr, posBasis), derived from
+    // xTrans/yTrans rather than a slot of the model's vector -- hence appended after the
+    // stats loop, which indexes (*stats)[slot] over the six transform slots. Companion
+    // to the physical rhoNorm in physicalDimSpecs, which explains how to read both.
+    // Axis top: radialForward(1-1e-3) is 3.8 (atanh), 6.9 (NegLog), 999 (Ratio); Ratio
+    // is capped well below that, its far tail being essentially unpopulated.
+    const double utop = (posBasis == PositionBasis::V3_Ratio)  ? 40.
+                      : (posBasis == PositionBasis::V2_NegLog) ?  7.
+                                                               :  4.;
+    specs.push_back({"rhoTrans", "u = radial transform of r/VDr", "",
+                     200, 0., utop, true, kRhoTransSlot});
     return specs;
 }
 
@@ -433,6 +452,18 @@ inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
     specs.push_back({"x",  "x [mm]", "mm", 800, -3904. - 2000., -3904. + 2000., false, kX});
     specs.push_back({"y",  "y [mm]", "mm", 800, -2000., 2000., false, kY});
     specs.push_back({"t",  "t [ns]", "ns", tnbin, 0., tmax, false, kT});
+
+    // Normalized radius rho = r/VDr about the transform's own (x0,y0), on a fixed [0,1]
+    // axis so the rim is always at 1 and species are directly comparable. Worth its own
+    // plot because x and y integrate over theta and dilute a purely radial defect --
+    // this ratio has shown a clear tilt while the x/y ratios looked flat. Read it as:
+    //   flat at 1            -> radial distribution is right;
+    //   smooth monotone tilt -> events pushed systematically in or out in radius;
+    //   deficit at BOTH ends, excess in the middle -> generated radius too narrow,
+    //     contracted toward its mode. That means a weak score field (undertrained, or
+    //     under-resolved at small sigma), so check the training loss and the planner's
+    //     stop reason first. The turnover may only be obvious in rhoTrans.
+    specs.push_back({"rhoNorm", "rho = r/VDr", "", 200, 0., 1., false, kRhoNorm});
     return specs;
 }
 
@@ -440,9 +471,10 @@ inline std::vector<DimSpec> physicalDimSpecs(int pdgId) {
 // `stats` (optional) re-sizes the TRANSFORMED axes to the model's training population; the
 // physical axes are always the static ranges, since those are in detector units the model
 // statistics say nothing about.
-inline std::vector<DimSpec> perDimensionSpecs(MomentumBasis basis, int pdgId,
+inline std::vector<DimSpec> perDimensionSpecs(MomentumBasis basis, PositionBasis posBasis,
+                                              int pdgId,
                                               const TransformedStatsBySlot* stats = nullptr) {
-    std::vector<DimSpec> specs = transformedDimSpecs(basis, stats);
+    std::vector<DimSpec> specs = transformedDimSpecs(basis, posBasis, stats);
     const std::vector<DimSpec> phys = physicalDimSpecs(pdgId);
     specs.insert(specs.end(), phys.begin(), phys.end());
     return specs;
@@ -640,7 +672,7 @@ public:
     // TRANSFORM slot order; when given, the transformed axes are sized to that population
     // instead of the static fallback ranges.
     void book(const art::TFileDirectory& dir, const std::string& label,
-              MomentumBasis basis, int pdgId, double massMeV,
+              MomentumBasis basis, PositionBasis posBasis, int pdgId, double massMeV,
               const std::string& sourceFile, const std::string& sourceTree,
               unsigned long virtualDetectorID, const InverseParams& ip,
               const std::string& moduleName,
@@ -648,15 +680,17 @@ public:
     {
         label_      = label;
         basis_      = basis;
+        posBasis_   = posBasis;
         pdgId_      = pdgId;
         moduleName_ = moduleName;
         dir_        = std::make_unique<art::TFileDirectory>(dir);
-        specs_      = perDimensionSpecs(basis, pdgId, stats);
+        specs_      = perDimensionSpecs(basis, posBasis, pdgId, stats);
         specs2D_    = correlationDimSpecs(basis, pdgId);
         // The 2D views' r and pr/pphi are measured about the SAME detector axis the
         // transform uses, so both sides share one origin and one mass.
         x0_   = ip.x0;
         y0_   = ip.y0;
+        VDr_  = ip.VDr;   // for the radial diagnostics (rhoNorm / rhoTrans)
         mass_ = massMeV;
 
         mother_.reserve(specs_.size());
@@ -744,8 +778,16 @@ public:
         if (!booked_) return;
         // For the V2 resampler path m0 is set from the raw drawn pTotal by
         // generateTwoStage, so the transformed pTotal slot is meaningful in both paths.
-        const double trans[6] = {g.xTrans, g.yTrans, g.tTrans, g.m0, g.m1, g.m2};
-        const double phys[6]  = {px, py, pz, x, y, t};
+        // Radial diagnostics: rho from the recovered (x,y), and the same radius in the
+        // model's own radial coordinate. Taking u from the transform of rho (rather than
+        // |(xTrans,yTrans)| directly) keeps this identical to the mother side, which has
+        // no generated xTrans/yTrans to measure.
+        const double rhoNorm  = std::sqrt((x - x0_) * (x - x0_) + (y - y0_) * (y - y0_)) / VDr_;
+        const double rhoTrans = radialForward(std::min(rhoNorm, 1.0 - kRhoClampEpsilon),
+                                              posBasis_);
+        const double trans[kRhoTransSlot + 1] =
+            {g.xTrans, g.yTrans, g.tTrans, g.m0, g.m1, g.m2, rhoTrans};
+        const double phys[kNPhysicalSlots] = {px, py, pz, x, y, t, rhoNorm};
         for (size_t i = 0; i < specs_.size(); ++i) {
             const DimSpec& s = specs_[i];
             generated_[i]->Fill(s.transformed ? trans[s.slot] : phys[s.slot]);
@@ -1289,8 +1331,8 @@ private:
                 double xTrans, yTrans, tTrans, m0, m1, m2;
                 forwardTransformSample(x, y, z, t, px, py, pz,
                                        ip.x0, ip.y0, ip.t0, ip.tScale, ip.p0, ip.VDr, ip.VDz0,
-                                       xTrans, yTrans, tTrans, m0, m1, m2, basis_, &pzStats);
-                const double trans[6] = {xTrans, yTrans, tTrans, m0, m1, m2};
+                                       xTrans, yTrans, tTrans, m0, m1, m2, basis_, &pzStats,
+                                       posBasis_);
                 // The mother's physical coordinates must be the ones the transform defines:
                 // the model only ever saw hits extrapolated onto the VDz0 plane, so comparing
                 // against the raw step positions would show an offset that is an artifact of
@@ -1299,8 +1341,16 @@ private:
                 double xm, ym, zm, tm, pxm, pym, pzm;
                 invertGeneratedSample(xTrans, yTrans, tTrans, m0, m1, m2,
                                       ip.x0, ip.y0, ip.t0, ip.tScale, ip.p0, ip.VDr, ip.VDz0,
-                                      xm, ym, zm, tm, pxm, pym, pzm, basis_);
-                const double phys[6] = {pxm, pym, pzm, xm, ym, tm};
+                                      xm, ym, zm, tm, pxm, pym, pzm, basis_, posBasis_);
+                // Same two radial diagnostics as fillGenerated, from the inverted
+                // physical values so both sides are built identically.
+                const double rhoNorm  =
+                    std::sqrt((xm - x0_) * (xm - x0_) + (ym - y0_) * (ym - y0_)) / VDr_;
+                const double rhoTrans =
+                    radialForward(std::min(rhoNorm, 1.0 - kRhoClampEpsilon), posBasis_);
+                const double trans[kRhoTransSlot + 1] =
+                    {xTrans, yTrans, tTrans, m0, m1, m2, rhoTrans};
+                const double phys[kNPhysicalSlots] = {pxm, pym, pzm, xm, ym, tm, rhoNorm};
                 for (size_t i = 0; i < specs_.size(); ++i) {
                     const DimSpec& s = specs_[i];
                     mother_[i]->Fill(s.transformed ? trans[s.slot] : phys[s.slot]);
@@ -1374,7 +1424,8 @@ private:
     // Detector-axis origin and rest mass the derived 2D quantities are formed with; taken
     // from the SAME InverseParams the transform uses and the module's ParticleDataList
     // mass, so both sides agree.
-    double x0_ = 0.0, y0_ = 0.0, mass_ = 0.0;
+    double x0_ = 0.0, y0_ = 0.0, VDr_ = 1.0, mass_ = 0.0;
+    PositionBasis posBasis_ = PositionBasis::V1_Atanh;
 
     TTree* metricTree_ = nullptr;
 
