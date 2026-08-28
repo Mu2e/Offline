@@ -132,6 +132,9 @@ core_fine_structure_config : {
   SBDMhidden : 256 # hidden slightly larger than all input dims to keep capacity, but fewer layers to reduce training time
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 16
+  # Radial position map u(rho), rho=r/VDr. Must be set explicitly: the module default is V1_ATANH,
+  # which diverges as rho->1 and leaves the network with no usable gradient.
+  SBDMpositionBasis : "V3_RATIO"
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-4
   SBDMlogSigMax : 1.0
@@ -178,6 +181,7 @@ core_avg_structure_config :{
   SBDMhidden : 256
   SBDMlayers : 4
   SBDMtimeEmbeddingDim : 12
+  SBDMpositionBasis : "V3_RATIO" # see core_fine_structure_config
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-3
   SBDMlogSigMax : 1.0
@@ -223,6 +227,7 @@ core_coarse_structure_config :{
   SBDMhidden : 140 # ~half, but sufficient to be > total input dims
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 8
+  SBDMpositionBasis : "V3_RATIO" # see core_fine_structure_config
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-2
   SBDMlogSigMax : 1.0
