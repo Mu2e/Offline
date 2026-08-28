@@ -7,6 +7,46 @@ art modules own I/O, visualization, and histogram shipping.
 This package has no GeometryService or ProditionsService dependency, so the
 same fill path can run in the DAQ process.
 
+## Output file layout
+
+`TFileService` writes **one file per art job** and gives **each module its own
+directory**, named after the module label. That directory is automatic and not
+optional — it is what keeps two modules from colliding in one file.
+
+```text
+crvDQM.root
+  CRVDigiDQM/     h1_peakAdc, h1_tdc, dtVsFeb, crvDigiRates*, timing_fpga/ ...
+  CRVStatusDQM/   nRocHeaders, errorBitsVsRoc, linkLatency* ...
+```
+
+`outputTag` adds a *second* level inside the module directory. Use it only when
+the module books histograms of its own alongside the helper's, so the two owners
+stay separated:
+
+| Module | `outputTag` | Why |
+|---|---|---|
+| `CRVStatusDQMAnalyzer` | `""` | books nothing itself — a second level would just repeat the module label |
+| `CRVDigiDQMAnalyzer` | `""` | as above; set it if `fillSectorOccupancy` is on and you want the per-sector hists kept apart |
+| `CrvDQMcollector` | `"CRVDigiDQM"` | **keep** — the module also books `crvPEsMPV*`, `crvPedestals*`, `crvCalibConstants*` and the `crvMetaData` tree at module level |
+
+### Per-sector occupancy
+
+`crvDigisPerChannelAndEvent_CRVsector*` is owned by the helper. Sector names and the
+channel->sector map are geometry-derived, so the caller injects them via
+`BookSectorOccupancy(...)` and the helper stays free of GeometryService. A
+negative sector entry skips that channel, which is how `CrvDQMcollector` drops
+its Proditions `notConnected` channels without the helper knowing about
+Proditions. `WriteGraphs()` fills them from `nDigisOffline`.
+
+An empty `outputTag` books directly in the module directory. The module labels in
+`CRVDQM.fcl` are therefore `CRVDigiDQM` / `CRVStatusDQM`, so the directory name is
+the same either way and `crv_status_extractor.py --dir CRVStatusDQM` keeps working
+(it matches a top-level key or any key ending in `/CRVStatusDQM`).
+
+`CRVDQM.fcl` is the only FCL in this package: digi and status always run together
+in one job, into one file. Running one side alone is a matter of dropping the
+other module from `physics.ana`, not a separate config to keep in step.
+
 ## CRVDigiDQM
 
 `mu2e::CRVDigiDQM` books and fills every live digi histogram from
@@ -26,10 +66,10 @@ dqm.WriteGraphs();               // endJob (TGraph is not auto-saved)
 `CRVReco/src/CrvDQMcollector_module.cc` uses this helper for all per-event
 digi histograms and the CRVId rate maps (`crvDigiRates_ROC*`, 2D
 `crvDigiRates`, `crvDigisPerChannel`). The collector still owns reco/PE/
-coincidence products. Per-sector `crvDigisPerChannelAndEvent_CRVsector*`
-is filled in the collector (and optionally `CRVDigiDQMAnalyzer`) `endJob`
-from the helper's offline-channel counts; GeometryService supplies sector
-names. The helper itself has no GeometryService or Proditions dependency.
+coincidence products. Per-sector `crvDigisPerChannelAndEvent_CRVsector*` is
+owned by the helper; the modules only inject the geometry-derived sector names
+and channel->sector map. The helper itself has no GeometryService or Proditions
+dependency.
 
 `Config::fillCrvIdRates` (default true) books the two rate maps and the
 detector-wide 1D vs offline channel. `WriteGraphs()` scales those three by
@@ -37,20 +77,26 @@ detector-wide 1D vs offline channel. `WriteGraphs()` scales those three by
 
 ### Readout geography (`kppReadout`)
 
-The helper carries two channel-ID conventions, and `Config::kppReadout`
-(default true) picks which one is live. They are mutually exclusive — the
-detector is either cabled the KPP way or it is not.
+`Config::kppReadout` (default true) sizes the FEB axes. It selects detector
+size only — it does **no** ROC remapping.
 
-`kppReadout: true` is the KPP cabling.
-DTC link 3 is read out as ROC 4 and folded onto
-ROC 2, FEBs are numbered `(roc-1)*25 + feb`, and `h1_channels` /
-`h1_channelsLastEwt` / `h2_channels` are booked over the resulting 33 FEB
-slots.
+`kppReadout: true` sizes for KPP, the extracted CRV and the only one built so
+far: ROC 1-2, FEBs numbered `(roc-1)*25 + feb`, and `h1_channels` /
+`h1_channelsLastEwt` / `h2_channels` booked over 33 FEB slots. Every existing
+dataset wants this mode, which is why it is the default here and in
+`prolog_v12.fcl`.
 
-`kppReadout: false` is the full CRV, which does not exist yet. The ROC fold is turned off
-and the occupancy trio is not booked rather than resized, since 394 of 432 FEBs
-would fall past the 2112-bin axis and `crvDigisPerChannel` / `crvDigiRates`
-already cover the full detector correctly binned.
+`kppReadout: false` is the full CRV, which does not exist yet — a seam for when
+it does, not a mode anything runs in today. The occupancy trio is **not booked**
+rather than resized, since 394 of 432 FEBs would fall past the 2112-bin axis and
+`crvDigisPerChannel` / `crvDigiRates` already cover the full detector correctly
+binned.
+
+**No ROC fold here.** DTC link 3 is read out as ROC 4 and folded onto ROC 2 by
+`CrvDigisFromArtdaqFragmentsFEBII` (`useROC4asROC2`) at unpack time, so digis
+reach the helper with the correct ROC already. Re-folding would duplicate a
+DAQ-level mapping and silently mask an unpacker configured without it; instead a
+ROC 4 arriving here lands off-axis and raises the warning below.
 
 `h1_channelsLastEwt`, the rolling EWT-window occupancy, has no full-CRV
 equivalent and would need rebasing onto the CRVId convention. Irrelevant while
@@ -146,7 +192,7 @@ fills. `lastEventRocs()` supplies the five artdaq LastPoint scalars
 `WordCount`) with names `CRV.DTC<n>.ROC<m>.*`.
 
 ```text
-mu2e -c Offline/DQMHelpers/fcl/CRVStatusDQM.fcl -s <digi.art>
+mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <digi.art>
 ```
 
 A missing `CrvStatus` product is tolerated (empty collection). A missing
@@ -157,7 +203,7 @@ A missing `CrvStatus` product is tolerated (empty collection). A missing
 `CRVDigiDQMAnalyzer` is a thin wrapper:
 
 ```text
-mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s <digi.art>
+mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <digi.art>
 ```
 
 A missing `CrvStatus` product is tolerated (empty collection). A missing

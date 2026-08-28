@@ -1,8 +1,6 @@
-//
 // Standalone CRV digi DQM helper.
 //
 // Original Author: R. Mina
-//
 
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
 #include "Offline/DQMHelpers/inc/CRVCFTime.hh"
@@ -19,17 +17,12 @@
 
 namespace mu2e {
 
-uint8_t CRVDigiDQM::foldedROC(uint8_t roc) const
+int CRVDigiDQM::globalFebId(uint8_t roc, uint8_t feb)
 {
-  return (config_.kppReadout && roc == kFoldFromROC) ? kFoldToROC : roc;
+  return (static_cast<int>(roc) - 1) * kNFebSlotsPerROC + feb;
 }
 
-int CRVDigiDQM::globalFebId(uint8_t roc, uint8_t feb) const
-{
-  return (static_cast<int>(foldedROC(roc)) - 1) * kNFebSlotsPerROC + feb;
-}
-
-int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel) const
+int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel)
 {
   return globalFebId(roc, feb) * kNChanPerFEB + febChannel;
 }
@@ -226,7 +219,8 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
             << "others like it are hidden in the overflow bin of dtVsFeb"
             << (config_.kppReadout ? " and h2_channels" : "") << ". "
             << (config_.kppReadout
-                    ? "KPP is ROC 1-2; set kppReadout=false for a larger CRV."
+                    ? "KPP is ROC 1-2 -- check CrvDigisFromArtdaqFragmentsFEBII "
+                      "useROC4asROC2, or set kppReadout=false for a larger CRV."
                     : "Raise kNFebIdBins.")
             << " Reported once per job.";
       }
@@ -303,10 +297,9 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
       hitTimes[febId][fpga].push_back({absTime_ns, febChannel});
     }
 
-    const uint8_t rocId = foldedROC(roc);
-    activeROCs_.insert(rocId);
+    activeROCs_.insert(roc);
     activeFEBs_.insert(febId);
-    rocFEBMap_[rocId].insert(feb);
+    rocFEBMap_[roc].insert(feb);
   }
 
   nDigis_ += static_cast<std::size_t>(nDigis);
@@ -434,8 +427,7 @@ double medianExcluding(const std::vector<double>& sorted, std::size_t p)
 }
 } // namespace
 
-// Rolling EWT-window twin of the cumulative dtOutOfRangePerFeb pair, for the
-// online monitor: a slip that starts now is not diluted by earlier good data.
+// Rolling EWT window for the online monitor, so a recent slip is not diluted.
 void CRVDigiDQM::fillRollingDtOutOfRange(uint64_t ewt)
 {
   if (h_dtOutOfRangePerFebLastEwt_ == nullptr) {
@@ -647,11 +639,44 @@ int CRVDigiDQM::nDigisOffline(std::size_t channel) const
   return nDigisOffline_[channel];
 }
 
+void CRVDigiDQM::BookSectorOccupancy(const std::vector<std::string>& sectorNames,
+                                     const std::vector<int>& channelToSector,
+                                     int nBins, double lo, double hi)
+{
+  if (!dir_ || !h_sectorOccupancy_.empty()) {
+    return;
+  }
+  channelToSector_ = channelToSector;
+  h_sectorOccupancy_.reserve(sectorNames.size());
+  for (const auto& sector : sectorNames) {
+    const std::string name = "crvDigisPerChannelAndEvent_CRVsector" + sector;
+    h_sectorOccupancy_.push_back(
+        dir_->make<TH1F>(name.c_str(), name.c_str(), nBins, lo, hi));
+  }
+}
+
+void CRVDigiDQM::fillSectorOccupancy()
+{
+  if (h_sectorOccupancy_.empty() || nEvents_ == 0) {
+    return;
+  }
+  const float invN = 1.0f / static_cast<float>(nEvents_);
+  for (std::size_t channel = 0; channel < channelToSector_.size(); ++channel) {
+    const int sector = channelToSector_[channel];
+    if (sector < 0 ||
+        static_cast<std::size_t>(sector) >= h_sectorOccupancy_.size()) {
+      continue;
+    }
+    h_sectorOccupancy_[sector]->Fill(nDigisOffline(channel) * invN);
+  }
+}
+
 void CRVDigiDQM::WriteGraphs()
 {
   if (!booked_ || !dir_) {
     return;
   }
+  fillSectorOccupancy();
   scaleRateHists();
   persistGraph(g_digisVsEwt_);
   persistGraph(g_digisAvgVsEwt_);

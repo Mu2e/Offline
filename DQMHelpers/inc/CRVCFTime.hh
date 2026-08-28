@@ -1,15 +1,8 @@
 #ifndef DQMHelpers_inc_CRVCFTime_hh
 #define DQMHelpers_inc_CRVCFTime_hh
-//
-// Constant-fraction timing for CRV waveforms.
+// Constant-fraction timing for CRV waveforms. Returns the time within the
+// waveform in ns; the caller adds startTDC * digitizationPeriod.
 // Ported from otsdaq-mu2e-crv ArtModules/CrvCFTime.hh (mu2e/ots_ops).
-//
-// Baseline from first sample, amplitude = peak - baseline,
-// threshold = baseline + fraction * amplitude.
-// Linearly interpolates between samples on the leading edge.
-// Returns time within the waveform in ns (fractional_sample * digitizationPeriod).
-// Caller adds startTDC * digitizationPeriod for the absolute time.
-//
 
 #include <algorithm>
 #include <cmath>

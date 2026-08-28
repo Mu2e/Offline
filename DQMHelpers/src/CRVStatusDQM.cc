@@ -1,8 +1,6 @@
-//
 // Standalone CRV ROC-status DQM helper.
 //
 // Original Author: R. Mina
-//
 
 #include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
 

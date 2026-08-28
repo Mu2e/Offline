@@ -1,8 +1,5 @@
 //
-// Offline CRV DQM collector. Per-event digi histograms and CRVId rate maps
-// are filled by mu2e::CRVDigiDQM; this module still owns reco/PE/coincidence
-// products. Per-sector crvDigisPerChannelAndEvent_* is filled in endJob from
-// the helper's offline-channel counts (geometry supplies sector names).
+// A module to find clusters of coincidences of CRV pulses
 //
 // Original Author: Ralf Ehrlich
 
@@ -184,7 +181,7 @@ namespace mu2e
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
       fhicl::Atom<std::string> crvDigiDQMDir{Name("crvDigiDQMDir"), Comment("TFileService subdirectory for CRVDigiDQM histograms"), "CRVDigiDQM"};
       fhicl::Atom<bool> fillInclusiveDigiDQM{Name("fillInclusiveDigiDQM"), Comment("also fill BarId/SiPM/ADC in CRVDigiDQM"), true};
-      fhicl::Atom<bool> crvDigiDQMkppReadout{Name("crvDigiDQMkppReadout"), Comment("KPP cabling: fold ROC 4 onto ROC 2 and book h1/h2_channels"), true};
+      fhicl::Atom<bool> crvDigiDQMkppReadout{Name("crvDigiDQMkppReadout"), Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"), true};
 
       fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
       fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
@@ -247,7 +244,6 @@ namespace mu2e
     std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
 
-    std::vector<TH1F*> _histDigisPerChannelAndEvent;
     std::vector<TH1F*> _histPEsMPV;
     std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
@@ -317,16 +313,12 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
     auto &crvCounters = CRS->getAllCRSScintillatorBars();
-    const float invN = 1.0f/_totalEvents;
     for(size_t channel=0; channel<crvCounters.size()*CRVId::nChanPerBar; ++channel)
     {
       if(_notConnected.at(channel)) continue;
 
       CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
       int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
-
-      _histDigisPerChannelAndEvent.at(sectorNumber)->Fill(
-          _digiDQM.nDigisOffline(channel) * invN);
 
       float MPV=0;
       float FWHM=0;
@@ -369,7 +361,6 @@ namespace mu2e
     _histPEsMPVROC.reserve(CRVId::nROC);
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
-    _histDigisPerChannelAndEvent.reserve(crvSectors.size());
     _nCoincidences.resize(crvSectors.size());
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
     _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
@@ -397,9 +388,6 @@ namespace mu2e
       _histCalibConstants.emplace_back(tfs->make<TH1F>(Form("crvCalibConstants_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             Form("crvCalibConstants_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             _histCalibConstsBins,_histCalibConstsStart,_histCalibConstsEnd));
-      _histDigisPerChannelAndEvent.emplace_back(tfs->make<TH1F>(Form("crvDigisPerChannelAndEvent_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            Form("crvDigisPerChannelAndEvent_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            _histDigisBins,_histDigisStart,_histDigisEnd));
     }
     for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
     {
@@ -475,6 +463,22 @@ namespace mu2e
         _histPedestals.at(sectorNumber)->Fill(pedestal);
         _histCalibConstants.at(sectorNumber)->Fill(calibPulseArea);
       }
+      //helper owns crvDigisPerChannelAndEvent_*; -1 drops notConnected channels
+      std::vector<std::string> sectorNames;
+      auto &crvSectors = CRS->getCRSScintillatorShields();
+      sectorNames.reserve(crvSectors.size());
+      for(size_t i=0; i<crvSectors.size(); ++i) sectorNames.emplace_back(crvSectors.at(i).name(""));
+
+      std::vector<int> channelToSector(crvCounters.size()*CRVId::nChanPerBar, -1);
+      for(size_t channel=0; channel<channelToSector.size(); ++channel)
+      {
+        if(_notConnected.at(channel)) continue;
+        CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
+        channelToSector.at(channel)=CRS->getBar(barIndex).id().getShieldNumber();
+      }
+      _digiDQM.BookSectorOccupancy(sectorNames, channelToSector,
+                                   _histDigisBins, _histDigisStart, _histDigisEnd);
+
       _firstRunSubrun=std::pair<int,int>(event.run(),event.subRun());
     }
     _lastRunSubrun=std::pair<int,int>(event.run(),event.subRun());

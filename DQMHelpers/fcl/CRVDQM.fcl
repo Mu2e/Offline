@@ -1,17 +1,11 @@
-# Thin offline wrapper around mu2e::CRVDigiDQM.
-# fillSectorOccupancy is false: no CosmicRayShield lookup. Enable it only
-# when GeometryService has a CRV geometry.
+# CRV DQM: digi and ROC-status histograms in one output file.
 #
-# Usage:
-#   mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s <input-art-file> -n <nevents>
-#
-# Change output filename:
-#   mu2e -c Offline/DQMHelpers/fcl/CRVDigiDQM.fcl -s input.art -T crvDigiDQM.root
+#   mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <input.art> -n <nevents>
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
 
-process_name : CRVDigiDQM
+process_name : CRVDQM
 
 source : {
   module_type : RootInput
@@ -21,17 +15,18 @@ source : {
 services : {
   message : @local::default_message
   TFileService : {
-    fileName : "crvDigiDQM.root"
+    fileName : "crvDQM.root"
   }
 }
 
 physics : {
   analyzers : {
-    crvDigiDQM : {
+    # module label == output directory name
+    CRVDigiDQM : {
       module_type          : CRVDigiDQMAnalyzer
       crvDigiTag           : "CrvDigi"
       crvStatusTag         : "CrvDigi"
-      outputTag            : "CRVDigiDQM"
+      outputTag            : ""
       diagLevel            : 1
       nBinsDigisPerEvt     : 200
       maxDigisPerEvt       : 4000
@@ -50,12 +45,28 @@ physics : {
       channelsWindowEwts   : 50000
       fillInclusive        : true
       fillCrvIdRates       : true
-      # KPP cabling; false only for a full CRV, which does not exist yet
+      # KPP FEB-axis sizing (ROC 1-2); false only for a full CRV
       kppReadout           : true
       fillSectorOccupancy  : false
     }
+
+    CRVStatusDQM : {
+      module_type       : CRVStatusDQMAnalyzer
+      crvStatusTag      : "CrvDigi"
+      crvDaqErrorTag    : "CrvDigi"
+      outputTag         : ""
+      diagLevel         : 1
+      nBinsLatency      : 1024
+      maxLinkLatency    : 4096.0
+      nBinsTriggerCount : 256
+      maxTriggerCount   : 65535.0
+      nBinsWordCount    : 256
+      maxWordCount      : 65535.0
+      nBinsEwtMismatch  : 201
+      maxEwtMismatch    : 100.0
+    }
   }
 
-  ana : [ crvDigiDQM ]
+  ana : [ CRVDigiDQM, CRVStatusDQM ]
   end_paths : [ ana ]
 }

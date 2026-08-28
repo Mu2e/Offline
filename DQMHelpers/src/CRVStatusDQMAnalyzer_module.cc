@@ -1,8 +1,6 @@
-//
 // Thin art analyzer that constructs, books, and fills CRVStatusDQM.
 //
 // Original Author: R. Mina
-//
 
 #include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
@@ -13,6 +11,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/SubRun.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
@@ -39,7 +38,9 @@ public:
         Comment("CRV DAQ-error producer"),
         art::InputTag{"CrvDigi"}};
     fhicl::Atom<std::string> outputTag{
-        Name("outputTag"), Comment("TFileService subdirectory"), "CRVStatusDQM"};
+        Name("outputTag"),
+        Comment("TFileService subdirectory; empty books in the module directory"),
+        ""};
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diagnostic level"), 0};
 
     fhicl::Atom<int> nBinsLatency{
@@ -105,7 +106,13 @@ CRVStatusDQMAnalyzer::CRVStatusDQMAnalyzer(const Parameters& conf) :
 void CRVStatusDQMAnalyzer::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
-  dqm_.Book(tfs->mkdir(outputTag_));
+  if (outputTag_.empty()) {
+    // TFileService already gives each module its own directory; book into it.
+    art::TFileDirectory dir = *tfs;
+    dqm_.Book(dir);
+  } else {
+    dqm_.Book(tfs->mkdir(outputTag_));
+  }
 }
 
 void CRVStatusDQMAnalyzer::analyze(const art::Event& event)

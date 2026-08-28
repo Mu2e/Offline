@@ -1,13 +1,8 @@
 #ifndef DQMHelpers_inc_CRVStatusDQM_hh
 #define DQMHelpers_inc_CRVStatusDQM_hh
-//
-// Standalone CRV ROC-status DQM helper. Books and fills firmware-health
-// histograms used by both the otsdaq online monitor (CrvStatusMetrics) and
-// the offline CRVStatusDQMAnalyzer. Does not fold roc==4 onto roc==2:
-// status is per DTC link.
-//
+// Standalone CRV ROC-status DQM helper: firmware-health histograms for the
+// otsdaq online monitor and CRVStatusDQMAnalyzer. Status is per DTC link.
 // Original Author: R. Mina
-//
 
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
@@ -73,24 +68,25 @@ public:
   void EndSubRun(int run, int subrun);
   void WriteGraphs();
 
-  TH1F* nRocHeaders() const { return h_nRocHeaders_; }
-  TH1F* activeFebCount() const { return h_activeFebCount_; }
-  TH1F* triggerCount() const { return h_triggerCount_; }
-  TH1F* wordCount() const { return h_wordCount_; }
-  TH1F* linkLatency() const { return h_linkLatency_; }
-  TH1F* errorBits() const { return h_errorBits_; }
-  TH2F* errorBitsVsRoc() const { return h_errorBitsVsRoc_; }
-  TH1F* portFlags() const { return h_portFlags_; }
-  TH1F* rocCensus() const { return h_rocCensus_; }
-  TH1F* eventHasError() const { return h_eventHasError_; }
-  TH1F* eventHasDaqError() const { return h_eventHasDaqError_; }
-  TH1F* daqErrorCode() const { return h_daqErrorCode_; }
-  TH1F* ewtMismatch() const { return h_ewtMismatch_; }
-  TH1F* errorsPerSubrun() const { return h_errorsPerSubrun_; }
-  TH1F* meanLatencyPerSubrun() const { return h_meanLatencyPerSubrun_; }
-  TGraph* errorsVsSubrun() const { return g_errorsVsSubrun_; }
-  TGraph* meanLatencyVsSubrun() const { return g_meanLatencyVsSubrun_; }
+  TH1F* nRocHeaders() const { return h_nRocHeaders_; }  //ROC headers per event
+  TH1F* activeFebCount() const { return h_activeFebCount_; }  //active FEBs per ROC header
+  TH1F* triggerCount() const { return h_triggerCount_; }  //ROC TriggerCount word
+  TH1F* wordCount() const { return h_wordCount_; }  //ROC ControllerEventWordCount word
+  TH1F* linkLatency() const { return h_linkLatency_; }  //DTC link latency, all links
+  TH1F* errorBits() const { return h_errorBits_; }  //firmware error bits 24-31, labelled
+  TH2F* errorBitsVsRoc() const { return h_errorBitsVsRoc_; }  //those bits vs dtcId*6+linkId
+  TH1F* portFlags() const { return h_portFlags_; }  //per-port problem flags, bits 0-23
+  TH1F* rocCensus() const { return h_rocCensus_; }  //ROC headers seen per dtcId*6+linkId
+  TH1F* eventHasError() const { return h_eventHasError_; }  //0/1 per event: any firmware bit
+  TH1F* eventHasDaqError() const { return h_eventHasDaqError_; }  //0/1 per event: unpack error
+  TH1F* daqErrorCode() const { return h_daqErrorCode_; }  //CrvDAQerror code, labelled
+  TH1F* ewtMismatch() const { return h_ewtMismatch_; }  //ROC EWT minus DTC EWT
+  TH1F* errorsPerSubrun() const { return h_errorsPerSubrun_; }  //error events in a subrun
+  TH1F* meanLatencyPerSubrun() const { return h_meanLatencyPerSubrun_; }  //mean latency in a subrun
+  TGraph* errorsVsSubrun() const { return g_errorsVsSubrun_; }  //error events vs subrun
+  TGraph* meanLatencyVsSubrun() const { return g_meanLatencyVsSubrun_; }  //mean latency vs subrun
 
+  //link latency, one hist per (dtcId, linkId)
   const std::map<std::pair<uint8_t, uint8_t>, TH1F*>& linkLatencyByRoc() const
   {
     return h_linkLatencyByRoc_;

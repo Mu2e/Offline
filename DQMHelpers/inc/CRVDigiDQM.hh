@@ -1,32 +1,8 @@
 #ifndef DQMHelpers_inc_CRVDigiDQM_hh
 #define DQMHelpers_inc_CRVDigiDQM_hh
-//
-// Standalone CRV digi DQM helper. Books and fills the histograms used by both
-// the otsdaq online monitor and offline DQM art modules. No GeometryService.
-//
-// Two channel-ID conventions, selected by Config::kppReadout (never both):
-//   kppReadout=true (default, and the only mode any existing data needs) -
-//     KPP occupancy (h1_channels / h2_channels):
-//     if (roc == 4) roc = 2;                 // DTC link 3 folded onto ROC 2
-//     globalFebId     = (roc-1)*25 + feb;    // 25 FEB slots per ROC
-//     globalChannelId = globalFebId*64 + febChannel;  // 2112 occupancy bins
-//   kppReadout=false - full CRV, which does not exist yet. No fold, and the
-//     occupancy pair is not booked: with the fold on, ROC 2 and ROC 4 would
-//     merge, and 394 of 432 FEBs fall past the 2112-bin axis. crvDigisPerChannel
-//     and crvDigiRates below already cover the full detector correctly binned.
-//   CRVId rate maps (crvDigiRates_ROC*, crvDigiRates, crvDigisPerChannel):
-//     raw GetROC()/GetFEB()/GetFEBchannel() (no fold; CRVId 24 FEBs/ROC).
-//     Offline channel = barIndex*4 + SiPM. Scaled by 1/nEvents in WriteGraphs.
-//     Per-sector crvDigisPerChannelAndEvent_* is filled by the art module.
-//
-// Inter-FEB sync (dtVsFeb): each FEB's first CF hit time is compared against the
-// median of the other FEBs' first hit times in the same event, so a FEB whose
-// clock has slipped shows up as a displaced vertical stripe at its globalFebId.
-// This replaces the former per-FEB-pair dt_febXX_febYY histograms, which encoded
-// the same N offsets in O(N^2) histograms. Intra-FEB FPGA timing is unchanged.
-//
+// Standalone CRV digi DQM helper: books and fills the histograms used by the
+// otsdaq online monitor and the offline DQM modules. No GeometryService.
 // Original Author: R. Mina
-//
 
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
@@ -40,6 +16,7 @@
 #include "TGraph.h"
 
 #include <cstdint>
+#include <string>
 #include <deque>
 #include <map>
 #include <optional>
@@ -74,8 +51,8 @@ public:
     bool fillInclusive{true};
     // CRVId-indexed rate maps and offline-channel occupancy (no GeometryService).
     bool fillCrvIdRates{true};
-    // Single-DTC KPP cabling: fold ROC 4 onto ROC 2 and book the 33-slot
-    // occupancy pair. False for full CRV; see the header comment above.
+    // KPP FEB-axis sizing: book the 33-slot occupancy pair and size the FEB
+    // axes for ROC 1-2. False for full CRV; see the header comment above.
     bool kppReadout{true};
   };
 
@@ -84,8 +61,6 @@ public:
   static constexpr int kNChanPerFEB = 64;
   static constexpr int kNGlobalChannelBins = 2112;
   static constexpr int kNGlobalFebBins = 32;
-  static constexpr uint8_t kFoldFromROC = 4;
-  static constexpr uint8_t kFoldToROC = 2;
 
   // Full-CRV globalFebId range, used only when kppReadout is false.
   static constexpr int kNFebIdBins = kNFebSlotsPerROC * static_cast<int>(CRVId::nROC);
@@ -101,51 +76,59 @@ public:
   static constexpr std::size_t kGraphPoints = 10000;
   static constexpr double kEwtXRange = 1000000;
 
-  // Not static: the fold and the FEB stride depend on Config::kppReadout.
-  uint8_t foldedROC(uint8_t roc) const;
-  int globalFebId(uint8_t roc, uint8_t feb) const;
-  int globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel) const;
+  static int globalFebId(uint8_t roc, uint8_t feb);
+  static int globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel);
 
   explicit CRVDigiDQM(const Config& config);
 
   void Book(art::TFileDirectory dir);
+  // Caller injects the geometry-derived sector map so the helper needs no
+  // GeometryService. Negative sector skips the channel. Call once after Book().
+  void BookSectorOccupancy(const std::vector<std::string>& sectorNames,
+                           const std::vector<int>& channelToSector,
+                           int nBins, double lo, double hi);
+  //digis/event per channel, one hist per CRV sector
+  const std::vector<TH1F*>& sectorOccupancy() const { return h_sectorOccupancy_; }
   void Fill(const CrvDigiCollection& crvDigis,
             const CrvStatusCollection& crvStatus);
   void WriteGraphs();
 
-  TH1F* h1_digisPerEvt() const { return h1_digisPerEvt_; }
-  TH1F* h1_peakAdc() const { return h1_peakAdc_; }
-  TH1F* h1_tdc() const { return h1_tdc_; }
-  TH1F* h1_channels() const { return h1_channels_; }
-  TH1F* h1_channelsLastEwt() const { return h1_channelsLastEwt_; }
-  TH2F* h2_channels() const { return h2_channels_; }
-  TGraph* g_digisVsEwt() const { return g_digisVsEwt_; }
-  TGraph* g_digisAvgVsEwt() const { return g_digisAvgVsEwt_; }
+  TH1F* h1_digisPerEvt() const { return h1_digisPerEvt_; }  //digis per event
+  TH1F* h1_peakAdc() const { return h1_peakAdc_; }  //largest ADC sample of a digi
+  TH1F* h1_tdc() const { return h1_tdc_; }  //digi start time in 12.5ns ticks
+  TH1F* h1_channels() const { return h1_channels_; }  //occupancy vs global channel ID
+  TH1F* h1_channelsLastEwt() const { return h1_channelsLastEwt_; }  //same, rolling EWT window
+  TH2F* h2_channels() const { return h2_channels_; }  //FEB vs FEB channel hit map
+  TGraph* g_digisVsEwt() const { return g_digisVsEwt_; }  //digis in the last EWTs vs EWT
+  TGraph* g_digisAvgVsEwt() const { return g_digisAvgVsEwt_; }  //mean digis/event vs EWT
 
-  TH1D* BarId() const { return hBarId_; }
-  TH1D* SiPM() const { return hSiPM_; }
-  TH1D* ADC() const { return hADC_; }
+  TH1D* BarId() const { return hBarId_; }  //ValCrvDigi: scintillator bar index
+  TH1D* SiPM() const { return hSiPM_; }  //ValCrvDigi: SiPM number within the bar
+  TH1D* ADC() const { return hADC_; }  //ValCrvDigi: every ADC sample
 
-  TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }
-  TH2F* crvDigiRates() const { return h_crvDigiRates_; }
-  const std::vector<TH1F*>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }
+  //CRVId rate maps, scaled to digis/event in WriteGraphs
+  TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }  //vs offline channel bar*4+SiPM
+  TH2F* crvDigiRates() const { return h_crvDigiRates_; }  //FEB channel vs FEB port
+  const std::vector<TH1F*>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }  //one per ROC
   int nDigisOffline(std::size_t channel) const;
   std::size_t nOfflineChannels() const { return nDigisOffline_.size(); }
   bool ratesScaled() const { return ratesScaled_; }
 
+  //inter-FEB sync: first-hit time minus the median of the other FEBs, per FEB
   TH2F* dtVsFeb() const { return h2_dtVsFeb_; }
 
-  // Per-FEB desync counters: a FEB whose clock has slipped stands above the
-  // others. Cumulative for offline, rolling EWT window for the online monitor.
-  TH1F* dtOutOfRangePerFeb() const { return h_dtOutOfRangePerFeb_; }
-  TH1F* dtOutOfRangePerFebLastEwt() const
+  //a FEB whose clock has slipped stands above the others in these
+  TH1F* dtOutOfRangePerFeb() const { return h_dtOutOfRangePerFeb_; }  //events with |dt| off scale
+  TH1F* dtOutOfRangePerFebLastEwt() const  //same, rolling EWT window
   {
     return h_dtOutOfRangePerFebLastEwt_;
   }
+  //intra-FEB timing, keyed (globalFebId, fpgaA*4+fpgaB)
   const std::map<std::pair<int, uint8_t>, TH1F*>& dtFpgaPairs() const
   {
     return h1_dtFpgaPairs_;
   }
+  //ROC MicroBunchStatus vs EWT, one graph per DTC link
   const std::map<uint8_t, TGraph*>& ubStatusVsEwt() const
   {
     return g_ubStatusVsEwt_;
@@ -186,6 +169,7 @@ private:
   void persistGraph(TGraph* g);
   void scaleRateHists();
   void fillRollingDtOutOfRange(uint64_t ewt);
+  void fillSectorOccupancy();
 
   Config config_;
   int nBinsDt_{400};
@@ -215,6 +199,8 @@ private:
   bool ratesScaled_{false};
 
   TH2F* h2_dtVsFeb_{nullptr};
+  std::vector<TH1F*> h_sectorOccupancy_;
+  std::vector<int> channelToSector_;
   TH1F* h_dtOutOfRangePerFeb_{nullptr};
   TH1F* h_dtOutOfRangePerFebLastEwt_{nullptr};
   std::map<std::pair<int, uint8_t>, TH1F*> h1_dtFpgaPairs_;

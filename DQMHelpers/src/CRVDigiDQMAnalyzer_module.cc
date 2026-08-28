@@ -1,11 +1,6 @@
-//
 // Thin art analyzer that constructs, books, and fills CRVDigiDQM.
-// When fillSectorOccupancy is true (requires GeometryService), endJob
-// fills crvDigisPerChannelAndEvent_CRVsector* from the helper's offline-
-// channel counts using CosmicRayShield sector names.
 //
 // Original Author: R. Mina
-//
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -21,6 +16,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
@@ -51,7 +47,9 @@ public:
         Comment("CRV status producer"),
         art::InputTag{"CrvDigi"}};
     fhicl::Atom<std::string> outputTag{
-        Name("outputTag"), Comment("TFileService subdirectory"), "CRVDigiDQM"};
+        Name("outputTag"),
+        Comment("TFileService subdirectory; empty books in the module directory"),
+        ""};
     fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("Diagnostic level"), 0};
 
     fhicl::Atom<int> nBinsDigisPerEvt{
@@ -94,7 +92,7 @@ public:
         true};
     fhicl::Atom<bool> kppReadout{
         Name("kppReadout"),
-        Comment("KPP cabling: fold ROC 4 onto ROC 2 and book h1/h2_channels"),
+        Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"),
         true};
     fhicl::Atom<bool> fillSectorOccupancy{
         Name("fillSectorOccupancy"),
@@ -135,7 +133,7 @@ private:
   double histDigisStart_;
   double histDigisEnd_;
   CRVDigiDQM dqm_;
-  std::vector<TH1F*> histDigisPerSector_;
+  bool sectorMapSent_{false};
 };
 
 CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
@@ -179,27 +177,40 @@ CRVDigiDQMAnalyzer::CRVDigiDQMAnalyzer(const Parameters& conf) :
 void CRVDigiDQMAnalyzer::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
-  dqm_.Book(tfs->mkdir(outputTag_));
+  if (outputTag_.empty()) {
+    // TFileService already gives each module its own directory; book into it.
+    art::TFileDirectory dir = *tfs;
+    dqm_.Book(dir);
+  } else {
+    dqm_.Book(tfs->mkdir(outputTag_));
+  }
 }
 
 void CRVDigiDQMAnalyzer::beginRun(const art::Run&)
 {
-  if (!fillSectorOccupancy_ || !histDigisPerSector_.empty()) {
+  if (!fillSectorOccupancy_ || sectorMapSent_) {
     return;
   }
+  sectorMapSent_ = true;
 
   GeomHandle<CosmicRayShield> CRS;
   auto const& crvSectors = CRS->getCRSScintillatorShields();
-  histDigisPerSector_.reserve(crvSectors.size());
-
-  art::ServiceHandle<art::TFileService> tfs;
+  std::vector<std::string> sectorNames;
+  sectorNames.reserve(crvSectors.size());
   for (std::size_t i = 0; i < crvSectors.size(); ++i) {
-    const std::string name =
-        Form("crvDigisPerChannelAndEvent_CRVsector%s",
-             crvSectors.at(i).name("").c_str());
-    histDigisPerSector_.emplace_back(tfs->make<TH1F>(
-        name.c_str(), name.c_str(), histDigisBins_, histDigisStart_, histDigisEnd_));
+    sectorNames.emplace_back(crvSectors.at(i).name(""));
   }
+
+  auto const& crvCounters = CRS->getAllCRSScintillatorBars();
+  std::vector<int> channelToSector(crvCounters.size() * CRVId::nChanPerBar, -1);
+  for (std::size_t channel = 0; channel < channelToSector.size(); ++channel) {
+    CRSScintillatorBarIndex barIndex(
+        static_cast<int>(channel / CRVId::nChanPerBar));
+    channelToSector[channel] = CRS->getBar(barIndex).id().getShieldNumber();
+  }
+
+  dqm_.BookSectorOccupancy(sectorNames, channelToSector,
+                           histDigisBins_, histDigisStart_, histDigisEnd_);
 }
 
 void CRVDigiDQMAnalyzer::analyze(const art::Event& event)
@@ -228,24 +239,6 @@ void CRVDigiDQMAnalyzer::analyze(const art::Event& event)
 void CRVDigiDQMAnalyzer::endJob()
 {
   dqm_.WriteGraphs();
-
-  if (fillSectorOccupancy_ && !histDigisPerSector_.empty() && dqm_.nEvents() > 0) {
-    GeomHandle<CosmicRayShield> CRS;
-    auto const& crvCounters = CRS->getAllCRSScintillatorBars();
-    const float invN = 1.0f / static_cast<float>(dqm_.nEvents());
-    const std::size_t nChan = crvCounters.size() * CRVId::nChanPerBar;
-    for (std::size_t channel = 0; channel < nChan; ++channel) {
-      CRSScintillatorBarIndex barIndex(
-          static_cast<int>(channel / CRVId::nChanPerBar));
-      const int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
-      if (sectorNumber < 0 ||
-          static_cast<std::size_t>(sectorNumber) >= histDigisPerSector_.size()) {
-        continue;
-      }
-      histDigisPerSector_.at(static_cast<std::size_t>(sectorNumber))
-          ->Fill(dqm_.nDigisOffline(channel) * invN);
-    }
-  }
 
   if (diagLevel_ > 0) {
     std::cout << "[CRVDigiDQMAnalyzer] Total events: " << dqm_.nEvents()
