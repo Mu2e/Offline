@@ -5,7 +5,8 @@
 // stage-1-method decisions — is already recorded in
 //   etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
 // So when only the TRAINING PLAN changes (curriculum, batch schedule, architecture, ...), the fcls
-// can be regenerated straight from that summary.
+// can be regenerated straight from that summary. Takes a LIST of summaries, so one job re-emits
+// every source of a campaign at once; each is independent and carries its own data source.
 //
 // The summary is strictly an INPUT here: this module never rewrites it. Only the hit-counting job
 // has the information to produce one, and the recorded TrainingMode / Stage1Method are taken as
@@ -34,6 +35,7 @@
 
 // fhicl includes
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/ParameterSet.h"
 
 // message handling
@@ -51,10 +53,11 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<std::string> hitSummaryFile{Name("hitSummaryFile"),
-          Comment("Existing hit summary (.txt) written by VDResamplerConfigure. Read-only: this "
-                  "module never rewrites it. Its NAME supplies versionTag, VirtualDetectorID, "
-                  "dataSourceTag and runNumber, so it must keep the "
+        fhicl::Sequence<std::string> hitSummaryFiles{Name("hitSummaryFiles"),
+          Comment("Existing hit summaries (.txt) written by VDResamplerConfigure, one per data "
+                  "source; all of them are processed in a single job. Read-only: this module never "
+                  "rewrites them. Each NAME supplies that source's versionTag, VirtualDetectorID, "
+                  "dataSourceTag and runNumber, so every entry must keep the "
                   "etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt "
                   "convention.")};
         fhicl::Atom<std::string> trainingPlanFile{Name("trainingPlanFile"),
@@ -75,7 +78,10 @@ namespace mu2e {
       void analyze(const art::Event&) override {}   // no ART input; everything happens in endJob()
       void endJob() override;
     private:
-      std::string hitSummaryFile;
+      // Re-emit every particle in one summary. Returns the number of fcls written.
+      std::size_t reconfigureSource(const std::string& hitSummaryFile);
+
+      std::vector<std::string> hitSummaryFiles;
       std::string trainingPlanFile;
       std::string VDResamplerDir;
       std::string fclDir;
@@ -85,10 +91,14 @@ namespace mu2e {
 
   VDResamplerReconfigure::VDResamplerReconfigure(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    hitSummaryFile(conf().hitSummaryFile()),
+    hitSummaryFiles(conf().hitSummaryFiles()),
     trainingPlanFile(conf().trainingPlanFile()),
     VDResamplerDir(conf().VDResamplerDir()),
     fclDir(conf().fclDir()) {
+
+    if (hitSummaryFiles.empty())
+      throw cet::exception("VDResamplerReconfigure")
+        << "hitSummaryFiles is empty; there is nothing to re-emit.";
 
     // Load and validate the training plan up front, so a bad plan fails before any file is written.
     if (trainingPlanFile.empty())
@@ -103,6 +113,19 @@ namespace mu2e {
   }
 
   void VDResamplerReconfigure::endJob() {
+    // Each summary is independent: it carries its own data source, and versionTag is resolved
+    // per-source, so the emit context is rebuilt for every one. A malformed summary aborts the
+    // whole job rather than leaving a half-regenerated set of fcls behind.
+    std::size_t totalFcls = 0;
+    for (const std::string& hitSummaryFile : hitSummaryFiles)
+      totalFcls += reconfigureSource(hitSummaryFile);
+
+    mf::LogInfo("VDResamplerReconfigure")
+      << "Re-emitted " << totalFcls << " training fcl(s) from " << hitSummaryFiles.size()
+      << " hit summary file(s) using plan " << trainingPlanFile << ".";
+  }
+
+  std::size_t VDResamplerReconfigure::reconfigureSource(const std::string& hitSummaryFile) {
     // Recover (versionTag, VD id, dataSourceTag, runNumber) from the summary FILE NAME — the same
     // four components VDResamplerGenerateMix parses back out of it. Taking them from the name
     // rather than from the plan is what keeps the regenerated fcls pointing at the very models this
@@ -167,6 +190,8 @@ namespace mu2e {
         << "  pdg " << row.pdgId << " (" << row.hitCount << " hits, "
         << (row.useTwoStage ? "two-stage" : "all-at-once") << "): " << fclFile;
     }
+
+    return rows.size();
   }
 
 }; // end namespace mu2e

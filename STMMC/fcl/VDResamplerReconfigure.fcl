@@ -1,0 +1,50 @@
+# Re-emit the VDResampler training fcls from EXISTING hit summaries, without re-running over the
+# data. Use this after editing VDResamplerTrainingPlan.fcl: the per-particle hit counts and the
+# training-mode / stage-1-method decisions are already recorded in the summaries, so the expensive
+# pass VDResamplerConfigure makes over the dataset does not have to be repeated.
+#
+# The summaries are read-only here. Their FILE NAMES supply each source's versionTag,
+# VirtualDetectorID, dataSourceTag and runNumber, so they must keep the convention
+#   etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
+# and the VD id must match common_training_config.VirtualDetectorID in the plan.
+#
+# Original author: Yongyi Wu
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: VDResamplerReconfigure
+
+# No ART input: the module reads the hit summaries directly and works in endJob().
+source : {
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services : @local::Services.Sim
+
+physics : {
+  analyzers : {
+    VDResamplerReconfigure : {
+      module_type : VDResamplerReconfigure
+      # One summary per data source; all are processed in this single job.
+      hitSummaryFiles : [
+        "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000000.txt",
+        "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025ai.001430_00000001.txt",
+        "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025au.001430_00000002.txt",
+        "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025av.001430_00000003.txt"
+      ]
+      trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
+      # Where the training jobs will write their model (.dat) files. These paths are baked into
+      # the generated fcls, so this must match the training jobs' output area. Empty = no prefix.
+      VDResamplerDir : ""
+      # Where to write the generated fcls. Empty falls back to VDResamplerDir, and if that is empty
+      # too, to this job's working directory.
+      fclDir : ""
+    }
+  }
+  reconfigurePath : [VDResamplerReconfigure]
+  end_paths : [reconfigurePath]
+}
+
+# Keep the full per-particle re-emission report.
+services.message.destinations.log.categories.default.limit : -1
