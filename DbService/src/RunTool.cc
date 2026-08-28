@@ -116,11 +116,7 @@ RunInfo::RunVec RunTool::listRuns(const RunSelect& runsel, bool configs,
   select = "run_number,comment,create_time,run_type_id";
   table = "online.run";
   order = "-run_number";
-  // Bypass the web cache for this query. It is unfiltered (no WHERE), so the
-  // whole table is cached as one blob on the server and refreshed on its own
-  // schedule -- runs inserted since the last refresh are silently absent
-  // from it, which makes them invisible to every selection (-r, --last,
-  // plain listing) even though they're already in the database.
+  // Bypass the web cache for this query so we always get the latest runs
   _reader.setUseCache(false);
   int rc = _reader.query(tcsv, select, table, where, order);
   _reader.setUseCache(true);
