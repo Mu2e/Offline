@@ -34,7 +34,8 @@ DbSet::EIoV DbSet::find(int tid, uint32_t run, uint32_t subrun) const {
       int dr = run - r.iov().endRun();
       int ds = subrun + DbIoV::maxSubrun() - r.iov().endSubrun();
       if (dr == 0) ds = subrun - r.iov().endSubrun();
-      if (dr > 0 && ds > 0 && (dr < brr || (dr == brr && ds < bsr))) {
+      if ( (dr > 0 || ( dr == 0 && ds > 0)) &&
+           (dr < brr || (dr == brr && ds < bsr)) ) {
         brr = dr;
         bsr = ds;
         br = r;
