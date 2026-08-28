@@ -1,0 +1,453 @@
+#ifndef STMMC_VDResamplerConfigureCommon_hh
+#define STMMC_VDResamplerConfigureCommon_hh
+//
+// Shared, ART-free half of the VDResampler training-configuration step: resolve a particle's entry
+// from the training plan and emit one self-contained training fcl per (source, particle).
+//
+// Two modules need this and reach it from opposite directions:
+//   * VDResamplerConfigure counts hits in an ART event loop, decides per particle whether to train
+//     two-stage, WRITES the hit-summary .txt, and emits the fcls.
+//   * a re-emit job starts from an existing hit summary (pdgId / hitCount / TrainingMode /
+//     Stage1Method already decided and recorded) and only regenerates the fcls, e.g. after the
+//     training plan has been edited. It does NOT rewrite the summary — that file is its input, and
+//     only the hit-counting job has the information to produce one.
+// So the summary reader/writer is NOT here: writing belongs to VDResamplerConfigure alone. What is
+// shared is plan resolution, the two-stage / stage1Method decision, and fcl emission.
+//
+// Keeping ONE implementation matters: the generated file names are parsed back by
+// VDResamplerGenerateMix via VDResamplerNameHelper, so two independent emitters would silently
+// drift apart and break the generate side.
+//
+// Yongyi Wu, Aug. 2026
+//
+
+// stdlib includes
+#include <algorithm>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
+
+// exception handling
+#include "cetlib_except/exception.h"
+
+// fhicl includes
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/exception.h"
+
+// message handling
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// Offline includes
+#include "Offline/STMMC/inc/VDResamplerNameHelper.hh"      // modelFileName / sanitizeTag / dataSourceNames
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"   // parseStage1Method (validation)
+
+namespace mu2e {
+  namespace VDResampler {
+
+    // Fallback only: two-stage training needs enough events to fit both stages, so when a plan
+    // entry does NOT set SBDMuseTwoStageTraining we default to two-stage iff nHits > this. When the
+    // plan sets SBDMuseTwoStageTraining explicitly, that value wins and this is not consulted.
+    constexpr int kTwoStageTrainingHitThreshold = 10000;
+
+    // Sentinels in the hit-summary columns: TrainingMode for a particle below the training
+    // threshold, and Stage1Method for any single-stage row.
+    inline const std::string& kNotTrainedMode() { static const std::string s = "*"; return s; }
+    inline const std::string& kNoStage1Method() { static const std::string s = "-"; return s; }
+
+    // Everything the emitter needs beyond the per-particle numbers. Populated from the training
+    // plan's common_training_config (plus the job's own directories) by the calling module.
+    struct EmitContext {
+      std::string versionTag;         // this source's tag; embedded in every generated file name
+      std::string dataSourceTag;      // EleBeam / MuBeam / TargetStops1809 / Neutrals
+      std::string VDResamplerDir;     // model output directory ("" = cwd)
+      std::string fclDir;             // generated-fcl directory ("" = fall back to VDResamplerDir)
+      std::string treeName;           // TreeName for the ROOT training path
+      std::string inputRootFile;      // may be empty / @nil -> placeholder + warning in the fcl
+      bool inputRootFileSet = false;
+      std::string stepPointMCsTag;    // ART-source tags (used only when !trainingFromROOT)
+      std::string simParticlemvTag;
+      unsigned long virtualDetectorID = 0;
+      double VDz0 = 0.0;
+      double VDr = 0.0;
+      int runNumber = 0;
+      bool trainingFromROOT = true;
+    };
+
+    namespace detail {
+
+      // Directory prefix for a generated file name. An empty directory means "no prefix", so the
+      // file lands in the current working directory — on the grid, the job's local sandbox. A
+      // non-empty directory gets exactly one trailing '/', whether or not it already had one.
+      inline std::string dirPrefix(const std::string& dir) {
+        if (dir.empty()) return dir;
+        return (dir.back() == '/') ? dir : dir + "/";
+      }
+
+      // fhicl key for a pdgId: negatives can't start with '-', so use 'm<abs>'
+      // (matching the model-file token convention), positives use the bare number.
+      inline std::string pdgPlanKey(int pdgId) {
+        return "pdg_" + std::string(pdgId < 0 ? "m" : "") + std::to_string(std::abs(pdgId));
+      }
+
+      // Plan-entry keys that are NOT VDResamplerTrain(FromRoot) parameters and so must not be
+      // copied into the generated fcl. Only stage1Method is a generate-side / summary field;
+      // every other key in a resolved entry (including SBDMuseTwoStageTraining and
+      // SBDMmomentumBasis) is a training parameter that passes straight through.
+      inline bool isPassThroughTrainingKey(const std::string& key) {
+        return key != "stage1Method";
+      }
+
+      // Preferred emission order for the pass-through training keys. fhicl's ParameterSet does not
+      // preserve the plan file's textual key order (get_names() is sorted, and @table:: expansion
+      // scrambles it), so we impose a fixed, readable grouping here: architecture, then schedule,
+      // then target/loss, then curriculum arrays, then planner. Any key not listed is emitted after
+      // these, in fhicl's sorted order, so newly added plan keys still pass through (just ungrouped).
+      inline const std::vector<std::string>& trainingKeyOrder() {
+        static const std::vector<std::string> order = {
+          // --- model architecture ---
+          "SBDMuseTwoStageTraining", "SBDMmomentumBasis", "SBDMpositionBasis",
+          "SBDMhidden", "SBDMlayers",
+          "SBDMtimeEmbeddingDim", "SBDMinputEmbeddingDims", "SBDMconditionEmbeddingDims",
+          // --- noise schedule ---
+          "SBDMnoiseSchedule", "SBDMbetaMin", "SBDMbetaMax", "SBDMcosineOffset",
+          "SBDMlogSigMin", "SBDMlogSigMax",
+          // --- prediction target / loss ---
+          "SBDMpredictionTarget", "SBDMlossWeightPower",
+          // --- dim-weight controller / EMA ---
+          "SBDMuseDimWeightController", "SBDMdimWeightControllerEMADecay",
+          "SBDMuseEMANetwork", "SBDMemaNetworkDecay", "SBDMpromoteEMA",
+          // --- curriculum (per-phase arrays) ---
+          "SBDMtrainingCurriculumEpochs", "SBDMtrainingCurriculumGradientClip",
+          "SBDMtrainingCurriculumLearningRate", "SBDMtrainingCurriculumBiasLowSigma",
+          "SBDMtrainingCurriculumTLowBound",
+          "SBDMtrainingCurriculumTFocusLow", "SBDMtrainingCurriculumTFocusHigh",
+          "SBDMtrainingCurriculumTFocusFraction", "SBDMtrainingCurriculumBatchSize",
+          "SBDMtrainingCurriculumSamplesDrawnPerEpoch",
+          "SBDMtrainingCurriculumUseDimWeightController", "SBDMtrainingCurriculumUsePeakSampling",
+          "SBDMtrainingCurriculumPromoteEMA", "SBDMtrainingCurriculumMinDelta",
+          // --- planner ---
+          "SBDMautoCurriculumPlanner", "SBDMplannerSmoothWindow", "SBDMplannerPatience",
+          "SBDMplannerMinEpochsPerPhase", "SBDMplannerMaxEpochsPerPhase"
+        };
+        return order;
+      }
+
+      // Render a ParameterSet once and split it into a { key -> "key: value" text block } map,
+      // reusing fhicl's own serializer (to_indented_string) so every value type — bool/int/double/
+      // string/sequence/table — is formatted exactly as fhicl would write it. Multi-line values
+      // (sequences/tables) keep their newlines; bracket-depth counting is used ONLY to detect where
+      // a multi-line value ends (it is not an indentation control). The map lets the caller emit the
+      // blocks in trainingKeyOrder() regardless of fhicl's internal sorted key order.
+      inline std::map<std::string, std::string> renderKeyBlocks(const fhicl::ParameterSet& pSet) {
+        std::map<std::string, std::string> blocks;
+        std::istringstream iss(pSet.to_indented_string(0));
+        std::string line;
+        while (std::getline(iss, line)) {
+          // A new top-level key begins at a line "key: ...". Find its name (up to the first ':').
+          const std::size_t colon = line.find(':');
+          if (colon == std::string::npos) continue;
+          const std::string key = line.substr(0, colon);
+          std::string block = line;
+          int depth = 0;
+          for (char c : line) { if (c == '[' || c == '{') ++depth; else if (c == ']' || c == '}') --depth; }
+          // Absorb continuation lines until brackets balance (multi-line sequence/table value).
+          while (depth > 0 && std::getline(iss, line)) {
+            block += "\n" + line;
+            for (char c : line) { if (c == '[' || c == '{') ++depth; else if (c == ']' || c == '}') --depth; }
+          }
+          blocks[key] = block;
+        }
+        return blocks;
+      }
+
+    } // namespace detail
+
+    // Resolve common_training_config.versionTag for a given data source.
+    //
+    // Accepts either form, so existing plans keep working:
+    //   * a bare string  -- one campaign tag shared by every source (the original behaviour);
+    //   * a sequence     -- one tag PER SOURCE, indexed by the source's position in
+    //                       VDResampler::dataSourceNames() (EleBeam, MuBeam, TargetStops1809,
+    //                       Neutrals). Sources are re-trained on their own schedules, so tying
+    //                       every source to one tag forced a version bump on all of them
+    //                       whenever any single one was regenerated.
+    //
+    // The sequence is indexed by the ENUMERATED source order, not by the order the entries
+    // happen to be written in, so the list must be as long as dataSourceNames() and an
+    // unenumerated dataSourceTag cannot use the per-source form (it has no index to look up).
+    inline std::string resolveVersionTag(const fhicl::ParameterSet& commonConfig,
+                                         const std::string& dataSourceTag,
+                                         const std::string& trainingPlanFile,
+                                         const std::string& moduleContext = "VDResamplerConfigure")
+    {
+      const std::vector<std::string>& sources = dataSourceNames();
+
+      // The enumerated source list, for the error messages below.
+      auto sourceList = [&sources]() {
+        std::ostringstream os;
+        for (size_t i = 0; i < sources.size(); ++i) os << (i ? ", " : "") << sources[i];
+        return os.str();
+      };
+
+      if (commonConfig.is_key_to_atom("versionTag"))
+        return commonConfig.get<std::string>("versionTag");
+
+      if (!commonConfig.is_key_to_sequence("versionTag"))
+        throw cet::exception(moduleContext)
+          << "common_training_config.versionTag in " << trainingPlanFile << " must be either a "
+          << "string (one tag for every source) or a sequence of strings (one tag per source, "
+          << "in dataSourceNames() order: " << sourceList() << ").";
+
+      const std::vector<std::string> tags = commonConfig.get<std::vector<std::string>>("versionTag");
+      if (tags.size() != sources.size())
+        throw cet::exception(moduleContext)
+          << "common_training_config.versionTag in " << trainingPlanFile << " has " << tags.size()
+          << " entries but there are " << sources.size() << " enumerated data sources; the "
+          << "per-source form needs exactly one tag per source, in this order: " << sourceList()
+          << ".";
+
+      const int index = dataSourceIndex(dataSourceTag);
+      if (index < 0)
+        throw cet::exception(moduleContext)
+          << "dataSourceTag '" << dataSourceTag << "' is not one of the enumerated data sources ("
+          << sourceList() << "), so it has no position in the per-source versionTag list in "
+          << trainingPlanFile << ". Use a single versionTag string for an unenumerated source.";
+
+      return tags[static_cast<size_t>(index)];
+    }
+
+    // Resolve a per-particle training entry from the plan ParameterSet. pdgId is the
+    // OUTER axis (a particle usually trains similarly across sources); source is the
+    // finer override. Fallback order:
+    //   particle_training_config.<pdg_key>.<source>  ->  particle_training_config.<pdg_key>.default  ->
+    //   particle_training_config.default.default
+    // Throws if no default chain exists (the plan file is required and must supply at
+    // least particle_training_config.default.default).
+    inline fhicl::ParameterSet resolvePlanEntry(const fhicl::ParameterSet& plan,
+                                                const std::string& source, int pdgId,
+                                                const std::string& moduleContext)
+    {
+      const fhicl::ParameterSet particle_training_config =
+        plan.get<fhicl::ParameterSet>("particle_training_config", fhicl::ParameterSet());
+      const std::string pdgKey = detail::pdgPlanKey(pdgId);
+
+      fhicl::ParameterSet pdgSet;
+      if (particle_training_config.has_key(pdgKey))         pdgSet = particle_training_config.get<fhicl::ParameterSet>(pdgKey);
+      else if (particle_training_config.has_key("default")) pdgSet = particle_training_config.get<fhicl::ParameterSet>("default");
+      else
+        throw cet::exception(moduleContext)
+          << "trainingPlanFile: 'particle_training_config' has neither \"" << pdgKey
+          << "\" nor a 'default' entry.";
+
+      if (pdgSet.has_key(source))            return pdgSet.get<fhicl::ParameterSet>(source);
+      if (pdgSet.has_key("default"))         return pdgSet.get<fhicl::ParameterSet>("default");
+      throw cet::exception(moduleContext)
+        << "trainingPlanFile: particle \"" << pdgKey << "\" has neither source \""
+        << source << "\" nor a 'default' entry.";
+    }
+
+    // Per-particle stage-1 method string (validated against the resampler enum).
+    inline std::string resolveStage1Method(const fhicl::ParameterSet& plan,
+                                           const std::string& source, int pdgId,
+                                           const std::string& moduleContext)
+    {
+      const fhicl::ParameterSet entry = resolvePlanEntry(plan, source, pdgId, moduleContext);
+      const std::string method = entry.get<std::string>("stage1Method", "DIFFUSION");
+      (void) parseStage1Method(method, moduleContext); // validate; throws on typo
+      return method;
+    }
+
+    // The two-stage decision for one particle: the plan's explicit SBDMuseTwoStageTraining wins;
+    // only when it is absent do we fall back to the hit-count rule (two-stage iff there are enough
+    // events to fit both stages). VDResamplerConfigure calls this and records the answer in the
+    // summary's TrainingMode column; a re-emit job reads that column instead of re-deciding, so a
+    // plan edit can never silently flip an already-trained particle's stage mode.
+    inline bool resolveUseTwoStage(const fhicl::ParameterSet& entry, int nHits) {
+      return entry.get<bool>("SBDMuseTwoStageTraining", nHits > kTwoStageTrainingHitThreshold);
+    }
+
+    // The VD geometry and versioning keys are required in common_training_config (single source of
+    // truth). Report each missing key by name instead of letting fhicl throw a generic get<> error.
+    inline void requireCommonKeys(const fhicl::ParameterSet& commonConfig,
+                                  const std::string& trainingPlanFile,
+                                  const std::string& moduleContext)
+    {
+      static const std::vector<std::string> required = {
+        "versionTag", "runNumber", "trainingFromROOTFile", "VirtualDetectorID", "VDz0", "VDr"
+      };
+      for (const std::string& key : required)
+        if (!commonConfig.has_key(key))
+          throw cet::exception(moduleContext)
+            << "common_training_config in " << trainingPlanFile
+            << " is missing required key '" << key << "'.";
+    }
+
+    // Populate an EmitContext from the plan's common_training_config. Call requireCommonKeys()
+    // first; this assumes the required keys are present.
+    //
+    // InputRootFile may be @nil or absent, in which case the generated fcl gets a placeholder +
+    // reminder instead of a path. fhicl reports a @nil value as a present atom, so
+    // has_key/is_key_to_atom cannot distinguish it from a real path — only the string conversion
+    // can, and it throws. Let the get<> attempt itself be the test and treat a failure as "not set".
+    inline EmitContext makeEmitContext(const fhicl::ParameterSet& commonConfig,
+                                       const std::string& dataSourceTag,
+                                       const std::string& trainingPlanFile,
+                                       const std::string& VDResamplerDir,
+                                       const std::string& fclDir,
+                                       const std::string& moduleContext)
+    {
+      EmitContext ctx;
+      ctx.versionTag        = resolveVersionTag(commonConfig, dataSourceTag, trainingPlanFile, moduleContext);
+      ctx.dataSourceTag     = dataSourceTag;
+      ctx.VDResamplerDir    = VDResamplerDir;
+      ctx.fclDir            = fclDir;
+      ctx.runNumber         = commonConfig.get<int>("runNumber");
+      ctx.trainingFromROOT  = commonConfig.get<bool>("trainingFromROOTFile");
+      ctx.virtualDetectorID = static_cast<unsigned long>(commonConfig.get<int>("VirtualDetectorID"));
+      ctx.VDz0              = commonConfig.get<double>("VDz0");
+      ctx.VDr               = commonConfig.get<double>("VDr");
+      ctx.treeName          = commonConfig.get<std::string>("TreeName", "VDResamplerTrainingSetup/ttree");
+      if (commonConfig.has_key("InputRootFile")) {
+        try {
+          ctx.inputRootFile = commonConfig.get<std::string>("InputRootFile");
+          ctx.inputRootFileSet = !ctx.inputRootFile.empty();
+        } catch (const fhicl::exception&) {
+          ctx.inputRootFileSet = false;  // @nil (or any non-string value): treat as unset
+        }
+      }
+      ctx.stepPointMCsTag  = commonConfig.get<std::string>("StepPointMCsTag", "compressDetStepMCsSTM116:");
+      ctx.simParticlemvTag = commonConfig.get<std::string>("SimParticlemvTag", "compressDetStepMCsSTM116:");
+      return ctx;
+    }
+
+    // Emit ONE self-contained training fcl. Returns the path written.
+    //
+    // useTwoStageTraining / stage1Method are passed in rather than re-derived so that both callers
+    // agree: VDResamplerConfigure computes them (resolveUseTwoStage / resolveStage1Method) on its
+    // way to writing the summary, while a re-emit job takes them straight from the summary columns.
+    inline std::string emitOneTrainingFcl(const fhicl::ParameterSet& entry,
+                                          const EmitContext& ctx,
+                                          int pdg, int nHits,
+                                          bool useTwoStageTraining,
+                                          const std::string& stage1Method,
+                                          const std::string& moduleContext)
+    {
+      const std::string fclFilePath = ctx.fclDir.empty() ? ctx.VDResamplerDir : ctx.fclDir;
+      const std::string sanitizedDataSourceTag = sanitizeTag(ctx.dataSourceTag);
+      const std::string vdStr = std::to_string(ctx.virtualDetectorID);
+
+      // One self-contained fcl per (source, particle). Negative pdgId uses 'm<abs>' in file names.
+      const std::string pdgIdstr = (pdg < 0) ? "m" + std::to_string(-pdg) : std::to_string(pdg);
+      const std::string tag = "VD" + vdStr + sanitizedDataSourceTag + "pdg" + pdgIdstr;
+      const std::string trainModule = ctx.trainingFromROOT ? "VDResamplerTrainFromRoot" : "VDResamplerTrain";
+      const std::string moduleName  = trainModule + tag;
+      const std::string pathName    = "trainPathVD" + vdStr + "pdg" + pdgIdstr;
+      // fcl file name mirrors the training module actually used (…TrainFromRoot_… vs …Train_…).
+      const std::string fclFile = detail::dirPrefix(fclFilePath) + trainModule + "_" + sanitizeTag(ctx.versionTag)
+                                + "_VD" + vdStr + "_" + sanitizedDataSourceTag + "_pdg" + pdgIdstr + ".fcl";
+
+      std::ofstream fclOutFile(fclFile);
+      if (!fclOutFile)
+        throw cet::exception(moduleContext) << "Cannot open file " << fclFile;
+
+      // ---- header + source + services ----
+      fclOutFile << "# This fcl is generated by VDResamplerConfigure_module.cc\n"
+                 << "# Training configuration for VD" << vdStr << " " << ctx.dataSourceTag
+                 << " pdg " << pdg << " (" << nHits << " hits).\n\n"
+                 << "#include \"Offline/fcl/standardServices.fcl\"\n"
+                 << "#include \"Production/JobConfig/pileup/STM/prolog.fcl\"\n\n";
+      if (ctx.trainingFromROOT) {
+        fclOutFile << "process_name: VDResamplerTrainParticle\n\n"
+                   << "# No ART input: VDResamplerTrainFromRoot reads InputRootFile directly.\n"
+                   << "source : {\n  module_type : EmptyEvent\n}\n\n";
+      } else {
+        fclOutFile << "process_name: VDResamplerTrain\n\n"
+                   << "source : @local::STMPileup.VDResamplerSource\n\n";
+      }
+      fclOutFile << "services : @local::Services.Sim\n\n";
+
+      // ---- analyzer block ----
+      const std::string ind = "      ";
+      fclOutFile << "physics: {\n  analyzers : {\n"
+                 << "    " << moduleName << " : {\n"
+                 << ind << "module_type : " << trainModule << "\n";
+
+      // Source keys, per training path.
+      if (ctx.trainingFromROOT) {
+        if (ctx.inputRootFileSet) {
+          fclOutFile << ind << "InputRootFile : \"" << ctx.inputRootFile << "\"\n";
+        } else {
+          // Plan left InputRootFile as @nil / unset: emit a placeholder + in-file reminder, and log one.
+          fclOutFile << ind << "InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
+          mf::LogWarning(moduleContext)
+            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
+            << " has a placeholder that MUST be set before running.";
+        }
+        fclOutFile << ind << "TreeName : \"" << ctx.treeName << "\"\n";
+      } else {
+        fclOutFile << ind << "StepPointMCsTag : \"" << ctx.stepPointMCsTag << "\"\n"
+                   << ind << "SimParticlemvTag : \"" << ctx.simParticlemvTag << "\"\n";
+      }
+
+      // Model output files (.dat, full double precision), named via the shared helper so the
+      // generator reconstructs identical paths. Under a resampler stage-1 method the 1-D pTotal
+      // model is NOT trained (the generator draws pTotal directly), so omit stage1's file — the
+      // train module trains stage1 only when that path is non-empty. Always train stage2.
+      const std::string modelDir = detail::dirPrefix(ctx.VDResamplerDir);
+      if (useTwoStageTraining) {
+        if (stage1Method == "DIFFUSION")
+          fclOutFile << ind << "SBDMstage1ModelFile : \""
+                     << modelDir << modelFileName("stage1", ctx.versionTag, ctx.virtualDetectorID, ctx.dataSourceTag, pdg, ctx.runNumber) << "\"\n";
+        fclOutFile << ind << "SBDMstage2ModelFile : \""
+                   << modelDir << modelFileName("stage2", ctx.versionTag, ctx.virtualDetectorID, ctx.dataSourceTag, pdg, ctx.runNumber) << "\"\n";
+      } else {
+        fclOutFile << ind << "SBDMallAtOnceModelFile : \""
+                   << modelDir << modelFileName("allAtOnce", ctx.versionTag, ctx.virtualDetectorID, ctx.dataSourceTag, pdg, ctx.runNumber) << "\"\n";
+      }
+
+      // VD geometry — always from the plan (single source of truth).
+      fclOutFile << ind << "VirtualDetectorID : " << ctx.virtualDetectorID << "\n"
+                 << ind << "VDz0 : " << ctx.VDz0 << "\n"
+                 << ind << "VDr : "  << ctx.VDr  << "\n"
+                 << ind << "pdgID : " << pdg << "\n"
+                 << ind << "SBDMtrainingSize : " << nHits << "\n";
+
+      // Pass through the plan's training keys (SBDM*), in a fixed readable grouping. stage1Method is
+      // excluded (generate-side). Keys not in trainingKeyOrder() are emitted afterwards in fhicl's
+      // sorted order so newly added plan keys still flow through.
+      const std::map<std::string, std::string> blocks = detail::renderKeyBlocks(entry);
+      std::vector<std::string> emitted;
+      for (const std::string& key : detail::trainingKeyOrder()) {
+        auto it = blocks.find(key);
+        if (it == blocks.end() || !detail::isPassThroughTrainingKey(key)) continue;
+        fclOutFile << ind << it->second << "\n";
+        emitted.push_back(key);
+      }
+      for (const auto& kv : blocks) {
+        if (!detail::isPassThroughTrainingKey(kv.first)) continue;
+        if (std::find(emitted.begin(), emitted.end(), kv.first) != emitted.end()) continue;
+        fclOutFile << ind << kv.second << "\n";
+      }
+
+      fclOutFile << "    }\n  }\n";
+
+      // ---- path + end_paths + services overrides ----
+      fclOutFile << "  " << pathName << " : [" << moduleName << "]\n"
+                 << "  end_paths: [" << pathName << "]\n"
+                 << "}\n\n";
+      // Remove the per-category log line limit so full training logs are kept.
+      fclOutFile << "services.message.destinations.log.categories.default.limit: -1\n";
+      // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
+      fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
+
+      return fclFile;
+    }
+
+  } // namespace VDResampler
+} // namespace mu2e
+
+#endif /* STMMC_VDResamplerConfigureCommon_hh */
