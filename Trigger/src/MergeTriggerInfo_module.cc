@@ -21,7 +21,6 @@
 #include <vector>
 #include <memory>
 #include <iostream>
-#include <forward_list>
 #include <string>
 
 
@@ -32,7 +31,7 @@ namespace mu2e {
     using  Comment = fhicl::Comment;
     struct Config {
       fhicl::Atom<int> debug     { Name("debugLevel"), Comment("Debug Level"), 0};
-      fhicl::Atom<int> doDeepCopy{ Name("doDeepCopy"), Comment("Produce cloned object collections"), 0};
+      fhicl::Atom<bool> doDeepCopy{ Name("doDeepCopy"), Comment("Produce cloned object collections"), false};
     };
 
     using        Parameters = art::EDProducer::Table<Config>;
@@ -40,7 +39,7 @@ namespace mu2e {
     void         produce(art::Event& evt) override;
   private:
     int          _debug;
-    int          _doDeepCopy;
+    bool         _doDeepCopy;
   };
 
   MergeTriggerInfo::MergeTriggerInfo(const Parameters& config) :
@@ -49,7 +48,7 @@ namespace mu2e {
     _doDeepCopy(config().doDeepCopy())
   {
     produces<TriggerInfoCollection>();
-    if (_doDeepCopy == 1){
+    if (_doDeepCopy){
       produces<KalSeedCollection        >();
       produces<HelixSeedCollection      >();
       produces<TimeClusterCollection    >();
@@ -71,15 +70,15 @@ namespace mu2e {
     std::vector<art::Handle<TriggerInfo> > list_of_triggerInfo = event.getMany<TriggerInfo>();
 
     if(_debug > 0){
-      std::cout << "["<<moduleDescription().moduleLabel() << "] number of TriggerInfo found in the is: "<< list_of_triggerInfo.size() << std::endl;
+      std::cout << "["<<moduleDescription().moduleLabel() << "] number of TriggerInfo found: "<< list_of_triggerInfo.size() << std::endl;
     }
 
     for (auto & trigInfoH: list_of_triggerInfo){
-      TriggerInfo trigInfo(*trigInfoH.product());
+      const TriggerInfo& trigInfo(*trigInfoH.product());
       if(_debug > 0){
         std::cout << "["<<moduleDescription().moduleLabel() << "] helices, tracks: "<< trigInfo.tracks().size() << " " << trigInfo.helixes().size() << std::endl;
       }
-      if (_doDeepCopy == 1){
+      if (_doDeepCopy){
         for(auto ptr : trigInfo.tracks       ()) ksCol->push_back(*(ptr.get()));
         for(auto ptr : trigInfo.helixes      ()) hsCol->push_back(*(ptr.get()));
         for(auto ptr : trigInfo.hitClusters  ()) tcCol->push_back(*(ptr.get()));
@@ -91,7 +90,7 @@ namespace mu2e {
     }
 
     event.put(std::move(tiCol));
-    if (_doDeepCopy == 1){
+    if (_doDeepCopy){
       event.put(std::move(ksCol));
       event.put(std::move(hsCol));
       event.put(std::move(tcCol));

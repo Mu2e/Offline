@@ -7,7 +7,7 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "fhiclcpp/ParameterSet.h"
+#include "canvas/Utilities/InputTag.h"
 
 // Offline
 #include "Offline/RecoDataProducts/inc/MSDHit.hh"
@@ -27,7 +27,7 @@ namespace mu2e {
     struct Config {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<std::string>  tag    {Name("tag")    , Comment("Collection tag")};
+      fhicl::Atom<art::InputTag> tag   {Name("tag")    , Comment("Collection tag")};
       fhicl::Atom<int>          minHits{Name("minHits"), Comment("Minimum number of hits")};
     };
 
@@ -38,15 +38,15 @@ namespace mu2e {
 
   private:
     bool filter  (art::Event& event) override;
-    bool endRun  (art::Run&   run  ) override;
-    bool goodHit (const MSDHit& hit);
+    bool endRun  (art::Run&        ) override;
+    static bool goodHit (const MSDHit& hit); //uses no member data
 
     // Inputs
-    std::string              _tag;
+    art::InputTag            _tag;
     int                      _minHits = -1;
 
     // Data
-    unsigned long            _nevt, _npass;
+    unsigned long            _nevt = 0, _npass = 0;
 
   };
 
@@ -73,15 +73,12 @@ namespace mu2e {
     // Count total events seen
     ++_nevt;
 
-    // Filter flag
-    bool passed = true;
-
     auto handle = event.getValidHandle<MSDHitCollection>(_tag);
     const auto hits = handle.product();
     int naccepted = 0;
     for(const auto& hit : *hits) if(goodHit(hit)) ++naccepted;
 
-    passed &= naccepted >= _minHits;
+    const bool passed = naccepted >= _minHits;
 
     if (passed) ++_npass;
 
@@ -90,7 +87,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  bool MSDHitFilter::endRun(art::Run& run) {
+  bool MSDHitFilter::endRun(art::Run&) {
     // Print a summary of the filter results
     const float rate = (_nevt > 0) ? float(_npass)/float(_nevt) : 0.f;
     TLOG(TLVL_DEBUG + 2) << "passed " << _npass << " events out of " << _nevt << " for a ratio of " << rate;
