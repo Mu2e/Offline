@@ -208,19 +208,29 @@ struct TrainState {
 // ConvergenceTracer — detects "stable loss" within a curriculum phase.
 //
 // Strategy: patience on a smoothed loss. Per-epoch diffusion loss is noisy
-// (stochastic t sampling + per-epoch subset sampling), so we smooth it with a
-// trailing moving average over `window` epochs and watch the best smoothed value.
-// A new smoothed value counts as an improvement only if it beats the best by a
-// RELATIVE margin `minDelta`; after `patience` consecutive non-improving epochs
-// (and at least `minEpochs` epochs into the phase) the phase is declared converged.
+// (stochastic t sampling + per-epoch subset sampling), so we smooth it over a
+// trailing `window` of epochs and watch the best smoothed value. A new smoothed
+// value counts as an improvement only if it beats the best by a RELATIVE margin
+// `minDelta`; after `patience` consecutive non-improving epochs (and at least
+// `minEpochs` epochs into the phase) the phase is declared converged.
 // reset() is called at every phase entry, so its state is independent of any epoch
 // history a loaded checkpoint may carry in the model.
+//
+// The window statistic is a SYMMETRIC trimmed mean: per-epoch loss is heavy-tailed,
+// and one outlier epoch would otherwise shift a plain average for the whole window.
+// Trimming both tails also keeps selection from favouring downward noise excursions.
+// Smoothed-best selection waits for a FULL window — a partial average is noisier and
+// biased toward the phase's starting point, which used to get near-first epochs
+// snapshotted as the phase best.
 // ---------------------------------------------------------------------------
 struct ConvergenceTracer {
     int    window;
     double minDelta;
     int    patience;
     int    minEpochs;
+
+    // Fraction trimmed from EACH tail of the window before averaging (internal).
+    static constexpr double kTrimFraction = 0.2;
 
     std::deque<double> recent;  // last `window` raw losses
     double bestSmoothed = std::numeric_limits<double>::infinity();
@@ -251,6 +261,19 @@ struct ConvergenceTracer {
         lastDelta    = std::numeric_limits<double>::quiet_NaN();
     }
 
+    // Symmetric trimmed mean of the current window. k is rounded down to a whole number
+    // of epochs per tail and clamped so at least one value always survives, so a short
+    // window (or a large trim) can never trim everything away.
+    static double trimmedMean(std::deque<double> v) {
+        if (v.empty()) return std::numeric_limits<double>::quiet_NaN();
+        std::sort(v.begin(), v.end());
+        const int n = static_cast<int>(v.size());
+        int k = static_cast<int>(n * kTrimFraction);   // per tail, truncated to an integer
+        if (2 * k >= n) k = (n - 1) / 2;               // keep >= 1 element
+        return std::accumulate(v.begin() + k, v.end() - k, 0.0)
+             / static_cast<double>(n - 2 * k);
+    }
+
     // Push one epoch's loss; returns true when the phase is considered converged.
     bool update(double loss) {
         ++epochsThisPhase;
@@ -260,8 +283,8 @@ struct ConvergenceTracer {
 
         recent.push_back(loss);
         if (static_cast<int>(recent.size()) > window) recent.pop_front();
-        double smoothed = std::accumulate(recent.begin(), recent.end(), 0.0)
-                          / static_cast<double>(recent.size());
+        const bool windowFull = (static_cast<int>(recent.size()) >= window);
+        const double smoothed = trimmedMean(recent);
 
         // Relative improvement of the smoothed loss vs the best seen so far (before this
         // update). Positive = improvement; NaN on the first epoch (no prior best yet).
@@ -270,13 +293,17 @@ struct ConvergenceTracer {
         lastDelta    = std::isfinite(prevBest) ? (prevBest - smoothed) / prevBest
                                                : std::numeric_limits<double>::quiet_NaN();
 
-        if (smoothed < bestSmoothed * (1.0 - minDelta)) {
-            bestSmoothed = smoothed;
-            bestSmoothedEpoch = epochsThisPhase;
-            sinceImprove = 0;
-            smoothedImproved = true;
-        } else {
-            ++sinceImprove;
+        // Only a full window can set (or fail to beat) the phase best: a partial average
+        // is not the same statistic, so neither improvements nor patience count yet.
+        if (windowFull) {
+            if (smoothed < bestSmoothed * (1.0 - minDelta)) {
+                bestSmoothed = smoothed;
+                bestSmoothedEpoch = epochsThisPhase;
+                sinceImprove = 0;
+                smoothedImproved = true;
+            } else {
+                ++sinceImprove;
+            }
         }
         return epochsThisPhase >= minEpochs && sinceImprove >= patience;
     }

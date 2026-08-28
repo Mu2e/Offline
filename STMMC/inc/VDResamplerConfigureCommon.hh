@@ -572,6 +572,14 @@ namespace mu2e {
       // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
       fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
 
+      // Trailing overrides. The InputRootFile assignment comes last so it wins over the analyzer
+      // block, giving one obvious line to point at the training file. The mu2emetadata keys are
+      // the mu2eprodsys hooks every production fcl carries.
+      fclOutFile << "\nphysics.analyzers." << moduleName << ".InputRootFile : @nil\n"
+                 << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
+                 << "mu2emetadata.fcl.inkeys: [  ]\n"
+                 << "mu2emetadata.fcl.outkeys: [  ]\n";
+
       return fclFile;
     }
 

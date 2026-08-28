@@ -88,14 +88,14 @@ common_EMA_config : {
 # outlier epoch (as seen right after a phase switch) must also not be able to drive the smoothed
 # value for the length of the window.
 #
-# minEpochsPerPhase must stay >= smoothWindow + patience (25 + 40 = 65): below smoothWindow the
-# smoothed loss is only a partial-window average, and a phase cannot legitimately end until
-# patience non-improving epochs have accumulated on top of that.
+# minEpochsPerPhase must stay >= smoothWindow + patience (25 + 25 = 50): the tracer records no
+# improvement and consumes no patience until the window is full, so a phase needs the window to
+# fill and then a full no-improvement streak on top of it.
 common_autoCurriculum_config : {
   SBDMautoCurriculumPlanner : true
   SBDMplannerSmoothWindow : 25
-  SBDMplannerPatience : 40
-  SBDMplannerMinEpochsPerPhase : 65
+  SBDMplannerPatience : 25
+  SBDMplannerMinEpochsPerPhase : 50
 }
 
 # ===== per-dataset batch / epoch-size schedules =====
