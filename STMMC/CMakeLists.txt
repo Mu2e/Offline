@@ -98,6 +98,12 @@ cet_build_plugin(VDResamplerConfigure art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(VDResamplerReconfigure art::module
+    REG_SOURCE src/VDResamplerReconfigure_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(VDResamplerTrain art::module
     REG_SOURCE src/VDResamplerTrain_module.cc
     LIBRARIES REG
