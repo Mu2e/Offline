@@ -163,59 +163,64 @@ namespace mu2e {
   void StrawHitReco::produce(art::Event& event)
   {
     if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
-
-    const Tracker& tt = _alignedTracker_h.get(event.id());
-    auto const& srep = _strawResponse_h.get(event.id());
     auto sdH = event.getValidHandle(_sdctoken);
     const StrawDigiCollection& sdcol(*sdH);
-
-    const StrawDigiADCWaveformCollection* sdadcc(0);
-    if (_useADCWF){
-      auto sdawH = event.getValidHandle(_sdadctoken);
-      sdadcc = sdawH.product();
-    }
-
-    const CaloClusterCollection* caloClusters(0);
-    if(_usecc){
-      auto ccH = event.getValidHandle(_ccctoken);
-      caloClusters = ccH.product();
-    }
-
-    auto pbtH = event.getValidHandle(_pbttoken);
-    const ProtonBunchTime& pbt(*pbtH);
-    double pbtOffset = pbt.pbtime_;
-    auto ewmH = event.getValidHandle(_ewmtoken);
-    const EventWindowMarker& ewm(*ewmH);
-
     std::unique_ptr<StrawHitCollection> shCol;
-    if(_writesh){
+    if (_writesh) {
       shCol = std::unique_ptr<StrawHitCollection>(new StrawHitCollection);
-      shCol->reserve(sdcol.size());
     }
     std::unique_ptr<ComboHitCollection> chCol(new ComboHitCollection());
     std::unique_ptr<IntensityInfoTrackerHits>  intInfo(new IntensityInfoTrackerHits());
     chCol->reserve(sdcol.size());
 
-    TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
+    if (sdcol.size() > 0) {
 
-    double pmp(0.0);
-    for (size_t isd=0;isd<sdcol.size();++isd) {
-      const StrawDigi& digi = sdcol[isd];
-      // compute peak-pedestal
-      if(!_useADCWF){
-        pmp = digi.PMP();
-      } else {
-        auto const& adcwf = sdadcc->at(isd).samples();
-        ADCWFIter maxiter;
-        pmp = _shrUtils.peakMinusPedWF(adcwf,srep,maxiter);
-        if(_diagLevel > 0)_maxiter->Fill( std::distance(adcwf.begin(),maxiter));
+      const Tracker& tt = _alignedTracker_h.get(event.id());
+      auto const& srep = _strawResponse_h.get(event.id());
+
+      const StrawDigiADCWaveformCollection* sdadcc(0);
+      if (_useADCWF){
+        auto sdawH = event.getValidHandle(_sdadctoken);
+        sdadcc = sdawH.product();
       }
-      _shrUtils.createComboHit(ewm, isd, chCol, shCol, caloClusters, pbtOffset,
-          digi.strawId(), digi.TDC(), digi.TOT(), pmp,
-          trackerStatus,  srep, tt);
-      //flag straw and electronic cross-talk
-      if(_flagXT){
-        _shrUtils.flagCrossTalk(shCol, chCol);
+
+      const CaloClusterCollection* caloClusters(0);
+      if(_usecc){
+        auto ccH = event.getValidHandle(_ccctoken);
+        caloClusters = ccH.product();
+      }
+
+      auto pbtH = event.getValidHandle(_pbttoken);
+      const ProtonBunchTime& pbt(*pbtH);
+      double pbtOffset = pbt.pbtime_;
+      auto ewmH = event.getValidHandle(_ewmtoken);
+      const EventWindowMarker& ewm(*ewmH);
+
+      if(_writesh){
+        shCol->reserve(sdcol.size());
+      }
+
+      TrackerStatus const& trackerStatus = _trackerStatus_h.get(event.id());
+
+      double pmp(0.0);
+      for (size_t isd=0;isd<sdcol.size();++isd) {
+        const StrawDigi& digi = sdcol[isd];
+        // compute peak-pedestal
+        if(!_useADCWF){
+          pmp = digi.PMP();
+        } else {
+          auto const& adcwf = sdadcc->at(isd).samples();
+          ADCWFIter maxiter;
+          pmp = _shrUtils.peakMinusPedWF(adcwf,srep,maxiter);
+          if(_diagLevel > 0)_maxiter->Fill( std::distance(adcwf.begin(),maxiter));
+        }
+        _shrUtils.createComboHit(ewm, isd, chCol, shCol, caloClusters, pbtOffset,
+            digi.strawId(), digi.TDC(), digi.TOT(), pmp,
+            trackerStatus,  srep, tt);
+        //flag straw and electronic cross-talk
+        if(_flagXT){
+          _shrUtils.flagCrossTalk(shCol, chCol);
+        }
       }
     }
     if(_writesh)event.put(std::move(shCol));
