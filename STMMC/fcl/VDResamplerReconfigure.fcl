@@ -20,7 +20,7 @@ source : {
   maxEvents : 1
 }
 
-services : @local::Services.Sim
+services : @local::Services.Core
 
 physics : {
   analyzers : {
