@@ -420,11 +420,9 @@ inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis, PositionBas
     // xTrans/yTrans rather than a slot of the model's vector -- hence appended after the
     // stats loop, which indexes (*stats)[slot] over the six transform slots. Companion
     // to the physical rhoNorm in physicalDimSpecs, which explains how to read both.
-    // Axis top: radialForward(1-1e-3) is 3.8 (atanh), 6.9 (NegLog), 999 (Ratio); Ratio
-    // is capped well below that, its far tail being essentially unpopulated.
-    const double utop = (posBasis == PositionBasis::V3_Ratio)  ? 40.
-                      : (posBasis == PositionBasis::V2_NegLog) ?  7.
-                                                               :  4.;
+    // Axis top: radialForward(1-1e-3) is 3.8 (Atanh) and 4.2 (AtanhSqrt, whose sqrt puts
+    // the rim slightly further out while stretching the core).
+    const double utop = (posBasis == PositionBasis::V2_AtanhSqrt) ? 4.5 : 4.;
     specs.push_back({"rhoTrans", "u = radial transform of r/VDr", "",
                      200, 0., utop, true, kRhoTransSlot});
     return specs;

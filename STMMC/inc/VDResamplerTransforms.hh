@@ -34,8 +34,8 @@ namespace mu2e {
     // not address it. Raising it only truncates real area near the rim (the truncated
     // fraction is ~2 eps for a uniform disc), so it is kept at the historical value.
     //
-    // Only PositionBasis::V1_Atanh is at all sensitive to the value, since its
-    // drho/du = 1-rho^2 collapses at the rim; V2_NegLog needs no more than rho < 1.
+    // Both PositionBasis maps are atanh-based and so diverge at rho = 1; the clamp is
+    // what keeps u finite there.
     constexpr double kRhoClampEpsilon = 1e-6;
     // Independent floor for pz in divisions (slope basis). Distinct from
     // kRadiusSafetyEpsilon because it guards a different quantity (longitudinal
@@ -118,8 +118,8 @@ namespace mu2e {
     //   theta = atan2(dy,dx), so the angular treatment is untouched; only u(rho)
     //   differs. All are monotone, send rho -> [0,inf), and invert in closed form.
     //
-    // Two independent effects decide whether a map suits a species. They are easy to
-    // conflate, so state both explicitly:
+    // Three effects decide whether a map suits a species. They are easy to conflate, so
+    // state them explicitly:
     //
     //   EFFECT 1 - RESOLUTION, drho/du. How far a fixed error in the network's output u
     //     displaces the physical radius. Where drho/du is large, a given u-error costs
@@ -132,78 +132,50 @@ namespace mu2e {
     //     is sparsely sampled and a score model generically over-populates it. This is
     //     about how many samples land where.
     //
-    //   For a uniform disc p(rho) ~ rho, so BOTH maps give p(u) -> 0 at the origin: that
-    //   is inherited from the geometry, not a property of either map, and cannot be
-    //   fixed by choosing between them. The maps differ in their TAILS.
+    //     For a uniform disc p(rho) ~ rho, so BOTH maps give p(u) -> 0 at the origin:
+    //     that is inherited from the geometry, not a property of either map, and cannot
+    //     be fixed by choosing between them. The maps differ in their TAILS.
     //
-    // History, and what this enum is and is NOT for. A radial mis-modelling was observed
-    //   under V1_Atanh: as a generated/mother ratio in rho it looked like a smooth
-    //   outward tilt (~0.78 -> ~1.18 over rho ~ 0.3-0.85 for pdg11 EleBeam; ~0.92 ->
-    //   ~1.08 for pdg22 EleBeam, milder and largely hidden in the x/y projections since
-    //   those integrate over theta). Reweighting a generated sample by that radial ratio
-    //   alone restored the physical x distribution (std dev 1075 -> 1030 against a
-    //   source 1032), so the bias was radial rather than angular.
+    //   EFFECT 3 - CORE WIDTH AFTER NORMALIZATION. The model z-scores each coordinate,
+    //     so what it fits is u divided by the stdev of u over the whole training set. A
+    //     map whose u grows steeply toward the rim inflates that stdev, and dividing by
+    //     it squeezes the populated core into a narrow band -- which shows up directly
+    //     as a generated peak that is too narrow. This is what ruled out the
+    //     rho/(1-rho) style maps, whose u reaches 99 at rho=0.99. It is invisible in u
+    //     itself and only appears after normalization, so it is easily missed when maps
+    //     are compared on their drho/du alone.
     //
-    //   Plotted over the FULL range in u, however, the ratio is not a monotone tilt at
-    //   all: it is ~0.7 at u~0, peaks ~1.38 at u~1.7, and falls back to ~0.7 by u~2.8 --
-    //   a deficit at BOTH ends with an excess in the middle. That is a distribution
-    //   contracted toward its own mode, i.e. too narrow, which is the signature of a
-    //   weak score field, not of a tail the coordinate made hard to represent. (Had it
-    //   been the latter, the tail would be OVER-populated; it is under-populated.) The
-    //   affected runs were subsequently found to have stopped early with a training loss
-    //   still above 0.99 -- they were simply undertrained. The rho-space view had hidden
-    //   this by compressing the turnover into its last few bins.
+    // A caution from an earlier investigation. A radial mis-modelling seen under
+    //   V1_Atanh (generated/mother ratio ~0.7 at u~0, peaking ~1.38 at u~1.7, back to
+    //   ~0.7 by u~2.8 -- a deficit at BOTH ends with an excess in the middle) looked
+    //   like a coordinate problem but was not: that shape is a distribution contracted
+    //   toward its own mode, the signature of a weak score field. Those runs were later
+    //   found to have stopped with a training loss still above 0.99, i.e. undertrained.
+    //   So before reaching for this enum to explain a radial discrepancy, check the
+    //   training loss and the planner's stop reason first.
     //
-    //   So: do NOT reach for this enum to fix a radial discrepancy before checking the
-    //   training loss and the planner's stop reason. Its justification is the standing
-    //   Effect 1 argument -- some species want finer resolution at small rho than atanh
-    //   gives -- not that measurement.
-    //
-    //   V1_Atanh  : u = atanh(rho); rho = tanh(u); drho/du = 1-rho^2.
+    //   V1_Atanh     : u = atanh(rho); rho = tanh(u); drho/du = 1-rho^2.
     //       Effect 1: drho/du = 1 at rho=0, 0.75 at rho=0.5, 0.19 at rho=0.9. Coarsest
-    //         at the centre, finest at the rim.
+    //         at the centre, finest at the rim. Since u ~ rho + O(rho^3) near the
+    //         origin, it gives no extra ABSOLUTE resolution where the events actually
+    //         are for a centrally-peaked species.
     //       Effect 2: for a uniform disc p(u) = tanh(u) sech^2(u), peaking near u~0.66
-    //         with an e^{-2u} tail -- the thinnest tail of the two, and the hardest to
-    //         terminate correctly.
-    //       Retained so existing models stay reproducible, and for species where it is
-    //       known to be adequate.
-    //   V2_NegLog : u = -ln(1-rho); rho = 1-e^{-u}; drho/du = 1-rho = e^{-u}.
-    //       Effect 1: drho/du = 1 at rho=0, 0.50 at rho=0.5, 0.10 at rho=0.9 --
-    //         uniformly SMALLER than atanh away from the origin, i.e. it spends more of
-    //         its u range on the inner region and resolves it ~1.5x more finely at
-    //         rho=0.5.
-    //       Effect 2: for a uniform disc p(u) = (1-e^{-u}) e^{-u}, an e^{-u} tail --
-    //         still exponential, but decaying half as fast as atanh's, so a fatter and
-    //         better-sampled tail.
-    //       Better than V1_Atanh on both effects while keeping the TIGHTEST output
-    //       range of the three (u = 2.3 at rho=0.9, 4.6 at rho=0.99), so it is the
-    //       default recommendation.
-    //   V3_Ratio  : u = rho/(1-rho); rho = u/(1+u); drho/du = (1-rho)^2.
-    //       Effect 1: drho/du = 1 at rho=0, 0.25 at rho=0.5, 0.010 at rho=0.9 -- the
-    //         BEST of the three, ~2x finer than NegLog and ~3x finer than atanh at
-    //         rho=0.5.
-    //       Effect 2: for a uniform disc p(u) = u/(1+u)^3, a POWER-LAW u^{-2} tail --
-    //         also the best of the three, being fatter than either exponential.
-    //       The cost is DYNAMIC RANGE, not either effect: reaching the rim needs large
-    //       outputs (u = 9 at rho=0.9, 99 at rho=0.99), which is a wide span for a
-    //       z-scored network output to cover and interacts with SBDMlogSigMin. Prefer
-    //       it when inner resolution is the binding constraint and the species has
-    //       little mass near the rim; prefer V2_NegLog when it does.
-    //
-    // Note every such map is u ~ rho + O(rho^2) near the origin, so drho/du is exactly 1
-    // at rho=0 for all of them: none improves ABSOLUTE resolution at the very centre,
-    // and for a species whose events sit almost entirely at small rho the choice barely
-    // matters. They differ in how quickly drho/du falls away from the origin, in their
-    // tails, and in the output range they demand.
-    //
-    // A fourth option, u = rho/sqrt(1-rho^2) (drho/du = (1+u^2)^{-3/2}, u^{-3} tail),
-    // sits between NegLog and Ratio on both effects and was not adopted: it adds no
-    // point the three above do not already cover.
+    //         with an e^{-2u} tail -- thin, and hard to terminate correctly.
+    //   V2_AtanhSqrt : u = atanh(sqrt(rho)); rho = tanh^2(u);
+    //         drho/du = 2 sqrt(rho) (1-rho).
+    //       Effect 1: the sqrt sends drho/du -> 0 as rho -> 0, so du/drho DIVERGES at
+    //         the centre. Where atanh spends a fixed amount of u range per unit rho near
+    //         the origin, this spends an unbounded amount: the inner region is STRETCHED
+    //         rather than compressed. Away from the centre it converges back toward
+    //         atanh -- 0.71 at rho=0.5, 0.19 at rho=0.9 -- so the rim keeps the same
+    //         tanh saturation and the same class of tail.
+    //       Effect 3: this is the reason to prefer it. Output range stays modest
+    //         (u = 1.47 at rho=0.9, 2.65 at rho=0.99), so the stdev is not inflated by a
+    //         steep rim and the core survives the z-score at a usable width.
     // ------------------------------------------------------------------------
     enum class PositionBasis {
-      V1_Atanh  = 0,
-      V2_NegLog = 1,
-      V3_Ratio  = 2
+      V1_Atanh     = 0,
+      V2_AtanhSqrt = 1
     };
 
     // ------------------------------------------------------------------------
@@ -275,9 +247,8 @@ namespace mu2e {
     // Opaque basis-tag packing. The SBDM stores a single int32 it never interprets;
     // VDResampler packs (ModelLayout, PositionBasis, MomentumBasis) into it and
     // unpacks on load. Encoding: peakTagged*1000 + layout*100 + position*10 + momentum,
-    // one decade per field, which caps PositionBasis and MomentumBasis at 10 entries each
-    // (3 and 4 today) and ModelLayout at 10 (3 today). Widen the strides if that is ever
-    // reached.
+    // one decade per field, which caps ModelLayout, PositionBasis and MomentumBasis at
+    // 10 entries each. Widen the strides if that is ever reached.
     //
     // This stays backward compatible with the pre-PositionBasis encoding
     // (layout*100 + momentum): an old tag has momentum < 10 in the units place and
@@ -332,9 +303,8 @@ namespace mu2e {
     }
     inline const char* positionBasisName(PositionBasis p) {
       switch (p) {
-        case PositionBasis::V1_Atanh:   return "V1_Atanh";
-        case PositionBasis::V2_NegLog: return "V2_NegLog";
-        case PositionBasis::V3_Ratio:  return "V3_Ratio";
+        case PositionBasis::V1_Atanh:     return "V1_Atanh";
+        case PositionBasis::V2_AtanhSqrt: return "V2_AtanhSqrt";
       }
       return "unknown";
     }
@@ -384,10 +354,10 @@ namespace mu2e {
     // the validation plots to build the transformed radial coordinate.
     inline double radialForward(double rho, PositionBasis basis) {
       switch (basis) {
-        case PositionBasis::V2_NegLog:
-          return -std::log(1.0 - rho);
-        case PositionBasis::V3_Ratio:
-          return rho / (1.0 - rho);
+        case PositionBasis::V2_AtanhSqrt: {
+          const double s = std::sqrt(rho);
+          return 0.5 * std::log((1.0 + s) / (1.0 - s)); // atanh(sqrt(rho))
+        }
         case PositionBasis::V1_Atanh:
         default:
           return 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(rho)
@@ -395,10 +365,10 @@ namespace mu2e {
     }
     inline double radialInverse(double u, PositionBasis basis) {
       switch (basis) {
-        case PositionBasis::V2_NegLog:
-          return 1.0 - std::exp(-u);
-        case PositionBasis::V3_Ratio:
-          return u / (1.0 + u);
+        case PositionBasis::V2_AtanhSqrt: {
+          const double th = std::tanh(u);
+          return th * th;                                  // tanh^2(u)
+        }
         case PositionBasis::V1_Atanh:
         default:
           return std::tanh(u);

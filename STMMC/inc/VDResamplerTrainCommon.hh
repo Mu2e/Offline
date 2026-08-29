@@ -386,14 +386,13 @@ inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string&
 // parsePositionBasis — convert fhicl string to PositionBasis enum. Selects the radial
 //   map u(rho), rho=r/VDr, used by the position transform; see PositionBasis in
 //   VDResamplerTransforms.hh for the resolution/density trade-offs behind the choice.
-//   V1_ATANH   : u = atanh(rho)     (historical; default, so old plans are unchanged)
-//   V2_NEGLOG  : u = -ln(1-rho)     (finer inner resolution, tightest output range)
-//   V3_RATIO   : u = rho/(1-rho)    (finest inner resolution, widest output range)
+//   V1_ATANH       : u = atanh(rho)        (historical; the module default)
+//   V2_ATANH_SQRT  : u = atanh(sqrt(rho))  (stretches the core instead of compressing it,
+//                                           so it survives the z-score at a usable width)
 // ---------------------------------------------------------------------------
 inline PositionBasis parsePositionBasis(const std::string& b, const std::string& moduleName) {
-    if (b == "V1_ATANH")  return PositionBasis::V1_Atanh;
-    if (b == "V2_NEGLOG") return PositionBasis::V2_NegLog;
-    if (b == "V3_RATIO")  return PositionBasis::V3_Ratio;
+    if (b == "V1_ATANH")      return PositionBasis::V1_Atanh;
+    if (b == "V2_ATANH_SQRT") return PositionBasis::V2_AtanhSqrt;
     mf::LogWarning(moduleName) << "Unrecognized SBDMpositionBasis value \"" << b
                                << "\"; falling back to V1_ATANH.";
     return PositionBasis::V1_Atanh;
