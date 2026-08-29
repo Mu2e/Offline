@@ -128,6 +128,20 @@ schedule_large_sample : {  # N >~ 500k
   SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 200000,  200000,  400000]
 }
 
+# ===== per-phase peak importance sampling =====
+# Same splice-one-table rule as the schedules above: every leaf must take exactly one, and must
+# never re-list the key directly. The toggle only does anything on a leaf that also defines
+# SBDMpeakWindow* -- elsewhere peaksampling_off is both the correct setting and the quiet one,
+# since enabling it without windows only earns a "no peak windows configured" warning.
+
+peaksampling_off : {       # no windows, or windows deliberately unused
+  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
+}
+
+peaksampling_late : {      # uniform while the global structure is learned, then oversample
+  SBDMtrainingCurriculumUsePeakSampling :        [  false,    true,    true]
+}
+
 core_fine_structure_config : {
   SBDMhidden : 256 # hidden slightly larger than all input dims to keep capacity, but fewer layers to reduce training time
   SBDMlayers : 5
@@ -154,7 +168,6 @@ core_fine_structure_config : {
   SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
-  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
 }
@@ -201,7 +214,6 @@ core_avg_structure_config :{
   SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
-  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
 }
@@ -248,7 +260,6 @@ core_coarse_structure_config :{
   SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
   SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
-  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
   @table::common_autoCurriculum_config
   SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
 }
@@ -269,30 +280,35 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
       @table::schedule_large_sample
+      @table::peaksampling_off
     }
     # no narrow structure so 1-stage is sufficient
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_fine_structure_1_stage_config
       @table::schedule_mid_sample
+      @table::peaksampling_off
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # few events from Neutrals, but if needed use the single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
+      @table::peaksampling_off
     }
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
   }
   # ===== positrons =====
@@ -305,18 +321,21 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # much fewer events than the electron sample, recommend using the electron model
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
+      @table::peaksampling_off
     }
     # probably not needed in Neutrals. go to default if needed
     # default
@@ -324,6 +343,7 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
+      @table::peaksampling_off
     }
   }
   # ===== photons =====
@@ -334,6 +354,7 @@ particle_training_config : {
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_large_sample
+      @table::peaksampling_off
     }
     # 347keV really hard to sample here (~60/1e6). more events in the tTransAsinh tail
     # should consider a standalone 347 keV. Only background here, 1-stage is sufficient
@@ -342,14 +363,29 @@ particle_training_config : {
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_large_sample
+      @table::peaksampling_off
     }
     # for 1809 keV from TargetStopsCat, mostly in the single peak of 1809 keV, and some lower energy events 
     # likely from scattering. to avoid issue potentially from sampling a extremely narrow peak, do the 2-stage
     # sampling with mid-range resolution
     TargetStops1809 : {
-      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_2_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_late # the only leaf with SBDMpeakWindow* configured (see below)
+      # Peak importance sampling on the TIME coordinate, 150-300 ns: the generated/mother ratio
+      # departs from 1 across that range (overshoot near 200 ns, deficit by 300), where the sharp
+      # low-time edge is under-resolved for want of statistics. tTrans is state index 0 in both
+      # the all-at-once and the V2/V3 stage-2 layouts. Bounds are in TRANSFORMED (pre-z-score)
+      # units: with t0=1700 ns and the V3 asinh map, 150 ns -> -0.177 and 300 ns -> 0.495.
+      # Oversampling reweights the loss (wIS) to stay unbiased, so this shifts where the model
+      # spends capacity without biasing the fit; it cannot create statistics that are not there.
+      SBDMpeakWindowDims  : [    0  ] # tTrans
+      SBDMpeakWindowLows  : [ -0.177] # 150 ns
+      SBDMpeakWindowHighs : [  0.495] # 300 ns
+      SBDMpeakGMaxes      : [  0.30 ] # draw up to 30% of samples from the window at low sigma
+      SBDMpeakSigma0s     : [  0.35 ] # taper scale ~ the window half-width in tTrans
+      SBDMpeakAlphas      : [  1.0  ] # 1 = unbiased: oversample the window, do NOT up-weight it
       # The 1809 keV line's TIMING distribution differs in shape from the lower-energy
       # (scattered/degraded) events around it: the line is prompt, the continuum is not. That is
       # a change in p(t | pTot) across a ~1 keV window, i.e. ~5e-4 in log(pTot) and well under
@@ -371,12 +407,14 @@ particle_training_config : {
       @table::common_avg_structure_1_stage_config
       # @table::common_avg_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
   }
   # ===== neutrons =====
@@ -386,6 +424,7 @@ particle_training_config : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # many more events in the MuBeam neutron sample. no significant tTrans tail so stay with V2 momentum basis
     MuBeam : {
@@ -393,24 +432,28 @@ particle_training_config : {
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # sufficient stat to do this if wanted
       @table::schedule_mid_sample
+      @table::peaksampling_off
     }
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
   }
   # ===== default =====
@@ -421,6 +464,7 @@ particle_training_config : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
+      @table::peaksampling_off
     }
   }
 }
