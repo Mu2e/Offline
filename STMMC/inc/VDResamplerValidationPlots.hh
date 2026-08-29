@@ -420,8 +420,8 @@ inline std::vector<DimSpec> transformedDimSpecs(MomentumBasis basis, PositionBas
     // xTrans/yTrans rather than a slot of the model's vector -- hence appended after the
     // stats loop, which indexes (*stats)[slot] over the six transform slots. Companion
     // to the physical rhoNorm in physicalDimSpecs, which explains how to read both.
-    // Axis top: radialForward(1-1e-3) is 3.8 (Atanh) and 4.2 (AtanhSqrt, whose sqrt puts
-    // the rim slightly further out while stretching the core).
+    // Axis top: radialForward(1-1e-3) is 3.8 (Atanh), 4.2 (AtanhSqrt) and 3.5 (AtanhSq),
+    // the inner power shifting the rim slightly either way.
     const double utop = (posBasis == PositionBasis::V2_AtanhSqrt) ? 4.5 : 4.;
     specs.push_back({"rhoTrans", "u = radial transform of r/VDr", "",
                      200, 0., utop, true, kRhoTransSlot});
@@ -588,7 +588,7 @@ inline std::vector<Dim2DSpec> correlationDimSpecs(MomentumBasis basis, int pdgId
     else
         // specs.push_back({zName + "_vs_t", "t [ns] per 1ns", zName + " per " + pPer,
         specs.push_back({zName + "_vs_t", "t [ns]", zName + " [MeV]",
-                         Var2D::kT, zVar, 500, 0., 500., p2bin, 0., pmax});
+                         Var2D::kT, zVar, 500, 0., 1000., p2bin, 0., pmax});
 
     // Photon line zooms: time vs energy in a +/- 15 keV window about each STM line of
     // interest. 1 keV in E gives 30 bins across the window -- enough occupancy per bin for

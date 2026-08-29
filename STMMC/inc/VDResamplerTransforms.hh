@@ -172,10 +172,30 @@ namespace mu2e {
     //       Effect 3: this is the reason to prefer it. Output range stays modest
     //         (u = 1.47 at rho=0.9, 2.65 at rho=0.99), so the stdev is not inflated by a
     //         steep rim and the core survives the z-score at a usable width.
+    //   V3_AtanhSq   : u = atanh(rho^2); rho = sqrt(tanh(u));
+    //         drho/du = (1-rho^4)/(2 rho).
+    //       The mirror image of V2: the square sends du/drho -> 0 at the centre, so the
+    //       inner region is COMPRESSED and the u range is spent further out. Fraction of
+    //       the u range (below the rim) landing in each rho band:
+    //           rho        atanh(rho)  atanh(sqrt)  atanh(rho^2)
+    //           0.0-0.2      0.203       0.481        0.040
+    //           0.2-0.4      0.221       0.264        0.121
+    //           0.4-0.6      0.270       0.286        0.216
+    //           0.6-0.8      0.406       0.412        0.381
+    //       Use it for a species whose events sit at LARGE rho, where V2 would spend most
+    //       of its resolution on a sparsely populated centre. Its cost is the mirror of
+    //       V2's benefit: the z-scored core comes out narrower (measured coreFrac 0.76
+    //       against V2's 0.68 on a rim-weighted species), so it trades Effect 3 for
+    //       Effect 1 where the mass is.
+    //
+    // All three saturate identically at the rim -- the atanh sets that, not the inner
+    // power (u-range on rho 0.9-1 is 5.78 for every one of them), so none of them buys
+    // resolution against the boundary itself.
     // ------------------------------------------------------------------------
     enum class PositionBasis {
       V1_Atanh     = 0,
-      V2_AtanhSqrt = 1
+      V2_AtanhSqrt = 1,
+      V3_AtanhSq   = 2
     };
 
     // ------------------------------------------------------------------------
@@ -305,6 +325,7 @@ namespace mu2e {
       switch (p) {
         case PositionBasis::V1_Atanh:     return "V1_Atanh";
         case PositionBasis::V2_AtanhSqrt: return "V2_AtanhSqrt";
+        case PositionBasis::V3_AtanhSq:   return "V3_AtanhSq";
       }
       return "unknown";
     }
@@ -358,6 +379,10 @@ namespace mu2e {
           const double s = std::sqrt(rho);
           return 0.5 * std::log((1.0 + s) / (1.0 - s)); // atanh(sqrt(rho))
         }
+        case PositionBasis::V3_AtanhSq: {
+          const double q = rho * rho;
+          return 0.5 * std::log((1.0 + q) / (1.0 - q)); // atanh(rho^2)
+        }
         case PositionBasis::V1_Atanh:
         default:
           return 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(rho)
@@ -369,6 +394,9 @@ namespace mu2e {
           const double th = std::tanh(u);
           return th * th;                                  // tanh^2(u)
         }
+        case PositionBasis::V3_AtanhSq:
+          // tanh(u) >= 0 for u >= 0, which radialForward always produces.
+          return std::sqrt(std::tanh(u));                   // sqrt(tanh(u))
         case PositionBasis::V1_Atanh:
         default:
           return std::tanh(u);

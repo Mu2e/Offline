@@ -387,12 +387,14 @@ inline MomentumBasis parseMomentumBasis(const std::string& b, const std::string&
 //   map u(rho), rho=r/VDr, used by the position transform; see PositionBasis in
 //   VDResamplerTransforms.hh for the resolution/density trade-offs behind the choice.
 //   V1_ATANH       : u = atanh(rho)        (historical; the module default)
-//   V2_ATANH_SQRT  : u = atanh(sqrt(rho))  (stretches the core instead of compressing it,
-//                                           so it survives the z-score at a usable width)
+//   V2_ATANH_SQRT  : u = atanh(sqrt(rho))  (stretches the centre; for centrally-peaked species)
+//   V3_ATANH_SQ    : u = atanh(rho^2)      (compresses the centre, spending the u range further
+//                                           out; for species whose mass sits at large rho)
 // ---------------------------------------------------------------------------
 inline PositionBasis parsePositionBasis(const std::string& b, const std::string& moduleName) {
     if (b == "V1_ATANH")      return PositionBasis::V1_Atanh;
     if (b == "V2_ATANH_SQRT") return PositionBasis::V2_AtanhSqrt;
+    if (b == "V3_ATANH_SQ")   return PositionBasis::V3_AtanhSq;
     mf::LogWarning(moduleName) << "Unrecognized SBDMpositionBasis value \"" << b
                                << "\"; falling back to V1_ATANH.";
     return PositionBasis::V1_Atanh;
