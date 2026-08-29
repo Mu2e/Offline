@@ -95,7 +95,7 @@ namespace mu2e {
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
     fhicl::Atom<bool> extend {Name("Extend"), Comment("Extend the fit") };
-    fhicl::Atom<std::string> mustRegrow{ Name("MustRegrow"), Comment("Required track regrowing success for event to pass")};
+    fhicl::Atom<std::string> mustRegrow{ Name("MustRegrow"), Comment("Required track regrowing success for event to pass: 'None', 'Any' or 'All'"), "None"};
 
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
