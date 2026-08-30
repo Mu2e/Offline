@@ -56,6 +56,7 @@ namespace mu2e {
       GlobalConstantsHandle<ParticleDataList> pdt;
       int pdgId = 0;
       double x = 0.0, y = 0.0, z = 0.0, mass = 0.0, E = 0.0, time = 0.0;
+      double px = 0.0, py = 0.0, pz = 0.0;
       VolumeId_type virtualdetectorId = 0;
       TTree* ttree;
       std::map<int, int> pdgIds; // <id, count>
@@ -74,6 +75,9 @@ namespace mu2e {
       ttree->Branch("y", &y, "y/D"); // mm
       ttree->Branch("z", &z, "z/D"); // mm
       ttree->Branch("E", &E, "E/D"); // MeV
+      ttree->Branch("px", &px, "px/D"); // MeV
+      ttree->Branch("py", &py, "py/D"); // MeV
+      ttree->Branch("pz", &pz, "pz/D"); // MeV
     };
 
   void VirtualDetectorTree::analyze(const art::Event& event) {
@@ -97,6 +101,9 @@ namespace mu2e {
       x = step.position().x();
       y = step.position().y();
       z = step.position().z();
+      px = step.momentum().x();
+      py = step.momentum().y();
+      pz = step.momentum().z();
       mass = pdt->particle(pdgId).mass();
       E = std::sqrt(step.momentum().mag2()+mass*mass)-mass; // Subtract the rest mass
       if (E < 0)
