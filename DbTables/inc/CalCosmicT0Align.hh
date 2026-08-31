@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
@@ -51,7 +52,7 @@ namespace mu2e {
     void addRow(const std::vector<std::string>& columns) override {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
-    if (index >= CaloConst::_nChannelDB  || index != _rows.size()) {
+    if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
         throw cet::exception("CALCOSMICT0ALIGN_BAD_INDEX")
         << "CalCosmicT0Align::addRow found index out of order: "
         <<index<< " != " << _rows.size() <<"\n";

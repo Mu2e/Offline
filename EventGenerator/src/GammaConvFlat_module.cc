@@ -16,6 +16,7 @@
 #include <string>
 #include <cmath>
 #include <memory>
+#include <limits>
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -25,11 +26,13 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 
@@ -49,6 +52,7 @@ namespace mu2e {
     explicit GammaConvFlat(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -74,6 +78,7 @@ namespace mu2e {
     , randFlat_{eng_}
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     process = ProcessCode::mu2eGammaConversion;
   }
 
@@ -146,6 +151,15 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  void GammaConvFlat::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1.,
+                                                  std::numeric_limits<double>::lowest(),
+                                                  std::numeric_limits<double>::max(),
+                                                  SpectrumConfig::Type::kFlat));
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

@@ -70,6 +70,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedHitVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_hitEntries)
   {
@@ -101,6 +102,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_caloStepPointMCVector, event, "StepPointMC", newEntries, 1);
+  createNewEntries<mu2e::CaloDigiCollection>(_caloDigiVector, event, "CaloDigi", newEntries, 2);
   createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 3);
 
   if(newEntries!=_caloHitEntries)
@@ -265,7 +267,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
-template const mu2e::KalSeedCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
+template const mu2e::KalSeedCollection*     ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
@@ -288,6 +290,9 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
     case 1 : if(typeid(CollectionType)!=typeid(mu2e::StepPointMCCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloStepPointMCVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloStepPointMCVector[index].product()));
+    case 2 : if(typeid(CollectionType)!=typeid(mu2e::CaloDigiCollection)) return(nullptr);
+             if(index>=static_cast<int>(_caloDigiVector.size())) return(nullptr);
+             return(reinterpret_cast<const CollectionType*>(_caloDigiVector[index].product()));
     case 3 : if(typeid(CollectionType)!=typeid(mu2e::CaloHitCollection)) return(nullptr);
              if(index>=static_cast<int>(_caloHitVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_caloHitVector[index].product()));
@@ -295,7 +300,8 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
   return(nullptr);
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::StepPointMCCollection>() const;
-template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
+template const mu2e::CaloDigiCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloDigiCollection>() const;
+template const mu2e::CaloHitCollection*     ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
 
 
 template<typename CollectionType>

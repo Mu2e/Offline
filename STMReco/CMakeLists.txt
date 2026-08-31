@@ -17,8 +17,8 @@ cet_build_plugin(PlotSTMEnergySpectrum art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(PlotSTMMWDSpectrum art::module
-    REG_SOURCE src/PlotSTMMWDSpectrum_module.cc
+cet_build_plugin(PlotSTMPHSpectrum art::module
+    REG_SOURCE src/PlotSTMPHSpectrum_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::GlobalConstantsService
@@ -71,7 +71,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits_testbeam.fcl   ${CURR
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd.fcl   ${CURRENT_BINARY_DIR} fcl/mwd.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/mwd_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMEnergySpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMEnergySpectrum.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMMWDSpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMMWDSpectrum.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMPHSpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMPHSpectrum.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMWaveformDigis.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMWaveformDigis.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_testbeam.fcl   COPYONLY)

@@ -215,7 +215,8 @@ namespace mu2e
 
         //time wrapping happened in the photon generator
         std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
-        CrvPhotonsCollection::const_iterator crvPhotons;
+        CrvPhotonsCollection::const_iterator crvPhotons;   //after this loop, it will point to the correct index in the photon collection, if barIndex and SiPM is found
+                                                           //otherwise it will be crvPhotonsCollection->end()
         for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
         {
           if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==(int)SiPM)
@@ -249,6 +250,9 @@ namespace mu2e
             bool darkNoise=responseIter->_darkNoise;
             if(!darkNoise)
             {
+              //crvPhotons should always point to the correct index in the photon collection, if not dark noise
+              //this exception line protects against future unintended code changes
+              if(crvPhotons==crvPhotonsCollection->end()) throw cet::exception("CrvSiPMChargeGenerator") << "invalid iterator of the photon collection";
               const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
               charges.emplace_back(time, charge, chargeInPEs, photonTimes[photonIndex]._step);
             }

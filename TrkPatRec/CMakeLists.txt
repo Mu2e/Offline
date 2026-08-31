@@ -1,7 +1,6 @@
 cet_make_library(INTERFACE INSTALLED_PATH_BASE Offline
     SOURCE
       #inc/KalFinalFit_types.hh
-      inc/KalSeedFit_types.hh
       inc/RobustHelixFinder_types.hh
       inc/RobustMultiHelixFinder_types.hh
       inc/TimeAndPhiClusterFinder_types.hh

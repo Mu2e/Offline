@@ -11,6 +11,7 @@
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitCalib.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitSeed.hh"
+#include "Offline/RecoDataProducts/inc/TrkParamHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/TrkStraw.hh"
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
@@ -45,6 +46,7 @@ namespace mu2e {
     auto const& hitCalibInfos() const { return _hitcalibs;}
     auto const& caloHit() const { return _chit; }
     auto const& straws() const { return _straws;}
+    auto const& paramHits() const { return _paramhits;}
     auto const& segments() const { return _segments; }
     auto const& intersections() const { return _inters; }
     auto const& status() const { return _status; }
@@ -69,9 +71,10 @@ namespace mu2e {
     // reconstitute (as best as possible) the fit trajectory.  The ptr will be null if the fit wasn't based on the requested trajector type
     // Note these return by value
     // Note that the returned piecetraj may have large gaps, unless the full fit trajectory was stored in the seed.
-    LHPTPtr loopHelixFitTrajectory() const;
-    CHPTPtr centralHelixFitTrajectory() const;
-    KLPTPtr kinematicLineFitTrajectory() const;
+    // Optionally override the particle Id
+    LHPTPtr loopHelixFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
+    CHPTPtr centralHelixFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
+    KLPTPtr kinematicLineFitTrajectory(PDGCode::type ptype = PDGCode::unknown) const;
 
     // global information about the track
     PDGCode::type   _tpart = PDGCode::unknown; // particle assumed for this fit
@@ -90,6 +93,7 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed>  _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStrawHitCalib> _hitcalibs; // extra calibration/alignment info
     std::vector<TrkStraw>         _straws; // straws interesected by this fit
+    std::vector<TrkParamHitSeed>  _paramhits; // parameter constraint hits
     std::vector<double>           _domainbounds; // domain time boundaries
     TrkCaloHitSeed                _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this has no content
     // static value used in regrowing

@@ -16,6 +16,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
@@ -45,6 +46,8 @@ namespace mu2e {
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
       using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>>;
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
+      using PanelDiagSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,std::string,int>>;
+      PanelDiagSHUSettings paneldiagshuConfig{ Name("PanelDiagSHUSettings"), Comment(PanelDiagSHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
@@ -69,7 +72,7 @@ namespace mu2e {
       fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<std::string> strawHitClusterLevel { Name("StrawHitClusterLevel"), Comment("Level for selecting StrawHitClusters (see StrawIdMask for details") };
-      fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of calorimeter data WRT tracker (ns)") }; // this should come from the database FIXME
+      fhicl::Atom<float> caloDt{ Name("CaloTrackerTimeOffset"), Comment("Time offset of CaloCluster WRT KKTrack extrapolated to the average shower position (ns)") }; // this is an algorithmic constant
       fhicl::Atom<float> caloPosRes{ Name("CaloPositionResolution"), Comment("Transverse resolution of CaloCluster position (mm)") }; // this should come from the CaloCluster FIXME!
       fhicl::Atom<float> caloTimeRes{ Name("CaloTimeResolution"), Comment("Effective resolution of CaloCluster time (ns)") }; // this should come from the CaloCluster FIXME!
       fhicl::Atom<float> caloPropSpeed{ Name("CaloPropagationSpeed"), Comment("Axial speed of light in a crystal (mm/ns)") }; // see doc 25320.  this should come from the CaloCluster FIXME!
@@ -95,6 +98,7 @@ namespace mu2e {
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
+      fhicl::Atom<bool> saveMatXings { Name("SaveMaterialXings"), Comment("Save generic passive material Xings (filled during extrapolation) in the KalSeed intersections"), false };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {
@@ -112,10 +116,13 @@ namespace mu2e {
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit (ns)") };
+      fhicl::Atom<float> MaxDtStep { Name("MaxDtStep"), Comment("Maximum time step when extrapolating a fit (ns)") };
+      fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum velocity perp to the surface extrapolate a straight track fit") };
       fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
-      fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
+      fhicl::Atom<bool> ToTrackerPerimeter { Name("ToTrackerPerimeter"), Comment("Extrapolate tracks to the tracker perimeter (z-ends and outer wall)") };
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
+      fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
     };
   }
 }

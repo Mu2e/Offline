@@ -13,12 +13,17 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/TrkReco/inc/KalSeedSelector.hh"
+#include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
+#include "Offline/DataProducts/inc/SurfaceId.hh"
+#include "Offline/GeneralUtilities/inc/EnumToStringSparse.hh"
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 // C++
 #include <vector>
 #include <tuple>
 #include <limits>
+#include <map>
+#include <string>
 
 namespace mu2e {
   // sorting function
@@ -33,7 +38,26 @@ namespace mu2e {
 
   class SelectSameTrack : public art::EDFilter {
     public:
-      enum bestpair {mom=0, deltat,deltap,hitfrac}; // selection options for defining the best pair
+      class BestPairDetail {
+        public:
+          enum enum_type {unknown=0, mom, deltat,deltap, hitfrac}; // options for defining the best pair
+          static std::string const& typeName() {
+            static std::string type("BestPair"); return type;
+          }
+          static std::map<enum_type,std::string> const& names() {
+            static std::map<enum_type,std::string> nam;
+            if ( nam.empty() ) {
+              nam[unknown] = "Unknown";
+              nam[mom] = "Momentum";
+              nam[deltat] = "DeltaT";
+              nam[deltap] = "DeltaP";
+              nam[hitfrac] = "HitFraction";
+            }
+            return nam;
+          }
+      };
+      typedef EnumToStringSparse<BestPairDetail> BestPair;
+
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
@@ -44,7 +68,7 @@ namespace mu2e {
         fhicl::Atom<double> maxdp{ Name("MaxDeltaP"), Comment("Maximum scalar momentum difference at tracker mid")};
         fhicl::Atom<double> minhitfrac{ Name("MinHitFrac"), Comment("Minimum number of common tracker hits")};
         fhicl::DelegatedParameter selector{ Name("Selector"), Comment("Selector parameters")};
-        fhicl::Atom<int> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
+        fhicl::Atom<std::string> selectbest{ Name("SelectBestPair"), Comment("Method to select the best pair if multiple pairs are found ")};
         fhicl::Atom<std::string> comparisonDirection{ Name("ComparisonDirection"), Comment("Direction (dZ/dt) to compare fits, 'Unknown' means test all")};
         fhicl::Atom<std::string> surface{ Name("ComparisonSurface"), Comment("Surface at which to compare fits")};
       };
@@ -63,6 +87,7 @@ namespace mu2e {
       using Parameters = art::EDFilter::Table<Config>;
       explicit SelectSameTrack(const Parameters& config);
       bool filter(art::Event& evt) override;
+      void endJob() override;
     private:
       int debug_;
       double maxdt_, maxdp_, minhf_;
@@ -70,7 +95,9 @@ namespace mu2e {
       TrkFitDirection compdir_;
       art::ProductToken<KalSeedCollection> primarytoken_, secondarytoken_;
       std::unique_ptr<KalSeedSelector> selector_;
-      bestpair selbest_;
+      BestPair selbest_;
+      bool samelist_ = false;
+      unsigned nevts_=0, nref_=0, nmultref_=0;
   };
 
   SelectSameTrack::SelectSameTrack(const Parameters& config) : art::EDFilter{config},
@@ -83,11 +110,13 @@ namespace mu2e {
     primarytoken_ { consumes<KalSeedCollection> (config().primaryTag()) },
     secondarytoken_ { consumes<KalSeedCollection> (config().secondaryTag()) },
     selector_(art::make_tool<KalSeedSelector>(config().selector.get<fhicl::ParameterSet>())),
-    selbest_(static_cast<bestpair>(config().selectbest())) {
+    selbest_(config().selectbest()) {
       produces<KalSeedPtrCollection> ();
+      samelist_ = config().primaryTag() == config().secondaryTag();
     }
 
   bool SelectSameTrack::filter(art::Event& event) {
+    ++nevts_;
     // create output
     std::unique_ptr<KalSeedPtrCollection> mkseeds(new KalSeedPtrCollection);
     auto const& priksch = event.getValidHandle<KalSeedCollection>(primarytoken_);
@@ -106,16 +135,17 @@ namespace mu2e {
           auto pritrkiinter = priks.intersections().end();
           for(auto priiinter = priks.intersections().begin(); priiinter != priks.intersections().end(); ++priiinter){
             auto const& priinter = *priiinter;
-            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() > 0.0){ // correct surface and direction
+            if(priinter.surfaceId() == compsurf_ && priinter.momentum3().Z()*compdir_.dzdt() >= 0.0){ // correct surface and direction
               if(debug_ > 1) std::cout << "Found primary intersection mom " << priinter.momentum3() << " time " << priinter.time() << std::endl;
               pritrkiinter = priiinter;
               break;
             }
           }
           // if no intersections found, skip testing for a match with this track
-          if(pritrkiinter == priks.intersections().end())break;
+          if(pritrkiinter == priks.intersections().end())continue;
           // otherwise, search for a matching secondary track
-          for(size_t isec = 0; isec <secksc.size(); ++isec){
+          size_t secstart = samelist_ ? ipri+1 : 0;
+          for(size_t isec = secstart; isec <secksc.size(); ++isec){
             auto const& secks = secksc[isec];
             if(selector_->select(secks)){
               if(debug_ > 2)std::cout << "Selected secondary track " << std::endl;
@@ -140,6 +170,7 @@ namespace mu2e {
                   for(auto const& hit: priks.hits()){
                     if(hit._ambig > WireHitState::inactive)prihits.insert(hit._index);
                   }
+                  if(prihits.empty()) continue;
                   unsigned nover(0);
                   for(auto const& hit: secks.hits()){
                     if(hit._ambig > WireHitState::inactive && prihits.find(hit._index) != prihits.end())++nover;
@@ -159,22 +190,24 @@ namespace mu2e {
       // if there are >1 matches select the best
       int ibest = -1;
       if(matches.size() >0 ){
+        ++nref_;
         ibest = 0;
         if(matches.size()>1){
-          if(debug_ > 1) std::cout << "Selecting best reflection pair from " << matches.size() << " candidates " << std::endl;
-          double value = std::numeric_limits<float>::max();
+          ++nmultref_;
+          if(debug_ > 1) std::cout << "Selecting best matching track from " << matches.size() << " candidates " << std::endl;
+          double value = (selbest_ == BestPair::deltat || selbest_ == BestPair::deltap) ? std::numeric_limits<double>::max() : 0;
           for (size_t imatch = 0; imatch < matches.size(); ++imatch) {
             auto const& match = matches[imatch];
-            if(selbest_ == mom && -match.primom_ < value){
+            if(selbest_ == BestPair::mom && match.primom_ > value){
               ibest = imatch;
-              value = -match.primom_; // sign to make highest momentum best
-            } else if(selbest_ == deltat && match.dt_ < value){
+              value = match.primom_;
+            } else if(selbest_ == BestPair::deltat && match.dt_ < value){
               ibest = imatch;
               value = match.dt_;
-            } else if(selbest_ == deltap && match.dmom_ < value){
+            } else if(selbest_ == BestPair::deltap && match.dmom_ < value){
               ibest = imatch;
               value = match.dmom_;
-            } else if(selbest_ == hitfrac && match.hfrac_ < value){
+            } else if(selbest_ == BestPair::hitfrac && match.hfrac_ > value){
               ibest = imatch;
               value = match.hfrac_;
             }
@@ -182,11 +215,11 @@ namespace mu2e {
         }
       }
       if(ibest > -1){
-        if(debug_ > 0) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
+        if(debug_ > 1) std::cout << "Found track pair candidate, primary momentum " << matches[ibest].primom_
           << " delta t " << matches[ibest].dt_
-          << " delta P " << matches[ibest].dmom_
-          << " hitfrac " << matches[ibest].hfrac_
-          << std::endl;
+            << " delta P " << matches[ibest].dmom_
+            << " hitfrac " << matches[ibest].hfrac_
+            << std::endl;
         mkseeds->emplace_back(priksch,matches[ibest].priIndex_); // store the primary track first by convention
         mkseeds->emplace_back(secksch,matches[ibest].secIndex_);
         keep = true;
@@ -194,6 +227,9 @@ namespace mu2e {
     }
     event.put(std::move(mkseeds));
     return keep;
+  }
+  void SelectSameTrack::endJob() {
+    if(debug_ > 0)std::cout << moduleDescription().moduleLabel() << " processed " << nevts_ << " events and found " << nref_ << " overlapping tracks with " << nmultref_ << " multiple matches" << std::endl;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectSameTrack)

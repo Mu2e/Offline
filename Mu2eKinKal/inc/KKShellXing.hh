@@ -9,6 +9,8 @@
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include <algorithm>
+#include <cmath>
 
 namespace mu2e {
   template <class KTRAJ,class SURF> class KKShellXing : public KinKal::ElementXing<KTRAJ> {
@@ -19,7 +21,9 @@ namespace mu2e {
       using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
       using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
       using SURFPTR = std::shared_ptr<SURF>;
-      // construct from a surface, material, intersection, and transverse thickness
+      // construct from a surface, material, intersection, and transverse thickness.
+      // Material ionization eloss mode (mpv/moyalmean/bethemean) is configured per-material in
+      // TrackerConditions/data/MaterialsList.data (KinKal 3.7.0+); no Offline path-scale correction.
       KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
       virtual ~KKShellXing() {}
       // clone op for reinstantiation
@@ -67,8 +71,9 @@ namespace mu2e {
   {
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      mxings_.emplace_back(mat_, pathlen);
     }
   }
 
@@ -90,8 +95,9 @@ namespace mu2e {
     // check if we are on the surface; if so, create the xing
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      mxings_.emplace_back(mat_, pathlen);
       fparams_ = this->parameterChange(varscale_);
     }
   }
@@ -101,7 +107,8 @@ namespace mu2e {
   }
 
   template <class KTRAJ,class SURF> double KKShellXing<KTRAJ,SURF>::transitTime() const {
-    double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
+    double dotprod = std::max(1e-6,fabs(inter_.norm_.Dot(inter_.pdir_)));
+    double pathlen = thick_/dotprod;
     return pathlen/reftrajptr_->speed();
   }
 

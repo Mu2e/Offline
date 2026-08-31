@@ -123,8 +123,8 @@ cet_make_library(
       src/PhysicsProcessInfo.cc
       src/preG4InitializeTasks.cc
       src/ReflectionProcess.cc
-      src/scorerDelayedDose.cc
-      src/scorerDoseEffective.cc
+      src/scorerDosePrompt.cc
+      src/scorerDoseResidual.cc
       src/scorerFTDConverter.cc
       src/scorerFTDTable.cc
       src/sourceProfileReader.cc

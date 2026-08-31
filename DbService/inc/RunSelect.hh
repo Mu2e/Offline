@@ -9,7 +9,6 @@ namespace mu2e {
 
 class RunSelect {
  public:
-
   // run:
   //     runnumber, like "110000", means just this one run
   //     start-stop (inclusive) like "110000-120000",
@@ -20,8 +19,7 @@ class RunSelect {
   // days only runs take in the last N days, 0 means all
   RunSelect(const std::string& run, int last, const std::string& type,
             const std::string& time, int days) :
-      _run(run),
-      _last(last), _type(type), _time(time), _days(days) {}
+      _run(run), _last(last), _type(type), _time(time), _days(days) {}
 
   const std::string& run() const { return _run; }
   int last() const { return _last; }

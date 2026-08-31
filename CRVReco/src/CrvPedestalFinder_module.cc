@@ -26,7 +26,6 @@
 
 #include <TH1F.h>
 #include <TF1.h>
-#include <TTree.h>
 
 namespace mu2e
 {
@@ -39,11 +38,13 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("module label for CrvDigis")};
-      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit")};
-      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 201};
-      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), -50.5};
-      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 150.5};
-      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal")};
+      fhicl::Atom<bool>        useNZS{Name("useNZS"), Comment("use NZS data"), false};
+      fhicl::Atom<bool>        firstSampleOnly{Name("firstSampleOnly"), Comment("only use first sample of a hit"), true};
+      fhicl::Atom<int>         histBins{Name("histBins"), Comment("pedestal histogram bins"), 401};
+      fhicl::Atom<double>      histMin{Name("histMin"), Comment("start range of pedestal histogram"), 1799.5};
+      fhicl::Atom<double>      histMax{Name("histMax"), Comment("end range of pedestal histogram"), 2200.5};
+      fhicl::Atom<double>      maxADCspread{Name("maxADCspread"), Comment("maximum spread of ADC values within a waveform to be considered for the pedestal"), 20};
+      fhicl::Atom<double>      maxADCspreadFirstTwoSamples{Name("maxADCspreadFirstTwoSamples"), Comment("maximum spread of ADC values within first two samples to be considered for the pedestal"), 3};
       fhicl::Atom<std::string> tmpDBfileName{Name("tmpDBfileName"), Comment("name of the tmp. DB file name for the pedestals")};
     };
 
@@ -56,27 +57,27 @@ namespace mu2e
 
     private:
     std::string        _crvDigiModuleLabel;
+    bool               _useNZS;
     bool               _firstSampleOnly;
     int                _histBins;
     double             _histMin, _histMax;
     double             _maxADCspread;
+    double             _maxADCspreadFirstTwoSamples;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _pedestalHists;
-
-    ProditionsHandle<CRVCalib> _calib_h;
-
-    std::vector<double> _timeOffsets;
   };
 
 
   CrvPedestalFinder::CrvPedestalFinder(const Parameters& conf) :
     art::EDAnalyzer(conf),
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
+    _useNZS(conf().useNZS()),
     _firstSampleOnly(conf().firstSampleOnly()),
     _histBins(conf().histBins()),
     _histMin(conf().histMin()),
     _histMax(conf().histMax()),
     _maxADCspread(conf().maxADCspread()),
+    _maxADCspreadFirstTwoSamples(conf().maxADCspreadFirstTwoSamples()),
     _tmpDBfileName(conf().tmpDBfileName())
   {
   }
@@ -88,7 +89,6 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     _pedestalHists.reserve(counters.size()*CRVId::nChanPerBar);
-    _timeOffsets.resize(counters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -100,7 +100,6 @@ namespace mu2e
         _pedestalHists.emplace_back(tfs->make<TH1F>(Form("crvPedestalHist_%lu",channelIndex),
                                                     Form("crvPedestalHist_%lu",channelIndex),
                                                     _histBins,_histMin,_histMax));
-        _timeOffsets[channelIndex]=0;
       }
     }
   }
@@ -141,45 +140,13 @@ namespace mu2e
       outputFile<<channel<<","<<funcPedestal.GetParameter(1)<<",-1,-1"<<std::endl;  //only print out pedestal values
     }
 
-    outputFile<<std::endl;
-
-    //time offsets
-    art::ServiceHandle<art::TFileService> tfs;
-    TTree *treeTimeOffsets = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
-    size_t channel;
-    double offset;
-    treeTimeOffsets->Branch("channel", &channel);
-    treeTimeOffsets->Branch("timeOffset", &offset);
-
-    outputFile<<"TABLE CRVTime"<<std::endl;
-    outputFile<<"#channel, timeOffset"<<std::endl;
-    for(channel=0; channel<_timeOffsets.size(); ++channel)
-    {
-      offset=_timeOffsets.at(channel);
-      outputFile<<channel<<","<<offset<<std::endl;  //write to temporary DB text file
-      treeTimeOffsets->Fill(); //fill tree
-    }
-
     outputFile.close();
   }
 
   void CrvPedestalFinder::analyze(const art::Event& event)
   {
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    if(!event.getByLabel(_crvDigiModuleLabel,"NZS",crvDigiCollection)) return;
-
-    //find time offsets from first event
-    //need to assume that this is only used for calibration runs where the time offsets stay constant over the entire run
-    static bool first=true;
-    if(first)
-    {
-      first=false;
-      auto const& calib = _calib_h.get(event.id());
-      for(size_t channelIndex=0; channelIndex<_timeOffsets.size(); ++channelIndex)
-      {
-        _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
-      }
-    }
+    if(!event.getByLabel(_crvDigiModuleLabel,(_useNZS?"NZS":""),crvDigiCollection)) return;
 
     for(auto iter=crvDigiCollection->begin(); iter!=crvDigiCollection->end(); ++iter)
     {
@@ -190,6 +157,8 @@ namespace mu2e
 
       if(_firstSampleOnly)
       {
+        if(fabs(iter->GetADCs().at(0)-iter->GetADCs().at(1))>=_maxADCspreadFirstTwoSamples) continue;
+
         hist->Fill(iter->GetADCs().at(0));
         continue;
       }

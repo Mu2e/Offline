@@ -52,6 +52,9 @@ namespace mu2e {
       _czmin(conf().czmin()),
       _czmax(conf().czmax()),
       _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _spectrumXMin(_spectrum.getXMin()),
+      _spectrumXMax(_spectrum.getXMax()),
+      _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat"),
       _internalRate((_external) ? 0. : 1.),
       _makeHistograms(conf().makeHistograms())
     {
@@ -97,15 +100,17 @@ namespace mu2e {
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) override {
+      _isPrimary = isPrimary;
       _randomUnitSphereExternal = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randomUnitSphereInternal = std::make_unique<RandomUnitSphere>(eng);
       _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
       _muonCaptureSpectrum = std::make_unique<MuonCaptureSpectrum>(_randFlat.get(), _randomUnitSphereInternal.get());
       if(_useRate) {
-        _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material));
+        _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCRate(material) * (_czmax - _czmin)/2.);
         _internalRate = GlobalConstantsHandle<PhysicsParams>()->getCaptureRMCInternalRate(material);
       }
     }
@@ -120,6 +125,9 @@ namespace mu2e {
     const double _czmin; //range of cos(theta_z) generated
     const double _czmax;
     BinnedSpectrum _spectrum; //RMC photon spectrum
+    const double _spectrumXMin;
+    const double _spectrumXMax;
+    const bool _flatSpectrum;
     std::unique_ptr<MuonCaptureSpectrum> _muonCaptureSpectrum; // internal conversion spectrum
     double _internalRate;
 
@@ -198,6 +206,15 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> RMCGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    // FIXME: calculate the spectrum fraction simulated
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (_czmax - _czmin)/2., _czmin, _czmax));
+    return config;
   }
 
 }

@@ -21,40 +21,59 @@ physics: {
   producers : {  }
   filters : {  }
   analyzers : {
-    plotHPGeWaveformDigis : {
+  
+    plotRawWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "FromSTMTestBeamData:HPGe"
+      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
-    plotLaBrWaveformDigis : {
+    
+    plotZSWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "FromSTMTestBeamData:LaBr"
+      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
 
-    plotHPGeWaveformDigisZP : {
+    plotPHWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "zeroSuppressHPGe"
+      stmWaveformDigisTag : "makeSTMDigis:phHPGe"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
-    plotLaBrWaveformDigisZP : {
+
+    plotRawWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "zeroSuppressLaBr"
+      stmWaveformDigisTag : "makeSTMDigis:rawLaBr"
       subtractPedestal : false
       verbosityLevel : 0
-      xAxis : "event_time"
+      xAxis : "sample_number"
     }
+    
+    plotZSWaveformDigisLaBr : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+    }
+
+    plotPHWaveformDigisLaBr : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisTag : "makeSTMDigis:phLaBr"
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+     }
+     
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotHPGeWaveformDigis, plotLaBrWaveformDigis,
-    plotHPGeWaveformDigisZP, plotLaBrWaveformDigisZP ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
   end_paths: [anaPath]
 }
 

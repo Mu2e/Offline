@@ -30,6 +30,7 @@
 #include "Offline/GeometryService/inc/Mu2eEnvelope.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
@@ -76,7 +77,7 @@ namespace mu2e {
 
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
 
-      bool  _geomInfoObtained = false;
+      bool  _diskInfoObtained = false;
       std::string _corsikaModuleLabel =  "FromCorsikaBinary";
 
       float _worldXmin = 0;
@@ -117,6 +118,7 @@ namespace mu2e {
   {
     produces<GenParticleCollection>();
     produces<CosmicLivetime,art::InSubRun>();
+    produces<SpectrumConfig,art::InSubRun>();
     if (_applyTimeOffset) {
       _timeOffsetTag = conf().simTimeOffset().value();
     }
@@ -132,6 +134,9 @@ namespace mu2e {
     std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(_primaries, _area, _lowE, _highE, _fluxConstant));
     std::cout << *livetime << std::endl;
     subrun.put(std::move(livetime), art::fullSubRun());
+
+    auto config = std::make_unique<SpectrumConfig>();
+    subrun.put(std::move(config), art::fullSubRun());
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)
@@ -143,7 +148,7 @@ namespace mu2e {
       _stoff = *stoH;
     }
 
-    if (!_geomInfoObtained) {
+    if (!_diskInfoObtained) {
       GeomHandle<Mu2eEnvelope> env;
       GeomHandle<WorldG4> worldGeom;
       GeomHandle<DetectorSystem> detsys;
@@ -172,12 +177,12 @@ namespace mu2e {
       {
         GeomHandle<Calorimeter> calorimeter;
         _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
-                                                 0, calorimeter->disk(0).geomInfo().origin().z());
+                                                 0, calorimeter->disk(0).diskInfo().origin().z());
       }
       else if (_refPointChoice == "UNDEFINED")
         _cosmicReferencePointInMu2e = Hep3Vector(0., 0, 0.);
 
-      _geomInfoObtained = true;
+      _diskInfoObtained = true;
     }
 
     art::Handle<mu2e::GenParticleCollection> corsikaParticles;

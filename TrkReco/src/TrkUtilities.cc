@@ -48,6 +48,7 @@ namespace mu2e {
     }
    // compute the overlap between 2 clusters
     double overlap(SHIV const& shiv1, SHIV const& shiv2) {
+      if(shiv1.empty() || shiv2.empty()) return 0.0;
       double over(0.0);
       double norm = std::min(shiv1.size(),shiv2.size());
       // count the overlapping hits

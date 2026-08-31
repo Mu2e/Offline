@@ -88,9 +88,9 @@ namespace mu2e {
     float            Chi2Par  ()        { return fChi2Par; }
     float            Chi2Perp ()        { return fChi2Perp; }
     float            Chi2Tot  ()        { return (fChi2Par+fChi2Perp); }
-    float            Chi2ParN ()        { return fChi2Par /fNHits; }
-    float            Chi2PerpN()        { return fChi2Perp/fNHits; }
-    float            Chi2TotN ()        { return (fChi2Par+fChi2Perp)/fNHits; }
+    float            Chi2ParN ()        { return (fNHits > 0) ? fChi2Par /fNHits : 0.f; }
+    float            Chi2PerpN()        { return (fNHits > 0) ? fChi2Perp/fNHits : 0.f; }
+    float            Chi2TotN ()        { return (fNHits > 0) ? (fChi2Par+fChi2Perp)/fNHits : 0.f; }
 //-----------------------------------------------------------------------------
 // 10000+idelta means that all hits of this segments, one by one, have been
 // picked up by the same delta candidate 'idelta'
@@ -103,12 +103,12 @@ namespace mu2e {
     int              nStrawHits()       { return fNStrawHits; }
 
     float            SumEDep ()         { return fSumEDep ; }
-    float            EDep    ()         { return fSumEDep/fNStrawHits ; }
+    float            EDep    ()         { return (fNStrawHits > 0) ? fSumEDep/fNStrawHits : 0.f; }
     bool             Used    ()         { return (fDeltaIndex >= 0); }
     int              Good    ()         { return (fGood       >= 0); }
 
-    float            TMean   ()         { return fSumT/fNHits;  }
-    float            Chi2Time ()        { return (fSumT2/fNHits-(fSumT/fNHits)*(fSumT/fNHits))/fSigT2; }
+    float            TMean   ()         { return (fNHits > 0) ? fSumT/fNHits : 0.f;  }
+    float            Chi2Time ()        { return (fNHits > 0 && fSigT2 > 0.f) ? (fSumT2/fNHits-(fSumT/fNHits)*(fSumT/fNHits))/fSigT2 : 0.f; }
 
     float            Z       ()         { return fZ;  }
     double           Xc      () const   { return CofM.x(); }

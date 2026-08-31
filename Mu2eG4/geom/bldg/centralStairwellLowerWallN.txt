@@ -12,8 +12,8 @@ double building.central.stairwell.lower.wall.n.yHalfThickness           = 1371.6
 vector<double> building.central.stairwell.lower.wall.n.xPositions = {
   5308.6,    // h
   5308.6,    // h0
-  11366.5,   // h1
-  11366.5    // h2
+  11617.2,   // h1
+  11617.2    // h2
 };
 
 vector<double> building.central.stairwell.lower.wall.n.yPositions = {

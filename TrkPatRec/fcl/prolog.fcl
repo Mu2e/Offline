@@ -32,7 +32,6 @@ TrkPatRec : { @table::TrkPatRec
       CaloClusterWeight      : 10.0
       TestFlag               : true
       CaloClusterMinE        : 50.0
-      CaloClusterWeight      : 10.0
       T0Calculator           : {}
       DtMax                  : 25
       MinNHits               : 10

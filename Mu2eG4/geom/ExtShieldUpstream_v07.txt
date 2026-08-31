@@ -66,7 +66,7 @@ vector<double> ExtShieldUpstream.dimsType16 = {6400.8,2743.2,25.4};
 vector<double> ExtShieldUpstream.dimsType17 = {6908.8,4876.6,25.4};
 vector<double> ExtShieldUpstream.dimsType18 = {5486.4,4978.6,25.4};
 vector<double> ExtShieldUpstream.dimsType19 = {1625.6,4978.6,25.4};
-vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6426.2};
+vector<double> ExtShieldUpstream.dimsType20 = {609.6,3810,6400.8}; // doc-db 57505
 //
 vector<double> ExtShieldUpstream.dimsType21 = {607,4110.05,1826.3};
 
@@ -158,7 +158,7 @@ vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
 vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,3031.47,  202.4};
 
 // Remote handling room door
-vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -12077.7};
+vector<double> ExtShieldUpstream.centerType20Box1 = {9392.9 ,-109.6, -12077.7}; // doc-db 57505
 // North-East external TS shielding
 vector<double> ExtShieldUpstream.centerType21Box1 = {2531.4,-252.35,1591.45};
 vector<double> ExtShieldUpstream.centerType21Box2 = {2531.4,-252.35,2201.05};

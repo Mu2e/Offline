@@ -102,6 +102,9 @@ void art::MSDHitsFromDTCEvents::produce(Event& event) {
       for (size_t blockIndex = 0; blockIndex < decoder.block_count(); blockIndex++) {
         mu2e::MobileSyncDataDecoder::sync_data_t dataPacketsVec =
             decoder.GetMobileSyncPackets(blockIndex);
+        // get channel ID of data block
+        const int rocLinkID =
+            static_cast<int>(dtcSubEvent.GetDataBlock(blockIndex)->GetHeader()->GetLinkID());
         // get number of hits in packet
         const unsigned nHitsInPacket = decoder.GetNHitsPerPacket();
         if (_debugLevel > 4) {
@@ -117,13 +120,15 @@ void art::MSDHitsFromDTCEvents::produce(Event& event) {
             mu2e::MSDHit msdHit;
             if (decoder.GetHitTime(&packet, hit, hitTime)) {
               msdHit.setTime(hitTime);
+              msdHit.setChannelID(rocLinkID);
               if (decoder.GetHitTOT(&packet, hit, hitTOT)) {
                 msdHit.setTOT(hitTOT);
               }
               msd_hits->emplace_back(msdHit);
               if (_debugLevel > 0) {
-                std::cout << "Hit " << hit << " in packet: time = " << msdHit.time()
-                          << " ns, TOT = " << msdHit.tot() << " ns" << std::endl;
+                std::cout << "Hit " << hit << " in packet: channel ID = " << msdHit.channelID()
+                          << " time = " << msdHit.time() << " ns, TOT = " << msdHit.tot()
+                          << " ns" << std::endl;
               }
             }
           }
@@ -193,4 +198,3 @@ artdaq::Fragments art::MSDHitsFromDTCEvents::getFragments(art::Event& event) {
 DEFINE_ART_MODULE(art::MSDHitsFromDTCEvents)
 
 // ======================================================================
-

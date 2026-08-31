@@ -8,7 +8,8 @@
 #define RecoDataProducts_TrkStraw_HH
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/StrawFlag.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 
 namespace mu2e {
@@ -25,7 +26,7 @@ namespace mu2e {
       _dmom(dmom)
     {
       double wallpath, gaspath, wirepath;
-      _pcalc = smat.pathLengths(pocadata,caconfig,wallpath,gaspath,wirepath);
+      _pcalc = smat.pathLengths(pocadata,caconfig.nsig_,wallpath,gaspath,wirepath);
       _wallpath = wallpath;
       _gaspath = gaspath;
       _wirepath = wirepath;

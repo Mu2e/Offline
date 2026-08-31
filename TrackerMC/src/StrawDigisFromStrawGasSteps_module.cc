@@ -447,7 +447,8 @@ namespace mu2e {
       const Tracker& tracker = *GeomHandle<Tracker>();
       _rstraw = tracker.strawProperties()._strawInnerRadius;
       if ( _printLevel > 0 ) {
-        auto const& strawphys = _strawphys_h.get(run.id());
+        // nominal subrun for debugging, calls in produce() give formal result
+        auto const& strawphys = _strawphys_h.get(art::EventID(run.run(),0,0));
         strawphys.print(cout);
       }
     }

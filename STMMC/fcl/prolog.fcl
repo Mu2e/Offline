@@ -111,7 +111,7 @@ STMMCAnalysis : {
             naverage : @local::STM.HPGe.naverage
         }
     }
-    MWD : {
+    PH : {
         HPGe : {
             stmWaveformDigisTag : {
                 ZS: "ZSHPGe:"
@@ -130,7 +130,7 @@ STMMCAnalysis : {
                 full: @local::STM.HPGe.defaultBaselineSD
                 suppressed: 0
             }
-            STMMWDDigiTag : "MWDHPGe:"
+            STMPHDigiTag : "PHHPGe:"
         }
         LaBr : {
             stmWaveformDigisTag : "ZSLaBr:"
@@ -141,7 +141,7 @@ STMMCAnalysis : {
             thresholdgrad : @local::STM.HPGe.thresholdgrad
             defaultBaselineMean : @local::STM.HPGe.defaultBaselineMean
             defaultBaselineSD : @local::STM.HPGe.defaultBaselineSD
-            STMMWDDigiTag : "MWDLaBr:"
+            STMPHDigiTag : "PHLaBr:"
         }
     }
 }

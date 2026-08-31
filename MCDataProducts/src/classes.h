@@ -21,6 +21,7 @@
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // simulation
 #include "Offline/MCDataProducts/inc/StatusG4.hh"
@@ -59,6 +60,7 @@
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
 #include "Offline/MCDataProducts/inc/CaloHitMC.hh"
+#include "Offline/MCDataProducts/inc/CaloHitEntrant.hh"
 #include "Offline/MCDataProducts/inc/CaloClusterMC.hh"
 #include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 // straws

@@ -306,7 +306,9 @@ namespace mu2e
         //calculating the end time of the last step
         double avgEnergy = 0.5*(endEnergyBefore+endEnergyAfter);
         double avgGamma  = avgEnergy/mass;
-        double avgBeta   = sqrt(1.0-1.0/(avgGamma*avgGamma));
+        double radicand  = 1.0-1.0/(avgGamma*avgGamma);
+        if(radicand<0) radicand=0;  //shouldn't happen except due to numerical precision
+        double avgBeta   = sqrt(radicand);
         double velocity  = avgBeta*CLHEP::c_light;
         endTime         += last->stepLength()/velocity;
 

@@ -29,6 +29,9 @@ bool   protonabsorber.solid        = false;
 // To make inner part shorter than MECO design
 bool   protonabsorber.isShorterCone = true;
 double protonabsorber.distFromTargetEnd = 625.; //mu2e z positions are 6901-7901 mm
+// Optional: pin the IPA at an absolute z, independent of the stopping
+// target (see MECOStyleProtonAbsorberMaker):
+// double protonabsorber.zStartInMu2e = 6901.;
 double protonabsorber.halfLength   = 500.0;
 
 bool   protonabsorber.ipa.buildSupports = true;
@@ -61,7 +64,7 @@ double protonabsorber.outerPAslotOffset         = -410.0; // mm - relative
 
 // oPA Supports are Aluminum rings that support and "hold together" the
 // OPA.  Support rings and bars for the IPA are also included here
-string protonabsorber.oPASupportMaterialName = "StainlessSteel316";
+string protonabsorber.oPASupportMaterialName = "Al6061";
 int    protonabsorber.oPASupportNSupportRing = 6;
 vector<double> protonabsorber.oPASupportInnerRadii = {506.3, 564.4, 665.0, 662.  , 721.  , 665.0}; //index 2 and 5 are 378.4 mm + 2*half lengths apart
 vector<double> protonabsorber.oPASupportOuterRadii = {606.3, 714.4, 685.0, 761.25, 819.35, 685.0};
@@ -77,18 +80,18 @@ double  protonabsorber.oPASupportSlatHeight = 20.0; // mm
 double  protonabsorber.oPASupportSlatWidth  = 50.0; // mm
 double  protonabsorber.oPASupportSlatLength = 800.0; // mm - Same as ST
 
-vector<string> protonabsorber.oPASupportMaterials = { "StainlessSteel316"
-                                                      ,"StainlessSteel316"
-                                                      ,"StainlessSteel316"
-                                                      ,"StainlessSteel316"
-                                                      ,"StainlessSteel316"
-                                                      ,"StainlessSteel316"};
+vector<string> protonabsorber.oPASupportMaterials = { "Al6061"
+                                                      ,"Al6061"
+                                                      ,"Al6061"
+                                                      ,"Al6061"
+                                                      ,"Al6061"
+                                                      ,"Al6061"};
 //slats for the stopping target supports
 int            protonabsorber.nOPASupportSlats             = 3;
 vector<double> protonabsorber.oPASupportSlatAngles         = {0.,120.,240.}; // degrees
 vector<int>    protonabsorber.oPASupportSlatTypes          = {0 ,  1 ,  0 };
 int            protonabsorber.nOPASupportSlatTypes         = 2;
-vector<string> protonabsorber.oPASupportSlatMaterials      = { "StainlessSteel316", "StainlessSteel316"};
+vector<string> protonabsorber.oPASupportSlatMaterials      = { "Al6061", "Al6061"};
 vector<string> protonabsorber.oPASupportSlatFillMaterials  = { "BronzeC642"       , "G4_Al"            };
 vector<double> protonabsorber.oPASupportSlatHeights        = {  45. ,   40.  }; // mm
 vector<double> protonabsorber.oPASupportSlatWidths         = {  127.,   35.  }; // mm
@@ -119,7 +122,7 @@ vector<int>    protonabsorber.crossSupportTwoIndex    = {  5   ,  5   ,  5   }; 
 vector<double> protonabsorber.crossSupportPhis        = { -20.  ,100.  ,220.  }; //phi about ring
 vector<double> protonabsorber.crossSupportHeights     = {228.6 ,228.6 ,228.6 }; //height of box, width of box from ring separation
 vector<double> protonabsorber.crossSupportRadii       = {665.  ,665.  ,665.  }; //radius of the support center
-string         protonabsorber.crossSupportMaterial    = "StainlessSteel316";
+string         protonabsorber.crossSupportMaterial    = "Al6061";
 
 
 // This tells emacs to view this file in c++ mode.

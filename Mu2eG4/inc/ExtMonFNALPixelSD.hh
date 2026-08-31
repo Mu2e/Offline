@@ -23,13 +23,13 @@ namespace mu2e {
   class ExtMonFNALPixelSD : public G4VSensitiveDetector {
 
     // Non-owning pointer to the  collection into which hits will be added.
-    ExtMonFNALSimHitCollection* _collection;
+    ExtMonFNALSimHitCollection* _collection = nullptr;
 
     // Limit maximum size of the steps collection
     unsigned _sizeLimit;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
-    const SimParticleHelper *_spHelper;
+    const SimParticleHelper *_spHelper = nullptr;
 
     const mu2e::ExtMonFNAL::ExtMon *_extmon;
 

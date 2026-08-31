@@ -58,10 +58,10 @@ namespace mu2e {
       int        nHits                () const { return fNHits; }
       int        nStrawHits           () const { return fNStrawHits; }
       DeltaSeed* Seed            (int I) const { return fSeed[I]; }
-      bool       StationUsed     (int I) const { return (fSeed[I] != NULL); }
+      bool       StationUsed     (int I) const { return (fSeed[I] != nullptr); }
       int        LastStation          () const { return fLastStation ; }
       int        FirstStation         () const { return fFirstStation; }
-      float      EDep                 () const { return fSumEDep/fNStrawHits; }
+      float      EDep                 () const { return (fNStrawHits > 0) ? fSumEDep/fNStrawHits : 0.f; }
       double     Xc                   () const { return CofM.x(); }
       double     Yc                   () const { return CofM.y(); }
       double     Rho                  () const { return CofM.Rho(); }

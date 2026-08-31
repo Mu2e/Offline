@@ -40,9 +40,13 @@ class DbTable {
   // if table needs to be sorted
   virtual const std::string orderBy() const { return std::string(); }
   virtual tableType type() const { return Calibration; }
+  // the hash of the csv content
+  const std::string& hash() const { return _hash; }
 
   // take the cvs text from a query and build out the table contents
   int fill(const std::string& csv, bool saveCsv = true);
+  // fill the hash member
+  void hashCsv();
   // in case table was filled with binary values, convert to csv
   int toCsv();
 
@@ -52,13 +56,14 @@ class DbTable {
   virtual void rowToCsv(std::ostringstream& stream, size_t irow) const = 0;
   // remove all rows
   virtual void clear() = 0;
-  void baseClear() { _csv.clear(); }
+  void baseClear() { _csv.clear(); _hash.clear(); }
 
  private:
   std::string _name;
   std::string _dbname;
   std::string _query;
   std::string _csv;
+  std::string _hash;
 };
 
 }  // namespace mu2e

@@ -6,6 +6,7 @@ if len(sys.argv) != 5:
   print("nChannels=22016 when using the full old CRV\"")
   print("nChannels=21376 when using the full new CRV\"")
   print("nChannels=2048 when using the extracted position\"")
+  print("nChannels=2304 when using the extracted position with muon taggers\"")
   sys.exit()
 
 nChannels=int(sys.argv[1])

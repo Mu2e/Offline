@@ -170,11 +170,13 @@ int mu2e::DbTool::printCalibration() {
   args["user"] = "";
   args["cid"] = "";
   args["ctime"] = "";
+  args["hash"] = "";
   if ((rc = getArgs(args))) return rc;
   std::string name = args["name"];
   std::string user = args["user"];
   std::vector<int>  cids = intList(args["cid"]);
   timeInterval tint = parseInterval(args["ctime"]);
+  std::string chash = args["hash"];
 
   // if this is a val table, just exit - there is no summary line
   if (name.substr(0, 3) == "Val") {
@@ -202,7 +204,9 @@ int mu2e::DbTool::printCalibration() {
       if (tid < 0 || cc.tid() == tid) {
         if (user.empty() || user == cc.create_user()) {
           if (tint.start == 0 || inTime(tint, cc.create_time())) {
-            cids.push_back(cc.cid());
+            if (chash.empty() || chash == cc.chash() ) {
+              cids.push_back(cc.cid());
+            }
           }
         }
       }
@@ -496,8 +500,9 @@ int mu2e::DbTool::printTable() {
         "         time"
      << std::endl;
   for (auto const& r : tt.rows()) {
-    ss << std::setw(3) << r.tid() << std::setw(20) << r.name() << std::setw(22)
-       << r.dbname() << "  " << std::setw(15) << r.create_user() << "  "
+    ss << std::setw(3) << r.tid() << " " << std::setw(22) << r.name()
+       << std::setw(22) << r.dbname() << "  "
+       << std::setw(15) << r.create_user() << "  "
        << r.create_time() << std::endl;
   }
   _result.append(ss.str());
@@ -764,9 +769,9 @@ int mu2e::DbTool::printCIDLine(int cid, int indent) {
   auto name = tids.row(cr.tid()).name();
 
   std::stringstream ss;
-  ss << "CID " << std::setw(5 + 4 * std::max(indent, 0)) << cid << std::setw(20)
-     << name << std::setw(12) << cr.create_user() << std::setw(35)
-     << cr.create_time() << std::endl;
+  ss << "CID " << std::setw(5 + 4 * std::max(indent, 0)) << cid << std::setw(22)
+     << name << std::setw(12) << cr.create_user()
+     << std::setw(35) << cr.create_time() << std::endl;
   _result.append(ss.str());
 
   return 0;
@@ -943,6 +948,7 @@ int mu2e::DbTool::commitCalibration() {
   args["file"] = "";
   args["addIOV"] = "";
   args["addGroup"] = "";
+  args["verify"] = "";
   if ((rc = getArgs(args))) return rc;
 
   if (args["file"].empty()) {
@@ -952,6 +958,7 @@ int mu2e::DbTool::commitCalibration() {
 
   bool qai = !args["addIOV"].empty();
   bool qag = !args["addGroup"].empty();
+  bool qverify = !args["verify"].empty();
 
   if (qag && !qai) {
     std::cout << "commit-calibration: addGroup requested without addIOV "
@@ -976,6 +983,18 @@ int mu2e::DbTool::commitCalibration() {
     std::cout << "commit-calibration: no table found in file " << args["file"]
               << std::endl;
     return 2;
+  }
+
+  if (qverify) {
+    for (auto lt : coll) {
+      std::stringstream ss;
+      ss << std::setw(25) << lt.table().name()
+         << std::setw(30) << lt.iov().to_string(true)
+         << std::setw(18) << lt.table().hash() << std::endl;
+      _result.append(ss.str());
+      if (_verbose > 5) std::cout << lt.table().csv();
+    }
+    return 0;
   }
 
   rc = commitCalibrationList(coll, qai, qag, _admin);
@@ -1025,13 +1044,21 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection& coll, bool qai,
 
     liveTable.setTid(tid);
 
+    if (ptr->hash().empty()) {
+      std::cout
+        << "DbTool::commitCalibrationList found empty hash summary for table named "
+        << liveTable.table().name() << std::endl;
+      return 1;
+    }
+
     command = "SET ROLE val_role;";
     rc = _sql.execute(command, result);
     if (rc != 0) return rc;
 
     command =
-        "INSERT INTO val.calibrations (tid,create_time,create_user)  VALUES (" +
-        std::to_string(tid) + ",CURRENT_TIMESTAMP,SESSION_USER) RETURNING cid;";
+        "INSERT INTO val.calibrations (tid,chash,create_time,create_user)  VALUES (" +
+      std::to_string(tid) + ",'" + ptr->hash() +
+      "',CURRENT_TIMESTAMP,SESSION_USER) RETURNING cid;";
     rc = _sql.execute(command, result);
     if (rc != 0) return rc;
 
@@ -2223,7 +2250,7 @@ int mu2e::DbTool::commitPatch() {
 
     // check that this group does not include any tables to be dropped
     for (int t : droptids) {
-      if (omap.find(t) == omap.end()) {
+      if (omap.find(t) != omap.end()) {
         omap.erase(t);
         remakegroup = true;
         if (_verbose > 1) {
@@ -2492,8 +2519,10 @@ int mu2e::DbTool::verifySet() {
   int nmiss = 0;
   for (auto t : tids) {
     if (iovv.find(t) == iovv.end()) {
-      std::cout << "Error - TID " << t
-                << " not found in the set near the requested runs" << std::endl;
+      std::stringstream ss;
+        ss << "Error - TID " << t
+           << " not found in the set near the requested runs\n";
+      _result.append(ss.str());
       nmiss++;
     }
   }
@@ -2529,8 +2558,10 @@ int mu2e::DbTool::verifySet() {
 
     for (auto const& ii : list) {
       if (!ii.isNull()) {
-        std::cout << "Missing coverage - TID " << tid << "  range "
-                  << ii.to_string(true) << std::endl;
+        std::stringstream ss;
+        ss << "Missing coverage - TID " << tid << "  range "
+                  << ii.to_string(true) << "\n";
+        _result.append(ss.str());
         nbad++;
       }
     }
@@ -2542,8 +2573,7 @@ int mu2e::DbTool::verifySet() {
      << " missing tables and " << nbad << " missing IoVs " << std::endl;
   _result.append(ss.str());
 
-  if (nmiss > 0 || nbad > 0) rc = 1;
-  return rc;
+  return 0;
 }
 
 // ****************************************  testUrl
@@ -2735,6 +2765,7 @@ int mu2e::DbTool::help() {
            " [OPTIONS]\n"
            "    --name NAME : name of the table\n"
            "    --user USERNAME : only print tables committed by this user \n"
+           "    --hash HASH : only print table with this content hash \n"
            "    --ctime TIME/TIME : only print contents created in this "
            "interval \n"
            "    --cid INT or INT LIST : only print this cid \n"
@@ -2888,6 +2919,7 @@ int mu2e::DbTool::help() {
                  "    --addGroup : after adding IOV's, also create a new group "
                  "(requires --addIOV)\n"
                  "    --dry-run : do everything except final database commit\n"
+                 "    --verify : only read file and summarize with hash\n"
               << std::endl;
   } else if (_action == "commit-iov") {
     std::cout

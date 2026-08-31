@@ -51,9 +51,9 @@ physics: {
       StepPointMCsTag : @local::SimplifyStage2Data.StepPointMCsTagSTMDet
       SimParticlemvTag : @local::SimplifyStage2Data.SimParticlemvTag
     }
-    MWDSpectra : {
-      module_type : MWDTree
-      STMMWDDigiTag : @local::STMMCAnalysis.MWD.HPGe.STMMWDDigiTag
+    PHSpectra : {
+      module_type : PHTree
+      STMPHDigiTag : @local::STMMCAnalysis.PH.HPGe.STMPHDigiTag
       EnergyCalib : @local::HPGeDigitization.EnergyPerADCBin
     }
   }

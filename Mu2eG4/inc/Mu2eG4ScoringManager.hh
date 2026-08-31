@@ -20,7 +20,7 @@ namespace mu2e {
     public:
       enum class ScorerCode{CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux,
                             TrackCounter, PassageCellFlux, VolumeFlux,
-                            DoseEffective,DelayedDose,Unknown};
+                            PromptDoseEff,PromptDoseAmb,ResidualDoseEff,ResidualDoseAmb,Unknown};
       enum class ParticleCode{Electron, Pion, Proton, Neutron, Photon, Unknown};
 
 

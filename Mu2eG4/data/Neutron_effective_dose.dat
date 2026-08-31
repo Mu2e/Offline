@@ -1,4 +1,5 @@
-Neutrons: Effective dose per fluence, in units of pSv cm², for monoenergetic particles incident in various geometries.
+Neutrons: Effective dose per fluence, in units of pSv cm2, for monoenergetic particles incident in various geometries.
+Data from ICRP 116
 
 Energy (MeV)        AP           PA           LLAT         RLAT         ROT          ISO
      1.0E-9        3.09         1.85         1.04         0.893        1.70         1.29

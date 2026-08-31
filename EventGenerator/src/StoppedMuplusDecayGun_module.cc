@@ -17,6 +17,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "Offline/SeedService/inc/SeedService.hh"
 
@@ -26,6 +27,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Offline/GeneralUtilities/inc/RSNTIO.hh"
@@ -58,6 +60,7 @@ namespace mu2e {
   public:
     explicit StoppedMuplusDecayGun(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
+    virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
@@ -74,6 +77,7 @@ namespace mu2e {
     , flat_        (eng_)
   {
     produces<mu2e::GenParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
   }
 
   //================================================================
@@ -98,6 +102,14 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     output->emplace_back(PDGCode::e_plus, GenId::muplusDecayGun, pos, p4, stop.t);
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void StoppedMuplusDecayGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., emin_, muMass()/2.));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

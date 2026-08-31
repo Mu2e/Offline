@@ -8,6 +8,7 @@ using namespace std;
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
+#include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/EventDisplay/src/Cube.h"
@@ -33,6 +34,7 @@ using namespace std;
 #include "Offline/ConfigTools/inc/SimpleConfig.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
+#include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
@@ -358,30 +360,30 @@ void DataInterface::fillGeometry()
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
 
-    double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
-    double diskRadiusIn          = calo->caloInfo().getDouble("caloDiskRadiusIn");
-    double diskRadiusOut         = calo->caloInfo().getDouble("caloDiskRadiusOut");
+    double diskCaseDZLength      = calo->G4Info().get<double>("diskCaseZLength")/2.0;
+    double diskRadiusIn          = calo->G4Info().get<double>("caloDiskRadiusIn");
+    double diskRadiusOut         = calo->G4Info().get<double>("caloDiskRadiusOut");
 
-    double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
-    double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
-    double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
-    double pipeRadius               = calo->caloInfo().getDouble("pipeRadius");
+    double FPCarbonDZ               = calo->G4Info().get<double>("FPCarbonZLength")/2.0;
+    double FPFoamDZ                 = calo->G4Info().get<double>("FPFoamZLength")/2.0;
+    double FPCoolPipeRadius         = calo->G4Info().get<double>("FPCoolPipeRadius");
+    double pipeRadius               = calo->G4Info().get<double>("pipeRadius");
     double frontPanelHalfThick      = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
 
-    double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
-    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;
-    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalCapZLength")/2.0;
-    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;
+    double crystalDXY            = calo->G4Info().get<double>("crystalXYLength")/2.0;
+    double crystalDZ             = calo->G4Info().get<double>("crystalZLength")/2.0;
+    double crystalFrameDZ        = calo->G4Info().get<double>("crystalCapZLength")/2.0;
+    double wrapperHalfThick      = calo->G4Info().get<double>("wrapperThickness")/2.0;
     double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
     double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
 
-    double FEEDZ                = calo->caloInfo().getDouble("FEEZLength")/2.0;
-    double FEEBoxThickness      = calo->caloInfo().getDouble("FEEBoxThickness");
+    double FEEDZ                = calo->G4Info().get<double>("FEEZLength")/2.0;
+    double FEEBoxThickness      = calo->G4Info().get<double>("FEEBoxThickness");
     double FEEBoxDZ             = FEEDZ + 2*FEEBoxThickness;
-    double BPPipeRadiusHigh     = calo->caloInfo().getDouble("BPPipeRadiusHigh");
-    double BPPipeDZOffset       = calo->caloInfo().getDouble("BPPipeZOffset")/2.0;
+    double BPPipeRadiusHigh     = calo->G4Info().get<double>("BPPipeRadiusHigh");
+    double BPPipeDZOffset       = calo->G4Info().get<double>("BPPipeZOffset")/2.0;
     double BPFEEDZ              = FEEBoxDZ + BPPipeDZOffset + BPPipeRadiusHigh;
-    double holeDZ               = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
+    double holeDZ               = calo->G4Info().get<double>("BPHoleZLength")/2.0;
     double zHalfBP              = BPFEEDZ+holeDZ;
 
     double crystalDiskLogOffset = frontPanelHalfThick - zHalfBP;
@@ -389,7 +391,7 @@ void DataInterface::fillGeometry()
     size_t icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisks(); idisk++)
     {
-      CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
+      CLHEP::Hep3Vector diskPos = calo->disk(idisk).diskInfo().origin() - _detSysOrigin;
       diskPos += CLHEP::Hep3Vector(0.0, 0.0, crystalDiskLogOffset);
 
       findBoundaryP(_calorimeterMinmax, diskPos.x()+diskRadiusOut, diskPos.y()+diskRadiusOut, diskPos.z()+diskCaseDZLength);
@@ -971,6 +973,35 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
           crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
           crystal->second->getComponentInfo()->expandLine(4,Form("%i",trackid));
+        }
+      }
+    }
+  }
+
+  const mu2e::CaloDigiCollection *calodigis=contentSelector->getSelectedCaloHitCollection<mu2e::CaloDigiCollection>();
+  if(calodigis!=nullptr)
+  {
+    _numberCrystalHits=calodigis->size();
+    std::vector<mu2e::CaloDigi>::const_iterator iter;
+    for(iter=calodigis->begin(); iter!=calodigis->end(); iter++)
+    {
+      const mu2e::CaloDigi& calodigi = *iter;
+      size_t crystalid = mu2e::CaloSiPMId(calodigi.SiPMID()).crystal().id();
+      double time = calodigi.t0();
+      std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
+      if(crystal!=_crystals.end() && !std::isnan(time))
+      {
+        double previousStartTime=crystal->second->getStartTime();
+        if(std::isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crystal->second->setStartTime(time);
+          crystal->second->getComponentInfo()->setText(2,Form("hit time(s): %gns",time/CLHEP::ns));
+          _crystalhits.push_back(crystal->second);
+        }
+        else
+        {
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
         }
       }
     }

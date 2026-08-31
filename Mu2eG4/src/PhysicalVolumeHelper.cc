@@ -72,7 +72,7 @@ namespace mu2e {
     if ( physVolIter == _volumeMap.end() ){
       string message;
       if ( _volumeMap.empty() ){
-        message = "The map is empty.  Is it not yet intialized?";
+        message = "The map is empty.  Is it not yet initialized?";
       } else{
         message = "The map is not empty: something has been corrupted.";
       }

@@ -66,7 +66,7 @@ namespace mu2e {
       cout.width(newwdth);
 
       cout << "Placing " << info.name;
-      if (parent!=0) {
+      if (parent!=nullptr) {
         cout << " inside " << parent->GetName()<< endl;
       } else {
         cout << endl;
@@ -74,7 +74,7 @@ namespace mu2e {
       cout << scientific << setprecision(newpr) << setw(newwdth) << right << *info.solid << endl;
       cout << "Offset " << offset << endl;
       cout << "Rotation ";
-      if (rot != 0) {
+      if (rot != nullptr) {
         rot->print(cout);
         cout << endl;
         cout << "Tolerance " << rot->getTolerance() << endl;
@@ -129,9 +129,9 @@ namespace mu2e {
                                                    false,
                                                    copyNo,
                                                    false) // we do not check for overlaps at first
-                              : 0x0;
+                              : nullptr;
 
-    if ( doSurfaceCheck && info.physical!=0x0) {
+    if ( doSurfaceCheck && info.physical!=nullptr) {
       checkForOverlaps( info.physical, _config, verbose);
     }
 

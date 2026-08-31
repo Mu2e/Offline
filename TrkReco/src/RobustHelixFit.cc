@@ -578,7 +578,7 @@ bool RobustHelixFit::initFZ_2(RobustHelixFinderData& HelixData) {
       for (int n=nmin; n<=nmax; n++) { //
         double x = dphidz + n*2*M_PI/dz;
         int bin = (x-minX)/stepX;
-        hist[bin] += weight;
+        if(bin >= 0 && bin < int(nbinsX)) hist[bin] += weight;
       }
     }
   }
@@ -1273,7 +1273,7 @@ void RobustHelixFit::findAGE(RobustHelixFinderData const& HelixData, XYZVectorF 
   {
     // mu2e::GeomHandle<mu2e::Calorimeter> ch;
     // const Calorimeter* calo = ch.get();
-    XYZVectorF cog(_calorimeter->geomUtil().mu2eToTracker(_calorimeter->geomUtil().diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
+    XYZVectorF cog(_calorimeter->mu2eToTracker(_calorimeter->diskFFToMu2e(HelixData._hseed.caloCluster()->diskID(),HelixData._hseed.caloCluster()->cog3Vector())));
     float rad = sqrtf(XYZVectorF(cog - center).perp2());
     radii.push_back(make_pair(rad,_ccwt));
   }

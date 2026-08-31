@@ -40,6 +40,7 @@ namespace mu2e
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("module label of the input CrvRecoPulses")};
+      fhicl::Atom<bool>        useNZS{Name("useNZS"), Comment("use NZS data"), false};
       fhicl::Atom<int>         histBinsPulseArea{Name("histBinsPulseArea"), Comment("pulseArea histogram bins"), 300};
       fhicl::Atom<int>         histBinsPulseHeight{Name("histBinsPulseHeight"), Comment("pulseHeight histogram bins"), 300};
       fhicl::Atom<double>      histMaxPulseArea{Name("histMaxPulseArea"), Comment("end range of pulseArea histogram"), 3000.0};
@@ -69,6 +70,7 @@ namespace mu2e
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
+    bool               _useNZS;
     int                _histBinsPulseArea, _histBinsPulseHeight;
     double             _histMaxPulseArea, _histMaxPulseHeight;
     double             _fitRangeStart, _fitRangeEnd;
@@ -85,13 +87,13 @@ namespace mu2e
     ProditionsHandle<CRVCalib> _calib_h;
 
     std::vector<double> _pedestals;
-    std::vector<double> _timeOffsets;
   };
 
 
   CrvCalibration::CrvCalibration(const Parameters& conf) :
     art::EDAnalyzer(conf),
     _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
+    _useNZS(conf().useNZS()),
     _histBinsPulseArea(conf().histBinsPulseArea()),
     _histBinsPulseHeight(conf().histBinsPulseHeight()),
     _histMaxPulseArea(conf().histMaxPulseArea()),
@@ -119,7 +121,6 @@ namespace mu2e
     _calibHistsPulseArea.reserve(counters.size()*CRVId::nChanPerBar);
     _calibHistsPulseHeight.reserve(counters.size()*CRVId::nChanPerBar);
     _pedestals.resize(counters.size()*CRVId::nChanPerBar);
-    _timeOffsets.resize(counters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -135,7 +136,6 @@ namespace mu2e
                                                  Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
                                                  _histBinsPulseHeight,0,_histMaxPulseHeight));
         _pedestals[channelIndex]=0;
-        _timeOffsets[channelIndex]=0;
       }
     }
   }
@@ -177,30 +177,13 @@ namespace mu2e
       treePedestal->Fill(); //fill tree
     }
 
-    outputFile<<std::endl;
-
-    //time offsets
-    TTree *treeTimeOffset = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
-    double offset;
-    treeTimeOffset->Branch("channel", &channel);
-    treeTimeOffset->Branch("timeOffset", &offset);
-
-    outputFile<<"TABLE CRVTime"<<std::endl;
-    outputFile<<"#channel,timeOffset"<<std::endl;
-    for(channel=0; channel<_timeOffsets.size(); ++channel)
-    {
-      offset=_timeOffsets.at(channel);
-      outputFile<<channel<<","<<offset<<std::endl;  //write to DB text file
-      treeTimeOffset->Fill(); //fill tree
-    }
-
     outputFile.close();
   }
 
   void CrvCalibration::analyze(const art::Event& event)
   {
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
-    if(!event.getByLabel(_crvRecoPulsesModuleLabel,"NZS",crvRecoPulseCollection)) return;
+    if(!event.getByLabel(_crvRecoPulsesModuleLabel,(_useNZS?"NZS":""),crvRecoPulseCollection)) return;
 
     //find pedestals and time offsets from first event
     //need to assume that this is only used for calibration runs where both values stay constant over the entire run
@@ -212,7 +195,6 @@ namespace mu2e
       for(size_t channelIndex=0; channelIndex<_pedestals.size(); ++channelIndex)
       {
         _pedestals[channelIndex] = calib.pedestal(channelIndex);
-        _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
       }
     }
 

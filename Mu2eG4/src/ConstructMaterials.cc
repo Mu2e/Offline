@@ -1,4 +1,4 @@
-//
+ //
 // Construct materials requested by the run-time configuration system.
 //
 
@@ -1334,6 +1334,15 @@ namespace mu2e {
       CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
     }
 
+    mat = uniqueMaterialOrThrow("IPAPolystyrene");
+    {
+      // We used an explicity density here
+      // Reflects the corrected density for End Ring material
+      G4double IPAEffectiveDensity = 0.426*CLHEP::g/CLHEP::cm3; //explicit density refer to Doc-57487-v3
+      G4Material* IPAPolystyrene = new G4Material( mat.name, IPAEffectiveDensity, 2);
+      IPAPolystyrene->AddElement( getElementOrThrow("C"), 8);
+      IPAPolystyrene->AddElement( getElementOrThrow("H"), 8);
+    }
 
     //G10-FR4 used for printed board of the I-Tracker
     // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html
@@ -1830,6 +1839,14 @@ namespace mu2e {
      Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_Ti"),(100.- AlPercentage -VPercentage)*CLHEP::perCent);
      Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_Al"),AlPercentage*CLHEP::perCent);
      Ti6Al4V->AddMaterial(findMaterialOrThrow("G4_V"),VPercentage*CLHEP::perCent);
+    }
+
+    // COL5 poly
+    mat = uniqueMaterialOrThrow("COL5Poly");
+    {
+      G4Material* met = findMaterialOrThrow("G4_POLYETHYLENE");
+      G4Material* poly = new G4Material(mat.name, met->GetDensity(), 1);
+      poly->AddMaterial(met, 1.);
     }
 
     // Add new materials before this line

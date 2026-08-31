@@ -11,12 +11,14 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/types/Sequence.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 #include "Offline/EventGenerator/inc/ExtMonFNALGunImpl.hh"
 
@@ -31,6 +33,7 @@ namespace mu2e {
 
     void produce(art::Event& event) override;
     void beginRun(art::Run& run) override;
+    void endSubRun(art::SubRun& sr) override;
   public:
 
     struct Config {
@@ -52,6 +55,7 @@ namespace mu2e {
     , engine_{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
       produces<GenParticleCollection>();
+      produces<SpectrumConfig, art::InSubRun>();
       if(conf_.empty()) {
         throw cet::exception("BADCONFIG")<<"Error: no ExtMon guns defined.\n";
       }
@@ -70,6 +74,11 @@ namespace mu2e {
       gun->generate(*output);
     }
     event.put(std::move(output));
+  }
+
+  void ExtMonFNALGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 
 } // namespace mu2e

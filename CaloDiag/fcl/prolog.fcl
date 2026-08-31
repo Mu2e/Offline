@@ -1,0 +1,34 @@
+#include "Offline/Compression/fcl/prolog.fcl"
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+#include "Offline/CaloCluster/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+CaloNNDiag : {
+  module_type            : CaloNNDiag
+  vdCollection           : "compressDigiMCs:virtualdetector"
+  caloHitCollection      : CaloHitMaker
+  caloClusterCollection  : CaloClusterMaker
+  caloHitTruth           : CaloHitTruthMatch
+  caloClusterTruth       : CaloClusterTruthMatch
+  minCluEnergy           : 0
+}
+
+CaloNNTrain: {
+  module_type             : CaloNNTrain
+  caloClusterCollection   : CaloClusterMaker
+  caloClusterMCCollection : CaloClusterTruthMatch
+  minEtoTest              : 40
+  MCEdepCut               : 3
+  diagLevel               : 0
+}
+
+
+CaloDiag : {
+  analyzers : {
+    CaloNNDiag     : @local::CaloNNDiag
+    CaloNNTrain    : @local::CaloNNTrain
+  }
+}
+
+END_PROLOG

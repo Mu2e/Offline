@@ -4,10 +4,10 @@ string building.central.stairwell.upper.wall.n.name     = "CentralStairwellUpper
 string building.central.stairwell.upper.wall.n.material = "CONCRETE_MARS";
 
 double building.central.stairwell.upper.wall.n.offsetFromMu2eOrigin.x   = 947.4;
-double building.central.stairwell.upper.wall.n.offsetFromFloorSurface.y = 6578.6;
+double building.central.stairwell.upper.wall.n.offsetFromFloorSurface.y = 6667.5;
 double building.central.stairwell.upper.wall.n.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.central.stairwell.upper.wall.n.yHalfThickness           = 787.4;
+double building.central.stairwell.upper.wall.n.yHalfThickness           = 876.3;
 
 vector<double> building.central.stairwell.upper.wall.n.xPositions = {
   12014.2,    // h

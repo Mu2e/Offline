@@ -23,7 +23,7 @@ namespace mu2e {
     diag_ = std::get<7>(config);
     if(diag_ > 0)
       std::cout << "DriftANNSHU LR sign weights " << std::get<0>(config) << " cut " << signmvacut_
-        << " cluster weights " << std::get<0>(config) << " cut " << clustermvacut_ << " dt cut " << dtmvacut_
+        << " cluster weights " << std::get<2>(config) << " cut " << clustermvacut_ << " dt cut " << dtmvacut_
         << " freezing " << freeze_ << " flags " << flag << " diag " << diag_ << std::endl;
   }
 

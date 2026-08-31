@@ -1,5 +1,6 @@
 cet_make_library(
     SOURCE
+      src/CaloConst.cc
       src/CaloRawSiPMId.cc
       src/CaloSiPMId.cc
       src/CompressedPDGCode.cc

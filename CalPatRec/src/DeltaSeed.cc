@@ -38,7 +38,7 @@ namespace mu2e {
 
     for (int face=0; face<kNFaces; face++) {
       fFaceProcessed[face] = 0;
-      fHitData      [face] = NULL;
+      fHitData      [face] = nullptr;
     }
 
     fHitData[face0]         = Hd0;
@@ -163,6 +163,7 @@ namespace mu2e {
       assert(fNHits > 2);
 
       double d  = fSnx2*fSny2-fSnxy*fSnxy;
+      if (d == 0.) return;
 
       double xc = (fSnyr*fSnx2-fSnxr*fSnxy)/d;
       double yc = (fSnyr*fSnxy-fSnxr*fSny2)/d;

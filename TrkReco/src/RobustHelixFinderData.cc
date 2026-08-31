@@ -63,12 +63,6 @@ namespace mu2e {
     _nXYSh       = 0;
     _nZPhiSh     = 0;
 
-    _nStrawHits  = 0;
-    _nComboHits  = 0;
-
-    _nFiltComboHits = 0;
-    _nFiltStrawHits = 0;
-
     //clear the panel-based structure
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t* facez = &_oTracker[f];

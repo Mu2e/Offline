@@ -30,15 +30,29 @@ CaloCluster : {
       strategy                   : 0
       diagLevel                  : 0
    }
+
+   CaloClusterFastMaker: {
+     module_type       : "CaloClusterFast"
+     caloHitCollection : "CaloHitFastMaker:calo"
+     EminSeed   : 10
+     EnoiseCut  : 1
+     ExpandCut  : 1
+     deltaTime  : 10
+     diagLevel  : 0
+     extendSearch: true
+     minSiPMPerHit: 2
+     timeOffset: -61
+   }
 }
 
 CaloCluster : { @table::CaloCluster
    producers : {
       CaloProtoClusterMaker  : { @table::CaloCluster.CaloProtoClusterMaker }
       CaloClusterMaker       : { @table::CaloCluster.CaloClusterMaker      }
+      CaloClusterFastMaker   : { @table::CaloCluster.CaloClusterFastMaker  }
    }
 
-   Reco : [ CaloProtoClusterMaker, CaloClusterMaker ]
+   Reco : [ CaloProtoClusterMaker, CaloClusterMaker, CaloClusterFastMaker ]
 }
 
 END_PROLOG

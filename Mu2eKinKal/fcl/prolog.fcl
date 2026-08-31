@@ -1,22 +1,9 @@
 #include "Offline/TrkReco/fcl/Particle.fcl"
 BEGIN_PROLOG
 Mu2eKinKal : {
+  #
   # general configuration
   #
-  MAT: {
-    elements  : "Offline/TrackerConditions/data/ElementsList.data"
-    isotopes  : "Offline/TrackerConditions/data/IsotopesList.data"
-    materials : "Offline/TrackerConditions/data/MaterialsList.data"
-    strawGasMaterialName  : "straw-gas"
-    strawWallMaterialName : "straw-wall"
-    strawWireMaterialName : "straw-wire"
-    IPAMaterialName : "HDPE"
-    STMaterialName : "Target"
-    IonizationEnergyLossMode : 1 # Moyal mean
-    SolidScatteringFraction : 0.999999
-    GasScatteringFraction : 0.9999999
-    ElectronBrehmsFraction : 0.04
-  }
   KKFIT: {
     PrintLevel : 0
     TPOCAPrecision : 1e-4 # mm
@@ -28,7 +15,7 @@ Mu2eKinKal : {
     StrawHitClusterDeltaStraw : 3 # straw index space
     StrawHitClusterDeltaT : 1.0 # ns
     StrawHitClusterLevel : "none"
-    CaloTrackerTimeOffset : -0.85 #ns
+    CaloTrackerTimeOffset : -0.41 #ns
     CaloPositionResolution : 9.0 #mm
     CaloTimeResolution : 0.5 #ns
     CaloPropagationSpeed : 200.0 #mm/ns
@@ -52,6 +39,7 @@ Mu2eKinKal : {
     SampleSurfaces : [] # specific to the fit type
     SaveHitCalibInfo : false
     SaveDomains : false
+    SaveMaterialXings : false # save generic passive material Xings (filled during extrapolation) in the KalSeed
   }
 
    CHSEEDFIT: {
@@ -386,21 +374,53 @@ Mu2eKinKal : {
   LHDRIFTXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-4 # momemntum fraction
-    ToTrackerEnds : true
+    ToTrackerPerimeter : true
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToCRV : false
   }
 
   LHSEEDXTRAP : {
     IntersectionTolerance : 0.1
     MaxDt : 200.0 # (ns)
+    MaxDtStep : 10.0 # (ns)
+    MinV : 0.0 # mm/ns
     BCorrTolerance : 1e-2 # momemntum fraction
-    ToTrackerEnds : true
+    ToTrackerPerimeter : true
     Upstream : false
     BackToTracker : false
     ToOPA : false
+    ToCRV : false
+  }
+
+  KLXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerPerimeter : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : true
+  }
+
+  CHXTRAP : {
+    IntersectionTolerance : 0.1
+    MaxDt : 200.0 # (ns)
+    MaxDtStep : 1.0 # (ns)
+    MinV : 1e-5 # mm/ns
+    BCorrTolerance : 1e-2 # momemntum fraction
+    ToTrackerPerimeter : false
+    Upstream : false
+    BackToTracker : false
+    ToOPA : false
+    ToCRV : true
   }
 
   CENTRALHELIX : {
@@ -411,7 +431,7 @@ Mu2eKinKal : {
     CosmicTrackSeedCollections : ["LineFinder"]
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
@@ -428,17 +448,12 @@ Mu2eKinKal : {
     CaloClusterCollection : "CaloClusterMaker"
     SeedFlags : [ "HelixOK" ]
     SampleSurfaces : ["TT_Front","TT_Back","TT_Outer"]
-    SampleTimeBuffer : 100 # time buffer for intersections (ns)
+    SampleTimeBuffer : 1 # time buffer for intersections (ns)
     IntersectionTolerance : 0.1 #  tolerance for intersections (mm)
     SampleInRange : true # require sample be in time range
     SampleInBounds : false # require sample be in surface bounds
   }
 
-  LINEEXTRAPOLATION : {
-    MaxDt : 200.0 # (ns)
-    MinV : 1e-5
-    ToCRV : true
-  }
 }
 
 Mu2eKinKal : {
@@ -446,7 +461,6 @@ Mu2eKinKal : {
 
   LHSeedFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["TT_Mid"]
@@ -468,13 +482,12 @@ Mu2eKinKal : {
 
   LHDriftFit : {
     module_type : LoopHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
-     SaveDomains : true
-     SaveTrajectory : Detector
+      SaveDomains : true
+      SaveTrajectory : Detector
     }
     FitSettings : {
       @table::Mu2eKinKal.LHSEEDFIT
@@ -493,7 +506,6 @@ Mu2eKinKal : {
 
   KLSeedFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: @local::Mu2eKinKal.KKFIT
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
@@ -508,7 +520,6 @@ Mu2eKinKal : {
 
   KLDriftFit : {
     module_type : KinematicLineFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       # DNB I don't know where this time offset difference WRT helical fits comes from. If it's physical, we will need a better
@@ -517,8 +528,8 @@ Mu2eKinKal : {
       # Additional width is needed here as straight tracks have worse time resolution
       MaxCaloClusterDt: 8
       # save the full trajectory
-       SaveTrajectory: Detector
-       SaveDomains : false # meaningless for Linefit
+      SaveTrajectory: Full
+      SaveDomains : false # meaningless for Linefit
     }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
@@ -526,12 +537,11 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KINEMATICLINE
       @table::Mu2eKinKal.KKPrecursors
     }
-    Extrapolation : @local::Mu2eKinKal.LINEEXTRAPOLATION
+    ExtrapolationSettings : @local::Mu2eKinKal.KLXTRAP
   }
 
   CHSeedFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : T0
@@ -547,7 +557,6 @@ Mu2eKinKal : {
 
   CHDriftFit : {
     module_type : CentralHelixFit
-    MaterialSettings : @local::Mu2eKinKal.MAT
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Detector
@@ -559,11 +568,80 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
     }
+    ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP
+  }
+
+  # MC-only diagnostic producers: re-seed each reconstructed cosmic fit with the TRUE muon state and
+  # re-extrapolate it, isolating the extrapolation (B-field/material) error from the fit error. These
+  # consume MC products, so they must NOT be added to any real-data reconstruction path; add them to an
+  # MC analysis path after the drift fit and SelectRecoMC. The truth-seeded KalSeed is associated to the
+  # same KalSeedMC as its reco parent (see KinematicLineTruthSeed / CentralHelixTruthSeed).
+  KLTruthSeed : {
+    module_type : KKTruthSeed
+    KalSeedCollection : "KKLine"      # reconstructed KKLine KalSeeds to truth-seed
+    KalSeedMCAssns : "SelectRecoMC"   # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
+    MCTrajectories : "compressDigiMCs" # true trajectory (set to the sample's MCTrajectory product)
+    SeedErrors : [15, 0.05, 10, 0.02, 2.0, 1.0] # d0, phi0, z0, cost, t0, mom (matches KINEMATICLINE)
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory: Full
+      SaveDomains : false # meaningless for a line fit
+      # Sample the truth track at the tracker ends + extracted-CRV sectors so its KalSeed carries the CRV
+      # crossings (the truth track has no straw hits, so it relies entirely on this surface sampling).
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer","CRV_EX","CRV_T1","CRV_T2"]
+    }
+    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT   # match the reco KKLine ExtensionSettings
+    ExtrapolationSettings : @local::Mu2eKinKal.KLXTRAP  # match the reco KKLine ExtrapolationSettings
+  }
+
+  CHTruthSeed : {
+    module_type : KKTruthSeed
+    KalSeedCollection : "KKCHmu"        # reconstructed KKCH KalSeeds to truth-seed
+    KalSeedMCAssns : "SelectRecoMC"     # reco KalSeed <-> KalSeedMC; the association propagated to the truth seed
+    MCTrajectories : "compressDigiMCs"  # dense true trajectory used to match the piecewise |p| through the tracker
+    SeedErrors : [5.0, 0.05, 5.0, 5.0, 0.1, 5.0] # d0, phi0, omega, z0, tandip, t0 (matches CENTRALHELIX)
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : Full
+      SaveDomains : false  # the truth track has no BField domains (upstream bfcorr=false); SaveDomains:true
+                           # would deref rbegin() of an empty domain set in KKFit::createSeed (SIGSEGV)
+      SampleSurfaces : ["TT_Front","TT_Back","TT_Outer",
+        "CRV_T1","CRV_T2","CRV_T3","CRV_T4","CRV_T5",
+        "CRV_R1","CRV_R2","CRV_R3","CRV_R4","CRV_R5","CRV_R6",
+        "CRV_L1","CRV_L2","CRV_L3","CRV_U","CRV_D1","CRV_D2","CRV_D3","CRV_D4"]
+    }
+    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
+    ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT   # match the reco KKCHmu ExtensionSettings
+    ExtrapolationSettings : @local::Mu2eKinKal.CHXTRAP  # match the reco KKCHmu ExtrapolationSettings
   }
 }
 
 Mu2eKinKal : {
   @table::Mu2eKinKal
+
+  RegrowLH : {
+    module_type : RegrowLoopHelix
+    CaloClusterCollection : "CaloClusterMaker"
+    StrawDigiIndexMap : "SelectReco:StrawDigiMap"
+    RefitSettings : {
+      @table::Mu2eKinKal.REGROW
+      BFieldCorrection : true
+    }
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back","TT_Mid","TT_Back"]
+      AddHits : false
+      SaveDomains : true
+      SaveTrajectory : Full
+    }
+    ExtrapolationSettings :{
+      @table::Mu2eKinKal.LHDRIFTXTRAP
+    }
+    Extend: false
+    MustRegrow : "None"
+  }
+
   producers : {
     # seed fits: these don't use drift information or BField corrections
     KLSeedFit: @local::Mu2eKinKal.KLSeedFit
@@ -599,7 +677,6 @@ Mu2eKinKal.producers.KKUeSeedFit.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKUmuSeedFit.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmuSeedFit.FitDirection : @local::FitDir.downstream
 
-# save trajectories in the Detector region for downstream fits, just the T0 segment for the rest
 Mu2eKinKal.producers.KKDe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKDe.FitDirection : @local::FitDir.downstream
 Mu2eKinKal.producers.KKDmu.ModuleSettings.FitParticle : @local::Particle.muminus
@@ -608,9 +685,5 @@ Mu2eKinKal.producers.KKUe.ModuleSettings.FitParticle : @local::Particle.eminus
 Mu2eKinKal.producers.KKUe.FitDirection : @local::FitDir.upstream
 Mu2eKinKal.producers.KKUmu.ModuleSettings.FitParticle : @local::Particle.muminus
 Mu2eKinKal.producers.KKUmu.FitDirection : @local::FitDir.upstream
-# propagate upstream fits back to the tracker
-Mu2eKinKal.producers.KKUe.ExtrapolationSettings.BackToTracker : true
-Mu2eKinKal.producers.KKUmu.ExtrapolationSettings.BackToTracker : true
 
-#
 END_PROLOG

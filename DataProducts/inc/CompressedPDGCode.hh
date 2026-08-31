@@ -20,6 +20,7 @@ namespace mu2e {
     enum enum_type
       {
         anti_n0     = -7,
+        anti_neutron = -7,
         anti_proton = -6,
         K_minus     = -5,
         pi_minus    = -4,
@@ -34,6 +35,7 @@ namespace mu2e {
         K_plus      =  5,
         proton      =  6,
         n0          =  7,
+        neutron     =  7,
         pi0         =  8,
         K_S0        =  9,
         K_L0        = 10,

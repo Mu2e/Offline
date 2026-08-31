@@ -11,6 +11,14 @@
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/TrkHitReco/inc/BkgClusterer.hh"
 
+#include <string>
+
+
+//Inference class
+namespace TMVA_SOFIE_TrainBkgDiag {
+  class Session;
+}
+
 
 namespace mu2e {
 
@@ -47,7 +55,6 @@ namespace mu2e {
     private:
       unsigned findNeighbors    (unsigned ihit, const std::vector<unsigned>& idx, const ComboHitCollection& chcol, std::vector<unsigned>& neighbors);
       void     calculateCluster (BkgCluster& cluster, const ComboHitCollection& chcol);
-      void     dump             (const std::vector<BkgCluster>& clusters);
 
       unsigned                DBSminExpand_;
       float                   deltaTime_;
@@ -59,9 +66,7 @@ namespace mu2e {
       bool                    testflag_;
       std::string             kerasW_;
       int                     diag_;
-
-      //Need the correct Sophie description
-      //std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
+      std::shared_ptr<TMVA_SOFIE_TrainBkgDiag::Session> sofiePtr_;
   };
 }
 

@@ -12,7 +12,7 @@
 namespace mu2e
 {
     using CaloShowerMCTruthAssn  = art::Assns<CaloHit,    SimParticle, art::Ptr<CaloShowerSim>>;
-    using CaloHitMCTruthAssn    = art::Assns<CaloHit,    CaloHitMC> ;
+    using CaloHitMCTruthAssn     = art::Assns<CaloHit,    CaloHitMC> ;
     using CaloClusterMCTruthAssn = art::Assns<CaloCluster,CaloClusterMC> ;
 }
 

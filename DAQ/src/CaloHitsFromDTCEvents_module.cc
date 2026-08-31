@@ -15,7 +15,7 @@
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
-#include "Offline/CaloConditions/inc/CaloDAQMap.hh"
+#include "Offline/CaloConditions/inc/CalDAQMap.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
@@ -89,9 +89,9 @@ public:
   virtual void endJob();
 
 private:
-  mu2e::ProditionsHandle<mu2e::CaloDAQMap> _calodaqconds_h;
+  mu2e::ProditionsHandle<mu2e::CalDAQMap> _calodaqconds_h;
 
-  void analyze_calorimeter_(mu2e::CaloDAQMap const& calodaqconds,
+  void analyze_calorimeter_(mu2e::CalDAQMap const& calodaqconds,
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
@@ -206,7 +206,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   art::EventNumber_t eventNumber = event.event();
 
-  mu2e::CaloDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
+  mu2e::CalDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
 
   // Collection of CaloHits for the event
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
@@ -263,7 +263,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
-    mu2e::CaloDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    mu2e::CalDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
     std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {
@@ -315,9 +315,21 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         // Fill the CaloHitCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
-        uint16_t crystalID = offlineId.crystal().id();
         uint16_t SiPMID = offlineId.id();
 
+        //Check that the channel is valid in the offline world
+        if (SiPMID >= mu2e::CaloConst::_nChannel){
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloHitsFromDataDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
+                      << ", Board " << thisHitPacket.BoardID << " Ch " << thisHitPacket.ChannelID
+                      << " offlineID " << SiPMID <<  std::endl;
+          }
+          failure_counter[mu2e::CaloDAQUtilities::CaloHitError::InvalidChannel]++;
+          total_hits_bad++;
+          continue;
+        }
+
+        uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
         float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
@@ -378,9 +390,21 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         // Fill the CaloHitCollection
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
-        uint16_t crystalID = offlineId.crystal().id();
         uint16_t SiPMID = offlineId.id();
 
+        //Check that the channel is valid in the offline world
+        if (SiPMID >= mu2e::CaloConst::_nChannel){
+          if (diagLevel_ > 1) {
+            std::cout << "[CaloHitsFromDataDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
+                      << ", Board " << thisHitPacket.BoardID << " Ch " << thisHitPacket.ChannelID
+                      << " offlineID " << SiPMID <<  std::endl;
+          }
+          failure_counter[mu2e::CaloDAQUtilities::CaloHitError::InvalidChannel]++;
+          total_hits_bad++;
+          continue;
+        }
+
+        uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
         float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];

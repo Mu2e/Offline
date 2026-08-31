@@ -13,7 +13,8 @@ helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
                                   'CLHEP',
-                                  'Core'
+                                  'Core',
+                                  'cetlib_except',
                                 ] )
 
 # This tells emacs to view this file in python mode.

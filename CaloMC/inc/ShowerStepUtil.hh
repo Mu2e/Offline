@@ -17,9 +17,9 @@ namespace mu2e {
                   imax_(imax),type_(type),n_(imax,0),eDepG4_(imax,0),eDepVis_(imax,0),
                   pIn_(imax,0),time_(imax,0),t0_(imax,0),x_(imax,0),y_(imax,0),z_(imax,0),
                   w_(imax,0),pos_(0,0,0)
-               {};
+               {}
 
-               void add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, CLHEP::Hep3Vector& pos);
+               void add(unsigned i, double eDepG4, double eDepVis, double time, double momentum, const CLHEP::Hep3Vector& pos);
                void reset(unsigned i);
                void printBucket(unsigned i);
 
@@ -34,6 +34,8 @@ namespace mu2e {
 
 
            private:
+               void rangeCheck(unsigned i) const;
+
                unsigned              imax_;
                weight_type           type_;
                std::vector<unsigned> n_;

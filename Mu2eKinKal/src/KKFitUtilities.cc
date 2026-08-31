@@ -42,8 +42,8 @@ namespace mu2e {
 
     KinKal::TimeRange timeBounds(ComboHitCollection const& chits) {
       if(chits.size() == 0) return KinKal::TimeRange();
-      double tmin = std::numeric_limits<float>::max();
-      double tmax = std::numeric_limits<float>::min();
+      double tmin = std::numeric_limits<double>::max();
+      double tmax = std::numeric_limits<double>::lowest();
       for( auto const& hit : chits) {
         // filter out hits already flagged as bad TODO
         tmin = std::min(tmin,(double)hit.correctedTime());
@@ -54,8 +54,8 @@ namespace mu2e {
 
     double zMid(ComboHitCollection const& chits) {
       if(chits.size() == 0) return 0.0;
-      double zmin = std::numeric_limits<float>::max();
-      double zmax = std::numeric_limits<float>::min();
+      double zmin = std::numeric_limits<double>::max();
+      double zmax = std::numeric_limits<double>::lowest();
       for( auto const& hit : chits) {
         // filter out hits already flagged as bad TODO
         double zpos = hit.pos().z();

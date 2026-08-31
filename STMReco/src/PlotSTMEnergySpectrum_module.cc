@@ -1,5 +1,5 @@
 //
-// Analyzer module to create a histogram of the STMMWDDigi uncalibrated energies
+// Analyzer module to create a histogram of the STMPHDigi uncalibrated energies
 //
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDAnalyzer.h"

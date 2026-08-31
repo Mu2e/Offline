@@ -26,16 +26,18 @@ namespace mu2e {
       std::vector<CADSHU::Config> cadshusettings;
       std::vector<DriftANNSHU::Config> driftannshusettings;
       std::vector<BkgANNSHU::Config> bkgannshusettings;
+      std::vector<PanelDiagSHU::Config> paneldiagshusettings;
       std::vector<Chi2SHU::Config> chi2shusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
       cadshusettings = fitconfig.cadshuConfig().value_or(cadshusettings);
       driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
       bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
+      paneldiagshusettings = fitconfig.paneldiagshuConfig().value_or(paneldiagshusettings);
       chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
       // set the schedule for the meta-iterations
-      unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
+      unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0), npdiag(0);
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig miconfig(std::get<0>(misetting));
         // parse StrawHit updaters, and add to the config of this meta-iteraion
@@ -49,6 +51,9 @@ namespace mu2e {
             miconfig.addUpdater(std::any(DriftANNSHU(driftannshusettings.at(nann++))));
           } else if(alg == StrawHitUpdaters::BkgANN) {
             miconfig.addUpdater(std::any(BkgANNSHU(bkgannshusettings.at(nbkg++))));
+          } else if(alg == StrawHitUpdaters::PanelDiag) {
+            miconfig.addUpdater(std::any(PanelDiagSHU(paneldiagshusettings.at(npdiag))));
+            if (paneldiagshusettings.size()>npdiag+1)npdiag++;
           } else if(alg == StrawHitUpdaters::Chi2) {
             miconfig.addUpdater(std::any(Chi2SHU(chi2shusettings.at(ncomb++))));
           } else if(alg == StrawHitUpdaters::none) {

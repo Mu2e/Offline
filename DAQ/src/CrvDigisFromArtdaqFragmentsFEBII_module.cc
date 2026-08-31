@@ -33,10 +33,11 @@ namespace mu2e
     public:
       struct Config
       {
-        fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
-        //for currently wrongly encoded subevent headers
-        fhicl::Atom<bool> produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce NZS digi collection"), true};
-        fhicl::Atom<bool> produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), true};
+        fhicl::Atom<int>     diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic Level")};
+        fhicl::Atom<uint16_t> firstCrvDtcID{fhicl::Name("firstCrvDtcID"), fhicl::Comment("First CRV DTC ID"), 0};
+        fhicl::Atom<bool>    produceZS{fhicl::Name("produceZS"), fhicl::Comment("produce ZS digi collection"), true};
+        fhicl::Atom<bool>    produceNZS{fhicl::Name("produceNZS"), fhicl::Comment("produce NZS digi collection"), false};
+        fhicl::Atom<bool>    useROC4asROC2{fhicl::Name("useROC4asROC2"), fhicl::Comment("use ROC4 as ROC2"), false};
       };
 
       explicit CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config);
@@ -45,16 +46,20 @@ namespace mu2e
 
     private:
       int                                      _diagLevel;
+      uint16_t                                 _firstCrvDtcID;
       bool                                     _produceZS;
       bool                                     _produceNZS;
+      bool                                     _useROC4asROC2;
       mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
   };
 
   CrvDigisFromArtdaqFragmentsFEBII::CrvDigisFromArtdaqFragmentsFEBII(const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
     _diagLevel(config().diagLevel()),
+    _firstCrvDtcID(config().firstCrvDtcID()),
     _produceZS(config().produceZS()),
-    _produceNZS(config().produceNZS())
+    _produceNZS(config().produceNZS()),
+    _useROC4asROC2(config().useROC4asROC2())
     {
       if(_produceZS) produces<mu2e::CrvDigiCollection>();
       if(_produceNZS) produces<mu2e::CrvDigiCollection>("NZS");
@@ -139,8 +144,9 @@ namespace mu2e
         }
 
         //loop through subevents
-        for(size_t iSubEvent=0; auto& dtcSubEvent : dtcSubEvents)
+        for(size_t iSubEvent=0; iSubEvent<dtcSubEvents.size(); ++iSubEvent)
         {
+          auto& dtcSubEvent=dtcSubEvents.at(iSubEvent);
           mu2e::CRVDataDecoder decoder(dtcSubEvent);
           for(size_t iDataBlock = 0; iDataBlock < decoder.block_count(); ++iDataBlock)
           {
@@ -175,8 +181,22 @@ namespace mu2e
                 std::cout << "CRV packet does not have subsystem ID 2." << std::endl;
                 std::cout << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
               }
-              crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::wrongSubsystemID,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              if(header->GetPacketCount()>0)  //should only be treated as an error, if there was data content.
+                                              //otherwise it is just a header from an unused dtc link, i.e. normal behavior.
+              {
+                crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::wrongSubsystemID,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              }
               continue;
+            }
+
+            uint16_t dtcID = header->GetID();
+            if(dtcID<_firstCrvDtcID)
+            {
+              std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+              std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+              std::cerr << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
+              crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidDtcId,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+              break;
             }
             auto subeventHeader = dtcSubEvent.GetHeader();
             crvStatus->emplace_back(*header, *subeventHeader);
@@ -188,6 +208,10 @@ namespace mu2e
             }
             if(header->GetPacketCount()>0)
             {
+              uint16_t linkID = header->GetLinkID();
+              uint16_t rocID = (dtcID-_firstCrvDtcID)*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+              if(_useROC4asROC2 && rocID==4) rocID=2;
+
               auto crvRocHeader = decoder.GetCRVROCStatusPacketFEBII(iDataBlock);
               if(crvRocHeader == nullptr)
               {
@@ -205,32 +229,38 @@ namespace mu2e
                 std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                 std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
                 std::cerr << "Error unpacking of CRV Hits" << std::endl;
-                decoder.PrintBlockFEBII(iDataBlock);
+                if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
                 crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                 break;
               }
               for(auto const& crvHit : crvHits)
               {
-                uint16_t dtcID = header->GetID();
-                uint16_t linkID = header->GetLinkID();
-                uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
                 uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                 //the 5th bit indicates special situations
                 //e.g. fake pulses
                 if((crvHit.getFpgaChannel() & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
                 //don't decode them, since there is no match to any offline channel.
-                if(rocPort==0) //corrupted data
+                if(rocPort==0) //one of the indicators of a "zero-block error". TODO: implement a better check for this error
                 {
-                  std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
                   std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                  std::cerr << "ROC-port-0 error!" << std::endl;
-                  decoder.PrintBlockFEBII(iDataBlock);
-                  //TODO: Add to crvDaqErrors
+                  std::cerr << "Zero block error!" << std::endl;
+                  if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::zeroBlockError,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                   continue;
                 }
 
                 mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+                if(!channelMap.offlineExists(onlineChannel))
+                {
+                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
+                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
+                  std::cerr << "Invalid channel ROC: " << rocID <<"  FEB: " << rocPort << "  FEBchannel: "<< febChannel << std::endl;
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidChannel,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+                  continue;
+                }
 
                 uint16_t offlineChannel = channelMap.offline(onlineChannel);
                 int crvBarIndex = offlineChannel / CRVId::nChanPerBar;
@@ -281,15 +311,13 @@ namespace mu2e
                   uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
                   //the 5th bit indicates special situations
                   //e.g. fake pulses
-                  if(rocPort==0) continue; //corrupted data
-
-                  uint16_t dtcID = header->GetID();
-                  uint16_t linkID = header->GetLinkID();
-                  uint16_t rocID = dtcID*CRVId::nROCPerDTC + linkID + 1; //ROC IDs are between 1 and 18
+                  if(rocPort==0) continue; //zero-block error - error already reported above
 
                   if((crvHit.getFpgaChannel() & 0x10) == 0)  //special situation, if the 5th bit of the fpgaChannel is non-zero (see below)
                   {
                     mu2e::CRVROC onlineChannel(rocID, rocPort, febChannel);
+
+                    if(!channelMap.offlineExists(onlineChannel)) continue; //channel doesn't exists - error already reported above
 
                     uint16_t offlineChannel = channelMap.offline(onlineChannel);
                     int crvBarIndex = offlineChannel / CRVId::nChanPerBar;

@@ -54,6 +54,10 @@ namespace mu2e {
         DbIoV iov;
         iov.setMax(); // start with full IOV range
         if(_useDb) {
+          _tatr_p->get(eid);
+          _tapl_p->get(eid);
+          _tapa_p->get(eid);
+          _tast_p->get(eid);
           iov.overlap(_tatr_p->iov());
           iov.overlap(_tapl_p->iov());
           iov.overlap(_tapa_p->iov());

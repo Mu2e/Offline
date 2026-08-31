@@ -11,6 +11,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Mu2e includes
@@ -18,11 +19,12 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/MCDataProducts/inc/ProcessCode.hh"
-#include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -65,6 +67,7 @@ namespace mu2e {
 
     virtual void produce(art::Event& event) override;
     virtual void beginRun(art::Run& run) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -121,26 +124,27 @@ namespace mu2e {
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
 
   }
 
   void CaloCalibGun::beginRun(art::Run&){
-      const DiskCalorimeter *_cal = GeomHandle<DiskCalorimeter>().get();
+      const Calorimeter *_cal = GeomHandle<Calorimeter>().get();
 
-      _pipeRadius      = _cal->caloInfo().getDouble("pipeRadius");
-      _pipeTorRadius   = _cal->caloInfo().getVDouble("pipeTorRadius");
-      _zPipeCenter     = _cal->disk(_nDisk).geomInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).geomInfo().size().z()/2.0-_pipeRadius);
-      _nPipes = _cal->caloInfo().getInt("nPipes");
+      _pipeRadius      = _cal->G4Info().get<double>("pipeRadius");
+      _pipeTorRadius   = _cal->G4Info().get<std::vector<double>>("pipeTorRadius");
+      _zPipeCenter     = _cal->disk(_nDisk).diskInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(_nDisk).diskInfo().size().z()/2.0-_pipeRadius);
+      _nPipes = _cal->G4Info().get<int>("nPipes");
 
       //Define the parameters of the pipes:
-      phi_lbd = _cal->caloInfo().getVDouble("largeTorPhi");
-      phi_sbd = _cal->caloInfo().getVDouble("smallTorPhi");
-      phi_end = _cal->caloInfo().getVDouble("straightEndPhi");
-      ysmall = _cal->caloInfo().getVDouble("yposition");
-      radSmTor = _cal->caloInfo().getDouble("radSmTor");
-      xsmall = _cal->caloInfo().getDouble("radSmTor");
-      xdistance = _cal->caloInfo().getDouble("xdistance");
-      rInnerManifold = _cal->caloInfo().getDouble("rInnerManifold");
+      phi_lbd = _cal->G4Info().get<std::vector<double>>("largeTorPhi");
+      phi_sbd = _cal->G4Info().get<std::vector<double>>("smallTorPhi");
+      phi_end = _cal->G4Info().get<std::vector<double>>("straightEndPhi");
+      ysmall = _cal->G4Info().get<std::vector<double>>("yposition");
+      radSmTor = _cal->G4Info().get<double>("radSmTor");
+      xsmall = _cal->G4Info().get<double>("radSmTor");
+      xdistance = _cal->G4Info().get<double>("xdistance");
+      rInnerManifold = _cal->G4Info().get<double>("rInnerManifold");
 
 
   }
@@ -231,6 +235,11 @@ namespace mu2e {
     event.put(std::move(output));
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
 
+  }
+
+  void CaloCalibGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 
   //================================================================

@@ -3,7 +3,7 @@ cet_make_library(
       src/ScoreBasedDiffusionModel.cc
     LIBRARIES PUBLIC
       CLHEP::CLHEP
-      messagefacility::messagefacility
+      messagefacility::MF_MessageLogger
       cetlib_except::cetlib_except
 )
 

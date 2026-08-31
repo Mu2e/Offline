@@ -174,20 +174,30 @@ namespace mu2e_eventdisplay
           {
             //1st function is the pedestal that gets added to each reco pulse fitted function
             TF1 *fpedestal = dynamic_cast<TF1*>(functionList->At(0));
+            TString functionStringSum;
+            functionStringSum.Append(fpedestal->GetExpFormula());
             for(int iFunction=1; iFunction<functionList->GetSize(); ++iFunction)
             {
               TF1 *f = dynamic_cast<TF1*>(functionList->At(iFunction));
               TString functionString;
               functionString.Append(fpedestal->GetExpFormula());
-              if(iFunction>0) functionString.Append("+");
+              functionString.Append("+");
               functionString.Append(f->GetExpFormula());
 
-              TF1 *functionSum = new TF1("recoFunctionSum",functionString.Data());
-              functionSum->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
-              functionSum->SetLineWidth(2);
-              functionSum->SetLineColor(2);
-              if(f->GetLineStyle()==2) functionSum->SetLineStyle(2);
+              TF1 *fWithPedestal = new TF1("recoFunctionWithPedestal",functionString.Data());
+              fWithPedestal->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
+              fWithPedestal->SetLineWidth(1);
+              fWithPedestal->SetLineColor(2);
+              if(f->GetLineStyle()==2) fWithPedestal->SetLineStyle(2);
+
+              functionStringSum.Append("+");
+              functionStringSum.Append(f->GetExpFormula());
             }
+
+            TF1 *fSum = new TF1("recoFunctionSum",functionStringSum.Data());
+            fSum->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
+            fSum->SetLineWidth(2);
+            fSum->SetLineColor(2);
           }
 
           const std::string multigraphName = m->GetName();

@@ -22,6 +22,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Utilities/make_tool.h"
 
@@ -29,6 +30,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
@@ -58,6 +60,7 @@ namespace mu2e {
     explicit SingleProcessGenerator(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
 
     //----------------------------------------------------------------
   private:
@@ -90,6 +93,7 @@ namespace mu2e {
     , randFlat_{eng_}
   {
     produces<mu2e::StageParticleCollection>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     if(verbosity_ > 0) {
       mf::LogInfo log("SingleProcessGenerator");
       log<<"stoppingTargetMaterial = "<<conf().stoppingTargetMaterial()
@@ -99,7 +103,7 @@ namespace mu2e {
 
     const auto pset = conf().decayProducts.get<fhicl::ParameterSet>();
     Generator_ = art::make_tool<ParticleGeneratorTool>(pset);
-    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial());
+    Generator_->finishInitialization(eng_, conf().stoppingTargetMaterial(), true);
 
     if(pdgId_==PDGCode::e_plus) {
       muonLifeTime_=0; //decay time already included for stopped muon(+) FIXME!!!
@@ -124,6 +128,11 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+  }
+
+  //================================================================
+  void SingleProcessGenerator::endSubRun(art::SubRun& sr) {
+    sr.put(Generator_->spectrumConfig(), art::fullSubRun());
   }
 
   //================================================================
