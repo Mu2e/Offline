@@ -1,46 +1,42 @@
-// VDResamplerTrain_module.cc
-// For StepPointMCs on the designated virtual detectors, train either:
-//   1) a two-stage score-based diffusion model with
-//      Stage 1: unconditional model for (t', x', y')
-//      Stage 2: conditional model for (p_r', p_phi', p_z' | t', x', y')
-//   2) a single unconditional score-based diffusion model for
-//      (t', x', y', p_r', p_phi', p_z')
-// and store the trained model parameters in binary .dat files.
-// note that p_z are filtered and only hits with positive p_z are kept
-// Yongyi Wu, Mar. 2026
+// VDResamplerTrainFromRoot_module.cc
+// A copy of VDResamplerTrain_module.cc but takes ROOT file input instead of
+// StepPointMCCollection and SimParticleCollection from art::Event.
+// Using ROOT file input from VDResamplerConfigure_module.cc,
+// and saving models at specified epochs as well as the final epoch.
+// Yongyi Wu, May 2026
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+#include "Offline/SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/MCDataProducts/inc/SimParticle.hh"
-#include "Offline/MCDataProducts/inc/StepPointMC.hh"
-#include "Offline/SeedService/inc/SeedService.hh"
+#include "TFile.h"
+#include "TTree.h"
 
 namespace mu2e {
-  class VDResamplerTrain : public art::EDAnalyzer {
+  class VDResamplerTrainFromRoot : public art::EDAnalyzer {
     public:
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> StepPointMCsTag{ Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs") };
-        fhicl::Atom<art::InputTag> SimParticlemvTag{ Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv") };
+        fhicl::Atom<std::string> InputRootFile{ Name("InputRootFile"), Comment("Input ROOT file with TTree") };
+        fhicl::Atom<std::string> TreeName{      Name("TreeName"),      Comment("Name of the TTree in the ROOT file"), "VDResamplerTrainingSetup/ttree" };
         fhicl::Atom<bool>        SBDMuseTwoStageTraining{    Name("SBDMuseTwoStageTraining"),    Comment("If true, train two-stage model; if false, train all 6 dimensions at once."), true };
         fhicl::Atom<std::string> SBDMallAtOnceModelFile{    Name("SBDMallAtOnceModelFile"),    Comment("Model output filename (.dat) for the all-at-once 6D model"),  "" };
         fhicl::Atom<std::string> SBDMstage1ModelFile{        Name("SBDMstage1ModelFile"),        Comment("Model output filename (.dat) for the stage-1 model"),         "" };
@@ -49,18 +45,18 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Checkpoint file to load for the stage-1 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Checkpoint file to load for the stage-2 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
-        fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"),    116 };
+        fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("Virtual detector ID to select"),    116 };
         fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector"),      37700.39 };
         fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
-        fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on"),         22 };
+        fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("PDG ID to select"),                          22 };
         fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<std::string> SBDMpositionBasis{ Name("SBDMpositionBasis"), Comment("Radial position map u(rho), rho=r/VDr: V1_ATANH, V2_ATANH_SQRT, V3_ATANH_SQ"), "V1_ATANH" };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
         fhicl::Sequence<int> SBDMinputEmbeddingDims{     Name("SBDMinputEmbeddingDims"),     Comment("Per-state-dim Fourier depth: [] none, [k] broadcast, or length-dim list; each 0 or even >= 2"),     std::vector<int>() };
         fhicl::Sequence<int> SBDMconditionEmbeddingDims{ Name("SBDMconditionEmbeddingDims"), Comment("Per-condition-dim Fourier depth: [] none, [k] broadcast, or length-condDim list; each 0 or even >= 2"), std::vector<int>() };
-        fhicl::Atom<int>    SBDMhidden{        Name("SBDMhidden"),        Comment("Size of hidden layers"),                     128 };
+        fhicl::Atom<int>    SBDMhidden{        Name("SBDMhidden"),        Comment("Hidden layer size"),                         128 };
         fhicl::Atom<int>    SBDMlayers{        Name("SBDMlayers"),        Comment("Number of layers"),                          4 };
-        fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"),   Comment("Optimizer (SGD or ADAM)"),                   "ADAM" };
+        fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"),   Comment("Optimizer (SGD/ADAM)"),                      "ADAM" };
         fhicl::Atom<double> SBDMadamBeta1{     Name("SBDMadamBeta1"),     Comment("Adam beta1"),                                0.9 };
         fhicl::Atom<double> SBDMadamBeta2{     Name("SBDMadamBeta2"),     Comment("Adam beta2"),                                0.999 };
         fhicl::Atom<double> SBDMadamEps{       Name("SBDMadamEps"),       Comment("Adam epsilon"),                              1e-8 };
@@ -70,7 +66,7 @@ namespace mu2e {
         // The integral ~0.5*betaMax must be O(a few) to fully noise the data by t=1; the old 0.02
         // (DDPM per-step value, meant to sum over ~1000 steps) left sigma(1)~0.1, not ~1.
         fhicl::Atom<double> SBDMbetaMax{       Name("SBDMbetaMax"),       Comment("Max beta (LINEAR schedule)"),                20.0 };
-        fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Offset (COSINE schedule)"),                  0.008 };
+        fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Cosine offset"),                             0.008 };
         fhicl::Atom<double> SBDMlogSigMin{     Name("SBDMlogSigMin"),     Comment("Min sigma (LOGSIG schedule)"),               1e-5 };
         fhicl::Atom<double> SBDMlogSigMax{     Name("SBDMlogSigMax"),     Comment("Max sigma (LOGSIG schedule)"),               1.0 };
         fhicl::Atom<std::string> SBDMpredictionTarget{ Name("SBDMpredictionTarget"), Comment("Network regression target: SCORE, EPS, or V (v-prediction)"), "SCORE" };
@@ -91,10 +87,9 @@ namespace mu2e {
         fhicl::Atom<double> SBDMemaNetworkDecay{    Name("SBDMemaNetworkDecay"),    Comment("Decay for EMA network"),                      0.9999 };
         fhicl::Atom<int>    SBDMdiffusionSteps{     Name("SBDMdiffusionSteps"),     Comment("Diffusion steps"),                            200 };
         fhicl::Atom<int>    SBDMtrainingSize{       Name("SBDMtrainingSize"),       Comment("Training data size (-1 = all)"),               -1 };
-        // Samples DRAWN per epoch (0 = one full pass over the dataset). Values above the dataset size
-        // cycle the data (with reshuffle-on-wrap) so an epoch is a fixed amount of optimization work.
-        // SBDMtrainingSubsetSizePerEpoch is the deprecated former name, still accepted; the new key
-        // wins when both are set to a non-zero value.
+        // Samples DRAWN per epoch (0 = one full pass; >N cycles the data with reshuffle-on-wrap so an
+        // epoch is a fixed amount of optimization work). SBDMtrainingSubsetSizePerEpoch is the
+        // deprecated former name, still accepted; the new key wins when set to a non-zero value.
         fhicl::Atom<int>    SBDMsamplesDrawnPerEpoch{ Name("SBDMsamplesDrawnPerEpoch"), Comment("Samples drawn per epoch (0 = full set; >N cycles the data)"), 0 };
         fhicl::Atom<int>    SBDMtrainingSubsetSizePerEpoch{ Name("SBDMtrainingSubsetSizePerEpoch"), Comment("[deprecated: use SBDMsamplesDrawnPerEpoch] Subset size per epoch (0 = full set)"), 0 };
         fhicl::Atom<int>    SBDMtrainingEpochs{     Name("SBDMtrainingEpochs"),     Comment("Number of training epochs"),                  10 };
@@ -156,29 +151,29 @@ namespace mu2e {
         fhicl::Sequence<double> SBDMpeakTagHalfWidths{ Name("SBDMpeakTagHalfWidths"), Comment("Per-tag inclusive half-window in RAW MeV/c; a hit is tagged when |pTot-center| <= halfWidth. Windows must be disjoint"), std::vector<double>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit VDResamplerTrain(const Parameters& conf);
-      void analyze(const art::Event& e) override;
+      explicit VDResamplerTrainFromRoot(const Parameters& conf);
+      void analyze(const art::Event&) override {}
       void endJob() override;
 
     private:
       art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat   randFlat_;
       CLHEP::RandGaussQ randGaussQ_;
-      art::ProductToken<StepPointMCCollection> StepPointMCsToken_;
-      art::ProductToken<SimParticleCollection> SimParticlemvToken_;
+      std::string inputRootFile_;
+      std::string treeName_;
       VDResampler::TrainState state_;
-      // Accumulates pz-fallback hits across analyze() calls; a single summary
-      // warning is emitted in endJob (V2 slope basis only; see PzFallbackStats).
+      // Accumulates pz-fallback hits over the TTree loop; one summary warning in endJob
+      // (V2 slope basis only; see PzFallbackStats).
       VDResampler::PzFallbackStats pzFallback_;
   };
 
-  VDResamplerTrain::VDResamplerTrain(const Parameters& conf) :
+  VDResamplerTrainFromRoot::VDResamplerTrainFromRoot(const Parameters& conf) :
     art::EDAnalyzer(conf),
     engine_     (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     randFlat_   (engine_),
     randGaussQ_ (engine_),
-    StepPointMCsToken_(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
-    SimParticlemvToken_(consumes<SimParticleCollection>(conf().SimParticlemvTag()))
+    inputRootFile_(conf().InputRootFile()),
+    treeName_     (conf().TreeName())
   {
     // Populate shared state from fhicl config
     state_.allAtOnceModelFile  = conf().SBDMallAtOnceModelFile();
@@ -188,8 +183,8 @@ namespace mu2e {
     state_.ckptStage1File      = conf().SBDMloadCheckPointStage1ModelFile();
     state_.ckptStage2File      = conf().SBDMloadCheckPointStage2ModelFile();
     state_.useTwoStageTraining = conf().SBDMuseTwoStageTraining();
-    state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrain");
-    state_.positionBasis       = VDResampler::parsePositionBasis(conf().SBDMpositionBasis(), "VDResamplerTrain");
+    state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrainFromRoot");
+    state_.positionBasis       = VDResampler::parsePositionBasis(conf().SBDMpositionBasis(), "VDResamplerTrainFromRoot");
     state_.virtualDetectorID   = conf().VirtualDetectorID();
     state_.VDz0                = conf().VDz0();
     state_.VDr                 = conf().VDr();
@@ -226,7 +221,7 @@ namespace mu2e {
     } else {
         state_.curriculumSamplesDrawnPerEpoch = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
         if (!state_.curriculumSamplesDrawnPerEpoch.empty())
-            mf::LogWarning("VDResamplerTrain")
+            mf::LogWarning("VDResamplerTrainFromRoot")
                 << "SBDMtrainingCurriculumSubsetSizePerEpoch is deprecated; "
                 << "rename it to SBDMtrainingCurriculumSamplesDrawnPerEpoch.";
     }
@@ -246,11 +241,11 @@ namespace mu2e {
     state_.featureBlockDiagnosticSamples = conf().SBDMfeatureBlockDiagnosticSamples();
     VDResampler::assemblePeakWindows(state_,
         conf().SBDMpeakWindowDims(), conf().SBDMpeakWindowLows(), conf().SBDMpeakWindowHighs(),
-        conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrain");
+        conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrainFromRoot");
     VDResampler::assemblePeakTags(state_,
-        conf().SBDMpeakTagCenters(), conf().SBDMpeakTagHalfWidths(), "VDResamplerTrain");
+        conf().SBDMpeakTagCenters(), conf().SBDMpeakTagHalfWidths(), "VDResamplerTrainFromRoot");
 
-    VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrain");
+    VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrainFromRoot");
     // Resolve the prediction target up front so the curriculum builder can coerce
     // lossWeightPower to 0 under V (and so p.predictionTarget reuses the same result).
     ScoreBasedDiffusionModel::PredictionTarget predictionTarget;
@@ -258,7 +253,7 @@ namespace mu2e {
         bool epsValue = false;
         bool epsSet = conf().SBDMepsPrediction(epsValue); // OptionalAtom: true if present
         predictionTarget = VDResampler::resolvePredictionTarget(
-            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrain");
+            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrainFromRoot");
     }
 
     // Prefer the new SBDMsamplesDrawnPerEpoch; fall back to the deprecated
@@ -267,11 +262,11 @@ namespace mu2e {
     int samplesDrawnPerEpoch = conf().SBDMsamplesDrawnPerEpoch();
     if (samplesDrawnPerEpoch == 0 && conf().SBDMtrainingSubsetSizePerEpoch() != 0) {
         samplesDrawnPerEpoch = conf().SBDMtrainingSubsetSizePerEpoch();
-        mf::LogWarning("VDResamplerTrain")
+        mf::LogWarning("VDResamplerTrainFromRoot")
             << "SBDMtrainingSubsetSizePerEpoch is deprecated; rename it to SBDMsamplesDrawnPerEpoch.";
     }
 
-    VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",
+    VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrainFromRoot",
         conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
         conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
         conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
@@ -284,11 +279,11 @@ namespace mu2e {
     p.conditionEmbeddingDims     = conf().SBDMconditionEmbeddingDims();
     p.hidden                     = conf().SBDMhidden();
     p.layers                     = conf().SBDMlayers();
-    p.optimizer                  = VDResampler::parseOptimizer(conf().SBDMoptimizer(), "VDResamplerTrain");
+    p.optimizer                  = VDResampler::parseOptimizer(conf().SBDMoptimizer(), "VDResamplerTrainFromRoot");
     p.adamBeta1                  = conf().SBDMadamBeta1();
     p.adamBeta2                  = conf().SBDMadamBeta2();
     p.adamEps                    = conf().SBDMadamEps();
-    p.noiseSchedule              = VDResampler::parseNoiseSchedule(conf().SBDMnoiseSchedule(), "VDResamplerTrain");
+    p.noiseSchedule              = VDResampler::parseNoiseSchedule(conf().SBDMnoiseSchedule(), "VDResamplerTrainFromRoot");
     p.betaMin                    = conf().SBDMbetaMin();
     p.betaMax                    = conf().SBDMbetaMax();
     p.cosineOffset               = conf().SBDMcosineOffset();
@@ -304,29 +299,35 @@ namespace mu2e {
     p.useEMANetwork              = conf().SBDMuseEMANetwork();
     p.emaNetworkDecay            = conf().SBDMemaNetworkDecay();
     p.diffusionSteps             = conf().SBDMdiffusionSteps();
-    VDResampler::buildModels(state_, p, randFlat_, randGaussQ_, "VDResamplerTrain");
+    VDResampler::buildModels(state_, p, randFlat_, randGaussQ_, "VDResamplerTrainFromRoot");
   }
 
-  void VDResamplerTrain::analyze(const art::Event& event) {
-    auto const& StepPointMCs = event.getProduct(StepPointMCsToken_);
-    if (StepPointMCs.empty()) return;
-    auto const& SimParticles = event.getProduct(SimParticlemvToken_);
-    if (SimParticles.empty()) return;
+  void VDResamplerTrainFromRoot::endJob() {
+    // Open ROOT file and read training data. TFile::Open is used to handle xroot:// paths.
+    auto fin = std::unique_ptr<TFile>{TFile::Open(inputRootFile_.c_str(), "READ")};
+    if (!fin || fin->IsZombie())
+      throw cet::exception("VDResamplerTrainFromRoot") << "Cannot open ROOT file: " << inputRootFile_;
+    TTree* ttree = dynamic_cast<TTree*>(fin->Get(treeName_.c_str()));
+    if (!ttree)
+      throw cet::exception("VDResamplerTrainFromRoot") << "Cannot find TTree: " << treeName_;
 
-    for (const StepPointMC& step : StepPointMCs) {
-      const SimParticle& particle = SimParticles.at(step.trackId());
-      int    stepPdgId       = particle.pdgId();
-      auto   vdId            = step.virtualDetectorId();
-      double pz              = step.momentum().z();
+    double time, x, y, z, px, py, pz;
+    int stepPdgId;
+    ULong64_t vdId;
+    ttree->SetBranchAddress("time",            &time);
+    ttree->SetBranchAddress("x",               &x);
+    ttree->SetBranchAddress("y",               &y);
+    ttree->SetBranchAddress("z",               &z);
+    ttree->SetBranchAddress("px",              &px);
+    ttree->SetBranchAddress("py",              &py);
+    ttree->SetBranchAddress("pz",              &pz);
+    ttree->SetBranchAddress("pdgId",           &stepPdgId);
+    ttree->SetBranchAddress("virtualdetectorId", &vdId);
+
+    for (Long64_t i = 0; i < ttree->GetEntries(); ++i) {
+      ttree->GetEntry(i);
       if (vdId != state_.virtualDetectorID || (stepPdgId != state_.pdgID && state_.pdgID != 0) || pz <= 0)
         continue;
-
-      double x    = step.position().x();
-      double y    = step.position().y();
-      double z    = step.position().z();
-      double px   = step.momentum().x();
-      double py   = step.momentum().y();
-      double time = step.time();
 
       // mom0/mom1/mom2 are the three transformed momentum values in state_.momentumBasis.
       double x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t;
@@ -343,10 +344,9 @@ namespace mu2e {
       VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
       VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t, pTotRaw);
     }
-  }
+    fin->Close();
 
-  void VDResamplerTrain::endJob() {
-    // Single summary warning for any pz fallbacks accumulated during analyze().
+    // Single summary warning for any pz fallbacks accumulated over the TTree loop.
     if (pzFallback_.count > 0) {
       std::ostringstream oss;
       oss << "pz fell below kPzSafetyEpsilon (" << VDResampler::kPzSafetyEpsilon << ") in "
@@ -354,11 +354,12 @@ namespace mu2e {
           << "(pz>0 expected from the selection). First " << pzFallback_.firstValues.size()
           << " offending pz value(s):";
       for (double v : pzFallback_.firstValues) oss << ' ' << v;
-      mf::LogWarning("VDResamplerTrain") << oss.str();
+      mf::LogWarning("VDResamplerTrainFromRoot") << oss.str();
     }
-    VDResampler::runTraining(state_, "VDResamplerTrain");
+
+    VDResampler::runTraining(state_, "VDResamplerTrainFromRoot");
   }
 
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::VDResamplerTrain)
+DEFINE_ART_MODULE(mu2e::VDResamplerTrainFromRoot)
