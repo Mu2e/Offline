@@ -89,6 +89,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TLatex.h"
+#include "TLine.h"
 #include "TPad.h"
 #include "TStyle.h"
 #include "TTree.h"
@@ -1178,9 +1179,9 @@ private:
     // Layout is two stacked pads, matching the reference comparison plots:
     //   top    -- both distributions overlaid (normalized, so directly comparable), log-y for
     //             the wide-dynamic-range dimensions, with a legend naming the two.
-    //   bottom -- generated/mother bin-by-bin ratio, flat at 1 for a perfect match, with the
-    //             agreement metrics printed in the legend header so the number and the shape
-    //             that produced it are read together.
+    //   bottom -- generated/mother bin-by-bin ratio over a dashed y=1 reference line, flat on
+    //             that line for a perfect match, with the agreement metrics printed in the
+    //             legend header so the number and the shape that produced it are read together.
     //
     // Called AFTER both sides have been rebinned and normalized, so the ratio divides
     // histograms that already share bin edges and total area.
@@ -1292,8 +1293,23 @@ private:
         ratio->SetMaximum(3.0);
         // "E" rather than "HIST": TH1::Divide propagates the two sides' bin errors into the
         // ratio, and a ratio bin is only meaningfully off 1 if its error bar does not cover it.
-        ratio->Draw("E");
+        // Drawn first with "AXIS" so the frame exists (and its ranges are final) before the
+        // y=1 reference line, then re-drawn with "E SAME" so the points sit on top of the line.
+        ratio->Draw("AXIS");
         ratio->SetBit(kCanDelete);
+
+        // Perfect-match reference: a bin agreeing with the mother lands exactly on this line,
+        // so the eye reads deviation instead of having to interpolate the y axis. Spans the
+        // full drawn x range, which after rebinning is the histogram's own axis range.
+        TLine* unity = new TLine(ratio->GetXaxis()->GetXmin(), 1.0,
+                                 ratio->GetXaxis()->GetXmax(), 1.0);
+        unity->SetLineColor(kGray + 2);
+        unity->SetLineStyle(2);
+        unity->SetLineWidth(2);
+        unity->Draw("SAME");
+        unity->SetBit(kCanDelete);
+
+        ratio->Draw("E SAME");
 
         // Metrics in the legend header. Green (TLatex #color[8] == kGreen+2) marks the value
         // each takes for a PERFECT match: W1/JSD/TV/KS are all distances (0 = identical),

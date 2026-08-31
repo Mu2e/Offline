@@ -149,7 +149,6 @@ core_fine_structure_config : {
   # Radial position map u(rho), rho=r/VDr. Must be set explicitly: the module default is V1_ATANH,
   # whose u ~ rho near the origin gives no extra resolution where a centrally-peaked species
   # actually sits. The sqrt stretches that inner region.
-  SBDMpositionBasis : "V2_ATANH_SQRT"
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-4
   SBDMlogSigMax : 1.0
@@ -195,7 +194,6 @@ core_avg_structure_config :{
   SBDMhidden : 256
   SBDMlayers : 4
   SBDMtimeEmbeddingDim : 12
-  SBDMpositionBasis : "V2_ATANH_SQRT" # see core_fine_structure_config
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-3
   SBDMlogSigMax : 1.0
@@ -240,7 +238,6 @@ core_coarse_structure_config :{
   SBDMhidden : 140 # ~half, but sufficient to be > total input dims
   SBDMlayers : 5
   SBDMtimeEmbeddingDim : 8
-  SBDMpositionBasis : "V2_ATANH_SQRT" # see core_fine_structure_config
   SBDMnoiseSchedule : "LOGSIG"
   SBDMlogSigMin : 1e-2
   SBDMlogSigMax : 1.0
@@ -278,6 +275,7 @@ particle_training_config : {
     # enough events to have a fine model; no narrow structure so 1-stage is sufficient
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
       @table::common_fine_structure_1_stage_config
       @table::schedule_large_sample
       @table::peaksampling_off
@@ -285,6 +283,7 @@ particle_training_config : {
     # no narrow structure so 1-stage is sufficient
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_fine_structure_1_stage_config
       @table::schedule_mid_sample
       @table::peaksampling_off
@@ -292,6 +291,7 @@ particle_training_config : {
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -299,6 +299,7 @@ particle_training_config : {
     # few events from Neutrals, but if needed use the single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
       @table::peaksampling_off
@@ -306,6 +307,7 @@ particle_training_config : {
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -319,6 +321,7 @@ particle_training_config : {
     # in the particle summary (1-stage, '-' stage 1)
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -326,6 +329,7 @@ particle_training_config : {
     # much fewer events than the electron sample, recommend using the electron model
     MuBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -333,6 +337,7 @@ particle_training_config : {
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
       @table::peaksampling_off
@@ -341,6 +346,7 @@ particle_training_config : {
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_tiny_sample
       @table::peaksampling_off
@@ -351,8 +357,9 @@ particle_training_config : {
     # many events, but backgrounds. no need for 2-stage
     EleBeam : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_1_stage_config
-      # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      SBDMpositionBasis : "V1_ATANH"
+      # @table::common_fine_structure_1_stage_config
+      @table::common_fine_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_large_sample
       @table::peaksampling_off
     }
@@ -360,8 +367,9 @@ particle_training_config : {
     # should consider a standalone 347 keV. Only background here, 1-stage is sufficient
     MuBeam :  {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_fine_structure_1_stage_config
-      # @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      # @table::common_fine_structure_1_stage_config
+      @table::common_fine_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_large_sample
       @table::peaksampling_off
     }
@@ -370,6 +378,7 @@ particle_training_config : {
     # sampling with mid-range resolution
     TargetStops1809 : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V2_ATANH_SQRT"
       @table::common_avg_structure_2_stage_config
       @table::schedule_small_sample
       @table::peaksampling_late # the only leaf with SBDMpeakWindow* configured (see below)
@@ -404,14 +413,16 @@ particle_training_config : {
     # hard to produce samples for the same POT, single stage sufficient
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
-      @table::common_avg_structure_1_stage_config
-      # @table::common_avg_structure_2_stage_config # if really want fine pTot structure
+      SBDMpositionBasis : "V1_ATANH"
+      # @table::common_avg_structure_1_stage_config
+      @table::common_avg_structure_2_stage_config # if really want fine pTot structure
       @table::schedule_small_sample
       @table::peaksampling_off
     }
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -422,6 +433,7 @@ particle_training_config : {
     # coarse single-stage training for neutrons from the EleBeam, no significant tTrans tail so V2 momentum basis is sufficient
     EleBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -429,6 +441,7 @@ particle_training_config : {
     # many more events in the MuBeam neutron sample. no significant tTrans tail so stay with V2 momentum basis
     MuBeam : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
       @table::common_fine_structure_1_stage_config
       # @table::common_fine_structure_2_stage_config # sufficient stat to do this if wanted
       @table::schedule_mid_sample
@@ -437,6 +450,7 @@ particle_training_config : {
     # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
     TargetStops1809 : {
       SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -444,6 +458,7 @@ particle_training_config : {
     # single stage
     Neutrals : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
       @table::common_avg_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -451,6 +466,7 @@ particle_training_config : {
     # default
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
@@ -462,6 +478,7 @@ particle_training_config : {
   default : {
     default : {
       SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
       @table::common_coarse_structure_1_stage_config
       @table::schedule_small_sample
       @table::peaksampling_off
