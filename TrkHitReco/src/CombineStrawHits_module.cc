@@ -190,6 +190,10 @@ namespace mu2e {
       if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
       combohit.init(hit1,origIndex[ich]);
+      // TimeDivision is a quality tag: StrawHitRecoUtils sets it only when the longitudinal
+      // position was actually measured, and leaves it off when StrawResponse had to clamp the
+      // position to the straw end.  It must therefore be propagated from the constituents.
+      bool tdiv = hit1.flag().hasAllProperties(StrawHitFlag::tdiv);
       int panel1 = hit1.strawId().uniquePanel();
 
       for (size_t jch=ich+1;jch<chcOrig.size();++jch) {
@@ -213,11 +217,12 @@ namespace mu2e {
           std::cout << "CombineStrawHits past limit" << std::endl;
         } else {
           isUsed[jch]= true;
+          tdiv &= hit2.flag().hasAllProperties(StrawHitFlag::tdiv);
         }
       }
-      // clear the flag bits; they are reset later
-      const static StrawHitFlag initialFlag("TimeDivision");
-      combohit._flag = initialFlag;
+      // clear the flag bits; they are reset below
+      combohit._flag = StrawHitFlag();
+      if(tdiv) combohit._flag.merge(StrawHitFlag::tdiv);
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
         if(_filter)continue;
@@ -263,7 +268,7 @@ namespace mu2e {
     {
       size_t index = combohit.index(ich);
       if (_debug > 3)std::cout << index << ", ";
-      if (index > chcOrig.size())
+      if (index >= chcOrig.size())
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = chcOrig[index];
