@@ -19,25 +19,25 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-         verbosityLevel : 2
+         verbosityLevel : 1
          saveSTMFragSummary : true
-         saveRawWithHeaderWaveform_HPGe: false
-         saveRawWaveform_HPGe: true
-         saveZSWaveform_HPGe: true
-         saveRawWithHeaderWaveform_LaBr: false
-         saveRawWaveform_LaBr: true
-         saveZSWaveform_LaBr: true
-	}
+         saveRawWaveformsWithHeaderHPGe: false
+         saveRawWaveformsHPGe: true
+         saveZSWaveformsHPGe: true
+         saveRawWaveformsWithHeaderLaBr: false
+         saveRawWaveformsLaBr: true
+         saveZSWaveformsLaBr: true
+        }
 
-       makeSTMBinary : { 
-      	 module_type : STMBinaryDigisFromFragments
+       makeSTMBinary : {
+         module_type : STMBinaryDigisFromFragments
          stmTag : "daq:ContainerSTM"
          verbosityLevel : 1
-	 rawFile : "raw.bin"
-	 zsFile : "zs.bin"
-	 phFile : "ph.bin"
-	 rawHeaderFile : "rawWithHeader.bin"
-	 eventFile : "event.bin"
+         rawFile : "raw.bin"
+         zsFile : "zs.bin"
+         phFile : "ph.bin"
+         rawHeaderFile : "rawWithHeader.bin"
+         eventFile : "event.bin"
       }
    }
 
@@ -47,6 +47,9 @@ physics : {
     stmPrint : {
       module_type : STMPrintFragments
       stmTag : "daq:ContainerSTM"
+      printEverything : false
+      printInnerFrags : false
+      printPayloads   : false
     }
 
    }

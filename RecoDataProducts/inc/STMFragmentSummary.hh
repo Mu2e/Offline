@@ -18,22 +18,42 @@ namespace mu2e {
 
   public:
     STMFragmentSummary() : _nContainerFrags(0), _nInnerFrags(0),
+                           _nRawFragsFlaggedBad(0), _nRawFragsFlaggedMissing(0),
+                           _nZSFragsSkippedDueToRawFlag(0), _nPHFragsSkippedDueToRawFlag(0),
+                           _nPrescaledRawFrags(0),_nPrescaledZSFrags(0),
                            _nGoodRawFrags(0),_nGoodZSFrags(0),_nGoodPHFrags(0),
                            _nZeroRawFrags(0),_nZeroZSFrags(0),_nZeroPHFrags(0),
                            _nEmptyRawFrags(0),_nEmptyZSFrags(0),_nEmptyPHFrags(0){};
 
     STMFragmentSummary(size_t nContainerFrags, size_t nInnerFrags,
+                       size_t nRawFragsFlaggedBad, size_t nRawFragsFlaggedMissing,
+                       size_t nZSFragsSkippedDueToRawFlag, size_t nPHFragsSkippedDueToRawFlag,
+                       size_t nPrescaledRawFrags, size_t nPrescaledZSFrags,
                        size_t nGoodRawFrags,size_t nGoodZSFrags, size_t nGoodPHFrags,
                        size_t nZeroRawFrags, size_t nZeroZSFrags, size_t nZeroPHFrags,
                        size_t nEmptyRawFrags, size_t nEmptyZSFrags, size_t nEmptyPHFrags) :
       _nContainerFrags(nContainerFrags), _nInnerFrags(nInnerFrags),
+      _nRawFragsFlaggedBad(nRawFragsFlaggedBad), _nRawFragsFlaggedMissing(nRawFragsFlaggedMissing),
+      _nZSFragsSkippedDueToRawFlag(nZSFragsSkippedDueToRawFlag), _nPHFragsSkippedDueToRawFlag(nPHFragsSkippedDueToRawFlag),
+      _nPrescaledRawFrags(nPrescaledRawFrags),_nPrescaledZSFrags(nPrescaledZSFrags),
       _nGoodRawFrags(nGoodRawFrags),_nGoodZSFrags(nGoodZSFrags),_nGoodPHFrags(nGoodPHFrags),
       _nZeroRawFrags(nZeroRawFrags),_nZeroZSFrags(nZeroZSFrags),_nZeroPHFrags(nZeroPHFrags),
       _nEmptyRawFrags(nEmptyRawFrags),_nEmptyZSFrags(nEmptyZSFrags),_nEmptyPHFrags(nEmptyPHFrags) {};
 
-
+    // Container/Fragment structure
     size_t nContainerFrags() const { return _nContainerFrags; }
     size_t nInnerFrags() const { return _nInnerFrags; }
+
+    // Raw Header Quality
+    size_t nRawFragsFlaggedBad() const {return _nRawFragsFlaggedBad; }
+    size_t nRawFragsFlaggedMissing() const { return _nRawFragsFlaggedMissing; }
+
+    size_t nZSFragsSkippedDueToRawFlag() const { return _nZSFragsSkippedDueToRawFlag; }
+    size_t nPHFragsSkippedDueToRawFlag() const { return _nPHFragsSkippedDueToRawFlag; }
+
+    // Filter/Classifications results
+    size_t nPrescaledRawFrags() const {return _nPrescaledRawFrags; }
+    size_t nPrescaledZSFrags() const{return _nPrescaledZSFrags; }
 
     size_t nGoodRawFrags() const { return _nGoodRawFrags; }
     size_t nGoodZSFrags() const { return _nGoodZSFrags; }
@@ -49,8 +69,20 @@ namespace mu2e {
 
 
   private:
+    // Container/Fragment
     size_t _nContainerFrags{};
     size_t _nInnerFrags{};
+
+    // Raw Header Quality
+    size_t _nRawFragsFlaggedBad{};
+    size_t _nRawFragsFlaggedMissing{};
+
+    size_t _nZSFragsSkippedDueToRawFlag{};
+    size_t _nPHFragsSkippedDueToRawFlag{};
+
+    // Filter/Classifications results
+    size_t _nPrescaledRawFrags{};
+    size_t _nPrescaledZSFrags{};
 
     size_t _nGoodRawFrags{};
     size_t _nGoodZSFrags{};
@@ -63,7 +95,6 @@ namespace mu2e {
     size_t _nEmptyRawFrags{};
     size_t _nEmptyZSFrags{};
     size_t _nEmptyPHFrags{};
-
 
   };
   typedef std::vector<STMFragmentSummary> STMFragmentSummaryCollection;

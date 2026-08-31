@@ -467,6 +467,15 @@
  <class name="mu2e::STMFragmentSummary"/>
  <class name="mu2e::STMFragmentSummaryCollection"/>
  <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
+ <class name="mu2e::STMEventHeader"/>
+ <class name="mu2e::STMEventHeaderCollection"/>
+ <class name="art::Wrapper<mu2e::STMEventHeaderCollection>"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>>"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>>"/>
 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
