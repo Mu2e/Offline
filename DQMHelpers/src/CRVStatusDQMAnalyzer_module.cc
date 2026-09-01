@@ -16,6 +16,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <algorithm>
 #include <iostream>
@@ -59,6 +60,18 @@ public:
         Name("nBinsEwtMismatch"), Comment("Bins for ewtMismatch"), 201};
     fhicl::Atom<float> maxEwtMismatch{
         Name("maxEwtMismatch"), Comment("Abs range for ewtMismatch"), 100.f};
+    fhicl::Atom<int> nBinsErrorsPerSubrun{
+        Name("nBinsErrorsPerSubrun"),
+        Comment("Bins for errorsPerSubrun"),
+        100};
+    fhicl::Atom<float> maxErrorsPerSubrun{
+        Name("maxErrorsPerSubrun"),
+        Comment("Upper edge for errorsPerSubrun (error events in a subrun)"),
+        10000.f};
+    fhicl::Atom<bool> fillLivePlots{
+        Name("fillLivePlots"),
+        Comment("Book TGraphs vs subrun (online only; not hadd-safe)"),
+        false};
   };
 
   using Parameters = art::EDAnalyzer::Table<Config>;
@@ -78,6 +91,8 @@ private:
   std::string outputTag_;
   int diagLevel_;
   CRVStatusDQM dqm_;
+  bool warnedMissingStatus_{false};
+  bool warnedMissingDaq_{false};
 };
 
 CRVStatusDQM::Config CRVStatusDQMAnalyzer::makeHelperConfig(const Config& conf)
@@ -91,6 +106,9 @@ CRVStatusDQM::Config CRVStatusDQMAnalyzer::makeHelperConfig(const Config& conf)
   c.maxWordCount = conf.maxWordCount();
   c.nBinsEwtMismatch = std::max(conf.nBinsEwtMismatch(), 1);
   c.maxEwtMismatch = conf.maxEwtMismatch();
+  c.nBinsErrorsPerSubrun = std::max(conf.nBinsErrorsPerSubrun(), 1);
+  c.maxErrorsPerSubrun = conf.maxErrorsPerSubrun();
+  c.fillLivePlots = conf.fillLivePlots();
   return c;
 }
 
@@ -119,15 +137,28 @@ void CRVStatusDQMAnalyzer::analyze(const art::Event& event)
 {
   art::Handle<CrvStatusCollection> statusHandle;
   event.getByLabel(crvStatusTag_, statusHandle);
+  const bool haveStatus =
+      statusHandle.isValid() && statusHandle.product() != nullptr;
+  if (!haveStatus && !warnedMissingStatus_) {
+    warnedMissingStatus_ = true;
+    mf::LogWarning("CRVStatusDQMAnalyzer")
+        << "No CrvStatusCollection at " << crvStatusTag_
+        << " (empty collection used; nRocHeaders will be 0). "
+        << "Reported once per job.";
+  }
   const CrvStatusCollection emptyStatus;
-  const CrvStatusCollection& status =
-      (statusHandle.isValid() && statusHandle.product() != nullptr) ?
-          *statusHandle :
-          emptyStatus;
+  const CrvStatusCollection& status = haveStatus ? *statusHandle : emptyStatus;
 
   art::Handle<CrvDAQerrorCollection> daqHandle;
   event.getByLabel(crvDaqErrorTag_, daqHandle);
-  if (daqHandle.isValid() && daqHandle.product() != nullptr) {
+  const bool haveDaq = daqHandle.isValid() && daqHandle.product() != nullptr;
+  if (!haveDaq && !warnedMissingDaq_) {
+    warnedMissingDaq_ = true;
+    mf::LogWarning("CRVStatusDQMAnalyzer")
+        << "No CrvDAQerrorCollection at " << crvDaqErrorTag_
+        << " (unpack-error histograms skipped). Reported once per job.";
+  }
+  if (haveDaq) {
     dqm_.Fill(status, *daqHandle);
   } else {
     dqm_.Fill(status);
@@ -173,6 +204,10 @@ void CRVStatusDQMAnalyzer::endJob()
     for (const auto& roc : dqm_.seenRocs()) {
       std::cout << "[CRVStatusDQMAnalyzer] seen DTC " << static_cast<int>(roc.first)
                 << " link " << static_cast<int>(roc.second) << std::endl;
+    }
+    if (dqm_.nUnindexedRocs() > 0) {
+      std::cout << "[CRVStatusDQMAnalyzer] Unindexed DTC/link status blocks: "
+                << dqm_.nUnindexedRocs() << std::endl;
     }
   }
 }

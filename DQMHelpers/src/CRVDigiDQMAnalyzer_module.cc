@@ -21,9 +21,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
-
-#include "TH1F.h"
-#include "TString.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <algorithm>
 #include <iostream>
@@ -88,12 +86,16 @@ public:
         true};
     fhicl::Atom<bool> fillCrvIdRates{
         Name("fillCrvIdRates"),
-        Comment("Book CRVId rate maps and crvDigisPerChannel"),
+        Comment("Book CRVId occupancy maps and crvDigisPerChannel"),
         true};
     fhicl::Atom<bool> kppReadout{
         Name("kppReadout"),
         Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"),
         true};
+    fhicl::Atom<bool> fillLivePlots{
+        Name("fillLivePlots"),
+        Comment("Book TGraphs vs EWT and *LastEwt snapshots (online only; not hadd-safe)"),
+        false};
     fhicl::Atom<bool> fillSectorOccupancy{
         Name("fillSectorOccupancy"),
         Comment("Fill per-sector crvDigisPerChannelAndEvent_* using GeometryService"),
@@ -134,6 +136,8 @@ private:
   double histDigisEnd_;
   CRVDigiDQM dqm_;
   bool sectorMapSent_{false};
+  bool warnedMissingDigi_{false};
+  bool warnedMissingStatus_{false};
 };
 
 CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
@@ -158,6 +162,7 @@ CRVDigiDQM::Config CRVDigiDQMAnalyzer::makeHelperConfig(const Config& conf)
   c.fillInclusive = conf.fillInclusive();
   c.fillCrvIdRates = conf.fillCrvIdRates();
   c.kppReadout = conf.kppReadout();
+  c.fillLivePlots = conf.fillLivePlots();
   return c;
 }
 
@@ -217,21 +222,29 @@ void CRVDigiDQMAnalyzer::analyze(const art::Event& event)
 {
   art::Handle<CrvDigiCollection> digiHandle;
   event.getByLabel(crvDigiTag_, digiHandle);
-  if (!digiHandle.isValid()) {
-    if (diagLevel_ > 1) {
-      std::cout << "[CRVDigiDQMAnalyzer] No CrvDigiCollection at "
-                << crvDigiTag_ << std::endl;
+  if (!digiHandle.isValid() || digiHandle.product() == nullptr) {
+    if (!warnedMissingDigi_) {
+      warnedMissingDigi_ = true;
+      mf::LogWarning("CRVDigiDQMAnalyzer")
+          << "No CrvDigiCollection at " << crvDigiTag_
+          << ". Event skipped. Reported once per job.";
     }
     return;
   }
 
   art::Handle<CrvStatusCollection> statusHandle;
   event.getByLabel(crvStatusTag_, statusHandle);
+  const bool haveStatus =
+      statusHandle.isValid() && statusHandle.product() != nullptr;
+  if (!haveStatus && !warnedMissingStatus_) {
+    warnedMissingStatus_ = true;
+    mf::LogWarning("CRVDigiDQMAnalyzer")
+        << "No CrvStatusCollection at " << crvStatusTag_
+        << " (empty collection used; occupancy/ADC/TDC still fill). "
+        << "Reported once per job.";
+  }
   const CrvStatusCollection emptyStatus;
-  const CrvStatusCollection& status =
-      (statusHandle.isValid() && statusHandle.product() != nullptr) ?
-          *statusHandle :
-          emptyStatus;
+  const CrvStatusCollection& status = haveStatus ? *statusHandle : emptyStatus;
 
   dqm_.Fill(*digiHandle, status);
 }
@@ -254,6 +267,15 @@ void CRVDigiDQMAnalyzer::endJob()
         std::cout << " " << static_cast<int>(feb);
       }
       std::cout << std::endl;
+    }
+    if (dqm_.nFebIdOutOfAxis() > 0) {
+      std::cout << "[CRVDigiDQMAnalyzer] Off-axis FEB ids: "
+                << dqm_.nFebIdOutOfAxis() << " (max globalFebId "
+                << dqm_.maxFebIdSeen() << ")" << std::endl;
+    }
+    if (dqm_.nCrvIdOutOfRange() > 0) {
+      std::cout << "[CRVDigiDQMAnalyzer] CRVId-range skips (crvDigiRates*): "
+                << dqm_.nCrvIdOutOfRange() << std::endl;
     }
   }
 }

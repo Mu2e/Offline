@@ -4,6 +4,7 @@
 // otsdaq online monitor and CRVStatusDQMAnalyzer. Status is per DTC link.
 // Original Author: R. Mina
 
+#include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
@@ -35,18 +36,23 @@ public:
     float maxWordCount{65535.f};
     int nBinsEwtMismatch{201};
     float maxEwtMismatch{100.f};
+    int nBinsErrorsPerSubrun{100};
+    float maxErrorsPerSubrun{10000.f};
+    // TGraphs vs subrun. Online monitor only — they do not survive hadd.
+    bool fillLivePlots{false};
   };
 
   static constexpr int kNErrorBits = 8;
   static constexpr int kErrorBitOffset = 24;
-  static constexpr int kNPortFlags = 24;
-  static constexpr int kNLinksPerDTC = 6;
-  static constexpr int kNRocBins = 18; // CRVId::nROC; no GeometryService
+  static constexpr int kNPortFlags = static_cast<int>(CRVId::nFEBPerROC);
+  static constexpr int kNLinksPerDTC = static_cast<int>(CRVId::nROCPerDTC);
+  static constexpr int kNRocBins = static_cast<int>(CRVId::nROC);
   static constexpr int kNDaqErrorCodes = 7;
 
   static const char* errorBitLabel(int bitIndex);
-  // Y-axis of errorBitsVsRoc: dtcId * 6 + linkId. No roc==4 fold.
+  // Y-axis of errorBitsVsRoc: dtcId * nROCPerDTC + linkId. No roc==4 fold.
   static int rocBin(uint8_t dtcId, uint8_t linkId);
+  static bool rocIndexed(uint8_t dtcId, uint8_t linkId);
 
   struct RocSnapshot {
     uint8_t dtcId{0};
@@ -68,6 +74,7 @@ public:
   void EndSubRun(int run, int subrun);
   void WriteGraphs();
 
+  TH1F* nEventsHist() const { return h_nEvents_; }  //one count per event; hadd-safe
   TH1F* nRocHeaders() const { return h_nRocHeaders_; }  //ROC headers per event
   TH1F* activeFebCount() const { return h_activeFebCount_; }  //active FEBs per ROC header
   TH1F* triggerCount() const { return h_triggerCount_; }  //ROC TriggerCount word
@@ -99,6 +106,7 @@ public:
   std::size_t nEventsWithAnyErrorBit() const { return nEventsWithAnyErrorBit_; }
   std::size_t nEventsWithDaqErrors() const { return nEventsWithDaqErrors_; }
   std::size_t nRocHeadersTotal() const { return nRocHeadersTotal_; }
+  long long nUnindexedRocs() const { return nUnindexedRocs_; }
   uint16_t nActiveFEBsMin() const { return nActiveFEBsMin_; }
   uint16_t nActiveFEBsMax() const { return nActiveFEBsMax_; }
   double nActiveFEBsMean() const;
@@ -113,11 +121,13 @@ private:
   void fillDaqErrors(const CrvDAQerrorCollection& crvDaqErrors);
   void persistGraph(TGraph* g);
   TH1F* latencyHistFor(uint8_t dtcId, uint8_t linkId);
+  void noteUnindexedRoc(uint8_t dtcId, uint8_t linkId);
 
   Config config_;
   bool booked_{false};
   std::optional<art::TFileDirectory> dir_;
 
+  TH1F* h_nEvents_{nullptr};
   TH1F* h_nRocHeaders_{nullptr};
   TH1F* h_activeFebCount_{nullptr};
   TH1F* h_triggerCount_{nullptr};
@@ -144,6 +154,8 @@ private:
   std::size_t nEventsWithAnyErrorBit_{0};
   std::size_t nEventsWithDaqErrors_{0};
   std::size_t nRocHeadersTotal_{0};
+  long long nUnindexedRocs_{0};
+  bool warnedUnindexedRoc_{false};
   std::size_t errorBitCounts_[kNErrorBits]{};
   uint16_t nActiveFEBsMin_{std::numeric_limits<uint16_t>::max()};
   uint16_t nActiveFEBsMax_{0};

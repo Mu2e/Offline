@@ -24,7 +24,8 @@ int CRVDigiDQM::globalFebId(uint8_t roc, uint8_t feb)
 
 int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel)
 {
-  return globalFebId(roc, feb) * kNChanPerFEB + febChannel;
+  return globalFebId(roc, feb) * static_cast<int>(CRVId::nChanPerFEB) +
+         febChannel;
 }
 
 CRVDigiDQM::CRVDigiDQM(const Config& config) :
@@ -73,18 +74,22 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
            config_.dtVsFebRange),
       nFebIdBins(), -0.5, nFebIdBins() - 0.5);
 
-  h_dtOutOfRangePerFebLastEwt_ = dir.make<TH1F>(
-      "dtOutOfRangePerFebLastEwt",
-      Form("Events with |#Deltat| > %.0f ns (EWT span %zu);Global FEB ID;Events",
-           config_.dtVsFebRange, config_.channelsWindowEwts),
-      nFebIdBins(), -0.5, nFebIdBins() - 0.5);
+  if (config_.fillLivePlots) {
+    h_dtOutOfRangePerFebLastEwt_ = dir.make<TH1F>(
+        "dtOutOfRangePerFebLastEwt",
+        Form("Events with |#Deltat| > %.0f ns (EWT span %zu);Global FEB ID;Events",
+             config_.dtVsFebRange, config_.channelsWindowEwts),
+        nFebIdBins(), -0.5, nFebIdBins() - 0.5);
+  }
 
   h1_digisPerEvt_ = dir.make<TH1F>("h1_digisPerEvt",
                                    "Hits / event;Hits / event;Events",
                                    config_.nBinsDigisPerEvt,
-                                   0.5,
+                                   -0.5,
                                    config_.maxDigisPerEvt + 0.5);
   h1_digisPerEvt_->SetMinimum(0.5);
+
+  h_nEvents_ = dir.make<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
 
   h1_peakAdc_ = dir.make<TH1F>("h1_peakAdc",
                                "Max sample ADC;Max sample ADC;Hits",
@@ -109,44 +114,49 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
                                   kNGlobalChannelBins - 0.5);
     h1_channels_->SetMinimum(0.5);
 
-    h1_channelsLastEwt_ = dir.make<TH1F>(
-        "h1_channelsLastEwt",
-        Form("Channel occupancy (EWT span %zu);Global channel ID;Hits",
-             config_.channelsWindowEwts),
-        kNGlobalChannelBins,
-        -0.5,
-        kNGlobalChannelBins - 0.5);
-    h1_channelsLastEwt_->SetMinimum(0.5);
+    if (config_.fillLivePlots) {
+      h1_channelsLastEwt_ = dir.make<TH1F>(
+          "h1_channelsLastEwt",
+          Form("Channel occupancy (EWT span %zu);Global channel ID;Hits",
+               config_.channelsWindowEwts),
+          kNGlobalChannelBins,
+          -0.5,
+          kNGlobalChannelBins - 0.5);
+      h1_channelsLastEwt_->SetMinimum(0.5);
+    }
 
     h2_channels_ = dir.make<TH2F>("h2_channels",
                                   "FEB vs channel hit map;Channel;FEB",
-                                  kNChanPerFEB,
+                                  static_cast<int>(CRVId::nChanPerFEB),
                                   0.5,
-                                  kNChanPerFEB + 0.5,
+                                  static_cast<double>(CRVId::nChanPerFEB) + 0.5,
                                   kNGlobalFebBins,
                                   0.5,
                                   kNGlobalFebBins + 0.5);
   }
 
-  g_digisVsEwt_ = dir.make<TGraph>();
-  g_digisVsEwt_->SetName("g_digisVsEwt");
-  g_digisVsEwt_->SetTitle(Form("Hits in last %zu EWTs (%zu points);"
-                               "Event window tag;Hits",
-                               kEwtWindow,
-                               kGraphPoints));
-  g_digisVsEwt_->SetPoint(0, 0, 0);
-  g_digisVsEwt_->SetPoint(1, 1, 1);
+  if (config_.fillLivePlots) {
+    g_digisVsEwt_ = dir.make<TGraph>();
+    g_digisVsEwt_->SetName("g_digisVsEwt");
+    g_digisVsEwt_->SetTitle(Form("Hits in last %zu EWTs (%zu points);"
+                                 "Event window tag;Hits",
+                                 kEwtWindow,
+                                 kGraphPoints));
+    g_digisVsEwt_->SetPoint(0, 0, 0);
+    g_digisVsEwt_->SetPoint(1, 1, 1);
 
-  g_digisAvgVsEwt_ = dir.make<TGraph>();
-  g_digisAvgVsEwt_->SetName("g_digisAvgVsEwt");
-  g_digisAvgVsEwt_->SetTitle(Form("Mean hits per event (averaged over %zu events);"
-                                  "Event window tag; ",
-                                  config_.avgBlockSize));
-  g_digisAvgVsEwt_->SetPoint(0, 0, 0);
-  g_digisAvgVsEwt_->SetPoint(1, 1, 1);
+    g_digisAvgVsEwt_ = dir.make<TGraph>();
+    g_digisAvgVsEwt_->SetName("g_digisAvgVsEwt");
+    g_digisAvgVsEwt_->SetTitle(Form("Mean hits per event (averaged over %zu events);"
+                                    "Event window tag; ",
+                                    config_.avgBlockSize));
+    g_digisAvgVsEwt_->SetPoint(0, 0, 0);
+    g_digisAvgVsEwt_->SetPoint(1, 1, 1);
+  }
 
   if (config_.fillInclusive) {
-    hBarId_ = dir.make<TH1D>("BarId", "Bar ID", 200, -0.5, 5503.5);
+    hBarId_ = dir.make<TH1D>("BarId", "Bar ID", 200, -0.5,
+                             static_cast<double>(CRVId::nBars) - 0.5);
     hSiPM_ = dir.make<TH1D>("SiPM", "SiPM", 4, -0.5, 3.5);
     hADC_ = dir.make<TH1D>("ADC", "ADC in waveform", 100, 0.0, 3000.0);
   }
@@ -156,7 +166,7 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
     for (std::size_t roc = 1; roc <= CRVId::nROC; ++roc) {
       h_crvDigiRatesROC_[roc - 1] = dir.make<TH1F>(
           Form("crvDigiRates_ROC%zu", roc),
-          Form("crvDigiRates_ROC%zu;Online channel in ROC;Digis / event", roc),
+          Form("crvDigiRates_ROC%zu;Online channel in ROC;Digis", roc),
           static_cast<int>(CRVId::nFEBPerROC * CRVId::nChanPerFEB),
           0,
           static_cast<double>(CRVId::nFEBPerROC * CRVId::nChanPerFEB));
@@ -172,7 +182,7 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
         static_cast<double>(CRVId::nROC * CRVId::nFEBPerROC));
     h_crvDigisPerChannel_ = dir.make<TH1F>(
         "crvDigisPerChannel",
-        "Mean digis per event vs offline channel;Offline channel (bar#times4+SiPM);Digis / event",
+        "Digis vs offline channel;Offline channel (bar#times4+SiPM);Digis",
         static_cast<int>(CRVId::nChannels),
         -0.5,
         static_cast<double>(CRVId::nChannels) - 0.5);
@@ -189,6 +199,9 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
   }
 
   ++nEvents_;
+  if (h_nEvents_) {
+    h_nEvents_->Fill(1.f);
+  }
 
   const bool haveEwt = !crvStatus.empty();
   const uint64_t ewt = haveEwt ? crvStatus.front().GetEventWindowTag() : 0;
@@ -272,6 +285,18 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
         if (h_crvDigiRates_) {
           h_crvDigiRates_->Fill(febCh, portIndex);
         }
+      } else {
+        ++nCrvIdOutOfRange_;
+        if (!warnedCrvIdOutOfRange_) {
+          warnedCrvIdOutOfRange_ = true;
+          mf::LogWarning("CRVDigiDQM")
+              << "digi from ROC " << rocId << " FEB " << febIdRaw
+              << " channel " << febCh << " is outside CRVId range (ROC 1-"
+              << CRVId::nROC << ", FEB 1-" << CRVId::nFEBPerROC
+              << ", channel 0-" << (CRVId::nChanPerFEB - 1)
+              << "). It is omitted from crvDigiRates*; occupancy and timing "
+              << "are still filled. Reported once per job.";
+        }
       }
     }
 
@@ -293,7 +318,8 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
     if (cf.valid) {
       const double absTime_ns =
           cf.time_ns + digi.GetStartTDC() * kDigitizationPeriodNs;
-      const uint8_t fpga = febChannel / 16;
+      const uint8_t fpga =
+          static_cast<uint8_t>(febChannel / CRVId::nChanPerFPGA);
       hitTimes[febId][fpga].push_back({absTime_ns, febChannel});
     }
 
@@ -307,7 +333,7 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
 
   fillTiming(hitTimes);
 
-  if (haveEwt) {
+  if (haveEwt && config_.fillLivePlots) {
     fillEwtSeries(ewt, nDigis);
     if (config_.kppReadout) {
       fillRollingOccupancy(ewt, eventChannelHits);
@@ -319,6 +345,9 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
 
 void CRVDigiDQM::fillEwtSeries(uint64_t ewt, int nDigis)
 {
+  if (g_digisVsEwt_ == nullptr || g_digisAvgVsEwt_ == nullptr) {
+    return;
+  }
   if (avgBlockCount_ == 0) {
     avgBlockFirstEwt_ = ewt;
   }
@@ -517,7 +546,8 @@ void CRVDigiDQM::fillTiming(
         const auto& hitsA = itA->second;
         const auto& hitsB = itB->second;
 
-        const uint8_t pairCode = static_cast<uint8_t>(fpgaA * 4 + fpgaB);
+        const uint8_t pairCode =
+            static_cast<uint8_t>(fpgaA * CRVId::nFPGAPerFEB + fpgaB);
         const auto key = std::make_pair(febId, pairCode);
 
         if (h1_dtFpgaPairs_.find(key) == h1_dtFpgaPairs_.end()) {
@@ -558,7 +588,7 @@ void CRVDigiDQM::fillTiming(
 
 void CRVDigiDQM::fillMicroBunchStatus(const CrvStatusCollection& crvStatus)
 {
-  if (!dir_) {
+  if (!dir_ || !config_.fillLivePlots) {
     return;
   }
 
@@ -611,26 +641,6 @@ void CRVDigiDQM::persistGraph(TGraph* g)
                                 g->GetY());
 }
 
-void CRVDigiDQM::scaleRateHists()
-{
-  if (ratesScaled_ || nEvents_ == 0) {
-    return;
-  }
-  const float invN = 1.0f / static_cast<float>(nEvents_);
-  for (TH1F* h : h_crvDigiRatesROC_) {
-    if (h) {
-      h->Scale(invN);
-    }
-  }
-  if (h_crvDigiRates_) {
-    h_crvDigiRates_->Scale(invN);
-  }
-  if (h_crvDigisPerChannel_) {
-    h_crvDigisPerChannel_->Scale(invN);
-  }
-  ratesScaled_ = true;
-}
-
 int CRVDigiDQM::nDigisOffline(std::size_t channel) const
 {
   if (channel >= nDigisOffline_.size()) {
@@ -657,6 +667,7 @@ void CRVDigiDQM::BookSectorOccupancy(const std::vector<std::string>& sectorNames
 
 void CRVDigiDQM::fillSectorOccupancy()
 {
+  // Per-file rate distribution. After hadd, rebuild from crvDigisPerChannel / nEvents.
   if (h_sectorOccupancy_.empty() || nEvents_ == 0) {
     return;
   }
@@ -677,7 +688,9 @@ void CRVDigiDQM::WriteGraphs()
     return;
   }
   fillSectorOccupancy();
-  scaleRateHists();
+  if (!config_.fillLivePlots) {
+    return;
+  }
   persistGraph(g_digisVsEwt_);
   persistGraph(g_digisAvgVsEwt_);
   for (auto& entry : g_ubStatusVsEwt_) {

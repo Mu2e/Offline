@@ -3,7 +3,6 @@
 #   mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <input.art> -n <nevents>
 
 #include "Offline/fcl/minimalMessageService.fcl"
-#include "Offline/fcl/standardServices.fcl"
 
 process_name : CRVDQM
 
@@ -47,6 +46,9 @@ physics : {
       fillCrvIdRates       : true
       # KPP FEB-axis sizing (ROC 1-2); false only for a full CRV
       kppReadout           : true
+      # TGraphs / *LastEwt are online-only; leave false so per-job files hadd
+      fillLivePlots        : false
+      # needs GeometryService; this FCL does not provide one
       fillSectorOccupancy  : false
     }
 
@@ -60,10 +62,13 @@ physics : {
       maxLinkLatency    : 4096.0
       nBinsTriggerCount : 256
       maxTriggerCount   : 65535.0
-      nBinsWordCount    : 256
-      maxWordCount      : 65535.0
-      nBinsEwtMismatch  : 201
-      maxEwtMismatch    : 100.0
+      nBinsWordCount       : 256
+      maxWordCount         : 65535.0
+      nBinsEwtMismatch     : 201
+      maxEwtMismatch       : 100.0
+      nBinsErrorsPerSubrun : 100
+      maxErrorsPerSubrun   : 10000.0
+      fillLivePlots        : false
     }
   }
 

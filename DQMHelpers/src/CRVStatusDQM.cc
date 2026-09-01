@@ -4,6 +4,8 @@
 
 #include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
 
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
 #include "TString.h"
 
 #include <algorithm>
@@ -40,11 +42,38 @@ int CRVStatusDQM::rocBin(uint8_t dtcId, uint8_t linkId)
   return static_cast<int>(dtcId) * kNLinksPerDTC + static_cast<int>(linkId);
 }
 
+bool CRVStatusDQM::rocIndexed(uint8_t dtcId, uint8_t linkId)
+{
+  if (static_cast<int>(linkId) >= kNLinksPerDTC) {
+    return false;
+  }
+  const int y = rocBin(dtcId, linkId);
+  return y >= 0 && y < kNRocBins;
+}
+
+void CRVStatusDQM::noteUnindexedRoc(uint8_t dtcId, uint8_t linkId)
+{
+  ++nUnindexedRocs_;
+  if (warnedUnindexedRoc_) {
+    return;
+  }
+  warnedUnindexedRoc_ = true;
+  mf::LogWarning("CRVStatusDQM")
+      << "status from DTC " << static_cast<int>(dtcId) << " link "
+      << static_cast<int>(linkId) << " is outside the " << kNRocBins
+      << "-bin ROC axis (link 0-" << (kNLinksPerDTC - 1) << ", dtcId*"
+      << kNLinksPerDTC << "+linkId < " << kNRocBins
+      << "). Per-link latency / rocCensus / errorBitsVsRoc skip it. "
+      << "Reported once per job.";
+}
+
 CRVStatusDQM::CRVStatusDQM(const Config& config) : config_(config) {}
 
 void CRVStatusDQM::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
+
+  h_nEvents_ = dir.make<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
 
   h_nRocHeaders_ = dir.make<TH1F>(
       "nRocHeaders", "ROC headers per event;N(ROC headers);Events", 20, -0.5, 19.5);
@@ -97,7 +126,8 @@ void CRVStatusDQM::Book(art::TFileDirectory dir)
   }
 
   h_portFlags_ = dir.make<TH1F>(
-      "portFlags", "MicroBunch port flags (bits 0-23);Port;Counts", 24, -0.5, 23.5);
+      "portFlags", "MicroBunch port flags (bits 0-23);Port;Counts",
+      kNPortFlags, -0.5, kNPortFlags - 0.5);
 
   h_rocCensus_ = dir.make<TH1F>(
       "rocCensus",
@@ -137,15 +167,15 @@ void CRVStatusDQM::Book(art::TFileDirectory dir)
   h_ewtMismatch_ = dir.make<TH1F>("ewtMismatch",
                                   "ROC EWT - DTC EWT;#Delta EWT;ROC headers",
                                   config_.nBinsEwtMismatch,
-                                  -config_.maxEwtMismatch,
-                                  config_.maxEwtMismatch);
+                                  -config_.maxEwtMismatch - 0.5f,
+                                  config_.maxEwtMismatch + 0.5f);
 
   h_errorsPerSubrun_ = dir.make<TH1F>(
       "errorsPerSubrun",
       "Events with any firmware error bit, per subrun;Events with error;Subruns",
-      50,
-      0,
-      50);
+      config_.nBinsErrorsPerSubrun,
+      -0.5f,
+      config_.maxErrorsPerSubrun + 0.5f);
 
   h_meanLatencyPerSubrun_ = dir.make<TH1F>(
       "meanLatencyPerSubrun",
@@ -154,22 +184,24 @@ void CRVStatusDQM::Book(art::TFileDirectory dir)
       0,
       config_.maxLinkLatency);
 
-  g_errorsVsSubrun_ = dir.make<TGraph>();
-  g_errorsVsSubrun_->SetName("g_errorsVsSubrun");
-  g_errorsVsSubrun_->SetTitle(
-      "Events with firmware error vs subrun;Subrun;Events with error");
+  if (config_.fillLivePlots) {
+    g_errorsVsSubrun_ = dir.make<TGraph>();
+    g_errorsVsSubrun_->SetName("g_errorsVsSubrun");
+    g_errorsVsSubrun_->SetTitle(
+        "Events with firmware error vs subrun;Subrun;Events with error");
 
-  g_meanLatencyVsSubrun_ = dir.make<TGraph>();
-  g_meanLatencyVsSubrun_->SetName("g_meanLatencyVsSubrun");
-  g_meanLatencyVsSubrun_->SetTitle(
-      "Mean link latency vs subrun;Subrun;Mean latency");
+    g_meanLatencyVsSubrun_ = dir.make<TGraph>();
+    g_meanLatencyVsSubrun_->SetName("g_meanLatencyVsSubrun");
+    g_meanLatencyVsSubrun_->SetTitle(
+        "Mean link latency vs subrun;Subrun;Mean latency");
+  }
 
   booked_ = true;
 }
 
 TH1F* CRVStatusDQM::latencyHistFor(uint8_t dtcId, uint8_t linkId)
 {
-  if (!booked_ || !dir_) {
+  if (!booked_ || !dir_ || !rocIndexed(dtcId, linkId)) {
     return nullptr;
   }
   const auto key = std::make_pair(dtcId, linkId);
@@ -197,6 +229,9 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus)
 {
   ++nEvents_;
   ++nEventsThisSubrun_;
+  if (booked_ && h_nEvents_) {
+    h_nEvents_->Fill(1.f);
+  }
   lastEventRocs_.clear();
 
   int nHeadersThisEvent = 0;
@@ -206,14 +241,20 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus)
     const uint8_t dtcId = status.GetDTCID();
     const uint8_t linkId = status.GetLinkID();
     const uint16_t latency = status.GetLinkLatency();
+    const bool indexed = rocIndexed(dtcId, linkId);
+    if (!indexed) {
+      noteUnindexedRoc(dtcId, linkId);
+    }
 
     latencySumThisSubrun_ += latency;
     ++latencyNThisSubrun_;
 
     if (booked_ && h_linkLatency_) {
       h_linkLatency_->Fill(latency);
-      if (TH1F* h = latencyHistFor(dtcId, linkId)) {
-        h->Fill(latency);
+      if (indexed) {
+        if (TH1F* h = latencyHistFor(dtcId, linkId)) {
+          h->Fill(latency);
+        }
       }
     }
 
@@ -228,11 +269,11 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus)
     ++nRocHeadersTotal_;
     seenRocs_.insert({dtcId, linkId});
     const int ybin = rocBin(dtcId, linkId);
-    if (booked_ && h_rocCensus_ && ybin >= 0 && ybin < kNRocBins) {
+    if (booked_ && h_rocCensus_ && indexed) {
       h_rocCensus_->Fill(ybin);
     }
 
-    const std::bitset<24> activeFEBs = roc.GetActiveFEBFlags();
+    const std::bitset<kNPortFlags> activeFEBs = roc.GetActiveFEBFlags();
     const uint16_t nActive = static_cast<uint16_t>(activeFEBs.count());
     const uint16_t trigCount = roc.TriggerCount;
     const uint16_t wordCount = roc.ControllerEventWordCount;
@@ -288,7 +329,7 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus)
         if (booked_ && h_errorBits_) {
           h_errorBits_->Fill(b);
         }
-        if (booked_ && h_errorBitsVsRoc_ && ybin >= 0 && ybin < kNRocBins) {
+        if (booked_ && h_errorBitsVsRoc_ && indexed) {
           h_errorBitsVsRoc_->Fill(b, ybin);
         }
       }

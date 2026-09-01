@@ -31,6 +31,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TMath.h>
 #include <TF1.h>
@@ -216,6 +217,8 @@ namespace mu2e
     std::string _crvCoincidenceClusterFinderModuleLabel;
     std::string _crvDaqErrorModuleLabel;
     std::string _crvDigiDQMDir;
+    bool _warnedMissingDigi{false};
+    bool _warnedMissingStatus{false};
 
     int                _histPEsBins;
     double             _histPEsStart;
@@ -239,7 +242,6 @@ namespace mu2e
     std::pair<int,int> _firstRunSubrun;
     std::pair<int,int> _lastRunSubrun;
 
-    std::vector<int>   _nCoincidences;       //for each sector
     std::vector<TH1F*> _histPEs;             //for each channel
     std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
@@ -294,6 +296,7 @@ namespace mu2e
       CRVDigiDQM::Config c;
       c.fillInclusive = fillInclusive;
       c.kppReadout = kppReadout;
+      c.fillLivePlots = false;
       return c;
     }(conf().fillInclusiveDigiDQM(), conf().crvDigiDQMkppReadout()))
   {
@@ -361,7 +364,6 @@ namespace mu2e
     _histPEsMPVROC.reserve(CRVId::nROC);
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
-    _nCoincidences.resize(crvSectors.size());
     _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
     _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
@@ -432,12 +434,24 @@ namespace mu2e
 
     const CrvStatusCollection emptyStatus;
     const CrvDigiCollection emptyDigis;
-    const CrvDigiCollection& digis =
-        (crvDigiCollection.isValid() && crvDigiCollection.product()!=nullptr) ?
-            *crvDigiCollection : emptyDigis;
-    const CrvStatusCollection& status =
-        (crvStatusCollection.isValid() && crvStatusCollection.product()!=nullptr) ?
-            *crvStatusCollection : emptyStatus;
+    const bool haveDigis =
+        crvDigiCollection.isValid() && crvDigiCollection.product()!=nullptr;
+    const bool haveStatus =
+        crvStatusCollection.isValid() && crvStatusCollection.product()!=nullptr;
+    if (!haveDigis && !_warnedMissingDigi) {
+      _warnedMissingDigi = true;
+      mf::LogWarning("CrvDQMcollector")
+          << "No CrvDigiCollection at " << _crvDigiModuleLabel
+          << " (empty collection used). Reported once per job.";
+    }
+    if (!haveStatus && !_warnedMissingStatus) {
+      _warnedMissingStatus = true;
+      mf::LogWarning("CrvDQMcollector")
+          << "No CrvStatusCollection at " << _crvStatusModuleLabel
+          << " (empty collection used). Reported once per job.";
+    }
+    const CrvDigiCollection& digis = haveDigis ? *crvDigiCollection : emptyDigis;
+    const CrvStatusCollection& status = haveStatus ? *crvStatusCollection : emptyStatus;
     _digiDQM.Fill(digis, status);
 
     static bool first=true;

@@ -49,18 +49,23 @@ public:
     std::size_t avgGraphPoints{1000};
     std::size_t channelsWindowEwts{50000};
     bool fillInclusive{true};
-    // CRVId-indexed rate maps and offline-channel occupancy (no GeometryService).
+    // CRVId-indexed occupancy maps (no GeometryService). Stored as raw
+    // counts; divide by nEvents after hadd.
     bool fillCrvIdRates{true};
     // KPP FEB-axis sizing: book the 33-slot occupancy pair and size the FEB
     // axes for ROC 1-2. False for full CRV; see the header comment above.
     bool kppReadout{true};
+    // TGraphs vs EWT and *LastEwt snapshots. Online monitor only — they do
+    // not survive hadd. Offline analyzers leave this false.
+    bool fillLivePlots{false};
   };
 
   // KPP readout geography used by the online occupancy plots.
+  // 25-slot stride is the online convention (not CRVId::nFEBPerROC = 24).
   static constexpr int kNFebSlotsPerROC = 25;
-  static constexpr int kNChanPerFEB = 64;
-  static constexpr int kNGlobalChannelBins = 2112;
   static constexpr int kNGlobalFebBins = 32;
+  static constexpr int kNGlobalChannelBins =
+      (kNGlobalFebBins + 1) * static_cast<int>(CRVId::nChanPerFEB);
 
   // Full-CRV globalFebId range, used only when kppReadout is false.
   static constexpr int kNFebIdBins = kNFebSlotsPerROC * static_cast<int>(CRVId::nROC);
@@ -94,6 +99,7 @@ public:
   void WriteGraphs();
 
   TH1F* h1_digisPerEvt() const { return h1_digisPerEvt_; }  //digis per event
+  TH1F* nEventsHist() const { return h_nEvents_; }  //one count per event; hadd-safe
   TH1F* h1_peakAdc() const { return h1_peakAdc_; }  //largest ADC sample of a digi
   TH1F* h1_tdc() const { return h1_tdc_; }  //digi start time in 12.5ns ticks
   TH1F* h1_channels() const { return h1_channels_; }  //occupancy vs global channel ID
@@ -106,13 +112,12 @@ public:
   TH1D* SiPM() const { return hSiPM_; }  //ValCrvDigi: SiPM number within the bar
   TH1D* ADC() const { return hADC_; }  //ValCrvDigi: every ADC sample
 
-  //CRVId rate maps, scaled to digis/event in WriteGraphs
+  //CRVId occupancy maps (raw counts; divide by nEvents after hadd)
   TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }  //vs offline channel bar*4+SiPM
   TH2F* crvDigiRates() const { return h_crvDigiRates_; }  //FEB channel vs FEB port
   const std::vector<TH1F*>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }  //one per ROC
   int nDigisOffline(std::size_t channel) const;
   std::size_t nOfflineChannels() const { return nDigisOffline_.size(); }
-  bool ratesScaled() const { return ratesScaled_; }
 
   //inter-FEB sync: first-hit time minus the median of the other FEBs, per FEB
   TH2F* dtVsFeb() const { return h2_dtVsFeb_; }
@@ -123,7 +128,7 @@ public:
   {
     return h_dtOutOfRangePerFebLastEwt_;
   }
-  //intra-FEB timing, keyed (globalFebId, fpgaA*4+fpgaB)
+  //intra-FEB timing, keyed (globalFebId, fpgaA*nFPGAPerFEB+fpgaB)
   const std::map<std::pair<int, uint8_t>, TH1F*>& dtFpgaPairs() const
   {
     return h1_dtFpgaPairs_;
@@ -134,10 +139,12 @@ public:
     return g_ubStatusVsEwt_;
   }
 
-  // Axis-coverage diagnostics. Only the off-axis FEB case is logged (once per
-  // job, from Fill); the dt counts are reported through the histograms above.
+  // Axis-coverage diagnostics. Only the off-axis FEB and CRVId-range cases
+  // are logged (once per job, from Fill); the dt counts are reported through
+  // the histograms above.
   int maxFebIdSeen() const { return maxFebIdSeen_; }
   long long nFebIdOutOfAxis() const { return nFebIdOutOfAxis_; }
+  long long nCrvIdOutOfRange() const { return nCrvIdOutOfRange_; }
   long long nDtOutOfRange() const { return nDtOutOfRange_; }
   double maxAbsDtSeen() const { return maxAbsDtSeen_; }
 
@@ -167,7 +174,6 @@ private:
   void fillTiming(const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes);
   void fillMicroBunchStatus(const CrvStatusCollection& crvStatus);
   void persistGraph(TGraph* g);
-  void scaleRateHists();
   void fillRollingDtOutOfRange(uint64_t ewt);
   void fillSectorOccupancy();
 
@@ -180,6 +186,7 @@ private:
   std::optional<art::TFileDirectory> timingFpgaDir_;
 
   TH1F* h1_digisPerEvt_{nullptr};
+  TH1F* h_nEvents_{nullptr};
   TH1F* h1_peakAdc_{nullptr};
   TH1F* h1_tdc_{nullptr};
   TH1F* h1_channels_{nullptr};
@@ -196,7 +203,6 @@ private:
   TH2F* h_crvDigiRates_{nullptr};
   std::vector<TH1F*> h_crvDigiRatesROC_;
   std::vector<int> nDigisOffline_;
-  bool ratesScaled_{false};
 
   TH2F* h2_dtVsFeb_{nullptr};
   std::vector<TH1F*> h_sectorOccupancy_;
@@ -208,8 +214,10 @@ private:
   std::map<uint8_t, uint32_t> lastMicroBunchStatus_;
 
   bool warnedOffAxisFeb_{false};
+  bool warnedCrvIdOutOfRange_{false};
   int maxFebIdSeen_{-1};
   long long nFebIdOutOfAxis_{0};
+  long long nCrvIdOutOfRange_{0};
   long long nDtOutOfRange_{0};
   double maxAbsDtSeen_{0.0};
   // FEBs whose dt was out of range in the event being filled.
