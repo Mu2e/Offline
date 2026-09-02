@@ -98,6 +98,7 @@ namespace mu2e {
       double xBeamCentre = -3904.0;
       int pdgId = 0;
       double E = 0.0, time = 0.0;
+      unsigned long nNoParent = 0; // steps whose SimParticle had no reachable parent
 
       art::ProductToken<StepPointMCCollection> StepPointMCsToken;
       art::ProductToken<SimParticleCollection> SimParticlemvToken;
@@ -126,12 +127,23 @@ namespace mu2e {
     // Get the particle parent
     parent = particle.parent();
 
+    // A primary has no parent, and a compressed SimParticleCollection can leave a non-null Ptr
+    // whose target was dropped. Either way the walk stops here and the particle is its own top
+    // parent - the same answer as the STMDet test below, which cannot be reached without a
+    // dereferenceable Ptr. Without this, art throws ProductNotFound (ProductID 0).
+    if (parent.isNull() || !parent.isAvailable()) {
+      ++nNoParent;
+      return std::make_tuple(particle.id(), particle.pdgId());
+    }
+
     // If the passed particle has no parent in STMDet, return its ID and PDG ID
     if (std::find(SimParticleIds.begin(), SimParticleIds.end(), parent->id()) == SimParticleIds.end())
       return std::make_tuple(particle.id(), particle.pdgId());
 
-    // If the particle has a parent in STMDet, update the particle parent
-    while (std::find(SimParticleIds.begin(), SimParticleIds.end(), parent->parent()->id()) != SimParticleIds.end())
+    // If the particle has a parent in STMDet, update the particle parent. The genealogy can run
+    // out before the STMDet boundary does, so the Ptr is checked before each dereference.
+    while (parent->parent().isNonnull() && parent->parent().isAvailable() &&
+           std::find(SimParticleIds.begin(), SimParticleIds.end(), parent->parent()->id()) != SimParticleIds.end())
       parent = parent->parent();
 
     // Return the ID and PDG ID
@@ -231,6 +243,11 @@ namespace mu2e {
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";
     log << "================================\n";
+    // Not an error - primaries legitimately have no parent - but a large count means the
+    // genealogy is truncated, so the "top parent" is only the top of what was kept.
+    if (nNoParent > 0)
+      log << "Steps whose SimParticle had no reachable parent (treated as their own top parent): "
+          << nNoParent << "\n";
     mf::LogWarning("LaBrTree")
       << "Reminder - the 'E' branch is raw ionizing energy deposited, not a LaBr detector response.\n";
   };
