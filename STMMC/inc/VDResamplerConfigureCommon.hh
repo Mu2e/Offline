@@ -504,19 +504,9 @@ namespace mu2e {
                  << "    " << moduleName << " : {\n"
                  << ind << "module_type : " << trainModule << "\n";
 
-      // Source keys, per training path.
-      if (ctx.trainingFromROOT) {
-        if (ctx.inputRootFileSet) {
-          fclOutFile << ind << "InputRootFile : \"" << ctx.inputRootFile << "\"\n";
-        } else {
-          // Plan left InputRootFile as @nil / unset: emit a placeholder + in-file reminder, and log one.
-          fclOutFile << ind << "InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
-          mf::LogWarning(moduleContext)
-            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
-            << " has a placeholder that MUST be set before running.";
-        }
-        fclOutFile << ind << "TreeName : \"" << ctx.treeName << "\"\n";
-      } else {
+      // Source keys, per training path. The ROOT path's InputRootFile / TreeName are emitted as
+      // trailing overrides below instead of here. Neither key exists on the art path's module.
+      if (!ctx.trainingFromROOT) {
         fclOutFile << ind << "StepPointMCsTag : \"" << ctx.stepPointMCsTag << "\"\n"
                    << ind << "SimParticlemvTag : \"" << ctx.simParticlemvTag << "\"\n";
       }
@@ -572,11 +562,26 @@ namespace mu2e {
       // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
       fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
 
-      // Trailing overrides. The InputRootFile assignment comes last so it wins over the analyzer
-      // block, giving one obvious line to point at the training file. The mu2emetadata keys are
-      // the mu2eprodsys hooks every production fcl carries.
-      fclOutFile << "\nphysics.analyzers." << moduleName << ".InputRootFile : @nil\n"
-                 << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
+      // Trailing overrides. The ROOT source keys come last, giving one obvious block to point at
+      // the training data; InputRootFile is normally left @nil here and filled in at submission.
+      // Emitted only on the ROOT path: VDResamplerTrain has neither key and, using Table<Config>,
+      // rejects unrecognised ones.
+      if (ctx.trainingFromROOT) {
+        if (ctx.inputRootFileSet) {
+          fclOutFile << "\nphysics.analyzers." << moduleName << ".InputRootFile : \""
+                     << ctx.inputRootFile << "\"\n";
+        } else {
+          fclOutFile << "\nphysics.analyzers." << moduleName
+                     << ".InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
+          mf::LogWarning(moduleContext)
+            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
+            << " has a placeholder that MUST be set before running.";
+        }
+        fclOutFile << "physics.analyzers." << moduleName << ".TreeName : \"" << ctx.treeName << "\"\n";
+      }
+
+      // The mu2emetadata keys are the mu2eprodsys hooks every production fcl carries.
+      fclOutFile << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
                  << "mu2emetadata.fcl.inkeys: [  ]\n"
                  << "mu2emetadata.fcl.outkeys: [  ]\n";
 
