@@ -31,9 +31,6 @@
 # values from training module setup so not specified in the plan file. If you want to override these, 
 # you can add them here.
 
-#include "Offline/fcl/standardServices.fcl"
-#include "Production/JobConfig/pileup/STM/prolog.fcl"
-
 common_training_config : { # Common training configuration for all particles
   # Campaign/version tag embedded in every generated file name (summary .txt, model .dat files, and
   # the recommended ROOT dump name). Lets several campaigns coexist in one directory and lets the
