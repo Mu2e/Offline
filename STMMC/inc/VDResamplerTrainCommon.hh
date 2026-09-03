@@ -1067,6 +1067,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage1File, "stage-1", s.momentumBasis, s.positionBasis,
                     runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
+                VDResampler::checkBuildConstants(s.stage1Model->buildConstants(), s.VDr, s.VDz0,
+                                                 "Stage-1 checkpoint " + s.ckptStage1File, moduleName);
+                VDResampler::checkPdgId(s.stage1Model->pdgId(), s.pdgID,
+                                        "Stage-1 checkpoint " + s.ckptStage1File, moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -1086,6 +1090,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage2File, "stage-2", s.momentumBasis, s.positionBasis,
                     runBasisAdopted, /*expectPeakTagged=*/s.usePeakTags(), moduleName);
+                VDResampler::checkBuildConstants(s.stage2Model->buildConstants(), s.VDr, s.VDz0,
+                                                 "Stage-2 checkpoint " + s.ckptStage2File, moduleName);
+                VDResampler::checkPdgId(s.stage2Model->pdgId(), s.pdgID,
+                                        "Stage-2 checkpoint " + s.ckptStage2File, moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
@@ -1112,6 +1120,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
                 s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, s.positionBasis,
                 runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
+            VDResampler::checkBuildConstants(s.allAtOnceModel->buildConstants(), s.VDr, s.VDz0,
+                                             "All-at-once checkpoint " + s.ckptAllAtOnceFile, moduleName);
+            VDResampler::checkPdgId(s.allAtOnceModel->pdgId(), s.pdgID,
+                                    "All-at-once checkpoint " + s.ckptAllAtOnceFile, moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
@@ -1884,6 +1896,12 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << "] (fraction=" << s.currentTFocusFraction << ")"
             << ", samplesDrawnPerEpoch=" << s.currentSamplesDrawnPerEpoch;
         const std::string base = stripExt(outFile);
+
+        // Stamp identity + build constants onto the model once. They live on the object, so
+        // every saveModel below (phase snapshots, best-loss, final, not-converged) carries
+        // them without each call site repeating it.
+        model.setPdgId(s.pdgID);
+        model.setBuildConstants(VDResampler::currentBuildConstants(s.VDr, s.VDz0));
 
         // Apply curriculum phase `k`'s hyperparameters (k is 0-based; only meaningful
         // for k>=1 — phase 0 keeps the constructed-model defaults, as in legacy mode).

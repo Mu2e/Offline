@@ -685,6 +685,12 @@ namespace mu2e {
         particle.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile)
         );
+        // Here pdgId comes from the summary rather than the file name, so this checks the
+        // resolved model file really is the one for this particle.
+        VDResampler::checkPdgId(particle.stage2Model->pdgId(), pdgId,
+                                "Stage-2 model " + stage2ModelFile, "VDResamplerGenerateMix");
+        VDResampler::checkBuildConstants(particle.stage2Model->buildConstants(), VDr_, VDz0_,
+                                         "Stage-2 model " + stage2ModelFile, "VDResamplerGenerateMix");
 
         // Peak tags, but only for a model that was actually trained with them (its own
         // basisTag says so). Resolving them from the training plan for the SAME (pdg, source)
@@ -742,6 +748,10 @@ namespace mu2e {
           particle.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
             ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile)
           );
+          VDResampler::checkPdgId(particle.stage1Model->pdgId(), pdgId,
+                                  "Stage-1 model " + stage1ModelFile, "VDResamplerGenerateMix");
+          VDResampler::checkBuildConstants(particle.stage1Model->buildConstants(), VDr_, VDz0_,
+                                           "Stage-1 model " + stage1ModelFile, "VDResamplerGenerateMix");
         }
       } else {
         const std::string modelFile = resolveModelFile(
@@ -749,6 +759,10 @@ namespace mu2e {
         particle.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, modelFile)
         );
+        VDResampler::checkPdgId(particle.allAtOnceModel->pdgId(), pdgId,
+                                "All-at-once model " + modelFile, "VDResamplerGenerateMix");
+        VDResampler::checkBuildConstants(particle.allAtOnceModel->buildConstants(), VDr_, VDz0_,
+                                         "All-at-once model " + modelFile, "VDResamplerGenerateMix");
       }
 
       // Validation set for this (source, particle), in its own subdirectory: the histogram

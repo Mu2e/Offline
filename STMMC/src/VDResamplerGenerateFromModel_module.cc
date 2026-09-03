@@ -389,6 +389,12 @@ namespace mu2e {
       requireLayout(*stage2Model_, VDResampler::ModelLayout::TwoStageStage2_5D,
                     stage2ModelFile_, "stage-2");
       pdgId_ = loadPDGIdFromFileName(stage2ModelFile_);
+      // A v9+ checkpoint records the particle it was trained for, so the name-derived value
+      // is cross-checked against it; a pre-v9 one stores 0 and the name stands alone.
+      VDResampler::checkPdgId(stage2Model_->pdgId(), pdgId_,
+                              "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(stage2Model_->buildConstants(), VDr_, VDz0_,
+                                       "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
 
       // The peak label is only as sharp as the pTotal it is derived from. A DIFFUSION stage-1
       // is a continuous model over log(pTotal/p0): it cannot reproduce a line whose width is a
@@ -430,6 +436,10 @@ namespace mu2e {
           << VDResampler::basisTagToString(stage1Model_->basisTag());
         requireLayout(*stage1Model_, VDResampler::ModelLayout::TwoStageStage1Ptot1D,
                       stage1ModelFile_, "stage-1");
+        VDResampler::checkPdgId(stage1Model_->pdgId(), pdgId_,
+                                "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
+        VDResampler::checkBuildConstants(stage1Model_->buildConstants(), VDr_, VDz0_,
+                                         "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
         // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
         const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
         if (stage1Basis != momBasis_)
@@ -466,6 +476,10 @@ namespace mu2e {
       requireLayout(*allAtOnceModel_, VDResampler::ModelLayout::AllAtOnce6D,
                     allAtOnceModelFile_, "all-at-once");
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
+      VDResampler::checkPdgId(allAtOnceModel_->pdgId(), pdgId_,
+                              "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(allAtOnceModel_->buildConstants(), VDr_, VDz0_,
+                                       "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
     }
 
     z_gen_ = VDz0_;
