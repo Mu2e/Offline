@@ -63,11 +63,15 @@ namespace mu2e {
 
   namespace {
     // Utility function to extract PDG ID from the model filename, which is expected to contain a substring like "pdg[optional m][digits]", e.g. "pdg13" for muons, "pdgm13" for muon pluses.
-    int loadPDGIdFromFileName(const std::string& fileName) {
+    // The directory prefix is stripped first, so only the file name decides the PDG ID.
+    int loadPDGIdFromFileName(const std::string& path) {
+      const size_t slash = path.find_last_of("/\\");
+      const std::string fileName = (slash == std::string::npos) ? path : path.substr(slash + 1);
+
       const size_t pdgPos = fileName.find("pdg");
       if (pdgPos == std::string::npos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       size_t pos = pdgPos + 3;
       bool negative = false;
@@ -81,7 +85,7 @@ namespace mu2e {
       }
       if (startDigits == pos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       const int magnitude = std::stoi(fileName.substr(startDigits, pos - startDigits));
       return negative ? -magnitude : magnitude;
