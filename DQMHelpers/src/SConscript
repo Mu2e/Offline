@@ -8,13 +8,17 @@ helper = mu2e_helper(env)
 
 rootlibs = env['ROOTLIBS']
 
-# CrvStatus.hh pulls artdaq CRVROCStatusPacketFEBII, whose accessors both
-# helper .cc files call; scons LIBS are not transitive, so list it here.
-mainlib = helper.make_mainlib([
+# The package is helper classes only: CrvDQMcollector (CRVReco) is the Offline
+# consumer, and otsdaq-mu2e-crv links the digi and status helpers directly.
+# There are no art plugins here, and so no GeometryService dependency.
+#
+# CrvStatus.hh pulls artdaq CRVROCStatusPacketFEBII, whose accessors the helper
+# .cc files call; scons LIBS are not transitive, so list it here.
+# CLHEP: CrvCoincidenceCluster.hh carries a CLHEP::Hep3Vector member.
+helper.make_mainlib([
     'mu2e_RecoDataProducts',
     'mu2e_DataProducts',
     'artdaq-core-mu2e_Overlays',
-    # CrvCoincidenceCluster.hh carries a CLHEP::Hep3Vector member
     'CLHEP',
     'art_Framework_Services_Registry',
     'art_root_io_tfile_support',
@@ -25,34 +29,6 @@ mainlib = helper.make_mainlib([
     'cetlib',
     'cetlib_except',
     rootlibs,
-])
-
-helper.make_plugins([
-    mainlib,
-    'mu2e_RecoDataProducts',
-    'mu2e_DataProducts',
-    'artdaq-core-mu2e_Overlays',
-    'mu2e_GeometryService',
-    'mu2e_CosmicRayShieldGeom',
-    'mu2e_GeomPrimitives',
-    'CLHEP',
-    'art_Framework_Core',
-    'art_Framework_Principal',
-    'art_Framework_Services_Registry',
-    'art_root_io_tfile_support',
-    'art_root_io_TFileService',
-    'art_Persistency_Common',
-    'art_Persistency_Provenance',
-    'art_Utilities',
-    'canvas',
-    'MF_MessageLogger',
-    'fhiclcpp',
-    'fhiclcpp_types',
-    'tbb',
-    'cetlib',
-    'cetlib_except',
-    rootlibs,
-    'boost_filesystem',
 ])
 
 # Local Variables:

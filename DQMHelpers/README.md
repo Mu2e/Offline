@@ -1,11 +1,21 @@
 # DQMHelpers
 
-Shared DQM histogram helpers used by both offline art analyzers and the
-otsdaq online monitor. The helper classes own histogram booking and filling;
-art modules own I/O, visualization, and histogram shipping.
+Shared DQM histogram helpers used by both Offline and the otsdaq online
+monitor. The helper classes own histogram booking and filling; art modules own
+I/O, visualization, and histogram shipping.
 
-This package has no GeometryService or ProditionsService dependency, so the
-same fill path can run in the DAQ process.
+This package is helper **classes only** — no art plugins, no FHiCL, and so no
+GeometryService or ProditionsService dependency anywhere in its build. That is
+what lets the same fill path run in the DAQ process. Two consumers:
+
+| Consumer | Uses | Where |
+|---|---|---|
+| `CrvDQMcollector` | all three helpers | `Offline/CRVReco/src/CrvDQMcollector_module.cc` |
+| `CrvDQM` / `CrvStatusMetrics` | digi and status helpers | `otsdaq-mu2e-crv` |
+
+Anything a helper needs from geometry or Proditions is **injected** by the
+consumer — the sector map, the channel-to-sector map, the CRV envelope — so the
+dependency stays on the caller's side of the boundary.
 
 ## Output file layout
 
@@ -13,42 +23,17 @@ same fill path can run in the DAQ process.
 directory**, named after the module label. That directory is automatic and not
 optional — it is what keeps two modules from colliding in one file.
 
-`outputTag` adds a *second* level inside the module directory. Use it only when
-the module books histograms of its own alongside the helper's, so the two owners
-stay separated:
+`CrvDQMcollector` books three helpers into one file, so two of them take a
+subdirectory and the third keeps the module directory:
 
-| Module | `outputTag` | Why |
+| Setting | Default | Why |
 |---|---|---|
-| `CRVStatusDQMAnalyzer` | `""` | books nothing itself — a second level would just repeat the module label |
-| `CRVDigiDQMAnalyzer` | `""` | as above; set it if `fillSectorOccupancy` is on and you want the per-sector hists kept apart |
-| `CRVRecoDQMAnalyzer` | `""` | as above |
-| `CrvDQMcollector` (`crvDigiDQMDir`) | `"CRVDigiDQM"` | **keep** — the module also books `crvPedestals*`, `crvCalibConstants*` and the `crvMetaData` tree at module level |
-| `CrvDQMcollector` (`crvRecoDQMDir`) | `""` | **keep empty** — `crvPEsMPV*` and `crvCoincidencesClusters` have always sat in the module directory and the KPP extractor reads them there |
+| `crvDigiDQMDir` | `"CRVDigiDQM"` | its own level, so it does not mix with what the module books |
+| `crvStatusDQMDir` | `"CRVStatusDQM"` | as above |
+| `crvRecoDQMDir` | `""` | **keep empty** — `crvPEsMPV*` and `crvCoincidencesClusters` have always sat in the module directory and the KPP extractor reads them there |
 
-With `CRVDQM.fcl` (module labels `CRVDigiDQM` / `CRVStatusDQM`, empty `outputTag`):
-
-```text
-crvDQM.root
-  CRVDigiDQM/
-    nEvents
-    h1_digisPerEvt, h1_peakAdc, h1_tdc
-    h1_channels, h2_channels
-    crvDigiRates, crvDigiRates_ROC*, crvDigisPerChannel
-    dtVsFeb, dtOutOfRangePerFeb
-    timing_fpga/
-    BarId, SiPM, ADC                  (fillInclusive)
-  CRVStatusDQM/
-    nEvents
-    nRocHeaders, errorBits, errorBitsVsRoc
-    linkLatency, linkLatency_dtc*_roc*
-    rocCensus, eventHasError, eventHasDaqError
-    daqErrorCode, ewtMismatch
-    errorsPerSubrun, meanLatencyPerSubrun
-    ...
-```
-
-`CrvDQMcollector` keeps its pedestal / calib histograms and the reco helper at
-module level, so only the digi helper's maps live one directory deeper:
+The module itself books `crvPedestals*`, `crvCalibConstants*` and the
+`crvMetaData` tree at module level, alongside the reco helper's histograms.
 
 ```text
 <collector module label>/
@@ -61,9 +46,20 @@ module level, so only the digi helper's maps live one directory deeper:
   LeadingTime2, NClus, NPc, PEc, tc, t2c, X, Y, Z
   CRVDigiDQM/
     nEvents
+    h1_digisPerEvt, h1_peakAdc, h1_tdc
+    h1_channels, h2_channels
     crvDigiRates, crvDigiRates_ROC*, crvDigisPerChannel
     crvDigisPerChannelAndEvent_CRVsector*   (if BookSectorOccupancy was called)
-    ...
+    dtVsFeb, dtOutOfRangePerFeb
+    timing_fpga/
+    BarId, SiPM, ADC                        (fillInclusive)
+  CRVStatusDQM/
+    nEvents
+    nRocHeaders, errorBits, errorBitsVsRoc
+    linkLatency, linkLatency_dtc*_roc*
+    rocCensus, eventHasError, eventHasDaqError
+    daqErrorCode, ewtMismatch
+    errorsPerSubrun, meanLatencyPerSubrun
 ```
 
 ### Combining per-job files
@@ -76,9 +72,8 @@ rate = content / nEvents->GetBinContent(1)
 ```
 
 TGraphs vs EWT or subrun, and `*LastEwt` rolling snapshots, are live-monitor
-objects (`fillLivePlots: true` in the online modules). They are not booked by
-the offline analyzers or the collector, so they are not in the files that get
-`hadd`'d.
+objects (`fillLivePlots: true` in the online modules). The collector leaves
+`fillLivePlots` false, so they are not in the files that get `hadd`'d.
 
 ### Per-sector occupancy
 
@@ -90,19 +85,6 @@ its Proditions `notConnected` channels without the helper knowing about
 Proditions. `WriteGraphs()` fills them once per file from `nDigisOffline` as a
 per-channel rate distribution. After `hadd`, rebuild that distribution from
 `crvDigisPerChannel` / `nEvents` rather than using the combined hist.
-
-An empty `outputTag` books directly in the module directory. The module labels in
-`CRVDQM.fcl` are therefore `CRVDigiDQM` / `CRVStatusDQM`, so the directory name is
-the same either way.
-
-`CRVDQM.fcl` runs digi and status together in one job, into one file. Running one
-side alone is a matter of dropping the other module from `physics.ana`, not a
-separate config to keep in step.
-
-`CRVRecoDQM.fcl` is separate from it because the **input tier** differs, not
-because of a preference: digis and ROC status come off a raw/dig file, while
-coincidence clusters exist only after reco. It also needs `Services.Reco` for
-`fillSectorMPV`, which `CRVDQM.fcl` deliberately does without.
 
 ## CRVDigiDQM
 
@@ -137,7 +119,7 @@ detector-wide 1D vs offline channel. Those three are raw counts; divide by
 ### Readout geography (`kppReadout`)
 
 `Config::kppReadout` (default true) sizes the FEB axes. It selects detector
-size only — it does **no** ROC remapping.
+size only — it does no ROC remapping.
 
 `kppReadout: true` sizes for KPP, the extracted CRV and the only one built so
 far: ROC 1-2, FEBs numbered `(roc-1)*25 + feb`, and `h1_channels` /
@@ -146,20 +128,13 @@ far: ROC 1-2, FEBs numbered `(roc-1)*25 + feb`, and `h1_channels` /
 it is the default here and in `prolog_v12.fcl`.
 
 `kppReadout: false` is the full CRV, which does not exist yet — a seam for when
-it does, not a mode anything runs in today. The occupancy trio is **not booked**
+it does, not a mode anything runs in today. The occupancy trio is not booked
 rather than resized, since 394 of 432 FEBs would fall past the 2112-bin axis and
 `crvDigisPerChannel` / `crvDigiRates` already cover the full detector correctly
 binned.
 
-**No ROC fold here.** DTC link 3 is read out as ROC 4 and folded onto ROC 2 by
-`CrvDigisFromArtdaqFragmentsFEBII` (`useROC4asROC2`) at unpack time, so digis
-reach the helper with the correct ROC already. Re-folding would duplicate a
-DAQ-level mapping and silently mask an unpacker configured without it; instead a
-ROC 4 arriving here lands off-axis and raises the warning below.
-
 `h1_channelsLastEwt`, the rolling EWT-window occupancy, is booked only with
-`fillLivePlots` and has no full-CRV equivalent. Irrelevant while KPP is the
-only CRV that exists.
+`fillLivePlots` and has no full-CRV equivalent.
 
 `dtVsFeb` is booked in both modes; its x-axis follows the same geography
 (`nFebIdBins()`) so it stays legible rather than reserving 450 bins for FEBs
@@ -199,17 +174,13 @@ nothing. The helper needs no run-boundary hook.
 
 **CRVId-range ROC/FEB — one warning per job.** Occupancy maps (`crvDigiRates*`) skip a
 digi whose ROC/FEB/channel is outside `CRVId`. Occupancy and timing still fill.
-`nCrvIdOutOfRange()` counts the skips. This is not a hard failure: the helper
-runs in the DAQ process.
-
-This is the only logging the helper does.
+`nCrvIdOutOfRange()` counts the skips.
 
 ### Per-FEB desync counters
 
-An off-scale `dt` is a physics observation, not a misconfiguration, so it is
-counted rather than logged. `dtOutOfRangePerFeb` is on the same `globalFebId`
-axis as `dtVsFeb`, counting events in which that FEB had `abs(dt) > dtVsFebRange`
-over the whole job. With `fillLivePlots`, `dtOutOfRangePerFebLastEwt` is the
+`dtOutOfRangePerFeb` is on the same `globalFebId` axis as `dtVsFeb`,
+counting events in which that FEB had `abs(dt) > dtVsFebRange` over the whole job.
+With `fillLivePlots`, `dtOutOfRangePerFebLastEwt` is the
 rolling `channelsWindowEwts` twin for the online monitor.
 
 A FEB whose clock has slipped shows a bar standing above its neighbours. The
@@ -235,11 +206,8 @@ occupancy, and MicroBunchStatus plots are skipped.
 
 ## CRVRecoDQM
 
-`mu2e::CRVRecoDQM` books and fills the reco-pulse and coincidence histograms that
-`CRVReco/src/CrvDQMcollector_module.cc` used to own: `crvCoincidencesClusters`,
-`crvPEsMPV_CRVsector*`, `crvPEsMPV_ROC*` and the 2D `crvPEsMPV`. Names, binning
-and titles are unchanged, and the collector still books them in its own module
-directory, so the KPP extractor keeps reading them where it always has.
+`mu2e::CRVRecoDQM` books and fills reco-pulse and coincidence histograms: 
+`crvCoincidencesClusters`, `crvPEsMPV_CRVsector*`, `crvPEsMPV_ROC*`, and the 2D `crvPEsMPV`.
 
 ```cpp
 CRVRecoDQM dqm(config);              // constructor / beginJob
@@ -249,15 +217,11 @@ dqm.Fill(*clusters, *recoPulses);    // analyze, once per event
 dqm.WriteGraphs();                   // endJob: runs the fits, fills the MPV maps
 ```
 
-Only pulses that belong to a coincidence cluster enter the **PE spectra and the
-MPV maps** — that is what `CrvDQMcollector` measured, and it is what makes the
-spectrum a minimum-ionising one rather than a dark-noise one. The inclusive
-plots below see every pulse, which is why they take the second `Fill` argument.
+Only pulses that belong to a coincidence cluster enter the PE spectra and the
+MPV maps. The inclusive plots below see every pulse,
+which is why they take the second `Fill` argument.
 
 ### Inclusive per-event plots (`fillInclusive`, default true)
-
-The `DqmCrv` tier-A block, so that the Phase-2 merge of `DqmCrv` and
-`CrvDQMcollector` has one place to land:
 
 ```text
 reco pulses (whole CrvRecoPulseCollection)
@@ -267,14 +231,7 @@ coincidence clusters
   NClus, NPc, PEc, tc, t2c, X, Y, Z
 ```
 
-Names and titles are copied from `Mu2e/DQM` `DqmCrv_module.cc` (itself
-`ValCrvRecoPulse.cc` + `ValCrvCoincidenceCluster.cc`), and so is every default.
-Occupancy, PE and fit-quality axes are **not** configurable — the value of those
-is a series that stays comparable across years, which a FHiCL knob would quietly
-break.
-
-The axes that follow the *detector* are configurable, because a fixed one is not
-stable, it is just wrong somewhere:
+The axes that follow the *detector* are configurable:
 
 | Config | Applies to | Default |
 |---|---|---|
@@ -287,31 +244,9 @@ three short axes share one definition and the three long axes another, so pulse,
 leading-edge and cluster times stay overlayable; `X`/`Y`/`Z` share a bin count
 but not a range.
 
-**The defaults do not fit the extracted CRV.** They were cut for the full CRV in
-Mu2e coordinates, and `crv_counters_extracted_v04.txt` puts the extracted
-counters at **y ≈ 4237–4649** and **z ≈ 21440–23065** — above the default top
-edges of 3000 and 20000, so on KPP data `Y` and `Z` are *100 % overflow*
-(measured on run 124155: 37,308 of 37,308 clusters, both plots). `X` needs no
-change; both geometries centre on x = −3904. See
-`analysis/crv_efficiency/fcl/dqm_reco_data_vst.fcl` for a working extracted set.
-
-A readout window much longer than `maxTime` is not a misconfiguration: on VST's
-~100 µs window the short axes only catch the leading edge and the `*2` twins
-carry the rest, which is what the pair is for.
-
-Two deliberate differences from `DqmCrv`:
-
-- **`SiPMr` is restored.** `ValCrvRecoPulse` has a reco-pulse `SiPM`
-  distribution and the `DqmCrv` copy dropped it. The digi `SiPM` hist tests the
-  readout, this one tests reconstruction per readout end, and the ratio of the
-  two isolates an end where waveforms arrive but do not fit. It is named on the
-  `DqmCrv` `r`-suffix convention (as `BarIdr` is) so it cannot collide with, or
-  be mistaken for, the digi `SiPM` that `CRVDigiDQM` books.
-- **`SecType` is not here.** `crvCoincidencesClusters` already is that
-  histogram; the audit asks the merge to end with one of the two, not both.
-
-`Ver` is not booked either — it is a `Validation` versioning device, and
-`CRVDigiDQM`'s inclusive block left it out for the same reason.
+The `X`/`Y`/`Z` entries are the **fallback only** — a caller with geometry
+should inject the envelope instead, as `CrvDQMcollector` does; see *Cluster
+position axes* below.
 
 `NClus` gets an entry on **every** event, zero included, so it is a rate. The
 reco-pulse block only fills through the two-argument `Fill`; a caller with no
@@ -321,9 +256,8 @@ reco-pulse block only fills through the two-argument `Fill`; a caller with no
 
 `CrvRecoPulse` carries `ROC` / `FEB` / `FEBchannel` copied from the digi it was
 reconstructed from, and both `CrvDigitizer` (MC) and the artdaq unpacker (data)
-fill those from `CRVOrdinal`. So the online-indexed plots need no Proditions
-here, and the collector no longer holds a `ProditionsHandle<CRVOrdinal>`. An
-ID outside the `CRVId` ranges is counted by `nOnlineIdOutOfRange()` and raises
+fill those from `CRVOrdinal`. So the online-indexed plots need no Proditions. 
+An ID outside the `CRVId` ranges is counted by `nOnlineIdOutOfRange()` and raises
 one `mf::LogWarning`; the per-sector MPV still gets that pulse.
 
 `crvPEsMPV_ROC*` and the 2D `crvPEsMPV` index the same online channel through
@@ -336,8 +270,8 @@ from the same constants, so the index and the axis cannot drift apart.
 sector names and the channel->sector map are geometry-derived and are injected by
 the caller, and a negative sector entry skips the channel — which is how
 `CrvDQMcollector` drops its Proditions `notConnected` channels without the helper
-knowing about Proditions. `CRVRecoDQMAnalyzer` has no Proditions, so it keeps
-those channels; they enter at MPV zero.
+knowing about Proditions. A caller with no Proditions keeps those channels;
+they enter at MPV zero.
 
 ### The fit
 
@@ -374,9 +308,7 @@ job over the combined input, or refit from `perChannelPE/`.
 ## CRVStatusDQM
 
 `mu2e::CRVStatusDQM` books and fills ROC-firmware health histograms from
-`CrvStatus` / `CrvDAQerror`. It does **not** fold `roc==4` onto `roc==2`
-(status is per DTC link). The required online plot is TH2 `errorBitsVsRoc`
-(firmware bits 24–31 vs `dtcId*6+linkId`).
+`CrvStatus` / `CrvDAQerror`. 
 
 Typical use:
 
@@ -389,7 +321,7 @@ dqm.WriteGraphs();               // endJob
 ```
 
 Empty `CrvStatus` (typical MC, product present but empty) still counts `nEvents`
-and skips ROC/latency fills. A **missing** product (wrong tag) is the same fill
+and skips ROC/latency fills. A missing product (wrong tag) is the same fill
 path plus one `LogWarning` per job from the analyzer — it is not a throw, so MC
 jobs that omit status still run. `lastEventRocs()` supplies the five artdaq
 LastPoint scalars
@@ -401,42 +333,32 @@ the ROC axis (`linkId < nROCPerDTC` and `dtcId*nROCPerDTC+linkId < nROC`).
 Corrupt IDs still fill the inclusive `linkLatency` histogram. Latency is a
 DTC-link field, so it is filled whether or not `HasROCHeader()` is true.
 
-```text
-mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <digi.art>
-```
-
 A missing `CrvStatus` product is tolerated (empty collection, one warning per
 job). A missing `CrvDAQerror` product skips unpack-error histograms (one
 warning per job).
 
-## Offline analyzer
+## Cluster position axes
 
-`CRVDigiDQMAnalyzer` is a thin wrapper:
+`X`, `Y` and `Z` are the one part of the inclusive block whose right range
+depends on where the detector physically is, so they are not booked by
+`Book()`. A caller holding geometry injects the CRV envelope:
 
-```text
-mu2e -c Offline/DQMHelpers/fcl/CRVDQM.fcl -s <digi.art>
+```cpp
+dqm.BookPositionAxes(crvMin, crvMax);   // min/max corner, Mu2e coordinates
+dqm.BookPositionAxes();                 // or: use the Config ranges
 ```
 
-A missing `CrvStatus` product is tolerated (empty collection, one warning per
-job). A missing `CrvDigi` product skips the event (one warning per job).
+`CrvDQMcollector` builds the envelope in `beginRun` from the counters:
 
-`fillSectorOccupancy: false` by default so the stock FCL needs no CRV
-geometry. Set it true to book
-`crvDigisPerChannelAndEvent_CRVsector*` from CosmicRayShield sector names
-and fill them in `endJob`. The collector still skips `notConnected`
-channels via Proditions; the analyzer does not.
-
-`CRVRecoDQMAnalyzer` is the same shape for `CRVRecoDQM`:
-
-```text
-mu2e -c Offline/DQMHelpers/fcl/CRVRecoDQM.fcl -s <rec.art>
+```cpp
+for (const auto &bar : CRS->getAllCRSScintillatorBars())
+  // crvMin[i] = min(crvMin[i], bar->getPosition()[i] - bar->getHalfLengths()[i]), etc.
 ```
 
-A missing `CrvCoincidenceCluster` product skips the event (one warning per job).
-A missing or unset `crvRecoPulseTag` leaves the inclusive reco-pulse plots empty
-and fills the rest (one warning per job). `fillSectorMPV` is the
-`fillSectorOccupancy` twin — true in `CRVRecoDQM.fcl`, which provides
-`Services.Reco` for it.
+On run 124155 the counter envelope gives x [-7204, -604], y [4203, 4743],
+z [21116, 24887] with a 5 % margin, and every cluster lands in range. The
+`Config` ranges remain as the no-geometry fallback; they are the full-CRV
+`DqmCrv` values and are entirely overflow in y and z on extracted geometry.
 
 ## otsdaq CrvDQM
 
@@ -459,7 +381,7 @@ Binning FHiCL defaults in `CRVDigiDQM::Config` match the online
 
 `otsdaq-mu2e-crv` `CrvStatusMetrics_module.cc` constructs a
 `mu2e::CRVStatusDQM` member with `fillLivePlots = true`, prefers
-`CrvStatus`/`CrvDAQerror` products, and still publishes the five LastPoint
+`CrvStatus`/`CrvDAQerror` products, and publishes the five LastPoint
 series. If the status product is absent it falls back to DTC-fragment decode
 for LastPoint only. `HistoSender` ships `errorBitsVsRoc` (and the other status
 hists) when `sendHists: true`. File-mode FCL: `fcl/RunCrvStatusDQM_vst_raw.fcl`.

@@ -1,7 +1,7 @@
 #ifndef DQMHelpers_inc_CRVStatusDQM_hh
 #define DQMHelpers_inc_CRVStatusDQM_hh
 // Standalone CRV ROC-status DQM helper: firmware-health histograms for the
-// otsdaq online monitor and CRVStatusDQMAnalyzer. Status is per DTC link.
+// otsdaq online monitor and CrvDQMcollector. Status is per DTC link.
 // Original Author: R. Mina
 
 #include "Offline/DataProducts/inc/CRVId.hh"
