@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <ctime>
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -559,8 +558,21 @@ namespace mu2e {
                  << "}\n\n";
       // Remove the per-category log line limit so full training logs are kept.
       fclOutFile << "services.message.destinations.log.categories.default.limit: -1\n";
-      // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
-      fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
+      // Seed derived from this job's identity, NOT the wall clock: every fcl in a source is
+      // written in one endJob, so a clock-based seed gives them all the same value, and a
+      // re-run of Configure on the same summary would not reproduce the earlier set. Mixing
+      // (runNumber, source index, pdg, VD id) makes the seed unique per particle and stable
+      // across re-runs, so a training result can be reproduced from its inputs.
+      {
+        const long srcIndex = dataSourceIndex(ctx.dataSourceTag);
+        long seed = static_cast<long>(ctx.runNumber);
+        seed = seed * 131 + srcIndex;
+        seed = seed * 131 + pdg;
+        seed = seed * 131 + static_cast<long>(ctx.virtualDetectorID);
+        // SeedService wants a positive value; the modulus keeps it inside its accepted range.
+        seed = (seed % 900000000 + 900000000) % 900000000 + 1;
+        fclOutFile << "services.SeedService.baseSeed : " << seed << "\n";
+      }
 
       // Trailing overrides. The ROOT source keys come last, giving one obvious block to point at
       // the training data; InputRootFile is normally left @nil here and filled in at submission.
@@ -584,6 +596,13 @@ namespace mu2e {
       fclOutFile << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
                  << "mu2emetadata.fcl.inkeys: [  ]\n"
                  << "mu2emetadata.fcl.outkeys: [  ]\n";
+
+      // A truncated fcl would fail confusingly at submission rather than here.
+      fclOutFile.flush();
+      if (!fclOutFile.good())
+        throw cet::exception(moduleContext)
+          << "Failed while writing the training fcl " << fclFile
+          << "; the file is incomplete. Check available space and quota.";
 
       return fclFile;
     }

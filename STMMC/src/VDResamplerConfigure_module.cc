@@ -312,6 +312,14 @@ namespace mu2e {
                                       stage1Method, "VDResamplerConfigure::endJob");
     }
 
+    // The summary is the input every downstream step reads, so a write that failed part-way
+    // (a full disk or an exhausted grid quota) must not pass as success.
+    sumOutFile.flush();
+    if (!sumOutFile.good())
+      throw cet::exception("VDResamplerConfigure::endJob")
+        << "Failed while writing the hit summary " << summaryFile
+        << "; the file is incomplete. Check available space and quota.";
+
     return;
   };
 }; // end namespace mu2e

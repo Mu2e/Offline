@@ -1853,6 +1853,14 @@ namespace mu2e {
         // the loader reads and verifies it, so a file truncated after otherwise-plausible
         // contents is rejected instead of silently loading partial data.
         out.write("ENDM", 4);
+
+        // Flush and check: a write that failed part-way (a full disk or an exhausted grid
+        // quota) otherwise leaves a truncated checkpoint behind and the job exits 0.
+        out.flush();
+        if (!out.good())
+            throw cet::exception("ScoreBasedDiffusionModel::saveModel")
+                << "Failed while writing " << filename
+                << "; the file is incomplete. Check available space and quota.";
     }
 
     void ScoreBasedDiffusionModel::saveModelCsv(
@@ -2069,6 +2077,13 @@ namespace mu2e {
                 out << "\n";
             }
         }
+
+        // See saveModel: an unchecked write leaves a truncated file and a zero exit code.
+        out.flush();
+        if (!out.good())
+            throw cet::exception("ScoreBasedDiffusionModel::saveModelCsv")
+                << "Failed while writing " << filename
+                << "; the file is incomplete. Check available space and quota.";
     }
 
     ScoreBasedDiffusionModel ScoreBasedDiffusionModel::loadModel(
@@ -2239,8 +2254,15 @@ namespace mu2e {
                 }
             }
 
-            // Network weights
+            // Network weights. The stored count must match the header's `layers`: the copy
+            // loop below iterates over the constructed model's network_ (sized from layers)
+            // while indexing loadedNetwork, so a smaller stored count reads out of bounds.
+            // The CSV path performs the same check.
             uint32_t numLayers = static_cast<uint32_t>(checkCount(rU32(), "network layer"));
+            if (numLayers != static_cast<uint32_t>(layers))
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Binary checkpoint " << filename << " declares " << layers
+                    << " layers in its header but stores " << numLayers << " network layer(s).";
             std::vector<Layer> loadedNetwork(numLayers);
             for (auto& layer : loadedNetwork) {
                 uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "layer outSize"));
@@ -2303,6 +2325,12 @@ namespace mu2e {
             std::vector<Layer> loadedEmaNetwork;
             if (hasEMA) {
                 uint32_t emaLayers = static_cast<uint32_t>(checkCount(rU32(), "EMA layer"));
+                // Same reasoning as the main network above: the EMA copy loop is bounded by
+                // emaNetwork_.size(), not by what the file stored.
+                if (emaLayers != static_cast<uint32_t>(layers))
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Binary checkpoint " << filename << " declares " << layers
+                        << " layers in its header but stores " << emaLayers << " EMA layer(s).";
                 loadedEmaNetwork.resize(emaLayers);
                 for (auto& layer : loadedEmaNetwork) {
                     uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "EMA layer outSize"));
