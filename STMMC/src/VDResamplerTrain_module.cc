@@ -350,10 +350,20 @@ namespace mu2e {
     if (pzFallback_.count > 0) {
       std::ostringstream oss;
       oss << "pz fell below kPzSafetyEpsilon (" << VDResampler::kPzSafetyEpsilon << ") in "
-          << pzFallback_.count << " hit(s); the floor was used in a slope division "
-          << "(pz>0 expected from the selection). First " << pzFallback_.firstValues.size()
-          << " offending pz value(s):";
+          << pzFallback_.count << " hit(s); the floor was used in the extrapolation and the "
+          << "slope division (pz>0 expected from the selection). First "
+          << pzFallback_.firstValues.size() << " offending pz value(s):";
       for (double v : pzFallback_.firstValues) oss << ' ' << v;
+      mf::LogWarning("VDResamplerTrain") << oss.str();
+    }
+    // Hits whose extrapolated radius landed outside VDr are moved to the rim, which changes
+    // the position they train on rather than merely guarding a divide.
+    if (pzFallback_.clampCount > 0) {
+      std::ostringstream oss;
+      oss << "rho = r/VDr reached or exceeded 1 in " << pzFallback_.clampCount
+          << " hit(s), which were clamped to the rim. First " << pzFallback_.firstRhos.size()
+          << " offending rho value(s):";
+      for (double v : pzFallback_.firstRhos) oss << ' ' << v;
       mf::LogWarning("VDResamplerTrain") << oss.str();
     }
     VDResampler::runTraining(state_, "VDResamplerTrain");

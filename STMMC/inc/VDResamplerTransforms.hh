@@ -81,6 +81,18 @@ namespace mu2e {
         ++count;
         if (firstValues.size() < kMaxSamples) firstValues.push_back(pz);
       }
+
+      // Hits whose extrapolated radius reached the rim, i.e. rho >= 1 before the clamp in
+      // forwardPosition. Distinct from the pz fallback above: a near-zero pz inflates the
+      // extrapolation and lands here too, but so does any hit that simply extrapolates
+      // outside VDr. Recorded separately so the caller can say which happened.
+      std::size_t clampCount = 0;
+      std::vector<double> firstRhos;         // first kMaxSamples offending rho values
+
+      void recordRhoClamp(double rho) {
+        ++clampCount;
+        if (firstRhos.size() < kMaxSamples) firstRhos.push_back(rho);
+      }
     };
 
     // ------------------------------------------------------------------------
@@ -536,10 +548,15 @@ namespace mu2e {
     // radial map differs (see PositionBasis for which to use and why).
     inline void forwardPosition(double dx, double dy, double r, double VDr,
                                 PositionBasis basis,
-                                double& xTrans, double& yTrans)
+                                double& xTrans, double& yTrans,
+                                PzFallbackStats* stats = nullptr)
     {
       double rho = r / VDr;
-      // Numerical guard only, so rho=1 cannot produce u=inf; see kRhoClampEpsilon.
+      // Two distinct cases share this clamp: the documented rho=1 guard (so u cannot be
+      // inf; see kRhoClampEpsilon) and a hit that extrapolated outside VDr entirely, which
+      // is silently relocated to the rim. Only the latter is worth reporting, so record
+      // rho >= 1 rather than every application of the clamp.
+      if (rho >= 1.0 && stats) stats->recordRhoClamp(rho);
       rho = std::min(rho, 1.0 - kRhoClampEpsilon);
       const double u = radialForward(rho, basis);
       const double theta = std::atan2(dy, dx);
@@ -671,11 +688,20 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& xTrans, double& yTrans, double& tTrans,
       double& prTrans, double& pphiTrans, double& pzTrans,
-      const PositionBasis posBasis = PositionBasis::V1_Atanh)
+      const PositionBasis posBasis = PositionBasis::V1_Atanh,
+      PzFallbackStats* pzStats = nullptr)
     {
+      // Floored for the extrapolation's divide only. Unlike V2 the momentum slot here is
+      // log(pz/p0), which stays finite for a tiny pz, so pz itself is left untouched below.
+      double pzSafe = pz;
+      if (std::abs(pz) < kPzSafetyEpsilon) {
+        if (pzStats) pzStats->record(pz);
+        pzSafe = kPzSafetyEpsilon;
+      }
+
       double dx, dy, r;
-      extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
+      extrapolateAndCenter(x, y, z, px, py, pzSafe, x0, y0, VDz0, dx, dy, r);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans, pzStats);
 
       double pr, pphi;
       cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
@@ -726,18 +752,22 @@ namespace mu2e {
       PzFallbackStats* pzStats = nullptr,
       const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
-      double dx, dy, r;
-      extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
-
-      double pr, pphi;
-      cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
-
+      // Floored BEFORE the extrapolation, which also divides by pz: an unfloored pz~1e-30
+      // sends the extrapolation factor (and the radius with it) to ~1e30, and the hit is
+      // then silently relocated to the rim by the clamp in forwardPosition.
       double pzSafe = pz;
       if (std::abs(pz) < kPzSafetyEpsilon) {
         if (pzStats) pzStats->record(pz);
         pzSafe = kPzSafetyEpsilon;
       }
+
+      double dx, dy, r;
+      extrapolateAndCenter(x, y, z, px, py, pzSafe, x0, y0, VDz0, dx, dy, r);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans, pzStats);
+
+      double pr, pphi;
+      cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
+
       double ur   = pr   / pzSafe;
       double uphi = pphi / pzSafe;
       if (asinhSlopes) {
@@ -827,7 +857,7 @@ namespace mu2e {
         // letting it fall through to V1.
         case MomentumBasis::V1_CylindricalTransformed:
           forwardTransformSampleV1(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                   xTrans, yTrans, tTrans, m0, m1, m2, posBasis);
+                                   xTrans, yTrans, tTrans, m0, m1, m2, posBasis, pzStats);
           break;
       }
     }
