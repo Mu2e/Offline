@@ -2135,15 +2135,28 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << "Phase " << phaseNum << " converged after " << epochInPhase
                     << " epochs; " << bestSummary() << ".";
             } else {
+                // Deliberately NOT outFile: the generate step resolves that path by name, so
+                // an undertrained checkpoint there would let generation succeed on a bad model.
+                // Parking it under a different extension keeps it for diagnosis while making
+                // the downstream step fail on a missing input instead.
+                const std::string notConvergedFile = base + ".notConverged.dat";
                 mf::LogWarning(moduleName)
                     << "Phase " << phaseNum << " did NOT converge within its max-epoch cap="
                     << maxEpochs << " epochs (" << bestSummary()
                     << "). Adjust the training plan — e.g. raise the cap, change the learning "
-                    << "rate, or revisit the phase hyperparameters. Stopping training.";
-                model.saveModel(outFile, basisTag);
+                    << "rate, or revisit the phase hyperparameters. Abandoning this model: the "
+                    << "undertrained state is saved to " << notConvergedFile << " for inspection "
+                    << "and " << outFile << " is NOT written.";
+                model.saveModel(notConvergedFile, basisTag);
                 if (s.saveAlsoCsv)
-                    model.saveModelCsv(base + ".csv");
-                return; // abort: surface the bad plan instead of advancing
+                    model.saveModelCsv(base + ".notConverged.csv");
+                // Abort the whole training: a later stage trained against a non-converged
+                // earlier stage is not usable either.
+                throw cet::exception(moduleName)
+                    << "Phase " << phaseNum << " failed to converge within max-epoch cap="
+                    << maxEpochs << " (" << bestSummary() << "). Undertrained state written to "
+                    << notConvergedFile << "; " << outFile << " was not written. Adjust the "
+                    << "training plan and re-run.";
             }
         }
         // What lands in outFile is the LAST PHASE'S SMOOTHED-BEST state, not the final epoch: the
