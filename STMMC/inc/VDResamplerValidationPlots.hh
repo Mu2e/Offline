@@ -750,9 +750,17 @@ public:
             axes << "ValidationPlots [" << label << "]: transformed axis ranges";
             for (const DimSpec& s : specs_) {
                 if (!s.transformed) continue;
-                const TransformedDimStats& st = (*stats)[s.slot];
                 axes << "\n  " << s.suffix << ": [" << s.lo << ", " << s.hi << "] in "
                      << s.nbins << " bins";
+                // rhoTrans is derived from xTrans/yTrans rather than being a slot of the model's
+                // vector, so its kRhoTransSlot sits past the stats array and the sizing loop in
+                // transformedDimSpecs never consults statistics for it. Reported so the list
+                // covers every plotted axis, but indexing the array here would run off the end.
+                if (s.slot >= static_cast<int>(stats->size())) {
+                    axes << "  (derived axis — not sized from training statistics)";
+                    continue;
+                }
+                const TransformedDimStats& st = (*stats)[s.slot];
                 if (st.valid)
                     axes << "  (from training stats: mean=" << st.mean << " sigma=" << st.stdev
                          << " range=[" << st.min << ", " << st.max << "])";
