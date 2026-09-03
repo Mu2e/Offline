@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"   // setBranchAddressChecked
 #include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -311,18 +312,19 @@ namespace mu2e {
     if (!ttree)
       throw cet::exception("VDResamplerTrainFromRoot") << "Cannot find TTree: " << treeName_;
 
-    double time, x, y, z, px, py, pz;
-    int stepPdgId;
-    ULong64_t vdId;
-    ttree->SetBranchAddress("time",            &time);
-    ttree->SetBranchAddress("x",               &x);
-    ttree->SetBranchAddress("y",               &y);
-    ttree->SetBranchAddress("z",               &z);
-    ttree->SetBranchAddress("px",              &px);
-    ttree->SetBranchAddress("py",              &py);
-    ttree->SetBranchAddress("pz",              &pz);
-    ttree->SetBranchAddress("pdgId",           &stepPdgId);
-    ttree->SetBranchAddress("virtualdetectorId", &vdId);
+    double time = 0., x = 0., y = 0., z = 0., px = 0., py = 0., pz = 0.;
+    int stepPdgId = 0;
+    ULong64_t vdId = 0;
+    const std::string ctx = "VDResamplerTrainFromRoot";
+    VDResampler::setBranchAddressChecked(ttree, "time",              &time,      ctx);
+    VDResampler::setBranchAddressChecked(ttree, "x",                 &x,         ctx);
+    VDResampler::setBranchAddressChecked(ttree, "y",                 &y,         ctx);
+    VDResampler::setBranchAddressChecked(ttree, "z",                 &z,         ctx);
+    VDResampler::setBranchAddressChecked(ttree, "px",                &px,        ctx);
+    VDResampler::setBranchAddressChecked(ttree, "py",                &py,        ctx);
+    VDResampler::setBranchAddressChecked(ttree, "pz",                &pz,        ctx);
+    VDResampler::setBranchAddressChecked(ttree, "pdgId",             &stepPdgId, ctx);
+    VDResampler::setBranchAddressChecked(ttree, "virtualdetectorId", &vdId,      ctx);
 
     for (Long64_t i = 0; i < ttree->GetEntries(); ++i) {
       ttree->GetEntry(i);

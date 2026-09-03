@@ -53,6 +53,21 @@ inline Stage1Method parseStage1Method(const std::string& m, const std::string& m
 }
 
 // ---------------------------------------------------------------------------
+// setBranchAddressChecked — SetBranchAddress that throws instead of returning a code.
+//   SetBranchAddress returns kMissingBranch and binds NOTHING when the branch is absent,
+//   so GetEntry then leaves the local untouched and the caller silently reads whatever
+//   was there. Naming the missing branch turns a wrong-tree mistake into a setup error.
+// ---------------------------------------------------------------------------
+template <typename T>
+inline void setBranchAddressChecked(TTree* ttree, const char* branch, T* target,
+                                    const std::string& moduleName) {
+    if (ttree->SetBranchAddress(branch, target) < 0)
+        throw cet::exception(moduleName)
+            << "TTree '" << ttree->GetName() << "' has no branch '" << branch
+            << "'. Check that the input file is the expected dump.";
+}
+
+// ---------------------------------------------------------------------------
 // forEachAcceptedHitRoot — open `file`/`tree` and invoke cb(x,y,z,t,px,py,pz) for
 //   every hit passing the standard VD-resampler selection (matching VD id, pdgId
 //   (0 = any), pz>0). Mirrors the read loop in VDResamplerTrainFromRoot so the
@@ -72,18 +87,18 @@ inline void forEachAcceptedHitRoot(
     if (!ttree)
         throw cet::exception(moduleName) << "Cannot find TTree: " << tree;
 
-    double time, x, y, z, px, py, pz;
-    int stepPdgId;
-    ULong64_t vdId;
-    ttree->SetBranchAddress("time",              &time);
-    ttree->SetBranchAddress("x",                 &x);
-    ttree->SetBranchAddress("y",                 &y);
-    ttree->SetBranchAddress("z",                 &z);
-    ttree->SetBranchAddress("px",                &px);
-    ttree->SetBranchAddress("py",                &py);
-    ttree->SetBranchAddress("pz",                &pz);
-    ttree->SetBranchAddress("pdgId",             &stepPdgId);
-    ttree->SetBranchAddress("virtualdetectorId", &vdId);
+    double time = 0., x = 0., y = 0., z = 0., px = 0., py = 0., pz = 0.;
+    int stepPdgId = 0;
+    ULong64_t vdId = 0;
+    setBranchAddressChecked(ttree, "time",              &time,      moduleName);
+    setBranchAddressChecked(ttree, "x",                 &x,         moduleName);
+    setBranchAddressChecked(ttree, "y",                 &y,         moduleName);
+    setBranchAddressChecked(ttree, "z",                 &z,         moduleName);
+    setBranchAddressChecked(ttree, "px",                &px,        moduleName);
+    setBranchAddressChecked(ttree, "py",                &py,        moduleName);
+    setBranchAddressChecked(ttree, "pz",                &pz,        moduleName);
+    setBranchAddressChecked(ttree, "pdgId",             &stepPdgId, moduleName);
+    setBranchAddressChecked(ttree, "virtualdetectorId", &vdId,      moduleName);
 
     for (Long64_t i = 0; i < ttree->GetEntries(); ++i) {
         ttree->GetEntry(i);
