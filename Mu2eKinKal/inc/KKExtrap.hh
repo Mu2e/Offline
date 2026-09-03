@@ -152,7 +152,7 @@ namespace mu2e {
     // first. Anchor the range and time origin on the tracker interior, and intersect the whole trajectory:
     // a calo-cluster track is already extrapolated to the calo, so its end piece lies beyond TT_Back.
     double tref = midinter.good() ? midinter.time_ : ftraj.t0();
-    if(!midinter.good()) ftraj.range().forceRange(tref);
+    ftraj.range().forceRange(tref);
     auto recordFace = [&](TimeDir tdir){
       if(!ktrk.extrapolate(tdir,toPerim)) return;
       double const sgn = KinKal::timeDirSign(tdir);
