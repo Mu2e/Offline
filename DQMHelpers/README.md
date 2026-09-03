@@ -21,7 +21,9 @@ stay separated:
 |---|---|---|
 | `CRVStatusDQMAnalyzer` | `""` | books nothing itself — a second level would just repeat the module label |
 | `CRVDigiDQMAnalyzer` | `""` | as above; set it if `fillSectorOccupancy` is on and you want the per-sector hists kept apart |
-| `CrvDQMcollector` | `"CRVDigiDQM"` | **keep** — the module also books `crvPEsMPV*`, `crvPedestals*`, `crvCalibConstants*` and the `crvMetaData` tree at module level |
+| `CRVRecoDQMAnalyzer` | `""` | as above |
+| `CrvDQMcollector` (`crvDigiDQMDir`) | `"CRVDigiDQM"` | **keep** — the module also books `crvPedestals*`, `crvCalibConstants*` and the `crvMetaData` tree at module level |
+| `CrvDQMcollector` (`crvRecoDQMDir`) | `""` | **keep empty** — `crvPEsMPV*` and `crvCoincidencesClusters` have always sat in the module directory and the KPP extractor reads them there |
 
 With `CRVDQM.fcl` (module labels `CRVDigiDQM` / `CRVStatusDQM`, empty `outputTag`):
 
@@ -45,12 +47,18 @@ crvDQM.root
     ...
 ```
 
-`CrvDQMcollector` keeps PE / pedestal / calib histograms at module level, so the
-helper's occupancy maps live one directory deeper:
+`CrvDQMcollector` keeps its pedestal / calib histograms and the reco helper at
+module level, so only the digi helper's maps live one directory deeper:
 
 ```text
 <collector module label>/
-  crvPEsMPV*, crvPedestals*, crvCalibConstants*, crvMetaData
+  crvPedestals*, crvCalibConstants*, crvMetaData        (module)
+  nEvents, nEventsWithCoincidenceClusters               (CRVRecoDQM)
+  crvCoincidencesClusters                               (CRVRecoDQM)
+  crvPEsMPV, crvPEsMPV_ROC*, crvPEsMPV_CRVsector*       (CRVRecoDQM)
+  NPulses, NPulse2, BarIdr, SiPMr, PEr, PEHeight,       (CRVRecoDQM,
+  PulseTime, PulseTime2, chi2, logchi2, LeadingTime,     fillInclusive)
+  LeadingTime2, NClus, NPc, PEc, tc, t2c, X, Y, Z
   CRVDigiDQM/
     nEvents
     crvDigiRates, crvDigiRates_ROC*, crvDigisPerChannel
@@ -87,9 +95,14 @@ An empty `outputTag` books directly in the module directory. The module labels i
 `CRVDQM.fcl` are therefore `CRVDigiDQM` / `CRVStatusDQM`, so the directory name is
 the same either way.
 
-`CRVDQM.fcl` is the only FCL in this package: digi and status always run together
-in one job, into one file. Running one side alone is a matter of dropping the
-other module from `physics.ana`, not a separate config to keep in step.
+`CRVDQM.fcl` runs digi and status together in one job, into one file. Running one
+side alone is a matter of dropping the other module from `physics.ana`, not a
+separate config to keep in step.
+
+`CRVRecoDQM.fcl` is separate from it because the **input tier** differs, not
+because of a preference: digis and ROC status come off a raw/dig file, while
+coincidence clusters exist only after reco. It also needs `Services.Reco` for
+`fillSectorMPV`, which `CRVDQM.fcl` deliberately does without.
 
 ## CRVDigiDQM
 
@@ -109,8 +122,10 @@ dqm.WriteGraphs();               // endJob (sector occupancy + persist TGraphs i
 
 `CRVReco/src/CrvDQMcollector_module.cc` uses this helper for all per-event
 digi histograms and the CRVId occupancy maps (`crvDigiRates_ROC*`, 2D
-`crvDigiRates`, `crvDigisPerChannel`). The collector still owns reco/PE/
-coincidence products. Per-sector `crvDigisPerChannelAndEvent_CRVsector*` is
+`crvDigiRates`, `crvDigisPerChannel`); reco pulses and coincidences go through
+`CRVRecoDQM` below, and the collector keeps only the Proditions-derived
+pedestal / calibration histograms and the metadata tree. Per-sector
+`crvDigisPerChannelAndEvent_CRVsector*` is
 owned by the helper; the modules only inject the geometry-derived sector names
 and channel->sector map. The helper itself has no GeometryService or Proditions
 dependency.
@@ -218,6 +233,144 @@ Event-window tags for the time-series plots come from
 occupancy / ADC / TDC histograms are still filled and the EWT graphs, rolling
 occupancy, and MicroBunchStatus plots are skipped.
 
+## CRVRecoDQM
+
+`mu2e::CRVRecoDQM` books and fills the reco-pulse and coincidence histograms that
+`CRVReco/src/CrvDQMcollector_module.cc` used to own: `crvCoincidencesClusters`,
+`crvPEsMPV_CRVsector*`, `crvPEsMPV_ROC*` and the 2D `crvPEsMPV`. Names, binning
+and titles are unchanged, and the collector still books them in its own module
+directory, so the KPP extractor keeps reading them where it always has.
+
+```cpp
+CRVRecoDQM dqm(config);              // constructor / beginJob
+dqm.Book(tfs->mkdir("CRVRecoDQM"));  // or *tfs, to book in the module directory
+dqm.BookSectorMPV(sectorNames, channelToSector);   // once, optional
+dqm.Fill(*clusters, *recoPulses);    // analyze, once per event
+dqm.WriteGraphs();                   // endJob: runs the fits, fills the MPV maps
+```
+
+Only pulses that belong to a coincidence cluster enter the **PE spectra and the
+MPV maps** — that is what `CrvDQMcollector` measured, and it is what makes the
+spectrum a minimum-ionising one rather than a dark-noise one. The inclusive
+plots below see every pulse, which is why they take the second `Fill` argument.
+
+### Inclusive per-event plots (`fillInclusive`, default true)
+
+The `DqmCrv` tier-A block, so that the Phase-2 merge of `DqmCrv` and
+`CrvDQMcollector` has one place to land:
+
+```text
+reco pulses (whole CrvRecoPulseCollection)
+  NPulses, NPulse2, BarIdr, SiPMr, PEr, PEHeight,
+  PulseTime, PulseTime2, chi2, logchi2, LeadingTime, LeadingTime2
+coincidence clusters
+  NClus, NPc, PEc, tc, t2c, X, Y, Z
+```
+
+Names and titles are copied from `Mu2e/DQM` `DqmCrv_module.cc` (itself
+`ValCrvRecoPulse.cc` + `ValCrvCoincidenceCluster.cc`), and so is every default.
+Occupancy, PE and fit-quality axes are **not** configurable — the value of those
+is a series that stays comparable across years, which a FHiCL knob would quietly
+break.
+
+The axes that follow the *detector* are configurable, because a fixed one is not
+stable, it is just wrong somewhere:
+
+| Config | Applies to | Default |
+|---|---|---|
+| `nBinsTime`, `minTime`, `maxTime` | `PulseTime`, `LeadingTime`, `tc` | 100, 0, 2000 ns |
+| `nBinsTime2`, `minTime2`, `maxTime2` | `PulseTime2`, `LeadingTime2`, `t2c` | 100, 0, 100 µs |
+| `nBinsPos`, `minX`/`maxX`, `minY`/`maxY`, `minZ`/`maxZ` | `X`, `Y`, `Z` | 100, the `DqmCrv` full-CRV ranges |
+
+Each time quantity is booked twice — a short view and a full-window view. The
+three short axes share one definition and the three long axes another, so pulse,
+leading-edge and cluster times stay overlayable; `X`/`Y`/`Z` share a bin count
+but not a range.
+
+**The defaults do not fit the extracted CRV.** They were cut for the full CRV in
+Mu2e coordinates, and `crv_counters_extracted_v04.txt` puts the extracted
+counters at **y ≈ 4237–4649** and **z ≈ 21440–23065** — above the default top
+edges of 3000 and 20000, so on KPP data `Y` and `Z` are *100 % overflow*
+(measured on run 124155: 37,308 of 37,308 clusters, both plots). `X` needs no
+change; both geometries centre on x = −3904. See
+`analysis/crv_efficiency/fcl/dqm_reco_data_vst.fcl` for a working extracted set.
+
+A readout window much longer than `maxTime` is not a misconfiguration: on VST's
+~100 µs window the short axes only catch the leading edge and the `*2` twins
+carry the rest, which is what the pair is for.
+
+Two deliberate differences from `DqmCrv`:
+
+- **`SiPMr` is restored.** `ValCrvRecoPulse` has a reco-pulse `SiPM`
+  distribution and the `DqmCrv` copy dropped it. The digi `SiPM` hist tests the
+  readout, this one tests reconstruction per readout end, and the ratio of the
+  two isolates an end where waveforms arrive but do not fit. It is named on the
+  `DqmCrv` `r`-suffix convention (as `BarIdr` is) so it cannot collide with, or
+  be mistaken for, the digi `SiPM` that `CRVDigiDQM` books.
+- **`SecType` is not here.** `crvCoincidencesClusters` already is that
+  histogram; the audit asks the merge to end with one of the two, not both.
+
+`Ver` is not booked either — it is a `Validation` versioning device, and
+`CRVDigiDQM`'s inclusive block left it out for the same reason.
+
+`NClus` gets an entry on **every** event, zero included, so it is a rate. The
+reco-pulse block only fills through the two-argument `Fill`; a caller with no
+`CrvRecoPulse` product still gets everything the clusters drive.
+
+### No channel map
+
+`CrvRecoPulse` carries `ROC` / `FEB` / `FEBchannel` copied from the digi it was
+reconstructed from, and both `CrvDigitizer` (MC) and the artdaq unpacker (data)
+fill those from `CRVOrdinal`. So the online-indexed plots need no Proditions
+here, and the collector no longer holds a `ProditionsHandle<CRVOrdinal>`. An
+ID outside the `CRVId` ranges is counted by `nOnlineIdOutOfRange()` and raises
+one `mf::LogWarning`; the per-sector MPV still gets that pulse.
+
+`crvPEsMPV_ROC*` and the 2D `crvPEsMPV` index the same online channel through
+`onlineChannelIndex()` / `rocChannel()` / `febPort()`, and their axes are sized
+from the same constants, so the index and the axis cannot drift apart.
+
+### Per-sector MPV
+
+`crvPEsMPV_CRVsector*` is owned by the helper. As with `BookSectorOccupancy`,
+sector names and the channel->sector map are geometry-derived and are injected by
+the caller, and a negative sector entry skips the channel — which is how
+`CrvDQMcollector` drops its Proditions `notConnected` channels without the helper
+knowing about Proditions. `CRVRecoDQMAnalyzer` has no Proditions, so it keeps
+those channels; they enter at MPV zero.
+
+### The fit
+
+`WriteGraphs()` runs the Landau(x)Gauss fit (`$ROOTSYS/tutorials/fit/langaus.C`)
+on every channel spectrum and fills the MPV maps from it. A channel too sparse to
+fit, or one whose fit lands on the range edge, enters as **zero** rather than
+being skipped — a hole in the distribution at zero is what makes a dead or
+dying channel visible. `nFits()`, `nFitsSucceeded()` and `meanFitChi2PerNdf()`
+separate "MPV is zero" from "the fit never ran"; the analyzer prints them at
+`diagLevel > 0`.
+
+### Per-channel spectra
+
+The `crvPEs_channel*` / `crvPEsROC_channel*` spectra are the fit input, not a DQM
+product, and across all of `CRVId` there are ~22 k offline and ~27 k online of
+them. They are booked **on first fill**, so a KPP-sized geometry pays for the few
+thousand channels it actually reads out rather than for the whole detector — the
+collector used to allocate every one of them in `beginRun`.
+
+By default the helper owns them outright (`SetDirectory(nullptr)`) and nothing
+writes them. Set `writePerChannelPE` to put the ones that were filled in a
+`perChannelPE/` subdirectory, when a channel's MPV goes bad and someone needs to
+see why.
+
+### hadd
+
+`nEvents`, `nEventsWithCoincidenceClusters` and `crvCoincidencesClusters` are raw
+counts and add correctly. The MPV objects **do not**: `crvPEsMPV_ROC*` and the 2D
+`crvPEsMPV` are bar charts whose bin content *is* the MPV, so `hadd` sums MPVs
+rather than averaging them, and `crvPEsMPV_CRVsector*` combines two files' fits
+of partial statistics rather than one fit of the sum. To combine runs, re-run the
+job over the combined input, or refit from `perChannelPE/`.
+
 ## CRVStatusDQM
 
 `mu2e::CRVStatusDQM` books and fills ROC-firmware health histograms from
@@ -272,6 +425,18 @@ geometry. Set it true to book
 `crvDigisPerChannelAndEvent_CRVsector*` from CosmicRayShield sector names
 and fill them in `endJob`. The collector still skips `notConnected`
 channels via Proditions; the analyzer does not.
+
+`CRVRecoDQMAnalyzer` is the same shape for `CRVRecoDQM`:
+
+```text
+mu2e -c Offline/DQMHelpers/fcl/CRVRecoDQM.fcl -s <rec.art>
+```
+
+A missing `CrvCoincidenceCluster` product skips the event (one warning per job).
+A missing or unset `crvRecoPulseTag` leaves the inclusive reco-pulse plots empty
+and fills the rest (one warning per job). `fillSectorMPV` is the
+`fillSectorOccupancy` twin — true in `CRVRecoDQM.fcl`, which provides
+`Services.Reco` for it.
 
 ## otsdaq CrvDQM
 

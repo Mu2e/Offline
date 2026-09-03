@@ -3,7 +3,6 @@
 //
 // Original Author: Ralf Ehrlich
 
-#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 #include "Offline/CRVConditions/inc/CRVStatus.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -14,13 +13,14 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
+#include "Offline/DQMHelpers/inc/CRVRecoDQM.hh"
+#include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
-#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 
-#include "canvas/Persistency/Common/Ptr.h"
 #include "art_root_io/TFileDirectory.h"
 #include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -28,142 +28,19 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include <TMath.h>
-#include <TF1.h>
-#include <TFitResult.h>
 #include <TH1F.h>
-#include <TH2F.h>
-#include <TH1I.h>
 #include <TTree.h>
 
+#include <algorithm>
 #include <bitset>
 #include <string>
-#include <array>
-
-namespace
-{
-double LandauGaussFunction(double *x, double *par)
-{
-    //From $ROOTSYS/tutorials/fit/langaus.C
-    //Fit parameters:
-    //par[0]=Width (scale) parameter of Landau density
-    //par[1]=Most Probable (MP, location) parameter of Landau density
-    //par[2]=Total area (integral -inf to inf, normalization constant)
-    //par[3]=Width (sigma) of convoluted Gaussian function
-    //
-    //In the Landau distribution (represented by the CERNLIB approximation),
-    //the maximum is located at x=-0.22278298 with the location parameter=0.
-    //This shift is corrected within this function, so that the actual
-    //maximum is identical to the MP parameter.
-
-    // Numeric constants
-    constexpr Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
-    constexpr Double_t mpshift  = -0.22278298;       // Landau maximum location
-
-    // Control constants
-    constexpr Double_t np = 100.0;      // number of convolution steps
-    constexpr Double_t sc =   5.0;      // convolution extends to +-sc Gaussian sigmas
-
-    // Variables
-    Double_t xx = 0.0;
-    Double_t mpc = 0.0;
-    Double_t fland = 0.0;
-    Double_t sum = 0.0;
-    Double_t xlow = 0.0, xupp = 0.0;
-    Double_t step = 0.0;
-    Int_t    i = 0.0;
-
-    // MP shift correction
-    mpc = par[1] - mpshift * par[0];
-
-    // Range of convolution integral
-    xlow = x[0] - sc * par[3];
-    xupp = x[0] + sc * par[3];
-    step = (xupp-xlow) / np;
-
-    // Convolution integral of Landau and Gaussian by sum
-    for(i=1.0; i<=np/2; i++)
-    {
-      xx = xlow + (i-.5) * step;
-      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-      sum += fland * TMath::Gaus(x[0],xx,par[3]);
-
-      xx = xupp - (i-.5) * step;
-      fland = TMath::Landau(xx,mpc,par[0]) / par[0];
-      sum += fland * TMath::Gaus(x[0],xx,par[3]);
-    }
-
-    return (par[2] * step * sum * invsq2pi / par[3]);
-}
-void LandauGauss(TH1F &h, float &mpv, float &fwhm, float &signals, float &chi2,
-                 float PEfitRangeStart, float PEfitRangeEnd, float PEstart)
-{
-    std::multimap<float,float> bins;  //binContent,binCenter
-    for(int i=1; i<=h.GetNbinsX(); i++)
-    {
-      if(h.GetBinCenter(i)<10.0) continue;
-      bins.emplace(h.GetBinContent(i),h.GetBinCenter(i));  //ordered from smallest to largest bin entries
-    }
-    if(bins.size()<4) return;
-    if(bins.rbegin()->first<20) return;  //low statistics
-    int nBins=0;
-    float binSum=0;
-    for(auto bin=bins.rbegin(); bin!=bins.rend(); ++bin)
-    {
-      nBins++;
-      binSum+=bin->second;
-      if(nBins==4) break;
-    }
-    float maxX=binSum/4;
-    float fitRangeStart=PEfitRangeStart*maxX;  //0.6 @ 24
-    float fitRangeEnd  =PEfitRangeEnd*maxX;
-    if(maxX<PEstart) maxX=PEstart;
-    if(fitRangeStart<PEstart) fitRangeStart=PEstart;
-
-    //Parameters
-    Double_t startValues[4], parLimitsLow[4], parLimitsHigh[4];
-    //Most probable value
-    startValues[1]=maxX;
-    parLimitsLow[1]=fitRangeStart;
-    parLimitsHigh[1]=fitRangeEnd;
-    //Area
-    startValues[2]=h.Integral(h.FindBin(fitRangeStart),h.FindBin(fitRangeEnd));
-    parLimitsLow[2]=0.01*startValues[2];
-    parLimitsHigh[2]=100*startValues[2];
-    //Other parameters
-    startValues[0]=5.0;   startValues[3]=10.0;
-    parLimitsLow[0]=2.0;  parLimitsLow[3]=2.0;
-    parLimitsHigh[0]=15.0; parLimitsHigh[3]=20.0; //7 and 15 @ 21  //6 and 13 @ 23
-
-    TF1 fit("LandauGauss",LandauGaussFunction,fitRangeStart,fitRangeEnd,4);
-    fit.SetParameters(startValues);
-    fit.SetLineColor(kRed);
-    fit.SetParNames("Width","MP","Area","GSigma");
-    for(int i=0; i<4; i++) fit.SetParLimits(i, parLimitsLow[i], parLimitsHigh[i]);
-    TFitResultPtr fr = h.Fit(&fit,"LQRS");
-    fit.Draw("same");
-
-    mpv = fit.GetMaximumX();
-    chi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():NAN);
-    if(mpv==fitRangeStart) {mpv=0; return;}
-/*
-    float halfMaximum = fit.Eval(mpv)/2.0;
-    float leftX = fit.GetX(halfMaximum,0.0,mpv);
-    float rightX = fit.GetX(halfMaximum,mpv,10.0*mpv);
-    fwhm = rightX-leftX;
-*/
-
-    signals = fit.Integral(0,150,1e-3)/h.GetBinWidth(1);  //need to divide by bin width.
-                                                          //if the bin width is 2 and one has e.g. 20 events for 50PEs and 20 events for 51PEs,
-                                                          //the combined bin of x=50/51 gets 40 entries and the integral assumes that there are 40 entries for x=50 and x=51.
-}
-
-} //end anonymous namespace for LandauGauss function
+#include <vector>
 
 namespace mu2e
 {
@@ -177,12 +54,16 @@ namespace mu2e
       fhicl::Atom<bool> useDQMcollector{Name("useDQMcollector"), Comment("fill DQM values, histograms, ...")};
       fhicl::Atom<std::string> crvDigiModuleLabel{Name("crvDigiModuleLabel"), Comment("label of CrvDigi module")};
       fhicl::Atom<std::string> crvStatusModuleLabel{Name("crvStatusModuleLabel"), Comment("label of CrvStatus module; empty uses crvDigiModuleLabel"), ""};
-      //fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module")};
+      fhicl::Atom<std::string> crvRecoPulsesModuleLabel{Name("crvRecoPulsesModuleLabel"), Comment("label of CrvReco module; empty skips the inclusive reco-pulse histograms"), ""};
       fhicl::Atom<std::string> crvCoincidenceClusterFinderModuleLabel{Name("crvCoincidenceClusterFinderModuleLabel"), Comment("label of CoincidenceClusterFinder module")};
       fhicl::Atom<std::string> crvDaqErrorModuleLabel{Name("crvDaqErrorModuleLabel"), Comment("label of module that found the CRV-DAQ errors")};
       fhicl::Atom<std::string> crvDigiDQMDir{Name("crvDigiDQMDir"), Comment("TFileService subdirectory for CRVDigiDQM histograms"), "CRVDigiDQM"};
+      fhicl::Atom<std::string> crvRecoDQMDir{Name("crvRecoDQMDir"), Comment("TFileService subdirectory for CRVRecoDQM histograms; empty books in the module directory"), ""};
+      fhicl::Atom<std::string> crvStatusDQMDir{Name("crvStatusDQMDir"), Comment("TFileService subdirectory for CRVStatusDQM histograms"), "CRVStatusDQM"};
       fhicl::Atom<bool> fillInclusiveDigiDQM{Name("fillInclusiveDigiDQM"), Comment("also fill BarId/SiPM/ADC in CRVDigiDQM"), true};
+      fhicl::Atom<bool> fillInclusiveRecoDQM{Name("fillInclusiveRecoDQM"), Comment("also fill the per-event DqmCrv reco-pulse and cluster plots in CRVRecoDQM"), true};
       fhicl::Atom<bool> crvDigiDQMkppReadout{Name("crvDigiDQMkppReadout"), Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"), true};
+      fhicl::Atom<bool> writePerChannelPE{Name("writePerChannelPE"), Comment("write the ~50k per-channel PE spectra (expert output)"), false};
 
       fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
       fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
@@ -199,6 +80,23 @@ namespace mu2e
       fhicl::Atom<double> PEfitRangeStart{Name("PEfitRangeStart"), Comment("low end of the PE MPV fit range as fraction of peak"), 0.7};
       fhicl::Atom<double> PEfitRangeEnd{Name("PEfitRangeEnd"), Comment("high end of the PE MPV fit range as fraction of peak"), 2.0};
       fhicl::Atom<double> PEstart{Name("PEstart"), Comment("lowest PE for fit"), 15.0};
+
+      //inclusive-plot axes that depend on detector position and readout window.
+      //defaults are the DqmCrv values (full CRV, Mu2e coordinates); the extracted
+      //CRV sits at y~4237-4649, z~21440-23065 and needs minY/maxY, minZ/maxZ moved.
+      fhicl::Atom<int>    nBinsTime{Name("nBinsTime"), Comment("bins for PulseTime/LeadingTime/tc"), 100};
+      fhicl::Atom<double> minTime{Name("minTime"), Comment("range start for PulseTime/LeadingTime/tc [ns]"), 0.0};
+      fhicl::Atom<double> maxTime{Name("maxTime"), Comment("range end for PulseTime/LeadingTime/tc [ns]"), 2000.0};
+      fhicl::Atom<int>    nBinsTime2{Name("nBinsTime2"), Comment("bins for PulseTime2/LeadingTime2/t2c"), 100};
+      fhicl::Atom<double> minTime2{Name("minTime2"), Comment("range start for PulseTime2/LeadingTime2/t2c [ns]"), 0.0};
+      fhicl::Atom<double> maxTime2{Name("maxTime2"), Comment("range end for PulseTime2/LeadingTime2/t2c [ns]"), 100000.0};
+      fhicl::Atom<int>    nBinsPos{Name("nBinsPos"), Comment("bins for the cluster position plots X/Y/Z"), 100};
+      fhicl::Atom<double> minX{Name("minX"), Comment("range start for X [mm]"), -6904.0};
+      fhicl::Atom<double> maxX{Name("maxX"), Comment("range end for X [mm]"), -904.0};
+      fhicl::Atom<double> minY{Name("minY"), Comment("range start for Y [mm]"), 0.0};
+      fhicl::Atom<double> maxY{Name("maxY"), Comment("range end for Y [mm]"), 3000.0};
+      fhicl::Atom<double> minZ{Name("minZ"), Comment("range start for Z [mm]"), -3500.0};
+      fhicl::Atom<double> maxZ{Name("maxZ"), Comment("range end for Z [mm]"), 20000.0};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -207,22 +105,25 @@ namespace mu2e
     void beginJob() override;
     void analyze(const art::Event& e) override;
     void beginRun(const art::Run &run) override;
+    void endSubRun(const art::SubRun &subRun) override;
     void endJob() override;
 
     private:
     bool        _useDQMcollector;
     std::string _crvDigiModuleLabel;
     std::string _crvStatusModuleLabel;
-    //std::string _crvRecoPulsesModuleLabel;
+    std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceClusterFinderModuleLabel;
     std::string _crvDaqErrorModuleLabel;
     std::string _crvDigiDQMDir;
+    std::string _crvRecoDQMDir;
+    std::string _crvStatusDQMDir;
     bool _warnedMissingDigi{false};
     bool _warnedMissingStatus{false};
+    bool _warnedMissingClusters{false};
+    bool _warnedMissingPulses{false};
+    bool _warnedMissingDaqErrors{false};
 
-    int                _histPEsBins;
-    double             _histPEsStart;
-    double             _histPEsEnd;
     int                _histPedestalsBins;
     double             _histPedestalsStart;
     double             _histPedestalsEnd;
@@ -232,9 +133,6 @@ namespace mu2e
     int                _histDigisBins;
     double             _histDigisStart;
     double             _histDigisEnd;
-    double             _PEfitRangeStart;
-    double             _PEfitRangeEnd;
-    double             _PEstart;
 
     int                _totalEvents;
     int                _totalEventsWithCoincidenceClusters;
@@ -242,23 +140,18 @@ namespace mu2e
     std::pair<int,int> _firstRunSubrun;
     std::pair<int,int> _lastRunSubrun;
 
-    std::vector<TH1F*> _histPEs;             //for each channel
-    std::vector<TH1F*> _histPEsROC;          //for each channel
     std::vector<bool>  _notConnected;        //for each channel
 
-    std::vector<TH1F*> _histPEsMPV;
-    std::vector<TH1F*> _histPEsMPVROC;
     std::vector<TH1F*> _histPedestals;
     std::vector<TH1F*> _histCalibConstants;
-    TH2F*              _hist2DPEsMPVROC;
-    TH1I*              _histCoincidenceClusters;
     TTree*             _treeMetaData;
 
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
-    ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
 
     CRVDigiDQM _digiDQM;
+    CRVRecoDQM _recoDQM;
+    CRVStatusDQM _statusDQM;
   };
 
   CrvDQMcollector::CrvDQMcollector(const Parameters& conf) :
@@ -267,13 +160,12 @@ namespace mu2e
     _crvDigiModuleLabel(conf().crvDigiModuleLabel()),
     _crvStatusModuleLabel(conf().crvStatusModuleLabel().empty() ?
                           conf().crvDigiModuleLabel() : conf().crvStatusModuleLabel()),
-    //_crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
+    _crvRecoPulsesModuleLabel(conf().crvRecoPulsesModuleLabel()),
     _crvCoincidenceClusterFinderModuleLabel(conf().crvCoincidenceClusterFinderModuleLabel()),
     _crvDaqErrorModuleLabel(conf().crvDaqErrorModuleLabel()),
     _crvDigiDQMDir(conf().crvDigiDQMDir()),
-    _histPEsBins(conf().histPEsBins()),
-    _histPEsStart(conf().histPEsStart()),
-    _histPEsEnd(conf().histPEsEnd()),
+    _crvRecoDQMDir(conf().crvRecoDQMDir()),
+    _crvStatusDQMDir(conf().crvStatusDQMDir()),
     _histPedestalsBins(conf().histPedestalsBins()),
     _histPedestalsStart(conf().histPedestalsStart()),
     _histPedestalsEnd(conf().histPedestalsEnd()),
@@ -283,14 +175,9 @@ namespace mu2e
     _histDigisBins(conf().histDigisBins()),
     _histDigisStart(conf().histDigisStart()),
     _histDigisEnd(conf().histDigisEnd()),
-    _PEfitRangeStart(conf().PEfitRangeStart()),
-    _PEfitRangeEnd(conf().PEfitRangeEnd()),
-    _PEstart(conf().PEstart()),
     _totalEvents(0),
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0),
-    _hist2DPEsMPVROC(nullptr),
-    _histCoincidenceClusters(nullptr),
     _treeMetaData(nullptr),
     _digiDQM([] (bool fillInclusive, bool kppReadout) {
       CRVDigiDQM::Config c;
@@ -298,7 +185,39 @@ namespace mu2e
       c.kppReadout = kppReadout;
       c.fillLivePlots = false;
       return c;
-    }(conf().fillInclusiveDigiDQM(), conf().crvDigiDQMkppReadout()))
+    }(conf().fillInclusiveDigiDQM(), conf().crvDigiDQMkppReadout())),
+    _recoDQM([] (const Config &conf) {
+      CRVRecoDQM::Config c;
+      c.nBinsPEs = conf.histPEsBins();
+      c.minPEs = conf.histPEsStart();
+      c.maxPEs = conf.histPEsEnd();
+      c.PEfitRangeStart = conf.PEfitRangeStart();
+      c.PEfitRangeEnd = conf.PEfitRangeEnd();
+      c.PEstart = conf.PEstart();
+      c.writePerChannelPE = conf.writePerChannelPE();
+      c.fillInclusive = conf.fillInclusiveRecoDQM();
+      c.nBinsTime = conf.nBinsTime();
+      c.minTime = conf.minTime();
+      c.maxTime = conf.maxTime();
+      c.nBinsTime2 = conf.nBinsTime2();
+      c.minTime2 = conf.minTime2();
+      c.maxTime2 = conf.maxTime2();
+      c.nBinsPos = conf.nBinsPos();
+      c.minX = conf.minX();
+      c.maxX = conf.maxX();
+      c.minY = conf.minY();
+      c.maxY = conf.maxY();
+      c.minZ = conf.minZ();
+      c.maxZ = conf.maxZ();
+      return c;
+    }(conf())),
+    //binning defaults are the online ones; fillLivePlots stays false so the
+    //per-job file hadds
+    _statusDQM([] {
+      CRVStatusDQM::Config c;
+      c.fillLivePlots = false;
+      return c;
+    }())
   {
   }
 
@@ -306,84 +225,78 @@ namespace mu2e
   {
     art::ServiceHandle<art::TFileService> tfs;
     _digiDQM.Book(tfs->mkdir(_crvDigiDQMDir));
+    //the reco histograms keep their historical place in the module directory
+    if(_crvRecoDQMDir.empty())
+    {
+      art::TFileDirectory dir = *tfs;
+      _recoDQM.Book(dir);
+    }
+    else
+    {
+      _recoDQM.Book(tfs->mkdir(_crvRecoDQMDir));
+    }
+    _statusDQM.Book(tfs->mkdir(_crvStatusDQMDir));
+  }
+
+  void CrvDQMcollector::endSubRun(const art::SubRun &subRun)
+  {
+    _statusDQM.EndSubRun(subRun.run(), subRun.subRun());
   }
 
   void CrvDQMcollector::endJob()
   {
     _digiDQM.WriteGraphs();
+    _recoDQM.WriteGraphs();  //runs the per-channel PE fits and fills the MPV maps
+    _statusDQM.WriteGraphs();
 
     if(_totalEvents<=0) return;
 
-    GeomHandle<CosmicRayShield> CRS;
-    auto &crvCounters = CRS->getAllCRSScintillatorBars();
-    for(size_t channel=0; channel<crvCounters.size()*CRVId::nChanPerBar; ++channel)
-    {
-      if(_notConnected.at(channel)) continue;
-
-      CRSScintillatorBarIndex barIndex(channel/CRVId::nChanPerBar);
-      int sectorNumber = CRS->getBar(barIndex).id().getShieldNumber();
-
-      float MPV=0;
-      float FWHM=0;
-      float signals=0;
-      float chi2=0;
-      LandauGauss(*_histPEs.at(channel), MPV, FWHM, signals, chi2, _PEfitRangeStart, _PEfitRangeEnd, _PEstart);
-      _histPEsMPV.at(sectorNumber)->Fill(MPV);
-    }
-
-    for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
-    {
-      for(size_t FEB=1; FEB<=CRVId::nFEBPerROC; ++FEB)
-      for(size_t FEBchannel=0; FEBchannel<CRVId::nChanPerFEB; ++FEBchannel)
-      {
-        size_t ROCchannel=(FEB-1)*CRVId::nChanPerFEB+FEBchannel;
-
-        float MPV=0;
-        float FWHM=0;
-        float signals=0;
-        float chi2=0;
-        LandauGauss(*_histPEsROC.at((ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB+ROCchannel), MPV, FWHM, signals, chi2, _PEfitRangeStart, _PEfitRangeEnd, _PEstart);
-        _histPEsMPVROC.at(ROC-1)->Fill(ROCchannel,MPV);
-
-        size_t portIndex=(ROC-1)*CRVId::nFEBPerROC+FEB-1;
-        _hist2DPEsMPVROC->Fill(FEBchannel,portIndex,MPV);
-      }
-    }
-
+    _totalEventsWithCoincidenceClusters = static_cast<int>(_recoDQM.nEventsWithClusters());
     _treeMetaData->Fill();
   }
 
   void CrvDQMcollector::beginRun(const art::Run &run)
   {
-    if(_histPEsMPV.size()>0) return;  //don't initialize again for additional runs
-
     GeomHandle<CosmicRayShield> CRS;
+
+    //The cluster position axes follow the detector, so take them from the CRV
+    //envelope rather than a fixed range that is wrong on some geometry.
+    //Built from the counters, not CosmicRayShield::getSectorHalfLengths: that
+    //one measures the aluminum sheets, and a countersOnly module (all of the
+    //extracted geometry) has none, so it throws. Counters are also the right
+    //basis here, since a cluster position is derived from them.
+    //getHalfLengths() is already indexed by world axis -- see
+    //CRSScintillatorBarDetail::getHalfThickness(), which reads
+    //_halfLengths[_localToWorld[0]] -- so no permutation is needed. Idempotent.
+    std::vector<double> crvMin(3, 0.0), crvMax(3, 0.0);
+    bool firstBar = true;
+    for(const auto &bar : CRS->getAllCRSScintillatorBars())
+    {
+      const std::vector<double> &hl = bar->getHalfLengths();
+      if(hl.size()<3) continue;
+      const CLHEP::Hep3Vector &pos = bar->getPosition();
+      for(int i=0; i<3; ++i)
+      {
+        const double lo = pos[i]-hl[i];
+        const double hi = pos[i]+hl[i];
+        if(firstBar) { crvMin[i]=lo; crvMax[i]=hi; }
+        else         { crvMin[i]=std::min(crvMin[i],lo); crvMax[i]=std::max(crvMax[i],hi); }
+      }
+      firstBar = false;
+    }
+    _recoDQM.BookPositionAxes(crvMin, crvMax);  //empty envelope falls back to fcl
+
+    if(_histPedestals.size()>0) return;  //don't initialize again for additional runs
+
     auto &crvSectors = CRS->getCRSScintillatorShields();
     auto &crvCounters = CRS->getAllCRSScintillatorBars();
-    _histPEsMPV.reserve(crvSectors.size());
-    _histPEsMPVROC.reserve(CRVId::nROC);
     _histPedestals.reserve(crvSectors.size());
     _histCalibConstants.reserve(crvSectors.size());
-    _histPEs.reserve(crvCounters.size()*CRVId::nChanPerBar);
-    _histPEsROC.reserve(CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB);
     _notConnected.resize(crvCounters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
-    for(size_t i=0; i<crvCounters.size()*CRVId::nChanPerBar; ++i)
-    {
-      _histPEs.emplace_back(new TH1F(Form("crvPEs_channel%lu",i), Form("crvPEs_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
-//      _histPEs.emplace_back(tfs->make<TH1F>(Form("crvPEs_channel%lu",i), Form("crvPEs_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
-    }
-    for(size_t i=0; i<CRVId::nROC*CRVId::nFEBPerROC*CRVId::nChanPerFEB; ++i)
-    {
-      _histPEsROC.emplace_back(new TH1F(Form("crvPEsROC_channel%lu",i), Form("crvPEsROC_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
-//      _histPEsROC.emplace_back(tfs->make<TH1F>(Form("crvPEsROC_channel%lu",i), Form("crvPEsROC_channel%lu",i), _histPEsBins,_histPEsStart,_histPEsEnd));
-    }
     for(size_t i=0; i<crvSectors.size(); ++i)
     {
-      _histPEsMPV.emplace_back(tfs->make<TH1F>(Form("crvPEsMPV_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            Form("crvPEsMPV_CRVsector%s",crvSectors.at(i).name("").c_str()),
-                                            _histPEsBins,_histPEsStart,_histPEsEnd));
       _histPedestals.emplace_back(tfs->make<TH1F>(Form("crvPedestals_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             Form("crvPedestals_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             _histPedestalsBins,_histPedestalsStart,_histPedestalsEnd));
@@ -391,14 +304,6 @@ namespace mu2e
                                             Form("crvCalibConstants_CRVsector%s",crvSectors.at(i).name("").c_str()),
                                             _histCalibConstsBins,_histCalibConstsStart,_histCalibConstsEnd));
     }
-    for(size_t ROC=1; ROC<=CRVId::nROC; ++ROC)
-    {
-      _histPEsMPVROC.emplace_back(tfs->make<TH1F>(Form("crvPEsMPV_ROC%zu",ROC),
-                                            Form("crvPEsMPV_ROC%zu",ROC),
-                                            CRVId::nFEBPerROC*CRVId::nChanPerFEB,0,CRVId::nFEBPerROC*CRVId::nChanPerFEB));
-    }
-    _hist2DPEsMPVROC=tfs->make<TH2F>("crvPEsMPV","crvPEsMPV:FEBchannel:FEB", CRVId::nChanPerFEB,0,CRVId::nChanPerFEB, CRVId::nROC*CRVId::nFEBPerROC,0,CRVId::nROC*CRVId::nFEBPerROC);
-    _histCoincidenceClusters=tfs->make<TH1I>("crvCoincidencesClusters","crvCoincidenceClusters:sectorType",10,0,10);
 
     _treeMetaData=tfs->make<TTree>("crvMetaData","crvMetaData");
     _treeMetaData->Branch("runNumberStart",&_firstRunSubrun.first);
@@ -417,27 +322,36 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
 
     art::Handle<CrvDigiCollection> crvDigiCollection;
-    //art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
     art::Handle<CrvDAQerrorCollection> crvDaqErrorCollection;
 
     event.getByLabel(_crvDigiModuleLabel,"",crvDigiCollection);
     art::Handle<CrvStatusCollection> crvStatusCollection;
     event.getByLabel(_crvStatusModuleLabel,"",crvStatusCollection);
-    //event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
+    if(!_crvRecoPulsesModuleLabel.empty()) event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(_crvDaqErrorModuleLabel,"",crvDaqErrorCollection);
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
-    auto const& channelMap = _channelMap_h.get(event.id());
 
     const CrvStatusCollection emptyStatus;
     const CrvDigiCollection emptyDigis;
+    const CrvCoincidenceClusterCollection emptyClusters;
     const bool haveDigis =
         crvDigiCollection.isValid() && crvDigiCollection.product()!=nullptr;
     const bool haveStatus =
         crvStatusCollection.isValid() && crvStatusCollection.product()!=nullptr;
+    const bool haveClusters =
+        crvCoincidenceClusterCollection.isValid() &&
+        crvCoincidenceClusterCollection.product()!=nullptr;
+    const bool havePulses =
+        crvRecoPulseCollection.isValid() &&
+        crvRecoPulseCollection.product()!=nullptr;
+    const bool haveDaqErrors =
+        crvDaqErrorCollection.isValid() &&
+        crvDaqErrorCollection.product()!=nullptr;
     if (!haveDigis && !_warnedMissingDigi) {
       _warnedMissingDigi = true;
       mf::LogWarning("CrvDQMcollector")
@@ -450,9 +364,35 @@ namespace mu2e
           << "No CrvStatusCollection at " << _crvStatusModuleLabel
           << " (empty collection used). Reported once per job.";
     }
+    if (!haveClusters && !_warnedMissingClusters) {
+      _warnedMissingClusters = true;
+      mf::LogWarning("CrvDQMcollector")
+          << "No CrvCoincidenceClusterCollection at "
+          << _crvCoincidenceClusterFinderModuleLabel
+          << " (empty collection used). Reported once per job.";
+    }
+    if (!havePulses && !_crvRecoPulsesModuleLabel.empty() && !_warnedMissingPulses) {
+      _warnedMissingPulses = true;
+      mf::LogWarning("CrvDQMcollector")
+          << "No CrvRecoPulseCollection at " << _crvRecoPulsesModuleLabel
+          << ". The inclusive reco-pulse histograms stay empty; everything "
+          << "driven by the coincidence clusters still fills. "
+          << "Reported once per job.";
+    }
+    if (!haveDaqErrors && !_warnedMissingDaqErrors) {
+      _warnedMissingDaqErrors = true;
+      mf::LogWarning("CrvDQMcollector")
+          << "No CrvDAQerrorCollection at " << _crvDaqErrorModuleLabel
+          << " (empty collection used; nEventsWithDAQerrors stays 0). "
+          << "Reported once per job.";
+    }
     const CrvDigiCollection& digis = haveDigis ? *crvDigiCollection : emptyDigis;
     const CrvStatusCollection& status = haveStatus ? *crvStatusCollection : emptyStatus;
+    const CrvDAQerrorCollection emptyDaqErrors;
+    const CrvDAQerrorCollection& daqErrors =
+        haveDaqErrors ? *crvDaqErrorCollection : emptyDaqErrors;
     _digiDQM.Fill(digis, status);
+    _statusDQM.Fill(status, daqErrors);
 
     static bool first=true;
     if(first)
@@ -477,7 +417,8 @@ namespace mu2e
         _histPedestals.at(sectorNumber)->Fill(pedestal);
         _histCalibConstants.at(sectorNumber)->Fill(calibPulseArea);
       }
-      //helper owns crvDigisPerChannelAndEvent_*; -1 drops notConnected channels
+      //helpers own crvDigisPerChannelAndEvent_* and crvPEsMPV_CRVsector*;
+      //-1 drops notConnected channels from both
       std::vector<std::string> sectorNames;
       auto &crvSectors = CRS->getCRSScintillatorShields();
       sectorNames.reserve(crvSectors.size());
@@ -492,41 +433,26 @@ namespace mu2e
       }
       _digiDQM.BookSectorOccupancy(sectorNames, channelToSector,
                                    _histDigisBins, _histDigisStart, _histDigisEnd);
+      _recoDQM.BookSectorMPV(sectorNames, channelToSector);
 
       _firstRunSubrun=std::pair<int,int>(event.run(),event.subRun());
     }
     _lastRunSubrun=std::pair<int,int>(event.run(),event.subRun());
 
-    for(size_t i=0; i<crvCoincidenceClusterCollection->size(); ++i)
+    const CrvCoincidenceClusterCollection& clusters =
+        haveClusters ? *crvCoincidenceClusterCollection : emptyClusters;
+    if(havePulses) _recoDQM.Fill(clusters, *crvRecoPulseCollection);
+    else           _recoDQM.Fill(clusters);
+
+    if(haveDaqErrors)
     {
-      int sectorType = crvCoincidenceClusterCollection->at(i).GetCrvSectorType();
-      _histCoincidenceClusters->Fill(sectorType);
-
-      const std::vector<art::Ptr<CrvRecoPulse> > &recoPulses = crvCoincidenceClusterCollection->at(i).GetCrvRecoPulses();
-      for(const auto recoPulse: recoPulses)
+      for(size_t i=0; i<crvDaqErrorCollection->size(); ++i)
       {
-        int barIndex = recoPulse->GetScintillatorBarIndex().asUint();
-        int SiPM = recoPulse->GetSiPMNumber();
-        size_t channel = barIndex*CRVId::nChanPerBar + SiPM;
-        float PEs =recoPulse->GetPEs();
-        _histPEs.at(channel)->Fill(PEs);
-
-        mu2e::CRVROC onlineChannel = channelMap.online(channel);
-        int ROC=onlineChannel.ROC();
-        int ROCport=onlineChannel.FEB();
-        int FEBchannel=onlineChannel.FEBchannel();
-        size_t onlineChannelIndex = (ROC-1)*CRVId::nFEBPerROC*CRVId::nChanPerFEB + (ROCport-1)*CRVId::nChanPerFEB + FEBchannel;
-        _histPEsROC.at(onlineChannelIndex)->Fill(PEs);
-      }
-    }
-    if(crvCoincidenceClusterCollection->size()>0) ++_totalEventsWithCoincidenceClusters;
-
-    for(size_t i=0; i<crvDaqErrorCollection->size(); ++i)
-    {
-      if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
-      {
-        ++_totalEventsWithDAQerrors;
-        break;
+        if(crvDaqErrorCollection->at(i).GetErrorCode()!=mu2e::CrvDAQerrorCode::wrongSubsystemID)  //don't count this error
+        {
+          ++_totalEventsWithDAQerrors;
+          break;
+        }
       }
     }
   }
