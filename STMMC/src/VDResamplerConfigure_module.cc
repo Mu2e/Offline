@@ -231,7 +231,9 @@ namespace mu2e {
   };
 
   void VDResamplerConfigure::endJob() {
-    mf::LogInfo log("Virtual Detector Resampler Training Configuration Summary");
+    // Category has no spaces: it is a fcl routing key, so destinations.*.categories cannot
+    // address one that does.
+    mf::LogInfo log("VDResamplerConfigure");
     log << "========= Particle Summary =========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";

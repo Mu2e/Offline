@@ -49,10 +49,12 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Checkpoint file to load for the stage-1 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Checkpoint file to load for the stage-2 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
-        fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on"),    116 };
-        fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector"),      37700.39 };
-        fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius"),                                 2000.0 };
-        fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on"),         22 };
+        // No C++ defaults: these select what is trained and where, so a fcl that omits one
+        // must fail rather than silently train some other particle or geometry.
+        fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on") };
+        fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector") };
+        fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius") };
+        fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on") };
         fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<std::string> SBDMpositionBasis{ Name("SBDMpositionBasis"), Comment("Radial position map u(rho), rho=r/VDr: V1_ATANH, V2_ATANH_SQRT, V3_ATANH_SQ"), "V1_ATANH" };
         fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
