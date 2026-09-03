@@ -842,24 +842,27 @@ namespace mu2e {
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/false, /*asinhTime=*/false, pzStats, posBasis);
-          break;
+          return;
         case MomentumBasis::V2_PtotSlopesAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/true, /*asinhTime=*/false, pzStats, posBasis);
-          break;
+          return;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/true, /*asinhTime=*/true, pzStats, posBasis);
-          break;
-        // No default arm: -Wswitch flags a new enumerator at compile time instead of
-        // letting it fall through to V1.
+          return;
         case MomentumBasis::V1_CylindricalTransformed:
           forwardTransformSampleV1(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2, posBasis, pzStats);
-          break;
+          return;
       }
+      // No default arm, so -Wswitch flags a new enumerator at compile time. Each case
+      // returns and this throws, which also tells the compiler every path either assigns
+      // the outputs or leaves — without it callers get -Wmaybe-uninitialized.
+      throw cet::exception("VDResamplerTransforms")
+        << "forwardTransformSample: unhandled MomentumBasis " << static_cast<int>(basis);
     }
 
     inline void invertGeneratedSample(
@@ -877,22 +880,26 @@ namespace mu2e {
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/false, /*asinhTime=*/false,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V2_PtotSlopesAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/false,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/true,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V1_CylindricalTransformed:
           invertGeneratedSampleV1(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, posBasis);
-          break;
+          return;
       }
+      // See forwardTransformSample: each case returns and this throws, so the compiler can
+      // see every path assigns the outputs or leaves.
+      throw cet::exception("VDResamplerTransforms")
+        << "invertGeneratedSample: unhandled MomentumBasis " << static_cast<int>(basis);
     }
 
   } // namespace VDResampler
