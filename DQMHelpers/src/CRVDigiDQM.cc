@@ -684,7 +684,25 @@ void CRVDigiDQM::fillSectorOccupancy()
 
 void CRVDigiDQM::WriteGraphs()
 {
-  if (!booked_ || !dir_) {
+  if (!booked_) {
+    return;
+  }
+  // Overflow bins record that something was off-axis / off-scale, not these
+  // extrema, so report them only when they themselves sit past the axis.
+  if (maxFebIdSeen_ >= nFebIdBins()) {
+    mf::LogWarning("CRVDigiDQM")
+        << "max globalFebId " << maxFebIdSeen_ << " is outside the "
+        << nFebIdBins() << "-bin FEB axis. Occupancy and dtVsFeb overflow "
+        << "bins do not store this value. Reported once at end of job.";
+  }
+  if (maxAbsDtSeen_ > config_.dtVsFebRange) {
+    mf::LogWarning("CRVDigiDQM")
+        << "max |dt| " << maxAbsDtSeen_ << " ns exceeds dtVsFebRange "
+        << config_.dtVsFebRange << " ns. dtVsFeb overflow and "
+        << "dtOutOfRangePerFeb do not store this magnitude. "
+        << "Reported once at end of job.";
+  }
+  if (!dir_) {
     return;
   }
   fillSectorOccupancy();

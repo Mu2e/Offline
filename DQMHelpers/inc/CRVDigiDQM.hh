@@ -139,9 +139,9 @@ public:
     return g_ubStatusVsEwt_;
   }
 
-  // Axis-coverage diagnostics. Only the off-axis FEB and CRVId-range cases
-  // are logged (once per job, from Fill); the dt counts are reported through
-  // the histograms above.
+  // Axis-coverage diagnostics. Off-axis FEB and CRVId-range: one LogWarning
+  // from Fill. maxFebIdSeen / maxAbsDtSeen: one LogWarning from WriteGraphs
+  // if they sit past the hist axes (overflow bins do not store those values).
   int maxFebIdSeen() const { return maxFebIdSeen_; }
   long long nFebIdOutOfAxis() const { return nFebIdOutOfAxis_; }
   long long nCrvIdOutOfRange() const { return nCrvIdOutOfRange_; }
