@@ -33,6 +33,7 @@
 #include "cetlib_except/exception.h"
 
 // fhicl includes
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
@@ -41,6 +42,7 @@
 
 // Offline includes
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
@@ -48,6 +50,7 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"      // validateGeometry
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
 #include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
@@ -167,10 +170,16 @@ namespace mu2e {
           Comment("TTree name in resamplerSourceRootFile."),
           "ttree"
         };
-        fhicl::Atom<unsigned long> VirtualDetectorID{
-          Name("VirtualDetectorID"),
-          Comment("VD id selection for the resampler source (must match training)."),
-          116
+        // VirtualDetectorID, VDz0 and VDr are NOT module parameters: they come from the
+        // training plan's common_training_config, the single source of truth. VDr is baked
+        // into the inverse transforms, so a local override that disagreed with training
+        // would scale every generated position and momentum slope with nothing to flag it.
+        fhicl::Atom<std::string> trainingPlanFile{
+          Name("trainingPlanFile"),
+          Comment("The SAME training plan fhicl that configured the training job (e.g. "
+                  "VDResamplerTrainingPlan.fcl). REQUIRED: it supplies the VD geometry "
+                  "(VirtualDetectorID / VDz0 / VDr) from common_training_config, so the inverse "
+                  "transforms cannot drift from the coordinate system training used.")
         };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
@@ -196,16 +205,6 @@ namespace mu2e {
           Name("sdeToOdeSigmaThreshold"),
           Comment("Switch from SDE to ODE when sigma falls below this threshold (-1 = always use useSDE setting)"),
           -1.0
-        };
-        fhicl::Atom<double> VDz0{
-          Name("VDz0"),
-          Comment("Nominal z coordinate of the virtual detector"),
-          37700.39
-        };
-        fhicl::Atom<double> VDr{
-          Name("VDr"),
-          Comment("Virtual detector radius used in the training transform"),
-          2000.0
         };
         fhicl::Atom<bool> doROOTDump{
           Name("doROOTDump"),
@@ -242,8 +241,10 @@ namespace mu2e {
       bool useEMANetworkIfAvailable_;
       int diffusionSteps_;
       double sdeToOdeSigmaThreshold_;
-      double VDz0_;
-      double VDr_;
+      // VD geometry, read from the training plan's common_training_config at construction.
+      unsigned long virtualDetectorID_ = 0;
+      double VDz0_ = 0.0;
+      double VDr_ = 0.0;
       bool doROOTDump_;
       bool doValidationPlots_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
@@ -308,22 +309,28 @@ namespace mu2e {
       useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
       sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
-      VDz0_(conf().VDz0()),
-      VDr_(conf().VDr()),
       doROOTDump_(conf().doROOTDump()),
       doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
 
-    if (VDr_ <= 0.0) {
+    // Geometry from the training plan's common_training_config, so it cannot drift from what
+    // training used. VDr in particular is baked into the inverse position/momentum transforms.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDr must be positive (got " << VDr_ << "); "
-        << "rho = r/VDr would produce inf/NaN in generated samples.";
-    }
-    if (!std::isfinite(VDz0_)) {
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) comes from.";
+    const fhicl::ParameterSet plan = ParameterSetFromFile(planFile).pSet();
+    if (!plan.has_key("common_training_config"))
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDz0 must be finite (got " << VDz0_ << ").";
-    }
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common = plan.get<fhicl::ParameterSet>("common_training_config");
+    virtualDetectorID_ = static_cast<unsigned long>(common.get<int>("VirtualDetectorID"));
+    VDz0_ = common.get<double>("VDz0");
+    VDr_  = common.get<double>("VDr");
+
+    VDResampler::validateGeometry(VDr_, VDz0_, "VDResamplerGenerateFromModel");
 
     stage1Method_ = VDResampler::parseStage1Method(conf().SBDMstage1Method(), "VDResamplerGenerateFromModel");
     const bool useResampler = (stage1Method_ != VDResampler::Stage1Method::DIFFUSION);
@@ -408,7 +415,7 @@ namespace mu2e {
             << "SBDMstage1Method=" << conf().SBDMstage1Method()
             << " requires resamplerSourceRootFile (the pTotal source).";
         ptotResampler_.buildFromRoot(srcFile, conf().resamplerSourceTreeName(),
-                                     conf().VirtualDetectorID(), pdgId_,
+                                     virtualDetectorID_, pdgId_,
                                      stage1Method_, "VDResamplerGenerateFromModel");
       } else {
         stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
@@ -496,7 +503,7 @@ namespace mu2e {
           tfs->mkdir("validation"),
           "pdg" + VDResampler::pdgFileToken(pdgId_), momBasis_, posBasis_, pdgId_,
           pdt_->particle(pdgId_).mass(),
-          srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
+          srcFile, conf().resamplerSourceTreeName(), virtualDetectorID_, ip,
           "VDResamplerGenerateFromModel", &stats);
       }
     } else if (doValidationPlots_) {

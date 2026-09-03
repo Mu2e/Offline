@@ -439,7 +439,7 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
     if (VDr <= 0.0)
         throw cet::exception(moduleName)
             << "VDr must be positive (got " << VDr << "); "
-            << "rho = r/VDr would produce inf/NaN in training data.";
+            << "rho = r/VDr would produce inf/NaN in the transformed coordinates.";
     if (!std::isfinite(VDz0))
         throw cet::exception(moduleName) << "VDz0 must be finite (got " << VDz0 << ").";
 }
