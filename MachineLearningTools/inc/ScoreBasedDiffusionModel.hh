@@ -15,6 +15,7 @@
 #include <iostream>
 #include <cctype>
 #include <cassert>
+#include <utility>
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -625,6 +626,16 @@ namespace mu2e{
         int basisTag() const { return basisTag_; }
         void setBasisTag(int tag) { basisTag_ = tag; }
 
+        // Two more opaque application-level markers, round-tripped verbatim exactly like
+        // basisTag and equally uninterpreted here (binary format v9+; older files load the
+        // defaults, 0 and empty). What the values mean, which ids exist, and what a
+        // disagreement implies are entirely the caller's business.
+        int pdgId() const { return pdgId_; }
+        void setPdgId(int pdg) { pdgId_ = pdg; }
+
+        const std::vector<std::pair<int, double>>& buildConstants() const { return buildConstants_; }
+        void setBuildConstants(const std::vector<std::pair<int, double>>& c) { buildConstants_ = c; }
+
         // CATEGORICAL condition dimension — the index of the ONE condition coordinate (if any)
         // carrying a small integer CLASS LABEL rather than a physical measurement.
         //
@@ -1044,6 +1055,12 @@ namespace mu2e{
         // Index of the single class-label condition dim, or -1 for none (the default, and
         // what every pre-v8 checkpoint loads as). See categoricalConditionDim().
         int categoricalConditionDim_ = -1;
+
+        // Opaque application-level markers (format v9+). Not interpreted by this class;
+        // see pdgId() / buildConstants(). The pair count is the vector's own size — on disk
+        // it is written count-prefixed, like the embedding-dim vectors.
+        int pdgId_ = 0;
+        std::vector<std::pair<int, double>> buildConstants_;
 
         // Training state
         double runningLoss_;  // Accumulated loss for monitoring during training

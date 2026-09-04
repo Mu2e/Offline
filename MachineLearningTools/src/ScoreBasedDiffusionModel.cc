@@ -1745,8 +1745,12 @@ namespace mu2e {
         // index of the one condition coordinate holding a class label, or -1 for none.
         // v<=7 files predate it and load as -1, i.e. every condition dim z-scored, which
         // is what those models were trained with.
+        // 9 = appends an int32 pdgId and a count-prefixed list of (int32 id, double value)
+        // build constants (both immediately after categoricalConditionDim). Like basisTag
+        // these are opaque here; the caller assigns the ids and decides what a disagreement
+        // means. v<=8 files load pdgId as 0 ("not recorded") and the list as empty.
         out.write("SBDM", 4);
-        wU32(8u);
+        wU32(9u);
 
         // Model architecture & hyper-parameters
         wI32(static_cast<int32_t>(dim_));
@@ -1791,6 +1795,16 @@ namespace mu2e {
         // has already acted on, so it must be persisted for the generate side to feed the
         // label at the same scale the network was trained on.
         wI32(static_cast<int32_t>(categoricalConditionDim_));
+
+        // Opaque caller-owned identity and build constants (format v9+). Set through
+        // setPdgId/setBuildConstants before saving; 0 and an empty list mean "not recorded".
+        // Count-prefixed like the embedding-dim vectors above.
+        wI32(static_cast<int32_t>(pdgId_));
+        wU32(static_cast<uint32_t>(buildConstants_.size()));
+        for (const auto& kv : buildConstants_) {
+            wI32(static_cast<int32_t>(kv.first));
+            wF64(kv.second);
+        }
 
         // Network weights
         wU32(static_cast<uint32_t>(network_.size()));
@@ -1839,6 +1853,14 @@ namespace mu2e {
         // the loader reads and verifies it, so a file truncated after otherwise-plausible
         // contents is rejected instead of silently loading partial data.
         out.write("ENDM", 4);
+
+        // Flush and check: a write that failed part-way (a full disk or an exhausted grid
+        // quota) otherwise leaves a truncated checkpoint behind and the job exits 0.
+        out.flush();
+        if (!out.good())
+            throw cet::exception("ScoreBasedDiffusionModel::saveModel")
+                << "Failed while writing " << filename
+                << "; the file is incomplete. Check available space and quota.";
     }
 
     void ScoreBasedDiffusionModel::saveModelCsv(
@@ -1897,6 +1919,12 @@ namespace mu2e {
         // Diffusion process configuration
         out << "diffusionSteps," << diffusionSteps_ << "\n";
         out << "basisTag," << basisTag_ << "\n"; // opaque app-level tag; see saveModel/basisTag()
+        // Opaque caller-owned markers; see pdgId()/buildConstants(). A CSV predating these
+        // keys reads back as 0 / empty, matching the binary v<=8 default. The constants are
+        // one "buildConstant,<id>,<value>" row each so the flat key-value shape is kept.
+        out << "pdgId," << pdgId_ << "\n";
+        for (const auto& kv : buildConstants_)
+            out << "buildConstant," << kv.first << "," << kv.second << "\n";
         // Index of the class-label condition dim, or -1 for none. A CSV predating this key
         // reads back as -1, matching the binary v<=7 default.
         out << "categoricalConditionDim," << categoricalConditionDim_ << "\n";
@@ -2049,6 +2077,13 @@ namespace mu2e {
                 out << "\n";
             }
         }
+
+        // See saveModel: an unchecked write leaves a truncated file and a zero exit code.
+        out.flush();
+        if (!out.good())
+            throw cet::exception("ScoreBasedDiffusionModel::saveModelCsv")
+                << "Failed while writing " << filename
+                << "; the file is incomplete. Check available space and quota.";
     }
 
     ScoreBasedDiffusionModel ScoreBasedDiffusionModel::loadModel(
@@ -2133,7 +2168,7 @@ namespace mu2e {
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Invalid magic bytes in binary file " << filename;
             uint32_t version = rU32();
-            if (version < 1 || version > 8)
+            if (version < 1 || version > 9)
                 throw cet::exception("ScoreBasedDiffusionModel::loadModel")
                     << "Unsupported binary file version " << version;
 
@@ -2203,8 +2238,31 @@ namespace mu2e {
             // those models were trained. Applied to the constructed model below.
             int categoricalConditionDim = (version >= 8) ? rI32() : -1;
 
-            // Network weights
+            // Opaque caller-owned identity and build constants (format v9+). v<=8 files
+            // predate both: pdgId loads as 0 and the list as empty, which the caller reads
+            // as "not recorded" and handles with its own fallback. Applied below.
+            int pdgId = 0;
+            std::vector<std::pair<int, double>> buildConstants;
+            if (version >= 9) {
+                pdgId = rI32();
+                const uint32_t nConst =
+                    static_cast<uint32_t>(checkCount(rU32(), "build constant"));
+                buildConstants.reserve(nConst);
+                for (uint32_t k = 0; k < nConst; ++k) {
+                    const int id = rI32();
+                    buildConstants.emplace_back(id, rF64());
+                }
+            }
+
+            // Network weights. The stored count must match the header's `layers`: the copy
+            // loop below iterates over the constructed model's network_ (sized from layers)
+            // while indexing loadedNetwork, so a smaller stored count reads out of bounds.
+            // The CSV path performs the same check.
             uint32_t numLayers = static_cast<uint32_t>(checkCount(rU32(), "network layer"));
+            if (numLayers != static_cast<uint32_t>(layers))
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "Binary checkpoint " << filename << " declares " << layers
+                    << " layers in its header but stores " << numLayers << " network layer(s).";
             std::vector<Layer> loadedNetwork(numLayers);
             for (auto& layer : loadedNetwork) {
                 uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "layer outSize"));
@@ -2267,6 +2325,12 @@ namespace mu2e {
             std::vector<Layer> loadedEmaNetwork;
             if (hasEMA) {
                 uint32_t emaLayers = static_cast<uint32_t>(checkCount(rU32(), "EMA layer"));
+                // Same reasoning as the main network above: the EMA copy loop is bounded by
+                // emaNetwork_.size(), not by what the file stored.
+                if (emaLayers != static_cast<uint32_t>(layers))
+                    throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                        << "Binary checkpoint " << filename << " declares " << layers
+                        << " layers in its header but stores " << emaLayers << " EMA layer(s).";
                 loadedEmaNetwork.resize(emaLayers);
                 for (auto& layer : loadedEmaNetwork) {
                     uint32_t outSize = static_cast<uint32_t>(checkCount(rU32(), "EMA layer outSize"));
@@ -2321,6 +2385,9 @@ namespace mu2e {
                 diffusionSteps, false
             );
             model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
+            // Opaque caller-owned markers (0 / empty for v<=8); see pdgId()/buildConstants().
+            model.setPdgId(pdgId);
+            model.setBuildConstants(buildConstants);
             // Class-label condition dim (-1 for v<=7). Set BEFORE the normalization arrays
             // are restored below so normalizeCondition/dimStats agree with them immediately;
             // the setter also re-checks the dim against this file's own conditionDim and
@@ -2419,6 +2486,9 @@ namespace mu2e {
             int basisTag = 0; // opaque app-level tag; absent in CSVs predating the feature
             // Class-label condition dim; absent in CSVs predating it, hence -1 = none.
             int categoricalConditionDim = -1;
+            // Opaque caller-owned markers; absent in CSVs predating them, hence 0 / empty.
+            int pdgId = 0;
+            std::vector<std::pair<int, double>> buildConstants;
             double gradientClipThreshold = 0.0, learningRate = 0.0;
 
             std::vector<double> dataMean, dataStdev, normMin, normMax;
@@ -2500,6 +2570,16 @@ namespace mu2e {
                         continue;
                     }
 
+                    // Opaque build constants: one "buildConstant,<id>,<value>" row each, so
+                    // handled here rather than by the two-token key/value path below.
+                    if (tokens[0] == "buildConstant") {
+                        if (tokens.size() != 3)
+                            throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                                << "invalid buildConstant line in [MODEL_PARAMETERS]: " << line;
+                        buildConstants.emplace_back(std::stoi(tokens[1]), std::stod(tokens[2]));
+                        continue;
+                    }
+
                     if (tokens.size() != 2) throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "ScoreBasedDiffusionModel::loadModel: invalid line in [MODEL_PARAMETERS] section: " << line;
 
                     const std::string& key = tokens[0];
@@ -2543,6 +2623,7 @@ namespace mu2e {
                     else if (key == "diffusionSteps") diffusionSteps = std::stoi(val);
                     else if (key == "basisTag") basisTag = std::stoi(val);
                     else if (key == "categoricalConditionDim") categoricalConditionDim = std::stoi(val);
+                    else if (key == "pdgId") pdgId = std::stoi(val);
                 }
 
                 // NETWORK PARAMETERS
@@ -2900,6 +2981,9 @@ namespace mu2e {
                 false // initializeRandomWeights
             );
             model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
+            // Opaque caller-owned markers (0 / empty if absent); see pdgId()/buildConstants().
+            model.setPdgId(pdgId);
+            model.setBuildConstants(buildConstants);
             // Class-label condition dim (-1 if absent); see the binary path for why this is
             // applied before the normalization arrays are restored.
             model.setCategoricalConditionDim(categoricalConditionDim);

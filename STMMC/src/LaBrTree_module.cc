@@ -53,7 +53,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
@@ -64,7 +63,6 @@
 
 // Mu2e type definitions
 typedef cet::map_vector_key key_type;
-typedef unsigned long VolumeId_type;
 
 namespace mu2e {
   class LaBrTree : public art::EDAnalyzer {
@@ -238,7 +236,7 @@ namespace mu2e {
   }; // end analyze
 
   void LaBrTree::endJob() {
-    mf::LogInfo log("Detector tree");
+    mf::LogInfo log("LaBrTree");
     log << "==========Data summary==========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";

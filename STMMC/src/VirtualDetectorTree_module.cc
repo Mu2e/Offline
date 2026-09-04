@@ -120,7 +120,7 @@ namespace mu2e {
   };
 
   void VirtualDetectorTree::endJob() {
-    mf::LogInfo log("Virtual detector tree summary");
+    mf::LogInfo log("VirtualDetectorTree");
     log << "========= Data summary =========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";

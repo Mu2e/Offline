@@ -231,7 +231,9 @@ namespace mu2e {
   };
 
   void VDResamplerConfigure::endJob() {
-    mf::LogInfo log("Virtual Detector Resampler Training Configuration Summary");
+    // Category has no spaces: it is a fcl routing key, so destinations.*.categories cannot
+    // address one that does.
+    mf::LogInfo log("VDResamplerConfigure");
     log << "========= Particle Summary =========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";
@@ -311,6 +313,14 @@ namespace mu2e {
       VDResampler::emitOneTrainingFcl(entry, emitCtx, pdg, nHits, useTwoStageTraining,
                                       stage1Method, "VDResamplerConfigure::endJob");
     }
+
+    // The summary is the input every downstream step reads, so a write that failed part-way
+    // (a full disk or an exhausted grid quota) must not pass as success.
+    sumOutFile.flush();
+    if (!sumOutFile.good())
+      throw cet::exception("VDResamplerConfigure::endJob")
+        << "Failed while writing the hit summary " << summaryFile
+        << "; the file is incomplete. Check available space and quota.";
 
     return;
   };

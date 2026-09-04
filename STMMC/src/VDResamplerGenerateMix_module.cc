@@ -59,6 +59,7 @@
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
 #include "Offline/STMMC/inc/VDResamplerConfigureCommon.hh"  // resolvePeakTags (training-plan lookup)
+#include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"      // validateGeometry
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
 #include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
@@ -138,11 +139,10 @@ namespace mu2e {
                   "writes to its own output area. Overrides ModelFileDir when both are set."),
           ""
         };
-        fhicl::Atom<int> VirtualDetectorID{
-          Name("VirtualDetectorID"),
-          Comment("Virtual detector ID encoded in the model filenames"),
-          116
-        };
+        // VirtualDetectorID, VDz0 and VDr are NOT module parameters: they come from the
+        // training plan's common_training_config, the single source of truth. VDr is baked
+        // into the inverse transforms, so a local override that disagreed with training
+        // would scale every generated position and momentum slope with nothing to flag it.
         fhicl::Sequence<std::string> resamplerSourceRootFiles{
           Name("resamplerSourceRootFiles"),
           Comment("Per-source ROOT files for the pTotal resampler (the VDResamplerConfigure rootdump "
@@ -160,14 +160,15 @@ namespace mu2e {
                   "label, i.e. 'VDResamplerTrainingSetup/ttree'."),
           std::vector<std::string>({"VDResamplerTrainingSetup/ttree"})
         };
-        fhicl::OptionalAtom<std::string> trainingPlanFile{
+        fhicl::Atom<std::string> trainingPlanFile{
           Name("trainingPlanFile"),
           Comment("The SAME training plan fhicl that configured the training jobs (e.g. "
-                  "VDResamplerTrainingPlan.fcl). Read here ONLY for the per-(pdg, source) peak-tag "
-                  "lines (SBDMpeakTagCenters / SBDMpeakTagHalfWidths), which the generate side must "
-                  "reproduce exactly because the stage-2 class label is a line's INDEX in that list. "
-                  "Required if any loaded stage-2 model was trained peak-tagged; omit it entirely "
-                  "when none were (generateTwoStage reports the mismatch either way).")
+                  "VDResamplerTrainingPlan.fcl). REQUIRED: it supplies the VD geometry "
+                  "(VirtualDetectorID / VDz0 / VDr) from common_training_config, so the inverse "
+                  "transforms cannot drift from the coordinate system training used. It also "
+                  "supplies the per-(pdg, source) peak-tag lines (SBDMpeakTagCenters / "
+                  "SBDMpeakTagHalfWidths), which the generate side must reproduce exactly because "
+                  "the stage-2 class label is a line's INDEX in that list.")
         };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
@@ -193,16 +194,6 @@ namespace mu2e {
           Name("sdeToOdeSigmaThreshold"),
           Comment("Switch from SDE to ODE when sigma falls below this threshold (-1 = always use useSDE setting)"),
           -1.0
-        };
-        fhicl::Atom<double> VDz0{
-          Name("VDz0"),
-          Comment("Nominal z coordinate of the virtual detector"),
-          37700.39
-        };
-        fhicl::Atom<double> VDr{
-          Name("VDr"),
-          Comment("Virtual detector radius used in the training transform"),
-          2000.0
         };
         fhicl::Atom<bool> doROOTDump{
           Name("doROOTDump"),
@@ -294,9 +285,9 @@ namespace mu2e {
       double VDr_ = 0.0;
       bool doROOTDump_ = false;
       bool doValidationPlots_ = false;
-      // Training plan, loaded once at construction when trainingPlanFile is given. Consulted
-      // only for each particle's peak-tag lines (resolvePeakTags); hasTrainingPlan_ says
-      // whether it was supplied, so a job whose models are all untagged needs no plan at all.
+      // Training plan, loaded once at construction (required). Supplies the VD geometry above
+      // and each particle's peak-tag lines (resolvePeakTags). hasTrainingPlan_ is retained for
+      // the tag lookups, which still branch on it, and is always true once construction succeeds.
       bool hasTrainingPlan_ = false;
       fhicl::ParameterSet trainingPlan_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
@@ -354,7 +345,6 @@ namespace mu2e {
       randFlat_(engine_),
       randGaussQ_(engine_),
       modelFileDir_(conf().ModelFileDir()),
-      virtualDetectorID_(conf().VirtualDetectorID()),
       resamplerSourceRootFiles_(conf().resamplerSourceRootFiles()),
       resamplerSourceTreeNames_(conf().resamplerSourceTreeNames()),
       useHeun_(conf().useHeun()),
@@ -362,20 +352,31 @@ namespace mu2e {
       useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
       sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
-      VDz0_(conf().VDz0()),
-      VDr_(conf().VDr()),
       doROOTDump_(conf().doROOTDump()),
       doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
 
-    // Training plan (optional). Loaded up front so a bad path fails at setup rather than at the
-    // first tagged particle; the per-(pdg, source) lookup happens as each summary is read.
-    std::string planFile;
-    if (conf().trainingPlanFile(planFile) && !planFile.empty()) {
-      trainingPlan_ = ParameterSetFromFile(planFile).pSet();
-      hasTrainingPlan_ = true;
-    }
+    // Training plan. Loaded up front so a bad path fails at setup rather than at the first
+    // tagged particle; the per-(pdg, source) peak-tag lookup happens as each summary is read.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
+      throw cet::exception("VDResamplerGenerateMix")
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) and the peak-tag lines come from.";
+    trainingPlan_ = ParameterSetFromFile(planFile).pSet();
+    hasTrainingPlan_ = true;
+
+    // Geometry from the plan's common_training_config, so it cannot drift from what training
+    // used. VDr in particular is baked into the inverse position/momentum transforms.
+    if (!trainingPlan_.has_key("common_training_config"))
+      throw cet::exception("VDResamplerGenerateMix")
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common =
+      trainingPlan_.get<fhicl::ParameterSet>("common_training_config");
+    virtualDetectorID_ = common.get<int>("VirtualDetectorID");
+    VDz0_ = common.get<double>("VDz0");
+    VDr_  = common.get<double>("VDr");
 
     // Model-file location: either a single directory (ModelFileDir) or a catalog of explicit paths
     // (ModelFileList). The catalog wins when both are set — on the grid each training job writes to
@@ -429,15 +430,7 @@ namespace mu2e {
         << "Loaded " << modelFileCatalog_.size() << " model file paths from " << modelFileList << ".";
     }
 
-    if (VDr_ <= 0.0) {
-      throw cet::exception("VDResamplerGenerateMix")
-        << "VDr must be positive (got " << VDr_ << "); "
-        << "rho = r/VDr would produce inf/NaN in generated samples.";
-    }
-    if (!std::isfinite(VDz0_)) {
-      throw cet::exception("VDResamplerGenerateMix")
-        << "VDz0 must be finite (got " << VDz0_ << ").";
-    }
+    VDResampler::validateGeometry(VDr_, VDz0_, "VDResamplerGenerateMix");
 
     const auto& hitSummaryFiles = conf().hitSummaryFiles();
     const auto& potsPerFile = conf().potsPerFile();
@@ -692,6 +685,12 @@ namespace mu2e {
         particle.stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile)
         );
+        // Here pdgId comes from the summary rather than the file name, so this checks the
+        // resolved model file really is the one for this particle.
+        VDResampler::checkPdgId(particle.stage2Model->pdgId(), pdgId,
+                                "Stage-2 model " + stage2ModelFile, "VDResamplerGenerateMix");
+        VDResampler::checkBuildConstants(particle.stage2Model->buildConstants(), VDr_, VDz0_,
+                                         "Stage-2 model " + stage2ModelFile, "VDResamplerGenerateMix");
 
         // Peak tags, but only for a model that was actually trained with them (its own
         // basisTag says so). Resolving them from the training plan for the SAME (pdg, source)
@@ -749,6 +748,10 @@ namespace mu2e {
           particle.stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
             ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile)
           );
+          VDResampler::checkPdgId(particle.stage1Model->pdgId(), pdgId,
+                                  "Stage-1 model " + stage1ModelFile, "VDResamplerGenerateMix");
+          VDResampler::checkBuildConstants(particle.stage1Model->buildConstants(), VDr_, VDz0_,
+                                           "Stage-1 model " + stage1ModelFile, "VDResamplerGenerateMix");
         }
       } else {
         const std::string modelFile = resolveModelFile(
@@ -756,6 +759,10 @@ namespace mu2e {
         particle.allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
           ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, modelFile)
         );
+        VDResampler::checkPdgId(particle.allAtOnceModel->pdgId(), pdgId,
+                                "All-at-once model " + modelFile, "VDResamplerGenerateMix");
+        VDResampler::checkBuildConstants(particle.allAtOnceModel->buildConstants(), VDr_, VDz0_,
+                                         "All-at-once model " + modelFile, "VDResamplerGenerateMix");
       }
 
       // Validation set for this (source, particle), in its own subdirectory: the histogram

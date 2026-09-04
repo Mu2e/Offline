@@ -439,7 +439,7 @@ inline void validateGeometry(double VDr, double VDz0, const std::string& moduleN
     if (VDr <= 0.0)
         throw cet::exception(moduleName)
             << "VDr must be positive (got " << VDr << "); "
-            << "rho = r/VDr would produce inf/NaN in training data.";
+            << "rho = r/VDr would produce inf/NaN in the transformed coordinates.";
     if (!std::isfinite(VDz0))
         throw cet::exception(moduleName) << "VDz0 must be finite (got " << VDz0 << ").";
 }
@@ -1067,6 +1067,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage1File, "stage-1", s.momentumBasis, s.positionBasis,
                     runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
+                VDResampler::checkBuildConstants(s.stage1Model->buildConstants(), s.VDr, s.VDz0,
+                                                 "Stage-1 checkpoint " + s.ckptStage1File, moduleName);
+                VDResampler::checkPdgId(s.stage1Model->pdgId(), s.pdgID,
+                                        "Stage-1 checkpoint " + s.ckptStage1File, moduleName);
                 s.stage1Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-1 model checkpoint from " << s.ckptStage1File;
@@ -1086,6 +1090,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
                              : VDResampler::ModelLayout::AllAtOnce6D,
                     s.ckptStage2File, "stage-2", s.momentumBasis, s.positionBasis,
                     runBasisAdopted, /*expectPeakTagged=*/s.usePeakTags(), moduleName);
+                VDResampler::checkBuildConstants(s.stage2Model->buildConstants(), s.VDr, s.VDz0,
+                                                 "Stage-2 checkpoint " + s.ckptStage2File, moduleName);
+                VDResampler::checkPdgId(s.stage2Model->pdgId(), s.pdgID,
+                                        "Stage-2 checkpoint " + s.ckptStage2File, moduleName);
                 s.stage2Model->updateUseDimWeightController(phase0UseDimWeightController);
                 mf::LogInfo(moduleName)
                     << "Watch for parameter override: Loaded stage-2 model checkpoint from " << s.ckptStage2File;
@@ -1112,6 +1120,10 @@ inline void buildModels(TrainState& s, const ModelBuildParams& p,
             checkModelLayout(*s.allAtOnceModel, VDResampler::ModelLayout::AllAtOnce6D,
                 s.ckptAllAtOnceFile, "all-at-once", s.momentumBasis, s.positionBasis,
                 runBasisAdopted, /*expectPeakTagged=*/false, moduleName);
+            VDResampler::checkBuildConstants(s.allAtOnceModel->buildConstants(), s.VDr, s.VDz0,
+                                             "All-at-once checkpoint " + s.ckptAllAtOnceFile, moduleName);
+            VDResampler::checkPdgId(s.allAtOnceModel->pdgId(), s.pdgID,
+                                    "All-at-once checkpoint " + s.ckptAllAtOnceFile, moduleName);
             s.allAtOnceModel->updateUseDimWeightController(phase0UseDimWeightController);
             mf::LogInfo(moduleName)
                 << "Watch for parameter override: Loaded all-at-once model checkpoint from " << s.ckptAllAtOnceFile;
@@ -1885,6 +1897,12 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             << ", samplesDrawnPerEpoch=" << s.currentSamplesDrawnPerEpoch;
         const std::string base = stripExt(outFile);
 
+        // Stamp identity + build constants onto the model once. They live on the object, so
+        // every saveModel below (phase snapshots, best-loss, final, not-converged) carries
+        // them without each call site repeating it.
+        model.setPdgId(s.pdgID);
+        model.setBuildConstants(VDResampler::currentBuildConstants(s.VDr, s.VDz0));
+
         // Apply curriculum phase `k`'s hyperparameters (k is 0-based; only meaningful
         // for k>=1 — phase 0 keeps the constructed-model defaults, as in legacy mode).
         // Logs "Switching to phase k+1" to match the existing 1-based phase numbering.
@@ -2135,15 +2153,28 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
                     << "Phase " << phaseNum << " converged after " << epochInPhase
                     << " epochs; " << bestSummary() << ".";
             } else {
+                // Deliberately NOT outFile: the generate step resolves that path by name, so
+                // an undertrained checkpoint there would let generation succeed on a bad model.
+                // Parking it under a different extension keeps it for diagnosis while making
+                // the downstream step fail on a missing input instead.
+                const std::string notConvergedFile = base + ".notConverged.dat";
                 mf::LogWarning(moduleName)
                     << "Phase " << phaseNum << " did NOT converge within its max-epoch cap="
                     << maxEpochs << " epochs (" << bestSummary()
                     << "). Adjust the training plan — e.g. raise the cap, change the learning "
-                    << "rate, or revisit the phase hyperparameters. Stopping training.";
-                model.saveModel(outFile, basisTag);
+                    << "rate, or revisit the phase hyperparameters. Abandoning this model: the "
+                    << "undertrained state is saved to " << notConvergedFile << " for inspection "
+                    << "and " << outFile << " is NOT written.";
+                model.saveModel(notConvergedFile, basisTag);
                 if (s.saveAlsoCsv)
-                    model.saveModelCsv(base + ".csv");
-                return; // abort: surface the bad plan instead of advancing
+                    model.saveModelCsv(base + ".notConverged.csv");
+                // Abort the whole training: a later stage trained against a non-converged
+                // earlier stage is not usable either.
+                throw cet::exception(moduleName)
+                    << "Phase " << phaseNum << " failed to converge within max-epoch cap="
+                    << maxEpochs << " (" << bestSummary() << "). Undertrained state written to "
+                    << notConvergedFile << "; " << outFile << " was not written. Adjust the "
+                    << "training plan and re-run.";
             }
         }
         // What lands in outFile is the LAST PHASE'S SMOOTHED-BEST state, not the final epoch: the

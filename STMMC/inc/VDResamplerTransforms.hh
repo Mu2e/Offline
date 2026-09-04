@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "cetlib_except/exception.h"
+
 namespace mu2e {
   namespace VDResampler {
 
@@ -78,6 +80,18 @@ namespace mu2e {
       void record(double pz) {
         ++count;
         if (firstValues.size() < kMaxSamples) firstValues.push_back(pz);
+      }
+
+      // Hits whose extrapolated radius reached the rim, i.e. rho >= 1 before the clamp in
+      // forwardPosition. Distinct from the pz fallback above: a near-zero pz inflates the
+      // extrapolation and lands here too, but so does any hit that simply extrapolates
+      // outside VDr. Recorded separately so the caller can say which happened.
+      std::size_t clampCount = 0;
+      std::vector<double> firstRhos;         // first kMaxSamples offending rho values
+
+      void recordRhoClamp(double rho) {
+        ++clampCount;
+        if (firstRhos.size() < kMaxSamples) firstRhos.push_back(rho);
       }
     };
 
@@ -296,18 +310,134 @@ namespace mu2e {
            + static_cast<int>(position) * kBasisTagPositionStride
            + static_cast<int>(basis);
     }
+    // Highest defined enumerator of each field, so unpacking a tag written by a NEWER build
+    // is rejected instead of static_cast'ing to a value no switch handles. Bump these when
+    // an enumerator is added.
+    constexpr int kMaxModelLayout   = static_cast<int>(ModelLayout::TwoStageStage2_5D);
+    constexpr int kMaxPositionBasis = static_cast<int>(PositionBasis::V3_AtanhSq);
+    constexpr int kMaxMomentumBasis = static_cast<int>(MomentumBasis::V3_PtotSlopesAsinhTimeAsinh);
+
     inline ModelLayout unpackModelLayout(int tag) {
-      return static_cast<ModelLayout>((tag % kBasisTagPeakStride) / kBasisTagLayoutStride);
+      const int v = (tag % kBasisTagPeakStride) / kBasisTagLayoutStride;
+      if (v < 0 || v > kMaxModelLayout)
+        throw cet::exception("VDResamplerTransforms")
+          << "basisTag " << tag << " decodes to ModelLayout " << v
+          << ", which this build does not define (max " << kMaxModelLayout
+          << "). The checkpoint was written by a newer build.";
+      return static_cast<ModelLayout>(v);
     }
     inline PositionBasis unpackPositionBasis(int tag) {
-      return static_cast<PositionBasis>((tag % kBasisTagLayoutStride) / kBasisTagPositionStride);
+      const int v = (tag % kBasisTagLayoutStride) / kBasisTagPositionStride;
+      if (v < 0 || v > kMaxPositionBasis)
+        throw cet::exception("VDResamplerTransforms")
+          << "basisTag " << tag << " decodes to PositionBasis " << v
+          << ", which this build does not define (max " << kMaxPositionBasis
+          << "). The checkpoint was written by a newer build.";
+      return static_cast<PositionBasis>(v);
     }
     inline MomentumBasis unpackMomentumBasis(int tag) {
-      return static_cast<MomentumBasis>(tag % kBasisTagPositionStride);
+      const int v = tag % kBasisTagPositionStride;
+      if (v < 0 || v > kMaxMomentumBasis)
+        throw cet::exception("VDResamplerTransforms")
+          << "basisTag " << tag << " decodes to MomentumBasis " << v
+          << ", which this build does not define (max " << kMaxMomentumBasis
+          << "). The checkpoint was written by a newer build.";
+      return static_cast<MomentumBasis>(v);
     }
     // True when the model carries the peak-tag condition dim (see PeakTag).
     inline bool unpackPeakTagged(int tag) {
       return (tag / kBasisTagPeakStride) != 0;
+    }
+
+    // ------------------------------------------------------------------------
+    // Build constants — the map-defining numeric parameters, recorded in every
+    //   checkpoint so a retune is detected on load rather than silently changing
+    //   what a stored model means. The basis enums say which map; these say what
+    //   it was tuned to.
+    //
+    //   The id is the contract, not the position: ids are explicit, never reused,
+    //   and new ones are appended. Pure numerical guards (kRadiusSafetyEpsilon,
+    //   kMinSafeTime, kRhoClampEpsilon, kPzSafetyEpsilon) are excluded — they do
+    //   not define the map.
+    // ------------------------------------------------------------------------
+    enum class BuildConstantId : int {
+      kVDr            = 0,  // position, every PositionBasis
+      kVDz0           = 1,  // position, every PositionBasis
+      kP0             = 2,  // momentum, every MomentumBasis
+      kT0             = 3,  // time, every MomentumBasis
+      kTScale         = 4,  // time, every MomentumBasis
+      kUrSlopeScale   = 5,  // momentum, MomentumBasis V2_PtotSlopesAsinh + V3
+      kUphiSlopeScale = 6,  // momentum, MomentumBasis V2_PtotSlopesAsinh + V3
+      kTBulkCenter    = 7,  // time, MomentumBasis V3 only
+      kTTailScale     = 8   // time, MomentumBasis V3 only
+    };
+
+    inline const char* buildConstantName(BuildConstantId id) {
+      switch (id) {
+        case BuildConstantId::kVDr:            return "VDr";
+        case BuildConstantId::kVDz0:           return "VDz0";
+        case BuildConstantId::kP0:             return "kP0";
+        case BuildConstantId::kT0:             return "kT0";
+        case BuildConstantId::kTScale:         return "kTScale";
+        case BuildConstantId::kUrSlopeScale:   return "kUrSlopeScale";
+        case BuildConstantId::kUphiSlopeScale: return "kUphiSlopeScale";
+        case BuildConstantId::kTBulkCenter:    return "kTBulkCenter";
+        case BuildConstantId::kTTailScale:     return "kTTailScale";
+      }
+      return "unknown";
+    }
+
+    // This job's values. VDr/VDz0 are per-job (from the training plan) so they are
+    // passed in; the rest are this build's compile-time constants. All are written
+    // regardless of basis — an unused one costs nothing and keeps the list uniform.
+    inline std::vector<std::pair<int, double>> currentBuildConstants(double VDr, double VDz0) {
+      return {
+        {static_cast<int>(BuildConstantId::kVDr),            VDr},
+        {static_cast<int>(BuildConstantId::kVDz0),           VDz0},
+        {static_cast<int>(BuildConstantId::kP0),             kP0},
+        {static_cast<int>(BuildConstantId::kT0),             kT0},
+        {static_cast<int>(BuildConstantId::kTScale),         kTScale},
+        {static_cast<int>(BuildConstantId::kUrSlopeScale),   kUrSlopeScale},
+        {static_cast<int>(BuildConstantId::kUphiSlopeScale), kUphiSlopeScale},
+        {static_cast<int>(BuildConstantId::kTBulkCenter),    kTBulkCenter},
+        {static_cast<int>(BuildConstantId::kTTailScale),     kTTailScale}
+      };
+    }
+
+    // Compare a checkpoint's stored constants against this job's, throwing on the first
+    // disagreement. An empty list means a pre-v9 checkpoint: current values are assumed
+    // and the check is skipped. A non-empty list must be complete.
+    inline void checkBuildConstants(const std::vector<std::pair<int, double>>& stored,
+                                    double VDr, double VDz0,
+                                    const std::string& what, const std::string& moduleName) {
+      if (stored.empty()) return;
+
+      for (const auto& expected : currentBuildConstants(VDr, VDz0)) {
+        const auto it = std::find_if(stored.begin(), stored.end(),
+                                     [&](const std::pair<int, double>& kv) {
+                                       return kv.first == expected.first;
+                                     });
+        const auto id = static_cast<BuildConstantId>(expected.first);
+        if (it == stored.end())
+          throw cet::exception(moduleName)
+            << what << " records build constants but is missing '" << buildConstantName(id)
+            << "' (id " << expected.first << ").";
+        if (it->second != expected.second)
+          throw cet::exception(moduleName)
+            << what << " was built with " << buildConstantName(id) << " = " << it->second
+            << ", but this job uses " << expected.second << ". Re-train, or restore the value.";
+      }
+    }
+
+    // Cross-check a checkpoint's recorded pdgId against the one inferred from the model
+    // file name. A stored 0 means a pre-v9 checkpoint, so the inferred value stands.
+    inline void checkPdgId(int stored, int inferred,
+                           const std::string& what, const std::string& moduleName) {
+      if (stored == 0) return;
+      if (stored != inferred)
+        throw cet::exception(moduleName)
+          << what << " was trained for pdgId " << stored << ", but this job inferred "
+          << inferred << " from the model file name.";
     }
 
     // Human-readable enum names and a full basisTag decode, shared by the train and
@@ -340,11 +470,17 @@ namespace mu2e {
     }
     // Decode an opaque basisTag (peakTagged*1000 + layout*100 + position*10 + momentum)
     // into "layout=<...>, basis=<...> (tag <n>)" for logs and error messages.
+    // Decodes the raw fields rather than calling the unpack* helpers: this is used INSIDE the
+    // messages those helpers throw, so it must render an out-of-range tag rather than throw
+    // again. The name helpers return "unknown" for a value they do not cover.
     inline std::string basisTagToString(int tag) {
       std::ostringstream os;
-      os << "layout=" << modelLayoutName(unpackModelLayout(tag))
-         << ", position=" << positionBasisName(unpackPositionBasis(tag))
-         << ", basis=" << momentumBasisName(unpackMomentumBasis(tag))
+      os << "layout=" << modelLayoutName(static_cast<ModelLayout>(
+                             (tag % kBasisTagPeakStride) / kBasisTagLayoutStride))
+         << ", position=" << positionBasisName(static_cast<PositionBasis>(
+                             (tag % kBasisTagLayoutStride) / kBasisTagPositionStride))
+         << ", basis=" << momentumBasisName(static_cast<MomentumBasis>(
+                             tag % kBasisTagPositionStride))
          << ", peakTagged=" << (unpackPeakTagged(tag) ? "yes" : "no")
          << " (tag " << tag << ")";
       return os.str();
@@ -384,9 +520,12 @@ namespace mu2e {
           return 0.5 * std::log((1.0 + q) / (1.0 - q)); // atanh(rho^2)
         }
         case PositionBasis::V1_Atanh:
-        default:
           return 0.5 * std::log((1.0 + rho) / (1.0 - rho)); // atanh(rho)
       }
+      // No default arm, so -Wswitch flags a new enumerator at compile time instead of
+      // letting it fall through to the V1 map. Unreachable for a valid enum value.
+      throw cet::exception("VDResamplerTransforms")
+        << "radialForward: unhandled PositionBasis " << static_cast<int>(basis);
     }
     inline double radialInverse(double u, PositionBasis basis) {
       switch (basis) {
@@ -398,9 +537,10 @@ namespace mu2e {
           // tanh(u) >= 0 for u >= 0, which radialForward always produces.
           return std::sqrt(std::tanh(u));                   // sqrt(tanh(u))
         case PositionBasis::V1_Atanh:
-        default:
           return std::tanh(u);
       }
+      throw cet::exception("VDResamplerTransforms")
+        << "radialInverse: unhandled PositionBasis " << static_cast<int>(basis);
     }
 
     // Forward position transform: (dx,dy,r) -> (xTrans,yTrans) = u(rho)*(cos,sin theta)
@@ -408,10 +548,15 @@ namespace mu2e {
     // radial map differs (see PositionBasis for which to use and why).
     inline void forwardPosition(double dx, double dy, double r, double VDr,
                                 PositionBasis basis,
-                                double& xTrans, double& yTrans)
+                                double& xTrans, double& yTrans,
+                                PzFallbackStats* stats = nullptr)
     {
       double rho = r / VDr;
-      // Numerical guard only, so rho=1 cannot produce u=inf; see kRhoClampEpsilon.
+      // Two distinct cases share this clamp: the documented rho=1 guard (so u cannot be
+      // inf; see kRhoClampEpsilon) and a hit that extrapolated outside VDr entirely, which
+      // is silently relocated to the rim. Only the latter is worth reporting, so record
+      // rho >= 1 rather than every application of the clamp.
+      if (rho >= 1.0 && stats) stats->recordRhoClamp(rho);
       rho = std::min(rho, 1.0 - kRhoClampEpsilon);
       const double u = radialForward(rho, basis);
       const double theta = std::atan2(dy, dx);
@@ -543,11 +688,20 @@ namespace mu2e {
       const double tScale, const double p0, const double VDr, const double VDz0,
       double& xTrans, double& yTrans, double& tTrans,
       double& prTrans, double& pphiTrans, double& pzTrans,
-      const PositionBasis posBasis = PositionBasis::V1_Atanh)
+      const PositionBasis posBasis = PositionBasis::V1_Atanh,
+      PzFallbackStats* pzStats = nullptr)
     {
+      // Floored for the extrapolation's divide only. Unlike V2 the momentum slot here is
+      // log(pz/p0), which stays finite for a tiny pz, so pz itself is left untouched below.
+      double pzSafe = pz;
+      if (std::abs(pz) < kPzSafetyEpsilon) {
+        if (pzStats) pzStats->record(pz);
+        pzSafe = kPzSafetyEpsilon;
+      }
+
       double dx, dy, r;
-      extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
+      extrapolateAndCenter(x, y, z, px, py, pzSafe, x0, y0, VDz0, dx, dy, r);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans, pzStats);
 
       double pr, pphi;
       cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
@@ -598,18 +752,22 @@ namespace mu2e {
       PzFallbackStats* pzStats = nullptr,
       const PositionBasis posBasis = PositionBasis::V1_Atanh)
     {
-      double dx, dy, r;
-      extrapolateAndCenter(x, y, z, px, py, pz, x0, y0, VDz0, dx, dy, r);
-      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans);
-
-      double pr, pphi;
-      cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
-
+      // Floored BEFORE the extrapolation, which also divides by pz: an unfloored pz~1e-30
+      // sends the extrapolation factor (and the radius with it) to ~1e30, and the hit is
+      // then silently relocated to the rim by the clamp in forwardPosition.
       double pzSafe = pz;
       if (std::abs(pz) < kPzSafetyEpsilon) {
         if (pzStats) pzStats->record(pz);
         pzSafe = kPzSafetyEpsilon;
       }
+
+      double dx, dy, r;
+      extrapolateAndCenter(x, y, z, px, py, pzSafe, x0, y0, VDz0, dx, dy, r);
+      forwardPosition(dx, dy, r, VDr, posBasis, xTrans, yTrans, pzStats);
+
+      double pr, pphi;
+      cartesianToLocalPolar(px, py, dx, dy, r, pr, pphi);
+
       double ur   = pr   / pzSafe;
       double uphi = pphi / pzSafe;
       if (asinhSlopes) {
@@ -684,23 +842,27 @@ namespace mu2e {
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/false, /*asinhTime=*/false, pzStats, posBasis);
-          break;
+          return;
         case MomentumBasis::V2_PtotSlopesAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/true, /*asinhTime=*/false, pzStats, posBasis);
-          break;
+          return;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           forwardTransformSampleV2(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
                                    xTrans, yTrans, tTrans, m0, m1, m2,
                                    /*asinhSlopes=*/true, /*asinhTime=*/true, pzStats, posBasis);
-          break;
+          return;
         case MomentumBasis::V1_CylindricalTransformed:
-        default:
           forwardTransformSampleV1(x, y, z, t, px, py, pz, x0, y0, t0, tScale, p0, VDr, VDz0,
-                                   xTrans, yTrans, tTrans, m0, m1, m2, posBasis);
-          break;
+                                   xTrans, yTrans, tTrans, m0, m1, m2, posBasis, pzStats);
+          return;
       }
+      // No default arm, so -Wswitch flags a new enumerator at compile time. Each case
+      // returns and this throws, which also tells the compiler every path either assigns
+      // the outputs or leaves — without it callers get -Wmaybe-uninitialized.
+      throw cet::exception("VDResamplerTransforms")
+        << "forwardTransformSample: unhandled MomentumBasis " << static_cast<int>(basis);
     }
 
     inline void invertGeneratedSample(
@@ -718,23 +880,26 @@ namespace mu2e {
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/false, /*asinhTime=*/false,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V2_PtotSlopesAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/false,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V3_PtotSlopesAsinhTimeAsinh:
           invertGeneratedSampleV2(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, /*asinhSlopes=*/true, /*asinhTime=*/true,
                                   posBasis);
-          break;
+          return;
         case MomentumBasis::V1_CylindricalTransformed:
-        default:
           invertGeneratedSampleV1(xTrans, yTrans, tTrans, m0, m1, m2, x0, y0, t0, tScale, p0, VDr, VDz0,
                                   x, y, z, t, px, py, pz, posBasis);
-          break;
+          return;
       }
+      // See forwardTransformSample: each case returns and this throws, so the compiler can
+      // see every path assigns the outputs or leaves.
+      throw cet::exception("VDResamplerTransforms")
+        << "invertGeneratedSample: unhandled MomentumBasis " << static_cast<int>(basis);
     }
 
   } // namespace VDResampler

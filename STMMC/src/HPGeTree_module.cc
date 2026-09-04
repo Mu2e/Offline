@@ -230,7 +230,7 @@ namespace mu2e {
   }; // end analyze
 
   void HPGeTree::endJob() {
-    mf::LogInfo log("Detector tree");
+    mf::LogInfo log("HPGeTree");
     log << "==========Data summary==========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";

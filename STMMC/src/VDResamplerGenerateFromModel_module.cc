@@ -33,6 +33,7 @@
 #include "cetlib_except/exception.h"
 
 // fhicl includes
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 
@@ -41,6 +42,7 @@
 
 // Offline includes
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
@@ -48,6 +50,7 @@
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"      // validateGeometry
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
 #include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
@@ -60,11 +63,15 @@ namespace mu2e {
 
   namespace {
     // Utility function to extract PDG ID from the model filename, which is expected to contain a substring like "pdg[optional m][digits]", e.g. "pdg13" for muons, "pdgm13" for muon pluses.
-    int loadPDGIdFromFileName(const std::string& fileName) {
+    // The directory prefix is stripped first, so only the file name decides the PDG ID.
+    int loadPDGIdFromFileName(const std::string& path) {
+      const size_t slash = path.find_last_of("/\\");
+      const std::string fileName = (slash == std::string::npos) ? path : path.substr(slash + 1);
+
       const size_t pdgPos = fileName.find("pdg");
       if (pdgPos == std::string::npos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       size_t pos = pdgPos + 3;
       bool negative = false;
@@ -78,7 +85,7 @@ namespace mu2e {
       }
       if (startDigits == pos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       const int magnitude = std::stoi(fileName.substr(startDigits, pos - startDigits));
       return negative ? -magnitude : magnitude;
@@ -167,10 +174,16 @@ namespace mu2e {
           Comment("TTree name in resamplerSourceRootFile."),
           "ttree"
         };
-        fhicl::Atom<unsigned long> VirtualDetectorID{
-          Name("VirtualDetectorID"),
-          Comment("VD id selection for the resampler source (must match training)."),
-          116
+        // VirtualDetectorID, VDz0 and VDr are NOT module parameters: they come from the
+        // training plan's common_training_config, the single source of truth. VDr is baked
+        // into the inverse transforms, so a local override that disagreed with training
+        // would scale every generated position and momentum slope with nothing to flag it.
+        fhicl::Atom<std::string> trainingPlanFile{
+          Name("trainingPlanFile"),
+          Comment("The SAME training plan fhicl that configured the training job (e.g. "
+                  "VDResamplerTrainingPlan.fcl). REQUIRED: it supplies the VD geometry "
+                  "(VirtualDetectorID / VDz0 / VDr) from common_training_config, so the inverse "
+                  "transforms cannot drift from the coordinate system training used.")
         };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
@@ -196,16 +209,6 @@ namespace mu2e {
           Name("sdeToOdeSigmaThreshold"),
           Comment("Switch from SDE to ODE when sigma falls below this threshold (-1 = always use useSDE setting)"),
           -1.0
-        };
-        fhicl::Atom<double> VDz0{
-          Name("VDz0"),
-          Comment("Nominal z coordinate of the virtual detector"),
-          37700.39
-        };
-        fhicl::Atom<double> VDr{
-          Name("VDr"),
-          Comment("Virtual detector radius used in the training transform"),
-          2000.0
         };
         fhicl::Atom<bool> doROOTDump{
           Name("doROOTDump"),
@@ -242,8 +245,10 @@ namespace mu2e {
       bool useEMANetworkIfAvailable_;
       int diffusionSteps_;
       double sdeToOdeSigmaThreshold_;
-      double VDz0_;
-      double VDr_;
+      // VD geometry, read from the training plan's common_training_config at construction.
+      unsigned long virtualDetectorID_ = 0;
+      double VDz0_ = 0.0;
+      double VDr_ = 0.0;
       bool doROOTDump_;
       bool doValidationPlots_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
@@ -308,22 +313,28 @@ namespace mu2e {
       useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
       sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
-      VDz0_(conf().VDz0()),
-      VDr_(conf().VDr()),
       doROOTDump_(conf().doROOTDump()),
       doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
 
-    if (VDr_ <= 0.0) {
+    // Geometry from the training plan's common_training_config, so it cannot drift from what
+    // training used. VDr in particular is baked into the inverse position/momentum transforms.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDr must be positive (got " << VDr_ << "); "
-        << "rho = r/VDr would produce inf/NaN in generated samples.";
-    }
-    if (!std::isfinite(VDz0_)) {
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) comes from.";
+    const fhicl::ParameterSet plan = ParameterSetFromFile(planFile).pSet();
+    if (!plan.has_key("common_training_config"))
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDz0 must be finite (got " << VDz0_ << ").";
-    }
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common = plan.get<fhicl::ParameterSet>("common_training_config");
+    virtualDetectorID_ = static_cast<unsigned long>(common.get<int>("VirtualDetectorID"));
+    VDz0_ = common.get<double>("VDz0");
+    VDr_  = common.get<double>("VDr");
+
+    VDResampler::validateGeometry(VDr_, VDz0_, "VDResamplerGenerateFromModel");
 
     stage1Method_ = VDResampler::parseStage1Method(conf().SBDMstage1Method(), "VDResamplerGenerateFromModel");
     const bool useResampler = (stage1Method_ != VDResampler::Stage1Method::DIFFUSION);
@@ -378,6 +389,12 @@ namespace mu2e {
       requireLayout(*stage2Model_, VDResampler::ModelLayout::TwoStageStage2_5D,
                     stage2ModelFile_, "stage-2");
       pdgId_ = loadPDGIdFromFileName(stage2ModelFile_);
+      // A v9+ checkpoint records the particle it was trained for, so the name-derived value
+      // is cross-checked against it; a pre-v9 one stores 0 and the name stands alone.
+      VDResampler::checkPdgId(stage2Model_->pdgId(), pdgId_,
+                              "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(stage2Model_->buildConstants(), VDr_, VDz0_,
+                                       "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
 
       // The peak label is only as sharp as the pTotal it is derived from. A DIFFUSION stage-1
       // is a continuous model over log(pTotal/p0): it cannot reproduce a line whose width is a
@@ -408,7 +425,7 @@ namespace mu2e {
             << "SBDMstage1Method=" << conf().SBDMstage1Method()
             << " requires resamplerSourceRootFile (the pTotal source).";
         ptotResampler_.buildFromRoot(srcFile, conf().resamplerSourceTreeName(),
-                                     conf().VirtualDetectorID(), pdgId_,
+                                     virtualDetectorID_, pdgId_,
                                      stage1Method_, "VDResamplerGenerateFromModel");
       } else {
         stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
@@ -419,6 +436,10 @@ namespace mu2e {
           << VDResampler::basisTagToString(stage1Model_->basisTag());
         requireLayout(*stage1Model_, VDResampler::ModelLayout::TwoStageStage1Ptot1D,
                       stage1ModelFile_, "stage-1");
+        VDResampler::checkPdgId(stage1Model_->pdgId(), pdgId_,
+                                "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
+        VDResampler::checkBuildConstants(stage1Model_->buildConstants(), VDr_, VDz0_,
+                                         "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
         // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
         const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
         if (stage1Basis != momBasis_)
@@ -455,6 +476,10 @@ namespace mu2e {
       requireLayout(*allAtOnceModel_, VDResampler::ModelLayout::AllAtOnce6D,
                     allAtOnceModelFile_, "all-at-once");
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
+      VDResampler::checkPdgId(allAtOnceModel_->pdgId(), pdgId_,
+                              "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(allAtOnceModel_->buildConstants(), VDr_, VDz0_,
+                                       "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
     }
 
     z_gen_ = VDz0_;
@@ -496,7 +521,7 @@ namespace mu2e {
           tfs->mkdir("validation"),
           "pdg" + VDResampler::pdgFileToken(pdgId_), momBasis_, posBasis_, pdgId_,
           pdt_->particle(pdgId_).mass(),
-          srcFile, conf().resamplerSourceTreeName(), conf().VirtualDetectorID(), ip,
+          srcFile, conf().resamplerSourceTreeName(), virtualDetectorID_, ip,
           "VDResamplerGenerateFromModel", &stats);
       }
     } else if (doValidationPlots_) {

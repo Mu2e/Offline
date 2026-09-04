@@ -138,6 +138,7 @@
 #include "Offline/STMMC/inc/VDResamplerConfigureCommon.hh"   // resolvePlanEntry (plan lookup)
 #include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
 #include "Offline/STMMC/inc/VDResamplerNameHelper.hh"        // parseSummaryFileName
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"     // setBranchAddressChecked
 #include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"       // parse*Basis, validateGeometry
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 #include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
@@ -350,14 +351,15 @@ namespace mu2e {
     // but does not partition the comparison — a particle's basis is the same either way.
     double x = 0., y = 0., t = 0., px = 0., py = 0., pz = 0.;
     int summaryIndex = 0, pdgId = 0;
-    ttree->SetBranchAddress("x",            &x);
-    ttree->SetBranchAddress("y",            &y);
-    ttree->SetBranchAddress("time",         &t);
-    ttree->SetBranchAddress("px",           &px);
-    ttree->SetBranchAddress("py",           &py);
-    ttree->SetBranchAddress("pz",           &pz);
-    ttree->SetBranchAddress("pdgId",        &pdgId);
-    ttree->SetBranchAddress("summaryIndex", &summaryIndex);
+    const std::string ctx = "VDResamplerRegeneratePlots";
+    VDResampler::setBranchAddressChecked(ttree, "x",            &x,            ctx);
+    VDResampler::setBranchAddressChecked(ttree, "y",            &y,            ctx);
+    VDResampler::setBranchAddressChecked(ttree, "time",         &t,            ctx);
+    VDResampler::setBranchAddressChecked(ttree, "px",           &px,           ctx);
+    VDResampler::setBranchAddressChecked(ttree, "py",           &py,           ctx);
+    VDResampler::setBranchAddressChecked(ttree, "pz",           &pz,           ctx);
+    VDResampler::setBranchAddressChecked(ttree, "pdgId",        &pdgId,        ctx);
+    VDResampler::setBranchAddressChecked(ttree, "summaryIndex", &summaryIndex, ctx);
 
     const Long64_t nEntries = ttree->GetEntries();
     if (nEntries == 0)

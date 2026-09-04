@@ -25,7 +25,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <ctime>
 #include <fstream>
 #include <map>
 #include <sstream>
@@ -74,6 +73,11 @@ namespace mu2e {
       std::string generatedBy = "VDResamplerConfigure_module.cc";
       std::string stepPointMCsTag;    // ART-source tags (used only when !trainingFromROOT)
       std::string simParticlemvTag;
+      // Path to the plan this job was configured from, written into every generated fcl so
+      // the training modules read the SAME geometry the generate side does.
+      std::string trainingPlanFile;
+      // Parsed geometry, used here for model file names and the seed. NOT emitted into the
+      // generated fcl: the training modules read it from the plan themselves.
       unsigned long virtualDetectorID = 0;
       double VDz0 = 0.0;
       double VDr = 0.0;
@@ -430,6 +434,7 @@ namespace mu2e {
     {
       EmitContext ctx;
       ctx.versionTag        = resolveVersionTag(commonConfig, dataSourceTag, trainingPlanFile, moduleContext);
+      ctx.trainingPlanFile  = trainingPlanFile;
       ctx.dataSourceTag     = dataSourceTag;
       ctx.VDResamplerDir    = VDResamplerDir;
       ctx.fclDir            = fclDir;
@@ -504,19 +509,9 @@ namespace mu2e {
                  << "    " << moduleName << " : {\n"
                  << ind << "module_type : " << trainModule << "\n";
 
-      // Source keys, per training path.
-      if (ctx.trainingFromROOT) {
-        if (ctx.inputRootFileSet) {
-          fclOutFile << ind << "InputRootFile : \"" << ctx.inputRootFile << "\"\n";
-        } else {
-          // Plan left InputRootFile as @nil / unset: emit a placeholder + in-file reminder, and log one.
-          fclOutFile << ind << "InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
-          mf::LogWarning(moduleContext)
-            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
-            << " has a placeholder that MUST be set before running.";
-        }
-        fclOutFile << ind << "TreeName : \"" << ctx.treeName << "\"\n";
-      } else {
+      // Source keys, per training path. The ROOT path's InputRootFile / TreeName are emitted as
+      // trailing overrides below instead of here. Neither key exists on the art path's module.
+      if (!ctx.trainingFromROOT) {
         fclOutFile << ind << "StepPointMCsTag : \"" << ctx.stepPointMCsTag << "\"\n"
                    << ind << "SimParticlemvTag : \"" << ctx.simParticlemvTag << "\"\n";
       }
@@ -537,10 +532,9 @@ namespace mu2e {
                    << modelDir << modelFileName("allAtOnce", ctx.versionTag, ctx.virtualDetectorID, ctx.dataSourceTag, pdg, ctx.runNumber) << "\"\n";
       }
 
-      // VD geometry — always from the plan (single source of truth).
-      fclOutFile << ind << "VirtualDetectorID : " << ctx.virtualDetectorID << "\n"
-                 << ind << "VDz0 : " << ctx.VDz0 << "\n"
-                 << ind << "VDr : "  << ctx.VDr  << "\n"
+      // The training module reads VirtualDetectorID / VDz0 / VDr from this plan itself, the
+      // same way the generate side does, so the geometry is never copied through this fcl.
+      fclOutFile << ind << "trainingPlanFile : \"" << ctx.trainingPlanFile << "\"\n"
                  << ind << "pdgID : " << pdg << "\n"
                  << ind << "SBDMtrainingSize : " << nHits << "\n";
 
@@ -569,16 +563,51 @@ namespace mu2e {
                  << "}\n\n";
       // Remove the per-category log line limit so full training logs are kept.
       fclOutFile << "services.message.destinations.log.categories.default.limit: -1\n";
-      // Seed from the wall clock so re-generated jobs don't all share one fixed seed.
-      fclOutFile << "services.SeedService.baseSeed : " << (static_cast<long>(std::time(nullptr)) % 900000000 + 1) << "\n";
+      // Seed derived from this job's identity, NOT the wall clock: every fcl in a source is
+      // written in one endJob, so a clock-based seed gives them all the same value, and a
+      // re-run of Configure on the same summary would not reproduce the earlier set. Mixing
+      // (runNumber, source index, pdg, VD id) makes the seed unique per particle and stable
+      // across re-runs, so a training result can be reproduced from its inputs.
+      {
+        const long srcIndex = dataSourceIndex(ctx.dataSourceTag);
+        long seed = static_cast<long>(ctx.runNumber);
+        seed = seed * 131 + srcIndex;
+        seed = seed * 131 + pdg;
+        seed = seed * 131 + static_cast<long>(ctx.virtualDetectorID);
+        // SeedService wants a positive value; the modulus keeps it inside its accepted range.
+        seed = (seed % 900000000 + 900000000) % 900000000 + 1;
+        fclOutFile << "services.SeedService.baseSeed : " << seed << "\n";
+      }
 
-      // Trailing overrides. The InputRootFile assignment comes last so it wins over the analyzer
-      // block, giving one obvious line to point at the training file. The mu2emetadata keys are
-      // the mu2eprodsys hooks every production fcl carries.
-      fclOutFile << "\nphysics.analyzers." << moduleName << ".InputRootFile : @nil\n"
-                 << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
+      // Trailing overrides. The ROOT source keys come last, giving one obvious block to point at
+      // the training data; InputRootFile is normally left @nil here and filled in at submission.
+      // Emitted only on the ROOT path: VDResamplerTrain has neither key and, using Table<Config>,
+      // rejects unrecognised ones.
+      if (ctx.trainingFromROOT) {
+        if (ctx.inputRootFileSet) {
+          fclOutFile << "\nphysics.analyzers." << moduleName << ".InputRootFile : \""
+                     << ctx.inputRootFile << "\"\n";
+        } else {
+          fclOutFile << "\nphysics.analyzers." << moduleName
+                     << ".InputRootFile : @nil # TODO set the training ROOT file (left @nil in the plan)\n";
+          mf::LogWarning(moduleContext)
+            << "InputRootFile is @nil / unset in the training plan; the generated fcl " << fclFile
+            << " has a placeholder that MUST be set before running.";
+        }
+        fclOutFile << "physics.analyzers." << moduleName << ".TreeName : \"" << ctx.treeName << "\"\n";
+      }
+
+      // The mu2emetadata keys are the mu2eprodsys hooks every production fcl carries.
+      fclOutFile << "\nmu2emetadata.fcl.prologkeys: [  ]\n"
                  << "mu2emetadata.fcl.inkeys: [  ]\n"
                  << "mu2emetadata.fcl.outkeys: [  ]\n";
+
+      // A truncated fcl would fail confusingly at submission rather than here.
+      fclOutFile.flush();
+      if (!fclOutFile.good())
+        throw cet::exception(moduleContext)
+          << "Failed while writing the training fcl " << fclFile
+          << "; the file is incomplete. Check available space and quota.";
 
       return fclFile;
     }
