@@ -27,17 +27,17 @@ physics : {
          saveRawWithHeaderWaveform_LaBr: false
          saveRawWaveform_LaBr: true
          saveZSWaveform_LaBr: true
-	}
+   }
 
-       makeSTMBinary : { 
-      	 module_type : STMBinaryDigisFromFragments
+       makeSTMBinary : {
+          module_type : STMBinaryDigisFromFragments
          stmTag : "daq:ContainerSTM"
          verbosityLevel : 1
-	 rawFile : "raw.bin"
-	 zsFile : "zs.bin"
-	 phFile : "ph.bin"
-	 rawHeaderFile : "rawWithHeader.bin"
-	 eventFile : "event.bin"
+    rawFile : "raw.bin"
+    zsFile : "zs.bin"
+    phFile : "ph.bin"
+    rawHeaderFile : "rawWithHeader.bin"
+    eventFile : "event.bin"
       }
    }
 
