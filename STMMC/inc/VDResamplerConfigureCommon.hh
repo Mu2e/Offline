@@ -73,6 +73,11 @@ namespace mu2e {
       std::string generatedBy = "VDResamplerConfigure_module.cc";
       std::string stepPointMCsTag;    // ART-source tags (used only when !trainingFromROOT)
       std::string simParticlemvTag;
+      // Path to the plan this job was configured from, written into every generated fcl so
+      // the training modules read the SAME geometry the generate side does.
+      std::string trainingPlanFile;
+      // Parsed geometry, used here for model file names and the seed. NOT emitted into the
+      // generated fcl: the training modules read it from the plan themselves.
       unsigned long virtualDetectorID = 0;
       double VDz0 = 0.0;
       double VDr = 0.0;
@@ -429,6 +434,7 @@ namespace mu2e {
     {
       EmitContext ctx;
       ctx.versionTag        = resolveVersionTag(commonConfig, dataSourceTag, trainingPlanFile, moduleContext);
+      ctx.trainingPlanFile  = trainingPlanFile;
       ctx.dataSourceTag     = dataSourceTag;
       ctx.VDResamplerDir    = VDResamplerDir;
       ctx.fclDir            = fclDir;
@@ -526,10 +532,9 @@ namespace mu2e {
                    << modelDir << modelFileName("allAtOnce", ctx.versionTag, ctx.virtualDetectorID, ctx.dataSourceTag, pdg, ctx.runNumber) << "\"\n";
       }
 
-      // VD geometry — always from the plan (single source of truth).
-      fclOutFile << ind << "VirtualDetectorID : " << ctx.virtualDetectorID << "\n"
-                 << ind << "VDz0 : " << ctx.VDz0 << "\n"
-                 << ind << "VDr : "  << ctx.VDr  << "\n"
+      // The training module reads VirtualDetectorID / VDz0 / VDr from this plan itself, the
+      // same way the generate side does, so the geometry is never copied through this fcl.
+      fclOutFile << ind << "trainingPlanFile : \"" << ctx.trainingPlanFile << "\"\n"
                  << ind << "pdgID : " << pdg << "\n"
                  << ind << "SBDMtrainingSize : " << nHits << "\n";
 

@@ -111,6 +111,7 @@ cet_build_plugin(VDResamplerTrain art::module
     REG_SOURCE src/VDResamplerTrain_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
@@ -121,6 +122,7 @@ cet_build_plugin(VDResamplerTrainFromRoot art::module
     REG_SOURCE src/VDResamplerTrainFromRoot_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts

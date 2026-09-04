@@ -24,11 +24,13 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "cetlib_except/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -49,11 +51,9 @@ namespace mu2e {
         fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Checkpoint file to load for the stage-1 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Checkpoint file to load for the stage-2 model (.dat, or legacy .bin/.csv)"),    "" };
         fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
-        // No C++ defaults: these select what is trained and where, so a fcl that omits one
-        // must fail rather than silently train some other particle or geometry.
-        fhicl::Atom<int>    VirtualDetectorID{ Name("VirtualDetectorID"), Comment("ID of the virtual detector to train on") };
-        fhicl::Atom<double> VDz0{              Name("VDz0"),              Comment("z coordinate of the virtual detector") };
-        fhicl::Atom<double> VDr{               Name("VDr"),               Comment("VD radius") };
+        // VirtualDetectorID / VDz0 / VDr now come from the training plan's common_training_config, 
+        // and no longer individually configured. pdgID stays as each generated fcl trains one particle.
+        fhicl::Atom<std::string> trainingPlanFile{ Name("trainingPlanFile"), Comment("The SAME training plan fhicl the job was configured from; supplies VirtualDetectorID / VDz0 / VDr") };
         fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on") };
         fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
         fhicl::Atom<std::string> SBDMpositionBasis{ Name("SBDMpositionBasis"), Comment("Radial position map u(rho), rho=r/VDr: V1_ATANH, V2_ATANH_SQRT, V3_ATANH_SQ"), "V1_ATANH" };
@@ -192,9 +192,21 @@ namespace mu2e {
     state_.useTwoStageTraining = conf().SBDMuseTwoStageTraining();
     state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrain");
     state_.positionBasis       = VDResampler::parsePositionBasis(conf().SBDMpositionBasis(), "VDResamplerTrain");
-    state_.virtualDetectorID   = conf().VirtualDetectorID();
-    state_.VDz0                = conf().VDz0();
-    state_.VDr                 = conf().VDr();
+    // Geometry from the training plan's common_training_config, so it cannot drift from the
+    // coordinate system the generate side inverts in.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
+      throw cet::exception("VDResamplerTrain")
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) comes from.";
+    const fhicl::ParameterSet plan = ParameterSetFromFile(planFile).pSet();
+    if (!plan.has_key("common_training_config"))
+      throw cet::exception("VDResamplerTrain")
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common = plan.get<fhicl::ParameterSet>("common_training_config");
+    state_.virtualDetectorID   = static_cast<unsigned long>(common.get<int>("VirtualDetectorID"));
+    state_.VDz0                = common.get<double>("VDz0");
+    state_.VDr                 = common.get<double>("VDr");
     state_.pdgID               = conf().pdgID();
     state_.trainingEpochs      = conf().SBDMtrainingEpochs();
     state_.trainingSize        = conf().SBDMtrainingSize();
