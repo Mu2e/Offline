@@ -241,8 +241,23 @@ namespace mu2e
   CrvWidebandTest::~CrvWidebandTest()
   {
     delete[] _recoPEs;
+    delete[] _recoTime;
+    delete[] _fitStatus;
     delete[] _depositedEnergy;
     delete[] _coincidencePDGid;
+    delete[] _coincidenceTime;
+    delete[] _coincidencePosX;
+    delete[] _coincidencePosY;
+    delete[] _coincidencePosZ;
+    delete[] _trackSlope;
+    delete[] _trackIntercept;
+    delete[] _trackPoints;
+    delete[] _trackPEs;
+    delete[] _trackChi2;
+    delete[] _summaryPEs;
+    delete[] _summaryFWHMs;
+    delete[] _summarySignals;
+    delete[] _summaryChi2s;
   }
 
   void CrvWidebandTest::beginJob()
@@ -396,6 +411,15 @@ namespace mu2e
     //fits for the entire stack of modules/sectors (sectorType=0) and for individual modules/sectors (sectorType=1,...)
     for(int iSectorType=0; iSectorType<_nSectorTypes; ++iSectorType)
     {
+     //reset the per-event track variables for EVERY sector type, including the trigger sectors
+     //skipped below: these arrays are branched into the tree at dimension _nSectorTypes and are
+     //filled every event, so an un-reset trigger-sector entry would persist whatever new[] left there
+     _trackSlope[iSectorType]    =0;
+     _trackIntercept[iSectorType]=0;
+     _trackPEs[iSectorType]      =0;
+     _trackPoints[iSectorType]   =0;
+     _trackChi2[iSectorType]     =-1;
+
      if(std::find(_triggerSectorTypes.begin(),_triggerSectorTypes.end(), iSectorType) != _triggerSectorTypes.end()) continue;
 
      //initialize track variables
@@ -403,11 +427,6 @@ namespace mu2e
      float sumY     =0;
      float sumXY    =0;
      float sumYY    =0;
-     _trackSlope[iSectorType]    =0;
-     _trackIntercept[iSectorType]=0;
-     _trackPEs[iSectorType]      =0;
-     _trackPoints[iSectorType]   =0;
-     _trackChi2[iSectorType]     =-1;
 
       double counterWidth = counters.at(0)->getBarDetail().getHalfWidth()*2.0;
       int widthDirection = counters.at(0)->getBarDetail().getWidthDirection();  //assumes that all counters are oriented in the same way
