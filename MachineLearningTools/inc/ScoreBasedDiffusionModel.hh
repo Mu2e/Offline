@@ -34,10 +34,9 @@ namespace mu2e{
         std::vector<double> zscore; // normalized data
         std::vector<double> value;  // unnormalized data
 
-        // TEMPORARY, remove together with the VDResampler update that follows this PR.
-        // generateSample() used to return the unnormalized vector directly; this lets the
-        // existing VDResampler callers keep compiling until they are updated to take the
-        // struct and pick zscore/value explicitly.
+        // TEMPORARY, removed by the PR that replaces the generation modules. generateSample()
+        // used to return the unnormalized vector directly; this keeps the generators still in
+        // the tree compiling until they are updated to take the struct.
         operator const std::vector<double>&() const { return value; }
     };
 
@@ -169,6 +168,9 @@ namespace mu2e{
             CLHEP::RandGaussQ& randGaussQ,
             int dim,
             int conditionDim,
+            int timeEmbeddingDim = 0,
+            std::vector<int> inputEmbeddingDims = {},
+            std::vector<int> conditionEmbeddingDims = {},
             int hidden = 128,
             int layers = 4,
             // Optimizer configuration
@@ -183,36 +185,26 @@ namespace mu2e{
             double betaMax = 0.02,
             // -- cosine schedule parameters
             double cosineOffset = 0.008,
-            int batchSize = 32,
-            double gradientClipThreshold = 1.0,
-            double learningRate = 1e-3,
-            // Diffusion process configuration
-            int diffusionSteps = 200,
-            bool initializeRandomWeights = true,
-            // ---------------------------------------------------------------------------
-            // TEMPORARY PARAMETER ORDER. Everything above reproduces the previous signature
-            // exactly, and everything new is appended below, so the existing positional
-            // callers keep binding correctly until they are updated. The VDResampler update
-            // that follows this PR moves these back to their logical places: the embedding
-            // depths after conditionDim, the schedule bounds beside cosineOffset, and the
-            // training options beside learningRate.
-            // ---------------------------------------------------------------------------
             // -- log-sigma schedule parameters
             double logSigMin = 1e-5,
             double logSigMax = 1.0,
+            // Training configuration
             // -- Training target (SCORE / EPS / V); replaces the legacy bool epsPrediction
             PredictionTarget predictionTarget = PredictionTarget::SCORE,
+            // -- Training configuration
             double lossWeightPower = 2.0,
+            int batchSize = 32,
+            double gradientClipThreshold = 1.0,
+            double learningRate = 1e-3,
             // -- Adaptive dimensional weight controller
             bool useDimWeightController = false,
             double dimWeightEMADecay = 0.99,
-            // -- EMA copy of network parameters for inference
+            // EMA copy of network parameters for inference
             bool useEMANetwork = true,
             double emaNetworkDecay = 0.9999,
-            // -- Fourier embedding depths
-            int timeEmbeddingDim = 0,
-            std::vector<int> inputEmbeddingDims = {},
-            std::vector<int> conditionEmbeddingDims = {}
+            // Diffusion process configuration
+            int diffusionSteps = 200,
+            bool initializeRandomWeights = true
         );
 
         // Data normalization to be applied before training

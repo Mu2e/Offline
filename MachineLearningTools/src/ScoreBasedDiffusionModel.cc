@@ -250,6 +250,9 @@ namespace mu2e {
         CLHEP::RandGaussQ& randGaussQ,
         int dim,
         int conditionDim,
+        int timeEmbeddingDim,
+        std::vector<int> inputEmbeddingDims,
+        std::vector<int> conditionEmbeddingDims,
         int hidden,
         int layers,
         OptimizerType optimizerType,
@@ -260,23 +263,19 @@ namespace mu2e {
         double betaMin,
         double betaMax,
         double cosineOffset,
-        int batchSize,
-        double gradientClipThreshold,
-        double learningRate,
-        int diffusionSteps,
-        bool initializeRandomWeights,
-        // Temporary position; see the declaration.
         double logSigMin,
         double logSigMax,
         PredictionTarget predictionTarget,
         double lossWeightPower,
+        int batchSize,
+        double gradientClipThreshold,
+        double learningRate,
         bool useDimWeightController,
         double dimWeightEMADecay,
         bool useEMANetwork,
         double emaNetworkDecay,
-        int timeEmbeddingDim,
-        std::vector<int> inputEmbeddingDims,
-        std::vector<int> conditionEmbeddingDims
+        int diffusionSteps,
+        bool initializeRandomWeights
     ) : randFlat_(randFlat), randGaussQ_(randGaussQ),
         dim_(dim), conditionDim_(conditionDim), timeEmbeddingDim_(timeEmbeddingDim),
         inputEmbeddingDims_(resolveEmbeddingDims(inputEmbeddingDims, dim, "inputEmbeddingDims")),
@@ -2376,16 +2375,14 @@ namespace mu2e {
                     << "Normalisation dimension mismatch in binary file";
 
             // Reconstruct model
-            // Argument order follows the temporary constructor signature; see its declaration.
             ScoreBasedDiffusionModel model(
-                randFlat, randGaussQ, dim, conditionDim, hidden, layers,
+                randFlat, randGaussQ, dim, conditionDim, timeEmbeddingDim,
+                inputEmbeddingDims, conditionEmbeddingDims, hidden, layers,
                 optimizerType, adamBeta1, adamBeta2, adamEps, scheduleType,
-                betaMin, betaMax, cosineOffset,
-                batchSize, gradientClipThreshold, learningRate,
-                diffusionSteps, false,
-                logSigMin, logSigMax, predictionTarget, lossWeightPower,
+                betaMin, betaMax, cosineOffset, logSigMin, logSigMax,
+                predictionTarget, lossWeightPower, batchSize, gradientClipThreshold, learningRate,
                 useDimWeightController, dimWeightEMADecay, useEMANetwork, emaNetworkDecayStored,
-                timeEmbeddingDim, inputEmbeddingDims, conditionEmbeddingDims
+                diffusionSteps, false
             );
             model.setBasisTag(basisTag); // opaque tag (0 for v<=6); see saveModel/basisTag()
             // Opaque caller-owned markers (0 / empty for v<=8); see pdgId()/buildConstants().
@@ -2948,12 +2945,14 @@ namespace mu2e {
             mf::LogInfo("ScoreBasedDiffusionModel::loadModel") << logMsg.str();
 
             // Reconstruct model without random weight initialization
-            // Argument order follows the temporary constructor signature; see its declaration.
             ScoreBasedDiffusionModel model(
                 randFlat,
                 randGaussQ,
                 dim,
                 conditionDim,
+                timeEmbeddingDim,
+                inputEmbeddingDims,
+                conditionEmbeddingDims,
                 hidden,
                 layers,
                 optimizerType,
@@ -2964,15 +2963,13 @@ namespace mu2e {
                 betaMin,
                 betaMax,
                 cosineOffset,
-                batchSize,
-                gradientClipThreshold,
-                learningRate,
-                diffusionSteps,
-                false, // initializeRandomWeights
                 logSigMin,
                 logSigMax,
                 predictionTarget,
                 lossWeightPower,
+                batchSize,
+                gradientClipThreshold,
+                learningRate,
                 useDimWeightController,
                 dimWeightEMADecay,
                 useEMANetwork,
@@ -2980,9 +2977,8 @@ namespace mu2e {
                 // rescales correctly. Older CSVs only have the effective decay; pass it as
                 // a placeholder base and fix it up below.
                 emaNetworkDecayBasePresent ? emaNetworkDecayBase : emaNetworkDecay,
-                timeEmbeddingDim,
-                inputEmbeddingDims,
-                conditionEmbeddingDims
+                diffusionSteps,
+                false // initializeRandomWeights
             );
             model.setBasisTag(basisTag); // opaque tag (0 if absent); see saveModel/basisTag()
             // Opaque caller-owned markers (0 / empty if absent); see pdgId()/buildConstants().
