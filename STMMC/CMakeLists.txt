@@ -95,7 +95,15 @@ cet_build_plugin(VDResamplerConfigure art::module
     REG_SOURCE src/VDResamplerConfigure_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VDResamplerReconfigure art::module
+    REG_SOURCE src/VDResamplerReconfigure_module.cc
+    LIBRARIES REG
+      Offline::GeneralUtilities
       Offline::MCDataProducts
 )
 
