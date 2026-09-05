@@ -27,9 +27,17 @@ BEGIN_PROLOG
       module_type                            : CrvDQMcollector
       useDQMcollector                        : true
       crvDigiModuleLabel                     : "CrvDigi"
-      #crvRecoPulsesModuleLabel               : "CrvRecoPulses"
+      crvStatusModuleLabel                   : "CrvDigi"
+      crvRecoPulsesModuleLabel               : "CrvRecoPulses"
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvDaqErrorModuleLabel                 : "CrvDigi"
+      crvDigiDQMDir                          : "CRVDigiDQM"
+      crvStatusDQMDir                        : "CRVStatusDQM"
+      crvRecoDQMDir                          : ""     # module directory, where the PE/MPV hists have always lived
+      fillInclusiveDigiDQM                   : true
+      fillInclusiveRecoDQM                   : true   # per-event DqmCrv reco-pulse and cluster plots
+      crvDigiDQMkppReadout                   : true   # KPP FEB-axis sizing (ROC 1-2)
+      writePerChannelPE                      : false  # ~50k per-channel PE spectra; expert output
     }
 
     CrvRecoPulses:
