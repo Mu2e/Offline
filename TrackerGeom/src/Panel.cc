@@ -26,23 +26,22 @@ namespace mu2e {
     return os.str();
   }
 
-  Panel::Panel( const StrawId& id, TrackerStrawCollection const& straws, HepTransform const& panelToDS ) : _id(id) {
+  void Panel::rebindStraws( TrackerStrawCollection const& straws ) {
     for(auto const& straw : straws ) {
       // pick out all the straws belonging to this panel.
       if(_sidmask.equal(_id,straw.id())){
         _straws[straw.id().straw()] = &straw;
       }
     }
+  }
+
+  Panel::Panel( const StrawId& id, TrackerStrawCollection const& straws, HepTransform const& panelToDS ) : _id(id) {
+    rebindStraws(straws);
     setPanelToDS(panelToDS);
   }
 
   Panel::Panel( const StrawId& id, TrackerStrawCollection const& straws ) : _id(id) {
-    for(auto const& straw : straws ) {
-      // pick out all the straws belonging to this panel.
-      if(_sidmask.equal(_id,straw.id())){
-        _straws[straw.id().straw()] = &straw;
-      }
-    }
+    rebindStraws(straws);
     // compute the panel coordinate axes based on the straw content
     // U points along the straw (Cal to HV), V is radially outward, W is given by right-handedness
     _udir = _straws.front()->wireDirection();

@@ -24,13 +24,17 @@ namespace mu2e {
     return os.str();
   }
 
-  Plane::Plane( const StrawId& id, TrackerPanelCollection const& panels) : _id(id) {
+  void Plane::rebindPanels( TrackerPanelCollection const& panels ) {
     for(auto const& panel : panels ) {
       // pick out all the panels belonging to this plane.  This code relies on the Tracker collection being in order.
       if(_sidmask.equal(_id,panel.id())){
         _panels[panel.id().panel()] = &panel;
       }
     }
+  }
+
+  Plane::Plane( const StrawId& id, TrackerPanelCollection const& panels) : _id(id) {
+    rebindPanels(panels);
     // define the origin (in the tracker nominal frame) as the geometric average of the panel origins
     xyzVec origin;
     for(auto const& panel : _panels) origin += panel->origin();
