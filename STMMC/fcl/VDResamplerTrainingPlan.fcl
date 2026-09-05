@@ -1,0 +1,484 @@
+# VDResampler training plan (guideline) file.
+#
+# Consumed by VDResamplerConfigure (trainingPlanFile). Specifies per-particle
+# training configuration resolved by (pdgId, dataSourceTag). 
+#
+# Lookup order (pdgId is the OUTER axis: a particle usually trains similarly across
+# sources; source is the finer override):
+#     particle_training_config.pdg_<id>.<source>  
+# ->  particle_training_config.pdg_<id>.default  
+# ->  particle_training_config.default.default
+# Negative pdgId keys use an 'm' prefix (e.g. pdg_m11 for the positron), matching the
+# model-file naming convention. <source> is the dataSourceTag passed to Configure.
+#
+# stage1Method one of: DIFFUSION (train a 1-D pTotal model) | INVERSE_CDF | SPLINE_CDF | KDE
+# (the last three are non-diffusion resamplers read from the source ROOT file at generation).
+#
+# If SBDMuseTwoStageTraining is false, VDResamplerConfigure will train a single-stage 
+# diffusion model for the particle and configure SBDMallAtOnceModelFile automatically. 
+# If true, it will train a two-stage diffusion model. Depending on the stage1Method, it will
+# configure both SBDMstage1ModelFile and SBDMstage2ModelFile (if stage1Method is DIFFUSION), 
+# or just SBDMstage2ModelFile (if stage1Method is not DIFFUSION).
+#
+# pdgID is set directly by VDResamplerConfigure from the SimParticle's pdgId.
+# 
+# VDResamplerConfigure will check the sizes of SBDMinputEmbeddingDims and SBDMconditionEmbeddingDims
+# against the model setup. For all-at-once models, the input embedding dims must be 6 with no condition
+# embedding. For 2-stage models, Stage 2 always has 5 input embedding dims and 1 condition embedding 
+# dim (with V2 and V3 momentum basis). Stage 1 has 1 input embedding dims and no condition embedding.
+#
+# By default all trainings use ADAM optimizer with beta1=0.9, beta2=0.999, eps=1e-8. These are default
+# values from training module setup so not specified in the plan file. If you want to override these, 
+# you can add them here.
+
+common_training_config : { # Common training configuration for all particles
+  # Campaign/version tag embedded in every generated file name (summary .txt, model .dat files, and
+  # the recommended ROOT dump name). Lets several campaigns coexist in one directory and lets the
+  # generator recover the version from the summary file name. Required, and must not contain '.'
+  # (the file-name parser splits on dots).
+  # Either a single string (one tag for every source) or a sequence of one tag PER SOURCE. The
+  # sequence is indexed by the source's position in VDResamplerNameHelper's dataSourceNames(), so
+  # the entries MUST be in that order and the list must be exactly that long - the trailing
+  # comments below are only documentation, the position is what selects the tag. Per-source tags
+  # let one source be re-trained and version-bumped without forcing a bump on the others.
+  versionTag : ["MDC2025ai", # EleBeam
+                "MDC2025ai", # MuBeam
+                "MDC2025au", # TargetStops1809
+                "MDC2025av"  # Neutrals
+                ]
+  # Run number for the Mu2e-convention sequencer field, zero-padded to 6 digits in every generated
+  # file name (e.g. "001200"). Paired there with the 8-digit dataSourceTag enumeration. Required.
+  runNumber : 1430
+  trainingFromROOTFile : true # If true, VDResamplerConfigure emits a VDResamplerTrainFromRoot job
+                              # (EmptyEvent source, reads InputRootFile below). If false, it emits a
+                              # VDResamplerTrain job that reads the ART data source instead.
+  # ROOT-source settings (used only when trainingFromROOTFile is true). InputRootFile defaults to
+  # @nil so the generated fcl is intentionally incomplete: set it to the real training ROOT file.
+  # VDResamplerConfigure both logs a reminder and writes one into the generated fcl next to @nil.
+  InputRootFile : @nil
+  TreeName : "VDResamplerTrainingSetup/ttree"
+  # ART-source settings (used only when trainingFromROOTFile is false).
+  StepPointMCsTag : "compressDetStepMCsSTM116:"
+  SimParticlemvTag : "compressDetStepMCsSTM116:"
+  # common VD info
+  VirtualDetectorID : 116
+  VDz0 : 37700.39
+  VDr : 2000.0
+}
+
+common_prediction_config : {
+  SBDMpredictionTarget : "V"
+}
+
+common_dimWeightController_config : {
+  SBDMdimWeightControllerEMADecay : 0.95 # toggled per curriculum phase by SBDMtrainingCurriculumUseDimWeightController
+}
+
+common_EMA_config : {
+  SBDMuseEMANetwork : true # decay rate by default 0.9999, keep for reference
+  SBDMpromoteEMA : false # otherwise set up using SBDMtrainingCurriculumPromoteEMA
+}
+
+# Planner settings. The smoothing window must be long enough that per-epoch loss scatter does not
+# dominate the trend, otherwise the smoothed minimum lands wherever the window happens to start
+# and the planner restores a near-first epoch as the phase "best", discarding the rest. A single
+# outlier epoch (as seen right after a phase switch) must also not be able to drive the smoothed
+# value for the length of the window.
+#
+# minEpochsPerPhase must stay >= smoothWindow + patience (25 + 25 = 50): the tracer records no
+# improvement and consumes no patience until the window is full, so a phase needs the window to
+# fill and then a full no-improvement streak on top of it.
+common_autoCurriculum_config : {
+  SBDMautoCurriculumPlanner : true
+  SBDMplannerSmoothWindow : 25
+  SBDMplannerPatience : 25
+  SBDMplannerMinEpochsPerPhase : 50
+}
+
+# ===== per-dataset batch / epoch-size schedules =====
+# Batch size and samplesDrawnPerEpoch depend on the training sample size, not on the structure
+# tier. Every leaf must splice exactly ONE of these alongside its structure table, e.g.
+#     @table::common_fine_structure_1_stage_config
+#     @table::schedule_large_sample
+# FHiCL does not formally support redefining a key at intermediate scope, so a leaf must never
+# re-list these two keys directly - pick a different schedule table, or add one here.
+# Keep the phase-2/3 batch at or below 1024: larger batches average away the gradient signal the
+# sharp structures produce. steps/epoch = samplesDrawnPerEpoch / batch.
+
+schedule_tiny_sample : {   # N <~ 1k
+  SBDMtrainingCurriculumBatchSize :              [     64,     128,     256]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  20000,   20000,   40000]
+}
+
+schedule_small_sample : {  # N ~ 1k - 50k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [  50000,   50000,  100000]
+}
+
+schedule_mid_sample : {    # N ~ 50k - 500k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 100000,  100000,  200000]
+}
+
+schedule_large_sample : {  # N >~ 500k
+  SBDMtrainingCurriculumBatchSize :              [    128,     512,    1024]
+  SBDMtrainingCurriculumSamplesDrawnPerEpoch :   [ 200000,  200000,  400000]
+}
+
+# ===== per-phase peak importance sampling =====
+# Same splice-one-table rule as the schedules above: every leaf must take exactly one, and must
+# never re-list the key directly. The toggle only does anything on a leaf that also defines
+# SBDMpeakWindow* -- elsewhere peaksampling_off is both the correct setting and the quiet one,
+# since enabling it without windows only earns a "no peak windows configured" warning.
+
+peaksampling_off : {       # no windows, or windows deliberately unused
+  SBDMtrainingCurriculumUsePeakSampling :        [  false,   false,   false]
+}
+
+peaksampling_late : {      # uniform while the global structure is learned, then oversample
+  SBDMtrainingCurriculumUsePeakSampling :        [  false,    true,    true]
+}
+
+core_fine_structure_config : {
+  SBDMhidden : 256 # hidden slightly larger than all input dims to keep capacity, but fewer layers to reduce training time
+  SBDMlayers : 5
+  SBDMtimeEmbeddingDim : 16
+  # Radial position map u(rho), rho=r/VDr. Must be set explicitly: the module default is V1_ATANH,
+  # whose u ~ rho near the origin gives no extra resolution where a centrally-peaked species
+  # actually sits. The sqrt stretches that inner region.
+  SBDMnoiseSchedule : "LOGSIG"
+  SBDMlogSigMin : 1e-4
+  SBDMlogSigMax : 1.0
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # curriculum focus range :                         >0.5,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
+  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
+  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
+  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
+  SBDMtrainingCurriculumTLowBound :              [    0.5,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
+  @table::common_autoCurriculum_config
+  SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
+}
+
+# fine-structure 1 stage
+common_fine_structure_1_stage_config : {
+  @table::core_fine_structure_config
+  SBDMuseTwoStageTraining : false
+  SBDMinputEmbeddingDims : [40, 26, 26, 40, 32, 32] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  # SBDMconditionEmbeddingDims being [0], omitted 
+}
+
+# fine-structure 2-stage if need fine pTot resolution. 
+# Note this will echo and amplify pTot stat. fluctuations in the training sample, so only use if the training sample is 
+# large enough to support it, or fidelity of pTot distribution is a must. Otherwise, use the 1-stage config above.
+common_fine_structure_2_stage_config : {
+  @table::core_fine_structure_config
+  SBDMuseTwoStageTraining : true
+  stage1Method : "INVERSE_CDF"  
+  SBDMinputEmbeddingDims : [40, 26, 26, 32, 32] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMconditionEmbeddingDims : [40]             # pTot
+}
+
+core_avg_structure_config :{
+  SBDMhidden : 256
+  SBDMlayers : 4
+  SBDMtimeEmbeddingDim : 12
+  SBDMnoiseSchedule : "LOGSIG"
+  SBDMlogSigMin : 1e-3
+  SBDMlogSigMax : 1.0
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # curriculum focus range :                         >0.3,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
+  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
+  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
+  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
+  SBDMtrainingCurriculumTLowBound :              [    0.3,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
+  @table::common_autoCurriculum_config
+  SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
+}
+
+# average number of particles 1-stage
+common_avg_structure_1_stage_config : { 
+  @table::core_avg_structure_config
+  SBDMuseTwoStageTraining : false
+  SBDMinputEmbeddingDims : [34, 20, 20, 34, 26, 26] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  # SBDMconditionEmbeddingDims being [0], omitted 
+}
+
+# average number of particles 2-stage
+# signal resampling uses this config if training sample event number is moderate
+common_avg_structure_2_stage_config : {
+  @table::core_avg_structure_config
+  SBDMuseTwoStageTraining : true
+  stage1Method : "INVERSE_CDF" # resolution less ideal
+  SBDMinputEmbeddingDims : [34, 20, 20, 26, 26] # tTrans(Asinh), xTrans, yTrans, urTrans(Asinh), uphiTrans(Asinh)
+  SBDMconditionEmbeddingDims : [34]             # pTot
+}
+
+core_coarse_structure_config :{
+  SBDMhidden : 140 # ~half, but sufficient to be > total input dims
+  SBDMlayers : 5
+  SBDMtimeEmbeddingDim : 8
+  SBDMnoiseSchedule : "LOGSIG"
+  SBDMlogSigMin : 1e-2
+  SBDMlogSigMax : 1.0
+  @table::common_prediction_config
+  @table::common_dimWeightController_config
+  @table::common_EMA_config
+  # Batch size and samplesDrawnPerEpoch are dataset-size dependent and are NOT defined here:
+  # every leaf must splice exactly one schedule_* table alongside this one.
+  # logSigMin is already 1e-2 here, so phase 1 needs no tLowBound warm-up.
+  # curriculum focus range :                         full,    full, low end
+  SBDMtrainingCurriculumEpochs :                 [   1500,    1500,    1500]   # using planner, this is the max
+  SBDMtrainingCurriculumGradientClip :           [    1.0,     0.5,     0.3]
+  SBDMtrainingCurriculumLearningRate :           [   1e-3,    5e-4,    3e-4]
+  SBDMtrainingCurriculumBiasLowSigma :           [  false,   false,    true]
+  SBDMtrainingCurriculumTLowBound :              [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusLow :              [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusHigh :             [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumTFocusFraction :         [    0.0,     0.0,     0.0]
+  SBDMtrainingCurriculumUseDimWeightController : [   true,    true,    true]
+  @table::common_autoCurriculum_config
+  SBDMtrainingCurriculumMinDelta :               [  0.001,  0.0005,  0.0005]
+}
+
+# Common lowest quality setup for samples with fewest events ~1k
+common_coarse_structure_1_stage_config : {
+  @table::core_coarse_structure_config
+  SBDMuseTwoStageTraining : false
+  SBDMinputEmbeddingDims : [30, 16, 16, 28, 20, 20] # tTrans(Asinh), xTrans, yTrans, pTotTrans, urTrans(Asinh), uphiTrans(Asinh)
+  # SBDMconditionEmbeddingDims being [0], omitted 
+}
+
+particle_training_config : {
+  # ===== electrons =====
+  pdg_11 : {
+    # enough events to have a fine model; no narrow structure so 1-stage is sufficient
+    EleBeam : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
+      @table::common_fine_structure_1_stage_config
+      @table::schedule_large_sample
+      @table::peaksampling_off
+    }
+    # no narrow structure so 1-stage is sufficient
+    MuBeam : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_fine_structure_1_stage_config
+      @table::schedule_mid_sample
+      @table::peaksampling_off
+    }
+    # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
+    TargetStops1809 : {
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # few events from Neutrals, but if needed use the single stage
+    Neutrals : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
+      @table::peaksampling_off
+    }
+    # default
+    default : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+  }
+  # ===== positrons =====
+  pdg_m11 : {
+    # not as many events in the positron sample
+    # One other option is to use the electron model; the distribution is arguably identical.
+    # Simply copy the trained file, rename it to match pdgId, and manually change the configuration 
+    # in the particle summary (1-stage, '-' stage 1)
+    EleBeam : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # much fewer events than the electron sample, recommend using the electron model
+    MuBeam : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
+    TargetStops1809 : {
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH" # almost instantaneous emission, so no significant long tail
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
+      @table::peaksampling_off
+    }
+    # probably not needed in Neutrals. go to default if needed
+    # default
+    default : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_tiny_sample
+      @table::peaksampling_off
+    }
+  }
+  # ===== photons =====
+  pdg_22 : {
+    # many events, but backgrounds. no need for 2-stage
+    EleBeam : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
+      # @table::common_fine_structure_1_stage_config
+      @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_large_sample
+      @table::peaksampling_off
+    }
+    # 347keV really hard to sample here (~60/1e6). more events in the tTransAsinh tail
+    # should consider a standalone 347 keV. Only background here, 1-stage is sufficient
+    MuBeam :  {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      # @table::common_fine_structure_1_stage_config
+      @table::common_fine_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_large_sample
+      @table::peaksampling_off
+    }
+    # for 1809 keV from TargetStopsCat, mostly in the single peak of 1809 keV, and some lower energy events 
+    # likely from scattering. to avoid issue potentially from sampling a extremely narrow peak, do the 2-stage
+    # sampling with mid-range resolution
+    TargetStops1809 : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V2_ATANH_SQRT"
+      @table::common_avg_structure_2_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_late # the only leaf with SBDMpeakWindow* configured (see below)
+      # Peak importance sampling on the TIME coordinate, 150-300 ns: the generated/mother ratio
+      # departs from 1 across that range (overshoot near 200 ns, deficit by 300), where the sharp
+      # low-time edge is under-resolved for want of statistics. tTrans is state index 0 in both
+      # the all-at-once and the V2/V3 stage-2 layouts. Bounds are in TRANSFORMED (pre-z-score)
+      # units: with t0=1700 ns and the V3 asinh map, 150 ns -> -0.177 and 300 ns -> 0.495.
+      # Oversampling reweights the loss (wIS) to stay unbiased, so this shifts where the model
+      # spends capacity without biasing the fit; it cannot create statistics that are not there.
+      SBDMpeakWindowDims  : [    0  ] # tTrans
+      SBDMpeakWindowLows  : [ -0.177] # 150 ns
+      SBDMpeakWindowHighs : [  0.495] # 300 ns
+      SBDMpeakGMaxes      : [  0.30 ] # draw up to 30% of samples from the window at low sigma
+      SBDMpeakSigma0s     : [  0.35 ] # taper scale ~ the window half-width in tTrans
+      SBDMpeakAlphas      : [  1.0  ] # 1 = unbiased: oversample the window, do NOT up-weight it
+      # The 1809 keV line's TIMING distribution differs in shape from the lower-energy
+      # (scattered/degraded) events around it: the line is prompt, the continuum is not. That is
+      # a change in p(t | pTot) across a ~1 keV window, i.e. ~5e-4 in log(pTot) and well under
+      # 1e-3 sigma after the z-score -- far too sharp for the continuous pTot condition to
+      # resolve, whatever Fourier depth it is given. So the line is instead named explicitly:
+      # stage 2 gains a discrete condition dim carrying 1 for events on the line and 0 for
+      # everything else, and learns the two timing shapes separately.
+      #
+      # Read by BOTH sides: VDResamplerConfigure passes these through into the training fcl,
+      # and VDResamplerGenerateMix reads this same plan so the generated labels match what was
+      # trained. Add further lines by extending both sequences together (label = position in
+      # the list, starting at 1); windows must be disjoint.
+      SBDMpeakTagCenters :    [1.809] # MeV/c, raw pTotal
+      SBDMpeakTagHalfWidths : [0.001] # +/- 1 keV
+    }
+    # hard to produce samples for the same POT, single stage sufficient
+    Neutrals : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
+      # @table::common_avg_structure_1_stage_config
+      @table::common_avg_structure_2_stage_config # if really want fine pTot structure
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # default
+    default : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+  }
+  # ===== neutrons =====
+  pdg_2112 : {
+    # coarse single-stage training for neutrons from the EleBeam, no significant tTrans tail so V2 momentum basis is sufficient
+    EleBeam : {
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # many more events in the MuBeam neutron sample. no significant tTrans tail so stay with V2 momentum basis
+    MuBeam : {
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      SBDMpositionBasis : "V3_ATANH_SQ"
+      @table::common_fine_structure_1_stage_config
+      # @table::common_fine_structure_2_stage_config # sufficient stat to do this if wanted
+      @table::schedule_mid_sample
+      @table::peaksampling_off
+    }
+    # for 1809 keV from TargetStopsCat, few events, but if needed use the single stage
+    TargetStops1809 : {
+      SBDMmomentumBasis : "V2_PTOT_SLOPES_ASINH"
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # single stage
+    Neutrals : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH"
+      SBDMpositionBasis : "V1_ATANH"
+      @table::common_avg_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+    # default
+    default : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+  }
+  # ===== default =====
+  # Fallback for any particle / source not matched above. REQUIRED (the plan file is
+  # mandatory and must supply at least particle_training_config.default.default).
+  default : {
+    default : {
+      SBDMmomentumBasis : "V3_PTOT_SLOPES_ASINH_TIME_ASINH" # always safe
+      # SBDMpositionBasis : "V1_ATANH" # default, change if needed
+      @table::common_coarse_structure_1_stage_config
+      @table::schedule_small_sample
+      @table::peaksampling_off
+    }
+  }
+}
