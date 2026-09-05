@@ -1231,7 +1231,7 @@ namespace mu2e {
           //next remove overlap at rod
           //
           double wireRodAngle = std::abs((rodCenterToWire).angle(spokeAxis));
-          deltaLength = std::abs(std::tan(wireRodAngle)/tgt->spokeRadius());
+          deltaLength = std::abs(tgt->spokeRadius()*std::cos(wireRodAngle)/std::sin(wireRodAngle));
           wheelPos -= (deltaLength+1.)*spokeAxis;
           if(verbosityLevel > 0)
             std::cout << "wire rod angle " << wireRodAngle << " delta L " << deltaLength
