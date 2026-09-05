@@ -506,7 +506,10 @@ Mu2eKinKal : {
 
   KLSeedFit : {
     module_type : KinematicLineFit
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : T0  # KKFIT does not set this and it is mandatory; matches the sibling CHSeedFit
+    }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
       @table::Mu2eKinKal.CHSEEDEXT
@@ -605,7 +608,7 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Full
       SaveDomains : false  # the truth track has no BField domains (upstream bfcorr=false); SaveDomains:true
-                           # would deref rbegin() of an empty domain set in KKFit::createSeed (SIGSEGV)
+                           # is rejected by KKFit::createSeed with a cet::exception
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer",
         "CRV_T1","CRV_T2","CRV_T3","CRV_T4","CRV_T5",
         "CRV_R1","CRV_R2","CRV_R3","CRV_R4","CRV_R5","CRV_R6",
