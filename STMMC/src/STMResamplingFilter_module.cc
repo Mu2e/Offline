@@ -56,7 +56,7 @@ namespace mu2e {
   };
 
   void STMResamplingFilter::endJob() {
-    mf::LogInfo log("STMResamplingFilter summary");
+    mf::LogInfo log("STMResamplingFilter");
     log << "No. kept events:      " << keptEvents      << "\n";
     log << "No. discarded events: " << discardedEvents << "\n";
   };
