@@ -134,6 +134,7 @@ cet_build_plugin(VDResamplerGenerateFromModel art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DataProducts
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
@@ -145,6 +146,7 @@ cet_build_plugin(VDResamplerGenerateMix art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DataProducts
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts

@@ -33,11 +33,6 @@ namespace mu2e{
     struct SBDMGeneratedSample {
         std::vector<double> zscore; // normalized data
         std::vector<double> value;  // unnormalized data
-
-        // TEMPORARY, removed by the PR that replaces the generation modules. generateSample()
-        // used to return the unnormalized vector directly; this keeps the generators still in
-        // the tree compiling until they are updated to take the struct.
-        operator const std::vector<double>&() const { return value; }
     };
 
     // One peak-importance-sampling window (see ScoreBasedDiffusionModel::train). Oversamples
