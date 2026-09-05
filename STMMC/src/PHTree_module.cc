@@ -88,7 +88,7 @@ namespace mu2e {
   };
 
   void PHTree::endJob() {
-    mf::LogInfo log("PH tree summary");
+    mf::LogInfo log("PHTree");
     log << "========= PH tree summary =========\n";
     log << std::left << std::setw(25) << "\tProcessed events: " << eventCounter << "\n";
     log << std::left << std::setw(25) << "\tProcessed digis: "  << digiCounter << "\n";
