@@ -153,5 +153,15 @@ cet_build_plugin(VDResamplerGenerateMix art::module
       Offline::SeedService
 )
 
+cet_build_plugin(VDResamplerRegeneratePlots art::module
+    REG_SOURCE src/VDResamplerRegeneratePlots_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GeneralUtilities
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+)
+
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMMC/fcl)
