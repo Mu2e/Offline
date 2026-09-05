@@ -32,4 +32,22 @@ namespace mu2e {
 
     }
 
+  Tracker::Tracker(Tracker const& other) :
+    Detector(other), ProditionsEntity(other),
+    _origin(other._origin),
+    _strawprops(other._strawprops),
+    _planes(other._planes),
+    _panels(other._panels),
+    _straws(other._straws),
+    _planeExists(other._planeExists),
+    _g4tracker(other._g4tracker) {
+      // the copied panels and planes still point into 'other': re-point them here
+      rebindConstituents();
+    }
+
+  void Tracker::rebindConstituents() {
+    for(auto& panel : _panels) panel.rebindStraws(_straws);
+    for(auto& plane : _planes) plane.rebindPanels(_panels);
+  }
+
 } // namespace mu2e
