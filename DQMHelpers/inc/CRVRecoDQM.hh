@@ -11,6 +11,10 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 
 #include "art_root_io/TFileDirectory.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 #include "TH1D.h"
 #include "TH1F.h"
@@ -260,6 +264,58 @@ private:
   double fitChi2Sum_{0.0};
   std::size_t fitChi2N_{0};
 };
+
+// At namespace scope rather than nested in the class: a nested sibling
+// cannot default-construct Config, whose member initializers are only
+// complete at the end of the enclosing class.
+// Validated FHiCL for the Config above; see the note on CRVDigiDQMFhicl.
+struct CRVRecoDQMFhicl {
+  using Name = fhicl::Name;
+  using Comment = fhicl::Comment;
+  // Not constexpr: Config carries the segmentation block, which holds
+  // std::string and std::vector, so it is not a literal type.
+  static inline const CRVRecoDQM::Config d{};
+
+  fhicl::Atom<int> nBinsPEs{Name("nBinsPEs"), Comment("Bins for the PE spectra"), d.nBinsPEs};
+  fhicl::Atom<double> minPEs{Name("minPEs"), Comment("Low edge for the PE spectra"), d.minPEs};
+  fhicl::Atom<double> maxPEs{Name("maxPEs"), Comment("High edge for the PE spectra"), d.maxPEs};
+  fhicl::Atom<double> PEfitRangeStart{
+      Name("PEfitRangeStart"), Comment("Low end of the MPV fit range as a fraction of peak"),
+      d.PEfitRangeStart};
+  fhicl::Atom<double> PEfitRangeEnd{
+      Name("PEfitRangeEnd"), Comment("High end of the MPV fit range as a fraction of peak"),
+      d.PEfitRangeEnd};
+  fhicl::Atom<double> PEstart{Name("PEstart"), Comment("Lowest PE for the fit"), d.PEstart};
+  fhicl::Atom<int> nSectorTypeBins{
+      Name("nSectorTypeBins"), Comment("Bins for crvCoincidencesClusters"), d.nSectorTypeBins};
+  fhicl::Atom<bool> writePerChannelPE{
+      Name("writePerChannelPE"), Comment("Write the ~50k per-channel PE spectra (expert)"),
+      d.writePerChannelPE};
+  fhicl::Atom<bool> fillInclusive{
+      Name("fillInclusive"), Comment("Per-event DqmCrv reco-pulse and cluster plots"),
+      d.fillInclusive};
+  fhicl::Atom<int> nBinsTime{
+      Name("nBinsTime"), Comment("Bins for PulseTime / LeadingTime / tc"), d.nBinsTime};
+  fhicl::Atom<double> minTime{Name("minTime"), Comment("Low edge for the short time axes [ns]"), d.minTime};
+  fhicl::Atom<double> maxTime{Name("maxTime"), Comment("High edge for the short time axes [ns]"), d.maxTime};
+  fhicl::Atom<int> nBinsTime2{
+      Name("nBinsTime2"), Comment("Bins for PulseTime2 / LeadingTime2 / t2c"), d.nBinsTime2};
+  fhicl::Atom<double> minTime2{Name("minTime2"), Comment("Low edge for the full-window axes [ns]"), d.minTime2};
+  fhicl::Atom<double> maxTime2{Name("maxTime2"), Comment("High edge for the full-window axes [ns]"), d.maxTime2};
+  fhicl::Atom<int> nBinsPos{Name("nBinsPos"), Comment("Bins for the cluster position plots"), d.nBinsPos};
+  fhicl::Atom<double> minX{Name("minX"), Comment("Low edge for X [mm]"), d.minX};
+  fhicl::Atom<double> maxX{Name("maxX"), Comment("High edge for X [mm]"), d.maxX};
+  fhicl::Atom<double> minY{Name("minY"), Comment("Low edge for Y [mm]"), d.minY};
+  fhicl::Atom<double> maxY{Name("maxY"), Comment("High edge for Y [mm]"), d.maxY};
+  fhicl::Atom<double> minZ{Name("minZ"), Comment("Low edge for Z [mm]"), d.minZ};
+  fhicl::Atom<double> maxZ{Name("maxZ"), Comment("High edge for Z [mm]"), d.maxZ};
+  fhicl::OptionalDelegatedParameter segmentation{
+      Name("segmentation"),
+      Comment("Per-subrun / last-N-events copies and publishing for this helper; "
+              "see Offline/DQMHelpers/README.md")};
+};
+
+CRVRecoDQM::Config toConfig(const CRVRecoDQMFhicl& c);
 
 } // namespace mu2e
 

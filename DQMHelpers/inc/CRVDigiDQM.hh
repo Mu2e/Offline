@@ -10,6 +10,10 @@
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
 #include "art_root_io/TFileDirectory.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 #include "TH1D.h"
 #include "TH1F.h"
@@ -234,6 +238,74 @@ private:
   uint64_t avgBlockFirstEwt_{0};
   bool avgSeedsCleared_{false};
 };
+
+// At namespace scope rather than nested in the class: a nested sibling
+// cannot default-construct Config, whose member initializers are only
+// complete at the end of the enclosing class.
+// Validated FHiCL for the Config above, declared beside it so a default lives in one
+// place: each atom reads its own from `d`. A module owning one helper can
+// splice this in flat with fhicl::TableFragment; one owning several must
+// nest it, because the helpers share member names.
+struct CRVDigiDQMFhicl {
+  using Name = fhicl::Name;
+  using Comment = fhicl::Comment;
+  // Not constexpr: Config carries the segmentation block, which holds
+  // std::string and std::vector, so it is not a literal type.
+  static inline const CRVDigiDQM::Config d{};
+
+  fhicl::Atom<int> nBinsDigisPerEvt{
+      Name("nBinsDigisPerEvt"), Comment("Bins for h1_digisPerEvt"), d.nBinsDigisPerEvt};
+  fhicl::Atom<float> maxDigisPerEvt{
+      Name("maxDigisPerEvt"), Comment("Upper edge for h1_digisPerEvt"), d.maxDigisPerEvt};
+  fhicl::Atom<int> nBinsPeakAdc{
+      Name("nBinsPeakAdc"), Comment("Bins for h1_peakAdc"), d.nBinsPeakAdc};
+  fhicl::Atom<float> maxPeakAdc{
+      Name("maxPeakAdc"), Comment("Upper edge for h1_peakAdc"), d.maxPeakAdc};
+  fhicl::Atom<int> nBinsTdc{Name("nBinsTdc"), Comment("Bins for h1_tdc"), d.nBinsTdc};
+  fhicl::Atom<float> maxTdc{
+      Name("maxTdc"), Comment("Upper edge for h1_tdc"), d.maxTdc};
+  fhicl::Atom<double> cfFraction{
+      Name("cfFraction"), Comment("Constant-fraction timing threshold"), d.cfFraction};
+  fhicl::Atom<float> dtBinSize{
+      Name("dtBinSize"), Comment("CF dt histogram bin width [ns]"), d.dtBinSize};
+  fhicl::Atom<float> dtRange{
+      Name("dtRange"), Comment("CF dt histogram +/- range [ns]"), d.dtRange};
+  fhicl::Atom<float> dtVsFebBinSize{
+      Name("dtVsFebBinSize"), Comment("dtVsFeb bin width [ns]"), d.dtVsFebBinSize};
+  fhicl::Atom<float> dtVsFebRange{
+      Name("dtVsFebRange"), Comment("dtVsFeb +/- range [ns]"), d.dtVsFebRange};
+  fhicl::Atom<int> minAmplitude{
+      Name("minAmplitude"), Comment("Minimum CF amplitude (peak-baseline)"), d.minAmplitude};
+  fhicl::Atom<int> avgBlockSize{
+      Name("avgBlockSize"), Comment("Events per g_digisAvgVsEwt point"),
+      static_cast<int>(d.avgBlockSize)};
+  fhicl::Atom<int> avgGraphPoints{
+      Name("avgGraphPoints"), Comment("Max points in g_digisAvgVsEwt"),
+      static_cast<int>(d.avgGraphPoints)};
+  fhicl::Atom<int> channelsWindowEwts{
+      Name("channelsWindowEwts"),
+      Comment("Default window span for a segmentation rule that names none"),
+      static_cast<int>(d.channelsWindowEwts)};
+  fhicl::Atom<bool> fillInclusive{
+      Name("fillInclusive"), Comment("Also fill ValCrvDigi BarId/SiPM/ADC histograms"),
+      d.fillInclusive};
+  fhicl::Atom<bool> fillCrvIdRates{
+      Name("fillCrvIdRates"), Comment("Book CRVId occupancy maps and crvDigisPerChannel"),
+      d.fillCrvIdRates};
+  fhicl::Atom<bool> kppReadout{
+      Name("kppReadout"),
+      Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"),
+      d.kppReadout};
+  fhicl::Atom<bool> fillLivePlots{
+      Name("fillLivePlots"),
+      Comment("Book TGraphs vs EWT (online only; not hadd-safe)"), d.fillLivePlots};
+  fhicl::OptionalDelegatedParameter segmentation{
+      Name("segmentation"),
+      Comment("Per-subrun / last-N-events copies and publishing for this helper; "
+              "see Offline/DQMHelpers/README.md")};
+};
+
+CRVDigiDQM::Config toConfig(const CRVDigiDQMFhicl& c);
 
 } // namespace mu2e
 

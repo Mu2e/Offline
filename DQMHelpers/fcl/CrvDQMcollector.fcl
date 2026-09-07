@@ -55,11 +55,13 @@ services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_extracted_
 
 # The inclusive X/Y/Z defaults are the full-CRV DqmCrv ranges. The extracted
 # counters sit at y ~ 4237-4649 and z ~ 21440-23065, so without these Y and Z
-# are 100% overflow.
-physics.analyzers.CrvDQMcollector.minY : 3500.0
-physics.analyzers.CrvDQMcollector.maxY : 5500.0
-physics.analyzers.CrvDQMcollector.minZ : 20000.0
-physics.analyzers.CrvDQMcollector.maxZ : 26000.0
+# are 100% overflow. They live in the reco helper's own block: each helper is
+# configured under its own key, because the helpers share parameter names
+# (fillInclusive is in both the digi and reco configs).
+physics.analyzers.CrvDQMcollector.crvRecoDQM.minY : 3500.0
+physics.analyzers.CrvDQMcollector.crvRecoDQM.maxY : 5500.0
+physics.analyzers.CrvDQMcollector.crvRecoDQM.minZ : 20000.0
+physics.analyzers.CrvDQMcollector.crvRecoDQM.maxZ : 26000.0
 
 # There is no CRV IOV in the database for the extracted runs, so the CRV
 # conditions come from the text files shipped in CRVConditions/data.
@@ -81,23 +83,25 @@ services.DbService.verbose : 0
 # so every histogram gets exactly one job-integrated copy -- which is what
 # `hadd` wants and what the KPP extractor reads.
 #
-# The collector owns three helpers, and a rule glob is matched against the
-# histogram path relative to *that helper's own directory*. One block therefore
-# cannot tell the three `nEvents` histograms apart, which is why there are four
-# keys: `segmentation` applies to any helper with no block of its own, and the
-# three below replace it for one helper each (replace, not merge).
+# Each helper is configured under its own key, and carries its own optional
+# segmentation block:
+#
+#   physics.analyzers.CrvDQMcollector.crvDigiDQM.segmentation   : { ... }
+#   physics.analyzers.CrvDQMcollector.crvRecoDQM.segmentation   : { ... }
+#   physics.analyzers.CrvDQMcollector.crvStatusDQM.segmentation : { ... }
+#
+# The nesting is not stylistic: a rule glob matches the histogram path relative
+# to that helper's own directory, so one shared block could not tell the three
+# `nEvents` histograms apart. Every parameter each block accepts, and its
+# default, is in that helper's header as CRVDigiDQMFhicl / CRVRecoDQMFhicl /
+# CRVStatusDQMFhicl.
 #
 # Full grammar, the naming and labelling scheme, and which segment copies
 # survive `hadd`: Offline/DQMHelpers/README.md.
 #
-# physics.analyzers.CrvDQMcollector.segmentation           : { ... }
-# physics.analyzers.CrvDQMcollector.crvDigiSegmentation    : { ... }
-# physics.analyzers.CrvDQMcollector.crvRecoSegmentation    : { ... }
-# physics.analyzers.CrvDQMcollector.crvStatusSegmentation  : { ... }
-#
 # For example, a per-subrun nEvents for the digi helper alone:
 #
-# physics.analyzers.CrvDQMcollector.crvDigiSegmentation : {
+# physics.analyzers.CrvDQMcollector.crvDigiDQM.segmentation : {
 #   rules : [
 #     { match  : "nEvents"
 #       modes  : [ "job", "subrun" ]

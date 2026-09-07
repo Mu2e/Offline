@@ -3,6 +3,7 @@
 // Original Author: R. Mina
 
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
+#include "Offline/DQMHelpers/inc/DQMSegmentationConfig.hh"
 #include "Offline/DQMHelpers/inc/CRVCFTime.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -26,6 +27,33 @@ int CRVDigiDQM::globalChannelId(uint8_t roc, uint8_t feb, uint8_t febChannel)
 {
   return globalFebId(roc, feb) * static_cast<int>(CRVId::nChanPerFEB) +
          febChannel;
+}
+
+CRVDigiDQM::Config toConfig(const CRVDigiDQMFhicl& c)
+{
+  CRVDigiDQM::Config out;
+  out.nBinsDigisPerEvt = c.nBinsDigisPerEvt();
+  out.maxDigisPerEvt = c.maxDigisPerEvt();
+  out.nBinsPeakAdc = c.nBinsPeakAdc();
+  out.maxPeakAdc = c.maxPeakAdc();
+  out.nBinsTdc = c.nBinsTdc();
+  out.maxTdc = c.maxTdc();
+  out.cfFraction = c.cfFraction();
+  out.dtBinSize = c.dtBinSize();
+  out.dtRange = c.dtRange();
+  out.dtVsFebBinSize = c.dtVsFebBinSize();
+  out.dtVsFebRange = c.dtVsFebRange();
+  out.minAmplitude = c.minAmplitude();
+  out.avgBlockSize = static_cast<std::size_t>(std::max(c.avgBlockSize(), 1));
+  out.avgGraphPoints = static_cast<std::size_t>(std::max(c.avgGraphPoints(), 1));
+  out.channelsWindowEwts =
+      static_cast<std::size_t>(std::max(c.channelsWindowEwts(), 1));
+  out.fillInclusive = c.fillInclusive();
+  out.fillCrvIdRates = c.fillCrvIdRates();
+  out.kppReadout = c.kppReadout();
+  out.fillLivePlots = c.fillLivePlots();
+  out.segmentation = parseSegmentation(c.segmentation);
+  return out;
 }
 
 CRVDigiDQM::CRVDigiDQM(const Config& config) :

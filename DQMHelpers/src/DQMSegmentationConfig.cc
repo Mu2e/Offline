@@ -158,14 +158,4 @@ DQMSegmentation::Config parseSegmentation(const fhicl::OptionalDelegatedParamete
   return parseSegmentation(ps);
 }
 
-DQMSegmentation::Config parseSegmentation(const fhicl::OptionalDelegatedParameter& specific,
-                                          const fhicl::OptionalDelegatedParameter& shared)
-{
-  fhicl::ParameterSet ps;
-  if (specific.get_if_present<fhicl::ParameterSet>(ps)) {
-    return parseSegmentation(ps);
-  }
-  return parseSegmentation(shared);
-}
-
 } // namespace mu2e

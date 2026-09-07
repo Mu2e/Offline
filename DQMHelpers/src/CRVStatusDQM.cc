@@ -3,6 +3,7 @@
 // Original Author: R. Mina
 
 #include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
+#include "Offline/DQMHelpers/inc/DQMSegmentationConfig.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -66,6 +67,24 @@ void CRVStatusDQM::noteUnindexedRoc(uint8_t dtcId, uint8_t linkId)
       << kNLinksPerDTC << "+linkId < " << kNRocBins
       << "). Per-link latency / rocCensus / errorBitsVsRoc skip it. "
       << "Reported once per job.";
+}
+
+CRVStatusDQM::Config toConfig(const CRVStatusDQMFhicl& c)
+{
+  CRVStatusDQM::Config out;
+  out.nBinsLatency = std::max(c.nBinsLatency(), 1);
+  out.maxLinkLatency = c.maxLinkLatency();
+  out.nBinsTriggerCount = std::max(c.nBinsTriggerCount(), 1);
+  out.maxTriggerCount = c.maxTriggerCount();
+  out.nBinsWordCount = std::max(c.nBinsWordCount(), 1);
+  out.maxWordCount = c.maxWordCount();
+  out.nBinsEwtMismatch = std::max(c.nBinsEwtMismatch(), 1);
+  out.maxEwtMismatch = c.maxEwtMismatch();
+  out.nBinsErrorsPerSubrun = std::max(c.nBinsErrorsPerSubrun(), 1);
+  out.maxErrorsPerSubrun = c.maxErrorsPerSubrun();
+  out.fillLivePlots = c.fillLivePlots();
+  out.segmentation = parseSegmentation(c.segmentation);
+  return out;
 }
 
 CRVStatusDQM::CRVStatusDQM(const Config& config) : config_(config)

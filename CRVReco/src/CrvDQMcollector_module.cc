@@ -62,14 +62,15 @@ namespace mu2e
       fhicl::Atom<std::string> crvDigiDQMDir{Name("crvDigiDQMDir"), Comment("TFileService subdirectory for CRVDigiDQM histograms"), "CRVDigiDQM"};
       fhicl::Atom<std::string> crvRecoDQMDir{Name("crvRecoDQMDir"), Comment("TFileService subdirectory for CRVRecoDQM histograms; empty books in the module directory"), ""};
       fhicl::Atom<std::string> crvStatusDQMDir{Name("crvStatusDQMDir"), Comment("TFileService subdirectory for CRVStatusDQM histograms"), "CRVStatusDQM"};
-      fhicl::Atom<bool> fillInclusiveDigiDQM{Name("fillInclusiveDigiDQM"), Comment("also fill BarId/SiPM/ADC in CRVDigiDQM"), true};
-      fhicl::Atom<bool> fillInclusiveRecoDQM{Name("fillInclusiveRecoDQM"), Comment("also fill the per-event DqmCrv reco-pulse and cluster plots in CRVRecoDQM"), true};
-      fhicl::Atom<bool> crvDigiDQMkppReadout{Name("crvDigiDQMkppReadout"), Comment("KPP FEB-axis sizing (ROC 1-2); ROC4->ROC2 is the unpacker's job"), true};
-      fhicl::Atom<bool> writePerChannelPE{Name("writePerChannelPE"), Comment("write the ~50k per-channel PE spectra (expert output)"), false};
+      //Per-helper blocks. The atoms themselves are declared once, in
+      //each helper's own header as CRVxDQMFhicl, with defaults read from that
+      //helper's Config so a binning default lives in exactly one place.
+      fhicl::Table<CRVDigiDQMFhicl>   crvDigiDQM{Name("crvDigiDQM"), Comment("CRVDigiDQM helper configuration")};
+      fhicl::Table<CRVRecoDQMFhicl>   crvRecoDQM{Name("crvRecoDQM"), Comment("CRVRecoDQM helper configuration")};
+      fhicl::Table<CRVStatusDQMFhicl> crvStatusDQM{Name("crvStatusDQM"), Comment("CRVStatusDQM helper configuration")};
 
-      fhicl::Atom<int>    histPEsBins{Name("histPEsBins"), Comment("number of bins for PE histograms"), 75};
-      fhicl::Atom<double> histPEsStart{Name("histPEsStart"), Comment("range start for PE histograms"), 0};
-      fhicl::Atom<double> histPEsEnd{Name("histPEsEnd"), Comment("range end for PE histograms"), 150};
+      //Histogram binning for the collector's own Proditions plots, which no
+      //helper owns.
       fhicl::Atom<int>    histPedestalsBins{Name("histPedestalsBins"), Comment("number of bins for pedestal histograms"), 200};
       fhicl::Atom<double> histPedestalsStart{Name("histPedestalsStart"), Comment("range start for pedestal histograms"), 1950};
       fhicl::Atom<double> histPedestalsEnd{Name("histPedestalsEnd"), Comment("range end for pedestal histograms"), 2150};
@@ -79,32 +80,6 @@ namespace mu2e
       fhicl::Atom<int>    histDigisBins{Name("histDigisBins"), Comment("number of bins for digis per channel and event histograms"), 200};
       fhicl::Atom<double> histDigisStart{Name("histDigisStart"), Comment("range start for digis per channel and event histograms"), 0};
       fhicl::Atom<double> histDigisEnd{Name("histDigisEnd"), Comment("range end for digis per channel and event histograms"), 0.1};
-      fhicl::Atom<double> PEfitRangeStart{Name("PEfitRangeStart"), Comment("low end of the PE MPV fit range as fraction of peak"), 0.7};
-      fhicl::Atom<double> PEfitRangeEnd{Name("PEfitRangeEnd"), Comment("high end of the PE MPV fit range as fraction of peak"), 2.0};
-      fhicl::Atom<double> PEstart{Name("PEstart"), Comment("lowest PE for fit"), 15.0};
-
-      //inclusive-plot axes that depend on detector position and readout window.
-      //defaults are the DqmCrv values (full CRV, Mu2e coordinates); the extracted
-      //CRV sits at y~4237-4649, z~21440-23065 and needs minY/maxY, minZ/maxZ moved.
-      fhicl::Atom<int>    nBinsTime{Name("nBinsTime"), Comment("bins for PulseTime/LeadingTime/tc"), 100};
-      fhicl::Atom<double> minTime{Name("minTime"), Comment("range start for PulseTime/LeadingTime/tc [ns]"), 0.0};
-      fhicl::Atom<double> maxTime{Name("maxTime"), Comment("range end for PulseTime/LeadingTime/tc [ns]"), 2000.0};
-      fhicl::Atom<int>    nBinsTime2{Name("nBinsTime2"), Comment("bins for PulseTime2/LeadingTime2/t2c"), 100};
-      fhicl::Atom<double> minTime2{Name("minTime2"), Comment("range start for PulseTime2/LeadingTime2/t2c [ns]"), 0.0};
-      fhicl::Atom<double> maxTime2{Name("maxTime2"), Comment("range end for PulseTime2/LeadingTime2/t2c [ns]"), 100000.0};
-      fhicl::Atom<int>    nBinsPos{Name("nBinsPos"), Comment("bins for the cluster position plots X/Y/Z"), 100};
-      fhicl::Atom<double> minX{Name("minX"), Comment("range start for X [mm]"), -6904.0};
-      fhicl::Atom<double> maxX{Name("maxX"), Comment("range end for X [mm]"), -904.0};
-      fhicl::Atom<double> minY{Name("minY"), Comment("range start for Y [mm]"), 0.0};
-      fhicl::Atom<double> maxY{Name("maxY"), Comment("range end for Y [mm]"), 3000.0};
-      fhicl::Atom<double> minZ{Name("minZ"), Comment("range start for Z [mm]"), -3500.0};
-      fhicl::Atom<double> maxZ{Name("maxZ"), Comment("range end for Z [mm]"), 20000.0};
-
-      //which histograms get per-subrun / last-N-events copies. `segmentation`
-      fhicl::OptionalDelegatedParameter segmentation{Name("segmentation"), Comment("histogram segmentation rules applied to any helper without its own block; see Offline/DQMHelpers/README.md")};
-      fhicl::OptionalDelegatedParameter crvDigiSegmentation{Name("crvDigiSegmentation"), Comment("segmentation rules for CRVDigiDQM only; replaces segmentation")};
-      fhicl::OptionalDelegatedParameter crvRecoSegmentation{Name("crvRecoSegmentation"), Comment("segmentation rules for CRVRecoDQM only; replaces segmentation")};
-      fhicl::OptionalDelegatedParameter crvStatusSegmentation{Name("crvStatusSegmentation"), Comment("segmentation rules for CRVStatusDQM only; replaces segmentation")};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -188,48 +163,9 @@ namespace mu2e
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0),
     _treeMetaData(nullptr),
-    _digiDQM([] (const Config &conf) {
-      CRVDigiDQM::Config c;
-      c.fillInclusive = conf.fillInclusiveDigiDQM();
-      c.kppReadout = conf.crvDigiDQMkppReadout();
-      c.fillLivePlots = false;
-      c.segmentation = parseSegmentation(conf.crvDigiSegmentation, conf.segmentation);
-      return c;
-    }(conf())),
-    _recoDQM([] (const Config &conf) {
-      CRVRecoDQM::Config c;
-      c.nBinsPEs = conf.histPEsBins();
-      c.minPEs = conf.histPEsStart();
-      c.maxPEs = conf.histPEsEnd();
-      c.PEfitRangeStart = conf.PEfitRangeStart();
-      c.PEfitRangeEnd = conf.PEfitRangeEnd();
-      c.PEstart = conf.PEstart();
-      c.writePerChannelPE = conf.writePerChannelPE();
-      c.fillInclusive = conf.fillInclusiveRecoDQM();
-      c.nBinsTime = conf.nBinsTime();
-      c.minTime = conf.minTime();
-      c.maxTime = conf.maxTime();
-      c.nBinsTime2 = conf.nBinsTime2();
-      c.minTime2 = conf.minTime2();
-      c.maxTime2 = conf.maxTime2();
-      c.nBinsPos = conf.nBinsPos();
-      c.minX = conf.minX();
-      c.maxX = conf.maxX();
-      c.minY = conf.minY();
-      c.maxY = conf.maxY();
-      c.minZ = conf.minZ();
-      c.maxZ = conf.maxZ();
-      c.segmentation = parseSegmentation(conf.crvRecoSegmentation, conf.segmentation);
-      return c;
-    }(conf())),
-    //binning defaults are the online ones; fillLivePlots stays false so the
-    //per-job file hadds
-    _statusDQM([] (const Config &conf) {
-      CRVStatusDQM::Config c;
-      c.fillLivePlots = false;
-      c.segmentation = parseSegmentation(conf.crvStatusSegmentation, conf.segmentation);
-      return c;
-    }(conf()))
+    _digiDQM(toConfig(conf().crvDigiDQM())),
+    _recoDQM(toConfig(conf().crvRecoDQM())),
+    _statusDQM(toConfig(conf().crvStatusDQM()))
   {
   }
 

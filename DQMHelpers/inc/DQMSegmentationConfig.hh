@@ -48,14 +48,6 @@ DQMSegmentation::Config parseSegmentation(const fhicl::ParameterSet& ps);
 // worth more than two schemas that can disagree.
 DQMSegmentation::Config parseSegmentation(const fhicl::OptionalDelegatedParameter& p);
 
-// For a module that owns more than one helper. Each helper's registry matches
-// rule globs against paths relative to its own directory, so one shared block
-// cannot tell two helpers' identically named histograms apart -- `nEvents`
-// exists in all three CRV helpers. `specific` wins outright when present
-// (it replaces `shared`, it does not merge with it); otherwise `shared`
-// applies. Absent both, the job-only default.
-DQMSegmentation::Config parseSegmentation(const fhicl::OptionalDelegatedParameter& specific,
-                                          const fhicl::OptionalDelegatedParameter& shared);
 
 } // namespace mu2e
 

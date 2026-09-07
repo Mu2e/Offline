@@ -33,10 +33,12 @@ BEGIN_PROLOG
       crvDigiDQMDir                          : "CRVDigiDQM"
       crvStatusDQMDir                        : "CRVStatusDQM"
       crvRecoDQMDir                          : ""     # module directory, where the PE/MPV hists have always lived
-      fillInclusiveDigiDQM                   : true
-      fillInclusiveRecoDQM                   : true   # per-event DqmCrv reco-pulse and cluster plots
-      crvDigiDQMkppReadout                   : true   # KPP FEB-axis sizing (ROC 1-2)
-      writePerChannelPE                      : false  # ~50k per-channel PE spectra; expert output
+      # One block per helper. Nested because the helpers share parameter names
+      # (fillInclusive is in both the digi and reco configs), and so that each
+      # carries its own optional segmentation block.
+      crvDigiDQM   : { kppReadout : true }   # KPP FEB-axis sizing (ROC 1-2)
+      crvRecoDQM   : { }                     # writePerChannelPE : true for the ~50k expert spectra
+      crvStatusDQM : { }
     }
 
     CrvRecoPulses:

@@ -10,6 +10,10 @@
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 
 #include "art_root_io/TFileDirectory.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Comment.h"
+#include "fhiclcpp/types/Name.h"
+#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -178,6 +182,38 @@ private:
   std::uint64_t latencySumThisSubrun_{0};
   std::size_t latencyNThisSubrun_{0};
 };
+
+// At namespace scope rather than nested in the class: a nested sibling
+// cannot default-construct Config, whose member initializers are only
+// complete at the end of the enclosing class.
+// Validated FHiCL for the Config above; see the note on CRVDigiDQMFhicl.
+struct CRVStatusDQMFhicl {
+  using Name = fhicl::Name;
+  using Comment = fhicl::Comment;
+  // Not constexpr: Config carries the segmentation block, which holds
+  // std::string and std::vector, so it is not a literal type.
+  static inline const CRVStatusDQM::Config d{};
+
+  fhicl::Atom<int> nBinsLatency{Name("nBinsLatency"), Comment("Bins for linkLatency"), d.nBinsLatency};
+  fhicl::Atom<float> maxLinkLatency{Name("maxLinkLatency"), Comment("Upper edge for linkLatency"), d.maxLinkLatency};
+  fhicl::Atom<int> nBinsTriggerCount{Name("nBinsTriggerCount"), Comment("Bins for triggerCount"), d.nBinsTriggerCount};
+  fhicl::Atom<float> maxTriggerCount{Name("maxTriggerCount"), Comment("Upper edge for triggerCount"), d.maxTriggerCount};
+  fhicl::Atom<int> nBinsWordCount{Name("nBinsWordCount"), Comment("Bins for wordCount"), d.nBinsWordCount};
+  fhicl::Atom<float> maxWordCount{Name("maxWordCount"), Comment("Upper edge for wordCount"), d.maxWordCount};
+  fhicl::Atom<int> nBinsEwtMismatch{Name("nBinsEwtMismatch"), Comment("Bins for ewtMismatch"), d.nBinsEwtMismatch};
+  fhicl::Atom<float> maxEwtMismatch{Name("maxEwtMismatch"), Comment("+/- range for ewtMismatch"), d.maxEwtMismatch};
+  fhicl::Atom<int> nBinsErrorsPerSubrun{Name("nBinsErrorsPerSubrun"), Comment("Bins for errorsPerSubrun"), d.nBinsErrorsPerSubrun};
+  fhicl::Atom<float> maxErrorsPerSubrun{Name("maxErrorsPerSubrun"), Comment("Upper edge for errorsPerSubrun"), d.maxErrorsPerSubrun};
+  fhicl::Atom<bool> fillLivePlots{
+      Name("fillLivePlots"), Comment("Book TGraphs vs subrun (online only; not hadd-safe)"),
+      d.fillLivePlots};
+  fhicl::OptionalDelegatedParameter segmentation{
+      Name("segmentation"),
+      Comment("Per-subrun / last-N-events copies and publishing for this helper; "
+              "see Offline/DQMHelpers/README.md")};
+};
+
+CRVStatusDQM::Config toConfig(const CRVStatusDQMFhicl& c);
 
 } // namespace mu2e
 

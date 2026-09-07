@@ -3,6 +3,7 @@
 // Original Author: R. Mina
 
 #include "Offline/DQMHelpers/inc/CRVRecoDQM.hh"
+#include "Offline/DQMHelpers/inc/DQMSegmentationConfig.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -119,6 +120,35 @@ void checkAxis(const char* what, int& nBins, double lo, double hi)
   }
 }
 } // namespace
+
+CRVRecoDQM::Config toConfig(const CRVRecoDQMFhicl& c)
+{
+  CRVRecoDQM::Config out;
+  out.nBinsPEs = c.nBinsPEs();
+  out.minPEs = c.minPEs();
+  out.maxPEs = c.maxPEs();
+  out.PEfitRangeStart = c.PEfitRangeStart();
+  out.PEfitRangeEnd = c.PEfitRangeEnd();
+  out.PEstart = c.PEstart();
+  out.nSectorTypeBins = c.nSectorTypeBins();
+  out.writePerChannelPE = c.writePerChannelPE();
+  out.fillInclusive = c.fillInclusive();
+  out.nBinsTime = c.nBinsTime();
+  out.minTime = c.minTime();
+  out.maxTime = c.maxTime();
+  out.nBinsTime2 = c.nBinsTime2();
+  out.minTime2 = c.minTime2();
+  out.maxTime2 = c.maxTime2();
+  out.nBinsPos = c.nBinsPos();
+  out.minX = c.minX();
+  out.maxX = c.maxX();
+  out.minY = c.minY();
+  out.maxY = c.maxY();
+  out.minZ = c.minZ();
+  out.maxZ = c.maxZ();
+  out.segmentation = parseSegmentation(c.segmentation);
+  return out;
+}
 
 CRVRecoDQM::CRVRecoDQM(const Config& config) : config_(config)
 {

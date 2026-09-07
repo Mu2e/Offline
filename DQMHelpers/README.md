@@ -251,33 +251,32 @@ drifting.
 
 A rule glob is matched against the histogram path **relative to that helper's own
 directory**, so a single block cannot tell two helpers' identically named
-histograms apart -- and `nEvents` exists in all three CRV helpers.
-`CrvDQMcollector` therefore takes four blocks:
+histograms apart -- and `nEvents` exists in all three CRV helpers. The same is true
+of the helpers' other parameters: `fillInclusive` is in both the digi and reco
+configs, `fillLivePlots` in both the digi and status ones.
 
-| Key | Applies to |
-|---|---|
-| `segmentation` | any helper with no block of its own |
-| `crvDigiSegmentation` | `CRVDigiDQM` only |
-| `crvRecoSegmentation` | `CRVRecoDQM` only |
-| `crvStatusSegmentation` | `CRVStatusDQM` only |
-
-A per-helper block **replaces** the shared one for that helper; it does not merge
-with it. Omit all four for job-only.
-
-`fcl/CrvDQMcollector.fcl` is the runnable config for the collector and carries all
-four keys as commented examples, alongside the extracted-CRV geometry and axis
-overrides.
+`CrvDQMcollector` therefore configures each helper under its own key, and each
+block carries that helper's own `segmentation`:
 
 ```fcl
-# per-subrun nEvents for the digi helper alone, everything else job-only
-crvDigiSegmentation : {
-  rules : [
-    { match  : "nEvents"
-      modes  : [ "job", "subrun" ]
-      subrun : { keep : -1  persist : true } }
-  ]
+CrvDQMcollector : {
+  crvDigiModuleLabel : "CrvDigi"          # module-level: labels, directories
+  crvDigiDQMDir      : "CRVDigiDQM"
+  ...
+  crvDigiDQM   : { kppReadout : true   segmentation : { rules : [ ... ] } }
+  crvRecoDQM   : { minY : 3500.0       segmentation : { rules : [ ... ] } }
+  crvStatusDQM : { nBinsLatency : 1024 segmentation : { rules : [ ... ] } }
 }
 ```
+
+The atoms those blocks accept are declared once, as `CRVDigiDQMFhicl` and friends,
+in the same header as the `Config` they mirror, with every **default read from that
+`Config`** -- so a binning default lives in exactly one place rather
+than being repeated in the struct, in each module's atom list, and in the online
+`ps.get` call and kept equal by hand.
+
+A module owning a single helper has no collision to resolve and can splice the
+same atoms in flat with `fhicl::TableFragment`, leaving its FCL unnested.
 
 The otsdaq modules own one helper each, so they take a single `segmentation` block
 and need none of this.
