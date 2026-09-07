@@ -5,6 +5,7 @@
 // end of job to Landau(x)Gauss MPV maps. No GeometryService, no Proditions.
 // Original Author: R. Mina
 
+#include "Offline/DQMHelpers/inc/DQMSegmentation.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
@@ -46,16 +47,8 @@ public:
     bool fillInclusive{true};
 
     // Axes of the inclusive plots that depend on where the detector is and how
-    // long its readout window is. Defaults are the DqmCrv / ValCrv* values, cut
-    // for the full CRV in Mu2e coordinates; on the extracted CRV the y and z
-    // defaults are entirely overflow (it sits at y ~ 4237-4649, z ~ 21440-23065),
-    // which is what these exist to fix. Everything else in the inclusive block
-    // is detector-independent and stays fixed, so those series cannot drift.
-    //
-    // Each time quantity is booked twice, as a short view and a full-window
-    // view. The three short axes share one definition and the three long axes
-    // another, because they are the same quantity in the same window and the
-    // point of them is that pulse, leading-edge and cluster times overlay.
+    // long its readout window is.
+    // Each time quantity is booked twice, as a short view and a full-window view.
     int nBinsTime{100};      // PulseTime, LeadingTime, tc
     double minTime{0.0};
     double maxTime{2000.0};
@@ -69,6 +62,9 @@ public:
     double maxY{3000.0};
     double minZ{-3500.0};
     double maxZ{20000.0};
+    // Which histograms get per-subrun and last-N-events copies. Default is
+    // job-only, which reproduces the pre-segmentation output exactly.
+    DQMSegmentation::Config segmentation{};
   };
 
   // Online geography. The MPV index and the MPV axes are both derived from
@@ -95,6 +91,12 @@ public:
   explicit CRVRecoDQM(const Config& config);
 
   void Book(art::TFileDirectory dir);
+  void BeginSubRun(int run, int subrun);
+  void EndSubRun();
+
+  // Every histogram this helper books, and the segment copies of each.
+  DQMSegmentation& segments() { return segments_; }
+  const DQMSegmentation& segments() const { return segments_; }
   // Caller injects the geometry-derived sector map so the helper needs no
   // GeometryService. Negative sector skips the channel, which is how a caller
   // drops its Proditions notConnected channels. Call once after Book().
@@ -183,7 +185,7 @@ private:
   LandauGaussResult fitChannel(TH1F* h);
   TH1F* spectrum(std::vector<TH1F*>& hists, std::size_t index,
                  const char* namePrefix);
-  void bookInclusive(art::TFileDirectory& dir);
+  void bookInclusive();
   void bookPositionHists(const double lo[3], const double hi[3]);
   void ensurePositionAxes();
   void fillClusters(const CrvCoincidenceClusterCollection& clusters);
@@ -196,11 +198,15 @@ private:
 
   std::optional<art::TFileDirectory> dir_;
   std::optional<art::TFileDirectory> spectraDir_;
+  DQMSegmentation segments_;
 
-  TH1F* h_nEvents_{nullptr};
-  TH1F* h_nEventsWithClusters_{nullptr};
-  TH1I* h_coincidenceClusters_{nullptr};
+  DQMHist1<TH1F> h_nEvents_;
+  DQMHist1<TH1F> h_nEventsWithClusters_;
+  DQMHist1<TH1I> h_coincidenceClusters_;
 
+  // The MPV maps are filled once in WriteGraphs from the per-channel fits, not
+  // per event, so job / subrun / window copies of them would be identical.
+  // They stay outside the segmentation registry.
   std::vector<TH1F*> h_PEsMPVSector_;
   std::vector<TH1F*> h_PEsMPVROC_;
   TH2F* h_PEsMPV_{nullptr};
@@ -214,27 +220,27 @@ private:
 
   std::vector<int> channelToSector_;
 
-  TH1D* h_NPulses_{nullptr};
-  TH1D* h_NPulse2_{nullptr};
-  TH1D* h_BarIdr_{nullptr};
-  TH1D* h_SiPMr_{nullptr};
-  TH1D* h_PEr_{nullptr};
-  TH1D* h_PEHeight_{nullptr};
-  TH1D* h_PulseTime_{nullptr};
-  TH1D* h_PulseTime2_{nullptr};
-  TH1D* h_chi2_{nullptr};
-  TH1D* h_logchi2_{nullptr};
-  TH1D* h_LeadingTime_{nullptr};
-  TH1D* h_LeadingTime2_{nullptr};
+  DQMHist1<TH1D> h_NPulses_;
+  DQMHist1<TH1D> h_NPulse2_;
+  DQMHist1<TH1D> h_BarIdr_;
+  DQMHist1<TH1D> h_SiPMr_;
+  DQMHist1<TH1D> h_PEr_;
+  DQMHist1<TH1D> h_PEHeight_;
+  DQMHist1<TH1D> h_PulseTime_;
+  DQMHist1<TH1D> h_PulseTime2_;
+  DQMHist1<TH1D> h_chi2_;
+  DQMHist1<TH1D> h_logchi2_;
+  DQMHist1<TH1D> h_LeadingTime_;
+  DQMHist1<TH1D> h_LeadingTime2_;
 
-  TH1D* h_NClus_{nullptr};
-  TH1D* h_NPc_{nullptr};
-  TH1D* h_PEc_{nullptr};
-  TH1D* h_tc_{nullptr};
-  TH1D* h_t2c_{nullptr};
-  TH1D* h_X_{nullptr};
-  TH1D* h_Y_{nullptr};
-  TH1D* h_Z_{nullptr};
+  DQMHist1<TH1D> h_NClus_;
+  DQMHist1<TH1D> h_NPc_;
+  DQMHist1<TH1D> h_PEc_;
+  DQMHist1<TH1D> h_tc_;
+  DQMHist1<TH1D> h_t2c_;
+  DQMHist1<TH1D> h_X_;
+  DQMHist1<TH1D> h_Y_;
+  DQMHist1<TH1D> h_Z_;
 
   std::size_t nEvents_{0};
   std::size_t nEventsWithClusters_{0};

@@ -12,6 +12,7 @@
 #include "TString.h"
 
 #include <cmath>
+#include <optional>
 #include <map>
 
 namespace {
@@ -121,6 +122,7 @@ void checkAxis(const char* what, int& nBins, double lo, double hi)
 
 CRVRecoDQM::CRVRecoDQM(const Config& config) : config_(config)
 {
+  segments_.SetConfig(config_.segmentation);
   checkAxis("PE", config_.nBinsPEs, config_.minPEs, config_.maxPEs);
   if (config_.nSectorTypeBins < 1) {
     config_.nSectorTypeBins = 1;
@@ -137,15 +139,18 @@ CRVRecoDQM::CRVRecoDQM(const Config& config) : config_(config)
 void CRVRecoDQM::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
+  segments_.Book(dir);
 
-  h_nEvents_ = dir.make<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
+  h_nEvents_ =
+      segments_.book1<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
   h_nEventsWithClusters_ =
-      dir.make<TH1F>("nEventsWithCoincidenceClusters",
-                     "Events with a coincidence cluster;;Events", 1, 0.5, 1.5);
+      segments_.book1<TH1F>("nEventsWithCoincidenceClusters",
+                            "Events with a coincidence cluster;;Events", 1, 0.5,
+                            1.5);
 
-  h_coincidenceClusters_ =
-      dir.make<TH1I>("crvCoincidencesClusters", "crvCoincidenceClusters:sectorType",
-                     config_.nSectorTypeBins, 0, config_.nSectorTypeBins);
+  h_coincidenceClusters_ = segments_.book1<TH1I>(
+      "crvCoincidencesClusters", "crvCoincidenceClusters:sectorType",
+      config_.nSectorTypeBins, 0, config_.nSectorTypeBins);
 
   h_PEsMPVROC_.assign(kNROC, nullptr);
   for (int roc = 1; roc <= kNROC; ++roc) {
@@ -168,7 +173,7 @@ void CRVRecoDQM::Book(art::TFileDirectory dir)
   }
 
   if (config_.fillInclusive) {
-    bookInclusive(dir);
+    bookInclusive();
   }
 
   booked_ = true;
@@ -179,38 +184,42 @@ void CRVRecoDQM::Book(art::TFileDirectory dir)
 // these plots is a series that stays comparable across years. Only the axes
 // that depend on the detector's position and readout window are configurable;
 // see Config.
-void CRVRecoDQM::bookInclusive(art::TFileDirectory& dir)
+void CRVRecoDQM::bookInclusive()
 {
-  h_NPulses_ = dir.make<TH1D>("NPulses", "N Pulses", 101, -0.5, 100.5);
-  h_NPulse2_ = dir.make<TH1D>("NPulse2", "N Pulses", 100, -0.5, 2000.0);
-  h_BarIdr_ = dir.make<TH1D>("BarIdr", "RPulse Bar ID", 200, -0.5, 5503.5);
+  h_NPulses_ = segments_.book1<TH1D>("NPulses", "N Pulses", 101, -0.5, 100.5);
+  h_NPulse2_ = segments_.book1<TH1D>("NPulse2", "N Pulses", 100, -0.5, 2000.0);
+  h_BarIdr_ = segments_.book1<TH1D>("BarIdr", "RPulse Bar ID", 200, -0.5, 5503.5);
   // ValCrvRecoPulse has this and the DqmCrv copy dropped it. The digi SiPM
   // hist tests the readout; this one tests reconstruction per readout end, and
   // the ratio isolates an end where waveforms arrive but do not fit. Named
   // SiPMr on the DqmCrv "r" convention so it cannot be confused with the digi
   // SiPM hist that CRVDigiDQM books.
-  h_SiPMr_ = dir.make<TH1D>("SiPMr", "RPulse SiPM", 4, -0.5, 3.5);
-  h_PEr_ = dir.make<TH1D>("PEr", "Fit Photoelectrons", 100, 0.0, 400.0);
+  h_SiPMr_ = segments_.book1<TH1D>("SiPMr", "RPulse SiPM", 4, -0.5, 3.5);
+  h_PEr_ = segments_.book1<TH1D>("PEr", "Fit Photoelectrons", 100, 0.0, 400.0);
   h_PEHeight_ =
-      dir.make<TH1D>("PEHeight", "PE from Pulse Height", 100, 0.0, 400.0);
-  h_PulseTime_ = dir.make<TH1D>("PulseTime", "Pulse Peak Time",
-                                config_.nBinsTime, config_.minTime, config_.maxTime);
-  h_PulseTime2_ = dir.make<TH1D>("PulseTime2", "Pulse Peak Time",
-                                 config_.nBinsTime2, config_.minTime2, config_.maxTime2);
-  h_chi2_ = dir.make<TH1D>("chi2", "Pulse fit chi2", 100, 0.0, 20.0);
-  h_logchi2_ = dir.make<TH1D>("logchi2", "log10 Pulse fit chi2", 100, -3.0, 5.0);
-  h_LeadingTime_ = dir.make<TH1D>("LeadingTime", "Leading Edge Time",
-                                  config_.nBinsTime, config_.minTime, config_.maxTime);
-  h_LeadingTime2_ = dir.make<TH1D>("LeadingTime2", "Leading Edge Time",
-                                   config_.nBinsTime2, config_.minTime2, config_.maxTime2);
+      segments_.book1<TH1D>("PEHeight", "PE from Pulse Height", 100, 0.0, 400.0);
+  h_PulseTime_ = segments_.book1<TH1D>(
+      "PulseTime", "Pulse Peak Time", config_.nBinsTime, config_.minTime,
+      config_.maxTime);
+  h_PulseTime2_ = segments_.book1<TH1D>(
+      "PulseTime2", "Pulse Peak Time", config_.nBinsTime2, config_.minTime2,
+      config_.maxTime2);
+  h_chi2_ = segments_.book1<TH1D>("chi2", "Pulse fit chi2", 100, 0.0, 20.0);
+  h_logchi2_ = segments_.book1<TH1D>("logchi2", "log10 Pulse fit chi2", 100, -3.0, 5.0);
+  h_LeadingTime_ = segments_.book1<TH1D>(
+      "LeadingTime", "Leading Edge Time", config_.nBinsTime, config_.minTime,
+      config_.maxTime);
+  h_LeadingTime2_ = segments_.book1<TH1D>(
+      "LeadingTime2", "Leading Edge Time", config_.nBinsTime2, config_.minTime2,
+      config_.maxTime2);
 
-  h_NClus_ = dir.make<TH1D>("NClus", "N Clusters", 101, -0.5, 100.5);
-  h_NPc_ = dir.make<TH1D>("NPc", "N Pulse", 101, -0.5, 100.5);
-  h_PEc_ = dir.make<TH1D>("PEc", "clus PE", 100, 0.0, 2000.0);
-  h_tc_ = dir.make<TH1D>("tc", "clus start time",
-                         config_.nBinsTime, config_.minTime, config_.maxTime);
-  h_t2c_ = dir.make<TH1D>("t2c", "clus start time",
-                          config_.nBinsTime2, config_.minTime2, config_.maxTime2);
+  h_NClus_ = segments_.book1<TH1D>("NClus", "N Clusters", 101, -0.5, 100.5);
+  h_NPc_ = segments_.book1<TH1D>("NPc", "N Pulse", 101, -0.5, 100.5);
+  h_PEc_ = segments_.book1<TH1D>("PEc", "clus PE", 100, 0.0, 2000.0);
+  h_tc_ = segments_.book1<TH1D>("tc", "clus start time", config_.nBinsTime,
+                                config_.minTime, config_.maxTime);
+  h_t2c_ = segments_.book1<TH1D>("t2c", "clus start time", config_.nBinsTime2,
+                                 config_.minTime2, config_.maxTime2);
   // X/Y/Z are not booked here: see BookPositionAxes.
 
   // SecType is deliberately absent: crvCoincidencesClusters already is it, and
@@ -293,9 +302,19 @@ void CRVRecoDQM::bookPositionHists(const double lo[3], const double hi[3])
   checkAxis("X", config_.nBinsPos, lo[0], hi[0]);
   checkAxis("Y", config_.nBinsPos, lo[1], hi[1]);
   checkAxis("Z", config_.nBinsPos, lo[2], hi[2]);
-  h_X_ = dir_->make<TH1D>("X", "clus X", config_.nBinsPos, lo[0], hi[0]);
-  h_Y_ = dir_->make<TH1D>("Y", "clus Y", config_.nBinsPos, lo[1], hi[1]);
-  h_Z_ = dir_->make<TH1D>("Z", "clus Z", config_.nBinsPos, lo[2], hi[2]);
+  h_X_ = segments_.book1<TH1D>("X", "clus X", config_.nBinsPos, lo[0], hi[0]);
+  h_Y_ = segments_.book1<TH1D>("Y", "clus Y", config_.nBinsPos, lo[1], hi[1]);
+  h_Z_ = segments_.book1<TH1D>("Z", "clus Z", config_.nBinsPos, lo[2], hi[2]);
+}
+
+void CRVRecoDQM::BeginSubRun(int run, int subrun)
+{
+  segments_.BeginSubRun(run, subrun);
+}
+
+void CRVRecoDQM::EndSubRun()
+{
+  segments_.EndSubRun();
 }
 
 void CRVRecoDQM::ensurePositionAxes()
@@ -351,31 +370,33 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
   }
 
   ++nEvents_;
-  h_nEvents_->Fill(1.f);
+  // Rotate the segmentation ring between events, before anything is filled.
+  // No CrvStatus on this tier, so the window clock counts events.
+  segments_.Advance(nEvents_, std::nullopt);
+
+  h_nEvents_.Fill(1.f);
   if (!clusters.empty()) {
     ++nEventsWithClusters_;
-    h_nEventsWithClusters_->Fill(1.f);
+    h_nEventsWithClusters_.Fill(1.f);
   }
   //an entry every event, zero included: that is what makes NClus a rate
   if (config_.fillInclusive) {
     ensurePositionAxes();  //no-op once booked, from geometry or from Config
-    h_NClus_->Fill(clusters.size());
+    h_NClus_.Fill(clusters.size());
   }
 
   for (const auto& cluster : clusters) {
     ++nClusters_;
-    h_coincidenceClusters_->Fill(cluster.GetCrvSectorType());
+    h_coincidenceClusters_.Fill(cluster.GetCrvSectorType());
 
     if (config_.fillInclusive) {
-      h_NPc_->Fill(cluster.GetCrvRecoPulses().size());
-      h_PEc_->Fill(cluster.GetPEs());
-      h_tc_->Fill(cluster.GetStartTime());
-      h_t2c_->Fill(cluster.GetStartTime());
-      if (h_X_) {
-        h_X_->Fill(cluster.GetAvgHitPos().x());
-        h_Y_->Fill(cluster.GetAvgHitPos().y());
-        h_Z_->Fill(cluster.GetAvgHitPos().z());
-      }
+      h_NPc_.Fill(cluster.GetCrvRecoPulses().size());
+      h_PEc_.Fill(cluster.GetPEs());
+      h_tc_.Fill(cluster.GetStartTime());
+      h_t2c_.Fill(cluster.GetStartTime());
+      h_X_.Fill(cluster.GetAvgHitPos().x());
+      h_Y_.Fill(cluster.GetAvgHitPos().y());
+      h_Z_.Fill(cluster.GetAvgHitPos().z());
     }
 
     for (const auto& pulsePtr : cluster.GetCrvRecoPulses()) {
@@ -446,23 +467,23 @@ void CRVRecoDQM::fillInclusiveRecoPulses(const CrvRecoPulseCollection& recoPulse
   }
 
   nInclusiveRecoPulses_ += recoPulses.size();
-  h_NPulses_->Fill(recoPulses.size());
-  h_NPulse2_->Fill(recoPulses.size());
+  h_NPulses_.Fill(recoPulses.size());
+  h_NPulse2_.Fill(recoPulses.size());
 
   for (const auto& pulse : recoPulses) {
-    h_BarIdr_->Fill(pulse.GetScintillatorBarIndex().asInt());
-    h_SiPMr_->Fill(pulse.GetSiPMNumber());
-    h_PEr_->Fill(pulse.GetPEs());
-    h_PEHeight_->Fill(pulse.GetPEsPulseHeight());
-    h_PulseTime_->Fill(pulse.GetPulseTime());
-    h_PulseTime2_->Fill(pulse.GetPulseTime());
-    h_chi2_->Fill(pulse.GetPulseFitChi2());
+    h_BarIdr_.Fill(pulse.GetScintillatorBarIndex().asInt());
+    h_SiPMr_.Fill(pulse.GetSiPMNumber());
+    h_PEr_.Fill(pulse.GetPEs());
+    h_PEHeight_.Fill(pulse.GetPEsPulseHeight());
+    h_PulseTime_.Fill(pulse.GetPulseTime());
+    h_PulseTime2_.Fill(pulse.GetPulseTime());
+    h_chi2_.Fill(pulse.GetPulseFitChi2());
     //a chi2 of zero means the fit did not run, and log10 of it is not a number
     if (pulse.GetPulseFitChi2() > 0.0) {
-      h_logchi2_->Fill(std::log10(pulse.GetPulseFitChi2()));
+      h_logchi2_.Fill(std::log10(pulse.GetPulseFitChi2()));
     }
-    h_LeadingTime_->Fill(pulse.GetLEtime());
-    h_LeadingTime2_->Fill(pulse.GetLEtime());
+    h_LeadingTime_.Fill(pulse.GetLEtime());
+    h_LeadingTime2_.Fill(pulse.GetLEtime());
   }
 }
 
@@ -579,6 +600,9 @@ void CRVRecoDQM::WriteGraphs()
   }
   fitSectorMPV();
   fitOnlineMPV();
+  // Stamp every copy with the range it actually covers before anything is
+  // written; a partially filled live copy must not advertise a full span.
+  segments_.Finalize();
 }
 
 } // namespace mu2e

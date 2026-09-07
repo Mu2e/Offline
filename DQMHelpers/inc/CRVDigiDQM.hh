@@ -4,6 +4,7 @@
 // otsdaq online monitor and the offline DQM modules. No GeometryService.
 // Original Author: R. Mina
 
+#include "Offline/DQMHelpers/inc/DQMSegmentation.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
@@ -47,6 +48,7 @@ public:
     int minAmplitude{10};
     std::size_t avgBlockSize{30};
     std::size_t avgGraphPoints{1000};
+    // Fallback window span when a "window" rule does not set one itself.
     std::size_t channelsWindowEwts{50000};
     bool fillInclusive{true};
     // CRVId-indexed occupancy maps (no GeometryService). Stored as raw
@@ -55,9 +57,11 @@ public:
     // KPP FEB-axis sizing: book the 33-slot occupancy pair and size the FEB
     // axes for ROC 1-2. False for full CRV; see the header comment above.
     bool kppReadout{true};
-    // TGraphs vs EWT and *LastEwt snapshots. Online monitor only — they do
-    // not survive hadd. Offline analyzers leave this false.
+    // TGraphs vs EWT. Online monitor only — they do not survive hadd.
+    // Offline analyzers leave this false.
     bool fillLivePlots{false};
+    // Which histograms get per-subrun and last-N-events copies. Default is job-only.
+    DQMSegmentation::Config segmentation{};
   };
 
   // KPP readout geography used by the online occupancy plots.
@@ -93,17 +97,22 @@ public:
                            const std::vector<int>& channelToSector,
                            int nBins, double lo, double hi);
   //digis/event per channel, one hist per CRV sector
-  const std::vector<TH1F*>& sectorOccupancy() const { return h_sectorOccupancy_; }
+  const std::vector<DQMHist1<TH1F>>& sectorOccupancy() const { return h_sectorOccupancy_; }
   void Fill(const CrvDigiCollection& crvDigis,
             const CrvStatusCollection& crvStatus);
+  void BeginSubRun(int run, int subrun);
+  void EndSubRun();
   void WriteGraphs();
+
+  // Every histogram this helper books, and the segment copies of each.
+  DQMSegmentation& segments() { return segments_; }
+  const DQMSegmentation& segments() const { return segments_; }
 
   TH1F* h1_digisPerEvt() const { return h1_digisPerEvt_; }  //digis per event
   TH1F* nEventsHist() const { return h_nEvents_; }  //one count per event; hadd-safe
   TH1F* h1_peakAdc() const { return h1_peakAdc_; }  //largest ADC sample of a digi
   TH1F* h1_tdc() const { return h1_tdc_; }  //digi start time in 12.5ns ticks
   TH1F* h1_channels() const { return h1_channels_; }  //occupancy vs global channel ID
-  TH1F* h1_channelsLastEwt() const { return h1_channelsLastEwt_; }  //same, rolling EWT window
   TH2F* h2_channels() const { return h2_channels_; }  //FEB vs FEB channel hit map
   TGraph* g_digisVsEwt() const { return g_digisVsEwt_; }  //digis in the last EWTs vs EWT
   TGraph* g_digisAvgVsEwt() const { return g_digisAvgVsEwt_; }  //mean digis/event vs EWT
@@ -115,7 +124,7 @@ public:
   //CRVId occupancy maps (raw counts; divide by nEvents after hadd)
   TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }  //vs offline channel bar*4+SiPM
   TH2F* crvDigiRates() const { return h_crvDigiRates_; }  //FEB channel vs FEB port
-  const std::vector<TH1F*>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }  //one per ROC
+  const std::vector<DQMHist1<TH1F>>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }  //one per ROC
   int nDigisOffline(std::size_t channel) const;
   std::size_t nOfflineChannels() const { return nDigisOffline_.size(); }
 
@@ -124,12 +133,8 @@ public:
 
   //a FEB whose clock has slipped stands above the others in these
   TH1F* dtOutOfRangePerFeb() const { return h_dtOutOfRangePerFeb_; }  //events with |dt| off scale
-  TH1F* dtOutOfRangePerFebLastEwt() const  //same, rolling EWT window
-  {
-    return h_dtOutOfRangePerFebLastEwt_;
-  }
   //intra-FEB timing, keyed (globalFebId, fpgaA*nFPGAPerFEB+fpgaB)
-  const std::map<std::pair<int, uint8_t>, TH1F*>& dtFpgaPairs() const
+  const std::map<std::pair<int, uint8_t>, DQMHist1<TH1F>>& dtFpgaPairs() const
   {
     return h1_dtFpgaPairs_;
   }
@@ -169,12 +174,9 @@ private:
   };
 
   void fillEwtSeries(uint64_t ewt, int nDigis);
-  void fillRollingOccupancy(uint64_t ewt,
-                            const std::vector<uint16_t>& eventChannelHits);
   void fillTiming(const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes);
   void fillMicroBunchStatus(const CrvStatusCollection& crvStatus);
   void persistGraph(TGraph* g);
-  void fillRollingDtOutOfRange(uint64_t ewt);
   void fillSectorOccupancy();
 
   Config config_;
@@ -183,33 +185,31 @@ private:
   bool booked_{false};
 
   std::optional<art::TFileDirectory> dir_;
-  std::optional<art::TFileDirectory> timingFpgaDir_;
+  DQMSegmentation segments_;
 
-  TH1F* h1_digisPerEvt_{nullptr};
-  TH1F* h_nEvents_{nullptr};
-  TH1F* h1_peakAdc_{nullptr};
-  TH1F* h1_tdc_{nullptr};
-  TH1F* h1_channels_{nullptr};
-  TH1F* h1_channelsLastEwt_{nullptr};
-  TH2F* h2_channels_{nullptr};
+  DQMHist1<TH1F> h1_digisPerEvt_;
+  DQMHist1<TH1F> h_nEvents_;
+  DQMHist1<TH1F> h1_peakAdc_;
+  DQMHist1<TH1F> h1_tdc_;
+  DQMHist1<TH1F> h1_channels_;
+  DQMHist2<TH2F> h2_channels_;
   TGraph* g_digisVsEwt_{nullptr};
   TGraph* g_digisAvgVsEwt_{nullptr};
 
-  TH1D* hBarId_{nullptr};
-  TH1D* hSiPM_{nullptr};
-  TH1D* hADC_{nullptr};
+  DQMHist1<TH1D> hBarId_;
+  DQMHist1<TH1D> hSiPM_;
+  DQMHist1<TH1D> hADC_;
 
-  TH1F* h_crvDigisPerChannel_{nullptr};
-  TH2F* h_crvDigiRates_{nullptr};
-  std::vector<TH1F*> h_crvDigiRatesROC_;
+  DQMHist1<TH1F> h_crvDigisPerChannel_;
+  DQMHist2<TH2F> h_crvDigiRates_;
+  std::vector<DQMHist1<TH1F>> h_crvDigiRatesROC_;
   std::vector<int> nDigisOffline_;
 
-  TH2F* h2_dtVsFeb_{nullptr};
-  std::vector<TH1F*> h_sectorOccupancy_;
+  DQMHist2<TH2F> h2_dtVsFeb_;
+  std::vector<DQMHist1<TH1F>> h_sectorOccupancy_;
   std::vector<int> channelToSector_;
-  TH1F* h_dtOutOfRangePerFeb_{nullptr};
-  TH1F* h_dtOutOfRangePerFebLastEwt_{nullptr};
-  std::map<std::pair<int, uint8_t>, TH1F*> h1_dtFpgaPairs_;
+  DQMHist1<TH1F> h_dtOutOfRangePerFeb_;
+  std::map<std::pair<int, uint8_t>, DQMHist1<TH1F>> h1_dtFpgaPairs_;
   std::map<uint8_t, TGraph*> g_ubStatusVsEwt_;
   std::map<uint8_t, uint32_t> lastMicroBunchStatus_;
 
@@ -220,9 +220,6 @@ private:
   long long nCrvIdOutOfRange_{0};
   long long nDtOutOfRange_{0};
   double maxAbsDtSeen_{0.0};
-  // FEBs whose dt was out of range in the event being filled.
-  std::vector<int> dtOutOfRangeThisEvent_;
-
   std::size_t nEvents_{0};
   std::size_t nDigis_{0};
   std::set<int> activeFEBs_;
@@ -231,8 +228,6 @@ private:
 
   std::deque<std::pair<uint64_t, int>> ewtWindow_;
   long long ewtWindowSum_{0};
-  std::deque<std::pair<uint64_t, std::vector<uint16_t>>> recentChannelHitsByEwt_;
-  std::deque<std::pair<uint64_t, std::vector<int>>> recentDtByEwt_;
 
   long long avgBlockSum_{0};
   std::size_t avgBlockCount_{0};

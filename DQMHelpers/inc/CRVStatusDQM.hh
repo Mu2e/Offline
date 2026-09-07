@@ -4,6 +4,7 @@
 // otsdaq online monitor and CrvDQMcollector. Status is per DTC link.
 // Original Author: R. Mina
 
+#include "Offline/DQMHelpers/inc/DQMSegmentation.hh"
 #include "Offline/DataProducts/inc/CRVId.hh"
 #include "Offline/RecoDataProducts/inc/CrvDAQerror.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
@@ -40,6 +41,9 @@ public:
     float maxErrorsPerSubrun{10000.f};
     // TGraphs vs subrun. Online monitor only — they do not survive hadd.
     bool fillLivePlots{false};
+    // Which histograms get per-subrun and last-N-events copies. Default is
+    // job-only, which reproduces the pre-segmentation output exactly.
+    DQMSegmentation::Config segmentation{};
   };
 
   static constexpr int kNErrorBits = 8;
@@ -71,8 +75,13 @@ public:
   void Fill(const CrvStatusCollection& crvStatus);
   void Fill(const CrvStatusCollection& crvStatus,
             const CrvDAQerrorCollection& crvDaqErrors);
+  void BeginSubRun(int run, int subrun);
   void EndSubRun(int run, int subrun);
   void WriteGraphs();
+
+  // Every histogram this helper books, and the segment copies of each.
+  DQMSegmentation& segments() { return segments_; }
+  const DQMSegmentation& segments() const { return segments_; }
 
   TH1F* nEventsHist() const { return h_nEvents_; }  //one count per event; hadd-safe
   TH1F* nRocHeaders() const { return h_nRocHeaders_; }  //ROC headers per event
@@ -94,7 +103,7 @@ public:
   TGraph* meanLatencyVsSubrun() const { return g_meanLatencyVsSubrun_; }  //mean latency vs subrun
 
   //link latency, one hist per (dtcId, linkId)
-  const std::map<std::pair<uint8_t, uint8_t>, TH1F*>& linkLatencyByRoc() const
+  const std::map<std::pair<uint8_t, uint8_t>, DQMHist1<TH1F>>& linkLatencyByRoc() const
   {
     return h_linkLatencyByRoc_;
   }
@@ -120,32 +129,33 @@ public:
 private:
   void fillDaqErrors(const CrvDAQerrorCollection& crvDaqErrors);
   void persistGraph(TGraph* g);
-  TH1F* latencyHistFor(uint8_t dtcId, uint8_t linkId);
+  DQMHist1<TH1F> latencyHistFor(uint8_t dtcId, uint8_t linkId);
   void noteUnindexedRoc(uint8_t dtcId, uint8_t linkId);
 
   Config config_;
   bool booked_{false};
   std::optional<art::TFileDirectory> dir_;
+  DQMSegmentation segments_;
 
-  TH1F* h_nEvents_{nullptr};
-  TH1F* h_nRocHeaders_{nullptr};
-  TH1F* h_activeFebCount_{nullptr};
-  TH1F* h_triggerCount_{nullptr};
-  TH1F* h_wordCount_{nullptr};
-  TH1F* h_linkLatency_{nullptr};
-  TH1F* h_errorBits_{nullptr};
-  TH2F* h_errorBitsVsRoc_{nullptr};
-  TH1F* h_portFlags_{nullptr};
-  TH1F* h_rocCensus_{nullptr};
-  TH1F* h_eventHasError_{nullptr};
-  TH1F* h_eventHasDaqError_{nullptr};
-  TH1F* h_daqErrorCode_{nullptr};
-  TH1F* h_ewtMismatch_{nullptr};
-  TH1F* h_errorsPerSubrun_{nullptr};
-  TH1F* h_meanLatencyPerSubrun_{nullptr};
+  DQMHist1<TH1F> h_nEvents_;
+  DQMHist1<TH1F> h_nRocHeaders_;
+  DQMHist1<TH1F> h_activeFebCount_;
+  DQMHist1<TH1F> h_triggerCount_;
+  DQMHist1<TH1F> h_wordCount_;
+  DQMHist1<TH1F> h_linkLatency_;
+  DQMHist1<TH1F> h_errorBits_;
+  DQMHist2<TH2F> h_errorBitsVsRoc_;
+  DQMHist1<TH1F> h_portFlags_;
+  DQMHist1<TH1F> h_rocCensus_;
+  DQMHist1<TH1F> h_eventHasError_;
+  DQMHist1<TH1F> h_eventHasDaqError_;
+  DQMHist1<TH1F> h_daqErrorCode_;
+  DQMHist1<TH1F> h_ewtMismatch_;
+  DQMHist1<TH1F> h_errorsPerSubrun_;
+  DQMHist1<TH1F> h_meanLatencyPerSubrun_;
   TGraph* g_errorsVsSubrun_{nullptr};
   TGraph* g_meanLatencyVsSubrun_{nullptr};
-  std::map<std::pair<uint8_t, uint8_t>, TH1F*> h_linkLatencyByRoc_;
+  std::map<std::pair<uint8_t, uint8_t>, DQMHist1<TH1F>> h_linkLatencyByRoc_;
 
   std::vector<RocSnapshot> lastEventRocs_;
 

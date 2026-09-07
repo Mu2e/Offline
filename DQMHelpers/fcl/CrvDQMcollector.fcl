@@ -1,0 +1,106 @@
+# CRV DQM: CrvDQMcollector on a reco file.
+#
+# The collector owns all three helpers -- mu2e::CRVDigiDQM, mu2e::CRVRecoDQM
+# and mu2e::CRVStatusDQM -- plus its own Proditions pedestal / calibration
+# histograms and the crvMetaData tree. Its input tier is reco, because the
+# coincidence clusters the reco helper needs only exist after reconstruction.
+#
+#   mu2e -c Offline/DQMHelpers/fcl/CrvDQMcollector.fcl -s <rec.art> -n <nevents>
+#
+# Input must carry CrvDigi, CrvStatus, CrvRecoPulses and CrvCoincidenceCluster.
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CRVReco/fcl/prolog.fcl"
+
+process_name : CrvDQMcollector
+
+source : {
+  module_type : RootInput
+  maxEvents   : -1
+}
+
+# GeometryService and Proditions are not optional here: the collector reads
+# CosmicRayShield for the per-sector histograms and CRVCalib / CRVStatus for
+# the pedestal and calibration ones. Services.Reco alone leaves DbService on
+# DbEmpty, and the collector then throws on the first CRVTime lookup -- so a
+# calibration set has to be named, and it is dataset-specific.
+services : {
+  @table::Services.Reco
+  message : @local::default_message
+  TFileService : {
+    fileName : "crvDQMcollector.root"
+  }
+}
+
+physics : {
+  analyzers : {
+    CrvDQMcollector : @local::CrvDQMcollector
+  }
+  ana       : [ CrvDQMcollector ]
+  end_paths : [ ana ]
+}
+
+# ---------------------------------------------------------------------------
+# Extracted CRV (KPP) defaults
+#
+# KPP is the extracted CRV and the only one built, so it is what this ships
+# configured for -- as `kppReadout` and `prolog_v12.fcl` already are. Run
+# 124155 and MDC2025au CosmicCRYExtracted both want this.
+#
+# For the full CRV, drop this whole block: the stock geometry and the stock
+# X/Y/Z axis defaults are the full-CRV ones.
+# ---------------------------------------------------------------------------
+services.GeometryService.inputFile : "Offline/Mu2eG4/geom/geom_common_extracted_v04.txt"
+
+# The inclusive X/Y/Z defaults are the full-CRV DqmCrv ranges. The extracted
+# counters sit at y ~ 4237-4649 and z ~ 21440-23065, so without these Y and Z
+# are 100% overflow.
+physics.analyzers.CrvDQMcollector.minY : 3500.0
+physics.analyzers.CrvDQMcollector.maxY : 5500.0
+physics.analyzers.CrvDQMcollector.minZ : 20000.0
+physics.analyzers.CrvDQMcollector.maxZ : 26000.0
+
+# There is no CRV IOV in the database for the extracted runs, so the CRV
+# conditions come from the text files shipped in CRVConditions/data.
+services.ProditionsService.crvStatus.useDb : true
+services.ProditionsService.crvCalib.useDb  : true
+services.DbService.purpose : Sim_best
+services.DbService.version : v1_5
+services.DbService.textFile : [
+  "Offline/CRVConditions/data/status_extracted_20260630.txt",
+  "Offline/CRVConditions/data/calib_extracted_20260630.txt"
+]
+services.DbService.verbose : 0
+
+# ---------------------------------------------------------------------------
+# Histogram segmentation
+#
+# Which histograms get per-subrun and last-N-events copies, chosen entirely in
+# FHiCL so online can change it between runs without a rebuild. Omitted here,
+# so every histogram gets exactly one job-integrated copy -- which is what
+# `hadd` wants and what the KPP extractor reads.
+#
+# The collector owns three helpers, and a rule glob is matched against the
+# histogram path relative to *that helper's own directory*. One block therefore
+# cannot tell the three `nEvents` histograms apart, which is why there are four
+# keys: `segmentation` applies to any helper with no block of its own, and the
+# three below replace it for one helper each (replace, not merge).
+#
+# Full grammar, the naming and labelling scheme, and which segment copies
+# survive `hadd`: Offline/DQMHelpers/README.md.
+#
+# physics.analyzers.CrvDQMcollector.segmentation           : { ... }
+# physics.analyzers.CrvDQMcollector.crvDigiSegmentation    : { ... }
+# physics.analyzers.CrvDQMcollector.crvRecoSegmentation    : { ... }
+# physics.analyzers.CrvDQMcollector.crvStatusSegmentation  : { ... }
+#
+# For example, a per-subrun nEvents for the digi helper alone:
+#
+# physics.analyzers.CrvDQMcollector.crvDigiSegmentation : {
+#   rules : [
+#     { match  : "nEvents"
+#       modes  : [ "job", "subrun" ]
+#       subrun : { keep : -1  persist : true } }
+#   ]
+# }

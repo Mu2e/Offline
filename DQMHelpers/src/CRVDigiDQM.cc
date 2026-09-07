@@ -50,14 +50,24 @@ CRVDigiDQM::CRVDigiDQM(const Config& config) :
   if (nBinsDtVsFeb_ < 1) {
     nBinsDtVsFeb_ = 1;
   }
+
+  // channelsWindowEwts is the helper's own window default; a rule that names a
+  // span of its own wins, so the two knobs cannot disagree silently.
+  DQMSegmentation::Config segmentation = config_.segmentation;
+  for (auto& rule : segmentation.rules) {
+    if (rule.window.enabled && !rule.window.spanSet) {
+      rule.window.span = config_.channelsWindowEwts;
+    }
+  }
+  segments_.SetConfig(segmentation);
 }
 
 void CRVDigiDQM::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
-  timingFpgaDir_ = dir.mkdir("timing_fpga");
+  segments_.Book(dir);
 
-  h2_dtVsFeb_ = dir.make<TH2F>(
+  h2_dtVsFeb_ = segments_.book2<TH2F>(
       "dtVsFeb",
       "First-hit time vs median of other FEBs;Global FEB ID;#Deltat [ns]",
       nFebIdBins(),
@@ -68,36 +78,29 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
       config_.dtVsFebRange);
 
   // Per-FEB desync counters: a slipped FEB stands above its neighbours.
-  h_dtOutOfRangePerFeb_ = dir.make<TH1F>(
+  h_dtOutOfRangePerFeb_ = segments_.book1<TH1F>(
       "dtOutOfRangePerFeb",
       Form("Events with |#Deltat| > %.0f ns;Global FEB ID;Events",
            config_.dtVsFebRange),
       nFebIdBins(), -0.5, nFebIdBins() - 0.5);
 
-  if (config_.fillLivePlots) {
-    h_dtOutOfRangePerFebLastEwt_ = dir.make<TH1F>(
-        "dtOutOfRangePerFebLastEwt",
-        Form("Events with |#Deltat| > %.0f ns (EWT span %zu);Global FEB ID;Events",
-             config_.dtVsFebRange, config_.channelsWindowEwts),
-        nFebIdBins(), -0.5, nFebIdBins() - 0.5);
-  }
+  h1_digisPerEvt_ = segments_.book1<TH1F>("h1_digisPerEvt",
+                                          "Hits / event;Hits / event;Events",
+                                          config_.nBinsDigisPerEvt,
+                                          -0.5,
+                                          config_.maxDigisPerEvt + 0.5);
+  h1_digisPerEvt_.ForEach([](TH1F* h) { h->SetMinimum(0.5); });
 
-  h1_digisPerEvt_ = dir.make<TH1F>("h1_digisPerEvt",
-                                   "Hits / event;Hits / event;Events",
-                                   config_.nBinsDigisPerEvt,
-                                   -0.5,
-                                   config_.maxDigisPerEvt + 0.5);
-  h1_digisPerEvt_->SetMinimum(0.5);
+  h_nEvents_ =
+      segments_.book1<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
 
-  h_nEvents_ = dir.make<TH1F>("nEvents", "Events processed;;Events", 1, 0.5, 1.5);
+  h1_peakAdc_ = segments_.book1<TH1F>("h1_peakAdc",
+                                      "Max sample ADC;Max sample ADC;Hits",
+                                      config_.nBinsPeakAdc,
+                                      0,
+                                      config_.maxPeakAdc);
 
-  h1_peakAdc_ = dir.make<TH1F>("h1_peakAdc",
-                               "Max sample ADC;Max sample ADC;Hits",
-                               config_.nBinsPeakAdc,
-                               0,
-                               config_.maxPeakAdc);
-
-  h1_tdc_ = dir.make<TH1F>(
+  h1_tdc_ = segments_.book1<TH1F>(
       "h1_tdc",
       "Start timestamp of digi in units of 12.5ns;Start timestamp of digi;Digis",
       config_.nBinsTdc,
@@ -107,32 +110,22 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
   // KPP-only: these axes cover 33 FEB slots, so on full CRV they would be all
   // overflow. crvDigisPerChannel / crvDigiRates cover the full detector instead.
   if (config_.kppReadout) {
-    h1_channels_ = dir.make<TH1F>("h1_channels",
-                                  "Channel occupancy;Global channel ID;Hits",
-                                  kNGlobalChannelBins,
-                                  -0.5,
-                                  kNGlobalChannelBins - 0.5);
-    h1_channels_->SetMinimum(0.5);
+    h1_channels_ = segments_.book1<TH1F>("h1_channels",
+                                         "Channel occupancy;Global channel ID;Hits",
+                                         kNGlobalChannelBins,
+                                         -0.5,
+                                         kNGlobalChannelBins - 0.5);
+    h1_channels_.ForEach([](TH1F* h) { h->SetMinimum(0.5); });
 
-    if (config_.fillLivePlots) {
-      h1_channelsLastEwt_ = dir.make<TH1F>(
-          "h1_channelsLastEwt",
-          Form("Channel occupancy (EWT span %zu);Global channel ID;Hits",
-               config_.channelsWindowEwts),
-          kNGlobalChannelBins,
-          -0.5,
-          kNGlobalChannelBins - 0.5);
-      h1_channelsLastEwt_->SetMinimum(0.5);
-    }
-
-    h2_channels_ = dir.make<TH2F>("h2_channels",
-                                  "FEB vs channel hit map;Channel;FEB",
-                                  static_cast<int>(CRVId::nChanPerFEB),
-                                  0.5,
-                                  static_cast<double>(CRVId::nChanPerFEB) + 0.5,
-                                  kNGlobalFebBins,
-                                  0.5,
-                                  kNGlobalFebBins + 0.5);
+    h2_channels_ = segments_.book2<TH2F>(
+        "h2_channels",
+        "FEB vs channel hit map;Channel;FEB",
+        static_cast<int>(CRVId::nChanPerFEB),
+        0.5,
+        static_cast<double>(CRVId::nChanPerFEB) + 0.5,
+        kNGlobalFebBins,
+        0.5,
+        kNGlobalFebBins + 0.5);
   }
 
   if (config_.fillLivePlots) {
@@ -155,23 +148,23 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
   }
 
   if (config_.fillInclusive) {
-    hBarId_ = dir.make<TH1D>("BarId", "Bar ID", 200, -0.5,
-                             static_cast<double>(CRVId::nBars) - 0.5);
-    hSiPM_ = dir.make<TH1D>("SiPM", "SiPM", 4, -0.5, 3.5);
-    hADC_ = dir.make<TH1D>("ADC", "ADC in waveform", 100, 0.0, 3000.0);
+    hBarId_ = segments_.book1<TH1D>("BarId", "Bar ID", 200, -0.5,
+                                    static_cast<double>(CRVId::nBars) - 0.5);
+    hSiPM_ = segments_.book1<TH1D>("SiPM", "SiPM", 4, -0.5, 3.5);
+    hADC_ = segments_.book1<TH1D>("ADC", "ADC in waveform", 100, 0.0, 3000.0);
   }
 
   if (config_.fillCrvIdRates) {
-    h_crvDigiRatesROC_.assign(CRVId::nROC, nullptr);
+    h_crvDigiRatesROC_.assign(CRVId::nROC, DQMHist1<TH1F>());
     for (std::size_t roc = 1; roc <= CRVId::nROC; ++roc) {
-      h_crvDigiRatesROC_[roc - 1] = dir.make<TH1F>(
+      h_crvDigiRatesROC_[roc - 1] = segments_.book1<TH1F>(
           Form("crvDigiRates_ROC%zu", roc),
           Form("crvDigiRates_ROC%zu;Online channel in ROC;Digis", roc),
           static_cast<int>(CRVId::nFEBPerROC * CRVId::nChanPerFEB),
           0,
           static_cast<double>(CRVId::nFEBPerROC * CRVId::nChanPerFEB));
     }
-    h_crvDigiRates_ = dir.make<TH2F>(
+    h_crvDigiRates_ = segments_.book2<TH2F>(
         "crvDigiRates",
         "crvDigiRates:FEBchannel:FEB;FEB channel;FEB port",
         static_cast<int>(CRVId::nChanPerFEB),
@@ -180,7 +173,7 @@ void CRVDigiDQM::Book(art::TFileDirectory dir)
         static_cast<int>(CRVId::nROC * CRVId::nFEBPerROC),
         0,
         static_cast<double>(CRVId::nROC * CRVId::nFEBPerROC));
-    h_crvDigisPerChannel_ = dir.make<TH1F>(
+    h_crvDigisPerChannel_ = segments_.book1<TH1F>(
         "crvDigisPerChannel",
         "Digis vs offline channel;Offline channel (bar#times4+SiPM);Digis",
         static_cast<int>(CRVId::nChannels),
@@ -199,15 +192,17 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
   }
 
   ++nEvents_;
-  if (h_nEvents_) {
-    h_nEvents_->Fill(1.f);
-  }
 
+  // Rotate the segmentation ring between events, before anything is filled, so
+  // no entry can straddle two segments.
   const bool haveEwt = !crvStatus.empty();
   const uint64_t ewt = haveEwt ? crvStatus.front().GetEventWindowTag() : 0;
+  segments_.Advance(nEvents_,
+                    haveEwt ? std::optional<uint64_t>(ewt) : std::nullopt);
+
+  h_nEvents_.Fill(1.f);
 
   const int nDigis = static_cast<int>(crvDigis.size());
-  std::vector<uint16_t> eventChannelHits;
   std::map<int, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;
 
   for (const auto& digi : crvDigis) {
@@ -240,19 +235,17 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
     }
 
     if (config_.kppReadout) {
-      const int channelId = globalChannelId(roc, feb, febChannel);
-      h1_channels_->Fill(channelId);
-      eventChannelHits.push_back(static_cast<uint16_t>(channelId));
-      h2_channels_->Fill(febChannel + 1, febId);
+      h1_channels_.Fill(globalChannelId(roc, feb, febChannel));
+      h2_channels_.Fill(febChannel + 1, febId);
     }
 
     const auto& adcs = digi.GetADCs();
     if (!adcs.empty()) {
       const int16_t maxSample = *std::max_element(adcs.begin(), adcs.end());
-      h1_peakAdc_->Fill(maxSample);
+      h1_peakAdc_.Fill(maxSample);
     }
 
-    h1_tdc_->Fill(digi.GetStartTDC());
+    h1_tdc_.Fill(digi.GetStartTDC());
 
     const int barIndex = digi.GetScintillatorBarIndex().asUint();
     const int sipm = digi.GetSiPMNumber();
@@ -262,9 +255,7 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
           static_cast<std::size_t>(sipm);
       if (offlineChannel < nDigisOffline_.size()) {
         ++nDigisOffline_[offlineChannel];
-        if (h_crvDigisPerChannel_) {
-          h_crvDigisPerChannel_->Fill(static_cast<float>(offlineChannel));
-        }
+        h_crvDigisPerChannel_.Fill(static_cast<float>(offlineChannel));
       }
     }
 
@@ -278,13 +269,11 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
         const int rocChannel =
             (febIdRaw - 1) * static_cast<int>(CRVId::nChanPerFEB) + febCh;
         if (!h_crvDigiRatesROC_.empty()) {
-          h_crvDigiRatesROC_[static_cast<std::size_t>(rocId) - 1]->Fill(rocChannel);
+          h_crvDigiRatesROC_[static_cast<std::size_t>(rocId) - 1].Fill(rocChannel);
         }
         const int portIndex =
             (rocId - 1) * static_cast<int>(CRVId::nFEBPerROC) + febIdRaw - 1;
-        if (h_crvDigiRates_) {
-          h_crvDigiRates_->Fill(febCh, portIndex);
-        }
+        h_crvDigiRates_.Fill(febCh, portIndex);
       } else {
         ++nCrvIdOutOfRange_;
         if (!warnedCrvIdOutOfRange_) {
@@ -301,16 +290,10 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
     }
 
     if (config_.fillInclusive) {
-      if (hBarId_) {
-        hBarId_->Fill(digi.GetScintillatorBarIndex().asInt());
-      }
-      if (hSiPM_) {
-        hSiPM_->Fill(digi.GetSiPMNumber());
-      }
-      if (hADC_) {
-        for (auto a : adcs) {
-          hADC_->Fill(a);
-        }
+      hBarId_.Fill(digi.GetScintillatorBarIndex().asInt());
+      hSiPM_.Fill(digi.GetSiPMNumber());
+      for (auto a : adcs) {
+        hADC_.Fill(a);
       }
     }
 
@@ -329,18 +312,24 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
   }
 
   nDigis_ += static_cast<std::size_t>(nDigis);
-  h1_digisPerEvt_->Fill(nDigis);
+  h1_digisPerEvt_.Fill(nDigis);
 
   fillTiming(hitTimes);
 
   if (haveEwt && config_.fillLivePlots) {
     fillEwtSeries(ewt, nDigis);
-    if (config_.kppReadout) {
-      fillRollingOccupancy(ewt, eventChannelHits);
-    }
-    fillRollingDtOutOfRange(ewt);
     fillMicroBunchStatus(crvStatus);
   }
+}
+
+void CRVDigiDQM::BeginSubRun(int run, int subrun)
+{
+  segments_.BeginSubRun(run, subrun);
+}
+
+void CRVDigiDQM::EndSubRun()
+{
+  segments_.EndSubRun();
 }
 
 void CRVDigiDQM::fillEwtSeries(uint64_t ewt, int nDigis)
@@ -415,34 +404,6 @@ void CRVDigiDQM::fillEwtSeries(uint64_t ewt, int nDigis)
   }
 }
 
-void CRVDigiDQM::fillRollingOccupancy(
-    uint64_t ewt, const std::vector<uint16_t>& eventChannelHits)
-{
-  if (h1_channelsLastEwt_ == nullptr) {
-    return;
-  }
-
-  recentChannelHitsByEwt_.emplace_back(ewt, eventChannelHits);
-  for (const auto channelId : recentChannelHitsByEwt_.back().second) {
-    if (channelId < kNGlobalChannelBins) {
-      h1_channelsLastEwt_->AddBinContent(static_cast<Int_t>(channelId) + 1, 1.0);
-    }
-  }
-
-  const uint64_t minKeepEwt =
-      (ewt > config_.channelsWindowEwts) ? ewt - config_.channelsWindowEwts : 0;
-  while (!recentChannelHitsByEwt_.empty() &&
-         recentChannelHitsByEwt_.front().first < minKeepEwt) {
-    for (const auto channelId : recentChannelHitsByEwt_.front().second) {
-      if (channelId < kNGlobalChannelBins) {
-        h1_channelsLastEwt_->AddBinContent(static_cast<Int_t>(channelId) + 1,
-                                           -1.0);
-      }
-    }
-    recentChannelHitsByEwt_.pop_front();
-  }
-}
-
 // Median of sorted values with the entry at sorted position p removed.
 namespace {
 double medianExcluding(const std::vector<double>& sorted, std::size_t p)
@@ -456,33 +417,9 @@ double medianExcluding(const std::vector<double>& sorted, std::size_t p)
 }
 } // namespace
 
-// Rolling EWT window for the online monitor, so a recent slip is not diluted.
-void CRVDigiDQM::fillRollingDtOutOfRange(uint64_t ewt)
-{
-  if (h_dtOutOfRangePerFebLastEwt_ == nullptr) {
-    return;
-  }
-
-  recentDtByEwt_.emplace_back(ewt, dtOutOfRangeThisEvent_);
-  for (const int febId : recentDtByEwt_.back().second) {
-    h_dtOutOfRangePerFebLastEwt_->AddBinContent(febId + 1, 1.0);
-  }
-
-  const uint64_t minKeepEwt =
-      (ewt > config_.channelsWindowEwts) ? ewt - config_.channelsWindowEwts : 0;
-  while (!recentDtByEwt_.empty() && recentDtByEwt_.front().first < minKeepEwt) {
-    for (const int febId : recentDtByEwt_.front().second) {
-      h_dtOutOfRangePerFebLastEwt_->AddBinContent(febId + 1, -1.0);
-    }
-    recentDtByEwt_.pop_front();
-  }
-}
-
 void CRVDigiDQM::fillTiming(
     const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes)
 {
-  dtOutOfRangeThisEvent_.clear();
-
   std::vector<std::pair<int, double>> febFirstHit;
   for (const auto& [febId, fpgaMap] : hitTimes) {
     // TODO: the median hit time may be a more noise-robust FEB reference than
@@ -500,7 +437,7 @@ void CRVDigiDQM::fillTiming(
 
   // Leave-one-out reference isolates the slipped FEB instead of smearing its
   // partners, which a common reference would do at low FEB multiplicity.
-  if (h2_dtVsFeb_ != nullptr && febFirstHit.size() >= 2) {
+  if (febFirstHit.size() >= 2) {
     std::vector<double> sorted;
     sorted.reserve(febFirstHit.size());
     for (const auto& entry : febFirstHit) {
@@ -513,7 +450,7 @@ void CRVDigiDQM::fillTiming(
           std::lower_bound(sorted.begin(), sorted.end(), entry.second) -
           sorted.begin());
       const double dt = entry.second - medianExcluding(sorted, p);
-      h2_dtVsFeb_->Fill(entry.first, dt);
+      h2_dtVsFeb_.Fill(entry.first, dt);
 
       // Measured on the raw dt, so an arbitrarily large slip is still counted
       // even when the y-axis would bury it in the overflow bin.
@@ -525,16 +462,13 @@ void CRVDigiDQM::fillTiming(
         ++nDtOutOfRange_;
         const int febId = entry.first;
         if (febId >= 0 && febId < nFebIdBins()) {
-          if (h_dtOutOfRangePerFeb_) {
-            h_dtOutOfRangePerFeb_->Fill(febId);
-          }
-          dtOutOfRangeThisEvent_.push_back(febId);
+          h_dtOutOfRangePerFeb_.Fill(febId);
         }
       }
     }
   }
 
-  if (!timingFpgaDir_) {
+  if (!segments_.booked()) {
     return;
   }
 
@@ -551,33 +485,35 @@ void CRVDigiDQM::fillTiming(
         const auto key = std::make_pair(febId, pairCode);
 
         if (h1_dtFpgaPairs_.find(key) == h1_dtFpgaPairs_.end()) {
+          // Booked on first use, so a KPP-sized readout pays only for the FEB
+          // pairs it actually has.
           const std::string name =
-              Form("dt_feb%02d_fpga%d_fpga%d", febId, fpgaA, fpgaB);
+              Form("timing_fpga/dt_feb%02d_fpga%d_fpga%d", febId, fpgaA, fpgaB);
           const std::string title = Form(
               "#Deltat FEB %02d FPGA %d - FPGA %d;#Deltat [ns];Entries",
               febId,
               fpgaA,
               fpgaB);
-          h1_dtFpgaPairs_[key] = timingFpgaDir_->make<TH1F>(name.c_str(),
-                                                            title.c_str(),
-                                                            nBinsDt_,
-                                                            -config_.dtRange,
-                                                            config_.dtRange);
+          h1_dtFpgaPairs_[key] = segments_.book1<TH1F>(name,
+                                                       title,
+                                                       nBinsDt_,
+                                                       -config_.dtRange,
+                                                       config_.dtRange);
         }
 
-        TH1F* h = h1_dtFpgaPairs_[key];
+        const DQMHist1<TH1F>& h = h1_dtFpgaPairs_[key];
         if (fpgaA == fpgaB) {
           for (std::size_t ia = 0; ia < hitsA.size(); ++ia) {
             for (std::size_t ib = ia + 1; ib < hitsA.size(); ++ib) {
               if (hitsA[ia].channel != hitsA[ib].channel) {
-                h->Fill(hitsA[ib].time_ns - hitsA[ia].time_ns);
+                h.Fill(hitsA[ib].time_ns - hitsA[ia].time_ns);
               }
             }
           }
         } else {
           for (const auto& hA : hitsA) {
             for (const auto& hB : hitsB) {
-              h->Fill(hB.time_ns - hA.time_ns);
+              h.Fill(hB.time_ns - hA.time_ns);
             }
           }
         }
@@ -653,15 +589,14 @@ void CRVDigiDQM::BookSectorOccupancy(const std::vector<std::string>& sectorNames
                                      const std::vector<int>& channelToSector,
                                      int nBins, double lo, double hi)
 {
-  if (!dir_ || !h_sectorOccupancy_.empty()) {
+  if (!segments_.booked() || !h_sectorOccupancy_.empty()) {
     return;
   }
   channelToSector_ = channelToSector;
   h_sectorOccupancy_.reserve(sectorNames.size());
   for (const auto& sector : sectorNames) {
     const std::string name = "crvDigisPerChannelAndEvent_CRVsector" + sector;
-    h_sectorOccupancy_.push_back(
-        dir_->make<TH1F>(name.c_str(), name.c_str(), nBins, lo, hi));
+    h_sectorOccupancy_.push_back(segments_.book1<TH1F>(name, name, nBins, lo, hi));
   }
 }
 
@@ -678,7 +613,7 @@ void CRVDigiDQM::fillSectorOccupancy()
         static_cast<std::size_t>(sector) >= h_sectorOccupancy_.size()) {
       continue;
     }
-    h_sectorOccupancy_[sector]->Fill(nDigisOffline(channel) * invN);
+    h_sectorOccupancy_[sector].Fill(nDigisOffline(channel) * invN);
   }
 }
 
@@ -706,6 +641,9 @@ void CRVDigiDQM::WriteGraphs()
     return;
   }
   fillSectorOccupancy();
+  // Stamp every copy with the range it actually covers before anything is
+  // written; a partially filled live copy must not advertise a full span.
+  segments_.Finalize();
   if (!config_.fillLivePlots) {
     return;
   }

@@ -15,6 +15,7 @@
 #include "Offline/DQMHelpers/inc/CRVDigiDQM.hh"
 #include "Offline/DQMHelpers/inc/CRVRecoDQM.hh"
 #include "Offline/DQMHelpers/inc/CRVStatusDQM.hh"
+#include "Offline/DQMHelpers/inc/DQMSegmentationConfig.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
@@ -32,6 +33,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalDelegatedParameter.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TH1F.h>
@@ -97,6 +99,12 @@ namespace mu2e
       fhicl::Atom<double> maxY{Name("maxY"), Comment("range end for Y [mm]"), 3000.0};
       fhicl::Atom<double> minZ{Name("minZ"), Comment("range start for Z [mm]"), -3500.0};
       fhicl::Atom<double> maxZ{Name("maxZ"), Comment("range end for Z [mm]"), 20000.0};
+
+      //which histograms get per-subrun / last-N-events copies. `segmentation`
+      fhicl::OptionalDelegatedParameter segmentation{Name("segmentation"), Comment("histogram segmentation rules applied to any helper without its own block; see Offline/DQMHelpers/README.md")};
+      fhicl::OptionalDelegatedParameter crvDigiSegmentation{Name("crvDigiSegmentation"), Comment("segmentation rules for CRVDigiDQM only; replaces segmentation")};
+      fhicl::OptionalDelegatedParameter crvRecoSegmentation{Name("crvRecoSegmentation"), Comment("segmentation rules for CRVRecoDQM only; replaces segmentation")};
+      fhicl::OptionalDelegatedParameter crvStatusSegmentation{Name("crvStatusSegmentation"), Comment("segmentation rules for CRVStatusDQM only; replaces segmentation")};
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -105,6 +113,7 @@ namespace mu2e
     void beginJob() override;
     void analyze(const art::Event& e) override;
     void beginRun(const art::Run &run) override;
+    void beginSubRun(const art::SubRun &subRun) override;
     void endSubRun(const art::SubRun &subRun) override;
     void endJob() override;
 
@@ -179,13 +188,14 @@ namespace mu2e
     _totalEventsWithCoincidenceClusters(0),
     _totalEventsWithDAQerrors(0),
     _treeMetaData(nullptr),
-    _digiDQM([] (bool fillInclusive, bool kppReadout) {
+    _digiDQM([] (const Config &conf) {
       CRVDigiDQM::Config c;
-      c.fillInclusive = fillInclusive;
-      c.kppReadout = kppReadout;
+      c.fillInclusive = conf.fillInclusiveDigiDQM();
+      c.kppReadout = conf.crvDigiDQMkppReadout();
       c.fillLivePlots = false;
+      c.segmentation = parseSegmentation(conf.crvDigiSegmentation, conf.segmentation);
       return c;
-    }(conf().fillInclusiveDigiDQM(), conf().crvDigiDQMkppReadout())),
+    }(conf())),
     _recoDQM([] (const Config &conf) {
       CRVRecoDQM::Config c;
       c.nBinsPEs = conf.histPEsBins();
@@ -209,15 +219,17 @@ namespace mu2e
       c.maxY = conf.maxY();
       c.minZ = conf.minZ();
       c.maxZ = conf.maxZ();
+      c.segmentation = parseSegmentation(conf.crvRecoSegmentation, conf.segmentation);
       return c;
     }(conf())),
     //binning defaults are the online ones; fillLivePlots stays false so the
     //per-job file hadds
-    _statusDQM([] {
+    _statusDQM([] (const Config &conf) {
       CRVStatusDQM::Config c;
       c.fillLivePlots = false;
+      c.segmentation = parseSegmentation(conf.crvStatusSegmentation, conf.segmentation);
       return c;
-    }())
+    }(conf()))
   {
   }
 
@@ -238,8 +250,17 @@ namespace mu2e
     _statusDQM.Book(tfs->mkdir(_crvStatusDQMDir));
   }
 
+  void CrvDQMcollector::beginSubRun(const art::SubRun &subRun)
+  {
+    _digiDQM.BeginSubRun(subRun.run(), subRun.subRun());
+    _recoDQM.BeginSubRun(subRun.run(), subRun.subRun());
+    _statusDQM.BeginSubRun(subRun.run(), subRun.subRun());
+  }
+
   void CrvDQMcollector::endSubRun(const art::SubRun &subRun)
   {
+    _digiDQM.EndSubRun();
+    _recoDQM.EndSubRun();
     _statusDQM.EndSubRun(subRun.run(), subRun.subRun());
   }
 
