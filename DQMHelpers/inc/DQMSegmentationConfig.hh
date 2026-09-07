@@ -24,7 +24,9 @@
 //         window  : { span : 50000  unit : "ewt"  subdivisions : 10
 //                     keep : 4  persist : false  persistLive : false }
 //         liveName : "h1_channelsLastEwt"
-//       }
+//         publish  : true            # hand this hist's copies to the consumer
+//         group    : "timing_feb"    # collect them under one label; omit for
+//       }                            # one entry per copy, keyed on its name
 //     ]
 //   }
 //

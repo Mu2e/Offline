@@ -615,6 +615,22 @@ std::vector<TH1*> DQMSegmentation::allCopies() const
   return out;
 }
 
+std::map<std::string, std::vector<TH1*>> DQMSegmentation::publishedCopies() const
+{
+  std::map<std::string, std::vector<TH1*>> out;
+  for (const auto& owner : entries_) {
+    if (!owner->rule.publish) {
+      continue;
+    }
+    for (TH1* h : copies(owner->path)) {
+      // No group: the copy is published under its own name, so the online
+      // names stay the ones a GUI already subscribes to.
+      out[owner->rule.group.empty() ? h->GetName() : owner->rule.group].push_back(h);
+    }
+  }
+  return out;
+}
+
 TH1* DQMSegmentation::live(const std::string& path) const
 {
   auto it = byPath_.find(path);

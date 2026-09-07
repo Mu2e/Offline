@@ -73,6 +73,13 @@ public:
     SubRunConfig subrun{};
     WindowConfig window{};
     std::string liveName{};   //explicit name for the window live copy
+    // Publishing. The registry does not know what a consumer does with these:
+    // `group` is an opaque label, and it is the caller that decides whether it
+    // means an otsdaq HistoSender folder, a web tab or anything else. Keeping
+    // it opaque is what lets DQMHelpers build in the DAQ process without
+    // knowing HistoSender exists.
+    bool publish{false};      //include this histogram's copies in publishedCopies()
+    std::string group{};      //label to collect them under; empty = each copy's own name
   };
 
   struct Config {
@@ -134,6 +141,14 @@ public:
   std::vector<TH1*> allCopies() const;
   // The rolling window copy, or nullptr when this histogram has no window mode.
   TH1* live(const std::string& path) const;
+
+  // Every copy of every histogram whose rule set `publish`, collected under
+  // that rule's `group`. A rule with no group gives each copy an entry of its
+  // own, keyed on the copy's object name -- so a live window copy named by
+  // `liveName` is published under that name, which is what a GUI subscribing
+  // to a fixed name wants. This is the whole of what a consumer needs: which
+  // histograms to ship and how to group them, both chosen in FHiCL.
+  std::map<std::string, std::vector<TH1*>> publishedCopies() const;
 
   std::size_t nHistograms() const { return entries_.size(); }
   // Set once if an "ewt" rule ran on input with no event window tag.

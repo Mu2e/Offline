@@ -195,6 +195,8 @@ segmentation : {
                       persist      : false   # write the _prevN copies
                       persistLive  : false } # write the _last copy
       liveName    : "h1_channelsLastEwt"     # name for the live window copy
+      publish     : true                     # hand its copies to the consumer
+      group       : ""                       # collect them under one label
     }
 
     { match   : "dtOutOfRangePerFeb"
@@ -211,6 +213,31 @@ segmentation : {
 
 Unknown keys, unknown modes and unknown units **throw**. A mistyped rule that quietly
 does nothing is worse online than a job that refuses to start.
+
+### Publishing
+
+`publish` and `group` decide what a consumer gets, so that too is FHiCL rather than
+a list compiled into a module:
+
+```cpp
+for (const auto& [group, copies] : dqm.segments().publishedCopies()) { ... }
+```
+
+`publishedCopies()` returns every copy of every histogram whose rule set
+`publish`, collected under that rule's `group`. A rule with no `group` gives each
+copy an entry of its own keyed on the copy's object name -- so a live window copy
+named by `liveName` is published under that name, which is what a GUI subscribing
+to a fixed name needs.
+
+The registry does not know what a group **means**. It is an opaque label, and the
+caller decides whether it is an otsdaq `HistoSender` folder, a web tab or something
+else. That is deliberate: it is what lets `DQMHelpers` build inside the DAQ process
+without knowing `HistoSender` exists, and it keeps the otsdaq naming convention
+(`crv/<group>:replace`) in the otsdaq module where it belongs.
+
+Nothing is published by default. Publishing a large histogram costs bandwidth on
+every send interval, so the choice is explicit -- but it is now a FHiCL line rather
+than a rebuild.
 
 `subrun.keep` bounds the in-memory history. A copy already written to the file is what
 `persist : true` asked for, so it is never dropped.
