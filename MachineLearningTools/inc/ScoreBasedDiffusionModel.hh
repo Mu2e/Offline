@@ -66,14 +66,30 @@ namespace mu2e{
 
     // First-layer input-feature-block magnitude (see ScoreBasedDiffusionModel::firstLayerBlockMagnitudes).
     // Reports, for one contiguous block of the network input, the L2 norm of the first layer's
-    // weight columns and of the (training-gradient) gradient columns over that block.
+    // weight columns and TWO different gradient measures over that block. They answer different
+    // questions and are only equal when every per-sample gradient points the same way:
+    //
+    //   gradL2    = || (1/n) sum_k g_k ||        norm of the MEAN gradient
+    //   gradRmsL2 = sqrt( (1/n) sum_k ||g_k||^2 ) RMS per-sample gradient MAGNITUDE
+    //
+    // gradL2 is the step the optimizer would actually take: contributions that disagree between
+    // samples cancel, so it decays toward 0 as the block converges. gradRmsL2 cannot cancel, so
+    // it stays large for any feature the loss still responds to, converged or not.
+    //
+    // Reading them together separates two states that gradL2 alone confuses:
+    //   small gradRmsL2                  -> the feature is DEAD: individual samples barely move
+    //                                       it (e.g. unused Fourier columns).
+    //   large gradRmsL2, small gradL2    -> the feature is ACTIVE and CONVERGED: samples pull
+    //                                       hard in both directions and the net update is small.
+    //   large gradRmsL2, large gradL2    -> the feature is ACTIVE and still being driven one way.
     struct SBDMFeatureBlockMagnitude {
         std::string name;     // human-readable block label, e.g. "fourier_state[5]"
         int    kind  = 0;     // 0 raw-state, 1 fourier-state, 2 raw-cond, 3 fourier-cond, 4 raw-time, 5 fourier-time
         int    coord = -1;    // state/condition coordinate index this block belongs to (-1 for time)
         int    nCols = 0;     // number of input columns in the block
         double weightL2 = 0.0;
-        double gradL2   = 0.0;
+        double gradL2    = 0.0; // norm of the mean gradient (the optimizer's step direction)
+        double gradRmsL2 = 0.0; // RMS per-sample gradient magnitude (feature liveness)
     };
 
     class ScoreBasedDiffusionModel {
@@ -260,21 +276,22 @@ namespace mu2e{
 
         // Enable/disable the adaptive per-dimension gradient weight controller mid-run
         // (e.g. as a curriculum-phase change, or as an explicit override after loading a
-        // checkpoint that was trained with it on). Turning it OFF does NOT reset
-        // dimWeights_: train() keeps multiplying each dimension's gradient by the frozen
-        // weight, it merely stops adapting them. The frozen values are logged so the
-        // override is auditable. Returns the resulting flag state.
+        // checkpoint that was trained with it on). Turning it OFF stops train() applying
+        // dimWeights_ as well as adapting them, so the gradients revert to unweighted.
+        // The weights are RETAINED, not reset, so re-enabling resumes from them (as does a
+        // checkpoint resume with the controller on); they are logged here so the values the
+        // run stopped at remain on the record. Returns the resulting flag state.
         bool updateUseDimWeightController(
             bool enabled
         ){
             if (useDimWeightController_ && !enabled) {
                 std::ostringstream woss;
-                woss << "Dimensional weight controller turned OFF; freezing dimWeights at [";
+                woss << "Dimensional weight controller turned OFF; retaining dimWeights at [";
                 for (int i = 0; i < dim_; ++i) {
                     woss << dimWeights_[i];
                     if (i < dim_ - 1) woss << ", ";
                 }
-                woss << "] (still applied to gradients, but no longer adapting).";
+                woss << "] (no longer applied to gradients; kept in case it is re-enabled).";
                 mf::LogInfo("ScoreBasedDiffusionModel::updateUseDimWeightController") << woss.str();
             }
             useDimWeightController_ = enabled;
@@ -284,14 +301,11 @@ namespace mu2e{
         // Return the controller to its neutral start state: all weights 1.0 and a cleared
         // loss EMA. Intended to be called at a curriculum phase boundary.
         //
-        // Two problems this addresses. First, a phase change alters the per-dimension loss
-        // SCALE (lossWeightPower, tLowBound/tFocus, batch size, peak sampling, an EMA
-        // promotion), but dimLossEMA_ carries over with a slow decay — so for many epochs
-        // the weights are a ratio of stale-scale to new-scale numbers, which is what
-        // produces the large jump seen at the start of a phase. Second, because train()
-        // applies dimWeights_ whether or not the controller is adapting, a skew left over
-        // from the previous phase would otherwise stay in force for the rest of the run
-        // (and in the saved model) even when the new phase disables the controller.
+        // A phase change alters the per-dimension loss SCALE (lossWeightPower,
+        // tLowBound/tFocus, batch size, peak sampling, an EMA promotion), but dimLossEMA_
+        // carries over with a slow decay — so for many epochs the weights would be a ratio
+        // of stale-scale to new-scale numbers, which is what produces the large jump seen at
+        // the start of a phase. Clearing both puts the controller back on the new scale.
         void resetDimWeightController() {
             std::fill(dimWeights_.begin(), dimWeights_.end(), 1.0);
             std::fill(dimLossEMA_.begin(), dimLossEMA_.end(), 0.0);
@@ -521,10 +535,12 @@ namespace mu2e{
         // Diagnostic (first-layer feature-block magnitudes): for each contiguous block of the
         // network input (each raw state coord, each state coord's Fourier columns, each raw
         // condition coord, each condition coord's Fourier columns, and the time block), return the
-        // L2 norm of the first layer's weight columns and of the gradient accumulated over nSamples
+        // L2 norm of the first layer's weight columns and TWO gradient measures over nSamples
         // training-like draws (uniform t, addNoise, the configured weighted eps/score loss,
-        // backward) with NO optimizer step. Near-zero gradL2 (or weightL2 stuck at init scale) on a
-        // block means that input feature is not being used/driven — e.g. dead pz Fourier columns.
+        // backward) with NO optimizer step. Near-zero gradRmsL2 (or weightL2 stuck at init scale)
+        // on a block means that input feature is not being used/driven — e.g. dead pz Fourier
+        // columns; gradL2 also falls to 0 at convergence and cannot make that call on its own.
+        // See SBDMFeatureBlockMagnitude for what each measure is and how to read them together.
         // perDimLossOut is filled with the FRESH mean per-output-dimension squared residual measured
         // over the same sweep (a live alternative to the checkpoint's stale dimLossEMA_). Operates
         // on the base network_ and leaves the gradient buffers zeroed.
@@ -999,9 +1015,8 @@ namespace mu2e{
         // loadModel() restores them from a checkpoint, so the bounds are an invariant of
         // the object rather than a property of one code path. The load path matters
         // because checkpoints written before the bounds existed can carry arbitrarily
-        // skewed weights, and train() applies dimWeights_ even when the controller is
-        // switched off — so an unclamped restore would otherwise suppress a dimension's
-        // gradient for a whole run with nothing to re-clamp it.
+        // skewed weights, which would suppress a dimension's gradient as soon as the
+        // controller is enabled, with nothing to re-clamp them until it next updates.
         void clampDimWeights(const char* context) {
             std::ostringstream before;
             bool changed = false;
@@ -1076,7 +1091,9 @@ namespace mu2e{
         double lastEpochPeakLoss_  = std::numeric_limits<double>::quiet_NaN();
         long   lastEpochPeakCount_ = 0;
 
-        // Variables to track gradient clipping statistics for monitoring
+        // Gradient-clipping statistics for monitoring, reported as ClipRatio / AvgClipScale on
+        // train()'s per-epoch log line. Reset at the top of each epoch, so they describe that
+        // epoch only. Transient per-run; NOT serialized.
         size_t clipCount_;
         size_t totalClipChecks_;
         double clipScaleAccum_;
