@@ -1704,10 +1704,15 @@ inline void runConditionalLossDiagnostic(ScoreBasedDiffusionModel& model,
 // ---------------------------------------------------------------------------
 // runFeatureBlockDiagnostic — first-layer input-feature-block weight/grad L2 magnitudes plus a
 //   fresh per-output-dimension loss. Writes TTree "feature_blocks" (one row per block: blockIndex,
-//   kind, coord, nCols, weightL2, gradL2, name) and TTree "output_dim_loss" (dim, loss), and logs a
-//   readable table. Near-zero gradL2 / init-scale weightL2 on a block (e.g. fourier_state[pz]) means
-//   that feature is not being used or driven — distinguishing a representation problem from a
-//   sampling one.
+//   kind, coord, nCols, weightL2, gradL2, gradRmsL2, name) and TTree "output_dim_loss" (dim, loss),
+//   and logs a readable table.
+//
+//   Read gradRmsL2 to decide whether a block (e.g. fourier_state[pz]) is DEAD: it is the RMS
+//   per-sample gradient magnitude, which cannot cancel across samples, so it stays large for any
+//   feature the loss responds to. gradL2 is the norm of the MEAN gradient — the step the optimizer
+//   would take — and legitimately decays toward 0 as a block converges, so a small gradL2 alone
+//   does NOT mean the feature is unused. Small gradRmsL2 (with weightL2 stuck at init scale) is
+//   what distinguishes a representation problem from a sampling one.
 // ---------------------------------------------------------------------------
 inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
                                       const std::vector<DiffusionTrainingSample>& data, // normalized
@@ -1724,7 +1729,7 @@ inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
 
     TTree* bt = new TTree("feature_blocks", "First-layer input-feature-block weight/grad L2");
     int blockIndex = 0, kind = 0, coord = 0, nCols = 0;
-    double weightL2 = 0.0, gradL2 = 0.0;
+    double weightL2 = 0.0, gradL2 = 0.0, gradRmsL2 = 0.0;
     std::string name;
     bt->Branch("blockIndex", &blockIndex);
     bt->Branch("kind", &kind);
@@ -1732,30 +1737,42 @@ inline void runFeatureBlockDiagnostic(ScoreBasedDiffusionModel& model,
     bt->Branch("nCols", &nCols);
     bt->Branch("weightL2", &weightL2);
     bt->Branch("gradL2", &gradL2);
+    bt->Branch("gradRmsL2", &gradRmsL2);
     bt->Branch("name", &name);
 
     // Per-block bar charts (bin label = block name) so the file is self-contained.
     const int nb = static_cast<int>(blocks.size());
     TH1D* hWeight = new TH1D("h_weightL2", "First-layer weight L2 per input-feature block;;weight L2", nb, 0, nb);
     TH1D* hGrad   = new TH1D("h_gradL2",   "First-layer mean-gradient L2 per input-feature block;;grad L2", nb, 0, nb);
-    hWeight->SetStats(0); hGrad->SetStats(0); // no statbox on the bar charts
+    // gradRmsL2 is the liveness measure: unlike gradL2 it cannot cancel across samples, so a
+    // small value here (and only here) identifies a feature the loss does not respond to.
+    TH1D* hGradRms = new TH1D("h_gradRmsL2", "First-layer RMS per-sample gradient magnitude per input-feature block;;grad RMS L2", nb, 0, nb);
+    hWeight->SetStats(0); hGrad->SetStats(0); hGradRms->SetStats(0); // no statbox on the bar charts
     std::ostringstream tbl;
     tbl << "First-layer feature-block magnitudes "
-        << "(kind: 0 raw-state 1 fourier-state 2 raw-cond 3 fourier-cond 4 raw-time 5 fourier-time):";
+        << "(kind: 0 raw-state 1 fourier-state 2 raw-cond 3 fourier-cond 4 raw-time 5 fourier-time). "
+        << "gradL2 = norm of the mean gradient (the optimizer's step, decays at convergence); "
+        << "gradRmsL2 = RMS per-sample gradient magnitude (feature liveness). Small gradRmsL2 means "
+        << "dead; large gradRmsL2 with small gradL2 means active and converged:";
     for (size_t b = 0; b < blocks.size(); ++b) {
         blockIndex = static_cast<int>(b);
         kind = blocks[b].kind; coord = blocks[b].coord; nCols = blocks[b].nCols;
-        weightL2 = blocks[b].weightL2; gradL2 = blocks[b].gradL2; name = blocks[b].name;
+        weightL2 = blocks[b].weightL2; gradL2 = blocks[b].gradL2;
+        gradRmsL2 = blocks[b].gradRmsL2; name = blocks[b].name;
         bt->Fill();
         hWeight->SetBinContent(static_cast<int>(b) + 1, blocks[b].weightL2);
         hWeight->GetXaxis()->SetBinLabel(static_cast<int>(b) + 1, blocks[b].name.c_str());
         hGrad->SetBinContent(static_cast<int>(b) + 1, blocks[b].gradL2);
         hGrad->GetXaxis()->SetBinLabel(static_cast<int>(b) + 1, blocks[b].name.c_str());
-        tbl << "\n  " << name << "  nCols=" << nCols << "  weightL2=" << weightL2 << "  gradL2=" << gradL2;
+        hGradRms->SetBinContent(static_cast<int>(b) + 1, blocks[b].gradRmsL2);
+        hGradRms->GetXaxis()->SetBinLabel(static_cast<int>(b) + 1, blocks[b].name.c_str());
+        tbl << "\n  " << name << "  nCols=" << nCols << "  weightL2=" << weightL2
+            << "  gradL2=" << gradL2 << "  gradRmsL2=" << gradRmsL2;
     }
     bt->Write();
     hWeight->Write();
     hGrad->Write();
+    hGradRms->Write();
     mf::LogInfo(moduleName) << tbl.str();
 
     TTree* dt = new TTree("output_dim_loss", "Fresh mean per-output-dimension squared residual");
@@ -1946,11 +1963,9 @@ inline void runTraining(TrainState& s, const std::string& moduleName) {
             model.updateUseDimWeightController(udwc);
             // Then clear the controller back to neutral for the new phase. This phase
             // changes the per-dimension loss scale, so the inherited dimLossEMA_ is stale
-            // and would produce a large spurious weight excursion while it re-converges;
-            // and since train() applies dimWeights_ even when the controller is off, an
-            // inherited skew would otherwise persist for the rest of the run. Ordered
-            // after updateUseDimWeightController so its frozen-weights log still reports
-            // the values the previous phase actually ended on.
+            // and would produce a large spurious weight excursion while it re-converges.
+            // Ordered after updateUseDimWeightController so its retained-weights log still
+            // reports the values the previous phase actually ended on.
             model.resetDimWeightController();
             if (s.curriculumPromoteEMA[k])
                 model.promoteEMAToNetwork();

@@ -313,6 +313,33 @@ namespace mu2e {
         if (diffusionSteps <= 0) {
             throw cet::exception("ScoreBasedDiffusionModel::initialization") << "Invalid diffusionSteps";
         }
+        // LOGSIG bounds, for EVERY prediction target. sigma(t) = logSigMin*exp(k*t) with
+        // k = ln(logSigMax/logSigMin), so:
+        //   logSigMin <= 0 or logSigMax <= 0  -> k is -inf/NaN and poisons every sigma(t)
+        //   logSigMax <= logSigMin            -> k <= 0, a constant or time-reversed schedule
+        //   logSigMax > 1                     -> sigma(t) > 1 over part of the range, where
+        //                                        alphabar clamps to 0 and addNoise produces
+        //                                        sqrt(0)*x + s*eps, i.e. pure noise with the
+        //                                        data removed, silently and for part of every
+        //                                        epoch.
+        // The v-prediction path below additionally COERCES logSigMax to exactly 1 because VP
+        // needs alpha^2+sigma^2=1; that is a stricter requirement, not a substitute for this.
+        if (noiseScheduleType_ == NoiseScheduleType::LOGSIG) {
+            if (!(logSigMin_ > 0.0) || !(logSigMax_ > 0.0))
+                throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                    << "LOGSIG requires logSigMin and logSigMax > 0 (got logSigMin="
+                    << logSigMin_ << ", logSigMax=" << logSigMax_ << ").";
+            if (!(logSigMax_ > logSigMin_))
+                throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                    << "LOGSIG requires logSigMax > logSigMin (got logSigMin=" << logSigMin_
+                    << ", logSigMax=" << logSigMax_ << "); the schedule would be constant or "
+                    << "run backwards.";
+            if (logSigMax_ > 1.0)
+                throw cet::exception("ScoreBasedDiffusionModel::initialization")
+                    << "LOGSIG requires logSigMax <= 1 (got " << logSigMax_
+                    << "); sigma > 1 drives alphabar to 0, so the data term vanishes and the "
+                    << "model would train on pure noise over part of the schedule.";
+        }
 
         // v-prediction guardrails (must run before any schedule-derived quantity is used and
         // before serialization, since the coerced values are what get saved).
@@ -1242,6 +1269,14 @@ namespace mu2e {
             double epochPeakLoss = 0.0;
             long   epochPeakCount = 0;
 
+            // Gradient-clipping counters are reset per epoch: ClipRatio and AvgClipScale are
+            // printed on the per-epoch line below alongside epochLoss and the peak-window
+            // figures, so a run-to-date average there would flatten out and stop reporting
+            // what the current epoch actually did.
+            clipCount_ = 0;
+            totalClipChecks_ = 0;
+            clipScaleAccum_ = 0.0;
+
             // iterate over the drawn samples (samplesDrawnPerEpoch if specified; cycles the data when it exceeds N)
             for (size_t idx = 0; idx < activeN; ++idx)
             {
@@ -1364,18 +1399,23 @@ namespace mu2e {
 
                 // Compute the gradient of the loss w.r.t. the predicted score.
                 // dimWeights_[i] rescales each dimension's gradient; normalized to mean=1 so overall
-                // gradient scale is preserved. Accumulate raw squared residuals for the controller EMA.
-                // wIS (peak importance weight, 1.0 when peak sampling is off) reweights this
-                // sample's gradient. The per-dim controller accumulates the RAW squared residual
-                // (unweighted) so it still balances dimensions by their intrinsic difficulty.
+                // gradient scale is preserved. Applied ONLY while the controller is enabled: the
+                // weights are retained across a disable (so re-enabling resumes from them, as does
+                // a checkpoint resume) but an inactive controller must not keep skewing gradients
+                // by values nothing is updating. Accumulate raw squared residuals for the
+                // controller EMA. wIS (peak importance weight, 1.0 when peak sampling is off)
+                // reweights this sample's gradient. The per-dim controller accumulates the RAW
+                // squared residual (unweighted) so it still balances dimensions by their
+                // intrinsic difficulty.
                 std::vector<double> grad(dim_);
                 double sampleSqResid = 0.0; // sum_i residual_i^2 for this sample (peak-window metric)
                 for (int i = 0; i < dim_; ++i) {
                     double residual = score[i] - target[i];
+                    const double dw = useDimWeightController_ ? dimWeights_[i] : 1.0;
                     if (useDimWeightController_)
                         epochDimLoss[i] += residual * residual;
                     sampleSqResid += residual * residual;
-                    grad[i] = 2.0 * weight * wIS * dimWeights_[i] * residual / dim_;
+                    grad[i] = 2.0 * weight * wIS * dw * residual / dim_;
                 }
                 // Peak-window loss: accumulate the UNWEIGHTED mean squared residual (ignore wIS)
                 // for in-window draws, so the planner can track raw fit quality in the feature region.
@@ -1646,6 +1686,14 @@ namespace mu2e {
         }
         perDimLossOut.assign(dim_, 0.0);
 
+        // Running per-block sums. meanAccum holds the summed gradient (whose norm becomes
+        // gradL2); sumSq holds the summed SQUARED per-sample magnitude (which becomes
+        // gradRmsL2). The latter needs each draw's gradient in isolation, so the first layer's
+        // buffer is read and cleared every iteration rather than accumulated across the sweep.
+        std::vector<std::vector<double>> meanAccum(network_[0].gradW.size(),
+                                                   std::vector<double>(inputSize, 0.0));
+        std::vector<double> sumSq(blocks.size(), 0.0);
+
         const size_t N = data.size();
         const double eps_safe = 1e-12;
         const size_t nUse = (nSamples > 0 && static_cast<size_t>(nSamples) < N)
@@ -1671,21 +1719,41 @@ namespace mu2e {
             for (int i = 0; i < dim_; ++i) {
                 double residual = score[i] - target[i];
                 perDimLossOut[i] += residual * residual; // fresh, unweighted per-output-dim loss
-                grad[i] = 2.0 * weight * dimWeights_[i] * residual / dim_; // same gradient train() would form
+                // Same gradient train() would form, including its gate on the controller flag.
+                const double dw = useDimWeightController_ ? dimWeights_[i] : 1.0;
+                grad[i] = 2.0 * weight * dw * residual / dim_;
             }
             backward(grad);
+
+            // Fold THIS draw's first-layer gradient into both accumulators, then clear it so
+            // the next draw is measured on its own. backward() accumulates, so without the
+            // clear the per-sample magnitudes would be running sums rather than samples.
+            auto& G0 = network_[0].gradW;
+            for (size_t b = 0; b < blocks.size(); ++b) {
+                double sq = 0.0;
+                for (const auto& row : G0)
+                    for (int c = blockStart[b]; c < blockStart[b] + blocks[b].nCols; ++c)
+                        sq += row[c] * row[c];
+                sumSq[b] += sq;
+            }
+            for (size_t r = 0; r < G0.size(); ++r)
+                for (int c = 0; c < inputSize; ++c) {
+                    meanAccum[r][c] += G0[r][c];
+                    G0[r][c] = 0.0;
+                }
         }
         const double invUsed = (used > 0) ? 1.0 / static_cast<double>(used) : 0.0;
         for (int i = 0; i < dim_; ++i) perDimLossOut[i] *= invUsed;
 
-        // Gradient L2 per block (mean per sample), then leave the gradient buffers zeroed.
-        const auto& G0 = network_[0].gradW;
+        // Both gradient measures per block; see SBDMFeatureBlockMagnitude for what each means
+        // and how to read them together.
         for (size_t b = 0; b < blocks.size(); ++b) {
             double sg = 0.0;
-            for (const auto& row : G0)
+            for (const auto& row : meanAccum)
                 for (int c = blockStart[b]; c < blockStart[b] + blocks[b].nCols; ++c)
                     sg += row[c] * row[c];
-            blocks[b].gradL2 = std::sqrt(sg) * invUsed;
+            blocks[b].gradL2    = std::sqrt(sg) * invUsed;       // || sum_k g_k || / n
+            blocks[b].gradRmsL2 = std::sqrt(sumSq[b] * invUsed); // sqrt( mean_k ||g_k||^2 )
         }
         for (auto& layer : network_) {
             for (auto& row : layer.gradW) std::fill(row.begin(), row.end(), 0.0);
@@ -2432,7 +2500,9 @@ namespace mu2e {
             model.dimLossEMA_ = loadedDimLossEMA;
             model.dimWeights_ = loadedDimWeights;
             // Checkpoints written before the dim-weight bounds existed can carry
-            // arbitrarily skewed weights; enforce the invariant on restore.
+            // arbitrarily skewed weights; enforce the invariant on restore. Only reaches the
+            // gradients if this run enables the controller, but the bound is applied
+            // unconditionally so a later enable starts from a sane state.
             model.clampDimWeights("Binary checkpoint restore");
 
             // Restore EMA network
@@ -3031,8 +3101,22 @@ namespace mu2e {
                 }
             }
 
+            // An empty dataMean means the file had no [DATA_NORMALIZATION] section at all,
+            // which is how a CSV written before that section existed reads back. Such a model
+            // was trained on normalized data but carries no way to recover the scale, so it
+            // cannot be loaded: defaulting to identity would de-normalize generated samples
+            // by the wrong factor and produce silently wrong output.
+            if (dataMean.empty()) {
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "CSV checkpoint " << filename << " has no [DATA_NORMALIZATION] section. "
+                    << "It predates that section and its normalization cannot be recovered; "
+                    << "re-save it from a binary (.dat) checkpoint, or re-train.";
+            }
             if ((int)dataMean.size() != (dim + conditionDim)) {
-                throw cet::exception("ScoreBasedDiffusionModel::loadModel") << "Normalization parameter size mismatch";
+                throw cet::exception("ScoreBasedDiffusionModel::loadModel")
+                    << "CSV checkpoint " << filename << " declares dim=" << dim
+                    << " + conditionDim=" << conditionDim << " but its [DATA_NORMALIZATION] "
+                    << "section holds " << dataMean.size() << " entries.";
             } // dataStdev, normMin, normMax have same dimensions
 
             // Restore network weights
@@ -3220,9 +3304,12 @@ namespace mu2e {
                     }
                 }
             } else {
-                // Heun's method (2nd order) Only ODE solver, no noise added
+                // Heun's method (2nd order predictor-corrector), for both the ODE and SDE
+                // solvers; the effectiveSDE branches below select which drift is used.
 
-                // sahred noise vector
+                // Shared noise vector: under the SDE the SAME draw is applied to the predictor
+                // and to the final update, so the corrector evaluates the drift at the state
+                // the step actually reaches. Unused when effectiveSDE is false.
                 std::vector<double> dw(dim_);
                 double noiseScale = std::sqrt(beta_val * dt);
                 for (int i = 0; i < dim_; ++i) {
