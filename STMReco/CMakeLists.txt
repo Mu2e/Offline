@@ -24,6 +24,7 @@ cet_build_plugin(PlotSTMPHSpectrum art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PlotSTMWaveformDigis art::module

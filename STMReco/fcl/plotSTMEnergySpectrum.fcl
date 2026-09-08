@@ -27,9 +27,9 @@ physics: {
     }
   }
   # setup paths
-  trigger_paths: [  ]
+  trigger_paths : [  ]
   anaPath : [ plotHPGeEnergySpectrum, plotLaBrEnergySpectrum ]
-  end_paths: [anaPath]
+  end_paths : [anaPath]
 }
 
 services.TFileService.fileName : "stmEnergySpectrum.root"

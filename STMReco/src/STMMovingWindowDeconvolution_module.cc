@@ -53,7 +53,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> stmWaveformDigisTag{ Name("stmWaveformDigisTag"), Comment("InputTag for STMWaveformDigiCollection")};
+        fhicl::Atom<art::InputTag> stmWaveformDigisMapTag{ Name("stmWaveformDigisMapTag"), Comment("InputTag for STMWaveformDigiCollectionMap")};
         fhicl::Atom<double> tau{Name("tau"), Comment("Decay constant of the waveform (used in the deconvolution step) [ns]")};
         fhicl::Atom<double> M{Name("M"), Comment("M parameter (number of samples to differentiate between)")};
         fhicl::Atom<double> L{Name("L"), Comment("L parameter (number of samples to average over)")};
@@ -66,7 +66,7 @@ namespace mu2e {
         fhicl::OptionalAtom<double> TTreeEnergyCalib{ Name("TTreeEnergyCalib"), Comment("Controls whether to make the energy TTrees with units of energy or in ADC values. If 0, will leave as ADC value, otherwise will multiply by this calibration to generate the energy.")};
         fhicl::OptionalAtom<int> verbosityLevel{Name("verbosityLevel"), Comment("Verbosity level")};
         fhicl::OptionalAtom<std::string> xAxis{ Name("xAxis"), Comment("Choice of x-axis unit for histograms if verbosity level >= 5: \"sample_number\", \"waveform_time\", or \"event_time\"")
-	};
+        };
 
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -86,7 +86,7 @@ namespace mu2e {
 
 
     // fhicl variables
-    art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;  // token of required data
+    art::ProductToken<STMWaveformDigiCollectionMap> _stmWaveformDigisMapToken; // token of required data
     STMChannel channel;                                                   // interface to prodicitions service
     double tau = 0.0;                                                     // decay time of waveform [ns] (used in deconvolution step)
     double M = 0.0;                                                       // M-parameter (used in differentiation step)
@@ -145,7 +145,7 @@ namespace mu2e {
 
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
     art::EDProducer{conf},
-    _stmWaveformDigisToken(consumes<STMWaveformDigiCollection>(conf().stmWaveformDigisTag())),
+    _stmWaveformDigisMapToken(consumes<STMWaveformDigiCollectionMap>(conf().stmWaveformDigisMapTag())),
     channel(STMChannel::findByName("HPGe")), // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
     tau(conf().tau()),
     M(conf().M()),
@@ -154,7 +154,7 @@ namespace mu2e {
     thresholdgrad(conf().thresholdgrad()),
     defaultBaselineMean(conf().defaultBaselineMean()),
     defaultBaselineSD(conf().defaultBaselineSD()) {
-      produces<STMPHDigiCollection>();
+      produces<STMPHDigiCollectionMap>();
       if (M < L)
         throw cet::exception("Configuration", "L (" + std::to_string(L) + ") is greater than M (" + std::to_string(M) + "), reconfigure\n");
       verbosityLevel = conf().verbosityLevel() ? *(conf().verbosityLevel()) : 0;
@@ -206,8 +206,11 @@ namespace mu2e {
 
   void STMMovingWindowDeconvolution::produce(art::Event& event) {
     // create output
-    std::unique_ptr<STMPHDigiCollection> outputPHDigis(new STMPHDigiCollection);
-    auto waveformDigisHandle = event.getValidHandle(_stmWaveformDigisToken);
+    std::unique_ptr<STMPHDigiCollectionMap> outputPHDigisMap(new STMPHDigiCollectionMap);
+    auto waveformDigisMapHandle = event.getValidHandle(_stmWaveformDigisMapToken);
+
+    // Counter for phDigis produced
+    size_t eventPHDigiCount = 0;
 
     // get prodition
     STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id());
@@ -218,80 +221,88 @@ namespace mu2e {
     processedEvents++;
     eventId = event.id().event();
     waveformID = 0;
-    for (STMWaveformDigi waveform : *waveformDigisHandle) {
+    for (const auto& mu2e_evt : *waveformDigisMapHandle) {
+        const auto& eventHeader = mu2e_evt.first;
+        const auto& waveforms = mu2e_evt.second;
+        // Now loop through the waveforms
+        for (const auto& waveform : waveforms) {
+            //Check prints --------------------------------------
+            if (verbosityLevel>=7){
+                std::cout << "event id = "<< event.id().event()<<std::endl;
+                std::cout << "waveformDigisMapHandle number of keys = " << waveformDigisMapHandle->size()<<std::endl; // Number of STMEventHeader Keys
+                std::cout << "waveformDigisMapHandle number of waveforms = " << waveforms.size()<<std::endl; // Number of Waveforms in the collection
+                std::cout << "waveform id =" << waveformID << std::endl;
+            }
+            // clear out data from previous waveform
+            ADCs.clear();
+            deconvolved_data.clear();
+            differentiated_data.clear();
+            averaged_data.clear();
+            peak_heights.clear();
+            peak_times.clear();
+            ADCs = waveform.adcs();
+            nADCs = ADCs.size();
+            processedWaveforms++;
+            waveformID++;
 
-      //Check prints --------------------------------------
-      if (verbosityLevel>=7){
-	std::cout << "event id = "<< event.id().event()<<std::endl;
-	std::cout << "waveformDigisHadndle size = " <<waveformDigisHandle->size()<<std::endl;
-	std::cout << "waveform id =" << waveformID << std::endl;
-      }
-      // clear out data from previous waveform
-      ADCs.clear();
-      deconvolved_data.clear();
-      differentiated_data.clear();
-      averaged_data.clear();
-      peak_heights.clear();
-      peak_times.clear();
-      ADCs = waveform.adcs();
-      nADCs = ADCs.size();
-      processedWaveforms++;
-      waveformID++;
+            if (M > nADCs)
+                M = nADCs;
+            if (L > nADCs)
+                L = nADCs;
+            //if(0 == nADCs)//Maybe should skip when its empty, nADs = ADCs.size, if 0 then its empty
+            deconvolve();
+            differentiate();
+            average();
+            calculate_baseline();
+            find_peaks();
 
-      if (M > nADCs)
-        M = nADCs;
-      if (L > nADCs)
-        L = nADCs;
-      //if(0 == nADCs)//Maybe should skip when its empty, nADs = ADCs.size, if 0 then its empty 
-      deconvolve();
-      differentiate();
-      average();
-      calculate_baseline();
-      find_peaks();
+            nPeaks = peak_heights.size();
+            foundPeaks += nPeaks;
+            if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
+            std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
+            for (i = 0; i < nPeaks; ++i) {
+                ph_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
+                STMPHDigi ph_digi(peak_times[i], -1 * ph_energy); // peak_heights are negative, make them positive here
+                if (ph_digi.energy() < -100)
+                throw cet::exception("logicError", "The peak height must be positive!");
 
-      nPeaks = peak_heights.size();
-      foundPeaks += nPeaks;
-      if (nPeaks && verbosityLevel) // TODO - change to verbosityLevel
-        std::cout << "MWD: found " << nPeaks << " peaks in event " << event.id() << std::endl;
-      for (i = 0; i < nPeaks; ++i) {
-        ph_energy = (peak_heights[i] < ADCMax) ? ADCMax : static_cast<int16_t>(peak_heights[i]); // When saturating the int16_t limit, deconvolution goes below the int16_t limit so the energy turns negative. This clips the energy and the limit
-        STMPHDigi ph_digi(peak_times[i], -1 * ph_energy); // peak_heights are negative, make them positive here
-        if (ph_digi.energy() < -100)
-          throw cet::exception("logicError", "The peak height must be positive!");
+                (*outputPHDigisMap)[eventHeader].emplace_back(ph_digi);
+                ++eventPHDigiCount;
 
-        outputPHDigis->push_back(ph_digi);
-        if (makeTTreeEnergies) {
-          time = ph_digi.time();
-          E = ph_digi.energy() * TTreeEnergyCalib;
-          ttree->Fill();
+                if (makeTTreeEnergies) {
+                    time = ph_digi.time();
+                    E = ph_digi.energy() * TTreeEnergyCalib;
+                    ttree->Fill();
+                };
+                if (verbosityLevel > 3)
+                std::cout << "energy: " << ph_digi.energy() << std::endl;
+            };
+
+            // Save data to TTree
+            if (makeTTreePH) {
+                time = waveform.trigTimeOffset();
+                for (i = 0; i < nADCs; i++) {
+                    ADC = ADCs[i];
+                    deconvoluted =  deconvolved_data[i];
+                    differentiated = differentiated_data[i];
+                    averaged = averaged_data[i];
+                    ttree->Fill();
+                    time++;
+                };
+            };
+
+            if (verbosityLevel >= 5)
+            make_debug_histogram(event, count, waveform, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
+            ++count;
         };
-        if (verbosityLevel > 3)
-          std::cout << "energy: " << ph_digi.energy() << std::endl;
-      };
-
-      // Save data to TTree
-      if (makeTTreePH) {
-        time = waveform.trigTimeOffset();
-        for (i = 0; i < nADCs; i++) {
-          ADC = ADCs[i];
-          deconvoluted =  deconvolved_data[i];
-          differentiated = differentiated_data[i];
-          averaged = averaged_data[i];
-          ttree->Fill();
-          time++;
-        };
-      };
-
-      if (verbosityLevel >= 5)
-        make_debug_histogram(event, count, waveform, stmEnergyCalib, deconvolved_data, differentiated_data, averaged_data, baseline_mean, baseline_stddev, peak_heights, peak_times);
-      ++count;
-    };
-
-    if (verbosityLevel)
-      std::cout << "MWD: " << channel.name() << ": " << outputPHDigis->size() << " PH digis found" << std::endl;
-    event.put(std::move(outputPHDigis));
+        // end of inner loop over waveforms
+    }
+    // end of outer loop over STMEventHeader entries
+    if (verbosityLevel) {
+        std::cout << "MWD: " << channel.name() << ": " << eventPHDigiCount << " PH digis found" << std::endl;
+    }
+    event.put(std::move(outputPHDigisMap));
   };
-
 
   void STMMovingWindowDeconvolution::deconvolve() {
     if (verbosityLevel > 4) {
@@ -445,7 +456,7 @@ namespace mu2e {
 
     h_peak_threshold->GetXaxis()->SetTitle("Sample Number");
     h_peak_threshold->GetYaxis()->SetTitle("ADCs");
-    
+
     for (size_t i = 0; i < deconvolved_data.size(); ++i) {
       h_waveform->SetBinContent(i+1, waveform.adcs()[i] - pedestal); // remove the pedestal
       h_deconvolved->SetBinContent(i+1, deconvolved_data[i]);
@@ -456,7 +467,7 @@ namespace mu2e {
       h_baseline_mean_minus_stddev->SetBinContent(i+1, baseline_mean - baseline_stddev);
       h_peak_threshold->SetBinContent(i+1, baseline_mean - nsigma_cut * baseline_stddev);
     }
-    
+
     TH1D* h_peaks = tfs->make<TH1D>(("h_peaks"+histsuffix.str()).c_str(), "Peaks", binning.nbins(),binning.low(),binning.high());
 
     h_peaks->GetXaxis()->SetTitle("Sample Number");

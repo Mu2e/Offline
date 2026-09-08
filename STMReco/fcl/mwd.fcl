@@ -19,7 +19,7 @@ physics: {
   producers : {
     phHPGe : {
       module_type : STMMovingWindowDeconvolution
-      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:zsHPGe"
       verbosityLevel : 6
       tau : @local::STM.HPGe.tau
       M : @local::STM.HPGe.M

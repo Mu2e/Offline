@@ -15,7 +15,6 @@
 #include <numeric>
 #include <algorithm>
 #include <cctype>
-#include <stdbool.h>
 #include <map>
 
 // root
@@ -45,7 +44,7 @@ namespace mu2e {
         fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
             Comment("Verbosity level")};
         fhicl::Atom<bool> plotZSWithoutOffset{Name("plotZSWithoutOffset"),
-            Comment("Whether to plot ZS without the trig timne offset"),
+            Comment("Whether to plot ZS without the trig time offset"),
             false};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
@@ -232,26 +231,26 @@ namespace mu2e {
 
                 // Fill waveforms here on plots that exist
                 for (size_t i_adc = 0; i_adc < waveform.adcs().size(); ++i_adc){
-                    const auto adc = waveform.adcs().at(i_adc);
-                    auto content = adc; // y-axis
-                    if (_subtractPedestal){
-                        content -= pedestal;
+                  const auto adc = waveform.adcs().at(i_adc);
+                  auto content = adc; // y-axis
+                  if (_subtractPedestal){
+                    content -= pedestal;
+                  }
+                  if (rawInstance){
+                    hWaveform->SetBinContent(i_adc + 1, content);
+                  }
+                  if (zsInstance){
+                    hWaveformOffset->SetBinContent(i_adc + 1, content);
+                    if (_plotZSWithoutOffset) {
+                      hWaveform3 ->SetBinContent(i_adc + 1, content);
                     }
-                    if (rawInstance){
-                        hWaveform->SetBinContent(i_adc + 1, content);
-                    }
-                    if (zsInstance){
-                        hWaveformOffset->SetBinContent(i_adc + 1, content);
-                        if (_plotZSWithoutOffset) {
-                            hWaveform3 ->SetBinContent(i_adc + 1, content);
-                        }
-                    }
-                    } // end of fill here
-                } // else
-                ++count;
-            } // waveform loop
-        }// map loop
-    }// analyzer
+                  }
+                } // end of fill here
+            } // else
+            ++count;
+        } // waveform loop
+    }// map loop
+  }// analyzer
 } // nameSpace
 
 DEFINE_ART_MODULE(mu2e::PlotSTMWaveformDigis)

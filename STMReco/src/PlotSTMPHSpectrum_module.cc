@@ -15,8 +15,9 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
-
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
+
 #include <utility>
 #include <map>
 // root
@@ -26,8 +27,6 @@
 #include "TTree.h"
 #include "TSpectrum.h"
 #include "TGraph.h"
-
-#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;

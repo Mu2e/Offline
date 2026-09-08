@@ -18,9 +18,18 @@ namespace mu2e
     uint64_t adcClock() const { return _adcClock; }
     uint64_t dtcClock() const { return _dtcClock; }
 
-    // other represents comparison, seperate by EWT
+    // Ordered by EWT, then use remaining header fields to further classify
     bool operator<(STMEventHeader const& other) const {
-    return eventWindowTag() < other.eventWindowTag();
+      if (eventWindowTag() != other.eventWindowTag()) {
+        return eventWindowTag() < other.eventWindowTag();
+      }
+      if (eventMode() != other.eventMode()) {
+        return eventMode() < other.eventMode();
+      }
+      if (adcClock() != other.adcClock()) {
+        return adcClock() < other.adcClock();
+      }
+      return dtcClock() < other.dtcClock();
     }
 
   private:
