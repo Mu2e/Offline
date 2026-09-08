@@ -5,6 +5,7 @@
 // Merged with flag and position creation B. Echenard, CalTech
 //
 // framework
+#include "cetlib_except/exception.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -147,6 +148,9 @@ namespace mu2e {
     produces<ComboHitCollection>();
     produces<IntensityInfoTrackerHits>();
     if (_writesh) produces<StrawHitCollection>();
+    // flagCrossTalk reads the StrawHitCollection, which is only created when it is written out
+    if (_flagXT && !_writesh)
+      throw cet::exception("RECO")<<"mu2e::StrawHitReco: FlagCrossTalk requires WriteStrawHitCollection"<<std::endl;
     if (_printLevel > 0) std::cout << "In StrawHitReco constructor " << std::endl;
   }
 
@@ -213,10 +217,11 @@ namespace mu2e {
       _shrUtils.createComboHit(ewm, isd, chCol, shCol, caloClusters, pbtOffset,
           digi.strawId(), digi.TDC(), digi.TOT(), pmp,
           trackerStatus,  srep, tt);
-      //flag straw and electronic cross-talk
-      if(_flagXT){
-        _shrUtils.flagCrossTalk(shCol, chCol);
-      }
+    }
+    //flag straw and electronic cross-talk: this scans the whole collection, so it must run once
+    //per event, not once per digi
+    if(_flagXT){
+      _shrUtils.flagCrossTalk(shCol, chCol);
     }
     if(_writesh)event.put(std::move(shCol));
     intInfo->setNTrackerHits(chCol->size());
