@@ -787,11 +787,9 @@ namespace mu2e {
           // skip 'zero-range' segments.  By convention, sample the state at the mid-time
           if(traj->range().range() > minrange) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
-        if(savedomains_){
-          // SaveDomains with a fit that ran without BField correction leaves no domains at all;
-          // rbegin() would then be rend() and dereferencing it is undefined behaviour
-          if(kktrk.domains().empty())throw cet::exception("RECO")
-            << "mu2e::KKFit: SaveDomains is set but the fit has no BField domains; set BFieldCorrection or SaveDomains:false" << std::endl;
+        // a fit that ran without BField correction has no domains at all; the trailing push_back
+        // below would then dereference rbegin() of an empty set, which is undefined behaviour
+        if(savedomains_ && !kktrk.domains().empty()){
           kseed._domainbounds.reserve(kktrk.domains().size()+1);
           for (auto const& domain : kktrk.domains()){
             kseed._domainbounds.push_back(domain->begin());
