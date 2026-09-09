@@ -1266,7 +1266,7 @@ namespace mu2e {
               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
                                            vdParamsInnerDisk,downstreamVacuumMaterial,0,
                                            posInnerDisk,caloDisk,
-                                           vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+                                           vdIdDiskEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
                                            placePV,false);
               ++vdIdDiskEdge;
 
@@ -1274,7 +1274,7 @@ namespace mu2e {
               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
                                             vdParamsOuterDisk,downstreamVacuumMaterial,0,
                                             posInnerDisk,caloDisk,
-                                            vdIdDiskSurf,1,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+                                            vdIdDiskEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
                                             placePV,false);
               ++vdIdDiskEdge;
 
