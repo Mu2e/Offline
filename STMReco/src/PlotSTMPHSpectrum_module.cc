@@ -37,7 +37,7 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollectionMap")};
+        fhicl::Atom<art::InputTag> stmPHDigisMapTag{ Name("stmPHDigisMapTag"), Comment("InputTag for STMPHDigiCollectionMap")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit PlotSTMPHSpectrum(const Parameters& conf);
@@ -56,8 +56,8 @@ namespace mu2e {
 
   PlotSTMPHSpectrum::PlotSTMPHSpectrum(const Parameters& config )  :
     art::EDAnalyzer{config},
-    _stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisTag())),
-    _channel(STMUtils::getChannel(config().stmPHDigisTag()))
+    _stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisMapTag())),
+    _channel(STMUtils::getChannel(config().stmPHDigisMapTag()))
   { }
 
   void PlotSTMPHSpectrum::beginJob() {
@@ -67,7 +67,7 @@ namespace mu2e {
     _phSpectrum=tfs->make<TH1D>("phSpectrum", (phSpectrumTitle + ";Pulse Height;Count").c_str(), 10000, -10000, 0); //bins,min,max
 
     _twoDhist=tfs->make<TH2F>("phEvent",("Pulse Height vs Art Events (" + _channel.name() + ");Event Bins; Pulse Height").c_str(), // (name, title;xtitle;ytitle, nbinsX, xlow, xup, nbinsY, ylow, yup)
-                              10,0,10,     // X-axis scale
+                              20,0,10,     // X-axis scale
                               10000,-10000,0);   // Y-axis scale
   }
 

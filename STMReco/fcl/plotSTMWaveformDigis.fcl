@@ -24,7 +24,8 @@ physics: {
   
     plotRawWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawHPGe"
+      waveformType : raw
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
@@ -32,7 +33,8 @@ physics: {
 
     plotRawWaveformDigisTimeHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawHPGe"
+      waveformType : raw
       subtractPedestal : false
       verbosityLevel : 0
       xAxis: "waveform_time"
@@ -40,7 +42,8 @@ physics: {
     
     plotZSWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:zsHPGe"
+      waveformType : zs
       plotZSWithoutOffset : true
       subtractPedestal : false
       verbosityLevel : 0
@@ -49,7 +52,8 @@ physics: {
 
     plotRawWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:rawLaBr"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawLaBr"
+      waveformType : raw
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
@@ -57,16 +61,27 @@ physics: {
     
     plotZSWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
+      stmWaveformDigisMapTag : "makeSTMDigis:zsLaBr"
+      waveformType : zs
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
+    }
+
+    plotZSWaveformDigisLaBrUnshifted : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisMapTag : "makeSTMDigis:zsLaBr"
+      waveformType : zs
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis : "sample_number"
+      plotZSWithoutOffset : true
     }
      
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr, plotZSWaveformDigisLaBrUnshfited ]
   end_paths: [anaPath]
 }
 
