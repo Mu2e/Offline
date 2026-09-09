@@ -48,6 +48,8 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
   }
   f.close();
 
+  if(_singlePEWaveform.empty())
+    throw std::logic_error("Could not read any single PE waveform points from "+filename);
   _singlePEMaxVoltage = *std::max_element(_singlePEWaveform.begin(), _singlePEWaveform.end());
 }
 
