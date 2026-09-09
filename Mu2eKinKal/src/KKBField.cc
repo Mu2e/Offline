@@ -26,9 +26,10 @@ namespace mu2e {
     SVEC3 dBdxv(dBdx.X(),dBdx.Y(), dBdx.Z());
     SVEC3 dBdyv(dBdy.X(),dBdy.Y(), dBdy.Z());
     SVEC3 dBdzv(dBdz.X(),dBdz.Y(), dBdz.Z());
-    retval.Place_in_row(dBdxv,0,0);
-    retval.Place_in_row(dBdyv,1,0);
-    retval.Place_in_row(dBdzv,2,0);
+    // Grad(i,j) = dB_i/dx_j, so the derivative along an axis fills a column, not a row
+    retval.Place_in_col(dBdxv,0,0);
+    retval.Place_in_col(dBdyv,0,1);
+    retval.Place_in_col(dBdzv,0,2);
     return retval;
   }
   // numerical derivatives for now: TODO!
