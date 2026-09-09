@@ -21,6 +21,8 @@
 #include "TMath.h"
 
 #include <iostream>
+#include <numeric>
+#include <vector>
 
 namespace mu2e {
 
@@ -61,7 +63,10 @@ namespace mu2e {
       void produce( art::Event& e);
 
     private:
-      void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol);
+      // origIndex maps a position in chcOrig to the corresponding index in chcol's parent
+      // collection; it is the identity unless the input was re-sorted first
+      void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
+                   std::vector<uint16_t> const& origIndex);
       void combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit);
 
       int           _debug;
@@ -143,20 +148,29 @@ namespace mu2e {
         // select hits based on flag
         panels[ch.strawId().uniquePanel()].push_back(ish);
       }
+      // chcolNew's parent is chcH (the unsorted input), so record where each sorted hit came
+      // from: without this the ComboHits would store positions in chcolsort while resolving
+      // them against chcOrig, silently corrupting per-hit provenance
+      std::vector<uint16_t> origIndex;
+      origIndex.reserve(nsh);
       for (uint16_t ipanel=0;ipanel<StrawId::_nupanels;ipanel++){
         for (uint16_t ish=0;ish<panels[ipanel].size();ish++){
           chcolsort.push_back(chcOrig.at(panels[ipanel][ish]));
+          origIndex.push_back(panels[ipanel][ish]);
         }
       }
-      combine(ewm, chcolsort, *chcolNew);
+      combine(ewm, chcolsort, *chcolNew, origIndex);
     }else{
-      combine(ewm, chcOrig, *chcolNew);
+      std::vector<uint16_t> origIndex(chcOrig.size());
+      std::iota(origIndex.begin(), origIndex.end(), 0);
+      combine(ewm, chcOrig, *chcolNew, origIndex);
     }
     event.put(std::move(chcolNew));
   }
 
 
-  void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol)
+  void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
+                                 std::vector<uint16_t> const& origIndex)
   {
 
     float minT = _minT;
@@ -175,7 +189,11 @@ namespace mu2e {
       if ( _testflag && hit1.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
       if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
-      combohit.init(hit1,ich);
+      combohit.init(hit1,origIndex[ich]);
+      // TimeDivision is a quality tag: StrawHitRecoUtils sets it only when the longitudinal
+      // position was actually measured, and leaves it off when StrawResponse had to clamp the
+      // position to the straw end.  It must therefore be propagated from the constituents.
+      bool tdiv = hit1.flag().hasAllProperties(StrawHitFlag::tdiv);
       int panel1 = hit1.strawId().uniquePanel();
 
       for (size_t jch=ich+1;jch<chcOrig.size();++jch) {
@@ -194,19 +212,20 @@ namespace mu2e {
         float wdchi = fabs(hit1.wireDist() - hit2.wireDist())/wderr;
         if (wdchi > _maxwdchi) continue;
 
-        bool ok = combohit.addIndex(jch);
+        bool ok = combohit.addIndex(origIndex[jch]);
         if (!ok){
           std::cout << "CombineStrawHits past limit" << std::endl;
         } else {
           isUsed[jch]= true;
+          tdiv &= hit2.flag().hasAllProperties(StrawHitFlag::tdiv);
         }
       }
-      // clear the flag bits; they are reset later
-      const static StrawHitFlag initialFlag("TimeDivision");
-      combohit._flag = initialFlag;
+      // clear the flag bits; they are reset below
+      combohit._flag = StrawHitFlag();
+      if(tdiv) combohit._flag.merge(StrawHitFlag::tdiv);
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::nhitsel);
       // actually combine the hits if necessar, and make the cuts
@@ -214,19 +233,19 @@ namespace mu2e {
 
       auto time = _useTOT ? combohit.correctedTime() : combohit.time();
       if (time < minT || time > maxT ){
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::timesel);
 
       auto energy = combohit.energyDep();
       if( energy > _maxE || energy < _minE ) {
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::energysel);
 
       auto r2 = combohit.pos().Perp2();
       if( r2 < _minR2 || r2 > _maxR2 ) {
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::radsel);
       combohit._mask = _mask;
@@ -249,7 +268,7 @@ namespace mu2e {
     {
       size_t index = combohit.index(ich);
       if (_debug > 3)std::cout << index << ", ";
-      if (index > chcOrig.size())
+      if (index >= chcOrig.size())
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = chcOrig[index];
