@@ -266,7 +266,7 @@ namespace mu2e
     unsigned      _nevt, _npass;
 
     // histogram info
-    Hist_t* _hists[10];
+    Hist_t* _hists[10] = {nullptr};
   };
 
   //--------------------------------------------------------------------------------------
@@ -279,6 +279,7 @@ namespace mu2e
     , _timeWindow        (config().timeWindow())
     , _maxOverlap        (config().maxOverlap())
     , _minArcGap         (config().minArcGap())
+    , _doHistograms      (config().doHistograms())
     , _nevt              (0)
     , _npass             (0)
     {
