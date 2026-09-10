@@ -1,0 +1,38 @@
+#
+# Make STMPHDigisTrees
+#
+
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+
+process_name: STMPHDigiTree
+
+source: {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "stmPHTree.root" }
+}
+
+physics: {
+  producers : { }
+  filters : { }
+  analyzers : {
+
+    phTreeHPGe : {
+      module_type : STMPHDigiTree
+      phDigiTag : "makeSTMDigis:phHPGe"
+    }
+
+    phTreeLaBr : {
+      module_type : STMPHDigiTree
+      phDigiTag : "makeSTMDigis:phLaBr"
+    }
+
+  }
+  anaPath : [phTreeHPGe, phTreeLaBr]
+  end_paths: [anaPath]
+}

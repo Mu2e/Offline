@@ -14,6 +14,7 @@ class ValSTMWaveformDigi {
   ValSTMWaveformDigi(std::string name) : _name(name) {}
   int declare(const art::TFileDirectory& tfs);
   int fill(const STMWaveformDigiCollection& coll, art::Event const& event);
+  int fill(const STMWaveformDigiCollectionMap& coll, art::Event const& event);
   std::string& name() { return _name; }
 
  private:

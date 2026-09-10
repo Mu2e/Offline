@@ -9,6 +9,9 @@
 #include <vector>
 #include <array>
 #include <Rtypes.h>
+#include <map>
+
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 
 namespace mu2e {
 
@@ -28,6 +31,7 @@ namespace mu2e {
   };
 
   typedef std::vector<STMPHDigi> STMPHDigiCollection;
+  typedef std::map<STMEventHeader,STMPHDigiCollection> STMPHDigiCollectionMap;
 
   bool lessByTime(const STMPHDigi& a, const STMPHDigi& b) {
     if (a.time() < b.time()) { return true; }

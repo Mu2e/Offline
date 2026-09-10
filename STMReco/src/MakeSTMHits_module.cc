@@ -37,7 +37,7 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollection")};
+      fhicl::Atom<art::InputTag> stmPHDigisTag{ Name("stmPHDigisTag"), Comment("InputTag for STMPHDigiCollectionMap")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit MakeSTMHits(const Parameters& conf);
@@ -45,21 +45,20 @@ namespace mu2e {
   private:
     void produce(art::Event& e) override;
 
-    art::ProductToken<STMPHDigiCollection> _stmPHDigisToken;
+    art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisToken;
     STMChannel _channel;
     ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
-    ,_stmPHDigisToken(consumes<STMPHDigiCollection>(config().stmPHDigisTag()))
+    ,_stmPHDigisToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisTag()))
     ,_channel(STMUtils::getChannel(config().stmPHDigisTag()))
     ,_stmEnergyCalib_h()
     {
       produces<STMHitCollection>();
     }
-  //Originally had _channel(STMChannel::LaBr)
-  
+
     void MakeSTMHits::produce(art::Event& event) {
     // create output
     unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);
@@ -70,14 +69,18 @@ namespace mu2e {
     const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
     const auto& pars = stmEnergyCalib.calib(_channel);
 
-    for (const auto& ph_digi : *phDigisHandle) {
-      auto uncalib_time = ph_digi.time();
-      auto uncalib_energy = ph_digi.energy();
-      float time = uncalib_time*nsPerCt;
-      float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
+    for (const auto& mu2e_evt : *phDigisHandle) {
+      //      const auto& stm_evt_header = mu2e_evt.first; // not used at the moment but left here for future reference
+      const auto& ph_digis = mu2e_evt.second;
+      for (const auto& ph_digi : ph_digis) {
+        auto uncalib_time = ph_digi.time();
+        auto uncalib_energy = ph_digi.energy();
+        float time = uncalib_time*nsPerCt;
+        float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
 
-      STMHit stm_hit(time,energy);
-      outputSTMHits->push_back(stm_hit);
+        STMHit stm_hit(time,energy);
+        outputSTMHits->push_back(stm_hit);
+      }
     }
 
     event.put(std::move(outputSTMHits));

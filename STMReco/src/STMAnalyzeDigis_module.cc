@@ -370,9 +370,10 @@ void STMAnalyzeDigis::analyze(const Event& event)
       auto stm_Digi = static_cast<mu2e::STMWaveformDigi>(Digi);
       std::vector<int16_t> adcs = stm_Digi.adcs();
       // Get EWT and DTC time from the digi
-      EWT = stm_Digi.EWT();
-      DTCtime = stm_Digi.DTCtime();
-      ADCtime = stm_Digi.ADCtime();
+      // TODO: these will now come from a dedicated data products rather than be assigned directly to a (possible prescaled away) digi
+      //      EWT = stm_Digi.EWT();
+      //      DTCtime = stm_Digi.DTCtime();
+      //      ADCtime = stm_Digi.ADCtime();
       // Plot the first waveform
       if(firstEvent){
 	fEvent->Set(adcs.size());
