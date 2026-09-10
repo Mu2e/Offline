@@ -146,7 +146,7 @@ namespace mu2e {
   STMMovingWindowDeconvolution::STMMovingWindowDeconvolution(const Parameters& conf) :
     art::EDProducer{conf},
     _stmWaveformDigisMapToken(consumes<STMWaveformDigiCollectionMap>(conf().stmWaveformDigisMapTag())),
-    channel(STMChannel::findByName("HPGe")), // FIXME: don't hardcode this probably don't want to do what we had before and try to infer it from the art::InputTag like this "STMUtils::getChannel(config().stmWaveformDigisTag()))"
+    channel(STMUtils::getChannel(conf().stmWaveformDigisMapTag())),
     tau(conf().tau()),
     M(conf().M()),
     L(conf().L()),

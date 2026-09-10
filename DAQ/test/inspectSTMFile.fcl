@@ -54,8 +54,8 @@ physics : {
 
    }
 
-   t1 : [ makeSTMDigis, stmPrint ]
-   e1 : [ stmOutput ]
+   t1 : [ makeSTMDigis ]
+   e1 : [ stmOutput, stmPrint ]
    #e1 : [ ]
    #e1 : [ frag, stmOutput ]
 

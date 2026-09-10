@@ -62,7 +62,6 @@ namespace mu2e {
     art::InputTag _stmWaveformDigisMapTag;
     bool _plotZSWithoutOffset{false};
 
-    //art::ProductToken<STMWaveformDigiCollection> _stmWaveformDigisToken;
     art::ProductToken<STMWaveformDigiCollectionMap> _stmWaveformDigisMapToken;
     std::string _waveformType;
     bool _subtractPedestal;
@@ -143,11 +142,6 @@ namespace mu2e {
         if (_verbosityLevel > 1) {
             std::cout << "Waveform size = " << waveforms.size() << std::endl;
         }
-
-        // reset to zero when looping through new eventwindow tag
-        std::stringstream histname, histtitle;
-        std::stringstream histname2, histtitle2;
-        std::stringstream histname3, histtitle3;
 
         std::stringstream histnameRaw, histtitleRaw;
         std::stringstream histnameZSOffset, histtitleZSOffset;

@@ -81,7 +81,7 @@ physics: {
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr, plotZSWaveformDigisLaBrUnshfited ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr, plotZSWaveformDigisLaBrUnshifted ]
   end_paths: [anaPath]
 }
 

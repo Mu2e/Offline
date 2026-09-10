@@ -14,7 +14,6 @@
 
 #include "Offline/DataProducts/inc/STMChannel.hh"
 #include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
-#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
   class STMWaveformDigi {

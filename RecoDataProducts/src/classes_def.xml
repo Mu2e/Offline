@@ -457,7 +457,6 @@
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
- <class name="art::Ptr<mu2e::STMWaveformDigi>"/>
  <class name="mu2e::STMPHDigi"/>
  <class name="mu2e::STMPHDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMPHDigiCollection>"/>
@@ -468,8 +467,6 @@
  <class name="mu2e::STMFragmentSummaryCollection"/>
  <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
  <class name="mu2e::STMEventHeader"/>
- <class name="mu2e::STMEventHeaderCollection"/>
- <class name="art::Wrapper<mu2e::STMEventHeaderCollection>"/>
  <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
  <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
  <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>>"/>

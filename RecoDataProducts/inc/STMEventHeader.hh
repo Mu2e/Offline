@@ -34,10 +34,9 @@ namespace mu2e
 
   private:
     Mu2eEventHeader _mu2eEventHeader;
-    uint64_t _adcClock;
-    uint64_t _dtcClock;
+    uint64_t _adcClock{0};
+    uint64_t _dtcClock{0};
   };
-  typedef std::vector<STMEventHeader> STMEventHeaderCollection;
 }  // namespace mu2e
 
 

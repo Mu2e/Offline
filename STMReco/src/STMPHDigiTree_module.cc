@@ -55,19 +55,19 @@ namespace mu2e {
           STMChannel _channel;
 
           // Store STM PH Digi information
-          int16_t pulseHeight = 0;
-          uint32_t uncalibratedTime = 0;
+          int16_t pulseHeight {0};
+          uint32_t uncalibratedTime {0};
 
           // Store file information
-          Int_t art_evt;
-          Int_t run;
-          Int_t subrun;
+          Int_t art_evt {0};
+          Int_t run {0};
+          Int_t subrun {0};
 
           // Store from EventHeader
-          uint64_t ewt = 0;
-          uint8_t evtMode = 0;
-          uint64_t adcClock = 0;
-          uint64_t dtcClock = 0;
+          uint64_t ewt {0};
+          uint8_t evtMode {0};
+          uint64_t adcClock {0};
+          uint64_t dtcClock {0};
 
           // Tree reference
           TTree* ttree = nullptr;
@@ -141,6 +141,6 @@ namespace mu2e {
         }
     } // end of analyze
 
-}; // end namespace mu2e
+} // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::STMPHDigiTree)

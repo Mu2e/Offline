@@ -1,6 +1,6 @@
 // ====================================================================
 //
-// STMDigisFromFragments: create all types of STMDigis from STMFragments
+// Stmdigisfromfragments: create all types of STMDigis from STMFragments
 // Note that for the STM, a single art event contains many EWTs
 //
 // ======================================================================
@@ -226,6 +226,8 @@ private:
         size_t setsSkippedDueToInvalidHeaders{0};
         size_t zsFragsSkippedDueToInvalidRawHeader{0};
         size_t phFragsSkippedDueToInvalidRawHeader{0};
+        size_t zsFragsSkippedDueToNoPrecedingRawHeader{0};
+        size_t phFragsSkippedDueToNoPrecedingRawHeader{0};
         size_t phCountMismatch{0};
 
     };
@@ -622,9 +624,25 @@ void STMDigisFromFragments::produce(Event& event)
                                 << "\n";
                     }
 
+                    // Decide Here to skip based on previous raw fragment information
+                    if (headerState.skipCurrentSetDueToInvalidHeader) {
+                        ++eventMetrics.zsFragsSkippedDueToInvalidRawHeader;
+                        continue;
+                    }
+
+                    if (headerState.skipCurrentSetDueToRawFlags) {
+                        isHPGe ? ++_totalZSFragsSkippedDueToRawFlagHPGe : ++_totalZSFragsSkippedDueToRawFlagLaBr;
+                        ++eventMetrics.zsFragsSkippedDueToRawFlag;
+                        continue;
+                    }
+
+                    // Check that there was a raw header before this ZS fragment
+                    if (!headerState.containsZSInfo) {
+                        ++eventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader;
+                        continue;
+                    }
+
                     // Extract zs variables from Raw Header
-                    bool skipCurrentSetDueToInvalidHeader = headerState.skipCurrentSetDueToInvalidHeader;
-                    bool skipCurrentSetDueToRawFlags = headerState.skipCurrentSetDueToRawFlags;
                     bool zsInfoWasExtracted = headerState.containsZSInfo;
                     bool zsPrescaled = headerState.zsPrescaled;
                     bool rawPrescaled = headerState.rawPrescaled;
@@ -646,17 +664,6 @@ void STMDigisFromFragments::produce(Event& event)
                         zsAdcClock,
                         zsdtcClock);
 
-                    // Decide Here to skip based on previous raw fragment information
-                    if (skipCurrentSetDueToInvalidHeader) {
-                        ++eventMetrics.zsFragsSkippedDueToInvalidRawHeader;
-                        continue;
-                    }
-
-                    if (skipCurrentSetDueToRawFlags) {
-                        isHPGe ? ++_totalZSFragsSkippedDueToRawFlagHPGe : ++_totalZSFragsSkippedDueToRawFlagLaBr;
-                        ++eventMetrics.zsFragsSkippedDueToRawFlag;
-                        continue;
-                    }
                     // Decide Here to skip based on zs prescale information
                     if (zsPrescaled) {
                         isHPGe ? ++_totalZSFragsPrescaledHPGe : ++_totalZSFragsPrescaledLaBr;
@@ -868,9 +875,26 @@ void STMDigisFromFragments::produce(Event& event)
                     isHPGe ? ++_totalPHFragsSeenHPGe : ++_totalPHFragsSeenLaBr;
                     ++eventMetrics.ph.seen;
 
+                    // Skip if header was malformed
+                    if (headerState.skipCurrentSetDueToInvalidHeader) {
+                        ++eventMetrics.phFragsSkippedDueToInvalidRawHeader;
+                        continue;
+                    }
+
+                    // Skip if Raw Fragment was Bad or Missing
+                    if (headerState.skipCurrentSetDueToRawFlags) {
+                        ++eventMetrics.phFragsSkippedDueToRawFlag;
+                        isHPGe ? ++_totalPHFragsSkippedDueToRawFlagHPGe : ++_totalPHFragsSkippedDueToRawFlagLaBr;
+                        continue;
+                    }
+
+                    // Check if a raw header was extracted before this PH fragment
+                    if (!headerState.containsPHInfo) {
+                        ++eventMetrics.phFragsSkippedDueToNoPrecedingRawHeader;
+                        continue;
+                    }
+
                     // Extract ph varibales from Raw Header
-                    bool skipCurrentSetDueToRawFlags = headerState.skipCurrentSetDueToRawFlags;
-                    bool skipCurrentSetDueToInvalidHeader = headerState.skipCurrentSetDueToInvalidHeader;
                     bool extractedPHInfo = headerState.containsPHInfo;
                     uint16_t phCount = headerState.expectedPHCount;
 
@@ -886,19 +910,6 @@ void STMDigisFromFragments::produce(Event& event)
                         phMode,
                         phAdcClock,
                         phdtcClock);
-
-                    // Skip if header was malformed
-                    if (skipCurrentSetDueToInvalidHeader) {
-                        ++eventMetrics.phFragsSkippedDueToInvalidRawHeader;
-                        continue;
-                    }
-
-                    // Skip if Raw Fragment was Bad or Missing
-                    if (skipCurrentSetDueToRawFlags) {
-                        ++eventMetrics.phFragsSkippedDueToRawFlag;
-                        isHPGe ? ++_totalPHFragsSkippedDueToRawFlagHPGe : ++_totalPHFragsSkippedDueToRawFlagLaBr;
-                        continue;
-                    }
 
                     // Check if PH fragment is empty
                     auto payloadPtr = stm_frag.payloadBegin();
@@ -1169,8 +1180,10 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
+        std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
         std::cout << "PH Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.phFragsSkippedDueToRawFlag << "\n";
         std::cout << "PH Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.phFragsSkippedDueToInvalidRawHeader << "\n";
+        std::cout << "PH Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.phFragsSkippedDueToNoPrecedingRawHeader << "\n";
         std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (HPGe)            : " << HPGeEventMetrics.setsSkippedDueToRawFlag << "\n";
         std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (HPGe)  : " << HPGeEventMetrics.setsSkippedDueToInvalidHeaders << "\n";
         std::cout << "\n";
@@ -1178,8 +1191,10 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Raw Frags With Invalid Anchors (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidAnchors << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
+        std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
         std::cout << "PH Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.phFragsSkippedDueToRawFlag << "\n";
         std::cout << "PH Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.phFragsSkippedDueToInvalidRawHeader << "\n";
+        std::cout << "PH Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.phFragsSkippedDueToNoPrecedingRawHeader << "\n";
         std::cout << "Raw/ZS/PH Sets Skipped Due To Raw Flags (LaBr)            : " << LaBrEventMetrics.setsSkippedDueToRawFlag << "\n";
         std::cout << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (LaBr)  : " << LaBrEventMetrics.setsSkippedDueToInvalidHeaders << "\n";
         std::cout << "=================================\n";
