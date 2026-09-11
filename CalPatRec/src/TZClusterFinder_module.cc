@@ -291,6 +291,7 @@ namespace mu2e {
     if (_enableTimeout && _timeoutService) {
       _timeoutGuard.emplace(*(*_timeoutService),
                             event,
+                            scheduleID(),
                             moduleDescription().moduleLabel(),
                             _timeoutMs);
     }
