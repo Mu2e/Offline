@@ -169,12 +169,11 @@ namespace mu2e {
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc,
       TrkTypes::TDCTimes &times, const StrawId &id) const {
-    double electronicsTimeDelay = _strawElectronics->electronicsTimeDelay();
     times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB()
-      - electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
+      - _electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
       + _timeOffsetStrawHV[id.uniqueStraw()];
     times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB()
-      - electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
+      - _electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
       + _timeOffsetStrawCal[id.uniqueStraw()];
   }
 
