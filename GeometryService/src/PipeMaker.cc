@@ -37,20 +37,20 @@ namespace mu2e {
     // Qualities of types
     std::vector<int>                       nComponentsOfType;
     std::vector<int>                       nPipesOfType;
-    std::vector<double>                    lengthOfType;
-    std::vector<std::string>               flavorOfType;
+    std::vector<Pipe::Flavor>              flavorOfType;
     std::vector<std::string>               fillOfType;
     nComponentsOfType                      .reserve(nType);
     nPipesOfType                           .reserve(nType);
-    if (version == 1) lengthOfType         .reserve(nType);
     flavorOfType                           .reserve(nType);
     fillOfType                             .reserve(nType);
 
     // Qualities of Pipes, by type
     std::vector<std::vector<CLHEP::Hep3Vector> >         sites;
     std::vector<std::vector<std::string> >               orients;
+    std::vector<std::vector<double> >                    lengths;
     sites                                  .reserve(nType);
     orients                                .reserve(nType);
+    lengths                                .reserve(nType);
 
     // Collections by type of qualities of components.  Filled below
     std::vector<std::vector<double> >      rInOfCompByType;
@@ -83,10 +83,6 @@ namespace mu2e {
     std::string vOffsetBaseName  = "Pipe.vOffsetType";
 
 
-    // Some temporary holders
-    std::vector<double> tempDoubleVec;
-    int totPipes = 0; // Keep track of total number of pipes
-
     // *********************
     // Loop over the various pipe _types_ and fill the vectors with
     // information needed for the _types_.
@@ -105,21 +101,19 @@ namespace mu2e {
       int nComp = c.getInt(bCompNumberVarName.str(),1);
       nComponentsOfType.push_back(nComp);
 
-      totPipes += nComp;  // Track total pipes
-
-      // Get the length of this type of box - the w component.
-      // This is Full length - will be cut in half when making Tubs, not Tori
-      if ( version == 1 ){
-        std::ostringstream bLengthVarName;
-        bLengthVarName << lengthBaseName << iType;
-        lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm);
-      }
-
       // Get the flavor - straight or bend for this type
       std::ostringstream pFlavVarName;
       pFlavVarName << flavBaseName << iType;
       std::string theFlav = c.getString(pFlavVarName.str(),"straight");
-      flavorOfType.push_back(theFlav);
+      if ( theFlav == "straight" ) {
+        flavorOfType.push_back(Pipe::Flavor::straight);
+      } else if ( theFlav == "bend" ) {
+        flavorOfType.push_back(Pipe::Flavor::bend);
+      } else {
+        throw cet::exception("GEOM")
+          << pFlavVarName.str() << " must be \"straight\" or \"bend\"."
+          << "\nYou specified: " << theFlav;
+      }
 
       // Get the fill material for the type of pipe
       std::ostringstream pFillVarName;
@@ -129,16 +123,16 @@ namespace mu2e {
 
     } // End of collecting Type information
 
-    if ( version > 1 ) lengthOfType.reserve(totPipes);
-
     // ****************
     // Now collect individual pipe information
     // ****************
     std::vector<CLHEP::Hep3Vector> tmpVecHep3V;
     std::vector<std::string> tmpVecOri;
+    std::vector<double> tmpVecLen;
     for ( int it = 0; it < nType; it++ ) {
       tmpVecHep3V.clear();
       tmpVecOri.clear();
+      tmpVecLen.clear();
       for ( int ip = 0; ip < nPipesOfType[it]; ip++ ) {
         // Location of the center of the pipe in Mu2e coords
         // Use our now-familiar trick for variable names
@@ -158,23 +152,27 @@ namespace mu2e {
             << "\nentered as a string.You specified: " << orientation;
         }
         tmpVecOri.push_back(orientation);
-        if ( version > 1 ) {
-          // We will cheat and collect a length for each pipe rather than
-          // each type (which rhymes).
-          std::ostringstream aLengthVarName;
-          aLengthVarName << lengthBaseName << it+1 << "Pipe" << ip+1;
-          std::ostringstream altLengthVarName;
-          altLengthVarName << lengthBaseName << it+1;
 
-          double tmpVal = c.getDouble( aLengthVarName.str(), -1.0 );
-          if ( tmpVal < 0.0 ) tmpVal = c.getDouble( altLengthVarName.str() );
-          lengthOfType.push_back(tmpVal);
+        // Full length of the pipe - will be cut in half when making Tubs,
+        // not Tori.  Version 1 gives one length per type.  Version 2 allows
+        // a length per pipe, falling back to the length of the type.
+        std::ostringstream pipeLengthVarName;
+        pipeLengthVarName << lengthBaseName << it+1 << "Pipe" << ip+1;
+        std::ostringstream typeLengthVarName;
+        typeLengthVarName << lengthBaseName << it+1;
 
+        double pipeLength = 0.0;
+        if ( version > 1 && c.hasName(pipeLengthVarName.str()) ) {
+          pipeLength = c.getDouble(pipeLengthVarName.str());
+        } else {
+          pipeLength = c.getDouble(typeLengthVarName.str());
         }
+        tmpVecLen.push_back(pipeLength*CLHEP::mm);
 
       }
       orients.push_back(tmpVecOri);
       sites.push_back(tmpVecHep3V);
+      lengths.push_back(tmpVecLen);
     }
 
     // ****************
@@ -247,14 +245,13 @@ namespace mu2e {
     } // end loop over types...
 
     // Now make the pointer to the object itself.
-    std::unique_ptr<Pipe> res(new Pipe( version,
-                                        nComponentsOfType,
+    std::unique_ptr<Pipe> res(new Pipe( nComponentsOfType,
                                         nPipesOfType,
-                                        lengthOfType,
                                         flavorOfType,
                                         fillOfType,
                                         sites,
                                         orients,
+                                        lengths,
                                         rInOfCompByType,
                                         rOutOfCompByType,
                                         materialOfCompByType,
