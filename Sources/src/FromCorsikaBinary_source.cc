@@ -125,6 +125,10 @@ namespace mu2e {
       currentEventNumber_ = 0;
 
       currentFile_ = new ifstream(currentFileName_);
+      if (!currentFile_->is_open()) {
+        throw cet::exception("FILEOPEN", " FromCorsikaBinary: ")
+          << " cannot open input file " << currentFileName_ << "\n";
+      }
 
       unsigned subrun = 0;
       float lowE, highE;
