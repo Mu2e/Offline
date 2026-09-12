@@ -1,5 +1,5 @@
-#ifndef ExternalShieldingGeom_Pipe_hh
-#define ExternalShieldingGeom_Pipe_hh
+#ifndef ServicesGeom_Pipe_hh
+#define ServicesGeom_Pipe_hh
 
 //
 //
@@ -36,23 +36,17 @@ namespace mu2e {
     // can add a "bendAngle" parameter which will be meaningless for a
     // straight section.
 
+    enum class Flavor { straight, bend };
+
     // ***
     // These represet type-level information
     // ***
 
-    const int &                           getVersion() const
-    { return _version; }
     const std::vector<int> &              getNComponentsInPipe() const
     { return _nComponentsInPipe; }
     const std::vector<int> &              getNPipes() const
     { return _nPipes; }
-    // If the flavor (see below) is "bend", then the length is really
-    // the toroidal radius of the containing pipe
-    // In version 2, length is not a property of a type, but of an individual
-    // pipe.  Use the same vector for code simplicity.
-    const std::vector<double> &           getLengths() const
-    { return _lengths; }
-    const std::vector<std::string> &      getFlavor() const
+    const std::vector<Flavor> &           getFlavor() const
     { return _flavors; }
     const std::vector<std::string> &      getFillMaterialNames() const
     { return _fillMaterialNames; }
@@ -68,6 +62,10 @@ namespace mu2e {
     { return _centerPositions; }
     const std::vector<std::vector<std::string> >&          getOrientations() const
     { return _orientations; }
+    // Full length of each pipe.  If the flavor is bend, this is the
+    // toroidal radius of the containing pipe.
+    const std::vector<std::vector<double> >&               getLengths() const
+    { return _lengths; }
 
     // The following are component-level information
     const std::vector<std::vector<double> >&  getInnerRads() const
@@ -86,27 +84,25 @@ namespace mu2e {
     friend class PipeMaker;
 
     // Private ctr: the class should only be constructed via Pipe::PipeMaker.
-    Pipe(const int&                               version,
-         const std::vector<int>&                  nComponentsInPipe,
+    Pipe(const std::vector<int>&                  nComponentsInPipe,
          const std::vector<int>&                  nPipes,
-         const std::vector<double>&               lengths,
-         const std::vector<std::string>&          flavs,
+         const std::vector<Flavor>&               flavs,
          const std::vector<std::string>&          fillMats,
          const std::vector<std::vector<CLHEP::Hep3Vector> >&    sites,
          const std::vector<std::vector<std::string> >&          orients,
+         const std::vector<std::vector<double> >&               lengths,
          const std::vector<std::vector<double> >& innerRads,
          const std::vector<std::vector<double> >& outerRads,
          const std::vector<std::vector<std::string> >&          mats,
          const std::vector<std::vector<double> >& uOffsets,
          const std::vector<std::vector<double> >& vOffsets)
-      : _version          (version),
-        _nComponentsInPipe (nComponentsInPipe),
+      : _nComponentsInPipe (nComponentsInPipe),
         _nPipes           (nPipes),
-        _lengths          (lengths),
         _flavors          (flavs),
         _fillMaterialNames     (fillMats),
         _centerPositions  (sites),
         _orientations     (orients),
+        _lengths          (lengths),
         _innerRads        (innerRads),
         _outerRads        (outerRads),
         _materialNames    (mats),
@@ -122,17 +118,16 @@ namespace mu2e {
     // Current description based on Geometry 14, adapted by
     // David Norvil Brown,
 
-    int                                  _version;
     // The following vectors hold information about the pipes
-    // The first five are type-level information
+    // The first four are type-level information
     std::vector< int >                   _nComponentsInPipe;
     std::vector< int >                   _nPipes;
-    std::vector< double >                _lengths;
-    std::vector< std::string >           _flavors;
+    std::vector< Flavor >                _flavors;
     std::vector< std::string >           _fillMaterialNames;
-    // The next two are pipe-level information
+    // The next three are pipe-level information
     std::vector< std::vector<CLHEP::Hep3Vector > >     _centerPositions;
     std::vector< std::vector<std::string > >           _orientations;
+    std::vector< std::vector< double > >               _lengths;
     // The last five are component-level information
     std::vector< std::vector< double > > _innerRads;
     std::vector< std::vector< double > > _outerRads;
@@ -145,4 +140,4 @@ namespace mu2e {
 
 }
 
-#endif/*ExternalShieldingGeom_Pipe_hh*/
+#endif/*ServicesGeom_Pipe_hh*/
