@@ -134,6 +134,10 @@ public:
   // monitor does before it ships or draws one.
   void RefreshLabels();
   void Finalize();
+  // Empty every copy and restart the window ring, keeping the objects booked
+  // (online, a new run must not inherit the last one). Named per-subrun
+  // archives describe finished subruns, so they are kept.
+  void ResetContents();
 
   // Every copy of one histogram, job copy first: what the online monitor ships
   // so that a newly configured segment needs no C++ change to reach the GUI.

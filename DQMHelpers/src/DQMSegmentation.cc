@@ -578,6 +578,43 @@ void DQMSegmentation::Finalize()
   }
 }
 
+void DQMSegmentation::ResetContents()
+{
+  auto clear = [](TH1* h) {
+    if (h != nullptr) {
+      h->Reset("ICES");
+    }
+  };
+  for (const auto& owner : entries_) {
+    Entry& entry = *owner;
+    clear(entry.job);
+    clear(entry.subrunLive);
+    clear(entry.windowLive);
+    for (TH1* h : entry.subBlocks) {
+      clear(h);
+    }
+    for (TH1* h : entry.windowArchive) {
+      clear(h);
+    }
+    entry.jobRange = Range{};
+    entry.subrunRange = Range{};
+    entry.liveRange = Range{};
+    entry.spanRange = Range{};
+    for (auto& r : entry.subBlockRange) {
+      r = Range{};
+    }
+    for (auto& r : entry.archiveRange) {
+      r = Range{};
+    }
+    entry.windowStarted = false;
+    entry.subBlockStartClock = 0;
+    entry.cur = 0;
+    entry.completedSubBlocks = 0;
+    refreshTargets(entry);
+    labelAll(entry);
+  }
+}
+
 std::vector<TH1*> DQMSegmentation::copies(const std::string& path) const
 {
   std::vector<TH1*> out;

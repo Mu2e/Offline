@@ -106,6 +106,9 @@ public:
             const CrvStatusCollection& crvStatus);
   void BeginSubRun(int run, int subrun);
   void EndSubRun();
+  // Online only: empty every histogram and graph for a new run. Job counters
+  // (nEvents, nDigis, activeFEBs) are not reset.
+  void ResetForNewRun();
   void WriteGraphs();
 
   // Every histogram this helper books, and the segment copies of each.
@@ -142,11 +145,6 @@ public:
   {
     return h1_dtFpgaPairs_;
   }
-  //ROC MicroBunchStatus vs EWT, one graph per DTC link
-  const std::map<uint8_t, TGraph*>& ubStatusVsEwt() const
-  {
-    return g_ubStatusVsEwt_;
-  }
 
   // Axis-coverage diagnostics. Off-axis FEB and CRVId-range: one LogWarning
   // from Fill. maxFebIdSeen / maxAbsDtSeen: one LogWarning from WriteGraphs
@@ -179,7 +177,6 @@ private:
 
   void fillEwtSeries(uint64_t ewt, int nDigis);
   void fillTiming(const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes);
-  void fillMicroBunchStatus(const CrvStatusCollection& crvStatus);
   void persistGraph(TGraph* g);
   void fillSectorOccupancy();
 
@@ -214,8 +211,6 @@ private:
   std::vector<int> channelToSector_;
   DQMHist1<TH1F> h_dtOutOfRangePerFeb_;
   std::map<std::pair<int, uint8_t>, DQMHist1<TH1F>> h1_dtFpgaPairs_;
-  std::map<uint8_t, TGraph*> g_ubStatusVsEwt_;
-  std::map<uint8_t, uint32_t> lastMicroBunchStatus_;
 
   bool warnedOffAxisFeb_{false};
   bool warnedCrvIdOutOfRange_{false};

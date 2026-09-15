@@ -346,7 +346,6 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis,
 
   if (haveEwt && config_.fillLivePlots) {
     fillEwtSeries(ewt, nDigis);
-    fillMicroBunchStatus(crvStatus);
   }
 }
 
@@ -358,6 +357,26 @@ void CRVDigiDQM::BeginSubRun(int run, int subrun)
 void CRVDigiDQM::EndSubRun()
 {
   segments_.EndSubRun();
+}
+
+void CRVDigiDQM::ResetForNewRun()
+{
+  segments_.ResetContents();
+  // Back to the two-point seed from Book(), so an empty graph stays drawable.
+  for (TGraph* g : {g_digisVsEwt_, g_digisAvgVsEwt_}) {
+    if (g == nullptr) {
+      continue;
+    }
+    g->Set(0);
+    g->SetPoint(0, 0, 0);
+    g->SetPoint(1, 1, 1);
+  }
+  ewtWindow_.clear();
+  ewtWindowSum_ = 0;
+  avgBlockSum_ = 0;
+  avgBlockCount_ = 0;
+  avgBlockFirstEwt_ = 0;
+  avgSeedsCleared_ = false;
 }
 
 void CRVDigiDQM::fillEwtSeries(uint64_t ewt, int nDigis)
@@ -550,45 +569,6 @@ void CRVDigiDQM::fillTiming(
   }
 }
 
-void CRVDigiDQM::fillMicroBunchStatus(const CrvStatusCollection& crvStatus)
-{
-  if (!dir_ || !config_.fillLivePlots) {
-    return;
-  }
-
-  for (const auto& status : crvStatus) {
-    if (!status.HasROCHeader()) {
-      continue;
-    }
-
-    const uint8_t linkID = status.GetLinkID();
-    const uint32_t ubStatus = status.GetMicroBunchStatus();
-    const uint64_t ewt = status.GetEventWindowTag();
-
-    if (g_ubStatusVsEwt_.find(linkID) == g_ubStatusVsEwt_.end()) {
-      const std::string name = Form("g_ubStatusVsEwt_link%d", linkID);
-      const std::string title = Form("MicroBunchStatus vs EWT (link %d);"
-                                     "Event window tag;MicroBunchStatus",
-                                     linkID);
-      TGraph* g = dir_->make<TGraph>();
-      g->SetName(name.c_str());
-      g->SetTitle(title.c_str());
-      g->SetPoint(0, static_cast<double>(ewt), static_cast<double>(ubStatus));
-      g_ubStatusVsEwt_[linkID] = g;
-      lastMicroBunchStatus_[linkID] = ubStatus;
-      continue;
-    }
-
-    if (ubStatus != lastMicroBunchStatus_[linkID]) {
-      TGraph* g = g_ubStatusVsEwt_[linkID];
-      g->SetPoint(g->GetN(),
-                  static_cast<double>(ewt),
-                  static_cast<double>(ubStatus));
-      lastMicroBunchStatus_[linkID] = ubStatus;
-    }
-  }
-}
-
 void CRVDigiDQM::persistGraph(TGraph* g)
 {
   if (!dir_ || g == nullptr) {
@@ -677,9 +657,6 @@ void CRVDigiDQM::WriteGraphs()
   }
   persistGraph(g_digisVsEwt_);
   persistGraph(g_digisAvgVsEwt_);
-  for (auto& entry : g_ubStatusVsEwt_) {
-    persistGraph(entry.second);
-  }
 }
 
 } // namespace mu2e

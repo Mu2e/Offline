@@ -45,6 +45,11 @@ public:
     float maxErrorsPerSubrun{10000.f};
     // TGraphs vs subrun. Online monitor only — they do not survive hadd.
     bool fillLivePlots{false};
+    // Per-link status summaries for the online display, booked per DTC link ID.
+    bool fillLinkPlots{false};
+    // Per-link step graphs vs EWT; only with fillLinkPlots. Not hadd-safe.
+    bool fillLinkGraphs{false};
+    std::size_t maxLinkGraphPoints{10000};
     // Which histograms get per-subrun and last-N-events copies. Default is
     // job-only, which reproduces the pre-segmentation output exactly.
     DQMSegmentation::Config segmentation{};
@@ -55,6 +60,8 @@ public:
   static constexpr int kNPortFlags = static_cast<int>(CRVId::nFEBPerROC);
   static constexpr int kNLinksPerDTC = static_cast<int>(CRVId::nROCPerDTC);
   static constexpr int kNRocBins = static_cast<int>(CRVId::nROC);
+  static constexpr int kNLinkBins = 6;  //y-axis of the per-link 2D summaries
+  static constexpr double kLatencyTickToUs = 0.064;  //DTC latency tick
   // Highest CrvDAQerrorCode + 1, so codes added upstream get their own bin.
   static int nDaqErrorCodes();
 
@@ -82,6 +89,9 @@ public:
             const CrvDAQerrorCollection& crvDaqErrors);
   void BeginSubRun(int run, int subrun);
   void EndSubRun(int run, int subrun);
+  // Online only: empty every histogram and graph for a new run. Job counters
+  // (nEvents, errorBitCount, seenRocs) are not reset.
+  void ResetForNewRun();
   void WriteGraphs();
 
   // Every histogram this helper books, and the segment copies of each.
@@ -115,6 +125,9 @@ public:
 
   const std::vector<RocSnapshot>& lastEventRocs() const { return lastEventRocs_; }
 
+  //fillLinkGraphs: every per-link graph, in the order booked
+  const std::vector<TGraph*>& linkGraphs() const { return linkGraphs_; }
+
   std::size_t nEvents() const { return nEvents_; }
   std::size_t nEventsWithRocHeader() const { return nEventsWithRocHeader_; }
   std::size_t nEventsWithAnyErrorBit() const { return nEventsWithAnyErrorBit_; }
@@ -133,7 +146,22 @@ public:
 
 private:
   void fillDaqErrors(const CrvDAQerrorCollection& crvDaqErrors);
-  void persistGraph(TGraph* g);
+  void fillLink(const CrvStatus& status);
+  DQMHist1<TH1F> linkHist(std::map<uint8_t, DQMHist1<TH1F>>& hists, uint8_t linkId,
+                          const char* name, const char* title, int nBins,
+                          double lo, double hi, const char* const* labels = nullptr);
+  TGraph* makeLinkGraph(const std::string& name, const std::string& title);
+  // Step graph that records only changes; `scale` converts the stored value.
+  void stepPoint(std::map<uint8_t, TGraph*>& graphs,
+                 std::map<uint8_t, uint32_t>& last, uint8_t linkId,
+                 uint32_t value, uint64_t ewt, double scale,
+                 const char* nameFmt, const char* titleFmt);
+  // One graph per bit, booked together on a link's first status.
+  void bookBitGraphs(std::map<std::pair<uint8_t, uint8_t>, TGraph*>& graphs,
+                     uint8_t linkId, const uint8_t* bits,
+                     const char* const* names, std::size_t n, const char* prefix);
+  void addBitPoint(TGraph* g, uint64_t ewt) const;
+  void persistGraph(TGraph* g, art::TFileDirectory* dir = nullptr);
   DQMHist1<TH1F> latencyHistFor(uint8_t dtcId, uint8_t linkId);
   void noteUnindexedRoc(uint8_t dtcId, uint8_t linkId);
 
@@ -163,6 +191,26 @@ private:
   std::map<std::pair<uint8_t, uint8_t>, DQMHist1<TH1F>> h_linkLatencyByRoc_;
 
   std::vector<RocSnapshot> lastEventRocs_;
+
+  std::optional<art::TFileDirectory> graphDir_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_latencyUs_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_latencyUsWide_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_linkStatusSummary_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_rocStatusSummary_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_rocGroupSummary_;
+  std::map<uint8_t, DQMHist1<TH1F>> h_portFlagBits_;
+  DQMHist2<TH2F> h2_rocStatusSummary_;
+  DQMHist2<TH2F> h2_rocGroupSummary_;
+  DQMHist2<TH2F> h2_portFlagBits_;
+  std::map<uint8_t, TGraph*> g_linkLatency_;
+  std::map<uint8_t, TGraph*> g_rocStatus_;
+  std::map<uint8_t, TGraph*> g_portFlags_;
+  std::map<std::pair<uint8_t, uint8_t>, TGraph*> g_linkStatusBit_;
+  std::map<std::pair<uint8_t, uint8_t>, TGraph*> g_rocStatusBit_;
+  std::map<uint8_t, uint32_t> lastLinkLatency_;
+  std::map<uint8_t, uint32_t> lastRocStatus_;
+  std::map<uint8_t, uint32_t> lastPortFlags_;
+  std::vector<TGraph*> linkGraphs_;
 
   std::size_t nEvents_{0};
   std::size_t nEventsWithRocHeader_{0};
@@ -208,6 +256,15 @@ struct CRVStatusDQMFhicl {
   fhicl::Atom<bool> fillLivePlots{
       Name("fillLivePlots"), Comment("Book TGraphs vs subrun (online only; not hadd-safe)"),
       d.fillLivePlots};
+  fhicl::Atom<bool> fillLinkPlots{
+      Name("fillLinkPlots"), Comment("Per-link status summaries for the online display"),
+      d.fillLinkPlots};
+  fhicl::Atom<bool> fillLinkGraphs{
+      Name("fillLinkGraphs"), Comment("Per-link step graphs vs EWT (needs fillLinkPlots)"),
+      d.fillLinkGraphs};
+  fhicl::Atom<int> maxLinkGraphPoints{
+      Name("maxLinkGraphPoints"), Comment("Cap on points per per-link graph"),
+      static_cast<int>(d.maxLinkGraphPoints)};
   fhicl::OptionalDelegatedParameter segmentation{
       Name("segmentation"),
       Comment("Per-subrun / last-N-events copies and publishing for this helper; "
