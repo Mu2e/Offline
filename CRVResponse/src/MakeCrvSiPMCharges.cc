@@ -45,7 +45,11 @@ std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
 {
   double x,y;
   _photonMap->GetRandom2(x,y);
-  return std::pair<int,int>(lrint(x),lrint(y));
+  // GetRandom2 samples the full width of the outermost bin, so lrint can return _nPixelsX/Y,
+  // one past the last pixel; that phantom pixel would carry its own discharge state
+  int ix=std::min(std::max(static_cast<int>(lrint(x)),0),_nPixelsX-1);
+  int iy=std::min(std::max(static_cast<int>(lrint(y)),0),_nPixelsY-1);
+  return std::pair<int,int>(ix,iy);
 }
 
 bool MakeCrvSiPMCharges::IsInactivePixelId(const std::pair<int,int> &pixelId)
