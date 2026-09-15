@@ -51,9 +51,13 @@
 #include "Geant4/G4Run.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4ScoringManager.hh"
+#include "Geant4/G4VExceptionHandler.hh"
+#include "Geant4/G4ExceptionSeverity.hh"
 
 // C++ includes.
+#include <atomic>
 #include <cstdlib>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -87,6 +91,63 @@ namespace tbb {
     }
   };
 }
+
+namespace {
+
+  // Workaround for the fatal end-of-job G4Exception Cache001 seen with
+  // Geant4 >= ~11.2 in MT jobs (e.g. ShieldingM_EMZ / POT-type jobs).
+  //
+  // ParticleHP model instances are owned by per-thread
+  // G4HadronicInteractionRegistry singletons whose destruction is deferred
+  // to a G4ThreadLocalSingleton static destructor that runs inside
+  // __run_exit_handlers() on the MAIN art thread.  The G4Cache<V> members
+  // of those models were created on G4 worker/master threads, so the main
+  // thread's thread-local cache container can be shorter than a member's
+  // cache id, and G4CacheReference<V>::Destroy raises the FATAL Cache001,
+  // aborting an otherwise-successful job after its output file has already
+  // been closed (the data on disk are good; only the exit status lies).
+  //
+  // Native Geant4 MT does not see this because there the main thread is the
+  // G4 master thread, whose cache container is fully grown.  It bites
+  // frameworks (like art) that run all G4 work on secondary threads.
+  //
+  // G4CacheReference<V>::Destroy has a clean handled-exception path: when a
+  // G4VExceptionHandler consumes the exception, Destroy simply returns
+  // without touching the container, which is exactly right at process exit.
+  // So: install, on the main thread, an exception handler that suppresses
+  // exactly Cache001 and keeps the default fatal behavior for everything
+  // else.  The handler must stay alive through exit(), hence the deliberate
+  // leak.  Registration with G4StateManager happens in the
+  // G4VExceptionHandler base-class constructor.
+  class CacheTeardownHandler : public G4VExceptionHandler {
+  public:
+    G4bool Notify(const char* originOfException,
+                  const char* exceptionCode,
+                  G4ExceptionSeverity severity,
+                  const char* description) override {
+      if (std::strcmp(exceptionCode, "Cache001") == 0) {
+        static std::atomic<unsigned> count{0};
+        if (count++ == 0) {
+          std::cerr << "Mu2eG4MT: suppressed end-of-job G4Exception Cache001 from "
+                    << originOfException
+                    << " (cross-thread G4Cache teardown; output is unaffected;"
+                    << " further occurrences suppressed silently)\n"
+                    << description << std::endl;
+        }
+        return false;  // continue execution
+      }
+      std::cerr << "G4Exception (" << exceptionCode << ") issued by "
+                << originOfException << "\n" << description << std::endl;
+      // Mimic the no-handler default: abort on fatal severities only.
+      return severity == FatalException || severity == FatalErrorInArgument;
+    }
+  };
+
+  void installCacheTeardownHandler() {
+    static CacheTeardownHandler* handler [[maybe_unused]] = new CacheTeardownHandler();
+  }
+
+} // anonymous namespace
 
 namespace mu2e {
 
@@ -429,6 +490,10 @@ namespace mu2e {
 
     if ( _exportPDTEnd ) exportG4PDT( "End:" );
     physVolHelper_.endRun();
+
+    // See the comment on CacheTeardownHandler above: suppress the spurious
+    // fatal Cache001 that Geant4 raises during exit-time static destruction.
+    installCacheTeardownHandler();
   }
 
 
