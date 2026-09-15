@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+# Original author R. Mina.
+
+Import('env')
+Import('mu2e_helper')
+
+helper = mu2e_helper(env)
+
+rootlibs = env['ROOTLIBS']
+
+# The package is helper classes only: CrvDQMcollector (CRVReco) is the Offline
+# consumer, and otsdaq-mu2e-crv links the digi and status helpers directly.
+# There are no art plugins here, and so no GeometryService dependency.
+helper.make_mainlib([
+    'mu2e_RecoDataProducts',
+    'mu2e_DataProducts',
+    'artdaq-core-mu2e_Overlays',
+    'CLHEP',
+    'art_Framework_Services_Registry',
+    'art_root_io_tfile_support',
+    'art_root_io_TFileService',
+    'art_Utilities',
+    'canvas',
+    'MF_MessageLogger',
+    'fhiclcpp',
+    'fhiclcpp_types',
+    'cetlib',
+    'cetlib_except',
+    rootlibs,
+])
+
+# Local Variables:
+# mode:python
+# End:
