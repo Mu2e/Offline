@@ -178,17 +178,13 @@ void CRVStatusDQM::Book(art::TFileDirectory dir)
   h_daqErrorCode_ = segments_.book1<TH1F>(
       "daqErrorCode",
       "CrvDAQerror code;Error code;Counts",
-      kNDaqErrorCodes,
+      nDaqErrorCodes(),
       -0.5,
-      kNDaqErrorCodes - 0.5);
+      nDaqErrorCodes() - 0.5);
   h_daqErrorCode_.ForEach([](TH1F* h) {
-    h->GetXaxis()->SetBinLabel(1, "unknown");
-    h->GetXaxis()->SetBinLabel(2, "unableToGetDataBlock");
-    h->GetXaxis()->SetBinLabel(3, "invalidPacket");
-    h->GetXaxis()->SetBinLabel(4, "wrongSubsystemID");
-    h->GetXaxis()->SetBinLabel(5, "errorUnpackingStatusPacket");
-    h->GetXaxis()->SetBinLabel(6, "errorUnpackingCrvHits");
-    h->GetXaxis()->SetBinLabel(7, "byteCountMismatch");
+    for (const auto& [code, name] : CrvDAQerrorCodeDetail::names()) {
+      h->GetXaxis()->SetBinLabel(static_cast<int>(code) + 1, name.c_str());
+    }
   });
 
   h_ewtMismatch_ = segments_.book1<TH1F>(
@@ -367,12 +363,18 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus,
   fillDaqErrors(crvDaqErrors);
 }
 
+int CRVStatusDQM::nDaqErrorCodes()
+{
+  const auto& names = CrvDAQerrorCodeDetail::names();
+  return names.empty() ? 1 : static_cast<int>(names.rbegin()->first) + 1;
+}
+
 void CRVStatusDQM::fillDaqErrors(const CrvDAQerrorCollection& crvDaqErrors)
 {
   bool countedEvent = false;
   for (const auto& err : crvDaqErrors) {
     const int code = static_cast<int>(err.GetErrorCode());
-    if (code >= 0 && code < kNDaqErrorCodes) {
+    if (code >= 0 && code < nDaqErrorCodes()) {
       h_daqErrorCode_.Fill(code);
     }
     if (err.GetErrorCode() == CrvDAQerrorCode::wrongSubsystemID) {

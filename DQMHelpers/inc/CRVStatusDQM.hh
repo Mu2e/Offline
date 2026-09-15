@@ -55,7 +55,8 @@ public:
   static constexpr int kNPortFlags = static_cast<int>(CRVId::nFEBPerROC);
   static constexpr int kNLinksPerDTC = static_cast<int>(CRVId::nROCPerDTC);
   static constexpr int kNRocBins = static_cast<int>(CRVId::nROC);
-  static constexpr int kNDaqErrorCodes = 7;
+  // Highest CrvDAQerrorCode + 1, so codes added upstream get their own bin.
+  static int nDaqErrorCodes();
 
   static const char* errorBitLabel(int bitIndex);
   // Y-axis of errorBitsVsRoc: dtcId * nROCPerDTC + linkId. No roc==4 fold.
