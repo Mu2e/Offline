@@ -1,7 +1,6 @@
 /* Simulate the photons coming from the pipe calibration source
  based on CaloCalibGun orginally written by Bertrand Echenard (2014)
  Current module author: Sophie Middleton (2022)
- Multi-disk edits author: Huma Jafree(2026)
 
  Assumptions:
  * We treat all 5 pipes as equal volume when we pick a pipe.
@@ -36,14 +35,16 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h" // NEW: needed for fhicl::Sequence<int> disks
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 
 // C++ includes.
 #include <iostream>
 #include <string>
 #include <cmath>
 #include <array>
+#include <set>
 
 using namespace std;
 
@@ -61,9 +62,9 @@ namespace mu2e {
       fhicl::Atom<double> phimax{Name("phimax"), CLHEP::twopi };
       fhicl::Atom<double> tmin{Name("tmin"),0.};
       fhicl::Atom<double> tmax{Name("tmax"),1694.};
-      // NEW: list of calorimeter disk indices to illuminate simultaneously in the same event (replaces single nDisk)
-      fhicl::Sequence<int> disks{Name("disks"), std::vector<int>{0,1}};
-      fhicl::Atom<bool> multi{Name("multiphotons"),false};
+      fhicl::Sequence<int> disks{Name("disks"), Comment("Calorimeter disk indices to illuminate simultaneously per event")};
+      fhicl::Atom<bool> multiphotons{Name("multiphotons"),false};
+      fhicl::Atom<double> sourceRate{Name("sourceRate"), Comment("Photon source rate in photons/crystal/sec, see docdb:54585"), 33.};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -82,8 +83,10 @@ namespace mu2e {
     double _phimax;
     double _tmin;
     double _tmax;
-    std::vector<int> _disks; // NEW: list of disks to illuminate simultaneously (replaces _nDisk)
-    bool _multi;
+    std::vector<int> _disks;
+    bool _multiphotons;
+    double _sourceRate;
+    std::vector<double> _photonMean; // one Poisson mean per entry in _disks
     std::vector<double> phi_lbd;
     // angle of small torus in degrees
     std::vector<double> phi_sbd;
@@ -109,7 +112,7 @@ namespace mu2e {
 
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
-    std::vector<CLHEP::Hep3Vector> _zPipeCenters; // NEW: one pipe center per disk in _disks
+    std::vector<CLHEP::Hep3Vector> _zPipeCenters;  
     unsigned int _nPipes;
 
   };
@@ -123,13 +126,22 @@ namespace mu2e {
     , _phimax{conf().phimax()}
     , _tmin{conf().tmin()}
     , _tmax{conf().tmax()}
-    , _disks{conf().disks()} // NEW: list of disks to illuminate simultaneously
-    , _multi{conf().multi()}
+    , _disks{conf().disks()}
+    , _multiphotons{conf().multiphotons()}
+    , _sourceRate{conf().sourceRate()}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , _randFlat{_engine}
+    , _randPoisson_dist{_engine}
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
-    , _randPoisson_dist{_engine, 2.246666666642} //rate-derived mean: 33.33333333 photons/crystal/sec * 674 crystals/disk * 100e-6 s gate
   {
+    if (_disks.empty()) {
+      throw cet::exception("CONFIG") << "CaloCalibGun: 'disks' must not be empty\n";
+    }
+    std::set<int> uniqueDisks(_disks.begin(), _disks.end());
+    if (uniqueDisks.size() != _disks.size()) {
+      throw cet::exception("CONFIG") << "CaloCalibGun: 'disks' contains duplicate entries\n";
+    }
+
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::PrimaryParticle>();
     produces<mu2e::SpectrumConfig, art::InSubRun>();
@@ -141,10 +153,17 @@ namespace mu2e {
 
       _pipeRadius      = _cal->G4Info().get<double>("pipeRadius");
       _pipeTorRadius   = _cal->G4Info().get<std::vector<double>>("pipeTorRadius");
-      // NEW: compute one pipe center per disk in _disks so multiple disks can be illuminated in the same event
       _zPipeCenters.clear();
+      _photonMean.clear();
       for (int disk : _disks) {
+        if (disk < 0 || static_cast<size_t>(disk) >= _cal->nDisks()) {
+          throw cet::exception("CONFIG") << "CaloCalibGun: disk index " << disk
+            << " is out of range; calorimeter has " << _cal->nDisks() << " disks\n";
+        }
         _zPipeCenters.push_back(_cal->disk(disk).diskInfo().origin()-CLHEP::Hep3Vector(0,0,_cal->disk(disk).diskInfo().size().z()/2.0-_pipeRadius));
+        // mean photons from this disk in the configured gate: rate[photons/crystal/s] * crystals-on-this-disk * gate[s]
+        // (tmin, tmax are in ns, hence the 1e-9 conversion to seconds)
+        _photonMean.push_back(_sourceRate * _cal->disk(disk).nCrystals() * (_tmax - _tmin) * 1e-9);
       }
       _nPipes = _cal->G4Info().get<int>("nPipes");
 
@@ -154,7 +173,7 @@ namespace mu2e {
       phi_end = _cal->G4Info().get<std::vector<double>>("straightEndPhi");
       ysmall = _cal->G4Info().get<std::vector<double>>("yposition");
       radSmTor = _cal->G4Info().get<double>("radSmTor");
-      xsmall = _cal->G4Info().get<double>("radSmTor");
+      xsmall = _cal->G4Info().get<double>("xsmall");
       xdistance = _cal->G4Info().get<double>("xdistance");
       rInnerManifold = _cal->G4Info().get<double>("rInnerManifold");
 
@@ -167,17 +186,10 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     PrimaryParticle primaryParticles;
 
-    // NEW: loop over each disk independently so multiple disks can be illuminated
-    // simultaneously in the same event. Each disk draws its own independent
-    // Poisson(mean=4) photon count, so per-disk statistics stay unchanged
-    // (mean ~4/disk) while the combined per-event total becomes the sum of
-    // independent Poisson draws (mean ~4*_disks.size()).
     for (unsigned int d = 0; d < _disks.size(); ++d) {
 
     unsigned int nPhotons = 1;
-    // Random number of photons with mean at 4 per disk (independent draw per disk)
-    if (_multi) nPhotons = (int(_randPoisson_dist.fire()));
-    // Loop over and make this number of random photons for this disk:
+    if (_multiphotons) nPhotons = (int(_randPoisson_dist.fire(_photonMean[d])));
     for(unsigned int i=0; i < nPhotons; i++ ){
 
       double xpipe, ypipe, zpipe;
@@ -244,7 +256,7 @@ namespace mu2e {
       }
       CLHEP::Hep3Vector pos(xpipe, ypipe, zpipe);
       // shift the pipe to the front of the calorimeter disk
-      pos += _zPipeCenters[d]; // NEW: use this disk's pipe center
+      pos += _zPipeCenters[d];
 
       //pick time
       double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
@@ -259,7 +271,7 @@ namespace mu2e {
       output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
 
     }
-    } // NEW: end loop over disks
+    } 
     event.put(std::move(output));
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
   }

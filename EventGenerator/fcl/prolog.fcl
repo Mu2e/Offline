@@ -142,6 +142,7 @@ CaloCalibGun : {
   phimax : 2.0
   tmin  :  500.
   tmax : 1694.
+  disks : [1]
 }
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
