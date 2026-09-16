@@ -1,0 +1,80 @@
+# Rebuild the VDResampler validation plots from an already-generated ROOT dump tree.
+#
+# Use this to combine a grid campaign: the per-job validation directories CANNOT be hadd'ed
+# (each job normalized both sides to unit area, re-read the whole mother, and picked its
+# rebinning from its own sample count), so the correct merge is to hadd the generated dump
+# TREES and recompute the comparison once from the merged tree. It also serves as a plain
+# re-draw tool for a single file after a change to the plotting code.
+#
+# ONE SOURCE PER RUN. hadd the jobs belonging to one data source, run this on the result,
+# then repeat for the next source. Every set in a run shares the source's mother file, plan
+# entries and geometry, and differs only in particle - which is what keeps the configuration
+# to the four paths below. A tree carrying more than one summaryIndex is rejected rather than
+# compared against whichever source MotherRootFile happens to name.
+#
+# Typical workflow, per source:
+#   hadd merged_TargetStops1809.root <job outputs for that source>
+#   mu2e -c Offline/STMMC/fcl/VDResamplerRegeneratePlots.fcl
+#
+# The output is a NEW file holding only the recomputed comparison; the input is never
+# modified. Each particle gets its own validation/<label>/ directory holding its histograms,
+# its c_* / c2_* canvases and its own validationMetrics tree, so particles cannot mix.
+#
+# The transform and the VD geometry are NOT configured here: they come from the training
+# plan, resolved per (source, particle) exactly as training and generation resolve them. The
+# summary file's NAME supplies the source tag, version and run number, so it must keep the
+# convention
+#   etc.mu2e.STMVDResamplerConfigure_VD<id>_hitSummary.<ver>.<run6>_<src8>.txt
+# and its VD id must match common_training_config.VirtualDetectorID in the plan.
+#
+# Original author: Yongyi Wu
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: VDResamplerRegeneratePlots
+
+# No ART input: the module reads the ROOT files directly and works in endJob().
+source : {
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    VDResamplerRegeneratePlots : {
+      module_type : VDResamplerRegeneratePlots
+
+      # The generated samples to replay: one job's output, or the hadd of one source's jobs.
+      InputRootFile : "merged.root"
+      TreeName : "VDResamplerGenerator/ttree"
+
+      # Per-particle SBDMmomentumBasis / SBDMpositionBasis and the common_training_config
+      # geometry (VirtualDetectorID, VDz0, VDr) all come from here.
+      trainingPlanFile : "Offline/STMMC/fcl/VDResamplerTrainingPlan.fcl"
+
+      # The source these samples came from. Only the file NAME is parsed - the contents are
+      # not read, so a path that no longer resolves is fine as long as the name is intact.
+      hitSummaryFile : "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/etc.mu2e.STMVDResamplerConfigure_VD116_hitSummary.MDC2025au.001430_00000002.txt"
+
+      # The mother (MC truth) distribution: the SAME source ROOT file the generation job's
+      # resamplerSourceRootFiles named for this source.
+      MotherRootFile : "/pnfs/mu2e/resilient/users/yongyiwu/STMVDResampler/MDC2025ai/nts.mu2e.STMVDResamplerConfigure_VD116_hitDump.MDC2025au.001430_00000002.root"
+      MotherTreeName : "VDResamplerTrainingSetup/ttree"
+
+      # Normally unset - the tree is expected to hold one source. Uncomment to pull a single
+      # source's entries out of a multi-source (mixed) tree and discard the rest; the plots
+      # then describe only that subset.
+      # SourceIndex : 2
+    }
+  }
+  regeneratePath : [VDResamplerRegeneratePlots]
+  end_paths : [regeneratePath]
+}
+
+# Holds the regenerated validation/<label>/ directories. Must NOT be the input file.
+services.TFileService.fileName : "validation_merged.root"
+
+# Keep the full per-particle axis-range and metric report.
+services.message.destinations.log.categories.default.limit : -1
