@@ -80,6 +80,7 @@ public:
     // knowing HistoSender exists.
     bool publish{false};      //include this histogram's copies in publishedCopies()
     std::string group{};      //label to collect them under; empty = each copy's own name
+    std::string archiveGroup{};  //label for the _prevN and per-subrun archives; empty = `group`
   };
 
   struct Config {

@@ -73,7 +73,7 @@ DQMSegmentation::Rule parseRule(const fhicl::ParameterSet& ps)
 {
   rejectUnknown(ps,
                 {"match", "enabled", "modes", "job", "subrun", "window", "liveName",
-                 "publish", "group"},
+                 "publish", "group", "archiveGroup"},
                 "a segmentation rule");
 
   DQMSegmentation::Rule rule;
@@ -82,6 +82,7 @@ DQMSegmentation::Rule parseRule(const fhicl::ParameterSet& ps)
   rule.liveName = ps.get<std::string>("liveName", "");
   rule.publish = ps.get<bool>("publish", false);
   rule.group = ps.get<std::string>("group", "");
+  rule.archiveGroup = ps.get<std::string>("archiveGroup", "");
 
   const auto modes = ps.get<std::vector<std::string>>(
       "modes", std::vector<std::string>{"job"});

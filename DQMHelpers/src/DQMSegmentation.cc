@@ -656,13 +656,28 @@ std::map<std::string, std::vector<TH1*>> DQMSegmentation::publishedCopies() cons
 {
   std::map<std::string, std::vector<TH1*>> out;
   for (const auto& owner : entries_) {
-    if (!owner->rule.publish) {
+    const Entry& entry = *owner;
+    if (!entry.rule.publish) {
       continue;
     }
-    for (TH1* h : copies(owner->path)) {
-      // No group: the copy is published under its own name, so the online
-      // names stay the ones a GUI already subscribes to.
-      out[owner->rule.group.empty() ? h->GetName() : owner->rule.group].push_back(h);
+    // No group: the copy is published under its own name, so the online
+    // names stay the ones a GUI already subscribes to.
+    auto add = [&out](TH1* h, const std::string& group) {
+      if (h != nullptr) {
+        out[group.empty() ? h->GetName() : group].push_back(h);
+      }
+    };
+    const std::string& archiveGroup =
+        entry.rule.archiveGroup.empty() ? entry.rule.group : entry.rule.archiveGroup;
+    // Same order as copies(), so an unset archiveGroup publishes exactly as before.
+    add(entry.job, entry.rule.group);
+    add(entry.subrunLive, entry.rule.group);
+    for (TH1* h : entry.subrunArchive) {
+      add(h, archiveGroup);
+    }
+    add(entry.windowLive, entry.rule.group);
+    for (TH1* h : entry.windowArchive) {
+      add(h, archiveGroup);
     }
   }
   return out;

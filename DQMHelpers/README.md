@@ -197,6 +197,7 @@ segmentation : {
       liveName    : "h1_channelsLastEwt"     # name for the live window copy
       publish     : true                     # hand its copies to the consumer
       group       : ""                       # collect them under one label
+      archiveGroup: ""                       # label for the _prevN / per-subrun archives
     }
 
     { match   : "dtOutOfRangePerFeb"
@@ -228,6 +229,18 @@ for (const auto& [group, copies] : dqm.segments().publishedCopies()) { ... }
 copy an entry of its own keyed on the copy's object name -- so a live window copy
 named by `liveName` is published under that name, which is what a GUI subscribing
 to a fixed name needs.
+
+`archiveGroup` sends only the archived copies -- the window's `_prevN` and the
+per-subrun `_rNNNNNN_sNNNNNN` copies -- to a label of their own, while the job, live
+and in-progress subrun copies keep `group` (or their own names). With it unset the
+archives follow `group`. For example, this keeps `h1_channels` and
+`h1_channelsLastEwt` at their usual names and collects the older spans in one folder:
+
+```fcl
+{ match : "h1_channels"  modes : [ "job", "window" ]
+  window : { span : 50000  unit : "ewt"  subdivisions : 50  keep : 4 }
+  liveName : "h1_channelsLastEwt"  publish : true  archiveGroup : "channels_history" }
+```
 
 The registry does not know what a group **means**. It is an opaque label, and the
 caller decides whether it is an otsdaq `HistoSender` folder, a web tab or something
