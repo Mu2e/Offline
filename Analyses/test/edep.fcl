@@ -1,0 +1,32 @@
+# Evaluate the average tracker/calo edep / event and primary energy losses
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : EDep
+
+services : @local::Services.Reco
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common.txt"
+
+source: {
+  module_type: RootInput
+}
+services.TFileService.fileName : "nts.owner.edep.version.sequencer.root"
+
+
+physics : {
+
+  analyzers : {
+    EDepAna : {
+      module_type              : EdepAna
+      CaloShowerStepCollection : "compressDetStepMCs"
+      CaloClusterCollection    : "CaloClusterMaker"
+      StrawGasStepCollection   : "compressDetStepMCs"
+      StepPointMCCollection    : "compressDetStepMCs:virtualdetector"
+      primary                  : "FindMCPrimary"
+      debugLevel               : 0
+    }
+  }
+  EndPath : [ EDepAna ]
+  end_paths : [ EndPath ]
+}
