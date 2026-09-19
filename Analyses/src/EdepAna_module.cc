@@ -1,5 +1,5 @@
-// EdepAna: simple analyzer for primary particle and calorimeter energy
-// Created 2026
+// EdepAna: simple analyzer for primary particle energy losses and calo/tracker energy deposition
+// Original author: Michael MacKenzie, 2026
 
 // framework
 #include "fhiclcpp/types/Atom.h"
@@ -10,13 +10,13 @@
 #include "art_root_io/TFileService.h"
 
 // Offline
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/StopWatch.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 // ROOT
 #include "TH1.h"
@@ -201,39 +201,6 @@ namespace mu2e {
     return fit_res->Status();
   }
 
-  TH1* GetDIOSpectrum() {
-    TTree tree("t1","t1");
-    TString table = "/exp/mu2e/app/users/mmackenz/run1b/Run1BAna/data/heeck_finer_binning_2016_szafron.tbl";
-    int     nb    = 11000; //finer binning in this table
-    double  bin   = 0.01;
-    tree.ReadFile(table,"e/D:w/D");
-    const int n = tree.GetEntries();
-
-    const double emin = 0.;
-    const double emax = 110.;
-    TH1* h_dio = new TH1D("h_dio","DIO spectrum",nb,emin,emax);
-
-    double e, w;
-
-    tree.SetBranchAddress("e",&e);
-    tree.SetBranchAddress("w",&w);
-
-    int prev_bin = 0;
-    for (int i = 0; i < n; ++i) {
-      tree.GetEntry(i);
-      const int ibin = h_dio->FindBin(e-bin/2.);
-      if(prev_bin > 0 && prev_bin != ibin - 1) {
-        std::cout << "Bin " << ibin << " entry " << i << " E = " << e
-             << " but prev_bin = " << prev_bin << std::endl;
-      }
-      h_dio->SetBinContent(ibin,w);
-      prev_bin = ibin;
-    }
-    h_dio->Scale(1./(bin*h_dio->Integral()));
-    return h_dio;
-  }
-
-
   private:
     art::InputTag primary_tag_;
     art::InputTag cluster_tag_;
@@ -242,7 +209,6 @@ namespace mu2e {
     art::InputTag step_point_tag_;
     int debug_level_;
     std::unique_ptr<StopWatch> watch_ = std::make_unique<StopWatch>();
-    TH1* h_dio_spectrum_ = nullptr;
 
     Hist_t* hists_[kMaxHists];
     Info_t info_;
@@ -280,8 +246,7 @@ namespace mu2e {
     bookHistograms(1, "edep 1 MeV");
     bookHistograms(2, "edep 10 MeV");
     bookHistograms(3, "edep 50 MeV");
-    watch_->Calibrate();
-    h_dio_spectrum_ = GetDIOSpectrum();
+    if(debug_level_ > 0) watch_->Calibrate();
   }
 
   //--------------------------------------------------------------------------------------
@@ -322,7 +287,7 @@ namespace mu2e {
   }
 
   void EdepAna::fillHistograms(Hist_t* Hist, const double Weight) {
-    watch_->SetTime(__func__);
+    if(debug_level_ > 0) watch_->SetTime(__func__);
     if(!Hist) throw std::runtime_error("Uninitialized histogram book!");
 
     const SimParticle* primsim = info_.primsim;
@@ -368,18 +333,18 @@ namespace mu2e {
       }
       Hist->h_total_calo_energy_->Fill(info_.calo_total_edep, Weight);
     }
-    watch_->StopTime(__func__);
+    if(debug_level_ > 0) watch_->StopTime(__func__);
   }
 
 
   void EdepAna::analyze(const art::Event& event) {
-    watch_->SetTime(__func__);
+    if(debug_level_ > 0) watch_->SetTime(__func__);
 
     //-------------------------------------------------------------
     // Retrieve data products for the event
     //-------------------------------------------------------------
 
-    watch_->SetTime("data retrieval");
+    if(debug_level_ > 0) watch_->SetTime("data retrieval");
 
     // Primary particle
     art::Handle<PrimaryParticle> primaryH;
@@ -406,13 +371,13 @@ namespace mu2e {
     event.getByLabel(step_point_tag_, spH);
     step_point_col_ = (spH.isValid()) ? spH.product() : nullptr;
 
-    watch_->StopTime("data retrieval");
+    if(debug_level_ > 0) watch_->StopTime("data retrieval");
 
     //-------------------------------------------------------------
     // Compute event-level info
     //-------------------------------------------------------------
 
-    watch_->SetTime("event info computation");
+    if(debug_level_ > 0) watch_->SetTime("event info computation");
 
     double totalTrackerE = 0.;
     if(straw_step_col_) {
@@ -444,19 +409,13 @@ namespace mu2e {
     info_.calo_total_edep = totalCaloE;
 
     info_.weight_ = 1.; // can be used to apply event weights if needed
-    if(info_.primsim && info_.primsim->creationCode() == ProcessCode::mu2eFlateMinus) {
-      const double gen_energy = info_.primsim->startMomentum().e();
-      const double dio_weight = h_dio_spectrum_ ? h_dio_spectrum_->Interpolate(gen_energy) : 1.;
-      info_.weight_ = dio_weight;
-      if(debug_level_ > 1) std::cout << "EdepAna: DIO event with gen energy " << gen_energy << " weight " << dio_weight << std::endl;
-    }
 
     total_events_ += info_.weight_;
     total_calo_edep_ += info_.weight_ * totalCaloE;
     if(totalCaloE > 50.) events_above_50_mev_ += info_.weight_;
     total_tracker_edep_ += info_.weight_ * totalTrackerE;
 
-    watch_->StopTime("event info computation");
+    if(debug_level_ > 0) watch_->StopTime("event info computation");
 
     //-------------------------------------------------------------
     // Fill histograms
@@ -466,12 +425,12 @@ namespace mu2e {
     if(totalCaloE >  1.) fillHistograms(hists_[1], info_.weight_);
     if(totalCaloE > 10.) fillHistograms(hists_[2], info_.weight_);
     if(totalCaloE > 50.) fillHistograms(hists_[3], info_.weight_);
-    watch_->StopTime(__func__);
+    if(debug_level_ > 0) watch_->StopTime(__func__);
   }
 
 
   void EdepAna::endJob() {
-    std::cout << *watch_ << std::endl;
+    if(debug_level_ > 0) std::cout << "[EdepAna::" << __func__ << "]\n" << *watch_ << std::endl;
 
     // Fit the total gen -> calo edep response
     TH1* h = (hists_[2]) ? hists_[2]->h_primary_energy_edep_diff_ : nullptr;
