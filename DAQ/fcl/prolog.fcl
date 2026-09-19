@@ -11,7 +11,7 @@ DAQ : {
             debugBits                               : [ "bit0:0", "bit1:0" ] ## 100 in total, configure printout details
             saveWaveforms                           : false
             missingDTCHeaders                       : false                  ## true for runs <= 107246
-            keyOnMnid                               : false                  ##
+            keyOnMnid                               : true ## false                  ##
             allowOfflineFallbackWhenPanelMapMissing : false
             forceOfflineAddressing                  : false
         }
