@@ -94,7 +94,7 @@ namespace mu2e {
       newCentre.setZ(outputZ);
     };
 
-  void ShiftVirtualDetectorStepPointMCs::produce(art::Event& event) {
+void ShiftVirtualDetectorStepPointMCs::produce(art::Event& event) {
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     if (StepPointMCs.empty())
       throw cet::exception("DataError", "Requested data product not found\n");
@@ -110,7 +110,6 @@ namespace mu2e {
       if ((particle->pdgId() != pdgID) && (pdgID != 0))
         continue;
 
-      mass = pdt->particle(particle->pdgId()).mass();
       oldPosition = step.position();
       oldPostPosition = step.postPosition();
       oldMomentum = step.momentum();
@@ -128,19 +127,39 @@ namespace mu2e {
       newPostPosition = newPosition + (oldPostPosition - oldPosition) * scaleFactor;
       newPostPosition.setZ(newCentre.z() + (oldPostPosition - oldPosition).z());
 
-      preE = std::sqrt(oldMomentum.mag2() + mass * mass);
+
       newMomentum.setX(oldMomentum.x() * scaleFactor);
       newMomentum.setY(oldMomentum.y() * scaleFactor);
-      newMomentum.setZ(preE - oldMomentum.perp() * scaleFactor);
-      if (newMomentum.mag() - oldMomentum.mag() > std::numeric_limits<double>::epsilon())
-        throw cet::exception("LogicError", "Difference in momentum magnitude is large");
 
-      postE = std::sqrt(oldPostMomentum.mag2()+mass*mass);
+      // Calculate new Pz to conserve total magnitude
+      double oldPMag2 = oldMomentum.mag2();
+      double newPTMag2 = std::pow(newMomentum.x(), 2) + std::pow(newMomentum.y(), 2);
+
+      if (newPTMag2 > oldPMag2) {
+          throw cet::exception("LogicError", "Scaled transverse momentum exceeds total momentum magnitude!");
+      }
+
+      // Assign Pz, preserving the original direction (sign)
+      double signPz = (oldMomentum.z() > 0) ? 1.0 : -1.0;
+      newPrePz = signPz * std::sqrt(oldPMag2 - newPTMag2);
+      newMomentum.setZ(newPrePz);
+
+      if (std::abs(newMomentum.mag() - oldMomentum.mag()) > 1e-6)
+        throw cet::exception("LogicError", "Difference in pre-momentum magnitude is large");
+
+
       newPostMomentum.setX(oldPostMomentum.x() * scaleFactor);
       newPostMomentum.setY(oldPostMomentum.y() * scaleFactor);
-      newPostMomentum.setZ(postE - oldPostMomentum.perp() * scaleFactor);
-      if (newPostMomentum.mag() - oldPostMomentum.mag() > std::numeric_limits<double>::epsilon())
-        throw cet::exception("LogicError", "Difference in momentum magnitude is large");
+
+      double oldPostPMag2 = oldPostMomentum.mag2();
+      double newPostPTMag2 = std::pow(newPostMomentum.x(), 2) + std::pow(newPostMomentum.y(), 2);
+
+      double signPostPz = (oldPostMomentum.z() > 0) ? 1.0 : -1.0;
+      newPostPz = signPostPz * std::sqrt(oldPostPMag2 - newPostPTMag2);
+      newPostMomentum.setZ(newPostPz);
+
+      if (std::abs(newPostMomentum.mag() - oldPostMomentum.mag()) > 1e-6)
+        throw cet::exception("LogicError", "Difference in post-momentum magnitude is large");
 
       makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
       _outputStepPointMCs->emplace_back(newStep); // Add it to the collection
@@ -164,9 +183,9 @@ namespace mu2e {
           newMomentum.setY(scaleFactor*oldMomentum.y());
           newMomentum.setZ(newPrePz);
 
-          newPostMomentum.setX(-1*scaleFactor*oldPostMomentum.x());
-          newPostMomentum.setY(scaleFactor*oldPostMomentum.y());
-          newPostMomentum.setZ(newPostPz);
+          newPostMomentum.setX(-1 * scaleFactor * oldPostMomentum.x());
+          newPostMomentum.setY(scaleFactor * oldPostMomentum.y());
+          newPostMomentum.setZ(newPostPz); // This now has the correct value from above!
 
           makeNewStepPointMC(step, particle, newStep, newPosition, newPostPosition, newMomentum, newPostMomentum); // Convert it into a StepPointMC
           _outputStepPointMCs->emplace_back(newStep); // Add it to the collection

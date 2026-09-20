@@ -139,5 +139,27 @@ cet_build_plugin(VDResamplerGenerateMix art::module
       Offline::SeedService
 )
 
+cet_build_plugin(GeometricShiftTree art::module
+    REG_SOURCE src/GeometricShiftTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+      Offline::SeedService
+)
+
+cet_build_plugin(TSCTree art::module
+    REG_SOURCE src/TSCTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+      Offline::SeedService
+)
+
 install_source(SUBDIRS src)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/STMMC/fcl)

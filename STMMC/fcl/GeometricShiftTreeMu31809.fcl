@@ -1,0 +1,76 @@
+# Generates a ROOT file with a TTree showing the effect of the StepPointMC shift
+# Run as: $ mu2e -c GeometricShiftTree.fcl -S FileWithListOfDataFiles.txt
+#
+# Original author: Pawel Plesniak
+
+# Offline includes
+#include "Offline/Analyses/fcl/prolog.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMMC/fcl/prolog.fcl"
+
+# Production includes
+#include "Production/JobConfig/common/prolog.fcl"
+#include "Production/JobConfig/pileup/prolog.fcl"
+#include "Production/JobConfig/pileup/STM/prolog.fcl"
+
+process_name: GeometricShiftTree
+
+source : {
+  # Use standard RootInput so the -S flag works
+  module_type : RootInput
+  fileNames: @nil
+}
+
+services : {
+  message : @local::default_message
+  TFileService : { fileName : "GeometricShiftTree.root" }
+  GlobalConstantsService : { inputFile : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
+}
+
+physics: {
+  producers: {
+    shiftStepsHPGe : {
+      module_type : ShiftVirtualDetectorStepPointMCs
+      # Updated to match the module label from your TargetStopsCat dataset event dump
+      StepPointMCsTag : "compressDetStepMCsSTM"
+      VirtualDetectorID : @local::STMPileup.ShiftVD101Steps.VirtualDetectorID
+      InputRadius : @local::STMPileup.ShiftVD101Steps.InputRadius
+      OutputRadius : @local::STMPileup.ShiftVD101Steps.OutputRadius
+      InputX : @local::ComponentPositions.VD101.x
+      InputY : @local::ComponentPositions.VD101.y
+      InputZ : @local::ComponentPositions.VD101.z
+      OutputX : @local::STMPileup.ShiftVD101Steps.HPGeUpStr.x
+      OutputY : @local::STMPileup.ShiftVD101Steps.HPGeUpStr.y
+      OutputZ : @local::STMPileup.ShiftVD101Steps.HPGeUpStr.z
+      pdgID : 0
+    }
+  }
+
+  analyzers : {
+    GeometricShiftTTree : {
+      module_type : GeometricShiftTree
+      # Updated to match the module label from your TargetStopsCat dataset event dump
+      BeforeShiftTag : "compressDetStepMCsSTM"
+      AfterShiftTag : "shiftStepsHPGe"
+    }
+  }
+
+  # Only run the shift module
+  shift_path : [
+    shiftStepsHPGe
+  ]
+
+  trigger_paths : [
+    shift_path
+  ]
+
+  # Only run the analyzer
+  ana : [
+    GeometricShiftTTree
+  ]
+
+  end_paths : [
+    ana
+  ]
+}
