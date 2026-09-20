@@ -258,7 +258,7 @@ namespace mu2e {
   void CombineStrawHits::combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit)
   {
     // simple sums to speed up the trigger
-    double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0);
+    double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0),vacc(0);
     double etacc[2] = {0,0};
     XYZVectorF midpos;
     combohit._nsh = 0;
@@ -280,6 +280,9 @@ namespace mu2e {
       dtacc += ch.driftTime();
       ptacc += ch.propTime();
       midpos += ch.centerPos();
+      // v is transverse to the wire, in the panel plane; the constituents of a combo all come
+      // from the same panel, so their uDir are parallel and their v variances simply average
+      vacc += ch.vVar();
       // weight time values by time error
       double twt = 1.0/(ch.timeVar());
       twtsum += twt;
@@ -309,10 +312,16 @@ namespace mu2e {
     combohit._wdist      = wacc/wwtsum;
     combohit._pos        = midpos + combohit._wdist*combohit.uDir();
     combohit._uvar       = 1.0/wwtsum + _uvar;
-    combohit._vvar       = 1.0/twtsum;
+    // _vvar is a position variance (ComboHit declares _uvar/_vvar/_wvar as the diagonals of the
+    // position covariance, and vVar() feeds uVar()*sin^2+vVar()*cos^2 rotations in RobustHelixFit
+    // and MergeHelices).  It previously took 1.0/twtsum, which is the *time* variance already
+    // stored in _timevar just above, so every multi-straw combo reported ns^2 where mm^2 was
+    // expected.
+    combohit._vvar       = vacc/nsh;
     // compute U chisquared
     unsigned ndof = nsh - 1; // u direction only
-    double chisq = wacc2 - wacc/wwtsum;
+    // weighted chi-square is sum(w*x^2) - (sum(w*x))^2/sum(w); the square on wacc was missing
+    double chisq = wacc2 - wacc*wacc/wwtsum;
     combohit._qual       = TMath::Prob(chisq,ndof);
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:
