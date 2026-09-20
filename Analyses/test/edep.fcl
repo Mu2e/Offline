@@ -20,7 +20,6 @@ physics : {
     EDepAna : {
       module_type              : EdepAna
       CaloShowerStepCollection : "compressDetStepMCs"
-      CaloClusterCollection    : "CaloClusterMaker"
       StrawGasStepCollection   : "compressDetStepMCs"
       StepPointMCCollection    : "compressDetStepMCs:virtualdetector"
       primary                  : "FindMCPrimary"

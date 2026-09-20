@@ -16,7 +16,6 @@
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/StopWatch.hh"
-#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 // ROOT
 #include "TH1.h"
@@ -40,7 +39,6 @@ namespace mu2e {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<art::InputTag> primaryTag     { Name("primary")                 , Comment("PrimaryParticle tag") };
-      fhicl::Atom<art::InputTag> caloClusterTag { Name("CaloClusterCollection")   , Comment("CaloCluster collection") };
       fhicl::Atom<art::InputTag> caloShowerTag  { Name("CaloShowerStepCollection"), Comment("CaloShowerStep collection") };
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
@@ -53,9 +51,6 @@ namespace mu2e {
       TH1* h_primary_pdg_;
       TH1* h_primary_start_z_;
       TH1* h_primary_start_r_;
-      TH1* h_nclusters_;
-      TH1* h_cluster_energy_;
-      TH1* h_max_cluster_energy_;
       TH1* h_total_calo_energy_;
       TH1* h_step_energy_; // individual CaloShowerStep energies
       TH2* h_step_energy_vs_time_; // step energy vs time
@@ -76,6 +71,32 @@ namespace mu2e {
       double calo_total_edep = 0.;
       double weight_ = 1.;
     };
+
+    // Output tree information
+    enum {kMaxPrimaries = 10};
+    struct Tree_t {
+      int   nprim;
+      float prim_start_x         [kMaxPrimaries];
+      float prim_start_y         [kMaxPrimaries];
+      float prim_start_z         [kMaxPrimaries];
+      float prim_start_px        [kMaxPrimaries];
+      float prim_start_py        [kMaxPrimaries];
+      float prim_start_pz        [kMaxPrimaries];
+      float prim_start_e         [kMaxPrimaries];
+      float prim_start_m         [kMaxPrimaries];
+      int   prim_start_pdg       [kMaxPrimaries];
+      float prim_calo_edep       [kMaxPrimaries];
+      float prim_trk_front_energy[kMaxPrimaries];
+      float event_calo_edep;
+      float event_trk_edep;
+      float weight;
+      int   run;
+      int   subrun;
+      int   event;
+      Long64_t ngen; // running N(gen) count
+    };
+    Tree_t data_;
+    TTree* tree_ = nullptr;
 
     using Parameters = art::EDAnalyzer::Table<Config>;
     explicit EdepAna(const Parameters& conf);
@@ -107,6 +128,19 @@ namespace mu2e {
         }
       }
       return edep;
+    }
+
+    const StepPointMC* simTrkFrontStep(const SimParticle* sim) {
+      if(!sim || !step_point_col_) return nullptr;
+      const StepPointMC* front_trk_sp = nullptr;
+      for(const auto& sp : *step_point_col_) {
+        if(sp.simParticle()->id() == sim->id() &&
+           (sp.volumeId() == VirtualDetectorId::TT_FrontHollow || sp.volumeId() == VirtualDetectorId::TT_FrontPA)) {
+          if(!front_trk_sp || sp.time() < front_trk_sp->time()) front_trk_sp = &sp;
+          break;
+        }
+      }
+      return front_trk_sp;
     }
 
   //------------------------------------------------------------------------------------------------------------
@@ -203,7 +237,6 @@ namespace mu2e {
 
   private:
     art::InputTag primary_tag_;
-    art::InputTag cluster_tag_;
     art::InputTag calo_shower_tag_;
     art::InputTag straw_gas_tag_;
     art::InputTag step_point_tag_;
@@ -213,7 +246,6 @@ namespace mu2e {
     Hist_t* hists_[kMaxHists];
     Info_t info_;
     const PrimaryParticle*                 primary_        = nullptr;
-    const CaloClusterCollection*           cluster_col_    = nullptr;
     const CaloShowerStepCollection*        shower_col_     = nullptr;
     const StrawGasStepCollection*          straw_step_col_ = nullptr;
     const StepPointMCCollection*           step_point_col_ = nullptr;
@@ -228,7 +260,6 @@ namespace mu2e {
   EdepAna::EdepAna(const Parameters& conf)
     : art::EDAnalyzer{conf}
     , primary_tag_(conf().primaryTag())
-    , cluster_tag_(conf().caloClusterTag())
     , calo_shower_tag_(conf().caloShowerTag())
     , straw_gas_tag_(conf().strawGasStepTag())
     , step_point_tag_(conf().stepPointTag())
@@ -236,7 +267,6 @@ namespace mu2e {
   {
     // register products consumed
     consumes<PrimaryParticle>(primary_tag_);
-    consumes<CaloClusterCollection>(cluster_tag_);
     consumes<CaloShowerStepCollection>(calo_shower_tag_);
     consumes<StrawGasStepCollection>(straw_gas_tag_);
     consumes<StepPointMCCollection>(step_point_tag_);
@@ -246,6 +276,30 @@ namespace mu2e {
     bookHistograms(1, "edep 1 MeV");
     bookHistograms(2, "edep 10 MeV");
     bookHistograms(3, "edep 50 MeV");
+
+    // Book the output TTree
+    art::ServiceHandle<art::TFileService> tfs;
+    tree_ = tfs->make<TTree>("tree", "Energy deposition data");
+    tree_->Branch("nprimaries"              , &data_.nprim);
+    tree_->Branch("primary_start_x"         , data_.prim_start_x         , "primary_start_x[nprimaries]/F");
+    tree_->Branch("primary_start_y"         , data_.prim_start_y         , "primary_start_y[nprimaries]/F");
+    tree_->Branch("primary_start_z"         , data_.prim_start_z         , "primary_start_z[nprimaries]/F");
+    tree_->Branch("primary_start_px"        , data_.prim_start_px        , "primary_start_px[nprimaries]/F");
+    tree_->Branch("primary_start_py"        , data_.prim_start_py        , "primary_start_py[nprimaries]/F");
+    tree_->Branch("primary_start_pz"        , data_.prim_start_pz        , "primary_start_pz[nprimaries]/F");
+    tree_->Branch("primary_start_e"         , data_.prim_start_e         , "primary_start_e[nprimaries]/F");
+    tree_->Branch("primary_start_m"         , data_.prim_start_m         , "primary_start_m[nprimaries]/F");
+    tree_->Branch("primary_start_pdg"       , data_.prim_start_pdg       , "primary_start_pdg[nprimaries]/I");
+    tree_->Branch("primary_calo_edep"       , data_.prim_calo_edep       , "primary_calo_edep[nprimaries]/F");
+    tree_->Branch("primary_trk_front_energy", data_.prim_trk_front_energy, "primary_trk_front_energy[nprimaries]/F");
+    tree_->Branch("event_calo_edep"         , &data_.event_calo_edep);
+    tree_->Branch("event_trk_edep"          , &data_.event_trk_edep);
+    tree_->Branch("run"                     , &data_.run);
+    tree_->Branch("subrun"                  , &data_.subrun);
+    tree_->Branch("event"                   , &data_.event);
+    tree_->Branch("weight"                  , &data_.weight);
+    tree_->Branch("ngen"                    , &data_.ngen);
+
     if(debug_level_ > 0) watch_->Calibrate();
   }
 
@@ -258,6 +312,7 @@ namespace mu2e {
     } else {
       std::cerr << "Warning: GenEventCount not found in subrun" << std::endl;
     }
+    data_.ngen = ngen_; // update the output tree data
   }
 
   void EdepAna::bookHistograms(const int index, const char* title) {
@@ -272,9 +327,6 @@ namespace mu2e {
    Hist->h_primary_pdg_        = dir.make<TH1D>("primary_pdg"       , "Primary PDG ID;PDG ID"                    ,  50,  -25.,   25.);
    Hist->h_primary_start_z_    = dir.make<TH1D>("primary_start_z"   , "Primary start z;Start z (mm)"             , 500, 3000., 8000.);
    Hist->h_primary_start_r_    = dir.make<TH1D>("primary_start_r"   , "Primary start radius;Start radius (mm)"   , 100,    0.,  200.);
-   Hist->h_nclusters_          = dir.make<TH1I>("nclusters"         , "Number of Calo clusters;N clusters"       , 100,    0 ,  100 );
-   Hist->h_cluster_energy_     = dir.make<TH1F>("cluster_energy"    , "Calo cluster energy;Energy (MeV)"         , 150,    0.,  150.);
-   Hist->h_max_cluster_energy_ = dir.make<TH1F>("max_cluster_energy", "Max cluster energy;Energy (MeV)"          , 150,    0.,  150.);
    Hist->h_total_calo_energy_  = dir.make<TH1F>("total_calo_energy" , "Total Calo energy from steps;Energy (MeV)", 200,    0.,  200.);
    Hist->h_step_energy_        = dir.make<TH1F>("calo_step_energy"  , "CaloShowerStep energy;E_{step} (MeV)"     , 100,    0.,  100.);
    Hist->h_trk_front_energy_   = dir.make<TH1F>("trk_front_energy"  , "Energy of StepPointMC at front of tracker;Energy (MeV)", 1500, 0., 150.);
@@ -315,16 +367,6 @@ namespace mu2e {
       }
     }
 
-    Hist->h_nclusters_->Fill((cluster_col_) ? cluster_col_->size() : 0);
-    if(cluster_col_) {
-      const CaloCluster* max_cl = nullptr;
-      for(const auto& cl : *cluster_col_) {
-        if(!max_cl || cl.energyDep() > max_cl->energyDep()) max_cl = &cl;
-        Hist->h_cluster_energy_->Fill(cl.energyDep(), Weight);
-      }
-      if(max_cl) Hist->h_max_cluster_energy_->Fill(max_cl->energyDep(), Weight);
-    }
-
     if(shower_col_) {
       for(const auto& css : *shower_col_) {
         const double e = css.energyDepBirks();
@@ -350,11 +392,6 @@ namespace mu2e {
     art::Handle<PrimaryParticle> primaryH;
     event.getByLabel(primary_tag_, primaryH);
     primary_ = (primaryH.isValid()) ? primaryH.product() : nullptr;
-
-    // Calo clusters
-    art::Handle<CaloClusterCollection> clusterH;
-    event.getByLabel(cluster_tag_, clusterH);
-    cluster_col_ = (clusterH.isValid()) ? clusterH.product() : nullptr;
 
     // Calo shower steps - sum energyDepBirks across the collection
     art::Handle<CaloShowerStepCollection> cssH;
@@ -394,21 +431,51 @@ namespace mu2e {
         totalCaloE += e;
       }
     }
+
+    // Take the first primary as the main one for default histogramming
     info_.primsim = (primary_ && !primary_->primarySimParticles().empty()) ? &(*primary_->primarySimParticles().front()) : nullptr;
-    info_.front_trk_sp = nullptr;
-    if(info_.primsim && step_point_col_) {
-      for(const auto& sp : *step_point_col_) {
-        if(sp.simParticle()->id() == info_.primsim->id() &&
-          (sp.volumeId() == VirtualDetectorId::TT_FrontHollow || sp.volumeId() == VirtualDetectorId::TT_FrontPA)) {
-          if(!info_.front_trk_sp || sp.time() < info_.front_trk_sp->time()) info_.front_trk_sp = &sp;
-          break;
-        }
-      }
-    }
+    info_.front_trk_sp = simTrkFrontStep(info_.primsim);
     info_.primsim_edep = edepBySim(info_.primsim, true);
     info_.calo_total_edep = totalCaloE;
 
     info_.weight_ = 1.; // can be used to apply event weights if needed
+
+    //-------------------------------------------------------------
+    // Set ouput tree data
+    //-------------------------------------------------------------
+
+    data_.weight = info_.weight_;
+    data_.run = event.run();
+    data_.subrun = event.subRun();
+    data_.event = event.event();
+    data_.event_calo_edep = totalCaloE;
+    data_.event_trk_edep  = totalTrackerE;
+    data_.nprim = (primary_) ? int(primary_->primarySimParticles().size()) : 0;
+    if(data_.nprim >= kMaxPrimaries) throw cet::exception("Analysis") << "Too many primary particles!"
+                                                                           << "N(primaries) = " << data_.nprim
+                                                                           << " > " << kMaxPrimaries;
+
+    // Store information for each primary
+    for(int iprim = 0; iprim < data_.nprim; ++iprim) {
+      const auto* sim = &(*primary_->primarySimParticles().at(iprim));
+      data_.prim_start_x  [iprim] = sim->startPosition().x();
+      data_.prim_start_y  [iprim] = sim->startPosition().y();
+      data_.prim_start_z  [iprim] = sim->startPosition().z();
+      data_.prim_start_px [iprim] = sim->startMomentum().x();
+      data_.prim_start_py [iprim] = sim->startMomentum().y();
+      data_.prim_start_pz [iprim] = sim->startMomentum().z();
+      data_.prim_start_e  [iprim] = sim->startMomentum().e();
+      data_.prim_start_m  [iprim] = sim->startMomentum().m();
+      data_.prim_start_pdg[iprim] = sim->pdgId();
+      data_.prim_calo_edep[iprim] = edepBySim(sim, true);
+      const auto front_trk_sp = simTrkFrontStep(sim);
+      data_.prim_trk_front_energy[iprim] = (front_trk_sp) ? front_trk_sp->momentum().mag() : 0.f;
+    }
+    tree_->Fill();
+
+    //-------------------------------------------------------------
+    // Increment summary data
+    //-------------------------------------------------------------
 
     total_events_ += info_.weight_;
     total_calo_edep_ += info_.weight_ * totalCaloE;
@@ -432,7 +499,10 @@ namespace mu2e {
   void EdepAna::endJob() {
     if(debug_level_ > 0) std::cout << "[EdepAna::" << __func__ << "]\n" << *watch_ << std::endl;
 
+    //-------------------------------------------------------------
     // Fit the total gen -> calo edep response
+    //-------------------------------------------------------------
+
     TH1* h = (hists_[2]) ? hists_[2]->h_primary_energy_edep_diff_ : nullptr;
     if(h && h->GetEntries() > 100) {
       double mean_seed, fwhm_seed;
@@ -446,10 +516,13 @@ namespace mu2e {
                                h->GetMean(), h->GetRMS(), mean_seed, fwhm_seed) << std::endl;
     }
 
+    //-------------------------------------------------------------
     // Fit the energy loss from gen -> tracker front
+    //-------------------------------------------------------------
+
     h = (hists_[2]) ? hists_[2]->h_trk_front_energy_diff_ : nullptr;
     if(h) {
-      TH1* h_ref = (hists_[0]) ? hists_[0]->h_nclusters_ : nullptr;
+      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_ : nullptr;
       const double eff = h->GetEntries() > 0 && h_ref ? h->GetEntries() * 1./ h_ref->GetEntries() : 0.;
       double mpv_seed, fwhm_seed;
       get_landau_seed(h, mpv_seed, fwhm_seed);
@@ -460,15 +533,22 @@ namespace mu2e {
       std::cout << std::format("Tracker front StepPointMC energy - primary energy distribution: MPV = {:.2f} MeV, FWHM = {:.2f} MeV, efficiency = {:.4g}", mpv_seed, fwhm_seed, eff) << std::endl;
     }
 
+    //-------------------------------------------------------------
     // Fit the tracker front -> calo edep response
+    //-------------------------------------------------------------
+
     h = (hists_[2]) ? hists_[2]->h_trk_front_energy_edep_diff_ : nullptr;
     if(h) {
-      TH1* h_ref = (hists_[0]) ? hists_[0]->h_nclusters_ : nullptr;
+      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_ : nullptr;
       const double eff = h->GetEntries() > 0 && h_ref ? h->GetEntries() * 1./ h_ref->GetEntries() : 0.;
       double mpv, fwhm;
       get_landau_seed(h, mpv, fwhm);
       std::cout << std::format("Primary Edep - tracker front StepPointMC energy distribution: MPV = {:.2f} MeV, FWHM = {:.2f} MeV, efficiency = {:.4g}", mpv, fwhm, eff) << std::endl;
     }
+
+    //-------------------------------------------------------------
+    // Report summary data
+    //-------------------------------------------------------------
 
     const double averageCaloEdep    = (total_events_ > 0) ? total_calo_edep_    / total_events_ : 0.;
     const double averageCaloEdepGen = (ngen_         > 0) ? total_calo_edep_    / ngen_         : 0.;
