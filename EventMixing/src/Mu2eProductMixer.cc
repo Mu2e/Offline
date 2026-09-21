@@ -223,6 +223,13 @@ namespace mu2e {
         bootstrapStageNorm_ = true;
         poolGenCount_ = poolGen;
         poolEventCount_ = poolEvents;
+        poolStages_ = snmc.poolStages();
+        poolFromOrigin_ = snmc.poolFromOrigin();
+        if(poolStages_ == 0) {
+          throw cet::exception("BADCONFIG")
+            << "Mu2eProductMixer/stageNormMixer: poolStages must be >= 1; the "
+            << "pool's own normalization spans at least its generating stage.\n";
+        }
         // No mix op: the pool's ratio is stated, not read. Reading it would
         // take the DRAWN SUBRUN's GenEventCount against the whole pool's event
         // count, which is wrong by the number of subruns in the pool.
@@ -296,8 +303,15 @@ namespace mu2e {
             << "Mu2eProductMixer/stageNormMixer: no draws were made; was the "
             << "mixin file opened correctly?\n";
         }
+        // nStages and fromOrigin come from what the caller stated about the
+        // pool, not from an assumption that its totals reach the origin.
+        // Hardcoding 2 here claimed a rate per proton from a stops pool whose
+        // stated generated count was beam draws -- wrong by the beam stage's
+        // own efficiency, about 78 for Run1B, with nothing in the file to
+        // show it.
         auto norm = std::make_unique<StageNormalization>(
-          double(resampledEvents_) * poolGenCount_ / poolEventCount_, 0, 2);
+          double(resampledEvents_) * poolGenCount_ / poolEventCount_, 0,
+          poolStages_ + 1, poolFromOrigin_);
         sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
       } else {
       if(nDrawsUnnormalized_ > 0) {
@@ -317,7 +331,7 @@ namespace mu2e {
           << "was the mixin file opened correctly?\n";
       }
       // nPassed is left 0 here on purpose: this product says only how many
-      // origin-generated events the DRAWS represent. What survives to a given
+      // generated events the DRAWS represent. What survives to a given
       // output stream is that stream's business, and its
       // StageNormalizationCounter fills nPassed in against this number.
       auto norm = std::make_unique<StageNormalization>(perEventSum_, 0,

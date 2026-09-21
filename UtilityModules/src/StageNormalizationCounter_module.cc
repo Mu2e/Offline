@@ -15,8 +15,9 @@
 // Seeding the normalization
 // -------------------------
 // For a stage whose source reads events 1:1 (a generator or a filter job) the
-// origin-equivalent count is the job's own GenEventCount, which is what
-// genCountTag names. That is the default.
+// generated-equivalent count is the job's own GenEventCount, which is what
+// genCountTag names. That is the default. Whether that count reaches the
+// ORIGIN of the chain is genCountIsOrigin, and it is recorded with it.
 //
 // For a RESAMPLING stage it is not: the job's GenEventCount records the number
 // of draws, and the resampled input arrives as a mixing secondary whose own
@@ -65,7 +66,7 @@ namespace mu2e {
           Comment("SubRun GenEventCount of THIS job, used to seed the normalization "
                   "for a stage that reads its input 1:1."), "genCounter" };
         fhicl::OptionalAtom<art::InputTag> upstreamTag { Name("upstreamTag"),
-          Comment("SubRun StageNormalization carrying the origin-equivalent count "
+          Comment("SubRun StageNormalization carrying the generated-equivalent count "
                   "already computed for this stage -- set this for a RESAMPLING "
                   "stage, where the mixer computes it and genCountTag would count "
                   "draws instead.") };
@@ -77,6 +78,14 @@ namespace mu2e {
                   "at the END of the path so CosmicLivetime scales correctly, and "
                   "a second GenEventCounter is refused by GenEventCounter itself. "
                   "A later counter then names THIS module in upstreamTag."), false };
+        fhicl::Atom<bool> genCountIsOrigin { Name("genCountIsOrigin"),
+          Comment("Whether the GenEventCount named by genCountTag counts events "
+                  "at the ORIGIN of the chain. True for a generator, and for a "
+                  "1:1 stage whose chain has never resampled, since the count "
+                  "propagates. Set FALSE for a 1:1 stage over a resampled file "
+                  "-- there GenEventCount is the resampling stage's draw count, "
+                  "not the origin's, and calling it origin-referenced overstates "
+                  "the chain by the upstream efficiency."), true };
         fhicl::Atom<int> diagLevel { Name("diagLevel"), Comment("Printout level"), 0 };
       };
 
@@ -92,6 +101,7 @@ namespace mu2e {
       art::InputTag upstreamTag_;
       bool resampled_;      // upstreamTag was supplied
       bool countAsGenerated_;
+      bool genCountIsOrigin_;
       int  diagLevel_;
       uint64_t nPassed_;
   };
@@ -101,6 +111,7 @@ namespace mu2e {
     , genCountTag_{conf().genCountTag()}
     , resampled_{conf().upstreamTag(upstreamTag_)}
     , countAsGenerated_{conf().countAsGenerated()}
+    , genCountIsOrigin_{conf().genCountIsOrigin()}
     , diagLevel_{conf().diagLevel()}
     , nPassed_{0}
   {
@@ -129,13 +140,17 @@ namespace mu2e {
     if(countAsGenerated_) {
       // Placed right after the generator, so every event of the job reaches
       // it: what it counted IS the generated count, and the chain starts here.
-      norm = StageNormalization(double(nPassed_), nPassed_, 1);
+      // This module IS the generator, so its count is the origin's.
+      norm = StageNormalization(double(nPassed_), nPassed_, 1, true);
     } else if(resampled_) {
-      // A resampling stage: the mixer already worked out the origin-equivalent
-      // count, because only it knows the pool the draws came from.
+      // A resampling stage: the mixer already worked out the count, because
+      // only it knows the pool the draws came from.
       auto h = sr.getHandle<StageNormalization>(upstreamTag_);
       if(h.isValid()) {
-        norm = StageNormalization(h->nGenEquivalent(), nPassed_, h->nStages());
+        // Depth and origin-reference both come from the mixer, which knows
+        // what the pool's normalization actually reached.
+        norm = StageNormalization(h->nGenEquivalent(), nPassed_, h->nStages(),
+                                  h->fromOrigin());
       } else {
         // Deliberately left unseeded (nStages 0) rather than defaulted to
         // anything: an efficiency of 1, or of 0, would be indistinguishable
@@ -144,29 +159,32 @@ namespace mu2e {
           << "no StageNormalization '" << upstreamTag_ << "' in this SubRun; "
           << "writing an unseeded normalization (nStages=0). The resampling "
           << "mixer did not run, or is not configured to produce it.";
-        norm = StageNormalization(0., nPassed_, 0);
+        norm = StageNormalization(0., nPassed_, 0, false);
       }
     } else {
-      // A 1:1 stage: this job's own generated count is the origin equivalent
-      // when it IS the origin, and is propagated from the input file by
-      // RootOutput when it is not.
+      // A 1:1 stage: this job's own generated count, propagated from the
+      // input file by RootOutput. genCountIsOrigin says whether that count
+      // reaches the origin -- it does not for a file that was resampled.
       auto h = sr.getHandle<GenEventCount>(genCountTag_);
       if(h.isValid()) {
-        norm = StageNormalization(double(h->count()), nPassed_, 1);
+        norm = StageNormalization(double(h->count()), nPassed_, 1,
+                                  genCountIsOrigin_);
       } else {
         mf::LogWarning("StageNormalizationCounter")
           << "no GenEventCount '" << genCountTag_ << "' in this SubRun; "
           << "writing an unseeded normalization (nStages=0). Set genCountTag, "
           << "or upstreamTag for a resampling stage.";
-        norm = StageNormalization(0., nPassed_, 0);
+        norm = StageNormalization(0., nPassed_, 0, false);
       }
     }
 
     if(diagLevel_ > 0) {
       mf::LogInfo("StageNormalizationCounter")
         << "passed " << norm.nPassed() << " events representing "
-        << norm.nGenEquivalent() << " origin-generated events over "
-        << norm.nStages() << " stage(s); efficiency " << norm.efficiency();
+        << norm.nGenEquivalent() << " generated events over "
+        << norm.nStages() << " stage(s)"
+        << (norm.fromOrigin() ? " back to the origin" : " (NOT reaching the origin)")
+        << "; efficiency " << norm.efficiency();
     }
 
     sr.put(std::make_unique<StageNormalization>(norm), art::fullSubRun());

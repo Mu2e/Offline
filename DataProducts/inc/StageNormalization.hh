@@ -6,8 +6,10 @@
 //
 // The quantity carried is a pair:
 //
-//   nGenEquivalent : generated events at the origin of the chain that this
-//                    stream's events collectively stand for
+//   nGenEquivalent : generated events that this stream's events collectively
+//                    stand for -- at the ORIGIN of the chain when
+//                    fromOrigin() is true, otherwise at the stage nStages
+//                    levels up
 //   nPassed        : events actually written to this stream
 //
 // so the cumulative efficiency of everything upstream is nPassed/nGenEquivalent,
@@ -22,8 +24,8 @@
 // EmptyEvent and its resampled input arrives as a mixing secondary, so the
 // input's own GenEventCount does not reach the output: its GenEventCount
 // records the number of DRAWS. Each draw stands for one input event, and one
-// input event stands for upstream.perEvent() = nGenEquivalent/nPassed origin
-// events, which is the factor the resampler applies.
+// input event stands for upstream.perEvent() = nGenEquivalent/nPassed
+// generated events, which is the factor the resampler applies.
 //
 // Why not FilterFraction: its chain() requires upstream.nPassed() == nSeen(),
 // a strict 1:1-consumption assumption that resampling violates by
@@ -47,8 +49,10 @@
 namespace mu2e {
   class StageNormalization {
     public:
-      StageNormalization(double nGenEquivalent, uint64_t nPassed, unsigned nStages = 1) :
-        nGenEquivalent_(nGenEquivalent), nPassed_(nPassed), nStages_(nStages) {}
+      StageNormalization(double nGenEquivalent, uint64_t nPassed,
+                         unsigned nStages = 1, bool fromOrigin = true) :
+        nGenEquivalent_(nGenEquivalent), nPassed_(nPassed), nStages_(nStages),
+        fromOrigin_(fromOrigin) {}
       StageNormalization(){}
 
       // accessors
@@ -58,6 +62,20 @@ namespace mu2e {
       // normalization was never seeded, which is NOT the same as an
       // efficiency of zero and must never be silently treated as one
       unsigned nStages() const { return nStages_; }
+      // Whether nGenEquivalent counts events at the ORIGIN of the chain, or
+      // only at some intermediate stage. False means the number is referenced
+      // to whatever the stage nStages levels up generated, which is a real
+      // measurement but NOT a rate per POT.
+      //
+      // It exists because the obvious source of a bootstrap's totals does not
+      // reach the origin: SAM's dh.gencount is reset by a resampling stage to
+      // that stage's draw count, so a stops sample records draws from the beam
+      // sample, not protons. Composing the chain from SAM cannot be automated
+      // either -- nothing in a file's metadata says a stage resampled, and the
+      // obvious test (does this stage's generated count differ from its
+      // parent's?) reads equal on a real Run1B chain where the beam stage and
+      // the resampler happen to be sized alike.
+      bool fromOrigin() const { return fromOrigin_; }
       // nPassed matters as much as the rest: a normalization recording no
       // events cannot say what one event represents, and perEvent() would
       // return 0, which a downstream resampler would otherwise accumulate as
@@ -66,12 +84,14 @@ namespace mu2e {
         return nStages_ > 0 && nGenEquivalent_ > 0. && nPassed_ > 0;
       }
 
-      // cumulative efficiency of every stage upstream of (and including) this one
+      // Efficiency of the nStages this normalization spans. It is a rate per
+      // generated event at the origin only when fromOrigin() is true.
       double efficiency() const {
         return (nGenEquivalent_ > 0.) ? double(nPassed_)/nGenEquivalent_ : 0.;
       }
-      // origin-generated events each event of this stream stands for: the
-      // factor a downstream resampler multiplies its draw count by
+      // generated events each event of this stream stands for, at this
+      // normalization's own depth: the factor a downstream resampler
+      // multiplies its draw count by
       double perEvent() const {
         return (nPassed_ > 0) ? nGenEquivalent_/double(nPassed_) : 0.;
       }
@@ -81,14 +101,16 @@ namespace mu2e {
       StageNormalization  operator + (StageNormalization const& other) const;
 
       // compose with the stream this one resampled from: nDraws draws, each
-      // standing for upstream.perEvent() origin events
+      // standing for upstream.perEvent() generated events
       static StageNormalization resample(uint64_t nDraws, StageNormalization const& upstream,
                                          uint64_t nPassed);
 
     private:
-      double   nGenEquivalent_ = 0.; // origin-stage generated events represented
+      double   nGenEquivalent_ = 0.; // generated events represented, at the
+                                     // depth fromOrigin_/nStages_ describe
       uint64_t nPassed_ = 0;         // events written to this stream
-      unsigned nStages_ = 0;         // chain depth; 0 = never seeded
+      unsigned nStages_ = 0;         // stages spanned; 0 = never seeded
+      bool     fromOrigin_ = false;  // does nGenEquivalent reach the origin?
   };
 }
 #endif

@@ -16,6 +16,10 @@ namespace mu2e {
     if(other.nStages() == 0) return *this;
     if(other.nStages() != nStages_)
       throw std::runtime_error("StageNormalization: chain depths conflict");
+    if(other.fromOrigin() != fromOrigin_)
+      throw std::runtime_error("StageNormalization: one of these reaches the "
+                               "origin and the other does not, so their "
+                               "generated counts are in different units");
     nGenEquivalent_ += other.nGenEquivalent();
     nPassed_ += other.nPassed();
     return *this;
@@ -38,8 +42,10 @@ namespace mu2e {
       throw std::runtime_error("StageNormalization: upstream normalization is unset; "
                                "the resampled input carries no StageNormalization and "
                                "no GenEventCount fallback was available");
+    // fromOrigin is carried, not assumed: a chain composed from a pool whose
+    // totals stop at an intermediate stage stays honest all the way down.
     return StageNormalization(double(nDraws) * upstream.perEvent(), nPassed,
-                              upstream.nStages() + 1);
+                              upstream.nStages() + 1, upstream.fromOrigin());
   }
 
 }

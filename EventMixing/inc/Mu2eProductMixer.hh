@@ -131,6 +131,19 @@ namespace mu2e {
                 "events). Requires poolEventCount.") };
       fhicl::OptionalAtom<double> poolEventCount{ Name("poolEventCount"),
         Comment("Total events over ALL of fileNames. Requires poolGenCount.") };
+      fhicl::Atom<unsigned> poolStages{ Name("poolStages"),
+        Comment("How many stages poolGenCount spans, i.e. what nStages the "
+                "pool's own StageNormalization would carry. The output records "
+                "one more than this."), 1u };
+      fhicl::Atom<bool> poolFromOrigin{ Name("poolFromOrigin"),
+        Comment("Whether poolGenCount counts events at the ORIGIN of the chain "
+                "(protons, for a beam chain) rather than at some intermediate "
+                "stage. Default false, because the usual source does not: SAM's "
+                "dh.gencount is reset by a resampling stage to that stage's own "
+                "draw count, so a stops sample's is draws from the beam sample. "
+                "Set true only when the totals really are the origin's -- "
+                "otherwise the result is a sound measurement of a shorter chain "
+                "and says so."), false };
     };
 
     // Configuration for the Mu2eProductMixing helper
@@ -322,6 +335,8 @@ namespace mu2e {
     bool bootstrapStageNorm_ = false;
     double poolGenCount_ = 0.;
     double poolEventCount_ = 0.;
+    unsigned poolStages_ = 1;
+    bool poolFromOrigin_ = false;
     // Draws whose subrun carried no usable normalization: reported, never
     // quietly folded in as if they had one.
     uint64_t nDrawsUnnormalized_ = 0;
