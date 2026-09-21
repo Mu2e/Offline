@@ -47,6 +47,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "cetlib_except/exception.h"
 
 #include "Offline/DataProducts/inc/StageNormalization.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
@@ -68,6 +69,14 @@ namespace mu2e {
                   "already computed for this stage -- set this for a RESAMPLING "
                   "stage, where the mixer computes it and genCountTag would count "
                   "draws instead.") };
+        fhicl::Atom<bool> countAsGenerated { Name("countAsGenerated"),
+          Comment("This module IS the generated count: record nGenEquivalent = "
+                  "the events it sees, rather than reading either tag. Put it "
+                  "immediately after the generator, for a stage whose "
+                  "GenEventCount cannot serve -- the cosmic S1 paths keep theirs "
+                  "at the END of the path so CosmicLivetime scales correctly, and "
+                  "a second GenEventCounter is refused by GenEventCounter itself. "
+                  "A later counter then names THIS module in upstreamTag."), false };
         fhicl::Atom<int> diagLevel { Name("diagLevel"), Comment("Printout level"), 0 };
       };
 
@@ -82,6 +91,7 @@ namespace mu2e {
       art::InputTag genCountTag_;
       art::InputTag upstreamTag_;
       bool resampled_;      // upstreamTag was supplied
+      bool countAsGenerated_;
       int  diagLevel_;
       uint64_t nPassed_;
   };
@@ -90,9 +100,16 @@ namespace mu2e {
     : art::EDProducer{conf}
     , genCountTag_{conf().genCountTag()}
     , resampled_{conf().upstreamTag(upstreamTag_)}
+    , countAsGenerated_{conf().countAsGenerated()}
     , diagLevel_{conf().diagLevel()}
     , nPassed_{0}
   {
+    if(countAsGenerated_ && resampled_) {
+      throw cet::exception("BADCONFIG")
+        << "StageNormalizationCounter: countAsGenerated says this module IS the "
+        << "generated count, and upstreamTag says it inherits one. Give one or "
+        << "the other.\n";
+    }
     produces<StageNormalization, art::InSubRun>();
   }
 
@@ -109,7 +126,11 @@ namespace mu2e {
   void StageNormalizationCounter::endSubRun(art::SubRun& sr) {
     StageNormalization norm;
 
-    if(resampled_) {
+    if(countAsGenerated_) {
+      // Placed right after the generator, so every event of the job reaches
+      // it: what it counted IS the generated count, and the chain starts here.
+      norm = StageNormalization(double(nPassed_), nPassed_, 1);
+    } else if(resampled_) {
       // A resampling stage: the mixer already worked out the origin-equivalent
       // count, because only it knows the pool the draws came from.
       auto h = sr.getHandle<StageNormalization>(upstreamTag_);
