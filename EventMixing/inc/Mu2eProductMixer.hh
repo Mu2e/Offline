@@ -40,6 +40,7 @@
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/DataProducts/inc/StageNormalization.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -98,6 +99,36 @@ namespace mu2e {
       fhicl::Atom<std::string> genCounterLabel{ Name("genCounterLabel"), Comment("Module label for the GenEventCounter"), "genCounter" };
     };
 
+    // StageNormalization in SubRuns: carry the resampled pool's
+    // origin-equivalent generated count through to the output, scaled by the
+    // number of draws. Without this the chain breaks here -- the secondary's
+    // GenEventCount does not reach the output, and the output's own records
+    // draws, not generated events.
+    struct StageNormMixerConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      // EXACTLY ONE of moduleLabel or (genCounterLabel + poolEventCount).
+      // They are alternatives rather than a preference and a fallback because
+      // art throws ProductNotFound when a declared mix op's product is absent
+      // from the secondary -- it does not call the op with an empty input --
+      // so declaring the StageNormalization op against a pool that has none
+      // aborts the job on the first event.
+      fhicl::OptionalAtom<art::InputTag> moduleLabel{ Name("moduleLabel"),
+        Comment("SubRun StageNormalization of the RESAMPLED INPUT, as its "
+                "StageNormalizationCounter wrote it. The pool MUST carry this "
+                "product; use the genCounterLabel bootstrap if it does not.") };
+      fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"),
+        Comment("Output instance name for SubRun outputs"), "resampled" };
+      fhicl::OptionalAtom<art::InputTag> genCounterLabel{ Name("genCounterLabel"),
+        Comment("Bootstrap for a pool predating StageNormalization: the input's "
+                "own GenEventCount. Requires poolEventCount, since the number of "
+                "events in the pool is not knowable from a mixing secondary.") };
+      fhicl::OptionalAtom<double> poolEventCount{ Name("poolEventCount"),
+        Comment("Total events in the resampled pool (all of fileNames), for the "
+                "genCounterLabel bootstrap. Draws are uniform over the pool, so "
+                "the pool-level ratio is the correct per-draw expectation.") };
+    };
+
     // Configuration for the Mu2eProductMixing helper
     struct Config {
       fhicl::Table<CollectionMixerConfig> genParticleMixer { fhicl::Name("genParticleMixer") };
@@ -120,6 +151,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> eventWindowMarkerMixer { fhicl::Name("eventWindowMarkerMixer") };
       fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
+      fhicl::OptionalTable<StageNormMixerConfig> stageNormMixer { fhicl::Name("stageNormMixer") };
       fhicl::OptionalAtom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)") };
     };
 
@@ -218,6 +250,14 @@ namespace mu2e {
                            mu2e::CosmicLivetime& out,
                            art::PtrRemapper const& remap);
 
+    bool mixStageNormalization(std::vector<mu2e::StageNormalization const*> const& in,
+                               mu2e::StageNormalization& out,
+                               art::PtrRemapper const& remap);
+
+    bool mixPoolGenEventCount(std::vector<GenEventCount const*> const& in,
+                              GenEventCount& out,
+                              art::PtrRemapper const& remap);
+
     //----------------
     // If elements of a collection can be pointed to by other
     // collections, the offset array for the pointed-to collection
@@ -267,6 +307,22 @@ namespace mu2e {
     // implemented.  Make sure we only see a single subrun in a job.
     bool cosmicSubrunInitialized_ = false;
     art::SubRunID cosmicSubRun_;
+
+    // StageNormalization mixing. perEventSum_ accumulates, once per drawn
+    // event, the origin-generated events that draw stands for. Accumulating
+    // rather than latching (as the cosmic path does) is what lets the draws
+    // span many subruns of the pool, which they always do for a beam sample.
+    std::string subrunStageNormInstanceName_;
+    bool mixStageNorm_ = false;
+    double perEventSum_ = 0.;
+    uint64_t nDraws_ = 0;
+    unsigned upstreamStages_ = 0;
+    // Bootstrap for a pool with no StageNormalization of its own.
+    bool bootstrapStageNorm_ = false;
+    double poolEventCount_ = 0.;
+    // Draws whose subrun carried no usable normalization: reported, never
+    // quietly folded in as if they had one.
+    uint64_t nDrawsUnnormalized_ = 0;
 
   };
 
