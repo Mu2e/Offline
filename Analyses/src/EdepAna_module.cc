@@ -3,13 +3,15 @@
 
 // framework
 #include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
+#include "cetlib_except/exception.h"
 
 // Offline
+#include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
@@ -21,7 +23,6 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TTree.h"
-#include "TString.h"
 #include "TF1.h"
 #include "TFitResult.h"
 
@@ -38,12 +39,12 @@ namespace mu2e {
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<art::InputTag> primaryTag     { Name("primary")                 , Comment("PrimaryParticle tag") };
+      fhicl::Atom<art::InputTag> primaryTag     { Name("Primary")                 , Comment("PrimaryParticle tag") };
       fhicl::Atom<art::InputTag> caloShowerTag  { Name("CaloShowerStepCollection"), Comment("CaloShowerStep collection") };
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
-      fhicl::Atom<art::InputTag> genCountTag    { Name("genCountTag")             , Comment("GenCount tag"), "genCounter" };
-      fhicl::Atom<int>           debugLevel     { Name("debugLevel")              , Comment("Debug level"), 0 };
+      fhicl::Atom<art::InputTag> genCountTag    { Name("GenCountTag")             , Comment("GenCount tag"), "genCounter" };
+      fhicl::Atom<int>           debugLevel     { Name("DebugLevel")              , Comment("Debug level"), 0 };
     };
 
     // Histograms
@@ -69,7 +70,7 @@ namespace mu2e {
     struct Info_t {
       const SimParticle* primsim = nullptr;
       const StepPointMC* front_trk_sp = nullptr;
-      double primsim_edep = 0.;
+      double primsim_edep_vis = 0.;
       double calo_total_edep = 0.;
       double calo_total_edep_vis = 0.;
       double weight_ = 1.;
@@ -108,7 +109,7 @@ namespace mu2e {
     explicit EdepAna(const Parameters& conf);
     virtual void analyze(const art::Event& event) override;
     virtual void endJob() override;
-    virtual void beginSubRun(const art::SubRun& subrun);
+    virtual void beginSubRun(const art::SubRun& subrun) override;
 
     void bookHistograms(const int index, const char* title);
     void fillHistograms(Hist_t* Hist, const double Weight = 1.);
@@ -190,13 +191,13 @@ namespace mu2e {
     if(h->GetEntries() < 100) return -1; // not enough stats for a fit
     double mean_seed, fwhm_seed;
     get_landau_seed(h, mean_seed, fwhm_seed);
-    TF1* f = new TF1("landau", landau_func, mean_seed - fwhm_seed, std::min(0., mean_seed + fwhm_seed), 4);
+    TF1* f = new TF1("landau_func", landau_func, mean_seed - fwhm_seed, std::min(0., mean_seed + fwhm_seed), 4);
     f->SetParNames("Norm", "#mu", "a", "b");
     f->SetParLimits(1, -50., 0.); // mean
     f->FixParameter(2, 0.5); // a
     f->SetParLimits(3, 0.01, 100.); // b
     f->SetParameters(h->GetMaximum(), mean_seed, 0.5, fwhm_seed/5.);
-    auto fit_res = h->Fit(f, "SR");
+    auto fit_res = h->Fit(f, "QNSR");
     mean = f->GetParameter(1);
     const double max_val = f->GetMaximum();
     const double half_max = max_val / 2.;
@@ -254,6 +255,7 @@ namespace mu2e {
     consumes<CaloShowerStepCollection>(calo_shower_tag_);
     consumes<StrawGasStepCollection>(straw_gas_tag_);
     consumes<StepPointMCCollection>(step_point_tag_);
+    consumes<GenEventCount, art::InSubRun>(gen_count_tag_);
 
     for(int i = 0; i < kMaxHists; ++i) hists_[i] = nullptr;
     bookHistograms(0, "all events");
@@ -303,7 +305,7 @@ namespace mu2e {
   }
 
   void EdepAna::bookHistograms(const int index, const char* title) {
-    if(index >= kMaxHists) throw std::runtime_error("Too many histograms!");
+    if(index >= kMaxHists) throw cet::exception("Analysis") << "Too many histograms!";
     hists_[index] = new Hist_t;
     auto Hist = hists_[index];
 
@@ -315,45 +317,47 @@ namespace mu2e {
    Hist->h_primary_start_z_    = dir.make<TH1D>("primary_start_z"   , "Primary start z;Start z (mm)"             , 500, 3000., 8000.);
    Hist->h_primary_start_r_    = dir.make<TH1D>("primary_start_r"   , "Primary start radius;Start radius (mm)"   , 100,    0.,  200.);
    Hist->h_total_calo_energy_  = dir.make<TH1F>("total_calo_energy" , "Total Calo energy from steps;Energy (MeV)", 200,    0.,  200.);
-   Hist->h_step_energy_        = dir.make<TH1F>("calo_step_energy"  , "CaloShowerStep energy;E_{step} (MeV)"     , 100,    0.,  100.);
+   Hist->h_step_energy_        = dir.make<TH1F>("calo_step_energy"  , "Visible CaloShowerStep energy;E_{step} (MeV)"     , 100,    0.,  100.);
    Hist->h_trk_front_p_        = dir.make<TH1F>("trk_front_p"       , "Momentum of StepPointMC at front of tracker;p (MeV/c)", 1500, 0., 150.);
    Hist->h_trk_front_energy_   = dir.make<TH1F>("trk_front_energy"  , "Energy of StepPointMC at front of tracker;Energy (MeV)", 1500, 0., 150.);
    Hist->h_trk_front_energy_diff_ = dir.make<TH1F>("trk_front_energy_diff", "Energy difference of StepPointMC at front of tracker and primary;Energy (MeV)", 500, -100., 0.);
    Hist->h_primary_energy_edep_diff_ = dir.make<TH1F>("primary_energy_edep_diff", "Primary Edep - energy;Energy (MeV)", 300, -150., 0.);
    Hist->h_primary_edep_ = dir.make<TH1F>("primary_edep", "Primary Edep;Energy (MeV)", 300, 0., 150.);
    Hist->h_primary_vs_edep_ = dir.make<TH2F>("primary_vs_edep", "Primary energy vs Edep;Primary energy (MeV);Edep (MeV)", 150, 0., 150., 150, 0., 150.);
-   Hist->h_step_energy_vs_time_ = dir.make<TH2F>("calo_step_energy_vs_time", "CaloShowerStep energy vs time;Time (ns);Energy (MeV)", 40, 0., 2000., 100, 0., 100.);
+   Hist->h_step_energy_vs_time_ = dir.make<TH2F>("calo_step_energy_vs_time", "Visible CaloShowerStep energy vs time;Time (ns);Energy (MeV)", 40, 0., 2000., 100, 0., 100.);
    Hist->h_trk_front_energy_edep_diff_ = dir.make<TH1F>("trk_front_energy_edep_diff", "Energy difference of StepPointMC at front of tracker and primary Edep;Energy (MeV)", 500, -50., 0.);
   }
 
   void EdepAna::fillHistograms(Hist_t* Hist, const double Weight) {
     if(debug_level_ > 0) watch_->SetTime(__func__);
-    if(!Hist) throw std::runtime_error("Uninitialized histogram book!");
+    if(!Hist) throw cet::exception("Analysis") << "Uninitialized histogram book!";
 
     const SimParticle* primsim = info_.primsim;
     const StepPointMC* front_trk_sp = info_.front_trk_sp;
-    const double primsim_edep = info_.primsim_edep;
+    const double primsim_edep_vis = info_.primsim_edep_vis;
 
 
     if(primsim) {
-      Hist->h_primary_energy_->Fill(primsim->startMomentum().e(), Weight);
+      const auto startMomentum = primsim->startMomentum();
+      Hist->h_primary_energy_->Fill(startMomentum.e(), Weight);
       Hist->h_primary_pdg_->Fill(primsim->pdgId(), Weight);
-      if(debug_level_ > 1) std::cout << "EdepAna: primary energy " << primsim->startMomentum().e() << " PDG " << primsim->pdgId() << std::endl;
+      if(debug_level_ > 1) std::cout << "EdepAna: primary energy " << startMomentum.e() << " PDG " << primsim->pdgId() << std::endl;
       Hist->h_primary_start_z_->Fill(primsim->startPosition().z(), Weight);
-      Hist->h_primary_start_r_->Fill(std::sqrt(std::pow(primsim->startPosition().x()+3904.,2) + std::pow(primsim->startPosition().y(),2)), Weight);
-      const double edep = primsim_edep;
+      GeomHandle<DetectorSystem> det;
+      Hist->h_primary_start_r_->Fill(det->toDetector(primsim->startPosition()).perp(), Weight);
+      const double edep = primsim_edep_vis;
       Hist->h_primary_edep_->Fill(edep, Weight);
-      Hist->h_primary_energy_edep_diff_->Fill(edep - primsim->startMomentum().e(), Weight);
-      Hist->h_primary_vs_edep_->Fill(primsim->startMomentum().e(), edep);
-      if(debug_level_ > 1) std::cout << "EdepAna: primary Edep " << edep << " difference " << primsim->startMomentum().e() - edep << std::endl;
+      Hist->h_primary_energy_edep_diff_->Fill(edep - startMomentum.e(), Weight);
+      Hist->h_primary_vs_edep_->Fill(startMomentum.e(), edep);
+      if(debug_level_ > 1) std::cout << "EdepAna: primary Edep " << edep << " difference " << startMomentum.e() - edep << std::endl;
 
       if(front_trk_sp) {
         Hist->h_trk_front_p_->Fill(front_trk_sp->momentum().mag(), Weight);
         const float step_energy = energyFromStepPoint(primsim, front_trk_sp);
         Hist->h_trk_front_energy_->Fill(step_energy, Weight);
-        Hist->h_trk_front_energy_diff_->Fill(step_energy - primsim->startMomentum().e(), Weight);
+        Hist->h_trk_front_energy_diff_->Fill(step_energy - startMomentum.e(), Weight);
         Hist->h_trk_front_energy_edep_diff_->Fill(edep - step_energy, Weight);
-        if(debug_level_ > 1) std::cout << "EdepAna: front tracker StepPointMC energy " << step_energy << " difference " << primsim->startMomentum().e() - step_energy << std::endl;
+        if(debug_level_ > 1) std::cout << "EdepAna: front tracker StepPointMC energy " << step_energy << " difference " << startMomentum.e() - step_energy << std::endl;
       }
     }
 
@@ -425,7 +429,7 @@ namespace mu2e {
     // Take the first primary as the main one for default histogramming
     info_.primsim = (primary_ && !primary_->primarySimParticles().empty()) ? &(*primary_->primarySimParticles().front()) : nullptr;
     info_.front_trk_sp = simTrkFrontStep(info_.primsim);
-    info_.primsim_edep = edepBySim(info_.primsim, true, true);
+    info_.primsim_edep_vis = edepBySim(info_.primsim, true, true);
     info_.calo_total_edep = totalCaloE;
     info_.calo_total_edep_vis = totalCaloEVis;
 
@@ -450,18 +454,20 @@ namespace mu2e {
     // Store information for each primary
     for(int iprim = 0; iprim < data_.nprim; ++iprim) {
       const auto* sim = &(*primary_->primarySimParticles().at(iprim));
-      data_.prim_start_x      [iprim] = sim->startPosition().x();
-      data_.prim_start_y      [iprim] = sim->startPosition().y();
-      data_.prim_start_z      [iprim] = sim->startPosition().z();
-      data_.prim_start_px     [iprim] = sim->startMomentum().x();
-      data_.prim_start_py     [iprim] = sim->startMomentum().y();
-      data_.prim_start_pz     [iprim] = sim->startMomentum().z();
-      data_.prim_start_e      [iprim] = sim->startMomentum().e();
-      data_.prim_start_m      [iprim] = sim->startMomentum().m();
+      const auto pos = sim->startPosition();
+      const auto mom = sim->startMomentum();
+      data_.prim_start_x      [iprim] = pos.x();
+      data_.prim_start_y      [iprim] = pos.y();
+      data_.prim_start_z      [iprim] = pos.z();
+      data_.prim_start_px     [iprim] = mom.x();
+      data_.prim_start_py     [iprim] = mom.y();
+      data_.prim_start_pz     [iprim] = mom.z();
+      data_.prim_start_e      [iprim] = mom.e();
+      data_.prim_start_m      [iprim] = mom.m();
       data_.prim_start_pdg    [iprim] = sim->pdgId();
       data_.prim_calo_edep    [iprim] = edepBySim(sim, true);
-      data_.prim_calo_edep_vis[iprim] = edepBySim(sim, true, true);
-      const auto front_trk_sp = simTrkFrontStep(sim);
+      data_.prim_calo_edep_vis[iprim] = (iprim == 0) ? info_.primsim_edep_vis : edepBySim(sim, true, true);
+      const auto front_trk_sp = (iprim == 0) ? info_.front_trk_sp : simTrkFrontStep(sim);
       data_.prim_trk_front_p     [iprim] = (front_trk_sp) ? front_trk_sp->momentum().mag() : 0.f;
       data_.prim_trk_front_energy[iprim] = energyFromStepPoint(sim, front_trk_sp);
     }

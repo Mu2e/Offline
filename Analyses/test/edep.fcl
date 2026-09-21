@@ -22,8 +22,8 @@ physics : {
       CaloShowerStepCollection : "compressDetStepMCs"
       StrawGasStepCollection   : "compressDetStepMCs"
       StepPointMCCollection    : "compressDetStepMCs:virtualdetector"
-      primary                  : "FindMCPrimary"
-      debugLevel               : 0
+      Primary                  : "FindMCPrimary"
+      DebugLevel               : 0
     }
   }
   EndPath : [ EDepAna ]
