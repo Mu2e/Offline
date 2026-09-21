@@ -58,7 +58,13 @@ namespace mu2e {
       // normalization was never seeded, which is NOT the same as an
       // efficiency of zero and must never be silently treated as one
       unsigned nStages() const { return nStages_; }
-      bool valid() const { return nStages_ > 0 && nGenEquivalent_ > 0.; }
+      // nPassed matters as much as the rest: a normalization recording no
+      // events cannot say what one event represents, and perEvent() would
+      // return 0, which a downstream resampler would otherwise accumulate as
+      // if it were a measurement.
+      bool valid() const {
+        return nStages_ > 0 && nGenEquivalent_ > 0. && nPassed_ > 0;
+      }
 
       // cumulative efficiency of every stage upstream of (and including) this one
       double efficiency() const {

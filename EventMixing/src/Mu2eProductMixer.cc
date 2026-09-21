@@ -187,24 +187,23 @@ namespace mu2e {
       subrunStageNormInstanceName_ = snmc.srOutInstance();
       helper.produces<StageNormalization, art::InSubRun>(subrunStageNormInstanceName_);
 
-      art::InputTag normTag, genCounter;
-      double poolEvents = 0.;
+      art::InputTag normTag;
+      double poolGen = 0., poolEvents = 0.;
       const bool haveNorm = snmc.moduleLabel(normTag);
-      const bool haveCounter = snmc.genCounterLabel(genCounter);
-      const bool havePool = snmc.poolEventCount(poolEvents);
+      const bool haveGen = snmc.poolGenCount(poolGen);
+      const bool haveEvents = snmc.poolEventCount(poolEvents);
 
-      if(haveCounter != havePool) {
+      if(haveGen != haveEvents) {
         throw cet::exception("BADCONFIG")
-          << "Mu2eProductMixer/stageNormMixer: genCounterLabel and poolEventCount "
+          << "Mu2eProductMixer/stageNormMixer: poolGenCount and poolEventCount "
           << "are the two halves of one bootstrap and must be given together; "
-          << "a pool event count without a generated count (or the reverse) "
-          << "cannot produce a normalization.\n";
+          << "one without the other cannot produce a normalization.\n";
       }
-      if(haveNorm == haveCounter) {
+      if(haveNorm == haveGen) {
         throw cet::exception("BADCONFIG")
           << "Mu2eProductMixer/stageNormMixer: give EXACTLY ONE of moduleLabel "
-          << "(the pool carries a StageNormalization) or genCounterLabel + "
-          << "poolEventCount (it does not, so bootstrap from its GenEventCount); "
+          << "(the pool carries a StageNormalization) or poolGenCount + "
+          << "poolEventCount (it does not, so state the pool's totals); "
           << (haveNorm ? "both were given" : "neither was given") << ". They are "
           << "alternatives, not a preference and a fallback: art throws "
           << "ProductNotFound when a declared mix op's product is missing from "
@@ -216,15 +215,17 @@ namespace mu2e {
         helper.declareMixOp<art::InSubRun>
           (normTag, "", &Mu2eProductMixer::mixStageNormalization, *this, false);
       } else {
-        if(poolEvents <= 0.) {
+        if(poolGen <= 0. || poolEvents <= 0.) {
           throw cet::exception("BADCONFIG")
-            << "Mu2eProductMixer/stageNormMixer: poolEventCount must be > 0, got "
-            << poolEvents << "\n";
+            << "Mu2eProductMixer/stageNormMixer: poolGenCount and poolEventCount "
+            << "must both be > 0, got " << poolGen << " and " << poolEvents << "\n";
         }
         bootstrapStageNorm_ = true;
+        poolGenCount_ = poolGen;
         poolEventCount_ = poolEvents;
-        helper.declareMixOp<art::InSubRun>
-          (genCounter, "", &Mu2eProductMixer::mixPoolGenEventCount, *this, false);
+        // No mix op: the pool's ratio is stated, not read. Reading it would
+        // take the DRAWN SUBRUN's GenEventCount against the whole pool's event
+        // count, which is wrong by the number of subruns in the pool.
       }
     }
 
@@ -287,6 +288,18 @@ namespace mu2e {
       sr.put(std::move(col), subrunVolInstanceName_, art::fullSubRun());
     }
     if (mixStageNorm_) {
+      if(bootstrapStageNorm_) {
+        // resampledEvents_ is the draw count (startEvent increments it), so the
+        // bootstrap needs no mix op and cannot disagree with one.
+        if(resampledEvents_ == 0) {
+          throw cet::exception("BADINPUT")
+            << "Mu2eProductMixer/stageNormMixer: no draws were made; was the "
+            << "mixin file opened correctly?\n";
+        }
+        auto norm = std::make_unique<StageNormalization>(
+          double(resampledEvents_) * poolGenCount_ / poolEventCount_, 0, 2);
+        sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
+      } else {
       if(nDrawsUnnormalized_ > 0) {
         // Never silently averaged over the draws that did have one: the result
         // would be a normalization short by exactly the missing fraction, and
@@ -310,6 +323,7 @@ namespace mu2e {
       auto norm = std::make_unique<StageNormalization>(perEventSum_, 0,
                                                        upstreamStages_ + 1);
       sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
+      }
     }
     if (mixCosmicLivetimes_) {
       if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
@@ -756,22 +770,6 @@ namespace mu2e {
       // guessed at: endSubRun refuses rather than reporting a normalization
       // built from only some of the draws.
       ++nDrawsUnnormalized_;
-    }
-    return false;
-  }
-
-  //----------------------------------------------------------------
-  // Bootstrap for a pool with no StageNormalization: the drawn subrun's own
-  // generated count, against a stated pool event count. Only consulted when
-  // the StageNormalization op found nothing.
-  bool Mu2eProductMixer::mixPoolGenEventCount(std::vector<GenEventCount const*> const& in,
-                                              GenEventCount& out,
-                                              art::PtrRemapper const&)
-  {
-    ++nDraws_;
-    if(in.size() == 1) {
-      perEventSum_ += double(in[0]->count()) / poolEventCount_;
-      if(upstreamStages_ == 0) upstreamStages_ = 1;
     }
     return false;
   }

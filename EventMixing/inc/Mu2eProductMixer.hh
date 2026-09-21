@@ -107,7 +107,7 @@ namespace mu2e {
     struct StageNormMixerConfig {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      // EXACTLY ONE of moduleLabel or (genCounterLabel + poolEventCount).
+      // EXACTLY ONE of moduleLabel or (poolGenCount + poolEventCount).
       // They are alternatives rather than a preference and a fallback because
       // art throws ProductNotFound when a declared mix op's product is absent
       // from the secondary -- it does not call the op with an empty input --
@@ -119,14 +119,18 @@ namespace mu2e {
                 "product; use the genCounterLabel bootstrap if it does not.") };
       fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"),
         Comment("Output instance name for SubRun outputs"), "resampled" };
-      fhicl::OptionalAtom<art::InputTag> genCounterLabel{ Name("genCounterLabel"),
-        Comment("Bootstrap for a pool predating StageNormalization: the input's "
-                "own GenEventCount. Requires poolEventCount, since the number of "
-                "events in the pool is not knowable from a mixing secondary.") };
+      // Bootstrap for a pool predating StageNormalization: state BOTH of the
+      // pool's totals. Reading the generated count from the secondary instead
+      // does not work -- the mix op sees the DRAWN SUBRUN's GenEventCount,
+      // while the event count can only be stated for the pool as a whole, and
+      // dividing one by the other mixes scopes and is wrong by the number of
+      // subruns. Both totals are over ALL of fileNames; draws are uniform over
+      // the pool, so the pool-level ratio is the correct per-draw expectation.
+      fhicl::OptionalAtom<double> poolGenCount{ Name("poolGenCount"),
+        Comment("Total GenEventCount over ALL of fileNames (the pool's generated "
+                "events). Requires poolEventCount.") };
       fhicl::OptionalAtom<double> poolEventCount{ Name("poolEventCount"),
-        Comment("Total events in the resampled pool (all of fileNames), for the "
-                "genCounterLabel bootstrap. Draws are uniform over the pool, so "
-                "the pool-level ratio is the correct per-draw expectation.") };
+        Comment("Total events over ALL of fileNames. Requires poolGenCount.") };
     };
 
     // Configuration for the Mu2eProductMixing helper
@@ -254,10 +258,6 @@ namespace mu2e {
                                mu2e::StageNormalization& out,
                                art::PtrRemapper const& remap);
 
-    bool mixPoolGenEventCount(std::vector<GenEventCount const*> const& in,
-                              GenEventCount& out,
-                              art::PtrRemapper const& remap);
-
     //----------------
     // If elements of a collection can be pointed to by other
     // collections, the offset array for the pointed-to collection
@@ -317,8 +317,10 @@ namespace mu2e {
     double perEventSum_ = 0.;
     uint64_t nDraws_ = 0;
     unsigned upstreamStages_ = 0;
-    // Bootstrap for a pool with no StageNormalization of its own.
+    // Bootstrap for a pool with no StageNormalization of its own: both totals
+    // are stated, and the draw count comes from resampledEvents_.
     bool bootstrapStageNorm_ = false;
+    double poolGenCount_ = 0.;
     double poolEventCount_ = 0.;
     // Draws whose subrun carried no usable normalization: reported, never
     // quietly folded in as if they had one.
