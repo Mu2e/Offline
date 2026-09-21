@@ -42,6 +42,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> caloShowerTag  { Name("CaloShowerStepCollection"), Comment("CaloShowerStep collection") };
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
+      fhicl::Atom<art::InputTag> genCountTag    { Name("genCountTag")             , Comment("GenCount tag"), "genCounter" };
       fhicl::Atom<int>           debugLevel     { Name("debugLevel")              , Comment("Debug level"), 0 };
     };
 
@@ -54,6 +55,7 @@ namespace mu2e {
       TH1* h_total_calo_energy_;
       TH1* h_step_energy_; // individual CaloShowerStep energies
       TH2* h_step_energy_vs_time_; // step energy vs time
+      TH1* h_trk_front_p_;
       TH1* h_trk_front_energy_;
       TH1* h_trk_front_energy_diff_;
       TH2* h_primary_vs_edep_;
@@ -69,6 +71,7 @@ namespace mu2e {
       const StepPointMC* front_trk_sp = nullptr;
       double primsim_edep = 0.;
       double calo_total_edep = 0.;
+      double calo_total_edep_vis = 0.;
       double weight_ = 1.;
     };
 
@@ -86,8 +89,11 @@ namespace mu2e {
       float prim_start_m         [kMaxPrimaries];
       int   prim_start_pdg       [kMaxPrimaries];
       float prim_calo_edep       [kMaxPrimaries];
+      float prim_calo_edep_vis   [kMaxPrimaries];
+      float prim_trk_front_p     [kMaxPrimaries];
       float prim_trk_front_energy[kMaxPrimaries];
       float event_calo_edep;
+      float event_calo_edep_vis;
       float event_trk_edep;
       float weight;
       int   run;
@@ -118,13 +124,13 @@ namespace mu2e {
       return false;
     }
 
-    double edepBySim(const SimParticle* sim, const bool check_parents) const {
+    double edepBySim(const SimParticle* sim, const bool check_parents, const bool do_vis = false) const {
       if(!sim) return 0.;
       if(!shower_col_) return 0.;
       double edep = 0.;
       for(const auto& shower : *shower_col_) {
         if(shower.simParticle()->id() == sim->id() || (check_parents && isDescendant(sim, &*shower.simParticle()))) {
-          edep += shower.energyDepBirks();
+          edep += (do_vis) ? shower.energyDepBirks() : shower.energyDepG4();
         }
       }
       return edep;
@@ -137,10 +143,15 @@ namespace mu2e {
         if(sp.simParticle()->id() == sim->id() &&
            (sp.volumeId() == VirtualDetectorId::TT_FrontHollow || sp.volumeId() == VirtualDetectorId::TT_FrontPA)) {
           if(!front_trk_sp || sp.time() < front_trk_sp->time()) front_trk_sp = &sp;
-          break;
         }
       }
       return front_trk_sp;
+    }
+
+    float energyFromStepPoint(const SimParticle* sim, const StepPointMC* step) {
+      if(!sim || !step) return 0.f;
+      // use the sim mass at start to get the energy from the step point
+      return std::sqrt(std::pow(step->momentum().mag(), 2) + std::pow(sim->startMomentum().m(), 2));
     }
 
   //------------------------------------------------------------------------------------------------------------
@@ -153,36 +164,6 @@ namespace mu2e {
     return val;
   }
 
-  //------------------------------------------------------------------------------------------------------------
-  // Landau core with power-law tails
-  static double landau_crystal_ball(double x, double mean, double a, double b, double alpha1, double alpha2, double n1, double n2) {
-    // See: https://github.com/pavel1murat/murat/blob/main/scripts/fit_cb4.C
-
-    // Requirements for normalization are N1 and N2 are > 1:
-    if(n1 < 1. || n2 < 1.) return 0.;
-
-    // Evaluate the function
-    const double dx = x-mean;
-    double val = 0.;
-    if (dx < -alpha1) { // Low tail
-      const double B1 = -alpha1+n1/(a*b*(1-exp(-b*alpha1)));
-      const double A1 = exp(a*(-b*alpha1-exp(-b*alpha1)))*pow(B1+alpha1,n1);
-      val  = A1/pow(B1-dx,n1);
-    } else if (dx < alpha2) { // Landau core
-      val = exp(a*(b*dx-exp(b*dx)));
-    } else { // High tail
-      const double B2 = -alpha2-n2/(a*b*(1. - exp(b*alpha2)));
-      const double A2 = exp(a*(b*alpha2-exp(b*alpha2)))*pow(B2+alpha2,n2);
-      val  = A2/pow(B2+dx,n2);
-    }
-
-    return val;
-  }
-
-  //------------------------------------------------------------------------------------------------------------
-  static double landau_crystal_ball_func(double* X, double* P) {
-    return P[0]*landau_crystal_ball(X[0], P[1], P[2], P[3], P[4], P[5], P[6], P[7]);
-  }
   //------------------------------------------------------------------------------------------------------------
   static double landau_func(double* X, double* P) {
     return P[0]*landau(X[0], P[1], P[2], P[3]);
@@ -240,6 +221,7 @@ namespace mu2e {
     art::InputTag calo_shower_tag_;
     art::InputTag straw_gas_tag_;
     art::InputTag step_point_tag_;
+    art::InputTag gen_count_tag_;
     int debug_level_;
     std::unique_ptr<StopWatch> watch_ = std::make_unique<StopWatch>();
 
@@ -252,6 +234,7 @@ namespace mu2e {
     double total_events_ = 0.;
     double events_above_50_mev_ = 0.;
     double total_calo_edep_ = 0.;
+    double total_calo_edep_vis_ = 0.;
     double total_tracker_edep_ = 0.;
     unsigned long ngen_ = 0;
   };
@@ -263,6 +246,7 @@ namespace mu2e {
     , calo_shower_tag_(conf().caloShowerTag())
     , straw_gas_tag_(conf().strawGasStepTag())
     , step_point_tag_(conf().stepPointTag())
+    , gen_count_tag_(conf().genCountTag())
     , debug_level_(conf().debugLevel())
   {
     // register products consumed
@@ -291,8 +275,11 @@ namespace mu2e {
     tree_->Branch("primary_start_m"         , data_.prim_start_m         , "primary_start_m[nprimaries]/F");
     tree_->Branch("primary_start_pdg"       , data_.prim_start_pdg       , "primary_start_pdg[nprimaries]/I");
     tree_->Branch("primary_calo_edep"       , data_.prim_calo_edep       , "primary_calo_edep[nprimaries]/F");
+    tree_->Branch("primary_calo_edep_vis"   , data_.prim_calo_edep_vis   , "primary_calo_edep_vis[nprimaries]/F");
+    tree_->Branch("primary_trk_front_p"     , data_.prim_trk_front_p     , "primary_trk_front_p[nprimaries]/F");
     tree_->Branch("primary_trk_front_energy", data_.prim_trk_front_energy, "primary_trk_front_energy[nprimaries]/F");
     tree_->Branch("event_calo_edep"         , &data_.event_calo_edep);
+    tree_->Branch("event_calo_edep_vis"     , &data_.event_calo_edep_vis);
     tree_->Branch("event_trk_edep"          , &data_.event_trk_edep);
     tree_->Branch("run"                     , &data_.run);
     tree_->Branch("subrun"                  , &data_.subrun);
@@ -306,7 +293,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------
   void EdepAna::beginSubRun(const art::SubRun& subrun) {
     // Get the generator counter
-    auto genCounterHandle = subrun.getHandle<GenEventCount>("genCounter");
+    auto genCounterHandle = subrun.getHandle<GenEventCount>(gen_count_tag_);
     if(genCounterHandle.isValid()) {
       ngen_ += genCounterHandle->count();
     } else {
@@ -329,6 +316,7 @@ namespace mu2e {
    Hist->h_primary_start_r_    = dir.make<TH1D>("primary_start_r"   , "Primary start radius;Start radius (mm)"   , 100,    0.,  200.);
    Hist->h_total_calo_energy_  = dir.make<TH1F>("total_calo_energy" , "Total Calo energy from steps;Energy (MeV)", 200,    0.,  200.);
    Hist->h_step_energy_        = dir.make<TH1F>("calo_step_energy"  , "CaloShowerStep energy;E_{step} (MeV)"     , 100,    0.,  100.);
+   Hist->h_trk_front_p_        = dir.make<TH1F>("trk_front_p"       , "Momentum of StepPointMC at front of tracker;p (MeV/c)", 1500, 0., 150.);
    Hist->h_trk_front_energy_   = dir.make<TH1F>("trk_front_energy"  , "Energy of StepPointMC at front of tracker;Energy (MeV)", 1500, 0., 150.);
    Hist->h_trk_front_energy_diff_ = dir.make<TH1F>("trk_front_energy_diff", "Energy difference of StepPointMC at front of tracker and primary;Energy (MeV)", 500, -100., 0.);
    Hist->h_primary_energy_edep_diff_ = dir.make<TH1F>("primary_energy_edep_diff", "Primary Edep - energy;Energy (MeV)", 300, -150., 0.);
@@ -360,10 +348,12 @@ namespace mu2e {
       if(debug_level_ > 1) std::cout << "EdepAna: primary Edep " << edep << " difference " << primsim->startMomentum().e() - edep << std::endl;
 
       if(front_trk_sp) {
-        Hist->h_trk_front_energy_->Fill(front_trk_sp->momentum().mag(), Weight);
-        Hist->h_trk_front_energy_diff_->Fill(front_trk_sp->momentum().mag() - primsim->startMomentum().e(), Weight);
-        Hist->h_trk_front_energy_edep_diff_->Fill(edep - front_trk_sp->momentum().mag(), Weight);
-        if(debug_level_ > 1) std::cout << "EdepAna: front tracker StepPointMC energy " << front_trk_sp->momentum().mag() << " difference " << primsim->startMomentum().e() - front_trk_sp->momentum().mag() << std::endl;
+        Hist->h_trk_front_p_->Fill(front_trk_sp->momentum().mag(), Weight);
+        const float step_energy = energyFromStepPoint(primsim, front_trk_sp);
+        Hist->h_trk_front_energy_->Fill(step_energy, Weight);
+        Hist->h_trk_front_energy_diff_->Fill(step_energy - primsim->startMomentum().e(), Weight);
+        Hist->h_trk_front_energy_edep_diff_->Fill(edep - step_energy, Weight);
+        if(debug_level_ > 1) std::cout << "EdepAna: front tracker StepPointMC energy " << step_energy << " difference " << primsim->startMomentum().e() - step_energy << std::endl;
       }
     }
 
@@ -424,19 +414,20 @@ namespace mu2e {
       }
     }
 
-    double totalCaloE = 0.;
+    double totalCaloE(0.), totalCaloEVis(0.);
     if(shower_col_) {
       for(const auto& css : *shower_col_) {
-        const double e = css.energyDepBirks();
-        totalCaloE += e;
+        totalCaloEVis += css.energyDepBirks(); // visible energy
+        totalCaloE    += css.energyDepG4(); // total energy
       }
     }
 
     // Take the first primary as the main one for default histogramming
     info_.primsim = (primary_ && !primary_->primarySimParticles().empty()) ? &(*primary_->primarySimParticles().front()) : nullptr;
     info_.front_trk_sp = simTrkFrontStep(info_.primsim);
-    info_.primsim_edep = edepBySim(info_.primsim, true);
+    info_.primsim_edep = edepBySim(info_.primsim, true, true);
     info_.calo_total_edep = totalCaloE;
+    info_.calo_total_edep_vis = totalCaloEVis;
 
     info_.weight_ = 1.; // can be used to apply event weights if needed
 
@@ -449,6 +440,7 @@ namespace mu2e {
     data_.subrun = event.subRun();
     data_.event = event.event();
     data_.event_calo_edep = totalCaloE;
+    data_.event_calo_edep_vis = totalCaloEVis;
     data_.event_trk_edep  = totalTrackerE;
     data_.nprim = (primary_) ? int(primary_->primarySimParticles().size()) : 0;
     if(data_.nprim >= kMaxPrimaries) throw cet::exception("Analysis") << "Too many primary particles!"
@@ -458,18 +450,20 @@ namespace mu2e {
     // Store information for each primary
     for(int iprim = 0; iprim < data_.nprim; ++iprim) {
       const auto* sim = &(*primary_->primarySimParticles().at(iprim));
-      data_.prim_start_x  [iprim] = sim->startPosition().x();
-      data_.prim_start_y  [iprim] = sim->startPosition().y();
-      data_.prim_start_z  [iprim] = sim->startPosition().z();
-      data_.prim_start_px [iprim] = sim->startMomentum().x();
-      data_.prim_start_py [iprim] = sim->startMomentum().y();
-      data_.prim_start_pz [iprim] = sim->startMomentum().z();
-      data_.prim_start_e  [iprim] = sim->startMomentum().e();
-      data_.prim_start_m  [iprim] = sim->startMomentum().m();
-      data_.prim_start_pdg[iprim] = sim->pdgId();
-      data_.prim_calo_edep[iprim] = edepBySim(sim, true);
+      data_.prim_start_x      [iprim] = sim->startPosition().x();
+      data_.prim_start_y      [iprim] = sim->startPosition().y();
+      data_.prim_start_z      [iprim] = sim->startPosition().z();
+      data_.prim_start_px     [iprim] = sim->startMomentum().x();
+      data_.prim_start_py     [iprim] = sim->startMomentum().y();
+      data_.prim_start_pz     [iprim] = sim->startMomentum().z();
+      data_.prim_start_e      [iprim] = sim->startMomentum().e();
+      data_.prim_start_m      [iprim] = sim->startMomentum().m();
+      data_.prim_start_pdg    [iprim] = sim->pdgId();
+      data_.prim_calo_edep    [iprim] = edepBySim(sim, true);
+      data_.prim_calo_edep_vis[iprim] = edepBySim(sim, true, true);
       const auto front_trk_sp = simTrkFrontStep(sim);
-      data_.prim_trk_front_energy[iprim] = (front_trk_sp) ? front_trk_sp->momentum().mag() : 0.f;
+      data_.prim_trk_front_p     [iprim] = (front_trk_sp) ? front_trk_sp->momentum().mag() : 0.f;
+      data_.prim_trk_front_energy[iprim] = energyFromStepPoint(sim, front_trk_sp);
     }
     tree_->Fill();
 
@@ -479,7 +473,8 @@ namespace mu2e {
 
     total_events_ += info_.weight_;
     total_calo_edep_ += info_.weight_ * totalCaloE;
-    if(totalCaloE > 50.) events_above_50_mev_ += info_.weight_;
+    total_calo_edep_vis_ += info_.weight_ * totalCaloEVis;
+    if(totalCaloEVis > 50.) events_above_50_mev_ += info_.weight_;
     total_tracker_edep_ += info_.weight_ * totalTrackerE;
 
     if(debug_level_ > 0) watch_->StopTime("event info computation");
@@ -489,9 +484,9 @@ namespace mu2e {
     //-------------------------------------------------------------
 
     fillHistograms(hists_[0], info_.weight_);
-    if(totalCaloE >  1.) fillHistograms(hists_[1], info_.weight_);
-    if(totalCaloE > 10.) fillHistograms(hists_[2], info_.weight_);
-    if(totalCaloE > 50.) fillHistograms(hists_[3], info_.weight_);
+    if(totalCaloEVis >  1.) fillHistograms(hists_[1], info_.weight_);
+    if(totalCaloEVis > 10.) fillHistograms(hists_[2], info_.weight_);
+    if(totalCaloEVis > 50.) fillHistograms(hists_[3], info_.weight_);
     if(debug_level_ > 0) watch_->StopTime(__func__);
   }
 
@@ -550,11 +545,11 @@ namespace mu2e {
     // Report summary data
     //-------------------------------------------------------------
 
-    const double averageCaloEdep    = (total_events_ > 0) ? total_calo_edep_    / total_events_ : 0.;
-    const double averageCaloEdepGen = (ngen_         > 0) ? total_calo_edep_    / ngen_         : 0.;
-    const double averageTrkEdep     = (total_events_ > 0) ? total_tracker_edep_ / total_events_ : 0.;
-    const double averageTrkEdepGen  = (ngen_         > 0) ? total_tracker_edep_ / ngen_         : 0.;
-    const double eventRate          = (ngen_         > 0) ? total_events_       / ngen_         : 0.;
+    const double averageCaloEdep    = (total_events_ > 0) ? total_calo_edep_    / total_events_ : -1.;
+    const double averageCaloEdepGen = (ngen_         > 0) ? total_calo_edep_    / ngen_         : -1.;
+    const double averageTrkEdep     = (total_events_ > 0) ? total_tracker_edep_ / total_events_ : -1.;
+    const double averageTrkEdepGen  = (ngen_         > 0) ? total_tracker_edep_ / ngen_         : -1.;
+    const double eventRate          = (ngen_         > 0) ? total_events_       / ngen_         : -1.;
 
     std::cout
       << "EdepAna summary:\n"
