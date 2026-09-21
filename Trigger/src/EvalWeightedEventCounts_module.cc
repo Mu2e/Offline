@@ -42,29 +42,21 @@ public:
 
   using Parameters = art::EDAnalyzer::Table<Config>;
 
-  enum { kNOcc = 2, kNOccVar = 2 };
+  // one set of histograms, two variables in it
+  enum { kNOccVar = 2 };
 
   struct occupancyHist_ {
-    TH1F* _hOccInfo[kNOcc][kNOccVar];
-
-    occupancyHist_() {
-      for (int i = 0; i < kNOcc; ++i) {
-        for (int j = 0; j < kNOccVar; ++j) {
-          _hOccInfo[i][j] = NULL;
-        }
-      }
-    }
+    TH1F* _hOccInfo[kNOccVar] = {nullptr, nullptr};
   };
 
   explicit EvalWeightedEventCounts(const Parameters& config);
   virtual ~EvalWeightedEventCounts() {}
 
-  virtual void beginJob();
-  virtual void endJob();
+  void beginJob() override;
+  void endJob() override;
 
   // This is called for each event.
-  virtual void analyze(const art::Event& e);
-  virtual void beginRun(const art::Run& run);
+  void analyze(const art::Event& e) override;
 
   void bookHistograms();
   void bookOccupancyInfoHist(art::ServiceHandle<art::TFileService>& Tfs, occupancyHist_& Hist);
@@ -74,7 +66,6 @@ private:
   art::InputTag _evtWeightTag;
 
   std::string _tagName;
-  double _nPOT;
 
   occupancyHist_ _occupancyHist;
 
@@ -96,14 +87,13 @@ void EvalWeightedEventCounts::bookHistograms() {
 void EvalWeightedEventCounts::bookOccupancyInfoHist(art::ServiceHandle<art::TFileService>& Tfs,
                                                     occupancyHist_& Hist) {
 
-  int index_last = 0;
   art::TFileDirectory occInfoDir = Tfs->mkdir("occInfoGeneral");
-  Hist._hOccInfo[index_last][0] =
-      occInfoDir.make<TH1F>(Form("hInstLum_%i", index_last),
-                            "distrbution of instantaneous lum; p/pulse", 1000, _minPOT, _maxPOT);
-  Hist._hOccInfo[index_last][1] =
-      occInfoDir.make<TH1F>(Form("hInstLum2B_%i", index_last),
-                            "distrbution of instantaneous lum re-weighted in 2 batch-mode; p/pulse",
+  Hist._hOccInfo[0] =
+      occInfoDir.make<TH1F>("hInstLum_0",
+                            "distribution of instantaneous lum; p/pulse", 1000, _minPOT, _maxPOT);
+  Hist._hOccInfo[1] =
+      occInfoDir.make<TH1F>("hInstLum2B_0",
+                            "distribution of instantaneous lum re-weighted in 2 batch-mode; p/pulse",
                             1000, _minPOT, _maxPOT);
 }
 
@@ -114,24 +104,12 @@ void EvalWeightedEventCounts::beginJob() { bookHistograms(); }
 void EvalWeightedEventCounts::endJob() {
 
   //    evalTriggerRate();  Tag names must be specified in the fcl
-  printf("[%s::enJob] totWg    = %10.3e\n", _tagName.c_str(), _wgSum[0]);
-  printf("[%s::enJob] totEvtB1 = %10.3f\n", _tagName.c_str(), _wgSum[1]);
-  printf("[%s::enJob] totEvtB2 = %10.3f\n", _tagName.c_str(), _wgSum[2]);
+  printf("[%s::endJob] totWg    = %10.3e\n", _tagName.c_str(), _wgSum[0]);
+  printf("[%s::endJob] totEvtB1 = %10.3f\n", _tagName.c_str(), _wgSum[1]);
+  printf("[%s::endJob] totEvtB2 = %10.3f\n", _tagName.c_str(), _wgSum[2]);
 }
 
 //--------------------------------------------------------------------------------
-
-//================================================================
-void EvalWeightedEventCounts::beginRun(const art::Run& run) {
-  // get bfield
-  // GeomHandle<BFieldManager> bfmgr;
-  // GeomHandle<DetectorSystem> det;
-  // CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-  // _bz0 = bfmgr->getBField(vpoint_mu2e).z();
-
-  // mu2e::GeomHandle<mu2e::Tracker> th;
-  // _tracker  = th.get();
-}
 
 //--------------------------------------------------------------------------------
 void EvalWeightedEventCounts::analyze(const art::Event& event) {
@@ -160,7 +138,7 @@ void EvalWeightedEventCounts::analyze(const art::Event& event) {
 
   double p1 = lumi * xlognorm_norm_b1 * cut_off_norm_b1;
   _wgSum[1] += p1;
-  _occupancyHist._hOccInfo[0][0]->Fill(lumi, p1);
+  _occupancyHist._hOccInfo[0]->Fill(lumi, p1);
 
   double p2 = lumi * xlognorm_norm_b2 * cut_off_norm_b2;
   double oneBatchWg = ROOT::Math::lognormal_pdf(lumi, mub1, sigma) / cut_off_norm_b1;
@@ -168,7 +146,7 @@ void EvalWeightedEventCounts::analyze(const art::Event& event) {
 
   p2 *= twoBatchWg / oneBatchWg; // sample generated using one batch mode
 
-  _occupancyHist._hOccInfo[0][1]->Fill(lumi, p2);
+  _occupancyHist._hOccInfo[1]->Fill(lumi, p2);
   _wgSum[2] += p2;
 }
 

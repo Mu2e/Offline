@@ -14,7 +14,7 @@ namespace mu2e
   {
     public:
 
-    enum enum_type{unknown=0, unableToGetDataBlock=1, invalidPacket=2, wrongSubsystemID=3, errorUnpackingStatusPacket=4, errorUnpackingCrvHits=5, byteCountMismatch=6};
+    enum enum_type{unknown=0, unableToGetDataBlock=1, invalidPacket=2, wrongSubsystemID=3, errorUnpackingStatusPacket=4, errorUnpackingCrvHits=5, byteCountMismatch=6, invalidChannel=7, invalidDtcId=8, zeroBlockError=9};
     static std::string const& typeName();
     static std::map<enum_type,std::string> const& names();
   };

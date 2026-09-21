@@ -21,6 +21,8 @@
 #include "TMath.h"
 
 #include <iostream>
+#include <numeric>
+#include <vector>
 
 namespace mu2e {
 
@@ -61,7 +63,10 @@ namespace mu2e {
       void produce( art::Event& e);
 
     private:
-      void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol);
+      // origIndex maps a position in chcOrig to the corresponding index in chcol's parent
+      // collection; it is the identity unless the input was re-sorted first
+      void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
+                   std::vector<uint16_t> const& origIndex);
       void combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit);
 
       int           _debug;
@@ -143,20 +148,29 @@ namespace mu2e {
         // select hits based on flag
         panels[ch.strawId().uniquePanel()].push_back(ish);
       }
+      // chcolNew's parent is chcH (the unsorted input), so record where each sorted hit came
+      // from: without this the ComboHits would store positions in chcolsort while resolving
+      // them against chcOrig, silently corrupting per-hit provenance
+      std::vector<uint16_t> origIndex;
+      origIndex.reserve(nsh);
       for (uint16_t ipanel=0;ipanel<StrawId::_nupanels;ipanel++){
         for (uint16_t ish=0;ish<panels[ipanel].size();ish++){
           chcolsort.push_back(chcOrig.at(panels[ipanel][ish]));
+          origIndex.push_back(panels[ipanel][ish]);
         }
       }
-      combine(ewm, chcolsort, *chcolNew);
+      combine(ewm, chcolsort, *chcolNew, origIndex);
     }else{
-      combine(ewm, chcOrig, *chcolNew);
+      std::vector<uint16_t> origIndex(chcOrig.size());
+      std::iota(origIndex.begin(), origIndex.end(), 0);
+      combine(ewm, chcOrig, *chcolNew, origIndex);
     }
     event.put(std::move(chcolNew));
   }
 
 
-  void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol)
+  void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
+                                 std::vector<uint16_t> const& origIndex)
   {
 
     float minT = _minT;
@@ -175,7 +189,11 @@ namespace mu2e {
       if ( _testflag && hit1.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
       if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
-      combohit.init(hit1,ich);
+      combohit.init(hit1,origIndex[ich]);
+      // TimeDivision is a quality tag: StrawHitRecoUtils sets it only when the longitudinal
+      // position was actually measured, and leaves it off when StrawResponse had to clamp the
+      // position to the straw end.  It must therefore be propagated from the constituents.
+      bool tdiv = hit1.flag().hasAllProperties(StrawHitFlag::tdiv);
       int panel1 = hit1.strawId().uniquePanel();
 
       for (size_t jch=ich+1;jch<chcOrig.size();++jch) {
@@ -194,19 +212,20 @@ namespace mu2e {
         float wdchi = fabs(hit1.wireDist() - hit2.wireDist())/wderr;
         if (wdchi > _maxwdchi) continue;
 
-        bool ok = combohit.addIndex(jch);
+        bool ok = combohit.addIndex(origIndex[jch]);
         if (!ok){
           std::cout << "CombineStrawHits past limit" << std::endl;
         } else {
           isUsed[jch]= true;
+          tdiv &= hit2.flag().hasAllProperties(StrawHitFlag::tdiv);
         }
       }
-      // clear the flag bits; they are reset later
-      const static StrawHitFlag initialFlag("TimeDivision");
-      combohit._flag = initialFlag;
+      // clear the flag bits; they are reset below
+      combohit._flag = StrawHitFlag();
+      if(tdiv) combohit._flag.merge(StrawHitFlag::tdiv);
       int nch = combohit.nCombo();
       if(nch  < _minN || nch > _maxN){
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::nhitsel);
       // actually combine the hits if necessar, and make the cuts
@@ -214,19 +233,19 @@ namespace mu2e {
 
       auto time = _useTOT ? combohit.correctedTime() : combohit.time();
       if (time < minT || time > maxT ){
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::timesel);
 
       auto energy = combohit.energyDep();
       if( energy > _maxE || energy < _minE ) {
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::energysel);
 
       auto r2 = combohit.pos().Perp2();
       if( r2 < _minR2 || r2 > _maxR2 ) {
-        if(_filter)break;
+        if(_filter)continue;
       } else
         combohit._flag.merge(StrawHitFlag::radsel);
       combohit._mask = _mask;
@@ -239,7 +258,7 @@ namespace mu2e {
   void CombineStrawHits::combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit)
   {
     // simple sums to speed up the trigger
-    double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0);
+    double eacc(0),ctacc(0),dtacc(0),twtsum(0),ptacc(0),wacc(0),wacc2(0),wwtsum(0),vacc(0);
     double etacc[2] = {0,0};
     XYZVectorF midpos;
     combohit._nsh = 0;
@@ -249,7 +268,7 @@ namespace mu2e {
     {
       size_t index = combohit.index(ich);
       if (_debug > 3)std::cout << index << ", ";
-      if (index > chcOrig.size())
+      if (index >= chcOrig.size())
         throw cet::exception("RECO")<<"mu2e::CombineStrawHits: inconsistent index "<<std::endl;
 
       const ComboHit& ch = chcOrig[index];
@@ -261,6 +280,9 @@ namespace mu2e {
       dtacc += ch.driftTime();
       ptacc += ch.propTime();
       midpos += ch.centerPos();
+      // v is transverse to the wire, in the panel plane; the constituents of a combo all come
+      // from the same panel, so their uDir are parallel and their v variances simply average
+      vacc += ch.vVar();
       // weight time values by time error
       double twt = 1.0/(ch.timeVar());
       twtsum += twt;
@@ -290,10 +312,16 @@ namespace mu2e {
     combohit._wdist      = wacc/wwtsum;
     combohit._pos        = midpos + combohit._wdist*combohit.uDir();
     combohit._uvar       = 1.0/wwtsum + _uvar;
-    combohit._vvar       = 1.0/twtsum;
+    // _vvar is a position variance (ComboHit declares _uvar/_vvar/_wvar as the diagonals of the
+    // position covariance, and vVar() feeds uVar()*sin^2+vVar()*cos^2 rotations in RobustHelixFit
+    // and MergeHelices).  It previously took 1.0/twtsum, which is the *time* variance already
+    // stored in _timevar just above, so every multi-straw combo reported ns^2 where mm^2 was
+    // expected.
+    combohit._vvar       = vacc/nsh;
     // compute U chisquared
     unsigned ndof = nsh - 1; // u direction only
-    double chisq = wacc2 - wacc/wwtsum;
+    // weighted chi-square is sum(w*x^2) - (sum(w*x))^2/sum(w); the square on wacc was missing
+    double chisq = wacc2 - wacc*wacc/wwtsum;
     combohit._qual       = TMath::Prob(chisq,ndof);
 //-----------------------------------------------------------------------------
 // for combohits made out of 2 and more straw hits:

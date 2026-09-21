@@ -20,13 +20,12 @@ cet_build_plugin(MergeTriggerInfo art::module
 cet_build_plugin(PrescaleEvent art::module
     REG_SOURCE src/PrescaleEvent_module.cc
     LIBRARIES REG
-      artdaq-core-mu2e::Data
+      Offline::DataProducts
 )
 
 cet_build_plugin(ReadTriggerInfo art::module
     REG_SOURCE src/ReadTriggerInfo_module.cc
     LIBRARIES REG
-      
       Offline::BFieldGeom
       Offline::DataProducts
       Offline::GeometryService
@@ -36,13 +35,11 @@ cet_build_plugin(ReadTriggerInfo art::module
       Offline::RecoDataProducts
       Offline::TrackerGeom
       KinKal::Trajectory
-
 )
 
 cet_build_plugin(ReadTriggerPath art::module
     REG_SOURCE src/ReadTriggerPath_module.cc
     LIBRARIES REG
-      
       Offline::MCDataProducts
       Offline::RecoDataProducts
       Offline::Mu2eUtilities

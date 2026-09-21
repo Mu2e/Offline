@@ -129,7 +129,7 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     evtHdr->flags         = cfo.GetEventMode().isOnSpillFlagSet();
     evtHdr->eventDuration = cfoRecord.event_duration;
     TLOG(TLVL_DEBUG + 20) << "mode = " << evtHdr->mode << " (" << cfoRecord.event_mode << ")"
-			  << " ewt  = "<< evtHdr->ewt << " flags = " << int(evtHdr->flags)
+                          << " ewt  = "<< evtHdr->ewt << " flags = " << int(evtHdr->flags)
                           << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
     if(ewm_) {
       constexpr double tick = 25.; // clock ticks -> ns

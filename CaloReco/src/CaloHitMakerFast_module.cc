@@ -198,21 +198,23 @@ namespace mu2e {
    //--------------------------------------------------------------------------------------------------------------
    void CaloHitMakerFast::addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep)
    {
-       bool addNewHit(true);
        for (auto& pulse : pulseMap[crystalID])
        {
            if (std::fabs(pulse.time_ - time) > deltaTPulses_) continue;
 
-           addNewHit    = false;
            float ratio  = (eDep-pulse.eDep_)/(eDep+pulse.eDep_);
            float eMean  = (eDep+pulse.eDep_)/2.0;
            float sigmaR = 0.707*sqrt(1.0/eMean/nPEperMeV_ + noise2_/eMean/eMean);
 
-           if (fabs(ratio) < nSigmaNoise_*sigmaR) {pulse.add(time,eDep);}
-           else if (eDep>pulse.eDep_)             {pulse.time_=time; pulse.eDep_=eDep;}
-           break;
+           // Two SiPM readings of the same energy deposit agree within noise: combine them.
+           if (fabs(ratio) < nSigmaNoise_*sigmaR) {pulse.add(time,eDep); return;}
+
+           // In time but incompatible in energy: not a reading of the same deposit.
+           // Keep scanning for a compatible pulse; if none exists the digi becomes its
+           // own hit below, and downstream selections (e.g. minSiPMPerHit) judge it on
+           // its own nSiPM count.
        }
-       if (addNewHit) pulseMap[crystalID].push_back(HitInfo(time, eDep));
+       pulseMap[crystalID].push_back(HitInfo(time, eDep));
    }
 }
 

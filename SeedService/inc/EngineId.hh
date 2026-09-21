@@ -9,6 +9,7 @@
 //
 
 #include <string>
+#include <tuple>
 #include <iostream>
 
 namespace mu2e {
@@ -29,22 +30,16 @@ namespace mu2e {
 
       // Accept compiler written d'tor, copy c'tor and copy assignment.
 
+      // An id without an instance name is distinct from every id with one,
+      // so that each engine of a module receives its own seed.
       bool operator==( EngineId const& rhs ) const{
-        if ( moduleLabel  != rhs.moduleLabel  ) return false;
-        if ( instanceDefined && rhs.instanceDefined ) {
-          if ( instanceName != rhs.instanceName ) return false;
-        }
-        return true;
+        return std::tie(moduleLabel, instanceDefined, instanceName) ==
+          std::tie(rhs.moduleLabel, rhs.instanceDefined, rhs.instanceName);
       }
 
       bool operator<( EngineId const& rhs ) const{
-        if ( moduleLabel  < rhs.moduleLabel  ) return true;
-        if ( instanceDefined && rhs.instanceDefined ) {
-          if ( moduleLabel == rhs.moduleLabel  ) {
-            if ( instanceName < rhs.instanceName ) return true;
-          }
-        }
-        return false;
+        return std::tie(moduleLabel, instanceDefined, instanceName) <
+          std::tie(rhs.moduleLabel, rhs.instanceDefined, rhs.instanceName);
       }
 
       std::string moduleLabel;

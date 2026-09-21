@@ -1,0 +1,54 @@
+#include "Offline/CaloMC/fcl/prolog.fcl"
+#include "Offline/CaloReco/fcl/prolog.fcl"
+BEGIN_PROLOG
+
+CaloCosmicEnecalib : {
+    module_type : CaloCosmicEnecalib
+    diagLevel : 0
+    useMeV : false
+    CutNCryHit : 3
+    CutEnergyDep : 250.
+    LYSOcut : 500.
+    CutChi2Norm : 2.5
+    CaloClusterTag : CaloClusterMaker
+    CaloHitTag : CaloHitMaker
+    OutCalibFile : "MIPfile.dat"
+}
+
+CaloCosmicEnergy : {
+    module_type : CaloCosmicEnergy
+    diagLevel : 0
+    CutNCryHit : 3
+    CutEnergyDep : 10.
+    CutChi2Norm : 2.5
+    CaloClusterTag : CaloClusterMaker
+    CaloHitTag : CaloHitMaker
+    OutCalibFile : "calib_parameters.dat"
+    OutCalibFileAsym : "npe_noise.dat"
+}
+
+CaloT0Align : {
+    module_type : CaloT0Align
+    caloHitCollection : CaloHitMaker
+    caloClusterCollection : CaloClusterMaker
+    cluHits : 3
+    cryEmin : 15.
+    ncryCut : 7
+    iteration : "first"
+    fileT0 : "fileT0.dat"
+    fileTcor : "fileTcor.dat"
+    diagLevel : 0
+}
+
+CosmicsCalib: {
+    filters: {
+        CaloT0Align : @local::CaloT0Align
+    }
+    analyzers: {
+        CaloCosmicEnecalib : @local::CaloCosmicEnecalib
+        CaloCosmicEnergy : @local::CaloCosmicEnergy
+    }
+}
+
+
+END_PROLOG

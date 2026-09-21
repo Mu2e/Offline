@@ -64,6 +64,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <map>
 #include <vector>
 #include <memory>
 
@@ -196,11 +197,16 @@ namespace mu2e {
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> rgkseedcol(new KalSeedCollection );
     std::unique_ptr<KalSeedMCAssns> ksmca;
+    // KalSeedMCAssns is a single flat product spanning every KalSeedCollection SelectRecoMC was
+    // configured with, so it cannot be indexed by this module's position within its own input
+    // collection. Build the KalSeed -> KalSeedMC lookup once per event instead.
+    std::map<art::Ptr<KalSeed>,art::Ptr<KalSeedMC>> mcmap;
     // deal with MC
     if(fillMCAssns_){
       ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
       if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: No KalSeedMCAssns found" << endl;
       ksmca = std::unique_ptr<KalSeedMCAssns>(new KalSeedMCAssns);
+      for(auto const& assn : *ksmca_H) mcmap[assn.first] = assn.second;
     }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
@@ -246,11 +252,10 @@ namespace mu2e {
           rgkseedcol->push_back(rgks);
           if(fillMCAssns_){
             // find the MC assns
-            auto ksmcai = (*ksmca_H)[iseed];
             auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
-            // test this is the right ptr
-            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: wrong KalSeed ptr"<< std::endl;
-            auto mcseedp = ksmcai.second;
+            auto imc = mcmap.find(origksp);
+            if(imc == mcmap.end())throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: can't find MC associated with KalSeed"<< std::endl;
+            auto mcseedp = imc->second;
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
             ksmca->addSingle(rgksp,mcseedp);
             // add the original too

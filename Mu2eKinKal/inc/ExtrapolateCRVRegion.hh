@@ -125,8 +125,9 @@ namespace mu2e {
         if(!coincident(newinter.time_)) inters_.emplace_back(newinter,(int)isect,sector.whw_);
       } else if(newinter.onsurface_ && newinter.inbounds_) {
         retval |= trange.beyond(newinter.time_,tdir); // crossing just beyond this piece: keep extrapolating
-      } else if(!newinter.onsurface_ && tdir == TimeDir::backwards) {
-        if(time_to_sector > piece_span) retval = true; // far sector beyond this (short) piece: keep going
+      } else if(!newinter.onsurface_) {
+        // far sector beyond this (short) piece: keep going, in BOTH time directions.
+        if(time_to_sector > piece_span) retval = true;
       }
     }
     // --- strongback passive planes (minvnorm floor, like ExtrapolatePlanes) ---
@@ -140,8 +141,8 @@ namespace mu2e {
         if(!coincident(newinter.time_)) inters_.emplace_back(newinter,plane);
       } else if(newinter.onsurface_ && newinter.inbounds_) {
         retval |= trange.beyond(newinter.time_,tdir);
-      } else if(!newinter.onsurface_ && tdir == TimeDir::backwards) {
-        if(time_to_plane > piece_span) retval = true;
+      } else if(!newinter.onsurface_) {
+        if(time_to_plane > piece_span) retval = true; // as in the sector loop above
       }
     }
     // sort the crossings in the time direction so the KKExtrap loop adds them outermost-first

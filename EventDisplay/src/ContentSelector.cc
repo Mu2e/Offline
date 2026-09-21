@@ -70,6 +70,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedHitVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_hitEntries)
   {
@@ -266,7 +267,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 }
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
-template const mu2e::KalSeedCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
+template const mu2e::KalSeedCollection*     ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const

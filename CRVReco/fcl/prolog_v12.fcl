@@ -9,7 +9,8 @@ BEGIN_PROLOG
       histBins                  : 401
       histMin                   : 1799.5
       histMax                   : 2200.5
-      maxADCspread              : 5  #if firstSampleOnly: false
+      maxADCspread              : 5  #if the entire waveform is used for NZS data
+      maxADCspreadFirstTwoSamples : 3   #if only the first sample is used for ZS data (in this case, the cut is a check that the first sample is not already part of the pulse)
       tmpDBfileName             : "pedestals.txt"
     }
 

@@ -96,8 +96,8 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
       if (oltab.iov().inInterval(run, subrun)) {  // and in valid interval
         auto dblt = oltab;
         if (_verbose > 5)
-          cout << "DbEngine::update table found " << dblt.table().name()
-               << " in overrides " << endl;
+          cout << "DbEngine::update table " << dblt.table().name()
+               << " found in overrides as CID "<< dblt.cid() << endl;
         return dblt;
       }
     }
@@ -123,6 +123,8 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
         << " DbEngine::update failed to find tid " << tid << " for run:subrun "
         << run << ":" << subrun << "\n";
   }
+
+  bool tableWasInCache = true;
 
   // if it wasn't found in cache, try to read from database
   if (!ptr) {
@@ -153,6 +155,8 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
             << ", rc =" << rc << "\n";
       }
 
+      tableWasInCache = false;
+
       // make it const
       ptr = std::const_pointer_cast<const mu2e::DbTable, mu2e::DbTable>(ncptr);
       // push to cache
@@ -165,6 +169,15 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   }  // write lock goes out of scope
 
+  if (_verbose > 5) {
+    cout << "DbEngine::update table " << ptr->name();
+    if(tableWasInCache) {
+      cout << " was in cache";
+    } else {
+      cout << " was loaded";
+    }
+    cout << " as CID "<< cid << endl;
+  }
   // this code handles the case where an override takes effect
   // in the middle of a database IOV - remove the override
   // table interval from the database table's interval

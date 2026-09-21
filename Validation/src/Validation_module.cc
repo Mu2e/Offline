@@ -156,6 +156,7 @@ void mu2e::Validation::analyze(art::Event const& event) {
   analyzeProduct<HelixSeedCollection, ValHelixSeed>(_hxsd, event);
   analyzeProduct<KalSeedCollection, ValKalSeed>(_klsd, event);
   analyzeProduct<STMWaveformDigiCollection, ValSTMWaveformDigi>(_stmw, event);
+  analyzeProduct<STMWaveformDigiCollectionMap, ValSTMWaveformDigi>(_stmw, event);
   analyzeProduct<art::TriggerResults, ValTriggerResults>(_trrs, event);
   analyzeProduct<TriggerInfo, ValTriggerInfo>(_tris, event);
 }
@@ -184,6 +185,7 @@ int mu2e::Validation::analyzeProduct(std::vector<std::shared_ptr<V>>& list,
     if (fcn == "mu2e::BkgQualDetailmu2e::MVAStructs") fcn = "BkgQual";
     if (fcn.find("mu2e::", 0) == 0) fcn.erase(0, 6);
     if (fcn.find("art::", 0) == 0) fcn.erase(0, 5);
+    if (fcn.find("STMEventHeadermu2e::STMWaveformDigisstd::map", 0) == 0) fcn = "STMWaveformDigiCollectionMap";
 
     std::string inst = prov->productInstanceName();
     if (inst.size() == 0) inst = "noName";

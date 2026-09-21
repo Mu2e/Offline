@@ -1703,9 +1703,9 @@ int mu2e::DbTool::commitExtension(int& eid, std::string purpose,
 
   std::stringstream ss;
   if (_dryrun) {
-    ss << "new EID would be " << result;
+    ss << "new EID would be " << result << "\n";
   } else {
-    ss << "new EID is " << eid;
+    ss << "new EID is " << eid << "\n";
   }
   _result.append(ss.str());
 

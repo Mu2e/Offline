@@ -1,6 +1,9 @@
 //
 // An art service to provide cooperative timeout checks for event/module processing.
 //
+// Deadlines and cancellation state are kept per art schedule: every call names the
+// schedule it acts on, so concurrent schedules never touch the same state.
+//
 
 #ifndef TimeoutService_TimeoutWatchdog_hh
 #define TimeoutService_TimeoutWatchdog_hh
@@ -8,6 +11,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceDeclarationMacros.h"
 #include "art/Framework/Services/Registry/ServiceTable.h"
+#include "art/Utilities/PerScheduleContainer.h"
+#include "art/Utilities/ScheduleID.h"
 #include "fhiclcpp/types/Atom.h"
 
 #include <chrono>
@@ -56,20 +61,23 @@ public:
   TimeoutWatchdog& operator=(TimeoutWatchdog&&) = delete;
 
   // --- called by modules (cooperative) ---
-  void startEvent(art::Event const& e);
-  void startModule(std::string const& moduleLabel,
+  // sid is the schedule processing the event: scheduleID() in a legacy module,
+  // ProcessingFrame::scheduleID() in a shared one.
+  void startEvent(art::Event const& e, art::ScheduleID sid);
+  void startModule(art::ScheduleID sid,
+                   std::string const& moduleLabel,
                    std::optional<double> allowedTimeMs = std::nullopt);
-  void endModule();
+  void endModule(art::ScheduleID sid);
 
   // Returns true once the current event/module has exceeded a configured budget.
-  bool check();
+  bool check(art::ScheduleID sid);
 
   // Stop token that can be used in downstream cooperative cancellation points.
-  std::stop_token stopToken() const;
+  std::stop_token stopToken(art::ScheduleID sid) const;
 
   // helpers
-  std::optional<std::chrono::steady_clock::time_point> eventDeadline() const;
-  std::optional<std::chrono::steady_clock::time_point> moduleDeadline() const;
+  std::optional<std::chrono::steady_clock::time_point> eventDeadline(art::ScheduleID sid) const;
+  std::optional<std::chrono::steady_clock::time_point> moduleDeadline(art::ScheduleID sid) const;
 
   // RAII guard declaration (defined below)
   class ModuleGuard;
@@ -103,7 +111,9 @@ private:
 
   double moduleBudgetFor_(std::optional<double> allowedTimeMs) const;
 
-  State tls_;
+  // One State per schedule, sized at construction and never resized, so each
+  // schedule reads and writes only its own element.
+  art::PerScheduleContainer<State> states_;
 
   double eventTimeoutMs_;
   double moduleTimeoutMs_;
@@ -114,25 +124,28 @@ class TimeoutWatchdog::ModuleGuard {
 public:
   ModuleGuard(TimeoutWatchdog& svc,
               art::Event const& e,
+              art::ScheduleID sid,
               std::string const& moduleLabel,
               std::optional<double> allowedTimeMs = std::nullopt)
     : svc_{svc}
+    , sid_{sid}
   {
-    svc_.startEvent(e); // Only necessary if the service is configured with registerPreEventCallback=false
-    svc_.startModule(moduleLabel, allowedTimeMs);
+    svc_.startEvent(e, sid_); // Only necessary if the service is configured with registerPreEventCallback=false
+    svc_.startModule(sid_, moduleLabel, allowedTimeMs);
   }
 
   ~ModuleGuard() noexcept {
     // Never throw from destructor
-    svc_.endModule();
+    svc_.endModule(sid_);
   }
 
-  bool check() const { return svc_.check(); }
+  bool check() const { return svc_.check(sid_); }
 
-  std::stop_token stopToken() const { return svc_.stopToken(); }
+  std::stop_token stopToken() const { return svc_.stopToken(sid_); }
 
 private:
   TimeoutWatchdog& svc_;
+  art::ScheduleID sid_;
 };
 
 } // namespace mu2e
