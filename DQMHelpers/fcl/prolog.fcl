@@ -1,0 +1,42 @@
+# Generic DQMHelpers presets for a client's `hists` table (DQMHistSetFhicl in
+# Offline/DQMHelpers/inc/DQMHistSetConfig.hh).
+#
+# A preset chooses which copies of each histogram exist and which are
+# published. It never touches binning or which histograms exist: those are
+# fixed in the client, so every job of a client writes the same set.
+#
+#   #include "Offline/DQMHelpers/fcl/prolog.fcl"
+#   physics.analyzers.myDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
+#
+# To add rules to a preset, splice it and append:
+#   hists : { @table::DQMHelpers.Hists.Online  rules : [ ... ] }
+
+BEGIN_PROLOG
+
+DQMHelpers : {
+  Hists : {
+    # One job-integrated copy of everything: what offline files and hadd want.
+    JobOnly : { }
+
+    # Plus a copy of every histogram per subrun, named by run and subrun
+    # (bySubrun/<name>_rNNNNNN_sNNNNNN) so they survive hadd.
+    PerSubrun : {
+      rules : [
+        { match  : "*"
+          modes  : [ "job", "subrun" ]
+          subrun : { keep : -1  persist : true } }
+      ]
+    }
+
+    # Online base: titles say what range each copy holds, no metadata stamp in
+    # the function list, and the client's time-series graphs are booked. Add
+    # `rules` choosing what is published; with none, nothing is.
+    Online : {
+      annotateTitles : true
+      stampMetadata  : false
+      liveSeries     : true
+    }
+  }
+}
+
+END_PROLOG
