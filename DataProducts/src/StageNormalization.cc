@@ -1,6 +1,6 @@
 #include "Offline/DataProducts/inc/StageNormalization.hh"
+#include "cetlib_except/exception.h"
 #include <algorithm>
-#include <stdexcept>
 
 namespace mu2e {
 
@@ -15,11 +15,12 @@ namespace mu2e {
     }
     if(other.nStages() == 0) return *this;
     if(other.nStages() != nStages_)
-      throw std::runtime_error("StageNormalization: chain depths conflict");
+      throw cet::exception("BADINPUT")
+        << "StageNormalization: chain depths conflict\n";
     if(other.fromOrigin() != fromOrigin_)
-      throw std::runtime_error("StageNormalization: one of these reaches the "
-                               "origin and the other does not, so their "
-                               "generated counts are in different units");
+      throw cet::exception("BADINPUT")
+        << "StageNormalization: one of these reaches the origin and the other "
+        << "does not, so their generated counts are in different units\n";
     nGenEquivalent_ += other.nGenEquivalent();
     nPassed_ += other.nPassed();
     return *this;
@@ -39,9 +40,11 @@ namespace mu2e {
                                                   StageNormalization const& upstream,
                                                   uint64_t nPassed) {
     if(!upstream.valid())
-      throw std::runtime_error("StageNormalization: upstream normalization is unset; "
-                               "the resampled input carries no StageNormalization and "
-                               "no GenEventCount fallback was available");
+      throw cet::exception("BADINPUT")
+        << "StageNormalization: the upstream normalization is unset, so what "
+        << "one drawn event represents is unknown. Either the pool carries no "
+        << "StageNormalization, or the stated poolGenCount/poolEventCount were "
+        << "not usable.\n";
     // fromOrigin is carried, not assumed: a chain composed from a pool whose
     // totals stop at an intermediate stage stays honest all the way down.
     return StageNormalization(double(nDraws) * upstream.perEvent(), nPassed,

@@ -116,7 +116,11 @@ namespace mu2e {
       fhicl::OptionalAtom<art::InputTag> moduleLabel{ Name("moduleLabel"),
         Comment("SubRun StageNormalization of the RESAMPLED INPUT, as its "
                 "StageNormalizationCounter wrote it. The pool MUST carry this "
-                "product; use the genCounterLabel bootstrap if it does not.") };
+                "product; state poolGenCount + poolEventCount if it does not. "
+                "Note this form cannot see pool subruns that kept no events, "
+                "so it reads low by about exp(-mean events kept per subrun); "
+                "for a sparse pool state the totals instead, which cover every "
+                "subrun. See StageNormalization.hh.") };
       fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"),
         Comment("Output instance name for SubRun outputs"), "resampled" };
       // Bootstrap for a pool predating StageNormalization: state BOTH of the
@@ -330,6 +334,10 @@ namespace mu2e {
     double perEventSum_ = 0.;
     uint64_t nDraws_ = 0;
     unsigned upstreamStages_ = 0;
+    // Accumulated like upstreamStages_, and false as soon as ANY draw comes
+    // from a normalization that does not reach the origin -- a chain is only
+    // origin-referenced if every draw in it is.
+    bool upstreamFromOrigin_ = true;
     // Bootstrap for a pool with no StageNormalization of its own: both totals
     // are stated, and the draw count comes from resampledEvents_.
     bool bootstrapStageNorm_ = false;

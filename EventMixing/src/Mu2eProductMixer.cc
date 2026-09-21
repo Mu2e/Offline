@@ -280,6 +280,7 @@ namespace mu2e {
     nDraws_ = 0;
     nDrawsUnnormalized_ = 0;
     upstreamStages_ = 0;
+    upstreamFromOrigin_ = true;
   }
 
   //----------------------------------------------------------------
@@ -309,9 +310,14 @@ namespace mu2e {
         // stated generated count was beam draws -- wrong by the beam stage's
         // own efficiency, about 78 for Run1B, with nothing in the file to
         // show it.
+        // Through resample(), so the depth and the origin flag advance in one
+        // place rather than being recomputed here. nPassed is 0 for the same
+        // reason as in the forwarding branch: what survives to a given output
+        // stream is that stream's counter's business.
+        const StageNormalization pool(poolGenCount_, uint64_t(poolEventCount_),
+                                      poolStages_, poolFromOrigin_);
         auto norm = std::make_unique<StageNormalization>(
-          double(resampledEvents_) * poolGenCount_ / poolEventCount_, 0,
-          poolStages_ + 1, poolFromOrigin_);
+          StageNormalization::resample(resampledEvents_, pool, 0));
         sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
       } else {
       if(nDrawsUnnormalized_ > 0) {
@@ -322,7 +328,7 @@ namespace mu2e {
           << "Mu2eProductMixer/stageNormMixer: " << nDrawsUnnormalized_ << " of "
           << nDraws_ << " draws came from a subrun carrying no usable "
           << "StageNormalization (and no bootstrap applied). Configure "
-          << "genCounterLabel + poolEventCount for a pool predating the product, "
+          << "poolGenCount + poolEventCount for a pool predating the product, "
           << "or regenerate the pool with a StageNormalizationCounter.\n";
       }
       if(nDraws_ == 0 || perEventSum_ <= 0.) {
@@ -334,8 +340,8 @@ namespace mu2e {
       // generated events the DRAWS represent. What survives to a given
       // output stream is that stream's business, and its
       // StageNormalizationCounter fills nPassed in against this number.
-      auto norm = std::make_unique<StageNormalization>(perEventSum_, 0,
-                                                       upstreamStages_ + 1);
+      auto norm = std::make_unique<StageNormalization>(
+        perEventSum_, 0, upstreamStages_ + 1, upstreamFromOrigin_);
       sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
       }
     }
@@ -779,11 +785,17 @@ namespace mu2e {
       // origin-generated events.
       perEventSum_ += in[0]->perEvent();
       upstreamStages_ = std::max(upstreamStages_, in[0]->nStages());
+      upstreamFromOrigin_ = upstreamFromOrigin_ && in[0]->fromOrigin();
     } else {
-      // The product is there but was never seeded (nStages 0). Counted, not
-      // guessed at: endSubRun refuses rather than reporting a normalization
-      // built from only some of the draws.
-      ++nDrawsUnnormalized_;
+      // The product is there but was never seeded (nStages 0). Refused on the
+      // spot: a subrun-end failure makes a day-long job find out at its last
+      // step, and a normalization built from only some of the draws would be
+      // short by exactly the fraction that was skipped.
+      throw cet::exception("BADINPUT")
+        << "Mu2eProductMixer/stageNormMixer: draw " << nDraws_ << " comes from "
+        << "a subrun whose StageNormalization was never seeded (nStages 0), so "
+        << "what that event represents is unknown. The pool was written by a "
+        << "counter that found no normalization of its own.\n";
     }
     return false;
   }

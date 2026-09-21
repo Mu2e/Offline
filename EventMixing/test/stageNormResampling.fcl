@@ -13,7 +13,7 @@
 # preference and a fallback, because art aborts on a declared mix op whose
 # product the secondary lacks:
 #
-#   genCounterLabel : "genCounter"
+#   poolGenCount    : 12500          # GenEventCount total over fileNames
 #   poolEventCount  : 735            # events in ALL of fileNames
 
 #include "Offline/fcl/minimalMessageService.fcl"

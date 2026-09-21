@@ -35,10 +35,23 @@
 // FilterFraction so the two can be unified if that constraint is ever
 // relaxed.
 //
-// Caveat worth carrying wherever this number is used: nDraws * perEvent() is
-// correct in EXPECTATION. When nDraws exceeds the size of the pool the draws
-// reuse events, so the statistical error on anything derived from it is not
-// naive-Poisson.
+// Two caveats worth carrying wherever this number is used.
+//
+// nDraws * perEvent() is correct in EXPECTATION. When nDraws exceeds the size
+// of the pool the draws reuse events, so the statistical error on anything
+// derived from it is not naive-Poisson.
+//
+// And the forwarded form -- accumulating each drawn subrun's perEvent() -- is
+// blind to pool subruns that kept NO events: a mix op is only ever called for
+// a subrun something was drawn from, while the generated events of an empty
+// subrun still belong in the denominator. The result reads LOW by about
+// exp(-mu), mu being the mean events kept per pool subrun. It is nothing for a
+// dense pool (no empty file in 5000 for Run1B target stops) and 2.2% for
+// Run1B IPA stops, where 111 files of 5000 are empty. Stating the pool's
+// totals instead is unbiased, because they cover every subrun whether or not
+// it was drawn from -- so prefer that for a sparse pool, and note that the
+// small undeclared test productions this product is aimed at are exactly
+// where mu is smallest.
 //
 // Original author: Michael MacKenzie, 2026
 //
@@ -49,8 +62,11 @@
 namespace mu2e {
   class StageNormalization {
     public:
+      // No defaults: a normalization that does not say how deep it goes, or
+      // whether it reaches the origin, is what let a forwarded stage quietly
+      // re-assert the origin after a bootstrap had denied it.
       StageNormalization(double nGenEquivalent, uint64_t nPassed,
-                         unsigned nStages = 1, bool fromOrigin = true) :
+                         unsigned nStages, bool fromOrigin) :
         nGenEquivalent_(nGenEquivalent), nPassed_(nPassed), nStages_(nStages),
         fromOrigin_(fromOrigin) {}
       StageNormalization(){}

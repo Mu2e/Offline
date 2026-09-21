@@ -166,16 +166,15 @@ namespace mu2e {
       // input file by RootOutput. genCountIsOrigin says whether that count
       // reaches the origin -- it does not for a file that was resampled.
       auto h = sr.getHandle<GenEventCount>(genCountTag_);
-      if(h.isValid()) {
-        norm = StageNormalization(double(h->count()), nPassed_, 1,
-                                  genCountIsOrigin_);
-      } else {
-        mf::LogWarning("StageNormalizationCounter")
-          << "no GenEventCount '" << genCountTag_ << "' in this SubRun; "
-          << "writing an unseeded normalization (nStages=0). Set genCountTag, "
-          << "or upstreamTag for a resampling stage.";
-        norm = StageNormalization(0., nPassed_, 0, false);
+      if(!h.isValid()) {
+        throw cet::exception("BADCONFIG")
+          << "StageNormalizationCounter: no GenEventCount '" << genCountTag_
+          << "' in this SubRun. Set genCountTag to the counter this job runs, "
+          << "upstreamTag for a resampling stage, or countAsGenerated where "
+          << "the generated count has to be taken here.\n";
       }
+      norm = StageNormalization(double(h->count()), nPassed_, 1,
+                                genCountIsOrigin_);
     }
 
     if(diagLevel_ > 0) {
