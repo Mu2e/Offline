@@ -2,8 +2,9 @@
 //
 // Original Author: R. Mina
 
-#include "Offline/DQMHelpers/inc/DQMSegmentation.hh"
+#include "Offline/DQMHelpers/inc/DQMHistSet.hh"
 
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "TList.h"
@@ -12,10 +13,11 @@
 
 #include <algorithm>
 #include <sstream>
+#include <typeinfo>
 
 namespace mu2e {
 
-const char* DQMSegmentation::unitName(Unit u)
+const char* DQMHistSet::unitName(Unit u)
 {
   switch (u) {
     case Unit::Event:
@@ -28,7 +30,7 @@ const char* DQMSegmentation::unitName(Unit u)
   return "events";
 }
 
-bool DQMSegmentation::unitFromString(const std::string& s, Unit& u)
+bool DQMHistSet::unitFromString(const std::string& s, Unit& u)
 {
   if (s == "event" || s == "events") {
     u = Unit::Event;
@@ -47,7 +49,7 @@ bool DQMSegmentation::unitFromString(const std::string& s, Unit& u)
 
 // '*' matches any run of characters, '?' exactly one. Backtracking on the last
 // '*' keeps it linear in practice for the patterns a rule list carries.
-bool DQMSegmentation::globMatch(const std::string& pattern,
+bool DQMHistSet::globMatch(const std::string& pattern,
                                 const std::string& text)
 {
   std::size_t p = 0, t = 0, star = std::string::npos, mark = 0;
@@ -73,7 +75,7 @@ bool DQMSegmentation::globMatch(const std::string& pattern,
 
 // ROOT titles carry the axis labels after the first ';', so the tag has to go
 // in front of it or the x-axis label silently becomes part of the title.
-std::string DQMSegmentation::annotate(const std::string& title,
+std::string DQMHistSet::annotate(const std::string& title,
                                       const std::string& tag)
 {
   if (tag.empty()) {
@@ -86,7 +88,7 @@ std::string DQMSegmentation::annotate(const std::string& title,
   return title.substr(0, semi) + " " + tag + title.substr(semi);
 }
 
-std::string DQMSegmentation::stampText(const Range& range, const char* mode,
+std::string DQMHistSet::stampText(const Range& range, const char* mode,
                                        int index)
 {
   std::ostringstream os;
@@ -98,7 +100,7 @@ std::string DQMSegmentation::stampText(const Range& range, const char* mode,
   return os.str();
 }
 
-void DQMSegmentation::note(Range& range, std::size_t event,
+void DQMHistSet::note(Range& range, std::size_t event,
                            unsigned long long clock, int run, int subrun)
 {
   if (!range.started) {
@@ -113,12 +115,47 @@ void DQMSegmentation::note(Range& range, std::size_t event,
   ++range.nEvents;
 }
 
-void DQMSegmentation::Book(art::TFileDirectory dir)
+void DQMHistSet::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
+  if (!clientName_.empty()) {
+    const std::string stamp =
+        clientName_ + " binningVersion=" + std::to_string(binningVersion_);
+    dir_->makeAndRegister<TNamed>("dqmBinningVersion", stamp.c_str(),
+                                  "dqmBinningVersion", stamp.c_str());
+  }
+  if (config_.autoNEvents) {
+    h_nEvents_ = book1<TH1F>("nEvents", "Events processed;;Events",
+                             DQMAxis(1, 0.5, 1.5));
+  }
 }
 
-art::TFileDirectory& DQMSegmentation::directoryFor(const std::string& dirPath)
+void DQMHistSet::SetVersion(const std::string& clientName, int binningVersion)
+{
+  clientName_ = clientName;
+  binningVersion_ = binningVersion;
+}
+
+void DQMHistSet::WriteCatalogue(std::ostream& out) const
+{
+  out << "# " << clientName_ << " binningVersion=" << binningVersion_ << "\n";
+  for (const auto& owner : entries_) {
+    const Entry& entry = *owner;
+    const TH1* h = entry.job != nullptr ? entry.job : entry.windowLive;
+    if (h == nullptr) {
+      continue;
+    }
+    out << entry.path << " " << h->ClassName() << " x=" << h->GetNbinsX() << ","
+        << h->GetXaxis()->GetXmin() << "," << h->GetXaxis()->GetXmax();
+    if (h->GetDimension() > 1) {
+      out << " y=" << h->GetNbinsY() << "," << h->GetYaxis()->GetXmin() << ","
+          << h->GetYaxis()->GetXmax();
+    }
+    out << "\n";
+  }
+}
+
+art::TFileDirectory& DQMHistSet::directoryFor(const std::string& dirPath)
 {
   if (dirPath.empty()) {
     return *dir_;
@@ -138,7 +175,7 @@ art::TFileDirectory& DQMSegmentation::directoryFor(const std::string& dirPath)
   return inserted.first->second;
 }
 
-const DQMSegmentation::Rule& DQMSegmentation::ruleFor(const std::string& path) const
+const DQMHistSet::Rule& DQMHistSet::ruleFor(const std::string& path) const
 {
   for (const auto& rule : config_.rules) {
     if (globMatch(rule.match, path)) {
@@ -148,7 +185,7 @@ const DQMSegmentation::Rule& DQMSegmentation::ruleFor(const std::string& path) c
   return defaultRule_;
 }
 
-TH1* DQMSegmentation::create(Entry& entry, const std::string& dirPath,
+TH1* DQMHistSet::create(Entry& entry, const std::string& dirPath,
                              const std::string& name, bool persist)
 {
   if (persist) {
@@ -161,7 +198,7 @@ TH1* DQMSegmentation::create(Entry& entry, const std::string& dirPath,
   return raw;
 }
 
-void DQMSegmentation::dropOwned(TH1* h)
+void DQMHistSet::dropOwned(TH1* h)
 {
   auto it = std::find_if(owned_.begin(), owned_.end(),
                          [h](const std::unique_ptr<TH1>& p) { return p.get() == h; });
@@ -170,7 +207,7 @@ void DQMSegmentation::dropOwned(TH1* h)
   }
 }
 
-void DQMSegmentation::refreshTargets(Entry& entry)
+void DQMHistSet::refreshTargets(Entry& entry)
 {
   entry.targets.clear();
   entry.targets.add(entry.job);
@@ -181,23 +218,31 @@ void DQMSegmentation::refreshTargets(Entry& entry)
   }
 }
 
-DQMSegmentation::Entry* DQMSegmentation::addEntry(const std::string& path,
+DQMHistSet::Entry* DQMHistSet::addEntry(const std::string& path,
                                                   const std::string& title,
                                                   DirFactory makeInDir,
-                                                  OwnedFactory makeOwned)
+                                                  OwnedFactory makeOwned,
+                                                  bool summary)
 {
   if (!dir_) {
     return nullptr;
   }
+  if (frozen_ && config_.strictBooking) {
+    throw cet::exception("DQMHistSet")
+        << "booking '" << path << "' after FreezeBooking(): the histogram set "
+        << "must not depend on the input. Book it in the client's book().\n";
+  }
   auto existing = byPath_.find(path);
   if (existing != byPath_.end()) {
+    if (config_.strictBooking) {
+      throw cet::exception("DQMHistSet")
+          << "'" << path << "' is booked twice" << (clientName_.empty() ? "" : " in ")
+          << clientName_ << ".\n";
+    }
     return existing->second;
   }
 
-  const Rule& rule = ruleFor(path);
-  if (!rule.enabled) {
-    return nullptr;  //handle stays empty; every fill through it is a no-op
-  }
+  const Rule& rule = summary ? defaultRule_ : ruleFor(path);
 
   auto owner = std::make_unique<Entry>();
   Entry& entry = *owner;
@@ -215,9 +260,10 @@ DQMSegmentation::Entry* DQMSegmentation::addEntry(const std::string& path,
       entry.dirPath.empty() ? config_.segmentDir
                             : entry.dirPath + "/" + config_.segmentDir;
 
-  if (rule.job) {
-    entry.job = create(entry, entry.dirPath, entry.base, rule.jobPersist);
-  }
+  // The job copy always exists: accessors return it, so a rule that leaves
+  // "job" out of its modes must not turn them into null pointers. The rule
+  // decides only whether the copy is written to the file.
+  entry.job = create(entry, entry.dirPath, entry.base, rule.job && rule.jobPersist);
 
   if (rule.subrun.enabled) {
     entry.subrunLive = create(entry, entry.dirPath, entry.base + "_sub",
@@ -264,7 +310,7 @@ DQMSegmentation::Entry* DQMSegmentation::addEntry(const std::string& path,
   return raw;
 }
 
-unsigned long long DQMSegmentation::clockFor(const Entry& entry) const
+unsigned long long DQMHistSet::clockFor(const Entry& entry) const
 {
   switch (entry.rule.window.unit) {
     case Unit::Event:
@@ -277,7 +323,7 @@ unsigned long long DQMSegmentation::clockFor(const Entry& entry) const
   return static_cast<unsigned long long>(currentEvent_);
 }
 
-void DQMSegmentation::Advance(std::size_t eventIndex, std::optional<uint64_t> ewt)
+void DQMHistSet::Advance(std::size_t eventIndex, std::optional<uint64_t> ewt)
 {
   currentEvent_ = eventIndex;
   if (ewt.has_value()) {
@@ -292,7 +338,7 @@ void DQMSegmentation::Advance(std::size_t eventIndex, std::optional<uint64_t> ew
     if (entry.rule.window.enabled && entry.rule.window.unit == Unit::Ewt &&
         !haveEwt_ && !ewtFallback_) {
       ewtFallback_ = true;
-      mf::LogWarning("DQMSegmentation")
+      mf::LogWarning("DQMHistSet")
           << "a window rule asks for unit \"ewt\" but the input carries no event "
           << "window tag (typical MC). Falling back to counting events for the "
           << "window clock. Reported once per job.";
@@ -315,9 +361,14 @@ void DQMSegmentation::Advance(std::size_t eventIndex, std::optional<uint64_t> ew
       note(entry.liveRange, eventIndex, clock, run_, subrun_);
     }
   }
+
+  //after the rotation, so the event lands in the window it belongs to
+  if (config_.autoNEvents) {
+    h_nEvents_.Fill(1.f);
+  }
 }
 
-void DQMSegmentation::advanceWindow(Entry& entry, unsigned long long clock)
+void DQMHistSet::advanceWindow(Entry& entry, unsigned long long clock)
 {
   if (!entry.windowStarted) {
     entry.windowStarted = true;
@@ -361,7 +412,7 @@ void DQMSegmentation::advanceWindow(Entry& entry, unsigned long long clock)
                    nRotations * entry.subBlockWidth;
 }
 
-void DQMSegmentation::rotateSubBlock(Entry& entry, unsigned long long /*clock*/)
+void DQMHistSet::rotateSubBlock(Entry& entry, unsigned long long /*clock*/)
 {
   ++entry.completedSubBlocks;
   if (entry.completedSubBlocks % entry.subBlocks.size() == 0) {
@@ -378,7 +429,7 @@ void DQMSegmentation::rotateSubBlock(Entry& entry, unsigned long long /*clock*/)
   refreshTargets(entry);
 }
 
-void DQMSegmentation::archiveSpan(Entry& entry)
+void DQMHistSet::archiveSpan(Entry& entry)
 {
   if (entry.windowArchive.empty()) {
     return;
@@ -403,7 +454,7 @@ void DQMSegmentation::archiveSpan(Entry& entry)
   label(entry, entry.windowArchive[0], entry.archiveRange[0], "window", 1);
 }
 
-void DQMSegmentation::rebuildLive(Entry& entry)
+void DQMHistSet::rebuildLive(Entry& entry)
 {
   if (entry.windowLive == nullptr) {
     return;
@@ -433,13 +484,13 @@ void DQMSegmentation::rebuildLive(Entry& entry)
   label(entry, entry.windowLive, entry.liveRange, "windowLive", 0);
 }
 
-void DQMSegmentation::BeginSubRun(int run, int subrun)
+void DQMHistSet::BeginSubRun(int run, int subrun)
 {
   run_ = run;
   subrun_ = subrun;
 }
 
-void DQMSegmentation::EndSubRun()
+void DQMHistSet::EndSubRun()
 {
   for (Entry* owner : segmented_) {
     Entry& entry = *owner;
@@ -488,7 +539,7 @@ void DQMSegmentation::EndSubRun()
   ++subrunClock_;
 }
 
-void DQMSegmentation::label(Entry& entry, TH1* h, const Range& range,
+void DQMHistSet::label(Entry& entry, TH1* h, const Range& range,
                             const char* mode, int index)
 {
   if (h == nullptr) {
@@ -547,7 +598,7 @@ void DQMSegmentation::label(Entry& entry, TH1* h, const Range& range,
   functions->Add(new TNamed("dqmSegment", stampText(range, mode, index).c_str()));
 }
 
-void DQMSegmentation::labelAll(Entry& entry)
+void DQMHistSet::labelAll(Entry& entry)
 {
   label(entry, entry.job, entry.jobRange, "job", 0);
   label(entry, entry.subrunLive, entry.subrunRange, "subrunLive", 0);
@@ -558,7 +609,7 @@ void DQMSegmentation::labelAll(Entry& entry)
   }
 }
 
-void DQMSegmentation::RefreshLabels()
+void DQMHistSet::RefreshLabels()
 {
   for (Entry* owner : segmented_) {
     Entry& entry = *owner;
@@ -568,7 +619,7 @@ void DQMSegmentation::RefreshLabels()
   }
 }
 
-void DQMSegmentation::Finalize()
+void DQMHistSet::Finalize()
 {
   for (Entry* owner : segmented_) {
     Entry& entry = *owner;
@@ -578,7 +629,7 @@ void DQMSegmentation::Finalize()
   }
 }
 
-void DQMSegmentation::ResetContents()
+void DQMHistSet::ResetContents()
 {
   auto clear = [](TH1* h) {
     if (h != nullptr) {
@@ -615,7 +666,7 @@ void DQMSegmentation::ResetContents()
   }
 }
 
-std::vector<TH1*> DQMSegmentation::copies(const std::string& path) const
+std::vector<TH1*> DQMHistSet::copies(const std::string& path) const
 {
   std::vector<TH1*> out;
   auto it = byPath_.find(path);
@@ -641,7 +692,7 @@ std::vector<TH1*> DQMSegmentation::copies(const std::string& path) const
   return out;
 }
 
-std::vector<TH1*> DQMSegmentation::allCopies() const
+std::vector<TH1*> DQMHistSet::allCopies() const
 {
   std::vector<TH1*> out;
   for (const auto& owner : entries_) {
@@ -652,7 +703,7 @@ std::vector<TH1*> DQMSegmentation::allCopies() const
   return out;
 }
 
-std::map<std::string, std::vector<TH1*>> DQMSegmentation::publishedCopies() const
+std::map<std::string, std::vector<TH1*>> DQMHistSet::publishedCopies() const
 {
   std::map<std::string, std::vector<TH1*>> out;
   for (const auto& owner : entries_) {
@@ -670,7 +721,11 @@ std::map<std::string, std::vector<TH1*>> DQMSegmentation::publishedCopies() cons
     const std::string& archiveGroup =
         entry.rule.archiveGroup.empty() ? entry.rule.group : entry.rule.archiveGroup;
     // Same order as copies(), so an unset archiveGroup publishes exactly as before.
-    add(entry.job, entry.rule.group);
+    // The job copy now always exists so the accessors never return null, but a
+    // rule that did not ask for "job" does not publish it.
+    if (entry.rule.job) {
+      add(entry.job, entry.rule.group);
+    }
     add(entry.subrunLive, entry.rule.group);
     for (TH1* h : entry.subrunArchive) {
       add(h, archiveGroup);
@@ -683,7 +738,7 @@ std::map<std::string, std::vector<TH1*>> DQMSegmentation::publishedCopies() cons
   return out;
 }
 
-TH1* DQMSegmentation::live(const std::string& path) const
+TH1* DQMHistSet::live(const std::string& path) const
 {
   auto it = byPath_.find(path);
   if (it == byPath_.end()) {

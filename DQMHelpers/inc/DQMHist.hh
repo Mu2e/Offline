@@ -1,6 +1,6 @@
 #ifndef DQMHelpers_inc_DQMHist_hh
 #define DQMHelpers_inc_DQMHist_hh
-// Lightweight handles returned by DQMSegmentation::book*. A handle fans one
+// Lightweight handles returned by DQMHistSet::book*. A handle fans one
 // Fill out to every copy of that histogram the FHiCL segmentation asked for
 // (job, current subrun, rolling window, current window sub-block), so helper
 // code fills a histogram the same way whether it is segmented or not.
@@ -13,7 +13,7 @@
 
 namespace mu2e {
 
-// Fill targets for one booked histogram. DQMSegmentation owns this and
+// Fill targets for one booked histogram. DQMHistSet owns this and
 // rewrites h[] when the window ring rotates; handles read it at fill time, so
 // they never go stale. Four is the most copies a single fill can reach.
 struct DQMHistTargets {
@@ -32,10 +32,10 @@ struct DQMHistTargets {
 // Common part of both handles. `H*` conversion and operator-> both give the
 // job copy, so existing accessors and null checks keep working unchanged.
 template <class H>
-class DQMHistBase {
+class DQMHBase {
 public:
-  DQMHistBase() = default;
-  explicit DQMHistBase(const DQMHistTargets* targets, H* job) :
+  DQMHBase() = default;
+  explicit DQMHBase(const DQMHistTargets* targets, H* job) :
       targets_(targets), job_(job)
   {}
 
@@ -71,9 +71,9 @@ protected:
 
 // 1D: Fill(x) and Fill(x, weight).
 template <class H>
-class DQMHist1 : public DQMHistBase<H> {
+class DQMH1 : public DQMHBase<H> {
 public:
-  using DQMHistBase<H>::DQMHistBase;
+  using DQMHBase<H>::DQMHBase;
 
   void Fill(double x) const
   {
@@ -101,9 +101,9 @@ public:
 // 2D: Fill(x, y) and Fill(x, y, weight). Kept a separate type so a 2-argument
 // fill cannot silently mean "x with weight" on one hist and "x, y" on another.
 template <class H>
-class DQMHist2 : public DQMHistBase<H> {
+class DQMH2 : public DQMHBase<H> {
 public:
-  using DQMHistBase<H>::DQMHistBase;
+  using DQMHBase<H>::DQMHBase;
 
   void Fill(double x, double y) const
   {

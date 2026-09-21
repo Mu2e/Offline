@@ -27,19 +27,9 @@ BEGIN_PROLOG
       module_type                            : CrvDQMcollector
       useDQMcollector                        : true
       crvDigiModuleLabel                     : "CrvDigi"
-      crvStatusModuleLabel                   : "CrvDigi"
-      crvRecoPulsesModuleLabel               : "CrvRecoPulses"
+      #crvRecoPulsesModuleLabel               : "CrvRecoPulses"
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvDaqErrorModuleLabel                 : "CrvDigi"
-      crvDigiDQMDir                          : "CRVDigiDQM"
-      crvStatusDQMDir                        : "CRVStatusDQM"
-      crvRecoDQMDir                          : ""     # module directory, where the PE/MPV hists have always lived
-      # One block per helper. Nested because the helpers share parameter names
-      # (fillInclusive is in both the digi and reco configs), and so that each
-      # carries its own optional segmentation block.
-      crvDigiDQM   : { kppReadout : true }   # KPP FEB-axis sizing (ROC 1-2)
-      crvRecoDQM   : { }                     # writePerChannelPE : true for the ~50k expert spectra
-      crvStatusDQM : { }
     }
 
     CrvRecoPulses:

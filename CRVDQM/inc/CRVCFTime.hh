@@ -1,8 +1,14 @@
-#ifndef DQMHelpers_inc_CRVCFTime_hh
-#define DQMHelpers_inc_CRVCFTime_hh
+#ifndef CRVDQM_inc_CRVCFTime_hh
+#define CRVDQM_inc_CRVCFTime_hh
 // Constant-fraction timing for CRV waveforms. Returns the time within the
-// waveform in ns; the caller adds startTDC * digitizationPeriod.
+// waveform in ns; the caller adds startTDC * CRVDigitizationPeriod.
 // Ported from otsdaq-mu2e-crv ArtModules/CrvCFTime.hh (mu2e/ots_ops).
+//
+// The threshold is a fraction of the waveform's global maximum, crossed on the
+// way up to that maximum. For a waveform holding two pulses it times the
+// larger one, which need not be the first.
+
+#include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -11,8 +17,6 @@
 #include <vector>
 
 namespace mu2e {
-
-constexpr double kDigitizationPeriodNs = 12.5; // ns per TDC count / ADC sample
 
 struct CFResult {
   double time_ns{
@@ -23,9 +27,9 @@ struct CFResult {
 };
 
 inline CFResult cfTime(const std::vector<int16_t>& adcs,
-                       double fraction = 0.20,
-                       int minAmplitude = 0,
-                       double digitizationPeriod = kDigitizationPeriodNs)
+                       double fraction,
+                       int minAmplitude,
+                       double digitizationPeriod = CRVDigitizationPeriod)
 {
   CFResult r;
   if (adcs.size() < 3) {
@@ -61,4 +65,4 @@ inline CFResult cfTime(const std::vector<int16_t>& adcs,
 
 } // namespace mu2e
 
-#endif /* DQMHelpers_inc_CRVCFTime_hh */
+#endif /* CRVDQM_inc_CRVCFTime_hh */

@@ -1,5 +1,5 @@
-#ifndef DQMHelpers_inc_DQMSegmentation_hh
-#define DQMHelpers_inc_DQMSegmentation_hh
+#ifndef DQMHelpers_inc_DQMHistSet_hh
+#define DQMHelpers_inc_DQMHistSet_hh
 // FHiCL-driven histogram segmentation for the shared DQM helpers.
 //
 // A helper books every histogram through this registry instead of calling
@@ -24,14 +24,17 @@
 //
 // Original Author: R. Mina
 
+#include "Offline/DQMHelpers/inc/DQMAxis.hh"
 #include "Offline/DQMHelpers/inc/DQMHist.hh"
 
 #include "art_root_io/TFileDirectory.h"
 
 #include "TH1.h"
+#include "TH1F.h"
 
 #include <cstdint>
 #include <functional>
+#include <ostream>
 #include <map>
 #include <memory>
 #include <optional>
@@ -40,7 +43,7 @@
 
 namespace mu2e {
 
-class DQMSegmentation {
+class DQMHistSet {
 public:
   enum class Unit { Event, Ewt, SubRun };
 
@@ -65,9 +68,10 @@ public:
     bool persistLive{false};  //write the live copy
   };
 
+  // There is no "enabled": FHiCL chooses copies of a histogram, never whether
+  // it exists, so every job of a client writes the same set.
   struct Rule {
     std::string match{"*"};   //glob over the directory-qualified histogram path
-    bool enabled{true};       //false: do not book the histogram at all
     bool job{true};
     bool jobPersist{true};
     SubRunConfig subrun{};
@@ -88,6 +92,14 @@ public:
     bool stampMetadata{true};
     std::string subrunDir{"bySubrun"};
     std::string segmentDir{"segments"};
+    // Refuse a book*() after FreezeBooking(), or a second booking of one path:
+    // the histogram set must not depend on what the input happens to contain.
+    // DQMClient turns both of these on.
+    bool strictBooking{false};
+    // Book and fill "nEvents" here rather than in each client.
+    bool autoNEvents{false};
+    // Book the client's DQMSeries (online only; graphs do not merge).
+    bool liveSeries{false};
     std::vector<Rule> rules{};
   };
 
@@ -104,8 +116,8 @@ public:
     bool started{false};
   };
 
-  DQMSegmentation() = default;
-  explicit DQMSegmentation(const Config& config) : config_(config) {}
+  DQMHistSet() = default;
+  explicit DQMHistSet(const Config& config) : config_(config) {}
 
   void SetConfig(const Config& config) { config_ = config; }
   const Config& config() const { return config_; }
@@ -114,15 +126,32 @@ public:
   void Book(art::TFileDirectory dir);
   bool booked() const { return dir_.has_value(); }
 
-  // `path` may name a subdirectory, e.g. "timing_fpga/dt_feb01_fpga0_fpga1".
-  // Rules match against that whole path. Booking after the job has started is
-  // allowed -- the per-FPGA timing hists are created on first use.
-  template <class H, class... Args>
-  DQMHist1<H> book1(const std::string& path, const std::string& title,
-                    Args... args);
-  template <class H, class... Args>
-  DQMHist2<H> book2(const std::string& path, const std::string& title,
-                    Args... args);
+  // Identity of the client filling this set, written into the output as
+  // dqmBinningVersion. A merging or metrics tool refuses to combine versions.
+  void SetVersion(const std::string& clientName, int binningVersion);
+  // No histogram may be booked after this; see Config::strictBooking.
+  void FreezeBooking() { frozen_ = true; }
+  // name, type and axes of every booked histogram, one per line: the reference
+  // that a fixed-binning check compares against.
+  void WriteCatalogue(std::ostream& out) const;
+
+  // `path` may name a subdirectory, e.g. "timing/dtFpgaPairs". Rules match
+  // against that whole path. Binning comes only from DQMAxis constants, so it
+  // is reviewable in the client header and dumped by WriteCatalogue.
+  template <class H>
+  DQMH1<H> book1(const std::string& path, const std::string& title,
+                 const DQMAxis& x);
+  template <class H>
+  DQMH2<H> book2(const std::string& path, const std::string& title,
+                 const DQMAxis& x, const DQMAxis& y);
+  // A summary filled once at end of job from other histograms (a fit result, a
+  // rate). It takes no rule: segment copies of it would all be identical.
+  template <class H>
+  DQMH1<H> bookSummary1(const std::string& path, const std::string& title,
+                        const DQMAxis& x);
+  template <class H>
+  DQMH2<H> bookSummary2(const std::string& path, const std::string& title,
+                        const DQMAxis& x, const DQMAxis& y);
 
   // Clock hooks. Advance() must be called once per event, before any fill, so
   // the window ring rotates between events rather than inside one.
@@ -207,7 +236,10 @@ private:
   TH1* create(Entry& entry, const std::string& dirPath, const std::string& name,
               bool persist);
   Entry* addEntry(const std::string& path, const std::string& title,
-                  DirFactory makeInDir, OwnedFactory makeOwned);
+                  DirFactory makeInDir, OwnedFactory makeOwned, bool summary);
+  template <class H, class... Args>
+  Entry* bookEntry(const std::string& path, const std::string& title,
+                   bool summary, Args... args);
   void refreshTargets(Entry& entry);
   void dropOwned(TH1* h);
   static void note(Range& range, std::size_t event, unsigned long long clock,
@@ -240,11 +272,16 @@ private:
   int subrun_{-1};
   unsigned long long subrunClock_{0};
   Rule defaultRule_{};
+  bool frozen_{false};
+  std::string clientName_{};
+  int binningVersion_{0};
+  DQMH1<TH1F> h_nEvents_;
 };
 
 template <class H, class... Args>
-DQMHist1<H> DQMSegmentation::book1(const std::string& path,
-                                   const std::string& title, Args... args)
+DQMHistSet::Entry* DQMHistSet::bookEntry(const std::string& path,
+                                         const std::string& title, bool summary,
+                                         Args... args)
 {
   auto inDir = [args...](art::TFileDirectory& d, const std::string& n,
                          const std::string& t) -> TH1* {
@@ -256,34 +293,41 @@ DQMHist1<H> DQMSegmentation::book1(const std::string& path,
     h->SetDirectory(nullptr);
     return h;
   };
-  Entry* e = addEntry(path, title, inDir, owned);
-  if (e == nullptr) {
-    return DQMHist1<H>();
-  }
-  return DQMHist1<H>(&e->targets, static_cast<H*>(e->job));
+  return addEntry(path, title, inDir, owned, summary);
 }
 
-template <class H, class... Args>
-DQMHist2<H> DQMSegmentation::book2(const std::string& path,
-                                   const std::string& title, Args... args)
+template <class H>
+DQMH1<H> DQMHistSet::book1(const std::string& path, const std::string& title,
+                           const DQMAxis& x)
 {
-  auto inDir = [args...](art::TFileDirectory& d, const std::string& n,
-                         const std::string& t) -> TH1* {
-    return d.make<H>(n.c_str(), t.c_str(), args...);
-  };
-  auto owned = [args...](const std::string& n,
-                         const std::string& t) -> std::unique_ptr<TH1> {
-    auto h = std::make_unique<H>(n.c_str(), t.c_str(), args...);
-    h->SetDirectory(nullptr);
-    return h;
-  };
-  Entry* e = addEntry(path, title, inDir, owned);
-  if (e == nullptr) {
-    return DQMHist2<H>();
-  }
-  return DQMHist2<H>(&e->targets, static_cast<H*>(e->job));
+  Entry* e = bookEntry<H>(path, title, false, x.n, x.lo, x.hi);
+  return e == nullptr ? DQMH1<H>() : DQMH1<H>(&e->targets, static_cast<H*>(e->job));
+}
+
+template <class H>
+DQMH2<H> DQMHistSet::book2(const std::string& path, const std::string& title,
+                           const DQMAxis& x, const DQMAxis& y)
+{
+  Entry* e = bookEntry<H>(path, title, false, x.n, x.lo, x.hi, y.n, y.lo, y.hi);
+  return e == nullptr ? DQMH2<H>() : DQMH2<H>(&e->targets, static_cast<H*>(e->job));
+}
+
+template <class H>
+DQMH1<H> DQMHistSet::bookSummary1(const std::string& path, const std::string& title,
+                                  const DQMAxis& x)
+{
+  Entry* e = bookEntry<H>(path, title, true, x.n, x.lo, x.hi);
+  return e == nullptr ? DQMH1<H>() : DQMH1<H>(&e->targets, static_cast<H*>(e->job));
+}
+
+template <class H>
+DQMH2<H> DQMHistSet::bookSummary2(const std::string& path, const std::string& title,
+                                  const DQMAxis& x, const DQMAxis& y)
+{
+  Entry* e = bookEntry<H>(path, title, true, x.n, x.lo, x.hi, y.n, y.lo, y.hi);
+  return e == nullptr ? DQMH2<H>() : DQMH2<H>(&e->targets, static_cast<H*>(e->job));
 }
 
 } // namespace mu2e
 
-#endif /* DQMHelpers_inc_DQMSegmentation_hh */
+#endif /* DQMHelpers_inc_DQMHistSet_hh */

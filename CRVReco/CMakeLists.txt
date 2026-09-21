@@ -65,7 +65,6 @@ cet_build_plugin(CrvDQMcollector art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CRVReco
-      Offline::DQMHelpers
 
       Offline::CosmicRayShieldGeom
       Offline::CRVConditions

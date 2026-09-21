@@ -1,616 +1,434 @@
 # DQMHelpers
 
-Shared DQM histogram helpers used by both Offline and the otsdaq online
-monitor. The helper classes own histogram booking and filling; art modules own
-I/O, visualization, and histogram shipping.
+Subdetector-agnostic histogramming for DQM. The classes here have no art
+module, no `Event`, no service, no Proditions lookup and no detector
+dependency: a module reads the event and calls a subdetector *client* built on
+this core, so the same client runs in an offline art job and inside the otsdaq
+online monitor.
 
-This package is helper **classes only** — no art plugins, no FHiCL, and so no
-GeometryService or ProditionsService dependency anywhere in its build. That is
-what lets the same fill path run in the DAQ process. Two consumers:
-
-| Consumer | Uses | Where |
-|---|---|---|
-| `CrvDQMcollector` | all three helpers | `Offline/CRVReco/src/CrvDQMcollector_module.cc` |
-| `CrvDQM` / `CrvStatusMetrics` | digi and status helpers | `otsdaq-mu2e-crv` |
-
-Anything a helper needs from geometry or Proditions is **injected** by the
-consumer — the sector map, the channel-to-sector map, the CRV envelope — so the
-dependency stays on the caller's side of the boundary.
-
-## Output file layout
-
-`TFileService` writes **one file per art job** and gives **each module its own
-directory**, named after the module label. That directory is automatic and not
-optional — it is what keeps two modules from colliding in one file.
-
-`CrvDQMcollector` books three helpers into one file, so two of them take a
-subdirectory and the third keeps the module directory:
-
-| Setting | Default | Why |
-|---|---|---|
-| `crvDigiDQMDir` | `"CRVDigiDQM"` | its own level, so it does not mix with what the module books |
-| `crvStatusDQMDir` | `"CRVStatusDQM"` | as above |
-| `crvRecoDQMDir` | `""` | **keep empty** — `crvPEsMPV*` and `crvCoincidencesClusters` have always sat in the module directory and the KPP extractor reads them there |
-
-The module itself books `crvPedestals*`, `crvCalibConstants*` and the
-`crvMetaData` tree at module level, alongside the reco helper's histograms.
-
-```text
-<collector module label>/
-  crvPedestals*, crvCalibConstants*, crvMetaData        (module)
-  nEvents, nEventsWithCoincidenceClusters               (CRVRecoDQM)
-  crvCoincidencesClusters                               (CRVRecoDQM)
-  crvPEsMPV, crvPEsMPV_ROC*, crvPEsMPV_CRVsector*       (CRVRecoDQM)
-  NPulses, NPulse2, BarIdr, SiPMr, PEr, PEHeight,       (CRVRecoDQM,
-  PulseTime, PulseTime2, chi2, logchi2, LeadingTime,     fillInclusive)
-  LeadingTime2, NClus, NPc, PEc, tc, t2c, X, Y, Z
-  CRVDigiDQM/
-    nEvents
-    h1_digisPerEvt, h1_peakAdc, h1_tdc
-    h1_channels, h2_channels
-    crvDigiRates, crvDigiRates_ROC*, crvDigisPerChannel
-    crvDigisPerChannelAndEvent_CRVsector*   (if BookSectorOccupancy was called)
-    dtVsFeb, dtOutOfRangePerFeb
-    timing_fpga/
-    BarId, SiPM, ADC                        (fillInclusive)
-  CRVStatusDQM/
-    nEvents
-    nRocHeaders, errorBits, errorBitsVsRoc
-    linkLatency, linkLatency_dtc*_roc*
-    rocCensus, eventHasError, eventHasDaqError
-    daqErrorCode, ewtMismatch
-    errorsPerSubrun, meanLatencyPerSubrun
+```
+DQMHelpers/
+  inc/DQMAxis.hh          one axis, as a constant
+  inc/DQMHistSet.hh       the histogram set: booking, copies, publishing
+  inc/DQMHist.hh          DQMH1<T> / DQMH2<T>, the fill handles
+  inc/DQMClient.hh        base class of a subdetector client
+  inc/DQMSeries.hh        capped TGraph time series (online only)
+  inc/DQMDiagnostics.hh   counters, warn-once, end-of-job summary
+  inc/DQMHistSetConfig.hh validated FHiCL for the histogram set
+  inc/DQMStyle.hh         ROOT styling, shared by online and offline displays
+  fcl/prolog.fcl          generic presets
 ```
 
-### Combining per-job files
+Subdetector clients live in their own packages and link `Offline::DQMHelpers`; nothing
+detector-specific belongs here, including on the link line. The CRV clients
+are in [`CRVDQM`](../CRVDQM/README.md), the worked example of everything
+below.
 
-`hadd` of per-job DQM files is the intended combine step (run, week, …). Occupancy
-maps are stored as **raw counts**. After `hadd`,
+## Three rules
 
-```text
-rate = content / nEvents->GetBinContent(1)
+1. **Binning is hard-coded.** An axis is a `static constexpr DQMAxis` in the client
+   header. `book1`/`book2` take nothing else. No FHiCL path reaches a binning.
+   This is to enable merging/comparison across runs.
+2. **The histogram set is code.** A client books everything in `book()`, up
+   front, for the whole detector. Booking later, or booking one name twice,
+   throws. FHiCL chooses extra *copies* of a histogram and what is published.
+3. **Changing either is a version bump.** Edit the constant, bump the client's
+   `kBinningVersion`, and regenerate the catalogue file (see
+   [Changing binning](#changing-binning)).
+
+The point of all three is merging: files from different runs and different
+jobs of the same client `hadd` bin for bin, and a metrics tool can refuse to
+combine two binning versions because every client stamps
+`dqmBinningVersion` into its output directory.
+
+## Adding a subdetector
+
+A subdetector's DQM goes in **its own Offline package** (`Offline/<Subdetector>DQM`),
+a sibling of `Offline/DQMHelpers`, never inside it. `Offline/CRVDQM` is the complete, working
+example, and every step below points at the CRV file to copy from. The steps
+use a hypothetical tracker package, `Offline/TrkDQM`, laid out like
+`Offline/CRVDQM`:
+
+```
+Offline/TrkDQM/                     compare Offline/CRVDQM/
+  CMakeLists.txt                    Offline/CRVDQM/CMakeLists.txt
+  inc/TrkDigiDQM.hh                 Offline/CRVDQM/inc/CRVDigiDQM.hh
+  src/TrkDigiDQM.cc                 Offline/CRVDQM/src/CRVDigiDQM.cc
+  src/SConscript                    Offline/CRVDQM/src/SConscript
+  fcl/prolog.fcl                    Offline/CRVDQM/fcl/prolog.fcl
+  data/TrkDQM_binning_v1.txt        Offline/CRVDQM/data/CRVDQM_binning_v1.txt
+  README.md                         Offline/CRVDQM/README.md
 ```
 
-TGraphs vs EWT or subrun are live-monitor objects (`fillLivePlots: true` in the
-online modules). The collector leaves `fillLivePlots` false, so they are not in the
-files that get `hadd`'d. Rolling-window and in-progress-subrun histogram copies are
-the same kind of object; see **Histogram segmentation** for which segment copies do
-and do not combine.
+**1. Write the client** in `Offline/TrkDQM/inc` and `Offline/TrkDQM/src`.
+Axes are constants; `book()` books; `Fill()` starts with `beginEvent()`. This
+is a whole client:
 
-### Per-sector occupancy
+```cpp
+// Offline/TrkDQM/inc/TrkDigiDQM.hh
+class TrkDigiDQM : public DQMClient {
+ public:
+  static constexpr int kBinningVersion = 1;          // bump on any axis change
+  static constexpr DQMAxis kNDigis = DQMAxis::Counts(0, 100);
+  static constexpr DQMAxis kTdc{100, 0., 80.e3};
 
-`crvDigisPerChannelAndEvent_CRVsector*` is owned by the helper. Sector names and the
-channel->sector map are geometry-derived, so the caller injects them via
-`BookSectorOccupancy(...)` and the helper stays free of GeometryService. A
-negative sector entry skips that channel, which is how `CrvDQMcollector` drops
-its Proditions `notConnected` channels without the helper knowing about
-Proditions. `WriteGraphs()` fills them once per file from `nDigisOffline` as a
-per-channel rate distribution. After `hadd`, rebuild that distribution from
-`crvDigisPerChannel` / `nEvents` rather than using the combined hist.
+  explicit TrkDigiDQM(const DQMHistSet::Config& hists = {}) :
+      DQMClient("TrkDigiDQM", kBinningVersion, hists) {}
 
-## Histogram segmentation
+  void Fill(const StrawDigiCollection& digis) {
+    beginEvent();                        // counts the event, advances windows
+    nDigis_.Fill(digis.size());
+    for (const auto& d : digis) tdc_.Fill(d.TDC(StrawEnd::cal));
+  }
 
-Online and offline want different things from the same fill path: online wants some
-histograms integrated over the run, some showing only the last N events, and older
-segments kept around; offline wants histograms that survive `hadd`. That choice is
-made **entirely in FHiCL**, so online can change it between runs without a rebuild.
-
-Every histogram the three helpers book goes through `mu2e::DQMSegmentation`. A rule
-list keyed on the histogram name decides which copies exist:
-
-| Mode | Copy | Reset | `hadd`-safe |
-|---|---|---|---|
-| `job` | the histogram as it has always been, unsuffixed name | never | yes |
-| `subrun` | a live copy for the subrun in progress, plus archived copies of previous subruns | each subrun | archived copies: **yes** |
-| `window` | a rolling copy of the last N events / EWTs, plus archived copies of previous spans | rolling | no |
-
-**The default is `job` only**, so a job with no `segmentation` block writes exactly
-what it wrote before this existed — same names, same titles, same objects. Nothing
-downstream (the KPP extractor, `hadd`) has to change.
-
-### Names
-
-For a histogram `B` booked in directory `D`:
-
-```text
-D/B                                  job copy -- name unchanged
-D/B_sub                              subrun in progress (live, resets)
-D/bySubrun/B_r001234_s000007         archived subrun, named by real run/subrun
-D/B_last                             live rolling window (`liveName` overrides)
-D/segments/B_prev1 ... B_prevK       previous complete spans, _prev1 newest
+ private:
+  void book() override {
+    nDigis_ = hists().book1<TH1F>("nDigis", "Digis / event;N;Events", kNDigis);
+    tdc_    = hists().book1<TH1F>("tdc", "Digi TDC;TDC;Digis", kTdc);
+  }
+  DQMH1<TH1F> nDigis_, tdc_;
+};
 ```
 
-Names are fixed at booking time and **content shifts through them**, so the online
-GUI and `HistoSender` can subscribe to a name that will still be there next span.
+The CRV clients show the same pattern at full size:
+- `Offline/CRVDQM/inc/CRVStatusDQM.hh` and `src/CRVStatusDQM.cc`: the simplest
+  CRV client. It needs no layout from the module, only the status collection
+  (and optionally the DAQ errors), and declares its axes at the top of the
+  header.
+- `Offline/CRVDQM/inc/CRVDigiDQM.hh` and `src/CRVDigiDQM.cc`: a client that
+  also takes the detector layout from the module (`SetConfiguration`,
+  `SetFebTopology`) and books one histogram family per configuration.
+- `Offline/CRVDQM/inc/CRVRecoDQM.hh` and `src/CRVRecoDQM.cc`: end-of-job fit
+  results booked with `bookSummary1`/`bookSummary2`.
+- `Offline/CRVDQM/inc/CRVDQMRun1.hh`: frozen layout constants kept apart from
+  the clients, so several clients share one numbering.
 
-### Labels
+**2. Add it to the build**, in both build systems. `Offline/CRVDQM/CMakeLists.txt`
+is the template; change the sources and the subdetector libraries:
 
-A copy that does not say what it covers is worse than no copy, so each one carries
-its range twice:
+```cmake
+# Offline/CRVDQM/CMakeLists.txt (comments added here)
+cet_make_library(
+    SOURCE
+      src/CRVDQMRun1.cc
+      src/CRVDigiDQM.cc
+      src/CRVRecoDQM.cc
+      src/CRVStatusDQM.cc
+    LIBRARIES PUBLIC
+      Offline::DQMHelpers              # always
+      Offline::CRVConditions           # the rest are what the CRV clients use
+      Offline::CosmicRayShieldGeom
+      Offline::RecoDataProducts
+      Offline::DataProducts
+      ROOT::Hist
+      ROOT::MathCore
+)
 
-- in the **title**, inserted before the first `;` so the axis labels survive:
-  `Channel occupancy [last 50000 EWT: 1234501-1284500, 4321 events];Global channel ID;Hits`
-- in a **`TNamed("dqmSegment", ...)`** in the histogram's list of functions, so the
-  range travels with the object through `HistoSender` without the directory around
-  it: `mode=window;index=1;firstEvent=...;lastEvent=...;nEvents=...;firstClock=...;`
-  `lastClock=...;run=...;subrun=...;complete=1`
+install_source(SUBDIRS src)
+install_headers(USE_PROJECT_NAME SUBDIRS inc)
+install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CRVDQM/fcl)
+```
 
-Both are rewritten at every rotation and once more at end of job, so a partly filled
-live copy never advertises a full span. A histogram with **only** a job copy is left
-alone: there is no sibling to confuse it with, and annotating it would change the
-output of an unconfigured job.
+The `install_fhicl` line is what makes
+`#include "Offline/CRVDQM/fcl/prolog.fcl"` resolve in a job. For the tracker
+it would read `SUBDIRNAME Offline/TrkDQM/fcl`.
 
-### The rolling window
+`Offline/CRVDQM/src/SConscript` is the scons template. scons does not pass
+libraries on transitively, so name everything the `.cc` files use, starting
+with `mu2e_DQMHelpers`:
 
-`window` keeps a ring of `subdivisions` sub-blocks of `span/subdivisions` units each.
-Every entry goes into the current sub-block *and* into the live copy, so the live copy
-is exact and never lags. On rotation the live copy is rebuilt by summing the ring --
-re-summing rather than subtracting the evicted block, which is what keeps the bin
-errors and the entry count right (the hand-rolled `AddBinContent` deques this replaces
-got both wrong).
+```python
+# Offline/CRVDQM/src/SConscript (excerpt)
+helper.make_mainlib([
+    'mu2e_DQMHelpers',
+    'mu2e_CRVConditions',
+    'mu2e_CosmicRayShieldGeom',
+    'mu2e_RecoDataProducts',
+    'mu2e_DataProducts',
+    'artdaq-core-mu2e_Overlays',
+    'CLHEP',
+    # ... art, fhiclcpp, cetlib, rootlibs: copy the rest of the list
+])
+```
 
-So the live copy covers between `span*(S-1)/S` and `span` units. It is quantized, and
-the realised range is in the title. `subdivisions : 1` degenerates to disjoint blocks
-at no extra memory. Memory is `subdivisions + keep + 1` clones of that histogram --
-which is why the policy is per histogram and not global: do not put a `window` rule on
-`timing_fpga/*`.
+Finally, register the package in Offline's top-level `Offline/CMakeLists.txt`,
+in alphabetical order. For the CRV that is:
 
-`unit` is `event`, `ewt` or `subrun`. `ewt` is the online convention (it is what
-`h1_channelsLastEwt` always meant); `event` is the plain last-N-events window. On MC,
-where `CrvStatus` is empty and there is no event window tag, an `ewt` rule falls back
-to counting events and says so once.
+```cmake
+add_subdirectory(CRVConfig)
+add_subdirectory(CRVDQM)
+add_subdirectory(CRVFilters)
+```
 
-### hadd
+scons needs no registration: it finds `Offline/TrkDQM/src/SConscript` itself.
 
-Job copies and `bySubrun/` copies add correctly -- the latter carry the real run and
-subrun in the name, so two files coexist rather than collide, and two jobs over the
-same subrun add. `_sub`, `_last` and `segments/_prev*` are **job-local ranges** and do
-not combine; either leave `window` modes off offline, or set `persist : false` so the
-copies live in memory for the online GUI and are never written. That is the same
-distinction `fillLivePlots` draws for the TGraphs.
+**3. Write the modules.** They live outside Offline: offline ones in
+[Mu2e/DQM](https://github.com/Mu2e/DQM) (`src/`), online ones in
+[Mu2e/otsdaq-mu2e-dqm](https://github.com/Mu2e/otsdaq-mu2e-dqm)
+(`otsdaq-mu2e-dqm/ArtModules/`). Every module drives its client the same way:
 
-### Configuration
+```cpp
+fhicl::Table<DQMClientFhicl> dqm{fhicl::Name("dqm")};   // its whole FHiCL schema
+TrkDigiDQM dqm_{toConfig(conf().dqm().hists())};
 
-Every field, with what it does:
+beginJob:    dqm_.Book(*tfs);                 // or tfs->mkdir("...")
+beginSubRun: dqm_.BeginSubRun(sr.run(), sr.subRun());
+analyze:     dqm_.Fill(*event.getValidHandle<StrawDigiCollection>(tag_));
+endSubRun:   dqm_.EndSubRun();
+endJob:      dqm_.EndJob();                   // series written, diagnostics printed
+beginRun:    dqm_.ResetForNewRun();           // online only
+publish:     for (auto& [group, copies] : dqm_.hists().publishedCopies()) ...
+```
 
-```fcl
-segmentation : {
-  annotateTitles : true          # append the range tag to every copy's title
-  stampMetadata  : true          # add the dqmSegment TNamed to every copy
-  subrunDir      : "bySubrun"    # subdirectory for archived subrun copies
-  segmentDir     : "segments"    # subdirectory for archived window copies
+The CRV modules to copy from:
+- Mu2e/DQM `src/DqmCrvStatus_module.cc`: the shortest, a complete offline
+  module in under 100 lines.
+- Mu2e/DQM `src/DqmCrvDigi_module.cc`: recomputes the layout on each new run
+  and passes it to the client.
+- otsdaq-mu2e-dqm `ArtModules/CrvDQM_module.cc`: online, with publishing,
+  HistoSender and the THttpServer display.
 
-  # First matching rule wins. `match` is a glob (* and ?) over the
-  # directory-qualified histogram path, so "timing_fpga/*" takes a whole
-  # subdirectory. An unmatched histogram gets job-only.
-  rules : [
-    { match       : "h1_channels"
-      enabled     : true         # false: do not book the histogram at all
-      modes       : [ "job", "window" ]
-      job         : { persist : true }
-      window      : { span         : 50000   # width of one span
-                      unit         : "ewt"   # "event" | "ewt" | "subrun"
-                      subdivisions : 10      # ring depth; 1 = disjoint blocks
-                      keep         : 4       # archived previous spans
-                      persist      : false   # write the _prevN copies
-                      persistLive  : false } # write the _last copy
-      liveName    : "h1_channelsLastEwt"     # name for the live window copy
-      publish     : true                     # hand its copies to the consumer
-      group       : ""                       # collect them under one label
-      archiveGroup: ""                       # label for the _prevN / per-subrun archives
+In the module's own build files, link `Offline::TrkDQM` (CMake) and
+`mu2e_TrkDQM` (scons) as well as `Offline::DQMHelpers` / `mu2e_DQMHelpers`,
+since the module includes both packages' headers. The `DqmCrv*` blocks in
+Mu2e/DQM `src/CMakeLists.txt` and `src/SConscript` show both.
+
+**4. Add FHiCL tables** in `Offline/TrkDQM/fcl/prolog.fcl`, the new
+subdetector package. That file includes the generic presets from
+`Offline/DQMHelpers/fcl/prolog.fcl` (this package) and builds one table per
+client out of them. For the CRV:
+
+```
+# Offline/CRVDQM/fcl/prolog.fcl (excerpt)
+#include "Offline/DQMHelpers/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+CRVDQM : {
+  # offline: one job-integrated copy of everything
+  Digi   : { hists : @local::DQMHelpers.Hists.JobOnly }
+  Status : { hists : @local::DQMHelpers.Hists.JobOnly }
+
+  # online: the generic online base plus rules choosing what is published
+  DigiOnline : {
+    hists : {
+      @table::DQMHelpers.Hists.Online
+      rules : [
+        { match : "h1_peakAdc"  modes : [ "job" ]  publish : true },
+        { match : "dtFpgaPairs" modes : [ "job" ]  publish : true  group : "timing_fpga" }
+      ]
     }
+  }
+}
 
-    { match   : "dtOutOfRangePerFeb"
-      modes   : [ "job", "subrun" ]
-      subrun  : { keep        : -1           # -1 = every subrun, N = last N
-                  persist     : true         # write the archived copies
-                  persistLive : false }      # write the in-progress copy
+END_PROLOG
+```
+
+A job then includes the subdetector prolog and hands each module its table.
+Adapted from Mu2e/DQM `fcl/crvDQM.fcl`:
+
+```
+#include "Offline/CRVDQM/fcl/prolog.fcl"
+
+physics.analyzers.crvStatusDQM : {
+  module_type : DqmCrvStatus
+  statusTag   : "CrvDigi"
+  daqErrorTag : "CrvDigi"
+  dqm         : @local::CRVDQM.Status
+}
+# per-subrun copies instead, overriding below the include:
+physics.analyzers.crvStatusDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
+```
+
+A subdetector that needs no named tables can skip `Offline/TrkDQM/fcl` and use
+the presets in `Offline/DQMHelpers/fcl/prolog.fcl` directly, e.g.
+`dqm : { hists : @local::DQMHelpers.Hists.JobOnly }`.
+
+**5. Write the reference catalogue**, `Offline/TrkDQM/data/TrkDQM_binning_v1.txt`:
+run a module with `catalogueFile` set and keep the dump, as in
+[Changing binning](#changing-binning).
+
+## Core API
+
+### `DQMAxis`
+
+```cpp
+constexpr DQMAxis(int nBins, double lo, double hi);
+static constexpr DQMAxis Counts(int first, int last);     // one bin per integer
+static constexpr DQMAxis Symmetric(double range, double binWidth);  // e.g. a dt axis
+std::string describe() const;                             // "n,lo,hi"
+```
+
+### `DQMHistSet`
+
+Booking (only in `book()`):
+
+```cpp
+DQMH1<H> book1<H>(path, title, const DQMAxis& x);
+DQMH2<H> book2<H>(path, title, const DQMAxis& x, const DQMAxis& y);
+// A summary filled once at end of job (a fit result, a rate): no rule applies,
+// because segment copies of it would all be identical. Still in the catalogue.
+DQMH1<H> bookSummary1<H>(path, title, x);
+DQMH2<H> bookSummary2<H>(path, title, x, y);
+```
+
+`path` may name a subdirectory (`"timing/dtFpgaPairs"`); rules match the whole
+path. The returned handle fans one `Fill` out to every copy the rules asked
+for, and converts to `H*` (the job copy), so accessors keep working:
+
+```cpp
+DQMH1<TH1F> h = hists().book1<TH1F>(...);
+h.Fill(x);  h.Fill(x, weight);  h.ForEach([](TH1F* p) { ... });  // styling, labels
+TH1F* job = h;                                                   // the job copy
+```
+
+The job copy always exists, so an accessor never returns null; a rule's `job`
+mode decides only whether it is *written*.
+
+Reading and lifecycle (the client base class drives most of this):
+`copies(path)`, `allCopies()`, `live(path)`, `publishedCopies()`,
+`Advance(event, ewt)`, `BeginSubRun`, `EndSubRun`, `RefreshLabels`,
+`Finalize`, `ResetContents`, `WriteCatalogue(ostream&)`.
+
+### `DQMClient`
+
+Owns the set, the series and the diagnostics.
+
+| Module calls | Client overrides (protected) |
+|---|---|
+| `Book(dir)` — books, then freezes | `book()` — required |
+| `BeginSubRun(run, subrun)` / `EndSubRun()` | `endSubRun()` |
+| `EndJob()` — hook, finalize, write series, print diagnostics | `endJob()` |
+| `ResetForNewRun()` — online | `resetForNewRun()` |
+| `Fill(...)` — the client's own typed method | `beginEvent(clock)` first in `Fill` |
+
+Also `hists()`, `series()`, `diag()`, `nEvents()`, `run()`, `subrun()`,
+`booked()`, `name()`, `binningVersion()`. `Book()` writes a
+`dqmBinningVersion` `TNamed` into the client's directory and books `nEvents`
+for you — do not book your own.
+
+### `DQMDiagnostics`
+
+With fixed axes, an out-of-range value lands in an overflow bin; this is how
+it gets *reported*.
+
+```cpp
+diag().Count("clusterOutsideEnvelope", "a cluster position is outside ...");
+diag().Note("maxAbsDt", dt);   // largest value seen for a key
+```
+
+`Count` warns the first time per key and totals are printed by `EndJob()`.
+Use it for conditions the data can produce. A condition that means the job is
+misconfigured should throw instead.
+
+### `DQMSeries` (online only)
+
+Graphs do not merge — `hadd` concatenates their points — so they are outside
+the fixed-set rule and offline presets leave them off.
+
+```cpp
+DQMSeries& g = series().book("graphs/g_rate", "Rate;EWT;Hz");  // path, title, cap
+g.Add(x, y);  g.AddIfChanged(x, y);  g.Step(x, y);             // step: status words
+```
+
+With `liveSeries` off, `book()` returns an inert series and every `Add` is a
+no-op, so a client fills unconditionally. `EndJob()` writes them.
+
+### `DQMStyle`
+
+The ROOT translation of `mu2e.mplstyle`. It lives here, not in the online
+package, so a histogram looks the same on the shifter's page and in whatever
+offline job later draws the merged file — the fixed binning exists so those two
+can be compared, and they are easier to compare when they are drawn alike.
+
+```cpp
+DQMStyle::SetStyle();                      // process-wide; once, by whoever draws
+DQMStyle::FormatHist(h, "blue");           // black (default), blue, green, red
+DQMStyle::FormatHist2D(h2);                // axis offsets, stats off
+DQMStyle::FormatGraph(g, "red");
+```
+
+Nothing here books, fills or interprets a histogram, and no client calls it:
+styling is the display's job, so the module that owns the canvases calls it.
+`SetStyle()` ends in `gROOT->ForceStyle()` and so is process-wide — in a job
+that monitors several subdetectors, the last caller wins, which is an argument
+for this one style rather than a style per package.
+
+## FHiCL
+
+A client's whole schema is its `hists` table (`DQMClientFhicl` when it has no
+other knobs). There is no binning in it and no way to drop a histogram.
+
+```
+hists : {
+  annotateTitles : true       # append the range each copy covers to its title
+  stampMetadata  : true       # add the dqmSegment TNamed to every copy
+  subrunDir      : "bySubrun"
+  segmentDir     : "segments"
+  liveSeries     : false      # book the client's graphs (online only)
+  rules : [                   # omit for job-only, which is what hadd wants
+    { match    : "nDigis"     # glob over the directory-qualified path
+      modes    : [ "job", "window" ]     # any of job, subrun, window
+      jobPersist : true                  # write the job copy
+      subrun   : { keep : -1  persist : true  persistLive : false }
+      window   : { span : 50000  unit : "ewt"   # event | ewt | subrun
+                   subdivisions : 10  keep : 4
+                   persist : false  persistLive : false }
+      liveName : "nDigisLastEwt"         # name of the rolling copy
+      publish  : true                    # hand its copies to the consumer
+      group    : "occupancy"             # collect them under one label
+      archiveGroup : "occupancy_history" # label for _prevN / per-subrun copies
     }
-
-    { match : "timing_fpga/*"  modes : [ "job" ] }
   ]
 }
 ```
 
-Unknown keys, unknown modes and unknown units **throw**. A mistyped rule that quietly
-does nothing is worse online than a job that refuses to start.
+First matching rule wins. `publish`/`group` are what `publishedCopies()`
+returns; the registry does not know what a consumer does with them, which is
+what lets DQMHelpers build in the DAQ process without knowing HistoSender
+exists.
 
-### Publishing
+Presets, from `fcl/prolog.fcl`:
 
-`publish` and `group` decide what a consumer gets, so that too is FHiCL rather than
-a list compiled into a module:
+| `@local::DQMHelpers.Hists.` | What it gives |
+|---|---|
+| `JobOnly` | one job-integrated copy of everything (offline default) |
+| `PerSubrun` | plus a copy per subrun, named by run and subrun |
+| `Online` | annotated titles, no stamp, `liveSeries`; add `rules` for publishing |
 
-```cpp
-for (const auto& [group, copies] : dqm.segments().publishedCopies()) { ... }
+```
+#include "Offline/DQMHelpers/fcl/prolog.fcl"
+physics.analyzers.myDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
+# or splice and extend:
+physics.analyzers.myDQM.dqm.hists : { @table::DQMHelpers.Hists.Online  rules : [ ... ] }
 ```
 
-`publishedCopies()` returns every copy of every histogram whose rule set
-`publish`, collected under that rule's `group`. A rule with no `group` gives each
-copy an entry of its own keyed on the copy's object name -- so a live window copy
-named by `liveName` is published under that name, which is what a GUI subscribing
-to a fixed name needs.
+### What the copies are called
 
-`archiveGroup` sends only the archived copies -- the window's `_prevN` and the
-per-subrun `_rNNNNNN_sNNNNNN` copies -- to a label of their own, while the job, live
-and in-progress subrun copies keep `group` (or their own names). With it unset the
-archives follow `group`. For example, this keeps `h1_channels` and
-`h1_channelsLastEwt` at their usual names and collects the older spans in one folder:
-
-```fcl
-{ match : "h1_channels"  modes : [ "job", "window" ]
-  window : { span : 50000  unit : "ewt"  subdivisions : 50  keep : 4 }
-  liveName : "h1_channelsLastEwt"  publish : true  archiveGroup : "channels_history" }
-```
-
-The registry does not know what a group **means**. It is an opaque label, and the
-caller decides whether it is an otsdaq `HistoSender` folder, a web tab or something
-else. That is deliberate: it is what lets `DQMHelpers` build inside the DAQ process
-without knowing `HistoSender` exists, and it keeps the otsdaq naming convention
-(`crv/<group>:replace`) in the otsdaq module where it belongs.
-
-Nothing is published by default. Publishing a large histogram costs bandwidth on
-every send interval, so the choice is explicit -- but it is now a FHiCL line rather
-than a rebuild.
-
-`subrun.keep` bounds the in-memory history. A copy already written to the file is what
-`persist : true` asked for, so it is never dropped.
-
-The parser (`parseSegmentation`, `DQMHelpers/inc/DQMSegmentationConfig.hh`) is shared:
-`CrvDQMcollector` hands it a delegated FHiCL block, the otsdaq modules hand it
-`ps.get<fhicl::ParameterSet>("segmentation")`. One grammar, no chance of the two
-drifting.
-
-### One module, three helpers
-
-A rule glob is matched against the histogram path **relative to that helper's own
-directory**, so a single block cannot tell two helpers' identically named
-histograms apart -- and `nEvents` exists in all three CRV helpers. The same is true
-of the helpers' other parameters: `fillInclusive` is in both the digi and reco
-configs, `fillLivePlots` in both the digi and status ones.
-
-`CrvDQMcollector` therefore configures each helper under its own key, and each
-block carries that helper's own `segmentation`:
-
-```fcl
-CrvDQMcollector : {
-  crvDigiModuleLabel : "CrvDigi"          # module-level: labels, directories
-  crvDigiDQMDir      : "CRVDigiDQM"
-  ...
-  crvDigiDQM   : { kppReadout : true   segmentation : { rules : [ ... ] } }
-  crvRecoDQM   : { minY : 3500.0       segmentation : { rules : [ ... ] } }
-  crvStatusDQM : { nBinsLatency : 1024 segmentation : { rules : [ ... ] } }
-}
-```
-
-The atoms those blocks accept are declared once, as `CRVDigiDQMFhicl` and friends,
-in the same header as the `Config` they mirror, with every **default read from that
-`Config`** -- so a binning default lives in exactly one place rather
-than being repeated in the struct, in each module's atom list, and in the online
-`ps.get` call and kept equal by hand.
-
-A module owning a single helper has no collision to resolve and can splice the
-same atoms in flat with `fhicl::TableFragment`, leaving its FCL unnested.
-
-The otsdaq modules own one helper each, so they take a single `segmentation` block
-and need none of this.
-
-`CRVDigiDQM::Config::channelsWindowEwts` is the helper's own default span, applied to
-any `window` rule that does not name a `span` of its own.
-
-The `crvPEsMPV*` maps are filled once at end of job from the per-channel fits rather
-than per event, so job / subrun / window copies of them would be identical. They stay
-outside the registry.
-
-## CRVDigiDQM
-
-`mu2e::CRVDigiDQM` books and fills every live digi histogram from
-`otsdaq-mu2e-crv` `CrvDQM_module.cc` (`mu2e/ots_ops`), plus optional
-`ValCrvDigi` inclusive plots (`BarId`, `SiPM`, `ADC`) gated by
-`Config::fillInclusive`.
-
-Typical use from an art module:
-
-```cpp
-CRVDigiDQM dqm(config);          // constructor / beginJob
-dqm.Book(tfs->mkdir("CRVDigiDQM"));
-dqm.BeginSubRun(run, subrun);    // beginSubRun, if a subrun rule is configured
-dqm.Fill(*digis, *status);       // analyze, once per event
-dqm.EndSubRun();                 // endSubRun
-dqm.WriteGraphs();               // endJob (sector occupancy + persist TGraphs if booked)
-```
-
-`CRVReco/src/CrvDQMcollector_module.cc` uses this helper for all per-event
-digi histograms and the CRVId occupancy maps (`crvDigiRates_ROC*`, 2D
-`crvDigiRates`, `crvDigisPerChannel`); reco pulses and coincidences go through
-`CRVRecoDQM` below, and the collector keeps only the Proditions-derived
-pedestal / calibration histograms and the metadata tree. Per-sector
-`crvDigisPerChannelAndEvent_CRVsector*` is
-owned by the helper; the modules only inject the geometry-derived sector names
-and channel->sector map. The helper itself has no GeometryService or Proditions
-dependency.
-
-`Config::fillCrvIdRates` (default true) books the two occupancy maps and the
-detector-wide 1D vs offline channel. Those three are raw counts; divide by
-`nEvents` after `hadd`.
-
-### Readout geography (`kppReadout`)
-
-`Config::kppReadout` (default true) sizes the FEB axes. It selects detector
-size only — it does no ROC remapping.
-
-`kppReadout: true` sizes for KPP, the extracted CRV and the only one built so
-far: ROC 1-2, FEBs numbered `(roc-1)*25 + feb`, and `h1_channels` /
-`h2_channels` booked over 33 FEB slots. Every existing dataset wants this mode, which is why
-it is the default here and in `prolog_v12.fcl`.
-
-`kppReadout: false` is the full CRV, which does not exist yet — a seam for when
-it does, not a mode anything runs in today. The occupancy trio is not booked
-rather than resized, since 394 of 432 FEBs would fall past the 2112-bin axis and
-`crvDigisPerChannel` / `crvDigiRates` already cover the full detector correctly
-binned.
-
-`h1_channelsLastEwt` is now a `window` rule on `h1_channels` rather than a histogram
-of its own -- see **Histogram segmentation** above. The online FCL keeps the name with
-`liveName`. It has no full-CRV equivalent.
-
-`dtVsFeb` is booked in both modes; its x-axis follows the same geography
-(`nFebIdBins()`) so it stays legible rather than reserving 450 bins for FEBs
-that do not exist.
-
-### Inter-FEB sync (`dtVsFeb`)
-
-FEBs drifting out of sync with each other is the error case these timing plots
-exist to catch. Because a slip is a per-FEB offset, every pairwise difference is
-just `dt(i,j) = d_j - d_i` — the N x N pair matrix carries only N independent
-numbers. `dtVsFeb` therefore stores those N numbers directly: x is the full
-`globalFebId`, y is that FEB's first constant-fraction hit time minus the median
-of the *other* FEBs' first hit times in the same event. A slipped FEB is a
-displaced vertical stripe; a whole ROC slipping is a block of adjacent stripes,
-since `globalFebId` is ROC-ordered.
-
-The reference excludes the FEB being filled so that one bad FEB does not drag the
-reference and smear its partners. Events with fewer than two FEBs are skipped
-(no reference exists), and with exactly two FEBs both entries are `+/-` the pair
-difference — attribution then comes from aggregating over events, since the bad
-FEB is displaced against *every* partner while each partner is displaced only in
-the events it shares with the bad one.
-
-### Axis-coverage diagnostics
-
-Both axes can hide entries, so the raw values are counted before `Fill` and
-exposed as accessors — `maxFebIdSeen()`, `nFebIdOutOfAxis()`, `nCrvIdOutOfRange()`,
-`nDtOutOfRange()`, `maxAbsDtSeen()`. Reading them beats reading an overflow bin,
-since `nDtOutOfRange` and `maxAbsDtSeen` are measured on the true `dt` and so
-register a slip of any size. Per-FEB attribution comes from the histograms below.
-
-**Off-axis FEB — one warning per job.** The first time a digi arrives from a FEB
-outside the axis, one `mf::LogWarning` names the ROC, FEB and `globalFebId`, then
-latches. The axis size comes from `Config::kppReadout`, so this is a fixed
-configuration error: it cannot change between runs, and repeating it would add
-nothing. The helper needs no run-boundary hook.
-
-**CRVId-range ROC/FEB — one warning per job.** Occupancy maps (`crvDigiRates*`) skip a
-digi whose ROC/FEB/channel is outside `CRVId`. Occupancy and timing still fill.
-`nCrvIdOutOfRange()` counts the skips.
-
-### Per-FEB desync counters
-
-`dtOutOfRangePerFeb` is on the same `globalFebId` axis as `dtVsFeb`,
-counting events in which that FEB had `abs(dt) > dtVsFebRange` over the whole job.
-A `window` rule on it gives the online monitor the rolling twin, so a slip that
-starts now is not diluted by hours of earlier good data.
-
-A FEB whose clock has slipped shows a bar standing above its neighbours.
-
-A FEB contributes at most one entry per event, and only when it has a digi
-passing `cfTime` (>= 3 samples, `peak - adcs[0] >= minAmplitude`, a leading-edge
-crossing) *and* at least one other FEB in the event does too — a lone FEB has no
-reference. So the count carries an occupancy term, which matters only while the
-healthy baseline is non-zero; see the caveat under `dtVsFebRange` above.
-
-This replaces the former per-FEB-pair `timing_feb/dt_febXX_febYY` histograms.
-Intra-FEB `timing_fpga/` histograms are unchanged.
-
-Event-window tags for the time-series plots come from
-`CrvStatus::GetEventWindowTag()`. Those plots are booked only when
-`fillLivePlots` is true. If the status collection is empty (typical MC),
-occupancy / ADC / TDC histograms are still filled and the EWT graphs, rolling
-occupancy, and MicroBunchStatus plots are skipped.
-
-## CRVRecoDQM
-
-`mu2e::CRVRecoDQM` books and fills reco-pulse and coincidence histograms: 
-`crvCoincidencesClusters`, `crvPEsMPV_CRVsector*`, `crvPEsMPV_ROC*`, and the 2D `crvPEsMPV`.
-
-```cpp
-CRVRecoDQM dqm(config);              // constructor / beginJob
-dqm.Book(tfs->mkdir("CRVRecoDQM"));  // or *tfs, to book in the module directory
-dqm.BookSectorMPV(sectorNames, channelToSector);   // once, optional
-dqm.BeginSubRun(run, subrun);        // beginSubRun, if a subrun rule is configured
-dqm.Fill(*clusters, *recoPulses);    // analyze, once per event
-dqm.EndSubRun();                     // endSubRun
-dqm.WriteGraphs();                   // endJob: runs the fits, fills the MPV maps
-```
-
-Only pulses that belong to a coincidence cluster enter the PE spectra and the
-MPV maps. The inclusive plots below see every pulse,
-which is why they take the second `Fill` argument.
-
-### Inclusive per-event plots (`fillInclusive`, default true)
-
-```text
-reco pulses (whole CrvRecoPulseCollection)
-  NPulses, NPulse2, BarIdr, SiPMr, PEr, PEHeight,
-  PulseTime, PulseTime2, chi2, logchi2, LeadingTime, LeadingTime2
-coincidence clusters
-  NClus, NPc, PEc, tc, t2c, X, Y, Z
-```
-
-The axes that follow the *detector* are configurable:
-
-| Config | Applies to | Default |
+| Copy | Name | Written when |
 |---|---|---|
-| `nBinsTime`, `minTime`, `maxTime` | `PulseTime`, `LeadingTime`, `tc` | 100, 0, 2000 ns |
-| `nBinsTime2`, `minTime2`, `maxTime2` | `PulseTime2`, `LeadingTime2`, `t2c` | 100, 0, 100 µs |
-| `nBinsPos`, `minX`/`maxX`, `minY`/`maxY`, `minZ`/`maxZ` | `X`, `Y`, `Z` | 100, the `DqmCrv` full-CRV ranges |
+| job | `<name>` | `jobPersist` (default true) |
+| subrun, in progress | `<name>_sub` | `subrun.persistLive` |
+| subrun, finished | `bySubrun/<name>_rNNNNNN_sNNNNNN` | `subrun.persist` |
+| window, rolling | `liveName`, else `<name>_last` | `window.persistLive` |
+| window, previous spans | `segments/<name>_prev1 … _prevK` | `window.persist` |
 
-Each time quantity is booked twice — a short view and a full-window view. The
-three short axes share one definition and the three long axes another, so pulse,
-leading-edge and cluster times stay overlayable; `X`/`Y`/`Z` share a bin count
-but not a range.
+`_prev1` is always the most recent completed span, so a GUI can subscribe to a
+fixed name. Only the job copy and the per-subrun archives are `hadd`-safe: the
+rest overlap in time or are rebuilt in place. With `annotateTitles`, every copy
+says what it covers, e.g. `[last 50000 EWT: 1234-5678, 4321 events]`, and with
+`stampMetadata` the same is machine-readable in a `dqmSegment` `TNamed`.
 
-The `X`/`Y`/`Z` entries are the **fallback only** — a caller with geometry
-should inject the envelope instead, as `CrvDQMcollector` does; see *Cluster
-position axes* below.
+## Changing binning
 
-`NClus` gets an entry on **every** event, zero included, so it is a rate. The
-reco-pulse block only fills through the two-argument `Fill`; a caller with no
-`CrvRecoPulse` product still gets everything the clusters drive.
+1. Edit the `DQMAxis` constant (or add/remove a histogram) in the client header.
+2. Bump that client's `kBinningVersion`.
+3. Regenerate the catalogue: run a job with the module's `catalogueFile` set
+   and copy the result over the client package's reference file (for the CRV,
+   `CRVDQM/data/CRVDQM_binning_v<N>.txt`).
+4. Say so in the PR: merging tools and the DQM database see a new version, and
+   old files no longer combine with new ones.
 
-### No channel map
-
-`CrvRecoPulse` carries `ROC` / `FEB` / `FEBchannel` copied from the digi it was
-reconstructed from, and both `CrvDigitizer` (MC) and the artdaq unpacker (data)
-fill those from `CRVOrdinal`. So the online-indexed plots need no Proditions. 
-An ID outside the `CRVId` ranges is counted by `nOnlineIdOutOfRange()` and raises
-one `mf::LogWarning`; the per-sector MPV still gets that pulse.
-
-`crvPEsMPV_ROC*` and the 2D `crvPEsMPV` index the same online channel through
-`onlineChannelIndex()` / `rocChannel()` / `febPort()`, and their axes are sized
-from the same constants, so the index and the axis cannot drift apart.
-
-### Per-sector MPV
-
-`crvPEsMPV_CRVsector*` is owned by the helper. As with `BookSectorOccupancy`,
-sector names and the channel->sector map are geometry-derived and are injected by
-the caller, and a negative sector entry skips the channel — which is how
-`CrvDQMcollector` drops its Proditions `notConnected` channels without the helper
-knowing about Proditions. A caller with no Proditions keeps those channels;
-they enter at MPV zero.
-
-### The fit
-
-`WriteGraphs()` runs the Landau(x)Gauss fit (`$ROOTSYS/tutorials/fit/langaus.C`)
-on every channel spectrum and fills the MPV maps from it. A channel too sparse to
-fit, or one whose fit lands on the range edge, enters as **zero** rather than
-being skipped — a hole in the distribution at zero is what makes a dead or
-dying channel visible. `nFits()`, `nFitsSucceeded()` and `meanFitChi2PerNdf()`
-separate "MPV is zero" from "the fit never ran"; the analyzer prints them at
-`diagLevel > 0`.
-
-### Per-channel spectra
-
-The `crvPEs_channel*` / `crvPEsROC_channel*` spectra are the fit input, not a DQM
-product, and across all of `CRVId` there are ~22 k offline and ~27 k online of
-them. They are booked **on first fill**, so a KPP-sized geometry pays for the few
-thousand channels it actually reads out rather than for the whole detector — the
-collector used to allocate every one of them in `beginRun`.
-
-By default the helper owns them outright (`SetDirectory(nullptr)`) and nothing
-writes them. Set `writePerChannelPE` to put the ones that were filled in a
-`perChannelPE/` subdirectory, when a channel's MPV goes bad and someone needs to
-see why.
-
-### hadd
-
-`nEvents`, `nEventsWithCoincidenceClusters` and `crvCoincidencesClusters` are raw
-counts and add correctly. The MPV objects **do not**: `crvPEsMPV_ROC*` and the 2D
-`crvPEsMPV` are bar charts whose bin content *is* the MPV, so `hadd` sums MPVs
-rather than averaging them, and `crvPEsMPV_CRVsector*` combines two files' fits
-of partial statistics rather than one fit of the sum. To combine runs, re-run the
-job over the combined input, or refit from `perChannelPE/`.
-
-## CRVStatusDQM
-
-`mu2e::CRVStatusDQM` books and fills ROC-firmware health histograms from
-`CrvStatus` / `CrvDAQerror`. 
-
-Typical use:
-
-```cpp
-CRVStatusDQM dqm(config);
-dqm.Book(tfs->mkdir("CRVStatusDQM"));
-dqm.BeginSubRun(run, subrun);    // beginSubRun
-dqm.Fill(*status, *daqErrors);   // analyze
-dqm.EndSubRun(run, subrun);      // endSubRun
-dqm.WriteGraphs();               // endJob
-```
-
-Empty `CrvStatus` (typical MC, product present but empty) still counts `nEvents`
-and skips ROC/latency fills. A missing product (wrong tag) is the same fill
-path plus one `LogWarning` per job from the analyzer — it is not a throw, so MC
-jobs that omit status still run. `lastEventRocs()` supplies the five artdaq
-LastPoint scalars
-(`TriggerCount`, `EventWindowTag`, `ActiveFEBCount`, `MicroBunchStatus`,
-`WordCount`) with names `CRV.DTC<n>.ROC<m>.*`.
-
-Per-link latency histograms are booked only for `(dtcId, linkId)` that fall on
-the ROC axis (`linkId < nROCPerDTC` and `dtcId*nROCPerDTC+linkId < nROC`).
-Corrupt IDs still fill the inclusive `linkLatency` histogram. Latency is a
-DTC-link field, so it is filled whether or not `HasROCHeader()` is true.
-
-A missing `CrvStatus` product is tolerated (empty collection, one warning per
-job). A missing `CrvDAQerror` product skips unpack-error histograms (one
-warning per job).
-
-## Cluster position axes
-
-`X`, `Y` and `Z` are the one part of the inclusive block whose right range
-depends on where the detector physically is, so they are not booked by
-`Book()`. A caller holding geometry injects the CRV envelope:
-
-```cpp
-dqm.BookPositionAxes(crvMin, crvMax);   // min/max corner, Mu2e coordinates
-dqm.BookPositionAxes();                 // or: use the Config ranges
-```
-
-`CrvDQMcollector` builds the envelope in `beginRun` from the counters:
-
-```cpp
-for (const auto &bar : CRS->getAllCRSScintillatorBars())
-  // crvMin[i] = min(crvMin[i], bar->getPosition()[i] - bar->getHalfLengths()[i]), etc.
-```
-
-On run 124155 the counter envelope gives x [-7204, -604], y [4203, 4743],
-z [21116, 24887] with a 5 % margin, and every cluster lands in range. The
-`Config` ranges remain as the no-geometry fallback; they are the full-CRV
-`DqmCrv` values and are entirely overflow in y and z on extracted geometry.
-
-## otsdaq CrvDQM
-
-`otsdaq-mu2e-crv` `CrvDQM_module.cc` (`feature/CRVDigiDQM`, based on
-`mu2e/ots_ops`) constructs a `mu2e::CRVDigiDQM` member with
-`Config::fillInclusive = false` and `Config::fillLivePlots = true`, calls
-`Book`/`BeginSubRun`/`Fill`/`EndSubRun`/`WriteGraphs`, and links
-`Offline::DQMHelpers`. The module still owns `h1_dummy`, `HistoSender`,
-`THttpServer`/`TCanvas`/`CrvDQMStyle`, rate-log counters, and the per-FEB timing
-summary canvases.
-
-Its `segmentation` block goes through the same `parseSegmentation` the collector
-uses, from `ps.get<fhicl::ParameterSet>("segmentation", {})`. `Send()` ships
-**every** copy the block created, keyed on the histogram's own name, so a newly
-configured segment reaches the GUI without a change in C++. `h1_channelsLastEwt`
-and `dtOutOfRangePerFebLastEwt` are now `window` rules with `liveName` set to those
-names, rather than histograms of their own; the module reaches them through
-`dqm_.segments().live("h1_channels")`. Worked examples, with every field annotated
-and three ready-made presets, are in
-`otsdaq-mu2e-crv/fcl/CrvDQM_segmentation_examples.fcl`.
-
-The DAQ build must pick up an Offline that contains `DQMHelpers` (the
-`off_dqm` checkout, or a later Offline tag). Constant-fraction timing
-lives in `Offline/DQMHelpers/inc/CRVCFTime.hh`; the local
-`ArtModules/CrvCFTime.hh` is unused by `CrvDQM`.
-
-Binning FHiCL defaults in `CRVDigiDQM::Config` match the online
-`ps.get(...)` defaults so a cutover on the same file is comparable.
-
-## otsdaq CrvStatusMetrics
-
-`otsdaq-mu2e-crv` `CrvStatusMetrics_module.cc` constructs a
-`mu2e::CRVStatusDQM` member with `fillLivePlots = true`, takes the same
-`segmentation` block, prefers
-`CrvStatus`/`CrvDAQerror` products, and publishes the five LastPoint
-series. If the status product is absent it falls back to DTC-fragment decode
-for LastPoint only. `HistoSender` ships `errorBitsVsRoc` (and the other status
-hists) when `sendHists: true`. File-mode FCL: `fcl/RunCrvStatusDQM_vst_raw.fcl`.
-
+`WriteCatalogue` prints one line per histogram — path, class, axes — so
+`diff` against the reference file is the check that a job's set is the
+expected one.
