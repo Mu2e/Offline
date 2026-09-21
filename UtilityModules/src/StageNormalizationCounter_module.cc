@@ -86,6 +86,13 @@ namespace mu2e {
                   "-- there GenEventCount is the resampling stage's draw count, "
                   "not the origin's, and calling it origin-referenced overstates "
                   "the chain by the upstream efficiency."), true };
+        fhicl::Atom<bool> required { Name("required"),
+          Comment("Whether the input this counter is seeded from must be there. "
+                  "True: a missing one is a misconfiguration and throws. False: "
+                  "this stage simply has no normalization to record and NOTHING "
+                  "is written -- not an unseeded product, which a later stage "
+                  "could name and then fail on. Set false for a counter that is "
+                  "scheduled by default while the mixer feeding it is not."), true };
         fhicl::Atom<int> diagLevel { Name("diagLevel"), Comment("Printout level"), 0 };
       };
 
@@ -102,6 +109,7 @@ namespace mu2e {
       bool resampled_;      // upstreamTag was supplied
       bool countAsGenerated_;
       bool genCountIsOrigin_;
+      bool required_;
       int  diagLevel_;
       uint64_t nPassed_;
   };
@@ -112,6 +120,7 @@ namespace mu2e {
     , resampled_{conf().upstreamTag(upstreamTag_)}
     , countAsGenerated_{conf().countAsGenerated()}
     , genCountIsOrigin_{conf().genCountIsOrigin()}
+    , required_{conf().required()}
     , diagLevel_{conf().diagLevel()}
     , nPassed_{0}
   {
@@ -146,27 +155,31 @@ namespace mu2e {
       // A resampling stage: the mixer already worked out the count, because
       // only it knows the pool the draws came from.
       auto h = sr.getHandle<StageNormalization>(upstreamTag_);
-      if(h.isValid()) {
-        // Depth and origin-reference both come from the mixer, which knows
-        // what the pool's normalization actually reached.
-        norm = StageNormalization(h->nGenEquivalent(), nPassed_, h->nStages(),
-                                  h->fromOrigin());
-      } else {
-        // Deliberately left unseeded (nStages 0) rather than defaulted to
-        // anything: an efficiency of 1, or of 0, would be indistinguishable
-        // from a real measurement downstream. valid() says so explicitly.
-        mf::LogWarning("StageNormalizationCounter")
-          << "no StageNormalization '" << upstreamTag_ << "' in this SubRun; "
-          << "writing an unseeded normalization (nStages=0). The resampling "
-          << "mixer did not run, or is not configured to produce it.";
-        norm = StageNormalization(0., nPassed_, 0, false);
+      if(!h.isValid()) {
+        if(!required_) return;   // nothing to record, so record nothing
+        // An input the configuration named and did not find is a
+        // misconfiguration, not a state to record. An unseeded product instead
+        // put a warning in every subrun of every job whose mixer was off, and
+        // left something a later stage could name and then fail on at the end
+        // of ITS subrun.
+        throw cet::exception("BADCONFIG")
+          << "StageNormalizationCounter: no StageNormalization '" << upstreamTag_
+          << "' in this SubRun. upstreamTag names the resampling mixer's "
+          << "product, so stageNormMixer must be configured on the resampler; "
+          << "set required: false for a counter that is scheduled while the "
+          << "mixer feeding it is not.\n";
       }
+      // Depth and origin-reference both come from the mixer, which knows what
+      // the pool's normalization actually reached.
+      norm = StageNormalization(h->nGenEquivalent(), nPassed_, h->nStages(),
+                                h->fromOrigin());
     } else {
       // A 1:1 stage: this job's own generated count, propagated from the
       // input file by RootOutput. genCountIsOrigin says whether that count
       // reaches the origin -- it does not for a file that was resampled.
       auto h = sr.getHandle<GenEventCount>(genCountTag_);
       if(!h.isValid()) {
+        if(!required_) return;   // nothing to record, so record nothing
         throw cet::exception("BADCONFIG")
           << "StageNormalizationCounter: no GenEventCount '" << genCountTag_
           << "' in this SubRun. Set genCountTag to the counter this job runs, "
