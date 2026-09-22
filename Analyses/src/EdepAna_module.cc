@@ -53,7 +53,7 @@ namespace mu2e {
       TH1* h_primary_pdg_;
       TH1* h_primary_start_z_;
       TH1* h_primary_start_r_;
-      TH1* h_total_calo_energy_;
+      TH1* h_total_calo_energy_vis_;
       TH1* h_step_energy_; // individual CaloShowerStep energies
       TH2* h_step_energy_vs_time_; // step energy vs time
       TH1* h_trk_front_p_;
@@ -316,7 +316,7 @@ namespace mu2e {
    Hist->h_primary_pdg_        = dir.make<TH1D>("primary_pdg"       , "Primary PDG ID;PDG ID"                    ,  50,  -25.,   25.);
    Hist->h_primary_start_z_    = dir.make<TH1D>("primary_start_z"   , "Primary start z;Start z (mm)"             , 500, 3000., 8000.);
    Hist->h_primary_start_r_    = dir.make<TH1D>("primary_start_r"   , "Primary start radius;Start radius (mm)"   , 100,    0.,  200.);
-   Hist->h_total_calo_energy_  = dir.make<TH1F>("total_calo_energy" , "Total Calo energy from steps;Energy (MeV)", 200,    0.,  200.);
+   Hist->h_total_calo_energy_vis_  = dir.make<TH1F>("total_calo_energy" , "Total visible Calo energy from steps;Energy (MeV)", 200,    0.,  200.);
    Hist->h_step_energy_        = dir.make<TH1F>("calo_step_energy"  , "Visible CaloShowerStep energy;E_{step} (MeV)"     , 100,    0.,  100.);
    Hist->h_trk_front_p_        = dir.make<TH1F>("trk_front_p"       , "Momentum of StepPointMC at front of tracker;p (MeV/c)", 1500, 0., 150.);
    Hist->h_trk_front_energy_   = dir.make<TH1F>("trk_front_energy"  , "Energy of StepPointMC at front of tracker;Energy (MeV)", 1500, 0., 150.);
@@ -367,7 +367,7 @@ namespace mu2e {
         Hist->h_step_energy_->Fill(e, Weight);
         Hist->h_step_energy_vs_time_->Fill(css.time(), e, Weight);
       }
-      Hist->h_total_calo_energy_->Fill(info_.calo_total_edep, Weight);
+      Hist->h_total_calo_energy_vis_->Fill(info_.calo_total_edep_vis, Weight);
     }
     if(debug_level_ > 0) watch_->StopTime(__func__);
   }
@@ -523,7 +523,7 @@ namespace mu2e {
 
     h = (hists_[2]) ? hists_[2]->h_trk_front_energy_diff_ : nullptr;
     if(h) {
-      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_ : nullptr;
+      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_vis_ : nullptr;
       const double eff = h->GetEntries() > 0 && h_ref ? h->GetEntries() * 1./ h_ref->GetEntries() : 0.;
       double mpv_seed, fwhm_seed;
       get_landau_seed(h, mpv_seed, fwhm_seed);
@@ -540,7 +540,7 @@ namespace mu2e {
 
     h = (hists_[2]) ? hists_[2]->h_trk_front_energy_edep_diff_ : nullptr;
     if(h) {
-      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_ : nullptr;
+      TH1* h_ref = (hists_[0]) ? hists_[0]->h_total_calo_energy_vis_ : nullptr;
       const double eff = h->GetEntries() > 0 && h_ref ? h->GetEntries() * 1./ h_ref->GetEntries() : 0.;
       double mpv, fwhm;
       get_landau_seed(h, mpv, fwhm);
