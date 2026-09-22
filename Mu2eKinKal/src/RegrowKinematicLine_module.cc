@@ -17,6 +17,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
@@ -138,6 +139,7 @@ namespace mu2e {
     private:
       int debug_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<TrackerStatus> trackerStatus_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // refit configuration object, containing the fit schedule
@@ -179,6 +181,7 @@ namespace mu2e {
   {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
@@ -248,7 +251,7 @@ namespace mu2e {
           // convert to seed output format
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
-          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
           rgkseedcol->push_back(rgks);
           if(fillMCAssns_){
             // find the MC assns

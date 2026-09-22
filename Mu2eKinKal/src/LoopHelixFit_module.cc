@@ -18,6 +18,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
@@ -159,6 +160,7 @@ namespace mu2e {
       TrkFitFlag goodseed_;
       bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<TrackerStatus> trackerStatus_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       int print_;
       PDGCode::type fpart_;
@@ -372,6 +374,7 @@ namespace mu2e {
     // calo geom
     GeomHandle<Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     // create output
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> kkseedcol(new KalSeedCollection );
@@ -413,7 +416,7 @@ namespace mu2e {
           // sample the fit as requested
           kkfit_.sampleFit(*ktrk);
           // convert to seed output format
-          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
           if(print_>0) print_track_info(kkseed, *ktrk);
           kkseedcol->push_back(kkseed);
           // fill assns with the helix seed

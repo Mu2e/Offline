@@ -18,6 +18,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // utiliites
@@ -154,6 +155,7 @@ namespace mu2e {
       TrkFitFlag goodseed_;
       bool saveall_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<TrackerStatus> trackerStatus_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       int print_;
       PDGCode::type fpart_;
@@ -261,6 +263,7 @@ namespace mu2e {
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
@@ -372,7 +375,7 @@ namespace mu2e {
             if(t0charge*PDGcharge_ < 0)ktrk->reverseCharge();
             // sample as requested: this may be redundant with extrapolation
             sampleFit(*ktrk);
-            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+            auto kkseed = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
             kkseedcol->push_back(kkseed);
             ktrkcol->push_back(ktrk.release());
           }

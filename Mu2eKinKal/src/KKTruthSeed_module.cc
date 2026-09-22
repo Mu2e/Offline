@@ -28,6 +28,9 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
+
 // data
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
@@ -108,7 +111,8 @@ namespace mu2e {
       std::optional<KalSeed> createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
           KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
           DetectorSystem const& det, ParticleDataList const& ptable,
-          Calorimeter const& calo, Tracker const& nominalTracker) const;
+          Calorimeter const& calo, Tracker const& nominalTracker,
+          TrackerStatus const& trackerStatus) const;
 
       int debug_;
       art::ProductToken<KalSeedCollection> kseedcol_T_;
@@ -188,7 +192,8 @@ namespace mu2e {
   std::optional<KalSeed> KKTruthSeed::createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
       KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
       DetectorSystem const& det, ParticleDataList const& ptable,
-      Calorimeter const& calo, Tracker const& nominalTracker) const {
+      Calorimeter const& calo, Tracker const& nominalTracker,
+      TrackerStatus const& trackerStatus) const {
     using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
     using KKTRK = KKTrack<KTRAJ>;
     using KKSTRAWHITCOL = std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>;
@@ -295,7 +300,7 @@ namespace mu2e {
     // the reco does. The truth track has no straw hits, so without this the KalSeed's detector time range
     // is undefined and the CRV crossings are not recorded -- leaving trktruthsegs empty at the CRV.
     kkfit.sampleFit(*ktrk_truth);
-    auto tsseed = kkfit.createSeed(*ktrk_truth,recoseed.status(),calo,nominalTracker);
+    auto tsseed = kkfit.createSeed(*ktrk_truth,recoseed.status(),calo,nominalTracker,trackerStatus);
     // carry the reco fit's hit metadata onto the truth KalSeed (the truth-constrained fit has no detector
     // hits, but EventNtuple consumers use the hit list for bookkeeping)
     tsseed._hits = recoseed.hits();
@@ -308,6 +313,8 @@ namespace mu2e {
     GeomHandle<Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<DetectorSystem> det;
+    ProditionsHandle<TrackerStatus> trackerStatus_h;
+    auto const& trackerStatus = trackerStatus_h.getPtr(event.id()).get();
     auto const& ptable = *GlobalConstantsHandle<ParticleDataList>();
 
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
@@ -337,13 +344,13 @@ namespace mu2e {
       std::optional<KalSeed> tsseed;
       if(kseed.loopHelixFit()){
         auto recotraj = kseed.loopHelixFitTrajectory();
-        tsseed = createTruthSeed<KinKal::LoopHelix>(*recotraj,kseed,lhfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::LoopHelix>(*recotraj,kseed,lhfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else if(kseed.centralHelixFit()){
         auto recotraj = kseed.centralHelixFitTrajectory();
-        tsseed = createTruthSeed<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else if(kseed.kinematicLineFit()){
         auto recotraj = kseed.kinematicLineFitTrajectory();
-        tsseed = createTruthSeed<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else {
         throw cet::exception("RECO") << "mu2e::KKTruthSeed: KalSeed is not a LoopHelix, CentralHelix, or KinematicLine fit" << std::endl;
       }
