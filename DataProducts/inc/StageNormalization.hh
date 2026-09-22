@@ -86,11 +86,17 @@ namespace mu2e {
       // It exists because the obvious source of a bootstrap's totals does not
       // reach the origin: SAM's dh.gencount is reset by a resampling stage to
       // that stage's draw count, so a stops sample records draws from the beam
-      // sample, not protons. Composing the chain from SAM cannot be automated
-      // either -- nothing in a file's metadata says a stage resampled, and the
-      // obvious test (does this stage's generated count differ from its
-      // parent's?) reads equal on a real Run1B chain where the beam stage and
-      // the resampler happen to be sized alike.
+      // sample, not protons.
+      //
+      // Whether a given pool is of that kind CAN be decided outside this
+      // product, from SAM parentage and per FILE: a 1:1 stage -- splitter,
+      // selector, concatenation -- has a file whose dh.gencount equals the sum
+      // over its art parents, and a resampling stage does not. It cannot be
+      // decided per DATASET, where a campaign may size a resampler to the same
+      // round number as the stage above it (Run1Ban reads 2e9 at every level,
+      // while per file TargetStops is 400000 against parents summing to
+      // 10000000). prodtools does that walk when it fills the totals; nothing
+      // inside a job can, which is why the answer is carried here.
       bool fromOrigin() const { return fromOrigin_; }
       // nPassed matters as much as the rest: a normalization recording no
       // events cannot say what one event represents, and perEvent() would
