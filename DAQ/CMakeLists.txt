@@ -196,20 +196,20 @@ cet_build_plugin(StrawHitFilter art::module
   ROOT::Gui
 )
 
-cet_build_plugin(StrawDigiFilter art::module
-  REG_SOURCE src/StrawDigiFilter_module.cc
-  LIBRARIES REG
-  Offline::DAQ
-  Offline::RecoDataProducts
-  Offline::DataProducts
-  artdaq-core-mu2e::Data
-  art_root_io::TFileService_service
-  ROOT::Hist
-  ROOT::Tree
-  ROOT::Core
-  ROOT::RIO
-  ROOT::Gui
-)
+# 2026-09-21 PMcet_build_plugin(StrawDigiFilter art::module
+# 2026-09-21 PM  REG_SOURCE src/StrawDigiFilter_module.cc
+# 2026-09-21 PM  LIBRARIES REG
+# 2026-09-21 PM  Offline::DAQ
+# 2026-09-21 PM  Offline::RecoDataProducts
+# 2026-09-21 PM  Offline::DataProducts
+# 2026-09-21 PM  artdaq-core-mu2e::Data
+# 2026-09-21 PM  art_root_io::TFileService_service
+# 2026-09-21 PM  ROOT::Hist
+# 2026-09-21 PM  ROOT::Tree
+# 2026-09-21 PM  ROOT::Core
+# 2026-09-21 PM  ROOT::RIO
+# 2026-09-21 PM  ROOT::Gui
+# 2026-09-21 PM)
 
 cet_build_plugin(CrvDigisFromArtdaqFragments art::module
   REG_SOURCE src/CrvDigisFromArtdaqFragments_module.cc

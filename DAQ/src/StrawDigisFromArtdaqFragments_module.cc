@@ -55,7 +55,6 @@
 // #include "TRACE/tracemf.h"
 // #define TRACE_NAME "StrawDigisFromArtdaqFragments"
 
-
 namespace mu2e {
   class StrawDigisFromArtdaqFragments;
 }
@@ -121,6 +120,8 @@ private:
   int       np_per_hit_ {-1};           // N(data packets per hits)
 
   const art::Event*        event_;
+
+  const std::string mf_stream_{"MAKE_SD"};
                                                 // for now, IDTC=2*nodename+PCIE_ADDR
   ProditionsHandle<TrackerPanelMap> _tpm_h;
   const TrackerPanelMap*            _trackerPanelMap;
@@ -157,9 +158,14 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     int index(0), value(0);
     key               = debugBits_[i].data();
     sscanf(key,"bit%i:%i",&index,&value);
-    debugBit_[index]  = value;
-
-    print_(e_INFO,std::format("bit={:4d} is set to {}",index,debugBit_[index]));
+    if ((index >=0) and (index < kNDebugBits)) {
+      debugBit_[index]  = value;
+      print_(e_INFO,std::format("debug bit {:4d} is set to {}",index,debugBit_[index]));
+    }
+    else {
+      print_(e_ERROR,std::format("debug bit:{:4d} out of range (0:{:d}. IGNORE)",
+                                 index,static_cast<int>(kNDebugBits)));
+    }
   }
 }
 
@@ -185,25 +191,25 @@ void mu2e::StrawDigisFromArtdaqFragments::print_(int Level, const std::string& M
 
   if (Level == e_DEBUG) {
                                         // debug
-    MF_LOG_TRACE("MAKE_DIGI_NT") << s << ss.back() << ":" << location.line() << " : " << Message;
+    MF_LOG_TRACE(mf_stream_) << s << ss.back() << ":" << location.line() << " : " << Message;
   }
   else if (Level == e_INFO) {
                                         // info
-    MF_LOG_VERBATIM("MAKE_DIGI_NT")
+    MF_LOG_VERBATIM(mf_stream_)
       << s << ss.back() << ":" << location.line()
       //            << location.function_name()
       << " : " << Message;
   }
   else if (Level == e_WARNING) {                // warning
-    MF_LOG_PRINT("MAKE_DIGI_NT") << "WARNING: " << s << ss.back() << ":" << location.line() << " : " << Message;
+    MF_LOG_PRINT(mf_stream_) << "WARNING: " << s << ss.back() << ":" << location.line() << " : " << Message;
   }
 
   else if (Level == e_ERROR) {                //
-    MF_LOG_PROBLEM("MAKE_DIGI_NT") << "ERROR: " << s << ss.back() << ":" << location.line() << " : " << Message;
+    MF_LOG_PROBLEM(mf_stream_) << "ERROR: " << s << ss.back() << ":" << location.line() << " : " << Message;
   }
 
   else if (Level == e_SEVERE) {                //
-    MF_LOG_ABSOLUTE("MAKE_DIGI_NT") << "SEVERE: " << s << ss.back() << ":" << location.line() << " : " << Message;
+    MF_LOG_ABSOLUTE(mf_stream_) << "SEVERE: " << s << ss.back() << ":" << location.line() << " : " << Message;
   }
 }
 
@@ -252,9 +258,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // defined by the first hit
 //-----------------------------------------------------------------------------
-  artdaq::Fragments    fragments;
-  artdaq::FragmentPtrs containerFragments;
-
+// 2026-09-21 PM  artdaq::Fragments    fragments;
+// 2026-09-21 PM  artdaq::FragmentPtrs containerFragments;
   auto fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
 
   if (debugMode_ > 0) {
@@ -265,16 +270,16 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
   for (auto handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty())     continue;
 
-    if (handle->front().type() == artdaq::Fragment::ContainerFragmentType) {
-      for (const auto& cont : *handle) {
-        artdaq::ContainerFragment contf(cont);
-        for (size_t ii = 0; ii < contf.block_count(); ++ii) {
-          containerFragments.push_back(contf[ii]);
-          fragments.push_back(*containerFragments.back());
-        }
-      }
-    }
-    else {
+// 2026-09-21 PM    if (handle->front().type() == artdaq::Fragment::ContainerFragmentType) {
+// 2026-09-21 PM      for (const auto& cont : *handle) {
+// 2026-09-21 PM        artdaq::ContainerFragment contf(cont);
+// 2026-09-21 PM        for (size_t ii = 0; ii < contf.block_count(); ++ii) {
+// 2026-09-21 PM          containerFragments.push_back(contf[ii]);
+// 2026-09-21 PM          fragments.push_back(*containerFragments.back());
+// 2026-09-21 PM        }
+// 2026-09-21 PM      }
+// 2026-09-21 PM    }
+// 2026-09-21 PM    else {
 //-----------------------------------------------------------------------------
 // the 'handle' handles a list of artdaq fragments
 // each artdaq fragment corresponds to a single DTC, or a plane
@@ -299,7 +304,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 // skip CFO fragment (type = 12)
 //-----------------------------------------------------------------------------
         if (frag->type() == mu2e::FragmentType::CFO)        continue;
-        uint8_t* fdata = (uint8_t*) (frag->dataBegin());
+        uint8_t* fdata        = (uint8_t*) (frag->dataBegin());
+        uint8_t* last_address = fdata+frag->dataSizeBytes();
+
         if (not missingDTCHeaders_) {
 //-----------------------------------------------------------------------------
 // skip fragments with the payload size less than the DTC header size
@@ -330,10 +337,9 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // this is a tracker DTC fragment, loop over the ROCs
 //-----------------------------------------------------------------------------
-        ushort*  buf          = (ushort*) fdata;
-        int      nbytes       = buf[0];             // frag.dataSizeBytes() includes extra 0x20
+        // ushort*  buf          = (ushort*) fdata;
+        // int      nbytes       = buf[0];             // frag.dataSizeBytes() includes extra 24 bytes
         uint8_t* roc_data     = fdata+sizeof(*seh);
-        uint8_t* last_address = fdata+nbytes;
 
         while (roc_data < last_address) {
           RocDataHeaderPacket_t* rdh = (RocDataHeaderPacket_t*) roc_data;
@@ -497,8 +503,8 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // an if could be more disruptive
 //-----------------------------------------------------------------------------
-              auto digi = straw_digis->back();
-              digi.digiFlag() = digi_flag;
+              auto digi = &straw_digis->back();
+              digi->digiFlag() = digi_flag;
 //------------------------------------------------------------------------------
 // the corresponding waveform, store only if at least the second packet is present (nSamples_ = 15 or more)
 //-----------------------------------------------------------------------------
@@ -543,7 +549,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
           roc_data += (nhits*np_per_hit_+1)*packet_size;
         }
       }
-    }
+      // 2026-09-21 PM    }
   }
 
   intInfo->setNTrackerHits(straw_digis->size());
