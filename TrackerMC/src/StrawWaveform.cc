@@ -199,7 +199,7 @@ namespace mu2e {
           volts.push_back(0);
         }
 
-        int num_steps = (int)ceil((times[times.size()-1]-iclust->time()-strawele.clusterLookbackTime())/strawele.saturationTimeStep());
+        int num_steps = (int)ceil((times[times.size()-1]-iclust->time()+strawele.clusterLookbackTime())/strawele.saturationTimeStep());
 
         for (int i=0;i<num_steps;i++){
           double time = iclust->time()-strawele.clusterLookbackTime() + i*strawele.saturationTimeStep();

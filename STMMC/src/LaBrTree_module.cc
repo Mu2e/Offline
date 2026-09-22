@@ -1,5 +1,5 @@
-// Adapted from ReadVirtualDetector_module.cc
-// For StepPointMCs in STMDet, generates a TTree with energy in branch "E" and time in branch "time". For a chosen STM detector
+// Adapted from HPGeTree_module.cc
+// For StepPointMCs in STMDet, generates a TTree with energy in branch "E" and time in branch "time", for the LaBr detector
 //  - Iterate over the StepPointMCs, determine the associated SimParticle
 //  - Find the most parent particle of the associated SimParticle within the associated STMDet
 //  - Increment the energy associated with the parent particle
@@ -7,12 +7,30 @@
 //  - Determine the PDG ID of the top particles, increment the mapped counter
 //    - If the PDG ID entry does not exist in the map, create a new entry.
 //  - Print the PDG ID counts at the end of the job
+//
+// WARNING - this module reports the RAW IONIZING ENERGY DEPOSITED in the LaBr crystal, summed
+// per top parent particle in exactly the same way as HPGeTree does for the HPGe crystal. It is
+// NOT a LaBr detector response. In particular the following are NOT applied:
+//  - the scintillation light yield and its non-proportionality with energy, which for LaBr3:Ce
+//    is a significant, energy dependent effect
+//  - the photosensor quantum efficiency and gain
+//  - the intrinsic energy resolution, which is far worse than that of a HPGe crystal
+// The deposited energy is still physically meaningful - the scintillation light produced is
+// driven by it - so this tree is useful for relative studies and for comparing the flux and
+// spectrum reaching the two crystals. Do not read the "E" branch as a measured LaBr spectrum.
+//
+// FIXME - replace the raw ionizing energy sum below with a proper LaBr response once the light
+// yield, non-proportionality and resolution model is defined in Offline. At that point this
+// module and HPGeTree_module.cc should probably be merged back into one detector-aware module,
+// which is what the "Detector" parameter of HPGeTree was originally intended for - it currently
+// throws for "LaBr" because that response is undefined, and this module exists to fill that gap
+// without changing HPGeTree's behaviour.
+//
 // Input Parameters
-//  - Detector - either "HPGe" or "LaBr" - applies a position cut to calculate the energy deposited by a particle going through the chosen detector
 //  - StepPointMCsTag - tag of data product containing the StepPoints for STMDet
 //  - SimParticlemvTag - tag of data product containing the SimParticles for STMDet
-// Original author: Ivan Logashenko
-// Adapted by: Pawel Plesniak
+// Original author: Ivan Logashenko, Pawel Plesniak
+// Adapted by: Yongyi Wu, Aug. 2026
 
 // stdlib includes
 #include <limits>
@@ -35,7 +53,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
@@ -46,28 +63,23 @@
 
 // Mu2e type definitions
 typedef cet::map_vector_key key_type;
-typedef unsigned long VolumeId_type;
 
 namespace mu2e {
-  class HPGeTree : public art::EDAnalyzer {
+  class LaBrTree : public art::EDAnalyzer {
     public:
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       struct Config {
-        fhicl::Atom<std::string> detector{ Name("Detector"), Comment("Which detector to generate energy histograms for, either 'HPGe' or 'LaBr'")};
         fhicl::Atom<art::InputTag> stepPointMCsTag{ Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs")};
         fhicl::Atom<art::InputTag> simParticlemvTag{ Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv")};
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
-      explicit HPGeTree(const Parameters& conf);
+      explicit LaBrTree(const Parameters& conf);
       std::tuple<key_type, int> topParent(std::set<key_type>& SimParticleIDs, const SimParticle particle);
       double parentTime(const art::Event& event, key_type parentId);
       void analyze(const art::Event& event);
       void endJob();
     private:
-      std::string detector = "";
-      std::vector<std::string> detectors{"HPGe", "LaBr"};
-
       SimParticle stepParticle;
       std::set<key_type> SimParticleIds;
 
@@ -91,17 +103,16 @@ namespace mu2e {
       art::Ptr<SimParticle> parent;
   };
 
-  HPGeTree::HPGeTree(const Parameters& conf) :
+  LaBrTree::LaBrTree(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    detector(conf().detector()),
     StepPointMCsToken(consumes<StepPointMCCollection>(conf().stepPointMCsTag())),
     SimParticlemvToken(consumes<SimParticleCollection>(conf().simParticlemvTag())) {
-      // Check if detector is one of the allowed types
-      if (std::find(detectors.begin(), detectors.end(), detector) == detectors.end())
-        throw cet::exception("Configuration") << "'detector' must be one of 'HPGe' or 'LaBr'";
-      // TODO - remove this when the LaBr shower energy is defined
-      if (detector == "LaBr")
-        throw cet::exception("Configuration") << "Currently this code only works for HPGe, exiting.\n";
+      // Make it obvious in the job log that this is not a detector response
+      mf::LogWarning("LaBrTree")
+        << "The 'E' branch of this tree is the raw ionizing energy deposited in the LaBr crystal.\n"
+        << "No scintillation light yield, non-proportionality, photosensor response or energy\n"
+        << "resolution is applied, so this is NOT a simulated LaBr spectrum. See the FIXME at the\n"
+        << "top of LaBrTree_module.cc.\n";
 
       // Set up TTree
       art::ServiceHandle<art::TFileService> tfs;
@@ -110,12 +121,12 @@ namespace mu2e {
       ttree->Branch("time", &time, "time/D");
   };
 
-  std::tuple<key_type, int> HPGeTree::topParent(std::set<key_type>& SimParticleIds, const SimParticle particle) {
+  std::tuple<key_type, int> LaBrTree::topParent(std::set<key_type>& SimParticleIds, const SimParticle particle) {
     // Get the particle parent
     parent = particle.parent();
 
     // A primary has no parent, and a compressed SimParticleCollection can leave a non-null Ptr
-    // whose pointee was dropped. Either way the walk stops here and the particle is its own top
+    // whose target was dropped. Either way the walk stops here and the particle is its own top
     // parent - the same answer as the STMDet test below, which cannot be reached without a
     // dereferenceable Ptr. Without this, art throws ProductNotFound (ProductID 0).
     if (parent.isNull() || !parent.isAvailable()) {
@@ -137,7 +148,7 @@ namespace mu2e {
     return std::make_tuple(parent->id(), parent->pdgId());
   };
 
-  double HPGeTree::parentTime(const art::Event& event, key_type parentId) {
+  double LaBrTree::parentTime(const art::Event& event, key_type parentId) {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     auto const& SimParticles = event.getProduct(SimParticlemvToken); // TODO - resture this so we don't access the SimParticles from the data product directly, but through the parent particle
@@ -160,7 +171,7 @@ namespace mu2e {
     return time;
   };
 
-  void HPGeTree::analyze(const art::Event& event) {
+  void LaBrTree::analyze(const art::Event& event) {
     // Get the data products from the event
     auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
     auto const& SimParticles = event.getProduct(SimParticlemvToken);
@@ -176,10 +187,8 @@ namespace mu2e {
 
     // Loop over all steps
     for (const StepPointMC& step : StepPointMCs) {
-      // Select the appropriate steps
-      if ((detector == "HPGe") && (step.position().x() > xBeamCentre))
-        continue;
-      else if ((detector == "LaBr") && (step.position().x() < xBeamCentre))
+      // Select the steps in the LaBr crystal, which sits on the +x side of the beam centre
+      if (step.position().x() < xBeamCentre)
         continue;
 
       // Get the associated top particle
@@ -190,17 +199,14 @@ namespace mu2e {
         throw cet::exception("LogicError") << "The found parent ID is not a member of the data product\n";
 
       // Collate the data
+      // FIXME - this is the raw ionizing energy deposited, not the LaBr response. See the top of this file.
       topParentIdsIt = std::find(topParentIds.begin(), topParentIds.end(), topParentId);
       if (topParentIdsIt != topParentIds.end()) {
-        if (detector == "HPGe")
-          EDeps[topParentId] += step.ionizingEdep();
-        // TODO - include the LaBr response here
+        EDeps[topParentId] += step.ionizingEdep();
       }
       else {
         topParentIds.emplace_back(topParentId);
-        if (detector == "HPGe")
-          EDeps.emplace(std::make_pair(topParentId, step.ionizingEdep()));
-        // TODO - include the LaBr response here
+        EDeps.emplace(std::make_pair(topParentId, step.ionizingEdep()));
         times.emplace(std::make_pair(topParentId, parentTime(event, topParentId)));
       };
 
@@ -229,8 +235,8 @@ namespace mu2e {
     return;
   }; // end analyze
 
-  void HPGeTree::endJob() {
-    mf::LogInfo log("HPGeTree");
+  void LaBrTree::endJob() {
+    mf::LogInfo log("LaBrTree");
     log << "==========Data summary==========\n";
     for (auto part : pdgIds)
       log << "PDGID " << part.first << ": " << part.second << "\n";
@@ -240,7 +246,9 @@ namespace mu2e {
     if (nNoParent > 0)
       log << "Steps whose SimParticle had no reachable parent (treated as their own top parent): "
           << nNoParent << "\n";
+    mf::LogWarning("LaBrTree")
+      << "Reminder - the 'E' branch is raw ionizing energy deposited, not a LaBr detector response.\n";
   };
 }; // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::HPGeTree)
+DEFINE_ART_MODULE(mu2e::LaBrTree)

@@ -4,7 +4,6 @@ cet_build_plugin(BaselineAnalyzer art::module
     art_root_io::TFileService_service
     Offline::CaloConditions
     Offline::CaloVisualizer
-    Offline::CaloVisualizer_dict
     Offline::DAQ
     Offline::DataProducts
     Offline::ProditionsService

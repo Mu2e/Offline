@@ -19,11 +19,11 @@ physics: {
   analyzers : {
     plotHPGePHSpectrum : {
       module_type : PlotSTMPHSpectrum
-      stmPHDigisTag : "makeSTMDigis:phHPGe"
+      stmPHDigisMapTag : "makeSTMDigis:phHPGe"
     }
     plotLaBrPHSpectrum : {
       module_type : PlotSTMPHSpectrum
-      stmPHDigisTag : "makeSTMDigis:phLaBr"
+      stmPHDigisMapTag : "makeSTMDigis:phLaBr"
     }
   }
   # setup paths

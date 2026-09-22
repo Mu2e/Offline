@@ -14,9 +14,37 @@ using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
 
+  namespace {
+    // a per-channel fcl list is either empty (no override) or covers every channel
+    void checkChannelListLength(char const* name, size_t size, size_t nchannels) {
+      if (size != 0 && size != nchannels)
+        throw cet::exception("BADCONFIG")
+          << "StrawElectronics fcl parameter " << name << " has " << size
+          << " entries; it must be empty or have " << nchannels << "\n";
+    }
+  }
+
   StrawElectronics::ptr_t StrawElectronicsMaker::fromFcl(EventTiming::cptr_t eventTiming) {
 
     unsigned maxTDC = (0x1<<_config.numTDCbits())-1;
+
+    // the wire distance points are interpolated between neighbours, so there must be at least 2
+    auto const wireDistances = _config.wireDistances();
+    auto const currentMeans = _config.currentMeans();
+    auto const currentNormalizations = _config.currentNormalizations();
+    auto const currentSigmas = _config.currentSigmas();
+    auto const currentT0s = _config.currentT0s();
+    if (wireDistances.size() < 2
+        || currentMeans.size() != wireDistances.size()
+        || currentNormalizations.size() != wireDistances.size()
+        || currentSigmas.size() != wireDistances.size()
+        || currentT0s.size() != wireDistances.size()) {
+      throw cet::exception("BADCONFIG")
+        << "StrawElectronics fcl parameters wireDistances, currentMeans, currentNormalizations,"
+        << " currentSigmas and currentT0s must have the same length, at least 2; lengths are "
+        << wireDistances.size() << " " << currentMeans.size() << " " << currentNormalizations.size()
+        << " " << currentSigmas.size() << " " << currentT0s.size() << "\n";
+    }
 
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
@@ -37,25 +65,34 @@ namespace mu2e {
         _config.ADCPoles(), _config.ADCZeros(),
         _config.preampToAdc1Poles(), _config.preampToAdc1Zeros(),
         _config.preampToAdc2Poles(), _config.preampToAdc2Zeros(),
-        _config.wireDistances(), _config.currentMeans(),
-        _config.currentNormalizations(), _config.currentSigmas(),
-        _config.currentT0s(), _config.reflectionTimeShift(),
+        wireDistances, currentMeans,
+        currentNormalizations, currentSigmas,
+        currentT0s, _config.reflectionTimeShift(),
         _config.reflectionVelocity(), _config.reflectionALength(),
         _config.reflectionFrac(), _config.triggerHysteresis(),
         _config.clusterLookbackTime());
 
+    auto const timeOffsetPanelFcl = _config.timeOffsetPanel();
+    auto const timeOffsetStrawHVFcl = _config.timeOffsetStrawHV();
+    auto const timeOffsetStrawCalFcl = _config.timeOffsetStrawCal();
+    checkChannelListLength("timeOffsetPanel", timeOffsetPanelFcl.size(), StrawId::_nupanels);
+    checkChannelListLength("timeOffsetStrawHV", timeOffsetStrawHVFcl.size(), StrawId::_nustraws);
+    if (timeOffsetStrawCalFcl.size() != timeOffsetStrawHVFcl.size())
+      throw cet::exception("BADCONFIG")
+        << "StrawElectronics fcl parameters timeOffsetStrawHV and timeOffsetStrawCal must have the same length, not "
+        << timeOffsetStrawHVFcl.size() << " and " << timeOffsetStrawCalFcl.size() << "\n";
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
-    if (_config.timeOffsetPanel().size() > 0){
+    if (timeOffsetPanelFcl.size() > 0){
       for (size_t i=0;i<timeOffsetPanel.size();i++)
-        timeOffsetPanel[i] = _config.timeOffsetPanel()[i];
+        timeOffsetPanel[i] = timeOffsetPanelFcl[i];
     }else{
       timeOffsetPanel.fill(0);
     }
-    if (_config.timeOffsetStrawHV().size() > 0){
+    if (timeOffsetStrawHVFcl.size() > 0){
       for(size_t i=0;i<timeOffsetStrawHV.size();i++){
-        timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
-        timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
+        timeOffsetStrawHV[i] = timeOffsetStrawHVFcl[i];
+        timeOffsetStrawCal[i] = timeOffsetStrawCalFcl[i];
       }
     }else{
       timeOffsetStrawHV.fill(0);
@@ -65,16 +102,20 @@ namespace mu2e {
         timeOffsetStrawHV,
         timeOffsetStrawCal );
 
+    auto const thresholddVdI = _config.thresholddVdI();
+    auto const adcdVdI = _config.adcdVdI();
+    checkChannelListLength("thresholddVdI", thresholddVdI.size(), StrawId::_nustraws);
+    checkChannelListLength("adcdVdI", adcdVdI.size(), StrawId::_nustraws);
     std::array<std::array<double, StrawId::_nustraws>,StrawElectronics::npaths> dVdI;
-    if(_config.thresholddVdI().size()>0) {
+    if(thresholddVdI.size()>0) {
       for (size_t i=0;i<dVdI[StrawElectronics::thresh].size();i++)
-        dVdI[StrawElectronics::thresh][i] = _config.thresholddVdI()[i];
+        dVdI[StrawElectronics::thresh][i] = thresholddVdI[i];
     } else {
       dVdI[StrawElectronics::thresh].fill(_config.defaultThresholddVdI());
     }
-    if(_config.adcdVdI().size()>0) {
+    if(adcdVdI.size()>0) {
       for (size_t i=0;i<dVdI[StrawElectronics::adc].size();i++)
-        dVdI[StrawElectronics::adc][i] = _config.adcdVdI()[i];
+        dVdI[StrawElectronics::adc][i] = adcdVdI[i];
     } else {
       dVdI[StrawElectronics::adc].fill(_config.defaultAdcdVdI());
     }
@@ -86,10 +127,12 @@ namespace mu2e {
     analognoise[StrawElectronics::adc]    = _config.adcAnalogNoise();
     ptr->setAnalogNoise(analognoise);
 
+    auto const discriminatorThreshold = _config.discriminatorThreshold();
+    checkChannelListLength("discriminatorThreshold", discriminatorThreshold.size(), StrawId::_nustrawends);
     std::array<double, StrawId::_nustrawends> vthresh;
-    if(_config.discriminatorThreshold().size()>0) {
+    if(discriminatorThreshold.size()>0) {
       for (size_t i=0;i<vthresh.size();i++)
-        vthresh[i] = _config.discriminatorThreshold()[i];
+        vthresh[i] = discriminatorThreshold[i];
     } else {
       vthresh.fill(_config.defaultDiscriminatorThreshold());
     }
@@ -126,13 +169,13 @@ namespace mu2e {
 
     const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
 
-    auto integral_normalization = log(responseBins/2/sampleRate + _config.currentT0s()[0]) - log(_config.currentT0s()[0]); // integral of 1/(t+t0) for 0 cm
+    auto integral_normalization = log(responseBins/2/sampleRate + currentT0s[0]) - log(currentT0s[0]); // integral of 1/(t+t0) for 0 cm
 
     std::vector<StrawElectronics::WireDistancePoint> wPoints;
-    for (size_t ai=0;ai<_config.wireDistances().size();ai++){
-      wPoints.emplace_back( _config.wireDistances()[ai],
-          _config.currentMeans()[ai],  _config.currentNormalizations()[ai],
-          _config.currentSigmas()[ai], _config.currentT0s()[ai]);
+    for (size_t ai=0;ai<wireDistances.size();ai++){
+      wPoints.emplace_back( wireDistances[ai],
+          currentMeans[ai],  currentNormalizations[ai],
+          currentSigmas[ai], currentT0s[ai]);
       wPoints[ai]._currentPulse = std::vector<double>(responseBins,0);
       double integral = 0;
       for (int i=0;i<responseBins;i++){

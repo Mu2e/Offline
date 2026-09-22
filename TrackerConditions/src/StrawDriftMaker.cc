@@ -26,7 +26,8 @@ namespace mu2e {
 
     std::vector<double> dataEField = _config.kVcm();
     std::vector<double> dataVInst = _config.cmus();
-    if ( dataEField.size()==0 || dataEField.size()!=dataVInst.size() ) {
+    // the table is interpolated between neighbouring points, so it needs at least 2
+    if ( dataEField.size()<2 || dataEField.size()!=dataVInst.size() ) {
       throw cet::exception("STRAW_DRIFT_BADMODEL")
         << "input drift model don't make sense, sizes:"<< dataEField.size()
         << " " << dataVInst.size()  << "\n";

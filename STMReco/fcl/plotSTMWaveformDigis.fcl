@@ -24,23 +24,27 @@ physics: {
   
     plotRawWaveformDigisHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:rawHPGe"
-      subtractPedestal : false
-      verbosityLevel : 0
-      xAxis : "sample_number"
-    }
-    
-    plotZSWaveformDigisHPGe : {
-      module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:zsHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawHPGe"
+      waveformType : raw
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
     }
 
-    plotPHWaveformDigisHPGe : {
+    plotRawWaveformDigisTimeHPGe : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:phHPGe"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawHPGe"
+      waveformType : raw
+      subtractPedestal : false
+      verbosityLevel : 0
+      xAxis: "waveform_time"
+    }
+    
+    plotZSWaveformDigisHPGe : {
+      module_type : PlotSTMWaveformDigis
+      stmWaveformDigisMapTag : "makeSTMDigis:zsHPGe"
+      waveformType : zs
+      plotZSWithoutOffset : true
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
@@ -48,7 +52,8 @@ physics: {
 
     plotRawWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:rawLaBr"
+      stmWaveformDigisMapTag : "makeSTMDigis:rawLaBr"
+      waveformType : raw
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
@@ -56,24 +61,27 @@ physics: {
     
     plotZSWaveformDigisLaBr : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:zsLaBr"
+      stmWaveformDigisMapTag : "makeSTMDigis:zsLaBr"
+      waveformType : zs
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
     }
 
-    plotPHWaveformDigisLaBr : {
+    plotZSWaveformDigisLaBrUnshifted : {
       module_type : PlotSTMWaveformDigis
-      stmWaveformDigisTag : "makeSTMDigis:phLaBr"
+      stmWaveformDigisMapTag : "makeSTMDigis:zsLaBr"
+      waveformType : zs
       subtractPedestal : false
       verbosityLevel : 0
       xAxis : "sample_number"
-     }
+      plotZSWithoutOffset : true
+    }
      
   }
   # setup paths
   trigger_paths: [  ]
-  anaPath : [ plotRawWaveformDigisHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr ]
+  anaPath : [ plotRawWaveformDigisHPGe, plotRawWaveformDigisTimeHPGe, plotZSWaveformDigisHPGe, plotRawWaveformDigisLaBr, plotZSWaveformDigisLaBr, plotZSWaveformDigisLaBrUnshifted ]
   end_paths: [anaPath]
 }
 

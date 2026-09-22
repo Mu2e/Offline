@@ -356,8 +356,17 @@ namespace mu2e {
     return seedtraj;
   }
   bool KinematicLineFit::goodFit(KKTRK const& ktrk) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    return ktrk.fitStatus().usable();
+    bool retval = ktrk.fitStatus().usable();
+    // a usable fit can still have diverged from its hits: test the fit where the active straw hits are
+    if(retval){
+      for(auto const& shptr : ktrk.strawHits()) {
+        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+          retval = false;
+          break;
+        }
+      }
+    }
+    return retval;
   }
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
