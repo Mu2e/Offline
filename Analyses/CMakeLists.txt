@@ -143,6 +143,15 @@ cet_build_plugin(DiskCal00 art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(EdepAna art::module
+    REG_SOURCE src/EdepAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(EMFCSimpleDumper art::module
     REG_SOURCE src/EMFCSimpleDumper_module.cc
     LIBRARIES REG
