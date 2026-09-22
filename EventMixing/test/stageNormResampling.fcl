@@ -1,0 +1,82 @@
+# Resample from a pool carrying a StageNormalization, and check it is carried
+# through and scaled by the draw count -- the step no other mechanism covers,
+# since the pool arrives as a mixing secondary whose SubRun products do not
+# otherwise reach the output.
+#
+# Make the pool with UtilityModules/test/stageNormalizationCounter.fcl over any
+# file with subrun bookkeeping. Over a Run1B TargetStops file that pool is 735
+# events representing 12500 generated, so perEvent = 17.00680... and 100 draws
+# must report nGenEquivalent = 1700.680... and nStages = 2.
+#
+# For a pool predating StageNormalization (every MuBeamCat dataset today),
+# replace moduleLabel with the bootstrap -- the two are alternatives, not a
+# preference and a fallback, because art aborts on a declared mix op whose
+# product the secondary lacks:
+#
+#   poolGenCount    : 12500          # GenEventCount total over fileNames
+#   poolEventCount  : 735            # events in ALL of fileNames
+
+#include "Offline/fcl/minimalMessageService.fcl"
+
+process_name : resampleNorm
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 100
+  firstRun : 1800
+  firstSubRun : 0
+}
+
+services : {
+  message : @local::default_message
+  RandomNumberGenerator : {}
+  SeedService : {
+    policy : autoIncrement
+    baseSeed : 1
+    maxUniqueEngines : 20
+  }
+}
+
+physics : {
+  filters : {
+    beamResampler : {
+      module_type : ResamplingMixer
+      fileNames : [ "sim.owner.stageNormTest.version.sequencer.art" ]
+      readMode : "sequential"
+      wrapFiles : true
+      mu2e : {
+        writeEventIDs : true
+        MaxEventsToSkip : 0
+        debugLevel : 0
+        products : {
+          stageNormMixer : {
+            moduleLabel : "targetStopCounter"
+            srOutInstance : "resampled"
+          }
+        }
+      }
+    }
+  }
+
+  producers : {
+    resampledCounter : {
+      module_type : StageNormalizationCounter
+      upstreamTag : "beamResampler:resampled"
+      diagLevel   : 1
+    }
+  }
+
+  countPath     : [ beamResampler, resampledCounter ]
+  trigger_paths : [ countPath ]
+
+  out           : [ Output ]
+  end_paths     : [ out ]
+}
+
+outputs : {
+  Output : {
+    module_type : RootOutput
+    SelectEvents : [ countPath ]
+    fileName : "sim.owner.resampleNormTest.version.sequencer.art"
+  }
+}

@@ -179,6 +179,63 @@ namespace mu2e {
         (clmc.moduleLabel(), "", &Mu2eProductMixer::mixCosmicLivetime, *this);
     }
 
+    //----------------------------------------------------------------
+    // StageNormalization handling
+    StageNormMixerConfig snmc;
+    if (conf.stageNormMixer(snmc)) {
+      mixStageNorm_ = true;
+      subrunStageNormInstanceName_ = snmc.srOutInstance();
+      helper.produces<StageNormalization, art::InSubRun>(subrunStageNormInstanceName_);
+
+      art::InputTag normTag;
+      double poolGen = 0., poolEvents = 0.;
+      const bool haveNorm = snmc.moduleLabel(normTag);
+      const bool haveGen = snmc.poolGenCount(poolGen);
+      const bool haveEvents = snmc.poolEventCount(poolEvents);
+
+      if(haveGen != haveEvents) {
+        throw cet::exception("BADCONFIG")
+          << "Mu2eProductMixer/stageNormMixer: poolGenCount and poolEventCount "
+          << "are the two halves of one bootstrap and must be given together; "
+          << "one without the other cannot produce a normalization.\n";
+      }
+      if(haveNorm == haveGen) {
+        throw cet::exception("BADCONFIG")
+          << "Mu2eProductMixer/stageNormMixer: give EXACTLY ONE of moduleLabel "
+          << "(the pool carries a StageNormalization) or poolGenCount + "
+          << "poolEventCount (it does not, so state the pool's totals); "
+          << (haveNorm ? "both were given" : "neither was given") << ". They are "
+          << "alternatives, not a preference and a fallback: art throws "
+          << "ProductNotFound when a declared mix op's product is missing from "
+          << "the secondary, so declaring both aborts on the first event when "
+          << "the pool lacks one.\n";
+      }
+
+      if(haveNorm) {
+        helper.declareMixOp<art::InSubRun>
+          (normTag, "", &Mu2eProductMixer::mixStageNormalization, *this, false);
+      } else {
+        if(poolGen <= 0. || poolEvents <= 0.) {
+          throw cet::exception("BADCONFIG")
+            << "Mu2eProductMixer/stageNormMixer: poolGenCount and poolEventCount "
+            << "must both be > 0, got " << poolGen << " and " << poolEvents << "\n";
+        }
+        bootstrapStageNorm_ = true;
+        poolGenCount_ = poolGen;
+        poolEventCount_ = poolEvents;
+        poolStages_ = snmc.poolStages();
+        poolFromOrigin_ = snmc.poolFromOrigin();
+        if(poolStages_ == 0) {
+          throw cet::exception("BADCONFIG")
+            << "Mu2eProductMixer/stageNormMixer: poolStages must be >= 1; the "
+            << "pool's own normalization spans at least its generating stage.\n";
+        }
+        // No mix op: the pool's ratio is stated, not read. Reading it would
+        // take the DRAWN SUBRUN's GenEventCount against the whole pool's event
+        // count, which is wrong by the number of subruns in the pool.
+      }
+    }
+
   }
 
   //================================================================
@@ -219,7 +276,11 @@ namespace mu2e {
   void Mu2eProductMixer::beginSubRun(const art::SubRun& s) {
     subrunVolumes_.clear();
     resampledEvents_ = 0;
-
+    perEventSum_ = 0.;
+    nDraws_ = 0;
+    nDrawsUnnormalized_ = 0;
+    upstreamStages_ = 0;
+    upstreamFromOrigin_ = true;
   }
 
   //----------------------------------------------------------------
@@ -233,6 +294,56 @@ namespace mu2e {
       }
 
       sr.put(std::move(col), subrunVolInstanceName_, art::fullSubRun());
+    }
+    if (mixStageNorm_) {
+      if(bootstrapStageNorm_) {
+        // resampledEvents_ is the draw count (startEvent increments it), so the
+        // bootstrap needs no mix op and cannot disagree with one.
+        if(resampledEvents_ == 0) {
+          throw cet::exception("BADINPUT")
+            << "Mu2eProductMixer/stageNormMixer: no draws were made; was the "
+            << "mixin file opened correctly?\n";
+        }
+        // nStages and fromOrigin come from what the caller stated about the
+        // pool, not from an assumption that its totals reach the origin.
+        // Hardcoding 2 here claimed a rate per proton from a stops pool whose
+        // stated generated count was beam draws -- wrong by the beam stage's
+        // own efficiency, about 78 for Run1B, with nothing in the file to
+        // show it.
+        // Through resample(), so the depth and the origin flag advance in one
+        // place rather than being recomputed here. nPassed is 0 for the same
+        // reason as in the forwarding branch: what survives to a given output
+        // stream is that stream's counter's business.
+        const StageNormalization pool(poolGenCount_, uint64_t(poolEventCount_),
+                                      poolStages_, poolFromOrigin_);
+        auto norm = std::make_unique<StageNormalization>(
+          StageNormalization::resample(resampledEvents_, pool, 0));
+        sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
+      } else {
+      if(nDrawsUnnormalized_ > 0) {
+        // Never silently averaged over the draws that did have one: the result
+        // would be a normalization short by exactly the missing fraction, and
+        // nothing in the output would say so.
+        throw cet::exception("BADINPUT")
+          << "Mu2eProductMixer/stageNormMixer: " << nDrawsUnnormalized_ << " of "
+          << nDraws_ << " draws came from a subrun carrying no usable "
+          << "StageNormalization (and no bootstrap applied). Configure "
+          << "poolGenCount + poolEventCount for a pool predating the product, "
+          << "or regenerate the pool with a StageNormalizationCounter.\n";
+      }
+      if(nDraws_ == 0 || perEventSum_ <= 0.) {
+        throw cet::exception("BADINPUT")
+          << "Mu2eProductMixer/stageNormMixer: no normalized draws were seen; "
+          << "was the mixin file opened correctly?\n";
+      }
+      // nPassed is left 0 here on purpose: this product says only how many
+      // generated events the DRAWS represent. What survives to a given
+      // output stream is that stream's business, and its
+      // StageNormalizationCounter fills nPassed in against this number.
+      auto norm = std::make_unique<StageNormalization>(
+        perEventSum_, 0, upstreamStages_ + 1, upstreamFromOrigin_);
+      sr.put(std::move(norm), subrunStageNormInstanceName_, art::fullSubRun());
+      }
     }
     if (mixCosmicLivetimes_) {
       if(generatedEvents_ == 0)throw cet::exception("BADINPUT")<<"Mu2eProductMixer: generated event count =0; was the mixin file opened correctly?" << std::endl;
@@ -653,6 +764,41 @@ namespace mu2e {
     return false;
   }
 
+
+  //----------------------------------------------------------------
+  // Called once per OUTPUT event with the drawn secondary's SubRun product, so
+  // this accumulates per draw rather than latching. That is the whole
+  // difference from the cosmic path, which requires every draw to come from one
+  // subrun; a beam pool spans thousands, and each may have its own efficiency.
+  bool Mu2eProductMixer::mixStageNormalization(std::vector<StageNormalization const*> const& in,
+                                               StageNormalization& out,
+                                               art::PtrRemapper const&)
+  {
+    ++nDraws_;
+    if(in.size() > 1) {
+      throw cet::exception("BADINPUT")
+        << "Mu2eProductMixer/subrun: can't mix StageNormalization from "
+        << in.size() << " secondaries\n";
+    }
+    if(in.size() == 1 && in[0]->valid()) {
+      // One draw stands for one input event, which stands for perEvent()
+      // origin-generated events.
+      perEventSum_ += in[0]->perEvent();
+      upstreamStages_ = std::max(upstreamStages_, in[0]->nStages());
+      upstreamFromOrigin_ = upstreamFromOrigin_ && in[0]->fromOrigin();
+    } else {
+      // The product is there but was never seeded (nStages 0). Refused on the
+      // spot: a subrun-end failure makes a day-long job find out at its last
+      // step, and a normalization built from only some of the draws would be
+      // short by exactly the fraction that was skipped.
+      throw cet::exception("BADINPUT")
+        << "Mu2eProductMixer/stageNormMixer: draw " << nDraws_ << " comes from "
+        << "a subrun whose StageNormalization was never seeded (nStages 0), so "
+        << "what that event represents is unknown. The pool was written by a "
+        << "counter that found no normalization of its own.\n";
+    }
+    return false;
+  }
 
   //----------------------------------------------------------------
   bool Mu2eProductMixer::mixCosmicLivetime(std::vector<CosmicLivetime const*> const& in,
