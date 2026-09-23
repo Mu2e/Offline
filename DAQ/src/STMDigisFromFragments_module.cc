@@ -1,7 +1,6 @@
 // ====================================================================
 //
-// Stmdigisfromfragments: create all types of STMDigis from STMFragments
-// Note that for the STM, a single art event contains many EWTs
+// STMDigisFromFragments: create all types of STMDigis from STMFragments
 //
 // ======================================================================
 
@@ -86,6 +85,7 @@ private:
     // General Fragment variables
     size_t _totalEvents{0};
     size_t _totalNonContainers{0};
+    size_t _totalUnknownContainers{0};
     size_t _totalFragments{0};
     size_t _totalContainers{0};
     size_t _totalInnerFrags{0};
@@ -102,6 +102,14 @@ private:
     size_t _totalEmptyRawFrags{0};
     size_t _totalEmptyZSFrags{0};
     size_t _totalEmptyPHFrags{0};
+
+    // zs errors
+    size_t _totalZSLengthMismatch{0};
+    size_t _totalZSLengthMismatchHPGe{0};
+    size_t _totalZSLengthMismatchLaBr{0};
+    size_t _totalZSRegionMismatch{0};
+    size_t _totalZSRegionMismatchHPGe{0};
+    size_t _totalZSRegionMismatchLaBr{0};
 
     // Header-related variables
     size_t _totalRawFragsPrescaled{0};
@@ -230,6 +238,9 @@ private:
         size_t phFragsSkippedDueToNoPrecedingRawHeader{0};
         size_t phCountMismatch{0};
 
+        size_t zsLengthMismatch{0};
+        size_t zsRegionMismatch{0};
+
     };
 
 }; // STMDigisFromFragments
@@ -285,6 +296,10 @@ void STMDigisFromFragments::produce(Event& event)
     size_t missingHPGeFragsThisEvent{0};
     size_t badLaBrFragsThisEvent{0};
     size_t missingLaBrFragsThisEvent{0};
+
+    // Unknown Container
+    size_t unknownContainersThisEvent{0};
+    size_t nonContainersThisEvent{0};
 
     ++_totalEvents; // Increments total event counter
 
@@ -350,6 +365,8 @@ void STMDigisFromFragments::produce(Event& event)
                     << "Frag ID : "  << outerFragID << "\n"
                     << "Event   : " << _totalEvents << "\n";
                 }
+                ++_totalUnknownContainers;
+                ++unknownContainersThisEvent;
                 continue; // Skips the rest of this container frag if it is unknown
             }
             ++containerFragsThisEvent;
@@ -789,35 +806,44 @@ void STMDigisFromFragments::produce(Event& event)
                     // Add exceptions
                     if (zsInfoWasExtracted) {
                         if (zsLength != zsTotalLengthCalculated) {
-                            throw cet::exception("STM_UNPACKING")
-                            << "\n=== ZS LENGTH MISMATCH ===\n"
-                            << "ZS Length Count from Raw Header : " << zsLength << "\n"
-                            << "ZS Length Calculated : " << zsTotalLengthCalculated << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
-
+                            if (_verbosityLevel > 1){
+                                std::cout << "\n=== ZS LENGTH MISMATCH ===\n"
+                                << "ZS Length Count from Raw Header : " << zsLength << "\n"
+                                << "ZS Length Calculated : " << zsTotalLengthCalculated << "\n"
+                                // General Information about where error was found
+                                << "Found at Event : " << _totalEvents << "\n"
+                                << "Found at Frag Index : " << i << "\n"
+                                << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
+                                << "Raw Prescale Value : " << rawPrescaleValue << "\n"
+                                << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
+                                << "ZS Prescale Value : " << zsPrescaleValue << "\n"
+                                << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
+                                << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            }
+                            ++_totalZSLengthMismatch;
+                            isHPGe? ++_totalZSLengthMismatchHPGe: ++_totalZSLengthMismatchLaBr;
+                            ++eventMetrics.zsLengthMismatch;
+                            continue;
                         }
                         if ( zsRegions != regionCounter) {
-                            throw cet::exception("STM_UNPACKING")
-                            << "\n=== ZS REGION COUNT MISMATCH ===\n"
-                            << "ZS Region Count from Raw Header : " << zsRegions << "\n"
-                            << "ZS Region Count Calculated : " << regionCounter << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            if (_verbosityLevel > 1){
+                                std::cout << "\n=== ZS REGION COUNT MISMATCH ===\n"
+                                << "ZS Region Count from Raw Header : " << zsRegions << "\n"
+                                << "ZS Region Count Calculated : " << regionCounter << "\n"
+                                // General Information about where error was found
+                                << "Found at Event : " << _totalEvents << "\n"
+                                << "Found at Frag Index : " << i << "\n"
+                                << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
+                                << "Raw Prescale Value : " << rawPrescaleValue << "\n"
+                                << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
+                                << "ZS Prescale Value : " << zsPrescaleValue << "\n"
+                                << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
+                                << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            }
+                            ++_totalZSRegionMismatch;
+                            isHPGe? ++_totalZSRegionMismatchHPGe: ++_totalZSRegionMismatchLaBr;
+                            ++eventMetrics.zsRegionMismatch;
+                            continue;
                         }
                     }
 
@@ -1048,6 +1074,7 @@ void STMDigisFromFragments::produce(Event& event)
                 << "Event       : " << _totalEvents << "\n";
             }
             ++_totalNonContainers;
+            ++nonContainersThisEvent;
             continue;
         }
     } // End of frags loop
@@ -1176,8 +1203,13 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Container Frags                                           : " << containerFragsThisEvent << "\n";
         std::cout << "Inner Frags This Event                                    : " << innerFragsThisEvent << "\n";
         std::cout << "Unknown Frags                                             : " << unknownFragsThisEvent << "\n";
+        std::cout << "Unknown Container Frags                                   : " << unknownContainersThisEvent << "\n";
+        std::cout << "Non Container Frags                                       : " << nonContainersThisEvent << "\n";
+        std::cout << "\n";
         std::cout << "Raw Frags With Invalid Headers (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidHeaders << "\n";
         std::cout << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags With Length Mismatch (HPGe)                      : " << HPGeEventMetrics.zsLengthMismatch << "\n";
+        std::cout << "Zs Frags WIth Region Mismatch (HPGe)                      : " << HPGeEventMetrics.zsRegionMismatch << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
         std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
@@ -1189,6 +1221,8 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "\n";
         std::cout << "Raw Frags With Invalid Headers (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidHeaders << "\n";
         std::cout << "Raw Frags With Invalid Anchors (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags With Length Mismatch (LaBr)                      : " << LaBrEventMetrics.zsLengthMismatch << "\n";
+        std::cout << "ZS Frags With Region Mismatch (LaBr)                      : " << LaBrEventMetrics.zsRegionMismatch << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
         std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
@@ -1245,10 +1279,12 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total HPGe Containers                           : " << _totalContainersHPGe << "\n";
         std::cout << "Total LaBr Containers                           : " << _totalContainersLaBr << "\n";
         std::cout << "Total Container Processed                       : " << _totalContainers << "\n";
-        std::cout << "Total Non Container Processed                   : " << _totalNonContainers << "\n";
 
         std::cout << "Total Inner Fragments Processed                 : " << _totalInnerFrags << "\n";
         std::cout << "Total Unreadable Inner Fragments                : " << _totalUnreadInnerFrags << "\n";
+
+        std::cout << "Total Unknown Container Fragments               : " << _totalUnknownContainers << "\n";
+        std::cout << "Total Non Container Fragments                   : " << _totalNonContainers << "\n";
 
         // Data Type Summary - pre-filtering
         std::cout << "\n--- Data Types Read (Pre - Filtering) ---\n";
@@ -1331,14 +1367,24 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Invalid Raw Anchors                             : " << _totalRawFragsWithInvalidAnchors << "\n";
         std::cout << "Invalid Raw Anchors (HPGe)                      : " << _totalRawFragsWithInvalidAnchorsHPGe << "\n";
         std::cout << "Invalid Raw Anchors (LaBr)                      : " << _totalRawFragsWithInvalidAnchorsLaBr << "\n";
+
         std::cout << "ZS Skipped Due To Raw Flags (HPGe)              : " << _totalZSFragsSkippedDueToRawFlagHPGe << "\n";
         std::cout << "ZS Skipped Due To Raw Flags (LaBr)              : " << _totalZSFragsSkippedDueToRawFlagLaBr << "\n";
+
         std::cout << "PH Skipped Due To Raw Flags (HPGe)              : " << _totalPHFragsSkippedDueToRawFlagHPGe << "\n";
         std::cout << "PH Skipped Due To Raw Flags (LaBr)              : " << _totalPHFragsSkippedDueToRawFlagLaBr << "\n";
+
+        std::cout << "ZS Length Mismatches Encountered                : " << _totalZSLengthMismatch << "\n";
+        std::cout << "ZS Length Mismatches Encountered (HPGe)         : " << _totalZSLengthMismatchHPGe << "\n";
+        std::cout << "ZS Length Mismtaches Enocuntered (LaBr)         : " << _totalZSLengthMismatchLaBr << "\n";
+
+        std::cout << "ZS Region Mismatches Encountered                : " << _totalZSRegionMismatch << "\n";
+        std::cout << "ZS Region Mismatches Encountered (HPGe)         : " << _totalZSRegionMismatchHPGe << "\n";
+        std::cout << "ZS Region Mismatches Encountered (LaBr)         : " << _totalZSRegionMismatchLaBr << "\n";
+
         std::cout << "PH Count Mismatches Encountered                 : " << _totalPHCountMismatch << "\n";
         std::cout << "PH Count Mismatches Encountered (HPGe)          : " << _totalPHCountMismatchHPGe << "\n";
         std::cout << "PH Count Mismatches Encountered (LaBr)          : " << _totalPHCountMismatchLaBr << "\n";
-
 
         std::cout << "\n===========================================================\n";
 
