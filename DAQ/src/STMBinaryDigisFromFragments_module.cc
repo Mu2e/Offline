@@ -1,6 +1,6 @@
 // =====================================================================
 //
-// STMBinaryDigisFromFragments: Binary file writing
+// STMBinaryDigisFromFragments: Binary File Writing
 //
 // ======================================================================
 
@@ -24,444 +24,480 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <stdbool.h>
 
 namespace art
 {
   class STMBinaryDigisFromFragments;
 }
-
 using art::STMBinaryDigisFromFragments;
-
 class art::STMBinaryDigisFromFragments : public EDProducer
 {
 public:
   struct Config {
     fhicl::Atom<art::InputTag> stmTag {fhicl::Name("stmTag"), fhicl::Comment("Input module")};
-    fhicl::Atom<std::string> rawFile {fhicl::Name("rawFile"), "raw.bin"};
-    fhicl::Atom<std::string> zsFile {fhicl::Name("zsFile"), "zs.bin"};
-    fhicl::Atom<std::string> phFile {fhicl::Name("phFile"), "ph.bin"};
-    fhicl::Atom<std::string> rawHeaderFile {fhicl::Name("rawHeaderFile"), "rawWithHeader.bin"}; 
+    fhicl::Atom<std::string> rawHPGeFile {fhicl::Name("rawHPGeFile"), "rawHPGe.bin"};
+    fhicl::Atom<std::string> zsHPGeFile {fhicl::Name("zsHPGeFile"), "zsHPGe.bin"};
+    fhicl::Atom<std::string> phHPGeFile {fhicl::Name("phHPGeFile"), "phHPGe.bin"};
+    fhicl::Atom<std::string> rawHeaderHPGeFile {fhicl::Name("rawHeaderHPGeFile"), "rawWithHeaderHPGe.bin"};
+    fhicl::Atom<std::string> rawLaBrFile {fhicl::Name("rawLaBrFile"), "rawLaBr.bin"};
+    fhicl::Atom<std::string> zsLaBrFile {fhicl::Name("zsLaBrFile"), "zsLaBr.bin"};
+    fhicl::Atom<std::string> phLaBrFile {fhicl::Name("phLaBrFile"), "phLaBr.bin"};
+    fhicl::Atom<std::string> rawHeaderLaBrFile {fhicl::Name("rawHeaderLaBrFile"), "rawWithHeaderLaBr.bin"};
     fhicl::Atom<std::string> eventFile {fhicl::Name("eventFile"), "event.bin"};
     fhicl::OptionalAtom<int> verbosityLevel{fhicl::Name("verbosityLevel"), fhicl::Comment("Verbosity level")};
   };
-  
+
   explicit STMBinaryDigisFromFragments(const art::EDProducer::Table<Config>& config); // constructor created, config via fcl
   virtual ~STMBinaryDigisFromFragments(); //declares destructor
 
   virtual void produce(Event &) override;
-  void endJob() override;//Final prinout summary
+  void endJob() override;
+
+struct FragRecord{
+  uint64_t seqID;
+  uint16_t dataset;
+  std::vector<int16_t> data;
+};
 
 private:
+  void writeSortedSingle(std::vector<FragRecord>& buf, std::ofstream& out);
+  void writeSortedCombined(std::vector<FragRecord>& buf, std::ofstream& out);
+  std::string getBaseName(const std::string& fullPath);
+
   art::InputTag _stmFragmentsTag;
-  std::ofstream _rawOut; //Files which can be acessesed throughout
-  std::ofstream _zsOut;
-  std::ofstream _phOut;
-  std::ofstream _rawHeaderOut;
+  int _verbosityLevel = 0;
+  bool _filesInitialized{false};
+  std::string _baseName;
+
+  std::vector<FragRecord> _rawHPGeBuf;
+  std::vector<FragRecord> _zsHPGeBuf;
+  std::vector<FragRecord> _phHPGeBuf;
+  std::vector<FragRecord> _rawHeaderHPGeBuf;
+  std::vector<FragRecord> _rawLaBrBuf;
+  std::vector<FragRecord> _zsLaBrBuf;
+  std::vector<FragRecord> _phLaBrBuf;
+  std::vector<FragRecord> _rawHeaderLaBrBuf;
+  std::vector<FragRecord> _eventBuf;
+
+  std::string _rawHPGeFile;
+  std::string _rawHeaderHPGeFile;
+  std::string _zsHPGeFile;
+  std::string _phHPGeFile;
+
+  std::string _rawLaBrFile;
+  std::string _rawHeaderLaBrFile;
+  std::string _zsLaBrFile;
+  std::string _phLaBrFile;
+  std::string _eventFile;
+
+  std::ofstream _rawHPGeOut;
+  std::ofstream _rawHeaderHPGeOut;
+  std::ofstream _zsHPGeOut;
+  std::ofstream _phHPGeOut;
+
+  std::ofstream _rawLaBrOut;
+  std::ofstream _rawHeaderLaBrOut;
+  std::ofstream _zsLaBrOut;
+  std::ofstream _phLaBrOut;
   std::ofstream _eventOut;
 
-  //Metrics
-  size_t _totalEvents{0}; //Another way to initialize to zero
+  size_t _totalEvents{0};
   size_t _totalFragments{0};
   size_t _totalContainers{0};
-  size_t _totalInner{0};
+  size_t _totalNonContainers{0};
+  size_t _totalUnreadInnerFrags{0};
+  size_t _totalInnerFrags{0};
   size_t _totalRaw{0};
   size_t _totalZS{0};
   size_t _totalPH{0};
-
-  //Additional metrics
-  size_t _totalZeroRaw{0};
-  size_t _totalZeroZS{0};
-  size_t _totalZeroPH{0};
-  size_t _totalEmptyRaw{0};
-  size_t _totalEmptyZS{0};
-  size_t _totalEmptyPH{0};
-
-  //fhicl varibales
-  int _verbosityLevel = 0;
-}; // STMDigisFromFragments
+  size_t _totalRawHPGe{0};
+  size_t _totalZSHPGe{0};
+  size_t _totalPHHPGe{0};
+  size_t _totalRawLaBr{0};
+  size_t _totalZSLaBr{0};
+  size_t _totalPHLaBr{0};
+};
 
 // ======================================================================
 
-
 STMBinaryDigisFromFragments::STMBinaryDigisFromFragments(const art::EDProducer::Table<Config>& config)
   : art::EDProducer{config}
-  ,_stmFragmentsTag(config().stmTag())
-  ,_verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
-
-{
-  //turns files into binary
-  _rawOut.open(config().rawFile(), std::ios::binary);
-  _zsOut.open(config().zsFile(), std::ios::binary);
-  _phOut.open(config().phFile(), std::ios::binary);
-  _rawHeaderOut.open(config().rawHeaderFile(), std::ios::binary);
-  _eventOut.open(config().eventFile(), std::ios::binary);
-
-  //Check to make sure we are reading the file
-  if(!_rawOut || !_zsOut || !_phOut || !_rawHeaderOut || !_eventOut){
-    throw cet::exception("FILEOPEN")<< "Failed to open one or more output files\n";
-  }
-  
-}
+  , _stmFragmentsTag(config().stmTag())
+  , _verbosityLevel(config().verbosityLevel() ? *(config().verbosityLevel()) : 0)
+  , _rawHPGeFile(config().rawHPGeFile())
+  , _rawHeaderHPGeFile(config().rawHeaderHPGeFile())
+  , _zsHPGeFile(config().zsHPGeFile())
+  , _phHPGeFile(config().phHPGeFile())
+  , _rawLaBrFile(config().rawLaBrFile())
+  , _rawHeaderLaBrFile(config().rawHeaderLaBrFile())
+  , _zsLaBrFile(config().zsLaBrFile())
+  , _phLaBrFile(config().phLaBrFile())
+  , _eventFile(config().eventFile())
+{}
 
 STMBinaryDigisFromFragments::~STMBinaryDigisFromFragments(){
-  if ( _rawOut.is_open() )
-    _rawOut.close();
-  if ( _zsOut.is_open() )
-    _zsOut.close();
-  if ( _phOut.is_open() )
-    _phOut.close();
-  if( _rawHeaderOut.is_open() )
-    _rawHeaderOut.close();
-  if( _eventOut.is_open() )
-    _eventOut.close();    
-}//Closing files
+  if (_rawHPGeOut.is_open())  {_rawHPGeOut.close();}
+  if (_zsHPGeOut.is_open()) {_zsHPGeOut.close();}
+  if (_phHPGeOut.is_open()) {_phHPGeOut.close();}
+  if (_rawHeaderHPGeOut.is_open()) {_rawHeaderHPGeOut.close();}
 
-// ----------------------------------------------------------------------
+  if (_rawLaBrOut.is_open())  {_rawLaBrOut.close();}
+  if (_zsLaBrOut.is_open()) {_zsLaBrOut.close();}
+  if (_phLaBrOut.is_open()) {_phLaBrOut.close();}
+  if (_rawHeaderLaBrOut.is_open()) {_rawHeaderLaBrOut.close();}
+
+  if (_eventOut.is_open()) {_eventOut.close();}
+} // Closing files
+
+// ==================================================================
+// Defined helper functions here
+
+void STMBinaryDigisFromFragments::writeSortedSingle(std::vector<FragRecord>& buf,
+                                              std::ofstream& out) {
+
+  std::sort(buf.begin(), buf.end(),
+            [](const FragRecord& a, const FragRecord& b) {
+              return a.seqID < b.seqID;
+            });
+
+  for (const auto& rec : buf) {
+    out.write(reinterpret_cast<const char*>(rec.data.data()),
+              rec.data.size() * sizeof(int16_t));
+  }
+}
+
+void STMBinaryDigisFromFragments::writeSortedCombined(std::vector<FragRecord>& buf,
+                                                std::ofstream& out) {
+
+  auto datasetOrder = [](uint16_t d) {
+    if (d == static_cast<uint16_t>(stm::Dataset::RAW_HPGE)) return 0;
+    if (d == static_cast<uint16_t>(stm::Dataset::ZS_HPGE))  return 1;
+    if (d == static_cast<uint16_t>(stm::Dataset::PH_HPGE))  return 2;
+    if (d == static_cast<uint16_t>(stm::Dataset::RAW_LABR)) return 3;
+    if (d == static_cast<uint16_t>(stm::Dataset::ZS_LABR))  return 4;
+    if (d == static_cast<uint16_t>(stm::Dataset::PH_LABR))  return 5;
+    return 99;
+  };
+
+  std::sort(buf.begin(), buf.end(),
+            [&](const FragRecord& a, const FragRecord& b) {
+              if (a.seqID != b.seqID)
+                return a.seqID < b.seqID;
+              return datasetOrder(a.dataset) < datasetOrder(b.dataset);
+            });
+
+  for (const auto& rec : buf) {
+    out.write(reinterpret_cast<const char*>(rec.data.data()),
+              rec.data.size() * sizeof(int16_t));
+  }
+}
+
+std::string STMBinaryDigisFromFragments::getBaseName(const std::string& fullPath) {
+  auto slash = fullPath.find_last_of("/\\");
+  std::string name = (slash == std::string::npos) ? fullPath : fullPath.substr(slash + 1);
+
+  // strip .art
+  auto dot = name.rfind(".art");
+  if (dot != std::string::npos) {
+    name = name.substr(0, dot);
+  }
+
+  return name;
+}
+
+// ==================================================================
 
 void STMBinaryDigisFromFragments::produce(Event& event)
 {
-  
   ++_totalEvents; //Increment Total Event Counter
-  
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> zs_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //std::unique_ptr<mu2e::STMPHDigiCollection> ph_digis(new mu2e::STMPHDigiCollection);
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> raw_header_waveform_digis(new mu2e::STMWaveformDigiCollection);
-  //std::unique_ptr<mu2e::STMWaveformDigiCollection> ph_waveform_digis(new mu2e::STMWaveformDigiCollection);//Original
+
+  if (!_filesInitialized){
+    std::ostringstream base;
+    base << "artDump_run" << event.run()
+         << "_subrun" << event.subRun() << "_";
+
+    _baseName = base.str();
+
+    // HPGe
+    std::string rawHPGeName        = _baseName + _rawHPGeFile;
+    std::string zsHPGeName         = _baseName + _zsHPGeFile;
+    std::string phHPGeName         = _baseName + _phHPGeFile;
+    std::string rawHeaderHPGeName  = _baseName + _rawHeaderHPGeFile;
+    std::string eventName          = _baseName + _eventFile;
+
+    // LaBr
+    std::string rawLaBrName        = _baseName + _rawLaBrFile;
+    std::string zsLaBrName         = _baseName + _zsLaBrFile;
+    std::string phLaBrName         = _baseName + _phLaBrFile;
+    std::string rawHeaderLaBrName  = _baseName + _rawHeaderLaBrFile;
+    // HPGe
+    _rawHPGeOut.open(rawHPGeName, std::ios::binary);
+    _zsHPGeOut.open(zsHPGeName, std::ios::binary);
+    _phHPGeOut.open(phHPGeName, std::ios::binary);
+    _rawHeaderHPGeOut.open(rawHeaderHPGeName, std::ios::binary);
+    _eventOut.open(eventName, std::ios::binary);
+    // LaBr
+    _rawLaBrOut.open(rawLaBrName, std::ios::binary);
+    _zsLaBrOut.open(zsLaBrName, std::ios::binary);
+    _phLaBrOut.open(phLaBrName, std::ios::binary);
+    _rawHeaderLaBrOut.open(rawHeaderLaBrName, std::ios::binary);
+
+    if(!_rawHPGeOut || !_zsHPGeOut || !_phHPGeOut || !_rawHeaderHPGeOut || !_eventOut
+      ||!_rawLaBrOut || !_zsLaBrOut || !_phLaBrOut || !_rawHeaderLaBrOut ) {
+        throw cet::exception("FILEOPEN") << "Failed to open output files\n";
+  }
+  if (_verbosityLevel > 0) {
+    std::cout << "[INFO] Output files:\n"
+              << "  " << rawHPGeName << "\n"
+              << "  " << zsHPGeName << "\n"
+              << "  " << phHPGeName << "\n"
+              << "  " << rawHeaderHPGeName << "\n"
+              << "  " << rawLaBrName << "\n"
+              << "  " << zsLaBrName << "\n"
+              << "  " << phLaBrName << "\n"
+              << "  " << rawHeaderLaBrName << "\n"
+              << "  " << eventName << "\n";
+  }
+  _filesInitialized = true;
+  }
 
   art::Handle<artdaq::Fragments> STMFragmentsH;
   event.getByLabel(_stmFragmentsTag, STMFragmentsH);
   const auto STMFragments = STMFragmentsH.product();
 
-  auto writePayload = [](std::ofstream& out, // [] is a capture list that only works with these parameters
-                         const int16_t* data,
-                         size_t words){
-    out.write(reinterpret_cast<const char*>(data),//Writing to file stream in binary
-              words * sizeof(int16_t));
-  };
-
-  //Event Metrics
-  size_t localRaw_frags{0};
-  size_t localZS_frags{0};
-  size_t localPH_frags{0};
-  size_t zeroRaw_frags{0}; 
-  size_t zeroZS_frags{0};
-  size_t zeroPH_frags{0};
-  size_t emptyRaw_frags{0};
-  size_t emptyZS_frags{0};
-  size_t emptyPH_frags{0};
-  
-  size_t extractedRawWaveforms{0};
-  size_t extractedZSWaveforms{0};
-  size_t extractedPHDigis{0};
-  //uint16_t ZSfromRaw{0}; //Keep track of ZS length from raw header
-  //bool readRawZSinfo{false};
-  
-  //loop over frags
   for (const auto& frag : *STMFragments) {
-    ++_totalFragments; //Increment Total Frag counter
-    
-    if (_verbosityLevel >=3){ std::cout <<"\nFrag_ID : " << frag.fragmentID() << "\n";}
-      
-    //Check if this is a container fragment
-    if (frag.type() == artdaq::Fragment::ContainerFragmentType){
+    ++_totalFragments;
 
+    if (_verbosityLevel >=3){ std::cout <<"\nFrag_ID : " << frag.fragmentID() << "\n";}
+
+    //Check if this is a container fragment
+    if (frag.type() == artdaq::Fragment::ContainerFragmentType) {
+
+      mu2e::STMFragment container_frag(frag);
       artdaq::ContainerFragment cont_frag(frag);
       ++_totalContainers;
       size_t blocks = cont_frag.block_count();
-      _totalInner += blocks;
+      _totalInnerFrags += blocks;
 
-      //loop over container
-      // i index corresponds to inner frag 
-      for (size_t i = 0; i < cont_frag.block_count(); ++i){
+      for (size_t i = 0; i < cont_frag.block_count(); ++i) {
 
         auto inner_frag = cont_frag.at(i);
         mu2e::STMFragment stm_frag(*inner_frag);
-        mu2e::STMWaveformDigi stm_waveform;
-
-        //auto ptr = stm_frag.payloadBegin();//Outer variable
-        //auto words = stm_frag.payloadWords();
+        const size_t physicalWords = inner_frag->dataSizeBytes() / sizeof(int16_t); // gets physical words stores in this frag
 
         if (stm_frag.isRaw()) {
           ++_totalRaw; //Increment job counter
-	  ++localRaw_frags;//Increment event counter
-	    
-          auto payloadPtr = stm_frag.payloadBegin();
-          auto payloadWords = stm_frag.payloadWords();
-          bool allZeros = true;//Assume raw frag is zero filled
-	  
-          //Checks for empty frag
-          if (payloadWords == 0) {
-	    if(_verbosityLevel >=3){std::cout<< "\nFound an empty frag, i = " << i <<" @Raw\n";}
-	    ++_totalEmptyRaw;//Job counter
-	    ++emptyRaw_frags;//Event counter
-            continue;//stops this loop check and goes to next frag
+          auto const* dataPtr = stm_frag.dataBegin();
+          bool const isHPGe = stm_frag.isHPGe();
+          bool const isLaBr = stm_frag.isLaBr();
+          // header + payload
+          {
+            // -- optional : print first few raw words
+            if (_verbosityLevel > 1) {
+              std::cout << "  First 25 header words: ";
+              for (size_t j = 0; j < std::min<size_t>(physicalWords,25); ++j) {
+                std::cout << dataPtr[j] << " ";
+              }
+              std::cout << "\n";
             }
 
-          //Check if any data points are not zero
-          for (size_t k =0; k < payloadWords; ++k){
-            if (payloadPtr[k] != 0){
-              allZeros = false;
-              break;
+            FragRecord rec{
+              inner_frag->sequenceID(),
+              static_cast<uint16_t>(stm_frag.dataset()),
+              std::vector<int16_t>(dataPtr, dataPtr + physicalWords)
+            };
+
+            if (isHPGe){
+              ++_totalRawHPGe;
+              _rawHeaderHPGeBuf.push_back(std::move(rec));
+            } else if (isLaBr){
+              ++_totalRawLaBr;
+              _rawHeaderLaBrBuf.push_back(std::move(rec));
             }
           }
 
-          //Check if zero filled
-          if (allZeros){
-	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = " << i << " @Raw\n";}
-	    ++_totalZeroRaw;//Increment counters
-	    ++zeroRaw_frags;//Increment Zero Raw Counter
-            continue;
+          // payload
+          // interpret header
+          if (physicalWords >= stm::RawHeader::WORDS) {
+            auto const* payloadPtr = stm_frag.payloadBegin();
+            const size_t physicalPayloadWords = physicalWords - stm::RawHeader::WORDS;
+            const size_t claimedPayloadWords = stm_frag.payloadWords();
+            const size_t wordsToWrite = std::min(claimedPayloadWords,physicalPayloadWords); // Pick smallest as bound
+            const int16_t* hdr = dataPtr;
+
+            int64_t ewt =
+                int64_t(hdr[stm::RawHeader::EWT_0]) |
+                (int64_t(hdr[stm::RawHeader::EWT_1]) << 16) |
+                (int64_t(hdr[stm::RawHeader::EWT_2]) << 32);
+
+            uint64_t raw_len = hdr[stm::RawHeader::RAW_LEN];
+
+            // --- print debug ---
+            if (_verbosityLevel > 1) {
+              std::cout << "[RAW PAYLOAD DEBUG] "
+                      << "SeqID=" << inner_frag->sequenceID()
+                      << " EWT=" << ewt
+                      << " RAW_LEN=" << raw_len
+                      << " physical payload=" << physicalPayloadWords
+                      << " claimed payload=" << claimedPayloadWords
+                      << "\n";
+            }
+
+            FragRecord rec{
+              inner_frag->sequenceID(),
+              static_cast<uint16_t>(stm_frag.dataset()),
+              std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)
+            };
+
+            if (isHPGe) {
+              _rawHPGeBuf.push_back(std::move(rec));
+            } else if (isLaBr) {
+              _rawLaBrBuf.push_back(std::move(rec));
+            }
           }
-
-          //Print first 20 values
-	  if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i <<" @Raw\n";}
-
-	  if (_verbosityLevel >= 4){
-	    std::cout << "\nFirst 20 adcs: ";
-	    for (size_t kk = 0; kk < std::min<size_t>(payloadWords,20); ++kk){
-	      std::cout << payloadPtr[kk] << " ,";
-	    }
-	    if(_verbosityLevel >=5){
-	      std::cout << "\nRaw header : Raw Length = " << stm_frag.rawLength()
-			<<" , ZS Length = " << stm_frag.zsLength()
-			<< " , ZS Regions  = " << stm_frag.zsRegions()
-			<< " , i = " << i << " @Raw\n";
-	    }
-	  }
-          //Ideally only good frags get up to here
-          //------full data (header + payload)
-	  //Waveform with data creation
-	  auto dataPtr = stm_frag.dataBegin();//Inner variable
-	  auto dataWords = stm_frag.dataWords();
-	  writePayload( _rawHeaderOut , dataPtr, dataWords);
-	  
-          //----- payload-only
-	  writePayload(_rawOut, payloadPtr, payloadWords);
-	  ++extractedRawWaveforms;
 
         }//End of isRaw
-	
-        else if (stm_frag.isZS()){
-          ++_totalZS; //Incremenet ZS counter
-	  ++localZS_frags;
-	  
-	  auto payloadPtr = stm_frag.payloadBegin();
-	  auto payloadWords = stm_frag.payloadWords();
-	  bool allZeros = true; //assumes all adcs are zero
+        else if (stm_frag.isZS()) {
+          ++_totalZS;
+          bool const isHPGe = stm_frag.isHPGe();
+          bool const isLaBr = stm_frag.isLaBr();
 
-	  //Check if payload is empty
-	  if (payloadWords == 0) {
-	    if (_verbosityLevel >=3){std::cout << "\nFound an empty frag, i = " << i << " @ZS\n";}
-	    ++_totalEmptyZS;
-	    ++emptyZS_frags; //Increment empty ZS counter
-	    continue;
-	  }
-	  //Check if any adc are non-zero
-	  for (size_t k = 0 ; k < payloadWords ; ++k){
-	    if(payloadPtr[k] != 0 ){
-	      allZeros = false;
-	      break;
-	    }
-	  }
-	  //Check if zero filled
-	  if (allZeros) {
-	    if (_verbosityLevel >=3){std::cout << "\nFound a zero filled frag, i = "<< i << " @ZS\n";}
-	    ++_totalZeroZS;
-	    ++zeroZS_frags;
-	    continue;
-	  }
-	  //Print first 20 payload adcs
-	  if (_verbosityLevel >=3){std::cout << "\nFound a good frag, i = " << i << " @ZS\n";}
+          auto const* payloadPtr = stm_frag.payloadBegin();
+          const size_t claimedWords = stm_frag.payloadWords();
+          const size_t wordsToWrite = std::min(claimedWords, physicalWords);
 
-	  if (_verbosityLevel >=4){
-	    std::cout << "\nFirst 20 adcs: ";
-	    for (size_t kk = 0 ; kk < std::min<size_t>(payloadWords,20) ; ++kk){
-	      std::cout << payloadPtr[kk] << " , ";
-	    }
-	    std::cout << "i = " << i << " @ZS\n";
-	  }
-	  
-	  //Defintions for payload references
-	  auto dataPtr = stm_frag.dataBegin();
-	  auto dataWords = stm_frag.dataWords();
-	  auto dataEnd = dataPtr + dataWords;
-	  size_t seg = 0;
-	  size_t totalLen = 0;
-	  uint16_t lastZSindex = 0; //keeps track of last recorded index from header -> with respect to what?
-	  uint16_t lastLen = 0; //keeps track of last recorded length from header
+          FragRecord rec{
+            inner_frag->sequenceID(),
+            static_cast<uint16_t>(stm_frag.dataset()),
+            std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)
+          };
+          if (isHPGe) {
+            ++_totalZSHPGe;
+            _zsHPGeBuf.push_back(std::move(rec));
+          } else if (isLaBr) {
+            ++_totalZSLaBr;
+            _zsLaBrBuf.push_back(std::move(rec));
+          }
 
-	  writePayload(_zsOut, payloadPtr, payloadWords);
-	  
-	  while (dataPtr + 2 <= dataEnd){
-	    uint16_t current_zs_location = static_cast<uint16_t>(dataPtr[0]);
-	    uint16_t current_zs_size = static_cast<uint16_t>(dataPtr[1]);
-	    auto adc = dataPtr + 2;
-	    if (adc + current_zs_size > dataEnd){ break;}
-	
-	    ++extractedZSWaveforms;
+        } // End of isZS
+        else if (stm_frag.isPH()) {
+          ++_totalPH;
+          bool const isHPGe = stm_frag.isHPGe();
+          bool const isLaBr = stm_frag.isLaBr();
 
-	    if (_verbosityLevel >=6){
-	      //A print check per segment
-	      std::cout << "Region = " << seg << " , zs_index = " << current_zs_location << " , zs_size = " << current_zs_size
-			<< "\n" ;
-	    }
-	    
-	    //Update variables
-	    lastZSindex = current_zs_location;
-	    lastLen = current_zs_size;
-	    totalLen += lastLen;
-	    ++seg;
-	    dataPtr = adc + current_zs_size;
-	  }
+          auto const* payloadPtr = stm_frag.payloadBegin();
+          const size_t claimedWords = stm_frag.payloadWords();
+          const size_t wordsToWrite = std::min(claimedWords,physicalWords);
 
-	  if (_verbosityLevel >=5){
-	    //Summary
-	    std::cout << "ZS Regions = " << seg
-		      << " , lastZSindex = " << lastZSindex
-		      << " , lastZSLen = " << lastLen
-		      << " , ZS total length = " << totalLen
-		      << " , i =  " << i <<  " @ZS\n";
-	  }
+          FragRecord rec{
+            inner_frag->sequenceID(),
+            static_cast<uint16_t>(stm_frag.dataset()),
+            std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)
+          };
 
-	  //Throw out if ZSLengthfromRaw != totalLen
-	  //if (readRawZSinfo && ZSfromRaw != totalLen){
-	  //throw cet::exception("Mismatch")
-	  //  << "\n=== ZS Length mismatch ===\n"
-	  //  << "ZS length from Raw header " << ZSfromRaw << "\n"
-	  //  << "ZS length calculated from file : " << totalLen << "\n"
-	  //  << "Found at inner frag i : " << i <<"\n";
-	    	  // }
-	  
-        }//End of isZS
-	
-        else if (stm_frag.isPH()){
-	  ++_totalPH;
-	  ++localPH_frags;
-	  //Check if zero filled
-	  auto payloadPtr = stm_frag.payloadBegin();
-	  auto payloadWords = stm_frag.payloadWords();
-	  bool allZeros = true;
+          if (isHPGe) {
+            ++_totalPHHPGe;
+            _phHPGeBuf.push_back(std::move(rec));
+          } else if (isLaBr) {
+            ++_totalPHLaBr;
+            _phLaBrBuf.push_back(std::move(rec));
+          }
 
-	  if (payloadWords ==0){
-            if (_verbosityLevel >= 3){std::cout << "\nFound an empty frag, i = " << i<< " @PH\n";}
-	    ++_totalEmptyPH;
-	    ++emptyPH_frags;
-	    continue;
-	  }
-
-	  //Check if zero filled
-	  for (size_t k = 0; k< payloadWords; ++k) {
-	    if (payloadPtr[k] !=0){
-	      allZeros = false;
-	      break;
-	    }
-	  }
-	  //count if zero filled
-	  if (allZeros){
-	    if (_verbosityLevel >=3){ std::cout<< "\nFound a zero filled frag, i = " << i<< " @PH\n";}
-	    ++_totalZeroPH;
-	    ++zeroPH_frags;
-	    continue;
-	  }
-
-	  if (_verbosityLevel >= 3){std::cout << "\nFound a good frag, i = " << i <<" @PH\n";}
-	  
-	  size_t digiWords = stm_frag.payloadWords();	  
-          auto const* digiPtr = stm_frag.payloadBegin();
-
-	  writePayload(_phOut,digiPtr, digiWords);
-	  extractedPHDigis += digiWords;
-
-      }//End of isPH and is checks
+      } else {
+        // Non Raw/ZS/PH case
+        ++_totalUnreadInnerFrags;
+        if (_verbosityLevel > 1){
+          std::cout << "\n[WARNING] Unknown Inner Frag" << std::endl;
+        }
+      } // End of isPH
 
         //---Combined stream write w. order preserved ----
         {
           const int16_t* cptr = nullptr;
           size_t cwords = 0;
+          uint16_t dataset = static_cast<uint16_t>(stm_frag.dataset());
 
           if (stm_frag.isRaw()){
             cptr = stm_frag.dataBegin();
-            cwords = stm_frag.dataWords();
+            cwords = physicalWords;
           }
           else if (stm_frag.isZS()){
             cptr = stm_frag.payloadBegin();
-            cwords = stm_frag.payloadWords();
+            cwords = std::min(stm_frag.payloadWords(),physicalWords);
           }
           else if (stm_frag.isPH()){
             cptr = stm_frag.payloadBegin();
-            cwords = stm_frag.payloadWords();
+            cwords = std::min(stm_frag.payloadWords(),physicalWords);
+          }
+          else {
+            if(_verbosityLevel > 1){
+              std::cout << "[WARNING] Unknown dataset : " << dataset << "\n";
+            }
           }
 
-          if (cptr != nullptr && cwords >0) {
-            _eventOut.write(reinterpret_cast<const char*>(cptr),
-                            cwords * sizeof(int16_t) );
+          if (cptr && cwords > 0) {
+            FragRecord rec;
+            rec.seqID = inner_frag->sequenceID();
+            rec.dataset = dataset;
+            rec.data.assign(cptr, cptr + cwords);
+
+            _eventBuf.push_back(std::move(rec));
           }
         }
-
-      }//End Container loop
+        // end of inner fragment loop
+      }
     } else {
-      //fallback (non-container case)
-      mu2e::STMFragment stm_frag(frag);
-      auto ptr = stm_frag.payloadBegin();
-      auto words = stm_frag.payloadWords();
-
-      if (stm_frag.isRaw()) {
-        writePayload(_rawOut, ptr, words);
+      // Non Container type
+      ++_totalNonContainers;
+      if (_verbosityLevel > 1) {
+        std::cout << "[WARNING] Non-Container STM Frag Type" << std::endl;
       }
     }
-  } //End of frags loop---George suggestions
-  if (_verbosityLevel >= 2 ){ 
-    //Event Summary -> tells us what happens per event
-    std::cout << "\n========== STM EVENT SUMMARY - (Binary Module) ==========\n";
-    std::cout << "Extracted Raw waveforms     : " << extractedRawWaveforms <<"\n";
-    std::cout << "Extracted ZS waveforms      : " << extractedZSWaveforms <<"\n";
-    std::cout << "Extracted PH digis          : " << extractedPHDigis <<"\n";
-
-    std::cout << "\n--- Frags Read ---\n";
-    std::cout << "Raw frags   : " << localRaw_frags << "\n";
-    std::cout << "ZS frags    : " << localZS_frags << "\n";
-    std::cout << "PH frags    : " << localPH_frags << "\n";
-  
-    std::cout << "\n--- Filter results ---\n";
-    std::cout << "Zero Raw frags   : " << zeroRaw_frags << "\n";
-    std::cout << "Zero ZS frags    : " << zeroZS_frags << "\n";
-    std::cout << "Zero PH frags    : " << zeroPH_frags << "\n";
-
-    std::cout << "Empty Raw frags  : " << emptyRaw_frags <<"\n";
-    std::cout << "Empty ZS frags   : " << emptyZS_frags << "\n";
-    std::cout << "Empty PH frags   : " << emptyPH_frags << "\n";
-  
-    std::cout << "=================================\n";
   }
-  
-} // produce()
+} // produce
 
 // ======================================================================
 
 void STMBinaryDigisFromFragments::endJob() {
-  if (_verbosityLevel >= 1){
-    //Tells us what happened at the very end
+  if (_verbosityLevel > 0) {
+    std::cout << "\nWriting sorted streams...\n";
+  }
+  writeSortedSingle(_rawHPGeBuf,       _rawHPGeOut);
+  writeSortedSingle(_rawHeaderHPGeBuf, _rawHeaderHPGeOut);
+  writeSortedSingle(_zsHPGeBuf,        _zsHPGeOut);
+  writeSortedSingle(_phHPGeBuf,        _phHPGeOut);
+
+  writeSortedSingle(_rawLaBrBuf,       _rawLaBrOut);
+  writeSortedSingle(_rawHeaderLaBrBuf, _rawHeaderLaBrOut);
+  writeSortedSingle(_zsLaBrBuf,        _zsLaBrOut);
+  writeSortedSingle(_phLaBrBuf,        _phLaBrOut);
+
+  writeSortedCombined(_eventBuf,   _eventOut);
+
+  if(_verbosityLevel > 0){
+
+    // Print out of summary
     std::cout << "\n========== STM JOB SUMMARY - (Binary Module) ==========\n";
 
-    std::cout << "Total events       : " << _totalEvents << "\n";
-    std::cout << "Total fragments    : " << _totalFragments << "\n";
-    std::cout << "Container frags    : " << _totalContainers << "\n";
-    std::cout << "Inner fragments    : " << _totalInner << "\n";
+    std::cout << "Total events                  : " << _totalEvents << "\n";
+    std::cout << "Total fragments               : " << _totalFragments << "\n";
+    std::cout << "Container frags               : " << _totalContainers << "\n";
+    std::cout << "Inner fragments               : " << _totalInnerFrags << "\n";
+    std::cout << "Total Non Container Fragments : " << _totalNonContainers << "\n";
+    std::cout << "Unknown Inner fragments       : " << _totalUnreadInnerFrags << "\n";
 
     std::cout << "\n--- Data types read ---\n";
-    std::cout << "RAW               : " << _totalRaw << "\n";
-    std::cout << "ZS                : " << _totalZS << "\n";
-    std::cout << "PH                : " << _totalPH << "\n";
+    std::cout << "RAW                           : " << _totalRaw << "\n";
+    std::cout << "ZS                            : " << _totalZS << "\n";
+    std::cout << "PH                            : " << _totalPH << "\n";
 
-    std::cout << "\n--- Data types filtered ---\n";
-    std::cout << "Zero RAW frags    : " << _totalZeroRaw << "\n";
-    std::cout << "Zero ZS frags     : " << _totalZeroZS << "\n";
-    std::cout << "Zero PH frags     : " << _totalZeroPH << "\n";
-    std::cout << "Empty Raw frags   : " << _totalEmptyRaw << "\n";
-    std::cout << "Empty ZS frags    : " << _totalEmptyZS << "\n";
-    std::cout << "Empty PH frags    : " << _totalEmptyPH << "\n";
+    std::cout << "RAW HPGE                      : " << _totalRawHPGe << "\n";
+    std::cout << "ZS  HPGE                      : " << _totalZSHPGe << "\n";
+    std::cout << "PH  HPGE                      : " << _totalPHHPGe << "\n";
+
+    std::cout << "RAW LABR                      : " << _totalRawLaBr << "\n";
+    std::cout << "ZS  LABR                      : " << _totalZSLaBr << "\n";
+    std::cout << "PH  LABR                      : " << _totalPHLaBr << "\n";
 
     std::cout << "=================================\n";
 

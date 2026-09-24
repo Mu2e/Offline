@@ -32,11 +32,15 @@ physics : {
        makeSTMBinary : {
          module_type : STMBinaryDigisFromFragments
          stmTag : "daq:ContainerSTM"
-         verbosityLevel : 1
-         rawFile : "raw.bin"
-         zsFile : "zs.bin"
-         phFile : "ph.bin"
-         rawHeaderFile : "rawWithHeader.bin"
+         verbosityLevel : 0
+         rawHPGeFile : "rawHPGe.bin"
+         zsHPGeFile  : "zsHPGe.bin"
+         phHPGeFile  : "phHPGe.bin"
+         rawHeaderHPGeFile : "rawWithHeaderHPGe.bin"
+         rawLaBrFile : "rawLaBr.bin"
+         zsLaBrFile  : "zsLaBr.bin"
+         phLaBrFile  : "phLaBr.bin:
+         rawHeaderLaBrFile : "rawWithHeaderLaBr.bin"
          eventFile : "event.bin"
       }
    }

@@ -65,7 +65,7 @@ namespace mu2e {
     // create histograms
     std::string phSpectrumTitle = "PH Spectrum (" +_channel.name() + ")"; // Builds title for PH Spectrum
     _phSpectrum=tfs->make<TH1D>("phSpectrum", (phSpectrumTitle + ";Pulse Height;Count").c_str(), 10000, -10000, 0); //bins,min,max
-
+    // this hist is to see if PHs are drifting
     _twoDhist=tfs->make<TH2F>("phEvent",("Pulse Height vs Art Event Blocks (" + _channel.name() + ");Art Event Block (10 events/block); Pulse Heights (ADC)").c_str(), // (name, title;xtitle;ytitle, nbinsX, xlow, xup, nbinsY, ylow, yup)
                               100,0,100,     // X-axis scale
                               10000,-10000,0);   // Y-axis scale
@@ -81,7 +81,7 @@ namespace mu2e {
         const auto& phDigis = i_phDigiMap.second;
         for (const auto& phDigi : phDigis) {
             // get uncalibrated energy (adc)
-            auto energy = phDigi.energy();
+            auto energy = phDigi.energy() * -1;
             _phSpectrum->Fill(energy);
             _twoDhist->Fill(binBlock, energy);
             }
