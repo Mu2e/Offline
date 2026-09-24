@@ -1,0 +1,40 @@
+#
+# Make STMHitTrees
+# These are calibrated energies and times
+
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/STMReco/fcl/prolog.fcl"
+#include "Offline/STMReco/fcl/prolog_testbeam.fcl"
+
+process_name: STMHitsTree
+
+source: {
+  module_type : RootInput
+}
+
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "stmHits.root" }
+}
+
+physics: {
+  producers : { }
+  filters : { }
+  analyzers : {
+
+    stmHitsHPGe : {
+      module_type     : STMHitsTree
+      stmHitsMapTag   : "stmHitsHPGe"
+    }
+
+    stmHitsLaBr : {
+      module_type     : STMHitsTree
+      stmHitsMapTag   : "stmHitsLaBr"
+    }
+
+  }
+  # setup apths
+  trigger_paths : [ ]
+  anaPath : [stmHitsHPGe, stmHitsLaBr]
+  end_paths: [anaPath]
+}

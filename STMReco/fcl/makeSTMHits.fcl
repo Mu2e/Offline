@@ -14,10 +14,10 @@ services : @local::Services.Reco
 physics: {
   producers : {
     stmHitsHPGe : { module_type : MakeSTMHits
-                    stmPHDigisTag : "makeSTMDigis:phHPGe"
+                    stmPHDigisMapTag : "makeSTMDigis:phHPGe"
     }
     stmHitsLaBr : { module_type : MakeSTMHits
-                    stmPHDigisTag : "makeSTMDigis:phLaBr"
+                    stmPHDigisMapTag : "makeSTMDigis:phLaBr"
     }
   }
   filters : {

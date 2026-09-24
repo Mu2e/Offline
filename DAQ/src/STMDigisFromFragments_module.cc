@@ -1,7 +1,6 @@
 // ====================================================================
 //
-// Stmdigisfromfragments: create all types of STMDigis from STMFragments
-// Note that for the STM, a single art event contains many EWTs
+// StmDigisFromFragments: create all types of STMDigis from STMFragments
 //
 // ======================================================================
 
@@ -86,6 +85,7 @@ private:
     // General Fragment variables
     size_t _totalEvents{0};
     size_t _totalNonContainers{0};
+    size_t _totalUnknownContainers{0};
     size_t _totalFragments{0};
     size_t _totalContainers{0};
     size_t _totalInnerFrags{0};
@@ -102,6 +102,14 @@ private:
     size_t _totalEmptyRawFrags{0};
     size_t _totalEmptyZSFrags{0};
     size_t _totalEmptyPHFrags{0};
+
+    // zs errors
+    size_t _totalZSLengthMismatch{0};
+    size_t _totalZSLengthMismatchHPGe{0};
+    size_t _totalZSLengthMismatchLaBr{0};
+    size_t _totalZSRegionMismatch{0};
+    size_t _totalZSRegionMismatchHPGe{0};
+    size_t _totalZSRegionMismatchLaBr{0};
 
     // Header-related variables
     size_t _totalRawFragsPrescaled{0};
@@ -170,6 +178,9 @@ private:
     size_t _totalRawFragsPrescaledLaBr{0};// track how many raw fragments were prescaled
     size_t _totalZSFragsPrescaledLaBr{0};// track how many ZS fragments were prescaled
     size_t _totalPHCountMismatchLaBr{0};
+    size_t _totalNoHitsPHFrags{0};
+    size_t _totalNoHitsPHFragsHPGe{0};
+    size_t _totalNoHitsPHFragsLaBr{0};
 
     // Used to save ZS information
     struct ZSRegion{
@@ -208,6 +219,7 @@ private:
         size_t empty{0};
         size_t zero{0};
         size_t good{0};
+        size_t noHits{0};
     };
 
     struct DetectorSpecificEventMetrics {
@@ -229,6 +241,9 @@ private:
         size_t zsFragsSkippedDueToNoPrecedingRawHeader{0};
         size_t phFragsSkippedDueToNoPrecedingRawHeader{0};
         size_t phCountMismatch{0};
+
+        size_t zsLengthMismatch{0};
+        size_t zsRegionMismatch{0};
 
     };
 
@@ -285,6 +300,10 @@ void STMDigisFromFragments::produce(Event& event)
     size_t missingHPGeFragsThisEvent{0};
     size_t badLaBrFragsThisEvent{0};
     size_t missingLaBrFragsThisEvent{0};
+
+    // Unknown Container
+    size_t unknownContainersThisEvent{0};
+    size_t nonContainersThisEvent{0};
 
     ++_totalEvents; // Increments total event counter
 
@@ -350,6 +369,8 @@ void STMDigisFromFragments::produce(Event& event)
                     << "Frag ID : "  << outerFragID << "\n"
                     << "Event   : " << _totalEvents << "\n";
                 }
+                ++_totalUnknownContainers;
+                ++unknownContainersThisEvent;
                 continue; // Skips the rest of this container frag if it is unknown
             }
             ++containerFragsThisEvent;
@@ -408,6 +429,14 @@ void STMDigisFromFragments::produce(Event& event)
                     // Confirm Raw Header has Valid Anchors
                     // For now just use as a diagnostic tool
                     if (!stm_frag.hasValidAnchors()) {
+                        if (_verbosityLevel > 1) {
+                            auto const* temp_dataPtr = stm_frag.dataBegin();
+                            std::cout << std::hex // switch to hexadecimal
+                            << "\nStart of raw header : 0x" << static_cast<uint16_t>(temp_dataPtr[stm::RawHeader::ANCHOR_START])
+                            << "\nEnd of raw header   : 0x" << static_cast<uint16_t>(temp_dataPtr[stm::RawHeader::ANCHOR_END])
+                            << std::dec << "\n" ; // switch to decimal
+                        }
+
                         ++eventMetrics.rawFragsWithInvalidAnchors;
                         ++_totalRawFragsWithInvalidAnchors;
                         isHPGe ? ++_totalRawFragsWithInvalidAnchorsHPGe : ++_totalRawFragsWithInvalidAnchorsLaBr;
@@ -789,35 +818,44 @@ void STMDigisFromFragments::produce(Event& event)
                     // Add exceptions
                     if (zsInfoWasExtracted) {
                         if (zsLength != zsTotalLengthCalculated) {
-                            throw cet::exception("STM_UNPACKING")
-                            << "\n=== ZS LENGTH MISMATCH ===\n"
-                            << "ZS Length Count from Raw Header : " << zsLength << "\n"
-                            << "ZS Length Calculated : " << zsTotalLengthCalculated << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
-
+                            if (_verbosityLevel > 1){
+                                std::cout << "\n=== ZS LENGTH MISMATCH ===\n"
+                                << "ZS Length Count from Raw Header : " << zsLength << "\n"
+                                << "ZS Length Calculated : " << zsTotalLengthCalculated << "\n"
+                                // General Information about where error was found
+                                << "Found at Event : " << _totalEvents << "\n"
+                                << "Found at Frag Index : " << i << "\n"
+                                << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
+                                << "Raw Prescale Value : " << rawPrescaleValue << "\n"
+                                << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
+                                << "ZS Prescale Value : " << zsPrescaleValue << "\n"
+                                << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
+                                << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            }
+                            ++_totalZSLengthMismatch;
+                            isHPGe? ++_totalZSLengthMismatchHPGe: ++_totalZSLengthMismatchLaBr;
+                            ++eventMetrics.zsLengthMismatch;
+                            continue;
                         }
                         if ( zsRegions != regionCounter) {
-                            throw cet::exception("STM_UNPACKING")
-                            << "\n=== ZS REGION COUNT MISMATCH ===\n"
-                            << "ZS Region Count from Raw Header : " << zsRegions << "\n"
-                            << "ZS Region Count Calculated : " << regionCounter << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            if (_verbosityLevel > 1){
+                                std::cout << "\n=== ZS REGION COUNT MISMATCH ===\n"
+                                << "ZS Region Count from Raw Header : " << zsRegions << "\n"
+                                << "ZS Region Count Calculated : " << regionCounter << "\n"
+                                // General Information about where error was found
+                                << "Found at Event : " << _totalEvents << "\n"
+                                << "Found at Frag Index : " << i << "\n"
+                                << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
+                                << "Raw Prescale Value : " << rawPrescaleValue << "\n"
+                                << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
+                                << "ZS Prescale Value : " << zsPrescaleValue << "\n"
+                                << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
+                                << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
+                            }
+                            ++_totalZSRegionMismatch;
+                            isHPGe? ++_totalZSRegionMismatchHPGe: ++_totalZSRegionMismatchLaBr;
+                            ++eventMetrics.zsRegionMismatch;
+                            continue;
                         }
                     }
 
@@ -895,7 +933,6 @@ void STMDigisFromFragments::produce(Event& event)
                     }
 
                     // Extract ph varibales from Raw Header
-                    bool extractedPHInfo = headerState.containsPHInfo;
                     uint16_t phCount = headerState.expectedPHCount;
 
                     // Extract for eventHeader (EWT, mode/spillFlag, adcClock, dtcClock)
@@ -916,61 +953,58 @@ void STMDigisFromFragments::produce(Event& event)
                     auto payloadWords = stm_frag.payloadWords();
                     bool allPHAreZeros= true;
 
+                    if (phCount == 0) {
+                        // no hits reported by raw header
+                        if (_verbosityLevel > 2) {
+                            std::cout << "\nNo hits reported for this fragment at Event : " << _totalEvents << "\n"
+                            << "Frag Index : " << i << "\n"
+                            << "--PH Frag\n";
+                        }
+                        ++eventMetrics.ph.noHits;
+                        ++_totalNoHitsPHFrags;
+                        isHPGe ? ++_totalNoHitsPHFragsHPGe : ++_totalNoHitsPHFragsLaBr;
+                        continue;
+                    }
+
                     if (payloadWords == 0) {
                         if (_verbosityLevel > 2) {
                             std::cout << "\nFound an empty PH fragment at Event : " <<  _totalEvents << "\n"
                             << "Frag Index : " << i << "\n"
                             << "--PH Frag\n";
                         }
-                        //increment
+                        // increment
+                        // fragment has no payload
                         ++eventMetrics.ph.empty;
                         ++_totalEmptyPHFrags;
                         isHPGe ? ++_totalEmptyPHFragsHPGe : ++_totalEmptyPHFragsLaBr;
                         continue;
                     }
 
-                    // Check that the payload has pairs (time, pulse height)
-                    if (payloadWords % 2 != 0) {
-                        if(_verbosityLevel > 2) {
-                            std::cout << "\nFound a PH Fragment with odd number of payload words at Event : " << _totalEvents << "\n"
-                            << "Frag Index : " << i << "\n"
-                            << "---PH Frag\n";
-                        }
-                        ++eventMetrics.ph.unread;
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-
-                    // Check if PH Pair count matches expected count from raw header
-                    size_t const nPairsInFragment = payloadWords / 2;
-
-                    if (extractedPHInfo && nPairsInFragment != phCount) {
+                    // Check if we under count ph Pairs in fragment comapred to raw header count
+                    size_t expectedWords = 2 * static_cast<size_t>(phCount);
+                    if (payloadWords < expectedWords) {
+                        // Note payloadWords can include data padding
+                        // Ideally it would not be less than ph pair count
                         if (_verbosityLevel > 2) {
-                            std::cout << "\nPH Count Comparison\n"
-                            << "Number of PH pairs we read in fragment : " << nPairsInFragment <<"\n"
-                            << "Number of PH pars from raw header      : " << phCount << "\n";
+                            std::cout << "\nPH Payload is shorter than Raw Header Expects\n"
+                            << "Expected Words : " << expectedWords << "\n"
+                            << "Payload Words  : " << payloadWords << "\n";
                         }
+                        // report
                         ++_totalPHCountMismatch;
                         isHPGe ? ++_totalPHCountMismatchHPGe : ++_totalPHCountMismatchLaBr;
                         ++eventMetrics.phCountMismatch;
-                    }
-
-                    // Here you either read the lowest pair count from raw header or what is in fragment
-                    // If not you read what what is in the fragment anyway
-                    size_t const nPairsToRead = extractedPHInfo ? std::min<size_t>(nPairsInFragment, phCount) : nPairsInFragment;
-                    if (_verbosityLevel > 2) {
-                        std::cout << "\nPH Pair Count We Will Processes : " << nPairsToRead << "\n"
-                        << "Pair Count coming from Fragment   : " << (nPairsInFragment < phCount ? "Yes" : "No") << "\n"
-                        << "Pair Count coming from Raw Header : " << (phCount < nPairsInFragment ? "Yes" : "No") << "\n";
-                    }
-
-                    if (nPairsToRead ==0){
                         ++eventMetrics.ph.unread;
                         ++_totalUnreadInnerFrags;
                         continue;
                     }
 
+                    // phCount becomes our upper bound
+                    size_t nPairsToRead = phCount;
+
                     // Check if zero filled
+                    // At this stage we expect PHCount to be a valid estimate in frag
+                    // But if all ph's second entry return 0 then this is zero filled
                     // Since its a (time,PH) pair we will check every second entry for the PH value
                     for (size_t k = 0; k < nPairsToRead; ++k) {
                         if (payloadPtr[k*2+1] !=0) {
@@ -1048,6 +1082,7 @@ void STMDigisFromFragments::produce(Event& event)
                 << "Event       : " << _totalEvents << "\n";
             }
             ++_totalNonContainers;
+            ++nonContainersThisEvent;
             continue;
         }
     } // End of frags loop
@@ -1150,7 +1185,9 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Zero  ZS  Frags (HPGe)                        : " << HPGeEventMetrics.zs.zero << "\n";
         std::cout << "Zero  PH  Frags (HPGe)                        : " << HPGeEventMetrics.ph.zero << "\n";
         std::cout << "\n";
-        std::cout << "Bad   Raw Frags (HPGe)                        : " << HPGeEventMetrics.rawFragsFlaggedBadOnly << "\n";
+        std::cout << "No Hits - PH Frags (HPGe)                     : " << HPGeEventMetrics.ph.noHits << "\n";
+        std::cout << "\n";
+        std::cout << "Bad Raw Frags (HPGe)                          : " << HPGeEventMetrics.rawFragsFlaggedBadOnly << "\n";
         std::cout << "Missing Raw Frags (HPGe)                      : " << HPGeEventMetrics.rawFragsFlaggedMissingOnly << "\n";
         std::cout << "Bad and Missing Raw Frags (HPGe)              : " << HPGeEventMetrics.rawFragsFlaggedBadAndMissing << "\n";
         std::cout << "\n";
@@ -1168,7 +1205,9 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Zero  ZS  Frags (LaBr)                        : " << LaBrEventMetrics.zs.zero << "\n";
         std::cout << "Zero  PH  Frags (LaBr)                        : " << LaBrEventMetrics.ph.zero << "\n";
         std::cout << "\n";
-        std::cout << "Bad   Raw Frags (LaBr)                        : " << LaBrEventMetrics.rawFragsFlaggedBadOnly << "\n";
+        std::cout << "No Hits - PH Frags (LaBr)                     : " << LaBrEventMetrics.ph.noHits << "\n";
+        std::cout << "\n";
+        std::cout << "Bad Raw Frags (LaBr)                          : " << LaBrEventMetrics.rawFragsFlaggedBadOnly << "\n";
         std::cout << "Missing Raw Frags (LaBr)                      : " << LaBrEventMetrics.rawFragsFlaggedMissingOnly << "\n";
         std::cout << "Bad and Missing Raw Frags (LaBr)              : " << LaBrEventMetrics.rawFragsFlaggedBadAndMissing << "\n";
         // Extra Filters
@@ -1176,8 +1215,13 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "Container Frags                                           : " << containerFragsThisEvent << "\n";
         std::cout << "Inner Frags This Event                                    : " << innerFragsThisEvent << "\n";
         std::cout << "Unknown Frags                                             : " << unknownFragsThisEvent << "\n";
+        std::cout << "Unknown Container Frags                                   : " << unknownContainersThisEvent << "\n";
+        std::cout << "Non Container Frags                                       : " << nonContainersThisEvent << "\n";
+        std::cout << "\n";
         std::cout << "Raw Frags With Invalid Headers (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidHeaders << "\n";
         std::cout << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags With Length Mismatch (HPGe)                      : " << HPGeEventMetrics.zsLengthMismatch << "\n";
+        std::cout << "Zs Frags WIth Region Mismatch (HPGe)                      : " << HPGeEventMetrics.zsRegionMismatch << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
         std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
@@ -1189,6 +1233,8 @@ void STMDigisFromFragments::produce(Event& event)
         std::cout << "\n";
         std::cout << "Raw Frags With Invalid Headers (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidHeaders << "\n";
         std::cout << "Raw Frags With Invalid Anchors (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidAnchors << "\n";
+        std::cout << "ZS Frags With Length Mismatch (LaBr)                      : " << LaBrEventMetrics.zsLengthMismatch << "\n";
+        std::cout << "ZS Frags With Region Mismatch (LaBr)                      : " << LaBrEventMetrics.zsRegionMismatch << "\n";
         std::cout << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag << "\n";
         std::cout << "ZS Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n";
         std::cout << "ZS Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n";
@@ -1245,10 +1291,12 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total HPGe Containers                           : " << _totalContainersHPGe << "\n";
         std::cout << "Total LaBr Containers                           : " << _totalContainersLaBr << "\n";
         std::cout << "Total Container Processed                       : " << _totalContainers << "\n";
-        std::cout << "Total Non Container Processed                   : " << _totalNonContainers << "\n";
 
         std::cout << "Total Inner Fragments Processed                 : " << _totalInnerFrags << "\n";
         std::cout << "Total Unreadable Inner Fragments                : " << _totalUnreadInnerFrags << "\n";
+
+        std::cout << "Total Unknown Container Fragments               : " << _totalUnknownContainers << "\n";
+        std::cout << "Total Non Container Fragments                   : " << _totalNonContainers << "\n";
 
         // Data Type Summary - pre-filtering
         std::cout << "\n--- Data Types Read (Pre - Filtering) ---\n";
@@ -1282,6 +1330,8 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total Empty Raw Frags                           : " << _totalEmptyRawFrags << "\n";
         std::cout << "Total Empty ZS  Frags                           : " << _totalEmptyZSFrags << "\n";
         std::cout << "Total Empty PH  Frags                           : " << _totalEmptyPHFrags << "\n";
+        std::cout << "\n";
+        std::cout << "Total Non Hits PH Frags                         : " << _totalNoHitsPHFrags << "\n";
 
         // Data Type Summary - post-filtering (HPGe)
         std::cout << "\n--- Data Types Read HPGe (Post - Filtering) ---\n";
@@ -1296,6 +1346,8 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total Empty Raw Frags (HPGe)                    : " << _totalEmptyRawFragsHPGe << "\n";
         std::cout << "Total Empty ZS  Frags (HPGe)                    : " << _totalEmptyZSFragsHPGe << "\n";
         std::cout << "Total Empty PH  Frags (HPGe)                    : " << _totalEmptyPHFragsHPGe << "\n";
+        std::cout << "\n";
+        std::cout << "Total Non Hits PH Frgas (HPGe)                  : " << _totalNoHitsPHFragsHPGe << "\n";
         std::cout << "\n";
         std::cout << "Total Raw Prescaled Frags (HPGe)                : " << _totalRawFragsPrescaledHPGe << "\n";
         // Raw Prescaled Frags should be classified as their own data for now
@@ -1318,6 +1370,8 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Total Empty ZS  Frags (LaBr)                    : " << _totalEmptyZSFragsLaBr << "\n";
         std::cout << "Total Empty PH  Frags (LaBr)                    : " << _totalEmptyPHFragsLaBr << "\n";
         std::cout << "\n";
+        std::cout << "Total Non Hits PH Frgas (LaBr)                  : " << _totalNoHitsPHFragsLaBr << "\n";
+        std::cout << "\n";
         std::cout << "Total Raw Prescaled Frags (LaBr)                : " << _totalRawFragsPrescaledLaBr << "\n";
         std::cout << "Total ZS Prescaled Frags (LaBr)                 : " << _totalZSFragsPrescaledLaBr << "\n";
         std::cout << "Total Raw Frags Flagged Bad Only (LaBr)         : " << _totalRawFragsFlaggedBadOnlyLaBr << "\n";
@@ -1331,14 +1385,24 @@ void STMDigisFromFragments::endJob() {
         std::cout << "Invalid Raw Anchors                             : " << _totalRawFragsWithInvalidAnchors << "\n";
         std::cout << "Invalid Raw Anchors (HPGe)                      : " << _totalRawFragsWithInvalidAnchorsHPGe << "\n";
         std::cout << "Invalid Raw Anchors (LaBr)                      : " << _totalRawFragsWithInvalidAnchorsLaBr << "\n";
+
         std::cout << "ZS Skipped Due To Raw Flags (HPGe)              : " << _totalZSFragsSkippedDueToRawFlagHPGe << "\n";
         std::cout << "ZS Skipped Due To Raw Flags (LaBr)              : " << _totalZSFragsSkippedDueToRawFlagLaBr << "\n";
+
         std::cout << "PH Skipped Due To Raw Flags (HPGe)              : " << _totalPHFragsSkippedDueToRawFlagHPGe << "\n";
         std::cout << "PH Skipped Due To Raw Flags (LaBr)              : " << _totalPHFragsSkippedDueToRawFlagLaBr << "\n";
+
+        std::cout << "ZS Length Mismatches Encountered                : " << _totalZSLengthMismatch << "\n";
+        std::cout << "ZS Length Mismatches Encountered (HPGe)         : " << _totalZSLengthMismatchHPGe << "\n";
+        std::cout << "ZS Length Mismtaches Enocuntered (LaBr)         : " << _totalZSLengthMismatchLaBr << "\n";
+
+        std::cout << "ZS Region Mismatches Encountered                : " << _totalZSRegionMismatch << "\n";
+        std::cout << "ZS Region Mismatches Encountered (HPGe)         : " << _totalZSRegionMismatchHPGe << "\n";
+        std::cout << "ZS Region Mismatches Encountered (LaBr)         : " << _totalZSRegionMismatchLaBr << "\n";
+
         std::cout << "PH Count Mismatches Encountered                 : " << _totalPHCountMismatch << "\n";
         std::cout << "PH Count Mismatches Encountered (HPGe)          : " << _totalPHCountMismatchHPGe << "\n";
         std::cout << "PH Count Mismatches Encountered (LaBr)          : " << _totalPHCountMismatchLaBr << "\n";
-
 
         std::cout << "\n===========================================================\n";
 
