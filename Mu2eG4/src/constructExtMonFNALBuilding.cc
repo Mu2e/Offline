@@ -603,6 +603,24 @@ namespace mu2e {
               doSurfaceCheck
               );
 
+    // The field is attached by constructExtMonFNALMagnetField().
+  }
+
+  //================================================================
+  // Field managers are per-thread objects in Geant4 MT.  One built here, in
+  // Construct(), would run only on the master and be shared by every worker,
+  // so this is called from ConstructSDandField(), once on each thread.
+  void constructExtMonFNALMagnetField(const ExtMonFNALMagnet& mag,
+                                      const std::string& volNameSuffix,
+                                      const SimpleConfig& config
+                                      )
+  {
+    Mu2eG4Helper& helper  = *(art::ServiceHandle<Mu2eG4Helper>());
+    AntiLeakRegistry& reg = helper.antiLeakRegistry();
+
+    G4LogicalVolume* magnetIron       = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetIron").logical;
+    G4LogicalVolume* apertureMarginUp = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginUp").logical;
+    G4LogicalVolume* apertureMarginDn = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginDn").logical;
 
     //----------------------------------------------------------------
     // Define the field in the magnet
@@ -623,6 +641,8 @@ namespace mu2e {
     chordFinder->SetDeltaChord(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
+    // Owned by this thread's G4FieldManagerStore, which deletes it with the
+    // thread's G4RunManagerKernel.
     G4FieldManager *manager = new G4FieldManager(field, chordFinder);
 
     AGDEBUG("orig: manager epsMin = "<<manager->GetMinimumEpsilonStep()
@@ -640,10 +660,10 @@ namespace mu2e {
             );
 
 
-    magnetIron.logical->SetFieldManager(manager, true);
+    magnetIron->SetFieldManager(manager, true);
     // No field in the margins
-    apertureMarginUp.logical->SetFieldManager(0, true);
-    apertureMarginDn.logical->SetFieldManager(0, true);
+    apertureMarginUp->SetFieldManager(0, true);
+    apertureMarginDn->SetFieldManager(0, true);
   }
 
   //================================================================
