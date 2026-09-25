@@ -23,6 +23,7 @@ vector<double> dirt.beamline.slab.W.xPositions = {
   21158.2,   // x0
   21158.2,   // x1
   20744.5,  // SE corner escape hatch
+  17288.5,  // SW corner escape hatch
   11684,    // d1
   11684,    // j1
   7366   // c inu
@@ -39,6 +40,7 @@ vector<double> dirt.beamline.slab.W.yPositions = {
   -152.4,   // x0
   2616.2,   // x1
   18794.4,     // SE corner escape hatch
+  17957,     // SW corner escape hatch
   14406.978, // d1
   4779.428, // j1
   3728.42   // c inu
