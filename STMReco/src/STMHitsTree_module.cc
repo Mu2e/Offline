@@ -1,4 +1,5 @@
 // NTuple dumper for Detector pulse heights - calibrated
+// Reads mcs.*.art file
 
 // stdlib includes
 #include <limits>
@@ -26,6 +27,7 @@
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+#include "Offline/DataProducts/inc/STMChannel.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -50,11 +52,9 @@ namespace mu2e {
         private:
           void analyze(const art::Event& event) override;
           void beginJob() override;
-          //void endJob() override;
 
           art::ProductToken<STMHitCollectionMap> _stmHitCollectionMapToken; // map token
           STMChannel _channel;
-          ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
 
           // Store STM Hit information
           float energy   {0};

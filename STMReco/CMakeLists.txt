@@ -15,6 +15,7 @@ cet_build_plugin(PlotSTMEnergySpectrum art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PlotSTMPHSpectrum art::module
@@ -81,9 +82,6 @@ cet_build_plugin(STMHitsTree art::module
     art_root_io::TFileService_service
     Offline::Mu2eUtilities
     Offline::RecoDataProducts
-    Offline::GlobalConstantsService
-    Offline::ProditionsService
-    Offline::STMConditions
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits.fcl   COPYONLY)

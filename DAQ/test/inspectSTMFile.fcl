@@ -21,12 +21,12 @@ physics : {
          stmTag : "daq:ContainerSTM"
          verbosityLevel : 0
          saveSTMFragSummary : true
-         saveRawWaveformsWithHeaderHPGe: false
-         saveRawWaveformsHPGe: false
-         saveZSWaveformsHPGe: false
-         saveRawWaveformsWithHeaderLaBr: false
-         saveRawWaveformsLaBr: false
-         saveZSWaveformsLaBr: false
+         saveRawWaveformsWithHeaderHPGe: true
+         saveRawWaveformsHPGe: true
+         saveZSWaveformsHPGe: true
+         saveRawWaveformsWithHeaderLaBr: true
+         saveRawWaveformsLaBr: true
+         saveZSWaveformsLaBr: true
         }
 
        makeSTMBinary : {
@@ -39,7 +39,7 @@ physics : {
          rawHeaderHPGeFile : "rawWithHeaderHPGe.bin"
          rawLaBrFile : "rawLaBr.bin"
          zsLaBrFile  : "zsLaBr.bin"
-         phLaBrFile  : "phLaBr.bin:
+         phLaBrFile  : "phLaBr.bin"
          rawHeaderLaBrFile : "rawWithHeaderLaBr.bin"
          eventFile : "event.bin"
       }

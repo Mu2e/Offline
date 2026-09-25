@@ -79,6 +79,7 @@ namespace mu2e {
         // make a hit
         float time = uncalib_time*nsPerCt;
         float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
+
         // store hit
         STMHit stm_hit(time,energy);
         // Add to map
