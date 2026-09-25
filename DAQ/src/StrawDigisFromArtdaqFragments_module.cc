@@ -13,6 +13,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Sequence.h"
 
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Core/EDProducer.h"
@@ -71,6 +72,10 @@ public:
     e_ERROR   = 3,
     e_SEVERE  = 4,
   };
+                                        // how (dtc_id,link_id,payload MnID) becomes a StrawId
+  enum class Addressing   { byLink, byMnid, geographic };
+                                        // what to do when the panel map has no row for the key
+  enum class OnMissingRow { skip, geographic };
 
   struct Config {
     fhicl::Atom<int>             diagLevel        {fhicl::Name("diagLevel"        ), fhicl::Comment("2026-04-25 PM: OBSOLETE, WILL BE REMOVED SOON")};
@@ -78,13 +83,18 @@ public:
     fhicl::Sequence<std::string> debugBits        {fhicl::Name("debugBits"        ), fhicl::Comment("debug bits"                                )};
     fhicl::Atom<bool>            saveWaveforms    {fhicl::Name("saveWaveforms"    ), fhicl::Comment("save StrawDigiADCWaveforms, default:true"  )};
     fhicl::Atom<bool>            missingDTCHeaders{fhicl::Name("missingDTCHeaders"), fhicl::Comment("true for runs <= 107246, default:false"    )};
-    fhicl::Atom<bool>            keyOnMnid        {fhicl::Name("keyOnMnid"        ), fhicl::Comment("true if need to key on MnID, default:false")};
-    fhicl::Atom<bool>            allowOfflineFallbackWhenPanelMapMissing{
-      fhicl::Name("allowOfflineFallbackWhenPanelMapMissing"),
-      fhicl::Comment("If TrackerPanelMap lookup fails, decode using offline StrawId(dtc,link,straw)")};
-    fhicl::Atom<bool>            forceOfflineAddressing{
-      fhicl::Name("forceOfflineAddressing"),
-      fhicl::Comment("Ignore TrackerPanelMap/mnid and decode StrawId directly as (dtc,link,straw)")};
+    fhicl::Atom<std::string>     addressing{
+      fhicl::Name("addressing"),
+      fhicl::Comment("how a hit is mapped onto a panel: "
+                     "\"byLink\"     - TrackerPanelMap keyed on (dtc_id,link_id); "
+                     "\"byMnid\"     - TrackerPanelMap keyed on the MnID in the hit payload; "
+                     "\"geographic\" - no map, StrawId(dtc_id,link_id,straw)")};
+    fhicl::Atom<std::string>     onMissingRow{
+      fhicl::Name("onMissingRow"),
+      fhicl::Comment("what to do when TrackerPanelMap has no row for the key: "
+                     "\"skip\"       - report and skip the data; "
+                     "\"geographic\" - report and fall back to StrawId(dtc_id,link_id,straw). "
+                     "Not used when addressing is \"geographic\"")};
 
   };
 
@@ -111,9 +121,8 @@ private:
   int                      debugBit_[kNDebugBits];
   bool      saveWaveforms_;
   bool      missingDTCHeaders_;
-  bool      keyOnMnid_;
-  bool      allowOfflineFallbackWhenPanelMapMissing_;
-  bool      forceOfflineAddressing_;
+  Addressing   addressing_;
+  OnMissingRow onMissingRow_;
                                         // the rest
   int       nADCPackets_{-1};           // N(ADC packets per hit)
   int       nSamples_   {-1};           // N(ADC samples per hit)
@@ -129,6 +138,27 @@ private:
   };
 
 // ======================================================================
+namespace {
+  using Addressing   = mu2e::StrawDigisFromArtdaqFragments::Addressing;
+  using OnMissingRow = mu2e::StrawDigisFromArtdaqFragments::OnMissingRow;
+
+  Addressing parseAddressing(const std::string& Name) {
+    if (Name == "byLink"    ) return Addressing::byLink;
+    if (Name == "byMnid"    ) return Addressing::byMnid;
+    if (Name == "geographic") return Addressing::geographic;
+    throw cet::exception("StrawDigisFromArtdaqFragments::addressing")
+      << "unknown addressing \"" << Name << "\", expect byLink, byMnid or geographic";
+  }
+
+  OnMissingRow parseOnMissingRow(const std::string& Name) {
+    if (Name == "skip"      ) return OnMissingRow::skip;
+    if (Name == "geographic") return OnMissingRow::geographic;
+    throw cet::exception("StrawDigisFromArtdaqFragments::onMissingRow")
+      << "unknown onMissingRow \"" << Name << "\", expect skip or geographic";
+  }
+}
+
+// ======================================================================
 mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::EDProducer::Table<Config>& config) :
     art::EDProducer   {config},
     diagLevel_        (config().diagLevel    ()),
@@ -136,9 +166,8 @@ mu2e::StrawDigisFromArtdaqFragments::StrawDigisFromArtdaqFragments(const art::ED
     debugBits_        (config().debugBits    ()),
     saveWaveforms_    (config().saveWaveforms()),
     missingDTCHeaders_(config().missingDTCHeaders()),
-    keyOnMnid_        (config().keyOnMnid()),
-    allowOfflineFallbackWhenPanelMapMissing_(config().allowOfflineFallbackWhenPanelMapMissing()),
-    forceOfflineAddressing_(config().forceOfflineAddressing()),
+    addressing_       (parseAddressing  (config().addressing  ())),
+    onMissingRow_     (parseOnMissingRow(config().onMissingRow())),
     event_            (nullptr)
 {
   produces<mu2e::StrawDigiCollection>();
@@ -391,10 +420,10 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
             }
 
             const TrkPanelMap::Row* tpm(nullptr);
-            if (!forceOfflineAddressing_ && not keyOnMnid_) {
+            if (addressing_ == Addressing::byLink) {
               tpm = _trackerPanelMap->panel_map_by_online_ind(dtc_id,link_id);
               if (tpm == nullptr) {
-                if (!allowOfflineFallbackWhenPanelMapMissing_) {
+                if (onMissingRow_ == OnMissingRow::skip) {
 //-----------------------------------------------------------------------------
 // either DTC ID or link ID are corrupted. Haven't seen that so far, switch to the next ROC anyway
 //-----------------------------------------------------------------------------
@@ -443,10 +472,10 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 
               uint16_t mnid    = channel >> mu2e::StrawId::_panelsft;
 
-              if (!forceOfflineAddressing_ && keyOnMnid_) {
+              if (addressing_ == Addressing::byMnid) {
                 tpm = _trackerPanelMap->panel_map_by_mnid(mnid);
                 if (tpm == nullptr) {
-                  if (!allowOfflineFallbackWhenPanelMapMissing_) {
+                  if (onMissingRow_ == OnMissingRow::skip) {
 //-----------------------------------------------------------------------------
 // bad mnid. Likely, corrupted data block. For now, skip the hit data and proceed with the next hit
 //-----------------------------------------------------------------------------
@@ -456,8 +485,14 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
                   print_(e_WARNING,std::format("TrkPanelMap mapping for mnid:{} is missing, using offline fallback",mnid));
                 }
               }
-// in principle, could this could become an 'else if'
-              if (!forceOfflineAddressing_ && tpm != nullptr && tpm->mnid() != mnid) {
+//-----------------------------------------------------------------------------
+// the MnID in the payload is cross-checked against the hardware address only in
+// the "byLink" mode. In "byMnid" the row was looked up by mnid, so tpm->mnid() is
+// equal to mnid by construction and there is nothing left to compare it against;
+// in "geographic" there is no row at all. Restricting the test to "byLink" does
+// not change behaviour - in the other two modes it could never fire.
+//-----------------------------------------------------------------------------
+              if (addressing_ == Addressing::byLink && tpm != nullptr && tpm->mnid() != mnid) {
                 print_(e_ERROR,std::format("mnid:{:3d} tpm->mnid():{:3d} hit chid:{:04x} inconsistent with the dtc_id:{:2d} and link_id:{}",
                                            mnid,tpm->mnid(),hit_data->StrawIndex, dtc_id, link_id));
 //-----------------------------------------------------------------------------
@@ -476,7 +511,7 @@ void mu2e::StrawDigisFromArtdaqFragments::produce(art::Event& event) {
 //-----------------------------------------------------------------------------
 // convert channel_id into a strawID
 //-----------------------------------------------------------------------------
-              mu2e::StrawId sid = (forceOfflineAddressing_ || tpm == nullptr)
+              mu2e::StrawId sid = (tpm == nullptr)
                 ? mu2e::StrawId(dtc_id, link_id, chid)
                 : mu2e::StrawId(tpm->uniquePlane(), tpm->panel(), chid);
 
