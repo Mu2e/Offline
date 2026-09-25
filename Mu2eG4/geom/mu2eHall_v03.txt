@@ -14,6 +14,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/beamlineBlockWallS.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineBlockWallTop.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineCeiling_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/beamlineCeilingUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineEscapeDoorHeader.txt"
 //#include "Mu2eG4/geom/bldg/beamlineUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineLowerSouth.txt"
@@ -26,7 +27,6 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Offline/Mu2eG4/geom/bldg/beamlineFoundationS06.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineFoundationUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineUpperE.txt"
-#include "Offline/Mu2eG4/geom/bldg/beamlineUpperNW.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineUpperS.txt"
 #include "Offline/Mu2eG4/geom/bldg/beamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/backfillBeamline.txt"
@@ -316,6 +316,7 @@ vector<string> bldg.prefix.list = {
    "building.beamline.block.wall.S",
    "building.beamline.block.wall.top",
    "building.beamline.ceiling",
+   "building.beamline.ceiling.upper",
    "building.beamline.ceiling.E",
    "building.beamline.lower.south",
    "building.beamline.NW",
@@ -328,7 +329,6 @@ vector<string> bldg.prefix.list = {
    "building.beamline.foundation.s05",
    "building.beamline.foundation.s06",
    "building.beamline.upper.E",
-   "building.beamline.upper.NW",
    "building.beamline.upper.S",
    "building.backfill.beamline",
    "building.backfill.foundation.N",
@@ -627,6 +627,7 @@ vector<string> rotated.prefix.list = {
 //#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746a.txt"
 //#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer746b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747a.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747a2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer747b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748a.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer748b.txt"
@@ -649,10 +650,13 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756b.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineBerm_Layer756c.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPSHatchUpperBoundary.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingUpper.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineCeilingW2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabW.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabW2.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlabNC.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NW.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtBeamlineSlab2NC.txt"
@@ -760,9 +764,11 @@ vector<string> rotated.prefix.list = {
 #include "Offline/Mu2eG4/geom/bldg/dirtNRetainingWallExtension_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaBaselevel_v02.txt"
 #include "Offline/Mu2eG4/geom/bldg/dirtPsAreaShieldingTop_v02.txt"
+#include "Offline/Mu2eG4/geom/bldg/dirtRemoteHandlingCeilingStrip.txt"
 vector<string> dirt.prefix.list = {
   "dirt.beamline",
   "dirt.beamline.berm.l747a",
+  "dirt.beamline.berm.l747a2",
   "dirt.beamline.berm.l747b",
   "dirt.beamline.berm.l748a",
   "dirt.beamline.berm.l748b",
@@ -785,11 +791,14 @@ vector<string> dirt.prefix.list = {
   "dirt.beamline.berm.l756b",
   "dirt.beamline.berm.l756c",
   "dirt.PSHatch.Upper.Boundary",
+  "dirt.beamline.ceiling.upper",
   "dirt.beamline.ceiling.E",
   "dirt.beamline.ceiling.W",
+  "dirt.beamline.ceiling.W2",
   "dirt.beamline.slab.E",
   "dirt.beamline.slab.NC",
   "dirt.beamline.slab.W",
+  "dirt.beamline.slab.W2",
   "dirt.beamline.slab2.NC",
   "dirt.beamline.slab2.NE",
   "dirt.beamline.slab2.NW",
@@ -867,7 +876,8 @@ vector<string> dirt.prefix.list = {
   "dirt.extMon.lower.S",
   "dirt.NRetainingWall.extension",
   "dirt.psArea.baselevel",
-  "dirt.psArea.shielding.top"
+  "dirt.psArea.shielding.top",
+  "dirt.remote.handling.ceiling.strip"
 };
 
 //  "dirt.S.retaining.Wall.Foot",
