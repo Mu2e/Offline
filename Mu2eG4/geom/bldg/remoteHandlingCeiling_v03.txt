@@ -13,8 +13,8 @@ double building.remote.handling.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 double building.remote.handling.ceiling.yHalfThickness           = 406.4;
 
 vector<double> building.remote.handling.ceiling.xPositions = {
-  3251.1,   // P4
   3251.1,   // P5
+  3251.1,   // P4
   1468.12,   //
   -12319,   // RHC02
   -12319,   // RHC03
@@ -27,7 +27,7 @@ vector<double> building.remote.handling.ceiling.xPositions = {
 };
 
 vector<double> building.remote.handling.ceiling.yPositions = {
-  8674.2,   // P5
+  8674.08,   // P5
   7289.9,   // P4
   6858.1,   //
   6858.1,   // RHC02
@@ -37,7 +37,7 @@ vector<double> building.remote.handling.ceiling.yPositions = {
   13512.8,   // RHC06
   16611.6,   // RHC07
   16611.6,   // RHC08
-  10697.8
+  10697.83
 };
 
 // Local Variables:
