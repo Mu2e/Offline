@@ -96,6 +96,7 @@ private:
   int diagLevel_;
   std::unique_ptr<CaloWaveformProcessor> waveformProcessor_;
   ProditionsHandle<mu2e::CalCalib> calCalibHandle_;
+  ProditionsHandle<EventTiming> eventTimingHandle_;
 };
 
 //-------------------------------------------------------
@@ -116,6 +117,8 @@ void CaloRecoDigiMaker::produce(art::Event& event) {
   }
 
   mu2e::CalCalib const& calCalib = calCalibHandle_.get(event.id());
+  EventTiming const& eventTiming = eventTimingHandle_.get(event.id());
+  pbtOffset -= eventTiming.caloTrackerTimeOffset();
 
   extractRecoDigi(caloDigisH, *recoCaloDigiColl, pbtOffset, calCalib);
 

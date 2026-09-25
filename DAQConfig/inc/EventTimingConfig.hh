@@ -18,6 +18,10 @@ namespace mu2e {
     fhicl::Atom<bool> useDb{
       Name("useDb"), Comment("use database or fcl")};
 
+    fhicl::Atom<float> crvTrackerTimeOffset{
+      Name("CRVTrackerTimeOffset"), Comment("Time shift in ns of CRV markers wrt tracker markers. Positive means CRV marker arrives after Tracker marker, i.e. CRV hits have earlier times")};
+    fhicl::Atom<float> caloTrackerTimeOffset{
+      Name("CaloTrackerTimeOffset"), Comment("Time shift in ns of calo markers wrt tracker markers. Positive means calo marker arrives after Tracker marker, i.e. calo hits have earlier times")};
     fhicl::Atom<double> timeFromProtonsToDRMarker{
       Name("TimeFromProtonsToDRMarker"), Comment("Time shift in ns of DR marker wrt to proton peak. Positive means marker arrives after protons")};
     fhicl::Atom<unsigned> offSpillLength{

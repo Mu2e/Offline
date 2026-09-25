@@ -30,14 +30,20 @@ namespace mu2e {
     constexpr static const char* cxname = {"EventTiming"};
 
     // construct with constants, then some values are computed and filled below
-    EventTiming( double timeFromProtonsToDRMarker,
+    EventTiming( float crvTrackerTimeOffset, float caloTrackerTimeOffset,
+                 double timeFromProtonsToDRMarker,
                  unsigned offSpillLength) :
       ProditionsEntity(cxname),
+      _crvTrackerTimeOffset(crvTrackerTimeOffset),
+      _caloTrackerTimeOffset(caloTrackerTimeOffset),
       _timeFromProtonsToDRMarker(timeFromProtonsToDRMarker),
       _offSpillLength(offSpillLength) {}
 
     virtual ~EventTiming() = default;
 
+    float crvTrackerTimeOffset() const { return _crvTrackerTimeOffset; }
+    float caloTrackerTimeOffset() const { return _caloTrackerTimeOffset; }
+    float crvCaloTimeOffset() const { return _crvTrackerTimeOffset - _caloTrackerTimeOffset; }
     double timeFromProtonsToDRMarker() const { return _timeFromProtonsToDRMarker; }
     unsigned offSpillLength() const { return _offSpillLength; }
 
@@ -45,6 +51,8 @@ namespace mu2e {
 
   private:
 
+    float _crvTrackerTimeOffset;
+    float _caloTrackerTimeOffset;
     double _timeFromProtonsToDRMarker;
     unsigned _offSpillLength;
 
