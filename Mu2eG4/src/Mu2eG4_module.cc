@@ -39,6 +39,7 @@
 #include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
+#include "Offline/Mu2eG4/inc/seedG4EngineFromEventID.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
 #endif
@@ -438,6 +439,10 @@ namespace mu2e {
           << "Mu2eG4::produce() Error: inconsistent simStage: "
           <<simStage_<<" vs "<<pvstage<<"\n";
       }
+    }
+
+    if(conf_.seedFromEventID()) {
+      seedG4EngineFromEventID(event.id(), conf_.salt());
     }
 
     // Run G4 for this event and access the completed event.
