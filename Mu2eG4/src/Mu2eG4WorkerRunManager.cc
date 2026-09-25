@@ -35,6 +35,7 @@
 #include "Geant4/G4TransportationManager.hh"
 #include "Geant4/G4VUserPhysicsList.hh"
 #include "Geant4/G4ParallelWorldProcessStore.hh"
+#include "Geant4/G4ScoringManager.hh"
 #if G4VERSION>4106
 #include "Geant4/G4HadronicParameters.hh"
 #else
@@ -115,6 +116,12 @@ namespace mu2e {
     const G4VUserDetectorConstruction* detector = masterRM->GetUserDetectorConstruction();
     G4RunManager::SetUserInitialization( const_cast<G4VUserDetectorConstruction*>(detector) );
     const_cast<G4VUserDetectorConstruction*>(detector)->ConstructSDandField();
+
+    // G4PhysicsListHelper::AddTransportation() builds G4CoupledTransportation on a thread
+    // that has a G4ScoringManager, and G4Transportation on one that does not. The instance
+    // is per thread, and the module constructor creates it on its own thread only, so give
+    // every worker one: all threads, like sequential Mu2eG4, then use the same transportation.
+    G4ScoringManager::GetScoringManager();
 
     // Set the physics list for the worker, share from master
     physicsList = const_cast<G4VUserPhysicsList*>(masterRM->GetUserPhysicsList());
