@@ -29,6 +29,7 @@ namespace mu2e {
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // clone op for reinstantiation
       KKCaloHit(KKCaloHit<KTRAJ> const& rhs):
+              KinKal::ResidualHit<KTRAJ>(rhs),
               caloCluster_(rhs.caloCluster()),
               tvar_(rhs.timeVariance()),
               wvar_(rhs.widthVariance()),

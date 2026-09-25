@@ -53,6 +53,7 @@ namespace mu2e {
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // clone op for reinstantiation
       KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          KinKal::ResidualHit<KTRAJ>(rhs),
           bfield_(rhs.bfield()),
           whstate_(rhs.hitState()),
           dVar_(rhs.dVar_),
