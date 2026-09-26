@@ -7,14 +7,15 @@ string building.remote.handling.ceiling.name     = "remoteHandlingCeiling";
 string building.remote.handling.ceiling.material = "CONCRETE_MARS";
 
 double building.remote.handling.ceiling.offsetFromMu2eOrigin.x   = 947.4;
-double building.remote.handling.ceiling.offsetFromFloorSurface.y = 4800.6;
+double building.remote.handling.ceiling.offsetFromFloorSurface.y = 4826;
 double building.remote.handling.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.remote.handling.ceiling.yHalfThickness           = 381;
+double building.remote.handling.ceiling.yHalfThickness           = 406.4;
 
 vector<double> building.remote.handling.ceiling.xPositions = {
-  2463.8,   // RHC00
-  941.301,   // RHC01
+  3251.1,   // P5
+  3251.1,   // P4
+  1468.12,   //
   -12319,   // RHC02
   -12319,   // RHC03
   3708.4,   // RHC04
@@ -22,22 +23,21 @@ vector<double> building.remote.handling.ceiling.xPositions = {
   9245.6,   // RHC06
   9245.6,   // RHC07
   11684,   // RHC08
-  11684,   // R0
-  9163.95   // BNW03
+  11684
 };
 
 vector<double> building.remote.handling.ceiling.yPositions = {
-  8446,   // RHC00
-  6858,   // RHC01
-  6858,   // RHC02
+  8674.08,   // P5
+  7289.9,   // P4
+  6858.1,   //
+  6858.1,   // RHC02
   16611.6,   // RHC03
   16611.6,   // RHC04
   13512.8,   // RHC05
   13512.8,   // RHC06
   16611.6,   // RHC07
   16611.6,   // RHC08
-  10692.4,   // R0
-  10080.4   // BNW03
+  10697.83
 };
 
 // Local Variables:
