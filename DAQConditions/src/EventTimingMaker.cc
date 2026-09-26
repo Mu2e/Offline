@@ -15,6 +15,8 @@ namespace mu2e {
     // creat this at the beginning since it must be used,
     // partially constructed, to complete the construction
     auto ptr = std::make_shared<EventTiming>(
+        _config.crvTrackerTimeOffset(),
+        _config.caloTrackerTimeOffset(),
         _config.timeFromProtonsToDRMarker(),
         _config.offSpillLength());
 

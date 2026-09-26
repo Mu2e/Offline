@@ -94,6 +94,7 @@ namespace mu2e
 
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
+    ProditionsHandle<EventTiming> _eventTiming;
   };
 
 
@@ -159,6 +160,8 @@ namespace mu2e
 
     auto const& calib = _calib.get(event.id());
     auto const& sipmStatus = _sipmStatus.get(event.id());
+    auto const& eventTiming = _eventTiming.get(event.id());
+    TDC0time += eventTiming.crvTrackerTimeOffset();
 
     size_t waveformIndex = 0;
     while(waveformIndex<crvDigiCollection->size())
