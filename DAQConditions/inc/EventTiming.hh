@@ -41,7 +41,9 @@ namespace mu2e {
 
     virtual ~EventTiming() = default;
 
+    // Positive offset will make CRV reco times larger
     float crvTrackerTimeOffset() const { return _crvTrackerTimeOffset; }
+    // Positive offset will make calo reco times larger
     float caloTrackerTimeOffset() const { return _caloTrackerTimeOffset; }
     float crvCaloTimeOffset() const { return _crvTrackerTimeOffset - _caloTrackerTimeOffset; }
     double timeFromProtonsToDRMarker() const { return _timeFromProtonsToDRMarker; }
