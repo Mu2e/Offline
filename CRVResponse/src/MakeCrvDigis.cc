@@ -9,10 +9,12 @@ void MakeCrvDigis::SetWaveform(const std::vector<double> &waveform, double ADCco
   _ADCs.resize(waveform.size());
   for(size_t i=0; i<waveform.size(); i++)
   {
-    int16_t ADC = static_cast<int16_t>(waveform[i]*ADCconversionFactor+pedestal+0.5);
-    if(ADC<minADC) ADC=minADC;
-    if(ADC>maxADC) ADC=maxADC;
-    _ADCs.at(i)=ADC;
+    // clamp before narrowing: an extreme sample cast to int16_t first would wrap around and
+    // land back inside [minADC,maxADC], so the saturation clamp would never see it
+    double ADCd = waveform[i]*ADCconversionFactor+pedestal+0.5;
+    if(ADCd<minADC) ADCd=minADC;
+    if(ADCd>maxADC) ADCd=maxADC;
+    _ADCs.at(i)=static_cast<int16_t>(ADCd);
   }
 
   int TDCtmp=lrint(startTime/digitizationPrecision);
