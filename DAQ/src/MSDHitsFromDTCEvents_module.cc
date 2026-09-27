@@ -7,6 +7,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Table.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "art/Framework/Principal/Handle.h"
 #include "artdaq-core-mu2e/Overlays/DTCEventFragment.hh"
@@ -43,6 +44,7 @@ public:
   // --- overloaded functions of the art producer
   virtual void produce(art::Event& ArtEvent) override;
   virtual void beginRun(art::Run& ArtRun) override;
+  virtual void endJob() override;
 
   //-----------------------------------------------------------------------------
   // helper functions
@@ -54,6 +56,12 @@ private:
   // fcl parameters
   //-----------------------------------------------------------------------------
   int _debugLevel;
+
+  //-----------------------------------------------------------------------------
+  // counters, reported at endJob
+  //-----------------------------------------------------------------------------
+  size_t _nSubEvents = 0;
+  size_t _nCorruptSubEvents = 0;
 };
 
 // ======================================================================
@@ -64,6 +72,12 @@ art::MSDHitsFromDTCEvents::MSDHitsFromDTCEvents(const art::EDProducer::Table<Con
 
 //-----------------------------------------------------------------------------
 void art::MSDHitsFromDTCEvents::beginRun(art::Run& ArtRun) {}
+
+//-----------------------------------------------------------------------------
+void art::MSDHitsFromDTCEvents::endJob() {
+  mf::LogInfo("MSDHitsFromDTCEvents") << "MSD DTC subevents: " << _nSubEvents << " seen, "
+                                      << _nCorruptSubEvents << " corrupt and skipped";
+}
 
 // ----------------------------------------------------------------------------
 // event entry point
@@ -91,6 +105,14 @@ void art::MSDHitsFromDTCEvents::produce(Event& event) {
     // loop over the DTC_SubEvents
     size_t index_subevt = 0;
     for (auto& dtcSubEvent : dtcSubEvents) {
+      // report and skip subevents that failed the DTC consistency checks
+      ++_nSubEvents;
+      if (dtcSubEvent.IsCorrupt()) {
+        ++_nCorruptSubEvents;
+        mf::LogWarning("MSDHitsFromDTCEvents")
+            << "Event " << event.id() << ": skipping corrupt MSD DTC subevent";
+        continue;
+      }
       // get the decoder
       mu2e::MobileSyncDataDecoder decoder(dtcSubEvent);
       // now loop over the blockIndex's
@@ -170,7 +192,7 @@ artdaq::Fragments art::MSDHitsFromDTCEvents::getFragments(art::Event& event) {
       for (const auto& cont : *handle) {
         artdaq::ContainerFragment contf(cont);
         if (contf.fragment_type() != mu2e::FragmentType::DTCEVT) {
-          break;
+          continue;
         }
 
         for (size_t ii = 0; ii < contf.block_count(); ++ii) {
