@@ -1,11 +1,11 @@
-string dirt.beamline.berm.l747a.name     = "dirtBeamlineBerml747a";
-string dirt.beamline.berm.l747a.material = "MBOverburden";
-double dirt.beamline.berm.l747a.offsetFromMu2eOrigin.x   = 947.40;
-double dirt.beamline.berm.l747a.offsetFromFloorSurface.y = 7696.2;
-double dirt.beamline.berm.l747a.offsetFromMu2eOrigin.z   = -3581.40;
-vector<int> dirt.beamline.berm.l747a.xreplace ={58 ,59 };
-double dirt.beamline.berm.l747a.yHalfThickness           = 76.195;
-vector<double> dirt.beamline.berm.l747a.xPositions = {
+string dirt.beamline.berm.l747a2.name     = "dirtBeamlineBerml747a2";
+string dirt.beamline.berm.l747a2.material = "MBOverburden";
+double dirt.beamline.berm.l747a2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.beamline.berm.l747a2.offsetFromFloorSurface.y = 7848.6;
+double dirt.beamline.berm.l747a2.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.beamline.berm.l747a2.xreplace ={58 ,59 };
+double dirt.beamline.berm.l747a2.yHalfThickness           = 76.195;
+vector<double> dirt.beamline.berm.l747a2.xPositions = {
 -4140.20, // 0
 -4140.20, // 1
 -4749.80, // 2
@@ -68,13 +68,9 @@ vector<double> dirt.beamline.berm.l747a.xPositions = {
 60000.00, // 59
 45789.30, // 60
 39262.50, // 61
-46210.07, // 62
--2006.60, // 63
--2006.60, // 64
--2921.00, // 65
--2921.00 // 66
+46210.07 // 62
 };
-vector<double> dirt.beamline.berm.l747a.yPositions = {
+vector<double> dirt.beamline.berm.l747a2.yPositions = {
 2438.40, // 0
 6858.00, // 1
 6858.00, // 2
@@ -137,9 +133,5 @@ vector<double> dirt.beamline.berm.l747a.yPositions = {
 6039.03, // 59
 5034.46, // 60
 4387.59, // 61
-2438.40, // 62
-2438.40, // 63
-7518.40, // 64
-7518.40, // 65
-2438.40 // 66
+2438.40 // 62
 };

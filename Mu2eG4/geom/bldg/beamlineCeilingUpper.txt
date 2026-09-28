@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_beamline_ceiling.ccl
+
+string building.beamline.ceiling.upper.name     = "beamlineCeilingUpper";
+
+string building.beamline.ceiling.upper.material = "CONCRETE_MARS";
+
+double building.beamline.ceiling.upper.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.ceiling.upper.offsetFromFloorSurface.y = 5918.2;
+double building.beamline.ceiling.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.ceiling.upper.yHalfThickness           = 76.19;
+
+vector<double> building.beamline.ceiling.upper.xPositions = {
+  7366,   // c inu
+  7366,   // b inu
+  3251.2,    // h1
+  3251.2,   // P5 bc
+  11684,    // i1
+  11684    // j1
+};
+
+vector<double> building.beamline.ceiling.upper.yPositions = {
+  3728.42,   // c inu
+  2438.4,   // b inu
+  2438.4,   // h1
+  8674.1,   // P5 bc
+  10697.778, // i1
+  4779.428 // j1
+};
+
+// Local Variables:
+// mode:c++
+// End:

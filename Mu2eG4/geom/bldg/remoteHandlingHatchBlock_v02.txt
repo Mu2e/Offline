@@ -7,7 +7,7 @@ string building.remote.handling.hatch.block.name     = "remoteHandlingHatchBlock
 string building.remote.handling.hatch.block.material = "CONCRETE_MARS";
 
 double building.remote.handling.hatch.block.offsetFromMu2eOrigin.x   = 947.4;
-double building.remote.handling.hatch.block.offsetFromFloorSurface.y = 7010.4;
+double building.remote.handling.hatch.block.offsetFromFloorSurface.y = 7061.2;
 double building.remote.handling.hatch.block.offsetFromMu2eOrigin.z   = -3581.4;
 
 double building.remote.handling.hatch.block.yHalfThickness           = 1828.8;
