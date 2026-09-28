@@ -39,7 +39,7 @@ public:
       DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  static constexpr DQMAxis kFebPortEdges{CRVDQMRun1::kNFebPorts, 0., CRVDQMRun1::kNFebPorts};
+  static constexpr DQMAxis kGlobalFebEdges{CRVDQMRun1::kNFebs, 0., CRVDQMRun1::kNFebs};
   // DqmCrv / ValCrv* plots. "2" is the full-readout-window view: KPP windows
   // reach ~410 us.
   static constexpr DQMAxis kNPulses{101, -0.5, 100.5};
@@ -89,7 +89,7 @@ public:
   TH1F* nEventsWithClustersHist() const { return h_nEventsWithClusters_; }
   TH1I* coincidenceClusters() const { return h_coincidenceClusters_; }  //by CrvSectorType
   TH2F* PEsVsChannel() const { return h_PEsVsChannel_; }  //the mergeable fit input
-  TH2F* PEsMPV() const { return h_PEsMPV_; }  //FEB channel vs FEB port
+  TH2F* PEsMPV() const { return h_PEsMPV_; }  //FEB channel vs global FEB ID
   TH1F* PEsMPVROC(int roc) const;  //online channel within ROC, roc 1-based
   TH1F* PEsMPVSector(int configuration, int sector) const;
 

@@ -102,7 +102,7 @@ void CRVStatusDQM::book()
   labelX(h_errorBits_, kNErrorBits, kErrorBitLabels);
   labelX(h_errorBitsVsRoc_, kNErrorBits, kErrorBitLabels);
 
-  h_portFlags_ = h.book1<TH1F>("portFlags", "MicroBunch port flags (bits 0-23);Port;Counts",
+  h_portFlags_ = h.book1<TH1F>("portFlags", "MicroBunch port flags (bits 0-23);ROC port/FEB ID;Counts",
                                kPortFlag);
   h_rocCensus_ = h.book1<TH1F>(
       "rocCensus", "ROC headers by DTC#times6 + link;DTC#times6 + link ID;ROC headers", kLink);
@@ -160,7 +160,7 @@ void CRVStatusDQM::book()
         flagAxis(kNRocGroupBits));
     l.portFlagBits = h.book1<TH1F>(
         Form("h1_portFlagBits_link%d", link),
-        Form("Port flag bit occupancy (link %d);Port (bit);Events with bit set", link),
+        Form("Port flag bit occupancy (link %d);ROC port/FEB ID (bit);Events with bit set", link),
         flagAxis(kNPortFlags));
     labelX(l.linkStatus, kNLinkStatusBits, kLinkStatusBitNames);
     labelX(l.rocStatus, kNRocStatusBits, kRocStatusBitNames);
@@ -174,7 +174,7 @@ void CRVStatusDQM::book()
       "h2_rocGroupSummary", "ROC group bit occupancy;Group flag;DTC#times6 + link ID",
       flagAxis(kNRocGroupBits), kLink);
   h2_portFlagBits_ = h.book2<TH2F>(
-      "h2_portFlagBits", "Port flag bit occupancy;Port (bit);DTC#times6 + link ID",
+      "h2_portFlagBits", "Port flag bit occupancy;ROC port/FEB ID (bit);DTC#times6 + link ID",
       flagAxis(kNPortFlags), kLink);
   labelX(h2_rocStatusSummary_, kNRocStatusBits, kRocStatusBitNames);
   labelX(h2_rocGroupSummary_, kNRocGroupBits, kRocGroupBitNames);

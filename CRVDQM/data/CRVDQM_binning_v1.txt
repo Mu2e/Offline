@@ -1,5 +1,5 @@
 # CRV DQM histogram catalogue: path, class, x=nbins,lo,hi [y=...], one block per client.
-# Written by DQMHistSet::WriteCatalogue (CrvDQMcollector catalogueFile); a job's catalogue must equal this file.
+# Written by DQMHistSet::WriteCatalogue (the DqmCrv* modules' catalogueFile); a job's catalogue must equal this file.
 # CRVDigiDQM binningVersion=1
 nEvents TH1F x=1,0.5,1.5
 h1_digisPerEvt TH1F x=500,-0.5,499.5

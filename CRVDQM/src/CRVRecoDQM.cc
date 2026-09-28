@@ -95,13 +95,13 @@ void CRVRecoDQM::book()
 
   // Fit results, filled once at end of job: bar charts, the MPV is the bin content.
   h_PEsMPV_ = h.bookSummary2<TH2F>(
-      "crvPEsMPV", "crvPEsMPV:FEBchannel:FEB;FEB channel;FEB port", kFebChannelEdges,
-      kFebPortEdges);
+      "crvPEsMPV", "crvPEsMPV:FEBchannel:FEB;FEB channel;global FEB ID ((ROC-1)#times24+(FEB-1))", kFebChannelEdges,
+      kGlobalFebEdges);
   h_PEsMPVROC_.resize(kNROC);
   for (int roc = 1; roc <= kNROC; ++roc) {
     h_PEsMPVROC_[roc - 1] = h.bookSummary1<TH1F>(
         Form("crvPEsMPV_ROC%d", roc),
-        Form("crvPEsMPV_ROC%d;Online channel in ROC;PE MPV", roc), kRocChannelEdges);
+        Form("crvPEsMPV_ROC%d;Online channel in ROC ((ROC port/FEB ID-1)#times64+FEB channel);PE MPV", roc), kRocChannelEdges);
   }
   h_PEsMPVSector_.resize(kNConfigurations);
   for (int c = 0; c < kNConfigurations; ++c) {
@@ -390,12 +390,12 @@ void CRVRecoDQM::endJob()
     if (results[channel].fitted) {
       ++nFitsSucceeded_;
     }
-    const int port = online / kNChanPerFEB;
+    const int globalFeb = online / kNChanPerFEB;
     const int febChannel = online % kNChanPerFEB;
-    const int roc = port / kNFebPerROC + 1;
-    const int feb = port % kNFebPerROC + 1;
+    const int roc = globalFeb / kNFebPerROC + 1;
+    const int feb = globalFeb % kNFebPerROC + 1;
     h_PEsMPVROC_[roc - 1].Fill(rocChannel(feb, febChannel), results[channel].mpv);
-    h_PEsMPV_.Fill(febChannel, port, results[channel].mpv);
+    h_PEsMPV_.Fill(febChannel, globalFeb, results[channel].mpv);
   }
 
   if (configuration_ < 0) {

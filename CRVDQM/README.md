@@ -26,8 +26,8 @@ calorimeter and tracker online DQM. Both link `Offline::CRVDQM`.
 
 ## The frozen layout
 
-`CRVDQMRun1.hh` holds the frozen layout: dense CRVId numbering (`febPort` =
-`(ROC-1)*24+(FEB-1)`, 432 ports; `onlineChannel` = `febPort*64+FEBchannel`,
+`CRVDQMRun1.hh` holds the frozen layout: dense CRVId numbering (`febId` =
+`(ROC-1)*24+(FEB-1)`, 432 ports; `onlineChannel` = `febId*64+FEBchannel`,
 27 648), the constant-fraction timing constants (`kCFFraction` 0.20,
 `kCFMinAmplitude` 10 ADC), the partner-timing selection (`kDtMinAmplitude`
 200 ADC, `kDtCoincWindow` 20 ns, `kDtMinLayers` 3), and the two supported
@@ -72,7 +72,7 @@ only inside a local coincidence group (≥ 3 of a module group's 4 layers within
 against the detector as a whole, and never across sectors — a muon entering one
 side and leaving the other gives two genuinely separated traversals. Each
 ordered partner pair fills one of four `dtPartner_<class>` maps (same module
-same side / other side, adjacent module same side / other side), x = FEB port.
+same side / other side, adjacent module same side / other side), x = global FEB ID.
 A slipped FEB is one displaced column. `layersPerGroup`, `groupsPerEvent`,
 `sectorsPerEvent` and `febNoGroup` make the selection auditable; a large
 multi-sector event is a cosmic air shower, which is physics, not a fault.

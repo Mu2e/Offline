@@ -28,8 +28,8 @@ constexpr int kNROC = static_cast<int>(CRVId::nROC);
 constexpr int kNFebPerROC = static_cast<int>(CRVId::nFEBPerROC);
 constexpr int kNChanPerFEB = static_cast<int>(CRVId::nChanPerFEB);
 constexpr int kNChanPerROC = kNFebPerROC * kNChanPerFEB;
-constexpr int kNFebPorts = kNROC * kNFebPerROC;               //432
-constexpr int kNOnlineChannels = kNFebPorts * kNChanPerFEB;   //27648
+constexpr int kNFebs = kNROC * kNFebPerROC;               //432
+constexpr int kNOnlineChannels = kNFebs * kNChanPerFEB;   //27648
 constexpr int kNOfflineChannels = static_cast<int>(CRVId::nChannels);
 constexpr int kNFPGAPerFEB = static_cast<int>(CRVId::nFPGAPerFEB);
 constexpr int kNChanPerFPGA = static_cast<int>(CRVId::nChanPerFPGA);
@@ -44,11 +44,11 @@ constexpr bool onlineIdInRange(int roc, int feb, int febChannel)
   return roc >= 1 && roc <= kNROC && feb >= 1 && feb <= kNFebPerROC &&
          febChannel >= 0 && febChannel < kNChanPerFEB;
 }
-constexpr int febPort(int roc, int feb) { return (roc - 1) * kNFebPerROC + feb - 1; }
+constexpr int globalFebId(int roc, int feb) { return (roc - 1) * kNFebPerROC + feb - 1; }
 constexpr int rocChannel(int feb, int febChannel) { return (feb - 1) * kNChanPerFEB + febChannel; }
 constexpr int onlineChannel(int roc, int feb, int febChannel)
 {
-  return febPort(roc, feb) * kNChanPerFEB + febChannel;
+  return globalFebId(roc, feb) * kNChanPerFEB + febChannel;
 }
 // fpgaA <= fpgaB
 constexpr int fpgaPairIndex(int fpgaA, int fpgaB)

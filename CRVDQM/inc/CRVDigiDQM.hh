@@ -45,15 +45,15 @@ public:
   static constexpr DQMAxis kTdc2{1024, 0., 40960.};
   static constexpr DQMAxis kOnlineChannel = DQMAxis::Counts(0, CRVDQMRun1::kNOnlineChannels - 1);
   static constexpr DQMAxis kFebChannel = DQMAxis::Counts(0, CRVDQMRun1::kNChanPerFEB - 1);
-  static constexpr DQMAxis kFebPort = DQMAxis::Counts(0, CRVDQMRun1::kNFebPorts - 1);
+  static constexpr DQMAxis kGlobalFeb = DQMAxis::Counts(0, CRVDQMRun1::kNFebs - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  static constexpr DQMAxis kFebPortEdges{CRVDQMRun1::kNFebPorts, 0., CRVDQMRun1::kNFebPorts};
+  static constexpr DQMAxis kGlobalFebEdges{CRVDQMRun1::kNFebs, 0., CRVDQMRun1::kNFebs};
   static constexpr DQMAxis kOfflineChannel = DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kBarId{200, -0.5, CRVId::nBars - 0.5};
   static constexpr DQMAxis kSiPM = DQMAxis::Counts(0, 3);
   static constexpr DQMAxis kFpgaPair =
-      DQMAxis::Counts(0, CRVDQMRun1::kNFebPorts * CRVDQMRun1::kNFpgaPairs - 1);
+      DQMAxis::Counts(0, CRVDQMRun1::kNFebs * CRVDQMRun1::kNFpgaPairs - 1);
   static constexpr DQMAxis kDtFpga = DQMAxis::Symmetric(50., 0.5);
   static constexpr DQMAxis kDigisPerChannelAndEvent{200, 0., 0.1};
   static constexpr DQMAxis kDigisPerChannelAndEvent2{250, 0., 5.};
@@ -84,7 +84,7 @@ public:
   static constexpr std::size_t kAvgBlockSize = 30;
   static constexpr std::size_t kAvgGraphPoints = 1000;
 
-  // Which sector, module and side a FEB reads, indexed by FEB port.
+  // Which sector, module and side a FEB reads, indexed by global FEB ID.
   struct FebTopology {
     int sector{-1};
     int module{-1};
@@ -98,7 +98,7 @@ public:
   // channelToSector: offline channel -> index into the configuration's
   // CRVDQMRun1 sector list, -1 to skip the channel.
   void SetConfiguration(int configuration, const std::vector<int>& channelToSector);
-  // febTopology indexed by FEB port; channelToLayer by offline channel.
+  // febTopology indexed by global FEB ID; channelToLayer by offline channel.
   // Without it the partner-dt histograms stay empty.
   void SetFebTopology(const std::vector<FebTopology>& febTopology,
                       const std::vector<int>& channelToLayer);
@@ -111,17 +111,17 @@ public:
   TH1F* h1_tdc() const { return h1_tdc_; }  //digi start time in 12.5 ns ticks
   TH1F* h1_tdc2() const { return h1_tdc2_; }  //same, full readout window
   TH1F* h1_channels() const { return h1_channels_; }  //occupancy vs online channel
-  TH2F* h2_channels() const { return h2_channels_; }  //FEB port vs FEB channel
+  TH2F* h2_channels() const { return h2_channels_; }  //global FEB ID vs FEB channel
   TH1D* BarId() const { return hBarId_; }  //ValCrvDigi: scintillator bar index
   TH1D* SiPM() const { return hSiPM_; }  //ValCrvDigi: SiPM number within the bar
   TH1D* ADC() const { return hADC_; }  //ValCrvDigi: every ADC sample
 
   //CRVId occupancy maps (raw counts; divide by nEvents after hadd)
   TH1F* crvDigisPerChannel() const { return h_crvDigisPerChannel_; }  //vs offline channel
-  TH2F* crvDigiRates() const { return h_crvDigiRates_; }  //FEB channel vs FEB port
+  TH2F* crvDigiRates() const { return h_crvDigiRates_; }  //FEB channel vs global FEB ID
   const std::vector<DQMH1<TH1F>>& crvDigiRatesROC() const { return h_crvDigiRatesROC_; }
 
-  //intra-FEB timing: x = febPort*kNFpgaPairs + fpgaPairIndex, y = dt
+  //intra-FEB timing: x = globalFeb*kNFpgaPairs + fpgaPairIndex, y = dt
   TH2F* dtFpgaPairs() const { return h2_dtFpgaPairs_; }
   //partner-FEB dt in a local coincidence group: a slipped FEB is a displaced column
   TH2F* dtPartner(int dtClass) const;
@@ -134,7 +134,7 @@ public:
   std::size_t nGroups() const { return nGroups_; }
   bool hasEwtWindow() const { return !ewtWindow_.empty(); }
   uint64_t lastEwt() const { return ewtWindow_.empty() ? 0 : ewtWindow_.back().first; }
-  const std::set<int>& activeFebPorts() const { return activeFebPorts_; }
+  const std::set<int>& activeGlobalFebs() const { return activeGlobalFebs_; }
   const std::set<uint8_t>& activeROCs() const { return activeROCs_; }
   const std::map<uint8_t, std::set<uint8_t>>& rocFEBMap() const { return rocFEBMap_; }
 
@@ -146,7 +146,7 @@ private:
   // One above-threshold hit, with the geography the grouping needs.
   struct PartnerHit {
     double time_ns{0.};
-    int febPort{-1};
+    int globalFeb{-1};
     int sector{-1};
     int module{-1};
     int side{-1};
@@ -199,7 +199,7 @@ private:
 
   std::size_t nDigis_{0};
   std::size_t nGroups_{0};
-  std::set<int> activeFebPorts_;
+  std::set<int> activeGlobalFebs_;
   std::set<uint8_t> activeROCs_;
   std::map<uint8_t, std::set<uint8_t>> rocFEBMap_;
 

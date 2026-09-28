@@ -57,11 +57,11 @@ void CRVDigiDQM::book()
       kTdc2);
 
   h1_channels_ = h.book1<TH1F>(
-      "h1_channels", "Channel occupancy;Online channel (FEB port#times64+FEB channel);Hits",
+      "h1_channels", "Channel occupancy;Online channel (global FEB ID#times64+FEB channel);Hits",
       kOnlineChannel);
   h2_channels_ = h.book2<TH2F>(
-      "h2_channels", "FEB vs channel hit map;FEB channel;FEB port (ROC-1)#times24+(FEB-1)",
-      kFebChannel, kFebPort);
+      "h2_channels", "FEB vs channel hit map;FEB channel;global FEB ID ((ROC-1)#times24+(FEB-1))",
+      kFebChannel, kGlobalFeb);
 
   hBarId_ = h.book1<TH1D>("BarId", "Bar ID", kBarId);
   hSiPM_ = h.book1<TH1D>("SiPM", "SiPM", kSiPM);
@@ -71,27 +71,27 @@ void CRVDigiDQM::book()
   for (int roc = 1; roc <= kNROC; ++roc) {
     h_crvDigiRatesROC_[roc - 1] =
         h.book1<TH1F>(Form("crvDigiRates_ROC%d", roc),
-                      Form("crvDigiRates_ROC%d;Online channel in ROC;Digis", roc),
+                      Form("crvDigiRates_ROC%d;Online channel in ROC ((ROC port/FEB ID-1)#times64+FEB channel);Digis", roc),
                       kRocChannelEdges);
   }
   h_crvDigiRates_ = h.book2<TH2F>("crvDigiRates",
-                                  "crvDigiRates:FEBchannel:FEB;FEB channel;FEB port",
-                                  kFebChannelEdges, kFebPortEdges);
+                                  "crvDigiRates:FEBchannel:FEB;FEB channel;global FEB ID ((ROC-1)#times24+(FEB-1))",
+                                  kFebChannelEdges, kGlobalFebEdges);
   h_crvDigisPerChannel_ = h.book1<TH1F>(
       "crvDigisPerChannel", "Digis vs offline channel;Offline channel (bar#times4+SiPM);Digis",
       kOfflineChannel);
 
   h2_dtFpgaPairs_ = h.book2<TH2F>(
       "dtFpgaPairs",
-      "#Deltat between hits on one FEB;FEB port#times10 + FPGA pair;#Deltat [ns]",
+      "#Deltat between hits on one FEB;global FEB ID#times10 + FPGA pair;#Deltat [ns]",
       kFpgaPair, kDtFpga);
 
   h2_dtPartner_.resize(kNDtClasses);
   for (int c = 0; c < kNDtClasses; ++c) {
     h2_dtPartner_[c] = h.book2<TH2F>(
         Form("dtPartner_%s", dtClassName(c)),
-        Form("#Deltat to partner FEB, %s;FEB port;#Deltat [ns]", dtClassName(c)),
-        kFebPort, kDtPartner[c]);
+        Form("#Deltat to partner FEB, %s;global FEB ID ((ROC-1)#times24+(FEB-1));#Deltat [ns]", dtClassName(c)),
+        kGlobalFeb, kDtPartner[c]);
   }
   h_layersPerGroup_ = h.book1<TH1F>(
       "layersPerGroup", "Layers in a coincidence group;Layers;Groups", kLayersPerGroup);
@@ -103,8 +103,8 @@ void CRVDigiDQM::book()
   h_sectorsPerEvent_ = h.book1<TH1F>(
       "sectorsPerEvent", "CRV sectors with a group;Sectors;Events", kSectorsPerEvent);
   h_febNoGroup_ = h.book1<TH1F>(
-      "febNoGroup", "Events where this FEB had hits but no group formed;FEB port;Events",
-      kFebPort);
+      "febNoGroup", "Events where this FEB had hits but no group formed;global FEB ID ((ROC-1)#times24+(FEB-1));Events",
+      kGlobalFeb);
 
   // Every configuration's family is booked; a job fills only its own.
   h_sectorOccupancy_.resize(kNConfigurations);
@@ -155,7 +155,7 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
   beginEvent(haveEwt ? std::optional<uint64_t>(ewt) : std::nullopt);
 
   const int nDigis = static_cast<int>(crvDigis.size());
-  std::map<int, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;  //by FEB port
+  std::map<int, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;  //by global FEB ID
   std::vector<PartnerHit> partnerHits;
 
   for (const auto& digi : crvDigis) {
@@ -163,14 +163,14 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
     const int feb = static_cast<int>(digi.GetFEB());
     const int febChannel = static_cast<int>(digi.GetFEBchannel());
     const bool online = onlineIdInRange(roc, feb, febChannel);
-    const int port = online ? febPort(roc, feb) : -1;
+    const int globalFeb = online ? globalFebId(roc, feb) : -1;
 
     if (online) {
       h1_channels_.Fill(onlineChannel(roc, feb, febChannel));
-      h2_channels_.Fill(febChannel, port);
+      h2_channels_.Fill(febChannel, globalFeb);
       h_crvDigiRatesROC_[roc - 1].Fill(rocChannel(feb, febChannel));
-      h_crvDigiRates_.Fill(febChannel, port);
-      activeFebPorts_.insert(port);
+      h_crvDigiRates_.Fill(febChannel, globalFeb);
+      activeGlobalFebs_.insert(globalFeb);
     } else {
       diag().Count("onlineIdOutOfRange",
                    "a digi's ROC/FEB/channel is outside CRVId (ROC 1-18, FEB 1-24, "
@@ -207,19 +207,19 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
     if (cf.valid && online) {
       const double absTime_ns = cf.time_ns + digi.GetStartTDC() * CRVDigitizationPeriod;
       const uint8_t fpga = static_cast<uint8_t>(febChannel / kNChanPerFPGA);
-      hitTimes[port][fpga].push_back({absTime_ns, static_cast<uint8_t>(febChannel)});
+      hitTimes[globalFeb][fpga].push_back({absTime_ns, static_cast<uint8_t>(febChannel)});
 
       // Partner timing takes a harder amplitude cut: below it the sample is
       // dominated by hits uncorrelated with the traversal.
       const int amplitude = static_cast<int>(cf.peak) - cf.baseline;
       if (amplitude >= kDtMinAmplitude && offline >= 0 &&
-          static_cast<std::size_t>(port) < febTopology_.size() &&
-          febTopology_[port].valid &&
+          static_cast<std::size_t>(globalFeb) < febTopology_.size() &&
+          febTopology_[globalFeb].valid &&
           static_cast<std::size_t>(offline) < channelToLayer_.size() &&
           channelToLayer_[offline] >= 0) {
-        const FebTopology& t = febTopology_[port];
+        const FebTopology& t = febTopology_[globalFeb];
         partnerHits.push_back(
-            {absTime_ns, port, t.sector, t.module, t.side, channelToLayer_[offline]});
+            {absTime_ns, globalFeb, t.sector, t.module, t.side, channelToLayer_[offline]});
       }
     }
 
@@ -244,10 +244,10 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
 void CRVDigiDQM::fillFpgaTiming(
     const std::map<int, std::map<uint8_t, std::vector<FpgaHit>>>& hitTimes)
 {
-  for (const auto& [port, fpgaMap] : hitTimes) {
+  for (const auto& [globalFeb, fpgaMap] : hitTimes) {
     for (auto itA = fpgaMap.begin(); itA != fpgaMap.end(); ++itA) {
       for (auto itB = itA; itB != fpgaMap.end(); ++itB) {
-        const double x = port * kNFpgaPairs + fpgaPairIndex(itA->first, itB->first);
+        const double x = globalFeb * kNFpgaPairs + fpgaPairIndex(itA->first, itB->first);
         const auto& hitsA = itA->second;
         const auto& hitsB = itB->second;
         if (itA == itB) {
@@ -293,13 +293,13 @@ int CRVDigiDQM::dtClassFor(int febA, int febB) const
 // so a slipped FEB appears as a displaced column in its class.
 void CRVDigiDQM::fillGroup(const std::vector<const PartnerHit*>& group)
 {
-  std::map<int, double> earliest;  //per FEB port
+  std::map<int, double> earliest;  //per global FEB ID
   std::set<int> layers;
   for (const PartnerHit* hit : group) {
     layers.insert(hit->layer);
-    auto it = earliest.find(hit->febPort);
+    auto it = earliest.find(hit->globalFeb);
     if (it == earliest.end() || hit->time_ns < it->second) {
-      earliest[hit->febPort] = hit->time_ns;
+      earliest[hit->globalFeb] = hit->time_ns;
     }
   }
 
@@ -339,7 +339,7 @@ void CRVDigiDQM::fillPartnerTiming(std::vector<PartnerHit>& hits)
   std::set<int> febsWithHits;
   std::size_t nGroupsThisEvent = 0;
   for (const PartnerHit& hit : hits) {
-    febsWithHits.insert(hit.febPort);
+    febsWithHits.insert(hit.globalFeb);
   }
 
   std::size_t i = 0;
@@ -388,7 +388,7 @@ void CRVDigiDQM::fillPartnerTiming(std::vector<PartnerHit>& hits)
       ++nGroupsThisEvent;
       sectorsWithGroup.insert(hits[i].sector);
       for (const PartnerHit* hit : group) {
-        febsInGroup.insert(hit->febPort);
+        febsInGroup.insert(hit->globalFeb);
       }
     }
     i = j;

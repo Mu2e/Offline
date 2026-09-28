@@ -70,7 +70,7 @@ inline std::vector<int> channelToSector(const CosmicRayShield& crs, int configur
   return out;
 }
 
-// Which sector, module and side each FEB port reads, from the channel map, and
+// Which sector, module and side each global FEB ID reads, from the channel map, and
 // the layer of each offline channel. One FEB reads two layers on one side of
 // one module; a FEB that maps to more than one module side gets no partner
 // timing, with one warning.
@@ -78,9 +78,9 @@ inline void febTopology(const CosmicRayShield& crs, const CRVOrdinal& channelMap
                         std::vector<CRVDigiDQM::FebTopology>& topology,
                         std::vector<int>& channelToLayer) {
   const std::size_t nChannels = crs.getAllCRSScintillatorBars().size() * CRVId::nChanPerBar;
-  topology.assign(CRVDQMRun1::kNFebPorts, CRVDigiDQM::FebTopology{});
+  topology.assign(CRVDQMRun1::kNFebs, CRVDigiDQM::FebTopology{});
   channelToLayer.assign(nChannels, -1);
-  std::vector<bool> conflicting(CRVDQMRun1::kNFebPorts, false);
+  std::vector<bool> conflicting(CRVDQMRun1::kNFebs, false);
   for (std::size_t channel = 0; channel < nChannels; ++channel) {
     const CRSScintillatorBarIndex bar(channel / CRVId::nChanPerBar);
     const auto& id = crs.getBar(bar).id();
@@ -90,19 +90,19 @@ inline void febTopology(const CosmicRayShield& crs, const CRVOrdinal& channelMap
     if (!channelMap.onlineExists(offline)) continue;  // takes the offline channel
     const CRVROC& online = channelMap.online(offline);
     if (!CRVDQMRun1::onlineIdInRange(online.ROC(), online.FEB(), online.FEBchannel())) continue;
-    const int port = CRVDQMRun1::febPort(online.ROC(), online.FEB());
-    if (conflicting[port]) continue;
+    const int globalFeb = CRVDQMRun1::globalFebId(online.ROC(), online.FEB());
+    if (conflicting[globalFeb]) continue;
 
     const int side = static_cast<int>(channel % CRVId::nChanPerBar % CRVId::nSidesPerBar);
-    CRVDigiDQM::FebTopology& t = topology[port];
+    CRVDigiDQM::FebTopology& t = topology[globalFeb];
     if (!t.valid) {
       t = {id.getShieldNumber(), id.getModuleNumber(), side, true};
     } else if (t.sector != id.getShieldNumber() || t.module != id.getModuleNumber() ||
                t.side != side) {
-      mf::LogWarning("CRVDQMLayout") << "FEB port " << port << " spans more than one module side; "
+      mf::LogWarning("CRVDQMLayout") << "global FEB ID " << globalFeb << " spans more than one module side; "
                                << "partner timing for it is disabled.";
       t = CRVDigiDQM::FebTopology{};
-      conflicting[port] = true;
+      conflicting[globalFeb] = true;
     }
   }
 }
