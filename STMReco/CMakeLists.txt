@@ -97,6 +97,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression.fcl   ${CURRENT_B
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/analyzeDigis.fcl   ${CURRENT_BINARY_DIR} fcl/analyzeDigis.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmPHTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmPHTrees.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmHitsTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmHitsTrees.fcl   COPYONLY)
+
 
 
 install_source(SUBDIRS src)
