@@ -1,9 +1,5 @@
-// NTuple dumper for Detector pulse heights - calibrated
-// Reads mcs.*.art file
-
-// stdlib includes
-#include <limits>
-#include <map>
+// NTuple dumper for Detector calibrated STM Hits
+// Reads mcs.*.art file -> STMHitCollectionMap
 
 // art includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -24,8 +20,6 @@
 
 // Offline includes I added
 #include "Offline/Mu2eUtilities/inc/STMUtils.hh"
-#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
-#include "Offline/STMConditions/inc/STMEnergyCalib.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 #include "Offline/DataProducts/inc/STMChannel.hh"
 
@@ -43,8 +37,14 @@ namespace mu2e {
           using Name=fhicl::Name;
           using Comment=fhicl::Comment;
           struct Config {
-            fhicl::Atom<art::InputTag> stmHitsMapTag{ Name("stmHitsMapTag"), Comment("Input Tag for STMHitCollectionMap")};
-            // reading from the makeSTMHits output
+            fhicl::Atom<art::InputTag> stmHitsMapTag{ Name("stmHitsMapTag"),
+                Comment("Input Tag for STMHitCollectionMap")};
+            fhicl::Atom<double> minEnergy{ Name("minEnergy"),
+                Comment("Energy histogram lower limit"), 0};
+            fhicl::Atom<double> maxEnergy{ Name("maxEnergy"),
+                Comment("Energy histogram upper limit "), 10};
+            fhicl::Atom<double> energyBinWidth{ Name("energyBinWidth"),
+                Comment("Energy histogram bin width"), 0.001};
           };
           using Parameters = art::EDAnalyzer::Table<Config>;
           explicit STMHitsTree(const Parameters& conf);
@@ -55,6 +55,11 @@ namespace mu2e {
 
           art::ProductToken<STMHitCollectionMap> _stmHitCollectionMapToken; // map token
           STMChannel _channel;
+
+          // hist
+          double _minEnergy;
+          double _maxEnergy;
+          double _energyBinWidth;
 
           // Store STM Hit information
           float energy   {0};
@@ -71,15 +76,27 @@ namespace mu2e {
           // Tree reference
           TTree* ttree = nullptr;
 
-          // STM PH spectrum
+          // STM Calibrated energy spectrum
           TH1D* _energySpectrum = nullptr;
     };
 
     STMHitsTree::STMHitsTree(const Parameters& config) :
         art::EDAnalyzer{config},
         _stmHitCollectionMapToken(consumes<STMHitCollectionMap>(config().stmHitsMapTag())),
-        _channel(STMUtils::getChannel(config().stmHitsMapTag()))
-        {}
+        _channel(STMUtils::getChannel(config().stmHitsMapTag())),
+        _minEnergy(config().minEnergy()),
+        _maxEnergy(config().maxEnergy()),
+        _energyBinWidth(config().energyBinWidth())
+        {
+            if(_maxEnergy <= _minEnergy) {
+                throw cet::exception("Configuration")
+                << "In fhicl: maxEnergy must be greater than minEnergy";
+            }
+            if (_energyBinWidth <= 0) {
+                throw cet::exception("Configuration")
+                << "In fhicl: energyBinWidth must be greater than zero";
+            }
+        }
 
     void STMHitsTree::beginJob(){
         // Set up TTree here
@@ -98,15 +115,16 @@ namespace mu2e {
 
         // Set up energy spectrum
         std::string energySpectrumTitle = "Energy Spectrum (" + _channel.name() + ")" ;
-        double min_energy = 0;
-        double max_energy = 10;
-        double energy_bin_width = 0.001;
-        int n_bins = (max_energy - min_energy) / energy_bin_width;
+        int n_bins = (_maxEnergy - _minEnergy) / _energyBinWidth;
+        if (n_bins <=0) {
+            throw cet::exception("Configuration")
+            << "Energy histogram configuration produces zero bins";
+        }
         _energySpectrum = tfs->make<TH1D>(
             "energySpectrum",
             (energySpectrumTitle +";Energy;Count").c_str(),
-            n_bins, min_energy, max_energy);
-    };
+            n_bins, _minEnergy, _maxEnergy);
+    }
 
     void STMHitsTree::analyze(const art::Event& event) {
         // We fill art based information here
