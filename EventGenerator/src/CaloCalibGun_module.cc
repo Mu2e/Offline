@@ -35,6 +35,7 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -63,8 +64,8 @@ namespace mu2e {
       fhicl::Atom<double> tmin{Name("tmin"),0.};
       fhicl::Atom<double> tmax{Name("tmax"),1694.};
       fhicl::Sequence<int> disks{Name("disks"), Comment("Calorimeter disk indices to illuminate simultaneously per event")};
-      fhicl::Atom<bool> multiphotons{Name("multiphotons"),false};
-      fhicl::Atom<double> sourceRate{Name("sourceRate"), Comment("Photon source rate in photons/crystal/sec, see docdb:54585"), 33.};
+      fhicl::Atom<bool> multiphotons{Name("multiphotons"), Comment("If true, draw a Poisson number of photons per disk with mean sourceRate*nCrystals*(tmax-tmin); if false, exactly one photon per disk"), false};
+      fhicl::OptionalAtom<double> sourceRate{Name("sourceRate"), Comment("Photon source rate in photons/crystal/sec, see docdb:54585; required when multiphotons is true")};
     };
 
     using Parameters= art::EDProducer::Table<Config>;
@@ -108,7 +109,7 @@ namespace mu2e {
     CLHEP::RandFlat     _randFlat;
 
     RandomUnitSphere    _randomUnitSphere;
-    CLHEP::RandPoissonQ _randPoisson_dist;
+    CLHEP::RandPoissonQ _randPoisson;
 
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
@@ -128,12 +129,15 @@ namespace mu2e {
     , _tmax{conf().tmax()}
     , _disks{conf().disks()}
     , _multiphotons{conf().multiphotons()}
-    , _sourceRate{conf().sourceRate()}
+    , _sourceRate{conf().sourceRate() ? *conf().sourceRate() : 0.}
     , _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , _randFlat{_engine}
-    , _randPoisson_dist{_engine}
     , _randomUnitSphere{_engine, _cosmin, _cosmax, 0, CLHEP::twopi}
+    , _randPoisson{_engine}
   {
+    if (_multiphotons && !conf().sourceRate()) {
+      throw cet::exception("CONFIG") << "CaloCalibGun: 'sourceRate' must be set when 'multiphotons' is true\n";
+    }
     if (_disks.empty()) {
       throw cet::exception("CONFIG") << "CaloCalibGun: 'disks' must not be empty\n";
     }
@@ -188,90 +192,90 @@ namespace mu2e {
 
     for (unsigned int d = 0; d < _disks.size(); ++d) {
 
-    unsigned int nPhotons = 1;
-    if (_multiphotons) nPhotons = (int(_randPoisson_dist.fire(_photonMean[d])));
-    for(unsigned int i=0; i < nPhotons; i++ ){
+      unsigned int nPhotons = 1;
+      if (_multiphotons) nPhotons = (int(_randPoisson.fire(_photonMean[d])));
+      for(unsigned int i=0; i < nPhotons; i++ ){
 
-      double xpipe, ypipe, zpipe;
-      //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
-      int xsn = round(_randFlat.fire());
-      int ysn = round(_randFlat.fire());
+        double xpipe, ypipe, zpipe;
+        //Pick position - find either 0,1 - these are indices of the sign list (so 0=-1, 1=+1)
+        int xsn = round(_randFlat.fire());
+        int ysn = round(_randFlat.fire());
 
-      // pick a random theta, between 0 and 2*pi:
-      double theta = _randFlat.fire() * 2.0 * CLHEP::pi;
-      // pick a random point on the radius
-      double pipeR = _pipeRadius * sqrt(_randFlat.fire());
-      // find the z position based on above:
-      zpipe = pipeR*sin(theta);
+        // pick a random theta, between 0 and 2*pi:
+        double theta = _randFlat.fire() * 2.0 * CLHEP::pi;
+        // pick a random point on the radius
+        double pipeR = _pipeRadius * sqrt(_randFlat.fire());
+        // find the z position based on above:
+        zpipe = pipeR*sin(theta);
 
-      // select an index from list of pipes:
-      unsigned int idx = int(5*_randFlat.fire());
+        // select an index from list of pipes:
+        unsigned int idx = int(_nPipes*_randFlat.fire());
 
-      // select the LgTor from list extracted from geom service above:
-      double radLgTor = _pipeTorRadius[idx];
+        // select the LgTor from list extracted from geom service above:
+        double radLgTor = _pipeTorRadius[idx];
 
-      // The phi range from 0 to half phi_lbd for the large torus
-      double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * CLHEP::degree / 2.;
+        // The phi range from 0 to half phi_lbd for the large torus
+        double phiLgTor = _randFlat.fire() * phi_lbd[idx]  * CLHEP::degree / 2.;
 
-      // x, y, z position of the large torus
-      double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
-      double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
-      // circulus (center) of the large torus
-      double circLgTor = radLgTor * phi_lbd[idx]  * CLHEP::degree / 2.;
+        // x, y, z position of the large torus
+        double xLgTor = sign[xsn]*(radLgTor + pipeR*cos(theta))*cos(phiLgTor);
+        double yLgTor = sign[ysn]*(radLgTor + pipeR*cos(theta))*sin(phiLgTor);
+        // circulus (center) of the large torus
+        double circLgTor = radLgTor * phi_lbd[idx]  * CLHEP::degree / 2.;
 
-      // The phi range for the small torus
-      double phiSmTor = CLHEP::degree * (_randFlat.fire() * phi_sbd[idx] + 180. + phi_lbd[idx]/2. - phi_sbd[idx]);
-      // x, y, z position of the small torus
-      double xSmTor = sign[xsn]*((radSmTor + pipeR*cos(theta))*cos(phiSmTor) + xsmall + xdistance * idx);
-      double ySmTor = sign[ysn]*((radSmTor + pipeR*cos(theta))*sin(phiSmTor) + ysmall[idx]);
-      // circulus (center) of the small torus
-      double circSmTor = CLHEP::degree * radSmTor * phi_sbd[idx];
+        // The phi range for the small torus
+        double phiSmTor = CLHEP::degree * (_randFlat.fire() * phi_sbd[idx] + 180. + phi_lbd[idx]/2. - phi_sbd[idx]);
+        // x, y, z position of the small torus
+        double xSmTor = sign[xsn]*((radSmTor + pipeR*cos(theta))*cos(phiSmTor) + xsmall + xdistance * idx);
+        double ySmTor = sign[ysn]*((radSmTor + pipeR*cos(theta))*sin(phiSmTor) + ysmall[idx]);
+        // circulus (center) of the small torus
+        double circSmTor = CLHEP::degree * radSmTor * phi_sbd[idx];
 
-      // straight pipe
-      double ymanifold = rInnerManifold * sin(CLHEP::degree * (90 - phi_end[idx]));
-      double xstart = xsmall + xdistance * idx - radSmTor * cos(CLHEP::degree * phi_end[idx]);
-      double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
-      // height of the straight pipe
-      double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
+        // straight pipe
+        double ymanifold = rInnerManifold * sin(CLHEP::degree * (90 - phi_end[idx]));
+        double xstart = xsmall + xdistance * idx - radSmTor * cos(CLHEP::degree * phi_end[idx]);
+        double ystart = ysmall[idx] + radSmTor * sin(CLHEP::degree * phi_end[idx]);
+        // height of the straight pipe
+        double hPipe = (ymanifold - ystart) / sin(CLHEP::degree * (90 - phi_end[idx]));
 
-      // a cylinder along y-axis
-      double y_center = _randFlat.fire() * hPipe;
-      double xPipe = pipeR * cos(theta);
-      double xStrait = sign[xsn] * (xPipe * cos(-CLHEP::degree * phi_end[idx]) - y_center * sin(-CLHEP::degree * phi_end[idx] ) + xstart);
-      double yStrait = sign[ysn] * (xPipe * sin(-CLHEP::degree * phi_end[idx]) + y_center * cos(-CLHEP::degree * phi_end[idx]) + ystart);
-      double lenStrait = hPipe;
+        // a cylinder along y-axis
+        double y_center = _randFlat.fire() * hPipe;
+        double xPipe = pipeR * cos(theta);
+        double xStrait = sign[xsn] * (xPipe * cos(-CLHEP::degree * phi_end[idx]) - y_center * sin(-CLHEP::degree * phi_end[idx] ) + xstart);
+        double yStrait = sign[ysn] * (xPipe * sin(-CLHEP::degree * phi_end[idx]) + y_center * cos(-CLHEP::degree * phi_end[idx]) + ystart);
+        double lenStrait = hPipe;
 
-      double sample = _randFlat.fire();
-      if(sample <= circLgTor / (circLgTor + circSmTor + lenStrait)){
-        xpipe = xLgTor;
-        ypipe = yLgTor;
+        double sample = _randFlat.fire();
+        if(sample <= circLgTor / (circLgTor + circSmTor + lenStrait)){
+          xpipe = xLgTor;
+          ypipe = yLgTor;
+        }
+        else if(sample > circLgTor / (circLgTor + circSmTor + lenStrait) and sample <= (circLgTor + circSmTor) / (circLgTor + circSmTor + lenStrait)){
+          xpipe = xSmTor;
+          ypipe = ySmTor;
+        }
+        else{
+          xpipe = xStrait;
+          ypipe = yStrait;
+        }
+        CLHEP::Hep3Vector pos(xpipe, ypipe, zpipe);
+        // shift the pipe to the front of the calorimeter disk
+        pos += _zPipeCenters[d];
+
+        //pick time
+        double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
+
+        //Pick energy and momentum vector
+        CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
+
+        //Set Four-momentum
+        CLHEP::HepLorentzVector mom(p3.x(), p3.y(),p3.z(),_energy );
+
+        // Add the particle to  the list.
+        output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
+
       }
-      else if(sample > circLgTor / (circLgTor + circSmTor + lenStrait) and sample <= (circLgTor + circSmTor) / (circLgTor + circSmTor + lenStrait)){
-        xpipe = xSmTor;
-        ypipe = ySmTor;
-      }
-      else{
-        xpipe = xStrait;
-        ypipe = yStrait;
-      }
-      CLHEP::Hep3Vector pos(xpipe, ypipe, zpipe);
-      // shift the pipe to the front of the calorimeter disk
-      pos += _zPipeCenters[d];
-
-      //pick time
-      double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
-
-      //Pick energy and momentum vector
-      CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(_energy);
-
-      //Set Four-momentum
-      CLHEP::HepLorentzVector mom(p3.x(), p3.y(),p3.z(),_energy );
-
-      // Add the particle to  the list.
-      output->emplace_back(PDGCode::gamma, GenId::CaloCalib, pos, mom, time);
-
     }
-    } 
     event.put(std::move(output));
     event.put(std::make_unique<PrimaryParticle>(primaryParticles));
   }
