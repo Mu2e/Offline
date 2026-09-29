@@ -15,6 +15,7 @@ cet_build_plugin(PlotSTMEnergySpectrum art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PlotSTMPHSpectrum art::module
@@ -75,6 +76,14 @@ cet_build_plugin(STMPHDigiTree art::module
     Offline::RecoDataProducts    
 )
 
+cet_build_plugin(STMHitsTree art::module
+    REG_SOURCE src/STMHitsTree_module.cc
+    LIBRARIES REG
+    art_root_io::TFileService_service
+    Offline::Mu2eUtilities
+    Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd.fcl   ${CURRENT_BINARY_DIR} fcl/mwd.fcl   COPYONLY)
@@ -88,6 +97,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression.fcl   ${CURRENT_B
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/analyzeDigis.fcl   ${CURRENT_BINARY_DIR} fcl/analyzeDigis.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmPHTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmPHTrees.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmHitsTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmHitsTrees.fcl   COPYONLY)
+
 
 
 install_source(SUBDIRS src)

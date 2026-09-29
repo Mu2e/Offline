@@ -473,6 +473,9 @@
  <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
  <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
  <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>>"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>>"/>
 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>
