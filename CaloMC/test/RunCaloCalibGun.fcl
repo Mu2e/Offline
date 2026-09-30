@@ -33,6 +33,9 @@ physics: {
         phimax : 2.0
         tmin  :  500.
         tmax : 1694.
+        disks : [1]
+        multiphotons : false
+        sourceRate : 33.33 // photons/crystal/sec, docdb:54585
       }
 
       g4run                : @local::g4run
