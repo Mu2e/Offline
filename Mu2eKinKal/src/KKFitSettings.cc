@@ -2,6 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/GeneralUtilities/inc/splitLine.hh"
+#include "cetlib_except/exception.h"
 #include <iostream>
 
 namespace mu2e {
@@ -23,7 +24,11 @@ namespace mu2e {
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
       config.mindtstep_ = fitconfig.minDomainTimeStep();
-      if(fitconfig.domainMargin() >= 0.0) config.domainmargin_ = fitconfig.domainMargin(); // negative keeps KinKal's unconfined default
+      double domainmargin(0.0);
+      if(fitconfig.domainMargin(domainmargin)){ // absent keeps KinKal's unconfined default
+        if(domainmargin < 0.0) throw cet::exception("RECO") << "mu2e::Mu2eKinKal::makeConfig: DomainMargin must be >= 0, got " << domainmargin << std::endl;
+        config.domainmargin_ = domainmargin;
+      }
       // create the updaters requested
       std::vector<CADSHU::Config> cadshusettings;
       std::vector<DriftANNSHU::Config> driftannshusettings;

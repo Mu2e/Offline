@@ -233,6 +233,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
 
       // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {

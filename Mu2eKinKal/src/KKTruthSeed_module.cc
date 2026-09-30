@@ -145,6 +145,8 @@ namespace mu2e {
     produces<KalSeedCollection>();
     produces<KalSeedMCAssns>();
     if(settings().extrapSettings()) extrap_ = std::make_unique<KKExtrap>(*settings().extrapSettings());
+    // the truth track extrapolates with the extension config's bfcorr_ and mindtstep_
+    if(extrap_) extrap_->checkConfig(exconfig_);
     if(truthSeedParamConstraints_.size() != KinKal::NParams())
       throw cet::exception("RECO") << "mu2e::KKTruthSeed: TruthSeedParameterConstraints must have "
         << KinKal::NParams() << " entries" << std::endl;

@@ -219,6 +219,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
       if(print_ > 0) std::cout << config_;
     }
 

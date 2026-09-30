@@ -4,6 +4,7 @@
 // Structs for configuring the Mu2e KinKal fit
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Tuple.h"
@@ -36,7 +37,7 @@ namespace mu2e {
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
       fhicl::Atom<double> minDomainTimeStep { Name("MinDomainTimeStep"), Comment("Minimum BField domain time step (ns); 0 leaves it unbounded"), 0.0 };
-      fhicl::Atom<double> domainMargin { Name("DomainMargin"), Comment("Maximum time a BField domain may extend beyond the active range (ns); negative leaves domains unconfined"), -1.0 };
+      fhicl::OptionalAtom<double> domainMargin { Name("DomainMargin"), Comment("Maximum time a BField domain may extend beyond the active range (ns, >= 0); absent leaves domains unconfined") };
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
