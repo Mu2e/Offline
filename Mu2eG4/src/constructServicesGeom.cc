@@ -83,17 +83,15 @@ namespace mu2e {
     // ==> Make Pipes <========
     // *******************************************************
 
-    int                        version = pipeSet->getVersion();
-
     // Load up the vectors needed for building.
     std::vector<int>            nPipes = pipeSet->getNPipes();
     std::vector<int>            nComps = pipeSet->getNComponentsInPipe();
-    std::vector<double>         pLeng  = pipeSet->getLengths();
-    std::vector<std::string>    pFlav  = pipeSet->getFlavor();
+    std::vector<Pipe::Flavor>   pFlav  = pipeSet->getFlavor();
     std::vector<std::string>    pFill  = pipeSet->getFillMaterialNames();
 
     std::vector<std::vector<CLHEP::Hep3Vector> > pCent = pipeSet->getCentersOfPipes();
     std::vector<std::vector<std::string> > pOrient = pipeSet->getOrientations();
+    std::vector<std::vector<double> > pLeng = pipeSet->getLengths();
 
     std::vector<std::vector<double> > cInRad = pipeSet->getInnerRads();
     std::vector<std::vector<double> > cOutRad = pipeSet->getOuterRads();
@@ -105,26 +103,18 @@ namespace mu2e {
     // *** Loop over the types and construct all *********
     // ***************************************************
 
-    int whichPipe = 0;
     for ( unsigned int it = 0; it < nPipes.size(); it++ ) {
 
       int nPipe = nPipes[it];
       int nComp = nComps[it];
-      double len = 0.0;
-      if (version == 1) len = pLeng[it];
-      std::string flav = pFlav[it];
-      bool isBend = false;
-      if ( flav != "straight" ) {
-        isBend = true;
-      } // end of if not straight
+      bool isBend = ( pFlav[it] == Pipe::Flavor::bend );
 
       std::string fillMat = pFill[it];
 
       // *** Now loop over the individual pipes ***
       for ( int ip = 0; ip < nPipe; ip++ ) {
 
-        if ( version > 1 ) len = pLeng[whichPipe];
-        whichPipe++;
+        double len = pLeng[it][ip];
         // Make the container ("mother") volume for the type.
         TubsParams  pipeParams(0.0,cOutRad[it][0],len/2.0);
         TorusParams bendParams(0.0,cOutRad[it][0],len);

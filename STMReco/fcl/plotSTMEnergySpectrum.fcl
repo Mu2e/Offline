@@ -19,11 +19,11 @@ physics: {
   analyzers : {
     plotHPGeEnergySpectrum : {
       module_type : PlotSTMEnergySpectrum
-      stmHitsTag : "stmHitsHPGe"
+      stmHitsMapTag : "stmHitsHPGe"
     }
     plotLaBrEnergySpectrum : {
       module_type : PlotSTMEnergySpectrum
-      stmHitsTag : "stmHitsLaBr"
+      stmHitsMapTag : "stmHitsLaBr"
     }
   }
   # setup paths

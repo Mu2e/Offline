@@ -31,8 +31,8 @@ vector<double> building.backfill.beamline.xPositions = {
   15778.2,   // BFDU09
   17082.1,   // BFDU10
   12984.2,   // BFDU11
-  14443.7,   // bB16
-  11684,   // R0
+  14442.3,   // S
+  11684,   // T
   11684,   // dB10
   12751,   // dFDN08
   15886.1,   // dFDN09
@@ -65,8 +65,8 @@ vector<double> building.backfill.beamline.yPositions = {
   23758.9,   // BFDU09
   18377.4,   // BFDU10
   17384.5,   // BFDU11
-  11361,   // bB16
-  10692.4,   // R0
+  11366.6,     // S
+  10698.4,   // T
   17703.8,   // dB10
   18347.3,   // dFDN08
   19106.9,   // dFDN09

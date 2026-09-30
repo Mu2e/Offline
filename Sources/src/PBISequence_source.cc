@@ -28,6 +28,7 @@
 //   So long as we do not write multiple subruns to same output file it is also moot.
 //
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <boost/utility.hpp>
@@ -63,6 +64,32 @@ using namespace std;
 
 namespace mu2e {
   using namespace boost::accumulators;
+
+  namespace {
+    void throwIfNotOpen(std::ifstream const& in, std::string const& fileName) {
+      if (!in.is_open()) {
+        throw cet::exception("FILEOPEN", " PBISequence: ")
+          << " cannot open input file " << fileName << "\n";
+      }
+    }
+
+    // Read the next proton count.  Returns false only at a clean end of file;
+    // a malformed, negative or non-finite value throws.
+    bool readProtons(std::istream& in, std::string const& fileName, unsigned long long& nprotons) {
+      double protons = 0.;
+      if (!(in >> protons)) {
+        if (in.eof() && !in.bad()) return false;
+        throw cet::exception("BADINPUT", " PBISequence: ")
+          << " malformed proton count in file " << fileName << "\n";
+      }
+      if (!std::isfinite(protons) || protons < 0.) {
+        throw cet::exception("BADINPUT", " PBISequence: ")
+          << " invalid proton count " << protons << " in file " << fileName << "\n";
+      }
+      nprotons = static_cast<unsigned long long>(llrint(protons));
+      return true;
+    }
+  }
 
   struct Config
   {
@@ -163,20 +190,15 @@ namespace mu2e {
     using namespace boost::accumulators;
     currentFileName_ = filename;
     currentFile_ = new ifstream(currentFileName_,std::ifstream::in);
+    throwIfNotOpen(*currentFile_, currentFileName_);
     // reset counters
     subRunNumber_++;
     if(subRunNumber_ != firstSubRunNumber_) currentEventNumber_ = 0; // only reset after the first sub run
     // compute statistics on protons in this file
     nprotAcc_ = {};
-    double protons;
-    unsigned long long nprotons;
-    while(true) {
-      *currentFile_ >> protons;
-      if ( currentFile_->good()) {
-        nprotons = static_cast<unsigned long long>(llrint(protons));
-        nprotAcc_(double(nprotons));
-      } else
-        break;
+    unsigned long long nprotons = 0;
+    while (readProtons(*currentFile_, currentFileName_, nprotons)) {
+      nprotAcc_(double(nprotons));
     }
     if ( verbosity_ > 0 ){
       std::cout << "Read " << extract_result<tag::count>(nprotAcc_) << " events with " << extract_result<tag::mean>(nprotAcc_) << " <protons> " << extract_result<tag::variance>(nprotAcc_) << " variance from file " << currentFileName_ << std::endl;
@@ -202,11 +224,8 @@ namespace mu2e {
       art::SubRunPrincipal*& outSR,
       art::EventPrincipal*& outE)
   {
-    double protons;
-    unsigned long long nprotons;
-    (*currentFile_) >>  protons;
-    if (!currentFile_->good()) return false;
-    nprotons = static_cast<unsigned long long>(llrint(protons));
+    unsigned long long nprotons = 0;
+    if (!readProtons(*currentFile_, currentFileName_, nprotons)) return false;
     managePrincipals(runNumber_, subRunNumber_, ++currentEventNumber_, outR, outSR, outE);
     std::unique_ptr<ProtonBunchIntensity> pbi(new ProtonBunchIntensity(nprotons));
     art::put_product_in_principal(std::move(pbi), *outE, myModuleLabel_);
@@ -262,16 +281,10 @@ namespace mu2e {
   void PBISequenceDetail::computeRunDataProducts( std::vector<std::string> const& inputFiles ){
     for ( auto const& file : inputFiles){
       std::ifstream in(file,std::ifstream::in);
-      double protons;
-      unsigned long long nprotons;
-      while (in){
-        in >> protons;
-        if ( in.good()) {
-          nprotons = static_cast<unsigned long long>(llrint(protons));
-          runNprotAcc_(double(nprotons));
-        } else {
-          break;
-        }
+      throwIfNotOpen(in, file);
+      unsigned long long nprotons = 0;
+      while (readProtons(in, file, nprotons)) {
+        runNprotAcc_(double(nprotons));
       }
     }
   } // end computeRunDataProducts

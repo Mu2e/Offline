@@ -1,4 +1,4 @@
-// NTuple dumper for Detector pulse heights
+// NTuple dumper for Detector pulse heights - uncalibrated
 
 // stdlib includes
 #include <limits>
@@ -102,10 +102,10 @@ namespace mu2e {
 
         // Set up histogram
         std::string phSpectrumTitle = "PH Spectrum (" + _channel.name() + ")" ; // Builds title PH Spectrum (HPGe/ LaBr)
-
+        // invert for easy comparison
         _phSpectrum = tfs->make<TH1D>("phSpectrum",
             (phSpectrumTitle +";PulseHeight;Count").c_str(),
-            10000, -10000, 0);
+            12000, 0, 12000);
     };
 
     void STMPHDigiTree::analyze(const art::Event& event) {
@@ -131,7 +131,7 @@ namespace mu2e {
 
             // Second loop for PH Digis
             for (const auto& phDigi : phDigis){
-                pulseHeight = phDigi.energy();
+                pulseHeight = phDigi.energy() * -1;
                 uncalibratedTime = phDigi.time();
                 // fill tree
                 ttree->Fill();
@@ -140,7 +140,6 @@ namespace mu2e {
             }
         }
     } // end of analyze
-
 } // end namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::STMPHDigiTree)

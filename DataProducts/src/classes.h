@@ -65,6 +65,7 @@
 // Filter
 #include "Offline/DataProducts/inc/FilterFraction.hh"
 #include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
+#include "Offline/DataProducts/inc/StageNormalization.hh"
 
 // General
 #include "Offline/DataProducts/inc/SurfaceId.hh"

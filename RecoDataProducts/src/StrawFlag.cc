@@ -24,6 +24,7 @@ namespace mu2e {
       bitnames[std::string("HasHit")]         = bit_to_mask(hashit);  // was it associated with a hit?
       bitnames[std::string("ActiveHit")]      = bit_to_mask(activehit); // was its associated hit active?
       bitnames[std::string("DriftHit")]       = bit_to_mask(drifthit); // did its associated hit use drift information in the fit?
+      bitnames[std::string("Dead")]       = bit_to_mask(dead); // we do not expect hits on this straw
     }
     return bitnames;
   }

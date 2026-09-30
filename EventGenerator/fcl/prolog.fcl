@@ -142,6 +142,10 @@ CaloCalibGun : {
   phimax : 2.0
   tmin  :  500.
   tmax : 1694.
+  disks : [1]
+  # If multiphotons is true, then set tmin=0 and tmax= 100000 above. (off-spill gate)
+  multiphotons : false
+  sourceRate : 33.33 # photons/crystal/sec, docdb:54585
 }
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules

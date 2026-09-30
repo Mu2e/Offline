@@ -40,6 +40,7 @@
 #include "Offline/MCDataProducts/inc/SurfaceStep.hh"
 #include "Offline/MCDataProducts/inc/ExtMonFNALSimHit.hh"
 #include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
+#include "Offline/DataProducts/inc/StageNormalization.hh"
 #include "Offline/MCDataProducts/inc/SimTimeOffset.hh"
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
@@ -98,6 +99,57 @@ namespace mu2e {
       fhicl::Atom<std::string> genCounterLabel{ Name("genCounterLabel"), Comment("Module label for the GenEventCounter"), "genCounter" };
     };
 
+    // StageNormalization in SubRuns: carry the resampled pool's
+    // origin-equivalent generated count through to the output, scaled by the
+    // number of draws. Without this the chain breaks here -- the secondary's
+    // GenEventCount does not reach the output, and the output's own records
+    // draws, not generated events.
+    struct StageNormMixerConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      // EXACTLY ONE of moduleLabel or (poolGenCount + poolEventCount).
+      // They are alternatives rather than a preference and a fallback because
+      // art throws ProductNotFound when a declared mix op's product is absent
+      // from the secondary -- it does not call the op with an empty input --
+      // so declaring the StageNormalization op against a pool that has none
+      // aborts the job on the first event.
+      fhicl::OptionalAtom<art::InputTag> moduleLabel{ Name("moduleLabel"),
+        Comment("SubRun StageNormalization of the RESAMPLED INPUT, as its "
+                "StageNormalizationCounter wrote it. The pool MUST carry this "
+                "product; state poolGenCount + poolEventCount if it does not. "
+                "Note this form cannot see pool subruns that kept no events, "
+                "so it reads low by about exp(-mean events kept per subrun); "
+                "for a sparse pool state the totals instead, which cover every "
+                "subrun. See StageNormalization.hh.") };
+      fhicl::Atom<std::string> srOutInstance{ Name("srOutInstance"),
+        Comment("Output instance name for SubRun outputs"), "resampled" };
+      // Bootstrap for a pool predating StageNormalization: state BOTH of the
+      // pool's totals. Reading the generated count from the secondary instead
+      // does not work -- the mix op sees the DRAWN SUBRUN's GenEventCount,
+      // while the event count can only be stated for the pool as a whole, and
+      // dividing one by the other mixes scopes and is wrong by the number of
+      // subruns. Both totals are over ALL of fileNames; draws are uniform over
+      // the pool, so the pool-level ratio is the correct per-draw expectation.
+      fhicl::OptionalAtom<double> poolGenCount{ Name("poolGenCount"),
+        Comment("Total GenEventCount over ALL of fileNames (the pool's generated "
+                "events). Requires poolEventCount.") };
+      fhicl::OptionalAtom<double> poolEventCount{ Name("poolEventCount"),
+        Comment("Total events over ALL of fileNames. Requires poolGenCount.") };
+      fhicl::Atom<unsigned> poolStages{ Name("poolStages"),
+        Comment("How many stages poolGenCount spans, i.e. what nStages the "
+                "pool's own StageNormalization would carry. The output records "
+                "one more than this."), 1u };
+      fhicl::Atom<bool> poolFromOrigin{ Name("poolFromOrigin"),
+        Comment("Whether poolGenCount counts events at the ORIGIN of the chain "
+                "(protons, for a beam chain) rather than at some intermediate "
+                "stage. Default false, because the usual source does not: SAM's "
+                "dh.gencount is reset by a resampling stage to that stage's own "
+                "draw count, so a stops sample's is draws from the beam sample. "
+                "Set true only when the totals really are the origin's -- "
+                "otherwise the result is a sound measurement of a shorter chain "
+                "and says so."), false };
+    };
+
     // Configuration for the Mu2eProductMixing helper
     struct Config {
       fhicl::Table<CollectionMixerConfig> genParticleMixer { fhicl::Name("genParticleMixer") };
@@ -120,6 +172,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> eventWindowMarkerMixer { fhicl::Name("eventWindowMarkerMixer") };
       fhicl::OptionalTable<CosmicLivetimeMixerConfig> cosmicLivetimeMixer { fhicl::Name("cosmicLivetimeMixer") };
       fhicl::OptionalTable<VolumeInfoMixerConfig> volumeInfoMixer { fhicl::Name("volumeInfoMixer") };
+      fhicl::OptionalTable<StageNormMixerConfig> stageNormMixer { fhicl::Name("stageNormMixer") };
       fhicl::OptionalAtom<art::InputTag> simTimeOffset { fhicl::Name("simTimeOffset"), fhicl::Comment("Simulation time offset to apply (optional)") };
     };
 
@@ -218,6 +271,10 @@ namespace mu2e {
                            mu2e::CosmicLivetime& out,
                            art::PtrRemapper const& remap);
 
+    bool mixStageNormalization(std::vector<mu2e::StageNormalization const*> const& in,
+                               mu2e::StageNormalization& out,
+                               art::PtrRemapper const& remap);
+
     //----------------
     // If elements of a collection can be pointed to by other
     // collections, the offset array for the pointed-to collection
@@ -267,6 +324,30 @@ namespace mu2e {
     // implemented.  Make sure we only see a single subrun in a job.
     bool cosmicSubrunInitialized_ = false;
     art::SubRunID cosmicSubRun_;
+
+    // StageNormalization mixing. perEventSum_ accumulates, once per drawn
+    // event, the origin-generated events that draw stands for. Accumulating
+    // rather than latching (as the cosmic path does) is what lets the draws
+    // span many subruns of the pool, which they always do for a beam sample.
+    std::string subrunStageNormInstanceName_;
+    bool mixStageNorm_ = false;
+    double perEventSum_ = 0.;
+    uint64_t nDraws_ = 0;
+    unsigned upstreamStages_ = 0;
+    // Accumulated like upstreamStages_, and false as soon as ANY draw comes
+    // from a normalization that does not reach the origin -- a chain is only
+    // origin-referenced if every draw in it is.
+    bool upstreamFromOrigin_ = true;
+    // Bootstrap for a pool with no StageNormalization of its own: both totals
+    // are stated, and the draw count comes from resampledEvents_.
+    bool bootstrapStageNorm_ = false;
+    double poolGenCount_ = 0.;
+    double poolEventCount_ = 0.;
+    unsigned poolStages_ = 1;
+    bool poolFromOrigin_ = false;
+    // Draws whose subrun carried no usable normalization: reported, never
+    // quietly folded in as if they had one.
+    uint64_t nDrawsUnnormalized_ = 0;
 
   };
 

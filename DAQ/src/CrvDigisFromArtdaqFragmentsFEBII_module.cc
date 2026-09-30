@@ -9,6 +9,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
@@ -137,9 +138,10 @@ namespace mu2e
         }
         if(expectedSize!=actualSize)
         {
-          std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-          std::cout << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << "      ";
-          std::cerr << "mismatch between expected event size and actual event size!" << std::endl;
+          mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                    << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                    << "Fragment index: " << iFragment << "      expected event size: " << expectedSize << ", actual event size: " << actualSize << "      "
+                    << "mismatch between expected event size and actual event size!" << std::endl;
           crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::byteCountMismatch,iFragment,0,0,0);
         }
 
@@ -155,9 +157,10 @@ namespace mu2e
             auto block = decoder.dataAtBlockIndex(iDataBlock);
             if(block == nullptr)
             {
-              std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-              std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-              std::cerr << "Unable to retrieve data block." << std::endl;
+              mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                        << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                        << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                        << "Unable to retrieve data block." << std::endl;
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::unableToGetDataBlock,iFragment,iSubEvent,iDataBlock,0);
               continue;
             }
@@ -165,10 +168,11 @@ namespace mu2e
             auto header = block->GetHeader();
             if(!header->isValid())
             {
-              std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-              std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-              std::cerr << "CRV packet is not valid." << std::endl;
-              std::cerr << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
+              mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                        << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                        << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                        << "CRV packet is not valid." << std::endl
+                        << "sub system ID: "<<(uint16_t)header->GetSubsystemID()<<" packet count: "<<header->GetPacketCount() << std::endl;
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidPacket,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
               continue;
             }
@@ -192,9 +196,10 @@ namespace mu2e
             uint16_t dtcID = header->GetID();
             if(dtcID<_firstCrvDtcID)
             {
-              std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-              std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-              std::cerr << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
+              mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                        << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                        << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                        << "CRV ID " << dtcID <<" is below first Crv DTC ID=" << _firstCrvDtcID << std::endl;
               crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidDtcId,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
               break;
             }
@@ -215,9 +220,10 @@ namespace mu2e
               auto crvRocHeader = decoder.GetCRVROCStatusPacketFEBII(iDataBlock);
               if(crvRocHeader == nullptr)
               {
-                std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-                std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                std::cerr << "Error retrieving CRV ROC Status Packet" << std::endl;
+                mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                          << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                          << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                          << "Error retrieving CRV ROC Status Packet" << std::endl;
                 crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingStatusPacket,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                 continue;
               }
@@ -226,9 +232,10 @@ namespace mu2e
               auto crvHits = decoder.GetCRVHitRangeFEBII(iDataBlock);
               if(crvHits.error())
               {
-                std::cout << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-                std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                std::cerr << "Error unpacking of CRV Hits" << std::endl;
+                mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                          << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                          << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                          << "Error unpacking of CRV Hits" << std::endl;
                 if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
                 crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::errorUnpackingCrvHits,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                 break;
@@ -243,9 +250,10 @@ namespace mu2e
                 //don't decode them, since there is no match to any offline channel.
                 if(rocPort==0) //one of the indicators of a "zero-block error". TODO: implement a better check for this error
                 {
-                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                  std::cerr << "Zero block error!" << std::endl;
+                  mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                            << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                            << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                            << "Zero block error!" << std::endl;
                   if(_diagLevel>2) decoder.PrintBlockFEBII(iDataBlock);
                   crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::zeroBlockError,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                   continue;
@@ -255,9 +263,10 @@ namespace mu2e
 
                 if(!channelMap.offlineExists(onlineChannel))
                 {
-                  std::cerr << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl;
-                  std::cerr << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl;
-                  std::cerr << "Invalid channel ROC: " << rocID <<"  FEB: " << rocPort << "  FEBchannel: "<< febChannel << std::endl;
+                  mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                            << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                            << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                            << "Invalid channel ROC: " << rocID <<"  FEB: " << rocPort << "  FEBchannel: "<< febChannel << std::endl;
                   crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::invalidChannel,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
                   continue;
                 }
