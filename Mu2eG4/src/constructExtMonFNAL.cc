@@ -153,4 +153,14 @@ namespace mu2e {
                                 config);
 
   } // constructExtMonFNAL()
+
+  //================================================================
+  void constructExtMonFNALMagnetFields(const SimpleConfig& config)
+  {
+    GeomHandle<ExtMonFNAL::ExtMon> extmon;
+    GeomHandle<ExtMonFNALBuilding> emfb;
+
+    constructExtMonFNALMagnetField(emfb->filter().magnet(), "filter", config);
+    constructExtMonFNALMagnetField(extmon->spectrometerMagnet(), "spectrometer", config);
+  }
 } // namespace mu2e

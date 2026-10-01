@@ -22,6 +22,10 @@ namespace mu2e {
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
                            const SimpleConfig& config);
 
+  // The magnetic fields of the volumes built by constructExtMonFNAL().
+  // Call from ConstructSDandField(), on every thread.
+  void constructExtMonFNALMagnetFields(const SimpleConfig& config);
+
   void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
                                    const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                                    const VolumeInfo& mainParent,
