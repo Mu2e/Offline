@@ -1,4 +1,5 @@
 
+#include "Offline/CaloConditions/inc/CaloDigitizationPeriod.hh"
 #include "Offline/Validation/inc/ValCaloDigi.hh"
 
 int mu2e::ValCaloDigi::declare(const art::TFileDirectory& tfs) {
@@ -24,8 +25,8 @@ int mu2e::ValCaloDigi::fill(const mu2e::CaloDigiCollection& coll,
   _hN2->Fill(coll.size());
   for (auto dg : coll) {
     _hI->Fill(dg.SiPMID());
-    _ht->Fill(dg.t0());
-    _ht2->Fill(dg.t0());
+    _ht->Fill(dg.t0() * CaloDigitizationPeriod); // ticks -> ns
+    _ht2->Fill(dg.t0() * CaloDigitizationPeriod);
     double emax = 0.0;
     _hm->Fill(double(dg.waveform().size()));
     for (auto e : dg.waveform()) {
