@@ -24,4 +24,14 @@ namespace mu2e {
 
   } // end fromFcl
 
+  EventTiming::ptr_t EventTimingMaker::fromDb(DAQTiming::cptr_t dt_p) {
+    auto ptr = std::make_shared<EventTiming>(
+        dt_p->rowAt(0).crvTrackerTimeOffset(),
+        dt_p->rowAt(0).caloTrackerTimeOffset(),
+        dt_p->rowAt(0).timeFromProtonsToDRMarker(),
+        _config.offSpillLength());
+
+    return ptr;
+  }
+
 }

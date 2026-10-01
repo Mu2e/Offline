@@ -40,6 +40,7 @@
 #include "Offline/DbTables/inc/TstCalib2.hh"
 #include "Offline/DbTables/inc/TstCalib3.hh"
 #include "Offline/DbTables/inc/TstAdhoc1.hh"
+#include "Offline/DbTables/inc/DAQTiming.hh"
 #include "cetlib_except/exception.h"
 
 
@@ -136,6 +137,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalCosmicT0Align());
   } else if (name=="CalSimCrystals") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::CalSimCrystals());
+  } else if (name=="DAQTiming") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::DAQTiming());
   }else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME")
         << "DbTableFactory::newTable call with bad table name: " + name + "\n";
