@@ -299,7 +299,7 @@ namespace mu2e {
            size_t sampleStart = hitStarts[ihit];
            size_t sampleStop  = hitStops[ihit];
            // t0 in digitizer clock ticks, in the digitizer (DR marker) frame, as the DIRAC hit packet reports it
-           size_t t0          = size_t(std::lround((sampleStart*digiSampling_ + digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_)/digiSampling_));
+           int    t0          = int(sampleStart) + std::lround((digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_)/digiSampling_);
 
            std::vector<int> wfsample{};
            wfsample.reserve(sampleStop-sampleStart);
@@ -308,7 +308,7 @@ namespace mu2e {
            // only consider hits above digitizationStart
            size_t peakPosition(0u);
            for (auto i = 0u; i<wfsample.size();++i) {
-              if ((t0+i)*digiSampling_+timeFromProtonsToDRMarker_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
+              if ((t0+int(i))*digiSampling_+timeFromProtonsToDRMarker_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
            }
            if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop
                                        << " peak in position " << peakPosition << std::endl;

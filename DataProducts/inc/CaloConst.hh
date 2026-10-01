@@ -38,6 +38,9 @@ public:
 
   constexpr static uint16_t _invalid = 9999;
 
+  // DIRAC ADC sampling period in ns. CaloDigi::t0() is in units of this period (digitizer clock ticks).
+  constexpr static double _digitizationPeriod = 5.0;
+
   using CaloSiPMId_type = std::uint16_t;
 
   enum SiPMn { SiPM0 = 0, SiPM1 = 1 };
