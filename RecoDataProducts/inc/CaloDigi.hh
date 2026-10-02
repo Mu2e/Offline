@@ -22,6 +22,8 @@ namespace mu2e
           {}
 
           int                     SiPMID()   const {return SiPMID_;}
+          // start of the waveform in digitizer clock ticks (CaloConst::_digitizationPeriod, 5 ns), in the
+          // digitizer (DR marker) frame; the raw hit-packet Time. CaloRecoDigiMaker converts to ns.
           int                     t0()       const {return t0_;}
           int                     peakpos()  const {return peakpos_;}
           const std::vector<int>& waveform() const {return waveform_;}

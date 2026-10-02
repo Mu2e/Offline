@@ -139,7 +139,7 @@ void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollectio
   std::vector<double> x{}, y{};
   for (const auto& caloDigi : caloDigis) {
     int SiPMID = caloDigi.SiPMID();
-    double t0 = caloDigi.t0();
+    double t0 = caloDigi.t0() * digiSampling_; // CaloDigi t0 is in digitizer clock ticks
     double adc2MeV = calCalib.ADC2MeV(SiPMID);
 
     const std::vector<int>& waveform = caloDigi.waveform();
