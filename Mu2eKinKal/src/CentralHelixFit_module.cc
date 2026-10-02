@@ -233,6 +233,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
 
       // surfaces to sample; this interface is deprecatecd and should be replaced with extrapolation TODO
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
@@ -361,9 +363,13 @@ namespace mu2e {
             goodfit = goodFit(*ktrk);
           }
           // extrapolate as required
-          if(goodfit && extrap_)extrap_->extrapolate(*ktrk);
+          if(goodfit && extrap_){
+            extrap_->extrapolate(*ktrk);
+            goodfit = goodFit(*ktrk); // extrapolation can mark the fit failing
+          }
           if(print_>1)ktrk->printFit(std::cout,print_);
-          if(goodfit || saveall_){
+          // a fit that failed before its trajectory was built has nothing to save
+          if((goodfit || saveall_) && ktrk->hasTraj()){
             TrkFitFlag fitflag;
             fitflag.merge(fitflag_);
             if(goodfit)
