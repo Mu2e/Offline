@@ -24,7 +24,7 @@
 // The mu- + nucleon system follows the same nuclear model as MuCapBNVGenerator (see
 // MuonNucleonKinematics.hh). All decays are isotropic in the parent rest frame (no spin
 // correlations or matrix elements).
-// See Offline/EventGenerator/doc/BNVMuonCapture.md for details.
+// See BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package) for details.
 //
 // Michael MacKenzie, 2026
 

@@ -193,7 +193,7 @@ genFilters : # in case we want to add more here
 #------------------------------------------------------------------------------
 # Baryon number violating (BNV) mu- + nucleon annihilation in the muonic atom,
 # for use as the decayProducts tool of SingleProcessGenerator (see MuCapBNVGenerator below).
-# See Offline/EventGenerator/doc/BNVMuonCapture.md for the physics and topologies.
+# See BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package) for the physics and topologies.
 #------------------------------------------------------------------------------
 BNVMuonCapture : {
     # mu- p --> pi0 pi0: Delta B = Delta L = -1 (B-L conserving, d=6 operator)

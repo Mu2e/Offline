@@ -12,7 +12,7 @@
 // according to pure n-body Lorentz-invariant phase space at the invariant mass W of the
 // annihilating system (see MuonNucleonKinematics.hh).
 // No matrix element and no intra-nuclear final-state interactions of the produced hadrons are
-// applied. See Offline/EventGenerator/doc/BNVMuonCapture.md for the physics motivation.
+// applied. See BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package) for the physics motivation.
 //
 // Michael MacKenzie, 2026 (based on MuCapProtonGenerator_tool.cc and RMCGenerator_tool.cc)
 
