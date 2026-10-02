@@ -198,7 +198,10 @@ namespace mu2e
       bool tableLoaded=false;
       for(size_t j=0; j<i; ++j)
       {
-        if(_lookupTableFileNames[i]==_lookupTableFileNames[j])
+        // the scintillation yield is state held on the shared MakeCrvPhotons instance, so two
+        // sectors may only share an instance if they agree on the yield as well as the table
+        if(_lookupTableFileNames[i]==_lookupTableFileNames[j] &&
+           _scintillationYields[i]==_scintillationYields[j])
         {
            tableLoaded=true;
            _makeCrvPhotons.emplace_back(_makeCrvPhotons[j]);
