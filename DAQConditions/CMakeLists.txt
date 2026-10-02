@@ -5,6 +5,7 @@ cet_make_library(
     LIBRARIES PUBLIC
       
       Offline::DAQConfig
+      Offline::DbTables
       Offline::DataProducts
       Offline::Mu2eInterfaces
       Offline::TrackerGeom

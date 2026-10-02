@@ -39,12 +39,10 @@ class DAQTiming : public DbTable {
   DAQTiming() : DbTable(cxname, "daq.timing",
       "crvTrackerTimeOffset,caloTrackerTimeOffset,timeFromProtonsToDRMarker") {}
   const Row& rowAt(const std::size_t index) const { return _rows.at(index); }
-  const Row& row(std::uint16_t channel) const { return _rows.at(channel); }
   std::vector<Row> const& rows() const { return _rows; }
   std::size_t nrow() const override { return _rows.size(); };
   std::size_t nrowFix() const override { return 1; };
   std::size_t size() const override { return baseSize() + nrow() * sizeof(Row); };
-  const std::string orderBy() const override { return std::string("crvTrackerTimeOffset"); }
 
   void addRow(const std::vector<std::string>& columns) override {
     if (_rows.size() != 0)
