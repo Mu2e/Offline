@@ -1,0 +1,139 @@
+# CRV DQM client tables: one per client, offline and online.
+#
+# Each table is the whole configuration of a CRV client (DQMClientFhicl): its
+# `hists` block. There is no binning here and no CRV configuration switch; the
+# clients book both the Run 1A/1B and the KPP (extracted) families and fill
+# the one the geometry names, so the same tables serve both detectors.
+#
+#   #include "Offline/CRVDQM/fcl/prolog.fcl"
+#   crvDigiDQM : { module_type : ...  dqm : @local::CRVDQM.Digi }
+#
+# Override a table below the include, e.g. per-subrun copies offline:
+#   physics.analyzers.crvDigiDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
+#
+# Online, rules pick what HistoSender ships. `publish` selects a histogram,
+# `group` collects its copies under one folder (omit it to ship each copy under
+# its own name, which is what the GUI subscribes to), `liveName` names the
+# rolling copy and `archiveGroup` the previous spans. First matching rule wins.
+
+#include "Offline/DQMHelpers/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+CRVDQM : {
+
+  # --- offline --------------------------------------------------------------
+  Digi   : { hists : @local::DQMHelpers.Hists.JobOnly }
+  Status : { hists : @local::DQMHelpers.Hists.JobOnly }
+  Reco   : { hists : @local::DQMHelpers.Hists.JobOnly }
+
+  # --- online (otsdaq CrvDQM): digis ----------------------------------------
+  DigiOnline : {
+    hists : {
+      @table::DQMHelpers.Hists.Online
+      rules : [
+        # crv/h1_channels, the rolling crv/h1_channelsLastEwt, and the four
+        # previous 50000-EWT spans (_prev1 newest) in crv/channels_history.
+        { match        : "h1_channels"
+          modes        : [ "job", "window" ]
+          window       : { span : 50000  unit : "ewt"  subdivisions : 50  keep : 4 }
+          liveName     : "h1_channelsLastEwt"
+          publish      : true
+          archiveGroup : "channels_history"
+        },
+        { match : "h2_channels"      modes : [ "job" ]  publish : true },
+        # Short and full-window views: KPP's ~400 us window needs the "2" ones.
+        { match : "h1_digisPerEvt*"  modes : [ "job" ]  publish : true },
+        { match : "h1_peakAdc"       modes : [ "job" ]  publish : true },
+        { match : "h1_tdc*"          modes : [ "job" ]  publish : true },
+
+        # FEB timing. A slipped FEB is a displaced column in a dtPartner class;
+        # febNoGroup (FEB had hits, no coincidence group) also has a rolling
+        # copy, with its previous spans in crv/timing_feb_history. The
+        # dtPartner maps are 432 x 100-200 bins each, so they ship job-only
+        # until the Phase 5 bandwidth check (plan R6).
+        { match : "dtPartner_*"  modes : [ "job" ]  publish : true  group : "timing_feb" },
+        { match        : "febNoGroup"
+          modes        : [ "job", "window" ]
+          window       : { span : 50000  unit : "ewt"  subdivisions : 50  keep : 4 }
+          liveName     : "febNoGroupLastEwt"
+          publish      : true
+          group        : "timing_feb"
+          archiveGroup : "timing_feb_history"
+        },
+        # Coincidence multiplicity: a large multi-sector event is an air shower.
+        { match : "layersPerGroup"   modes : [ "job" ]  publish : true  group : "timing_feb" },
+        { match : "groupsPerEvent*"  modes : [ "job" ]  publish : true  group : "timing_feb" },
+        { match : "sectorsPerEvent"  modes : [ "job" ]  publish : true  group : "timing_feb" },
+
+        # Intra-FEB FPGA timing: one TH2, one column per FEB and FPGA pair.
+        { match : "dtFpgaPairs"  modes : [ "job" ]  publish : true  group : "timing_fpga" }
+
+        # Anything else is booked job-only and not shipped (crvDigiRates*,
+        # crvDigisPerChannel: large and not on the display).
+      ]
+    }
+  }
+
+  # --- online (otsdaq CrvStatusMetrics): status summaries -------------------
+  StatusOnline : {
+    hists : {
+      @table::DQMHelpers.Hists.Online
+      rules : [
+        # Invalid (0xFFFF) link-latency words per link, with the status-block
+        # count per link as denominator. Rolling copies over the last 50000
+        # EWTs, so a link going bad shows while it happens.
+        { match    : "linkLatencyInvalid"
+          modes    : [ "job", "window" ]
+          window   : { span : 50000  unit : "ewt"  subdivisions : 10 }
+          liveName : "linkLatencyInvalidLastEwt"
+          publish  : true
+        },
+        { match    : "statusBlocksByLink"
+          modes    : [ "job", "window" ]
+          window   : { span : 50000  unit : "ewt"  subdivisions : 10 }
+          liveName : "statusBlocksByLinkLastEwt"
+          publish  : true
+        },
+
+        # The summaries CrvStatusMetrics ships today, under the same names.
+        { match : "errorBitsVsRoc"    modes : [ "job" ]  publish : true },
+        { match : "errorBits"         modes : [ "job" ]  publish : true },
+        { match : "nRocHeaders"       modes : [ "job" ]  publish : true },
+        { match : "activeFebCount"    modes : [ "job" ]  publish : true },
+        { match : "linkLatency"       modes : [ "job" ]  publish : true },
+        { match : "portFlags"         modes : [ "job" ]  publish : true },
+        { match : "daqErrorCode"      modes : [ "job" ]  publish : true },
+        { match : "eventHasError"     modes : [ "job" ]  publish : true },
+        { match : "eventHasDaqError"  modes : [ "job" ]  publish : true },
+        { match : "rocCensus"         modes : [ "job" ]  publish : true },
+        { match : "triggerCount"      modes : [ "job" ]  publish : true },
+        { match : "wordCount"         modes : [ "job" ]  publish : true },
+        { match : "linkLatency_dtc*_roc*"  modes : [ "job" ]  publish : true  group : "linkLatencyByRoc" }
+      ]
+    }
+  }
+
+  # --- online (otsdaq CrvDQM): per-link status pages ------------------------
+  # CrvStatusMetrics publishes the summaries above; this ships only the per-link
+  # views, so nothing goes out twice. The invalid-latency windows are kept (not
+  # published) because CrvDQM draws and ships their ratio as a live rate.
+  StatusLinksOnline : {
+    hists : {
+      @table::DQMHelpers.Hists.Online
+      rules : [
+        { match  : "linkLatencyInvalid"
+          modes  : [ "job", "window" ]
+          window : { span : 50000  unit : "ewt"  subdivisions : 10 } },
+        { match  : "statusBlocksByLink"
+          modes  : [ "job", "window" ]
+          window : { span : 50000  unit : "ewt"  subdivisions : 10 } },
+        # Per-link views h1_*_link<N> and the h2_* link summaries: crv/status.
+        { match : "h1_*"  modes : [ "job" ]  publish : true  group : "status" },
+        { match : "h2_*"  modes : [ "job" ]  publish : true  group : "status" }
+      ]
+    }
+  }
+}
+
+END_PROLOG
