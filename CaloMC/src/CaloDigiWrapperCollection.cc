@@ -3,6 +3,7 @@
 // September 2025
 
 #include "Offline/CaloMC/inc/CaloDigiWrapperCollection.hh"
+#include "cetlib_except/exception.h"
 
 namespace mu2e{
   // forward size query to underlying container
@@ -163,6 +164,14 @@ namespace mu2e{
     // here we determine the length of that waveform, by finding
     // how far past the end of the first it extends, if at all
     const auto& first = collided.front().Digi();
+    // the sample shifts below are t0 differences, so every digi must share one format (one t0 unit)
+    for (const auto& wrapper: collided){
+      if (wrapper.Digi().format() != first.format()){
+        throw cet::exception("CaloDigiWrapperCollection")
+          << "cannot merge CaloDigis of format " << first.format() << " and " << wrapper.Digi().format()
+          << " on SiPM " << first.SiPMID() << "\n";
+      }
+    }
     size_t length = 0;
     for (const auto& wrapper: collided){
       const auto& digi = wrapper.Digi();
@@ -201,7 +210,7 @@ namespace mu2e{
 
     const auto id = first.SiPMID();
     const auto t0 = first.t0();
-    const auto digi = CaloDigi(id, t0, samples, peakpos);
+    const auto digi = CaloDigi(id, t0, samples, peakpos, first.format());
     const auto wrapper = CaloDigiWrapper(digi);
     rv.Append(wrapper);
   }

@@ -50,3 +50,9 @@ install(DIRECTORY data DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/Offline/CaloReco
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS inc)
 install_fhicl(SUBDIRS fcl SUBDIRNAME Offline/CaloReco/fcl)
+
+cet_build_plugin(CaloDigiVersionDump art::module
+    REG_SOURCE src/CaloDigiVersionDump_module.cc
+    LIBRARIES REG
+      Offline::RecoDataProducts
+)

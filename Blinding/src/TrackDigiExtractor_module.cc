@@ -129,9 +129,7 @@ namespace mu2e{
           const auto& recos = hit->recoCaloDigis();
           for (const auto& reco: recos){
             const auto& ptr = reco->caloDigiPtr();
-            auto digi = CaloDigi(ptr->SiPMID(), ptr->t0(),
-                                 ptr->waveform(), ptr->peakpos());
-            ext_calodigis->push_back(digi);
+            ext_calodigis->push_back(*ptr);
           }
         }
       }
