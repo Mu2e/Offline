@@ -31,8 +31,21 @@
 
 <!--  ********* calorimeter  ********* -->
  <class name="mu2e::CaloDigi" ClassVersion="10"/>
-<!-- Class version 10: CaloDigi::t0_ in digitizer clock ticks (Offline#2022). Files written before #2022 hold
-     class version 1, t0_ in ns, and can be told apart (and converted by a read rule) by their class version. -->
+<!-- Up to class version 1 (files written before Offline#2022) CaloDigi stored t0_ in ns. From version 10 it stores
+     t0tick_ in digitizer clock ticks, and this rule converts version-1 files on read, so every reader sees ticks.
+     The stored member has a new name because ROOT skips a rule whose source and target member share one.
+     Version-1 files that already hold ticks are converted too and read wrong: CaloDigis from detector data written
+     by earlier releases, and files digitized with Offline#2022 before class version 10. -->
+<ioread sourceClass="mu2e::CaloDigi"
+        version="[1]"
+        source="int t0_;"
+        targetClass="mu2e::CaloDigi"
+        target="t0tick_"
+        include="cmath, Offline/DataProducts/inc/CaloConst.hh">
+<![CDATA[
+  t0tick_ = static_cast<int>(std::lround(onfile.t0_ / mu2e::CaloConst::_digitizationPeriod));
+]]>
+</ioread>
  <class name="mu2e::CaloDigiCollection"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
