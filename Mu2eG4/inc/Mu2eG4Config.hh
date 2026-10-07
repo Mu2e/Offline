@@ -280,6 +280,13 @@ namespace mu2e {
 
       fhicl::Atom<std::string> salt {Name("salt"), ""};
 
+      fhicl::Atom<bool> seedFromEventID {Name("seedFromEventID"),
+          Comment("Sequential Mu2eG4 only: seed the Geant4 engine at the start of every event from\n"
+                  "the event ID and salt, as Mu2eG4MT always does. The output of an event then does not\n"
+                  "depend on the events before it, and matches Mu2eG4MT event by event. false keeps one\n"
+                  "random stream per job, seeded by SeedService."),
+          false};
+
       fhicl::Atom<bool> G4InteralFiltering {Name("G4InteralFiltering"), false};
     };
   }
