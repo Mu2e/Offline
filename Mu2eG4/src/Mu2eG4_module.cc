@@ -82,7 +82,6 @@
 #include "Geant4/G4RunManagerKernel.hh"
 #include "Geant4/G4RunManager.hh"
 #include "Geant4/G4SDManager.hh"
-#include "Geant4/G4ScoringManager.hh"
 
 // C++ includes.
 #include <iostream>
@@ -199,8 +198,7 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
-    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
-                                                   conf_.scoring(),conf_.physics(),conf_.debug())),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(conf_.scoring(),conf_.physics(),conf_.debug())),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),
