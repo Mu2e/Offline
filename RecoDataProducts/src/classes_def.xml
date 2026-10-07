@@ -30,7 +30,9 @@
  <class name="art::Wrapper<mu2e::CosmicTrackSeedPtrCollection>"/>
 
 <!--  ********* calorimeter  ********* -->
- <class name="mu2e::CaloDigi"/>
+ <class name="mu2e::CaloDigi" ClassVersion="10"/>
+<!-- Class version 10: CaloDigi::t0_ in digitizer clock ticks (Offline#2022). Files written before #2022 hold
+     class version 1, t0_ in ns, and can be told apart (and converted by a read rule) by their class version. -->
  <class name="mu2e::CaloDigiCollection"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
