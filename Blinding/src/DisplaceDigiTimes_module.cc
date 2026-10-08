@@ -28,6 +28,7 @@
 
 // mu2e
 #include "Offline/CaloMC/inc/CaloDigiWrapper.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"

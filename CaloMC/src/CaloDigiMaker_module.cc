@@ -73,7 +73,7 @@ namespace mu2e {
             digitizationStart_ (config().digitizationStart()),
             digitizationEnd_   (config().digitizationEnd()),
             bufferDigi_        (config().bufferDigi()),
-            startTimeBuffer_   (config().pulseCache().digiSampling()*config().bufferDigi()),
+            startTimeBuffer_   (CaloConst::_digitizationPeriod*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
             pulseCache_        (CaloPulseUtil(config().pulseCache())),
             nBinsPeak_         (config().nBinsPeak()),
