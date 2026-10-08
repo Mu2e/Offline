@@ -329,7 +329,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * CaloConst::_digitizationPeriod + timeCalib_[SiPMID];
+        float time = (thisHitPacket.Time + peakIndex) * digiSampling_ + timeCalib_[SiPMID]; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
@@ -404,7 +404,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * CaloConst::_digitizationPeriod + timeCalib_[SiPMID];
+        float time = (thisHitPacket.Time + peakIndex) * digiSampling_ + timeCalib_[SiPMID]; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];

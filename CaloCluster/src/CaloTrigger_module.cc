@@ -163,7 +163,7 @@ namespace mu2e {
         if (countdown > 0) countdown--;
         else{
           if (deque_.front()> minAmp_ && deque_.front()== *std::prev(it,windowPeak_) && *std::prev(it,windowPeak_) != *std::prev(it,windowPeak_-1)){
-            int index = int(t0/CaloConst::_digitizationPeriod) + nCount - winOffsetT0_;
+            int index = int(t0) + nCount - winOffsetT0_; // t0 is in digitizer clock ticks
             hitList_[index].push_back(FastHit(crId,index,deque_.front()));
             if (deque_.front()> minSeedAmp_) seeds_.emplace_back(&(hitList_[index].back()));
           }
