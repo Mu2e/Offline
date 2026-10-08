@@ -5,6 +5,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/types/Atom.h"
 
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/MCDataProducts/inc/CaloEDepMC.hh"
 #include "Offline/MCDataProducts/inc/CaloHitMC.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerSim.hh"
@@ -52,7 +53,6 @@ namespace mu2e {
            caloHitToken_       {consumes<CaloHitCollection>(config().caloHitCollection())},
            ppToken_            {consumes<PrimaryParticle>(config().primaryParticle())},
            pulseCache_         (config().pulseCache()),
-           digiSampling_       (config().pulseCache().digiSampling()),
            deltaTimeMinus_     (config().deltaTimeMinus()),
            minAmplitude_       (config().minAmplitude()),
            fillDetailedMC_     (config().fillDetailedMC()),
@@ -77,7 +77,6 @@ namespace mu2e {
          const art::ProductToken<CaloHitCollection>       caloHitToken_;
          const art::ProductToken<PrimaryParticle>         ppToken_;
          CaloPulseUtil::Config                            pulseCache_;
-         double                                           digiSampling_;
          double                                           deltaTimeMinus_;
          double                                           minAmplitude_;
          bool                                             fillDetailedMC_;
@@ -177,13 +176,13 @@ namespace mu2e {
           // Maximum time difference for an MC hit to be associated, given the reco hit amplitude and the next reco hit time
           std::size_t nbin(wfBinMax_);
           while (nbin < wf_.size()) {if (wf_[nbin]*hit.energyDep() < minAmplitude_) break; ++nbin;}
-          double deltaTimePlus(nbin*digiSampling_);
+          double deltaTimePlus(nbin*CaloConst::_digitizationPeriod);
 
-          if (hitNextIt != sortedHits.end() && (*hitNextIt)->time() - hit.time() - 2*digiSampling_ < deltaTimePlus)
-             deltaTimePlus = (*hitNextIt)->time() - hit.time() - 2*digiSampling_;
+          if (hitNextIt != sortedHits.end() && (*hitNextIt)->time() - hit.time() - 2*CaloConst::_digitizationPeriod < deltaTimePlus)
+             deltaTimePlus = (*hitNextIt)->time() - hit.time() - 2*CaloConst::_digitizationPeriod;
 
           if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch] inspect hit id/time/energy/length "<<hit.crystalID()
-                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*digiSampling_<<" "<<deltaTimePlus<<std::endl;
+                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*CaloConst::_digitizationPeriod<<" "<<deltaTimePlus<<std::endl;
 
           // forward to the reco hit time, then loop while the shower time is within the reco window
           bool hitIsMatched(false);
