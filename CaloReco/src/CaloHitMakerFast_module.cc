@@ -147,8 +147,8 @@ namespace mu2e {
            baseline /= nSamPed;
 
            double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*ADCToMeV_;//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
-           double time     = caloDigi.t0() + caloDigi.peakpos()*digiSampling_ - pbtOffset;          //Giani's definition
-           //double time     = caloDigi.t0() + (caloDigi.peakpos()+0.5)*digiSampling_ - pbtOffset; //Bertrand's definition
+           double time     = (caloDigi.t0() + caloDigi.peakpos())*digiSampling_ - pbtOffset;        //Giani's definition; t0 in ticks
+           //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*digiSampling_ - pbtOffset; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);
            if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
