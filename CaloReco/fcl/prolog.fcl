@@ -42,7 +42,6 @@ CaloReco : {
       RawProcessor        : { @table::CaloReco.RawProcessor }
       TemplateProcessor   : { @table::CaloReco.TemplateProcessor }
       processorStrategy   : "TemplateFit"
-      digiSampling        : @local::HitMakerDigiSampling
       ProtonBunchTimeTag  : "EWMProducer"
       UseProtonBunchTime  : true
       maxChi2Cut          : 2.0
@@ -65,7 +64,6 @@ CaloReco : {
      caphriEDepMax       : 100
      caphriEDepMin       : 1
      deltaTPulses        : 11
-     digiSampling        : 5
      nPEperMeV           : 30
      nSigmaNoise         : 4
      noiseLevelMeV       : 5.5e-1

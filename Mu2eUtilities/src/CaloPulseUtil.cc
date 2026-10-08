@@ -1,5 +1,6 @@
 #include "cetlib_except/exception.h"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 
 #include "TFile.h"
@@ -15,18 +16,18 @@ namespace mu2e {
       fileName_(config.fileName()),
       histName_(config.histName()),
       nSteps_(100),
-      digiStep_(config.digiSampling()/double(nSteps_)),
+      digiStep_(CaloConst::_digitizationPeriod/double(nSteps_)),
       nBinShape_(0),
       pulseVec_(),
       deltaT_(0.),
       digitizedPulse_()
    {}
 
-   CaloPulseUtil::CaloPulseUtil(const std::string& fileName, const std::string& histName, double digiSampling) :
+   CaloPulseUtil::CaloPulseUtil(const std::string& fileName, const std::string& histName) :
       fileName_(fileName),
       histName_(histName),
       nSteps_(100),
-      digiStep_(digiSampling/double(nSteps_)),
+      digiStep_(CaloConst::_digitizationPeriod/double(nSteps_)),
       nBinShape_(0),
       pulseVec_(),
       deltaT_(0.),

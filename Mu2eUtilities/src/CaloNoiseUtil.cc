@@ -1,5 +1,6 @@
 #include "cetlib_except/exception.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/Mu2eUtilities/inc/CaloNoiseUtil.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -24,7 +25,6 @@ namespace mu2e {
       generate_      {config.generate()},
       fileName_      {config.histoFileName()},
       prefix_        {config.histoPrefix()},
-      digiSampling_  {config.digiSampling()},
       noiseRinDark_  {config.rinNphotPerNs() + config.darkNphotPerNs()},
       noiseElec_     {config.elecNphotPerNs()},
       randPoisson_   {engine},
@@ -121,7 +121,7 @@ namespace mu2e {
       const auto&        pulse         = pulseCache_.digitizedPulse(0.0);
       const unsigned     pulseSize     = pulse.size();
       const unsigned     bufferSize    = int(0.75*pulseSize);
-      const double       totalTime     = (noiseSize+bufferSize)*digiSampling_;
+      const double       totalTime     = (noiseSize+bufferSize)*CaloConst::_digitizationPeriod;
       const int          noiseLevelPE  = int(totalTime*noiseRinDark_);
 
       //Generate the radiation induced noise (RIN)
@@ -129,7 +129,7 @@ namespace mu2e {
       for (int i=0;i<nPh;++i) {
           double t0 = randFlat_.fire(0.0,totalTime);
           const auto& wf = pulseCache_.digitizedPulse(t0);
-          int i0 = int(t0/digiSampling_) - bufferSize;
+          int i0 = int(t0/CaloConst::_digitizationPeriod) - bufferSize;
           int l0 = (i0<0) ? -i0 : 0;
           int l1 = std::min(pulseSize,noiseSize-i0);
           for (int l=l0;l<l1;++l) waveform[i0+l] += wf[l];
@@ -137,12 +137,12 @@ namespace mu2e {
       for (auto& wf : waveform) wf *= peToADC;
 
       //add electronics noise
-      double noiseADC = noiseElec_*digiSampling_*peToADC;
+      double noiseADC = noiseElec_*CaloConst::_digitizationPeriod*peToADC;
       for (auto& val : waveform) val += randGauss_.fire(0.0,noiseADC);
       noiseMap_[histoID] = std::move(waveform);
 
       //estimate pedestal for this waveform - set it to theoretical value for the time being
-      pedestal_[histoID] = std::trunc(noiseRinDark_*digiSampling_*std::accumulate(pulse.begin(),pulse.end(),0.0)*peToADC);
+      pedestal_[histoID] = std::trunc(noiseRinDark_*CaloConst::_digitizationPeriod*std::accumulate(pulse.begin(),pulse.end(),0.0)*peToADC);
 
       peToADC_[histoID] = peToADC;
 

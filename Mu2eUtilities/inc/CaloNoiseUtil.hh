@@ -37,7 +37,6 @@ namespace mu2e {
             fhicl::Atom<double>      elecNphotPerNs { Name("elecNphotPerNs"), Comment("Electronics noise number of PE / ns ") };
             fhicl::Atom<double>      rinNphotPerNs  { Name("rinNphotPerNs"),  Comment("RIN noise number of PE / ns ") };
             fhicl::Atom<double>      darkNphotPerNs { Name("darkNphotPerNs"), Comment("SiPM Dark noise number of PE / ns ") };
-            fhicl::Atom<double>      digiSampling   { Name("digiSampling"),   Comment("Digitization time sampling") };
         };
 
 
@@ -57,7 +56,6 @@ namespace mu2e {
         bool                  generate_;
         std::string           fileName_;
         std::string           prefix_;
-        double                digiSampling_;
         double                noiseRinDark_;
         double                noiseElec_;
         CLHEP::RandPoissonQ   randPoisson_;

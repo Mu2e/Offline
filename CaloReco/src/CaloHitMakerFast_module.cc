@@ -42,7 +42,6 @@ namespace mu2e {
             using Comment = fhicl::Comment;
             fhicl::Atom<art::InputTag> caloDigiCollection { Name("caloDigiCollection"), Comment("CaloDigi collection name") };
             fhicl::Atom<art::InputTag> pbttoken           { Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer")};
-            fhicl::Atom<float>         digiSampling       { Name("digiSampling"),       Comment("Digitization time sampling") };
             fhicl::Atom<float>         deltaTPulses       { Name("deltaTPulses"),       Comment("Maximum time difference between two signals") };
             fhicl::Atom<float>         nPEperMeV          { Name("nPEperMeV"),          Comment("number of photo-electrons per MeV") };
             fhicl::Atom<float>         noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
@@ -57,7 +56,6 @@ namespace mu2e {
            EDProducer{config},
            caloDigisToken_    {consumes<CaloDigiCollection>(config().caloDigiCollection())},
            pbttoken_          {consumes<ProtonBunchTime>(config().pbttoken())},
-           digiSampling_      (config().digiSampling()),
            deltaTPulses_      (config().deltaTPulses()),
            nPEperMeV_         (config().nPEperMeV()),
            noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
@@ -83,7 +81,6 @@ namespace mu2e {
 
         art::ProductToken<CaloDigiCollection>     caloDigisToken_;
         const  art::ProductToken<ProtonBunchTime> pbttoken_;
-        float  digiSampling_;
         float  deltaTPulses_;
         float  nPEperMeV_;
         float  noise2_;
@@ -147,8 +144,8 @@ namespace mu2e {
            baseline /= nSamPed;
 
            double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*ADCToMeV_;//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
-           double time     = (caloDigi.t0() + caloDigi.peakpos())*digiSampling_ - pbtOffset;        //Giani's definition; t0 in ticks
-           //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*digiSampling_ - pbtOffset; //Bertrand's definition
+           double time     = (caloDigi.t0() + caloDigi.peakpos())*CaloConst::_digitizationPeriod - pbtOffset;        //Giani's definition; t0 in ticks
+           //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*CaloConst::_digitizationPeriod - pbtOffset; //Bertrand's definition
 
            addPulse(pulseMap, crystalID, time, eDep);
            if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
