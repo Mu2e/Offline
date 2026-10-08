@@ -64,11 +64,6 @@ namespace mu2e{
           fhicl::Name("SurfaceIds"),
           fhicl::Comment("Prioritized sequence of mu2e::SurfaceIds at which tracks may be sampled for reference timing")
         };
-        // would be better for the sampling period to come from conditions
-        fhicl::Atom<double> calo_adc_sample_period{
-          fhicl::Name("CaloADCSamplePeriod"),
-          fhicl::Comment("Sample spacing of calorimeter waveforms")
-        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -81,7 +76,6 @@ namespace mu2e{
       art::InputTag _calo_digi_tag;
       art::InputTag _kalseed_tag;
       SurfaceIdCollection _surface_ids;
-      double _calo_adc_sample_period;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
       art::RandomNumberGenerator::base_engine_t& _engine;
       BinnedSpectrum _target_distribution;
@@ -97,7 +91,6 @@ namespace mu2e{
       _tracker_digi_tag(config().tracker_digi_tag()),
       _calo_digi_tag(config().calo_digi_tag()),
       _kalseed_tag(config().kalseed_tag()),
-      _calo_adc_sample_period(config().calo_adc_sample_period()),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
     // initialize target distribution
     const auto pset = config().target_distribution.get<fhicl::ParameterSet>();
@@ -206,7 +199,7 @@ namespace mu2e{
     event.put(std::move(adcss));
 
     // apply the shift to calorimeter digis
-    double sample_period = _calo_adc_sample_period;
+    double sample_period = CaloConst::_digitizationPeriod;
     auto cdigis = std::make_unique<CaloDigiCollection>();
     if (0 < cdigi_handle->size()){
       for (const auto& old: *cdigi_handle){

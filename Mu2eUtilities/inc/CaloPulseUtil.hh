@@ -33,11 +33,10 @@ namespace mu2e {
               using Comment = fhicl::Comment;
               fhicl::Atom<std::string> fileName       { Name("fileName"),  Comment("Pulse file name") };
               fhicl::Atom<std::string> histName       { Name("histName"),  Comment("Pulse histogram name") };
-              fhicl::Atom<double>      digiSampling   { Name("digiSampling"),   Comment("Digitizer sampling time (ns) ") };
           };
 
           CaloPulseUtil(const Config& config);
-          CaloPulseUtil(const std::string& fileName, const std::string& histName, double digiSampling);
+          CaloPulseUtil(const std::string& fileName, const std::string& histName);
           ~CaloPulseUtil() = default;
 
           void buildCache();

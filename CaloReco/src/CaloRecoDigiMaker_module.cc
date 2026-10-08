@@ -11,6 +11,7 @@
 #include "Offline/CaloReco/inc/CaloTemplateWFProcessor.hh"
 #include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloRecoDigi.hh"

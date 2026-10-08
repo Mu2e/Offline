@@ -55,8 +55,6 @@ public:
     fhicl::Atom<int> data_type{fhicl::Name("dataType"),
                                fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
-    fhicl::Atom<float> digiSampling{fhicl::Name("digiSampling"),
-                                    fhicl::Comment("calorimeter sampling period in ns")};
     fhicl::Atom<float> deltaTPulses{
         fhicl::Name("deltaTPulses"),
         fhicl::Comment(
@@ -105,7 +103,6 @@ private:
   int diagLevel_;
 
   art::InputTag caloFragmentsTag_;
-  float digiSampling_;
   float deltaTPulses_, hitEDepMax_, hitEDepMin_, caphriEDepMax_, caphriEDepMin_, nPEperMeV_,
       noise2_, nSigmaNoise_;
 
@@ -183,7 +180,7 @@ void art::CaloHitsFromDataDTCEvents::addPulse(
 art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(
     const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, data_type_(config().data_type()),
-    diagLevel_(config().diagLevel()), digiSampling_(config().digiSampling()),
+    diagLevel_(config().diagLevel()),
     deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
     hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
     caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
@@ -332,7 +329,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+        float time = thisHitPacket.Time + peakIndex * CaloConst::_digitizationPeriod + timeCalib_[SiPMID];
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
@@ -407,7 +404,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+        float time = thisHitPacket.Time + peakIndex * CaloConst::_digitizationPeriod + timeCalib_[SiPMID];
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
