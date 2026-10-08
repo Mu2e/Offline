@@ -65,7 +65,6 @@ CaloReco : {
      caphriEDepMax       : 100
      caphriEDepMin       : 1
      deltaTPulses        : 11
-     digiSampling        : 5
      nPEperMeV           : 30
      nSigmaNoise         : 4
      noiseLevelMeV       : 5.5e-1

@@ -36,7 +36,6 @@ public:
     fhicl::Atom<art::InputTag>                          pbtTag             { Name("ProtonBunchTimeTag"), Comment("ProtonBunchTime producer") };
     fhicl::Atom<bool>                                   usePBT             { Name("UseProtonBunchTime"), Comment("Use the proton bunch time for T0") };
     fhicl::Atom<std::string>                            processorStrategy  { Name("processorStrategy"),  Comment("Digi reco processor name") };
-    fhicl::Atom<double>                                 digiSampling       { Name("digiSampling"),       Comment("Calo ADC sampling time (ns)") };
     fhicl::Atom<double>                                 maxChi2Cut         { Name("maxChi2Cut"),         Comment("Chi2 cut for keeping reco digi") };
     fhicl::Atom<int>                                    maxPlots           { Name("maxPlots"),           Comment("Maximum number of waveform plots") };
     fhicl::Atom<int>                                    diagLevel          { Name("diagLevel"),          Comment("Diagnosis level") };
@@ -49,7 +48,6 @@ public:
       pbtTag_            (config().pbtTag()),
       usePBT_            (config().usePBT()),
       processorStrategy_ (config().processorStrategy()),
-      digiSampling_      (config().digiSampling()),
       maxChi2Cut_        (config().maxChi2Cut()),
       maxPlots_          (config().maxPlots()),
       diagLevel_         (config().diagLevel()) {
@@ -90,7 +88,6 @@ private:
   bool usePBT_;
   art::ProductToken<ProtonBunchTime> pbttoken_;
   const std::string processorStrategy_;
-  double digiSampling_;
   double maxChi2Cut_;
   int maxPlots_;
   int diagLevel_;
@@ -153,7 +150,7 @@ void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollectio
     x.clear();
     y.clear();
     for (unsigned int i = 0; i < waveform.size(); ++i) {
-      x.push_back(t0 + (i + 0.5) * digiSampling_); // add 0.5 to be in middle of bin
+      x.push_back(t0 + (i + 0.5) * CaloConst::_digitizationPeriod); // add 0.5 to be in middle of bin
       y.push_back(waveform.at(i));
     }
 
