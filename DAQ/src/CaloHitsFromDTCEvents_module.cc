@@ -16,17 +16,14 @@
 #include <artdaq-core/Data/Fragment.hh>
 
 #include "Offline/CaloConditions/inc/CalDAQMap.hh"
+#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
-#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
-#include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/DataProducts/inc/CaloConst.hh"
-
 #include <iostream>
-
 #include <string>
-
 #include <array>
 #include <list>
 #include <memory>
@@ -329,7 +326,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = (thisHitPacket.Time + peakIndex) * CaloConst::_digitizationPeriod + timeCalib_[SiPMID]; // packet Time is in clock ticks
+        float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod + timeCalib_[SiPMID]; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
@@ -404,7 +401,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = (thisHitPacket.Time + peakIndex) * CaloConst::_digitizationPeriod + timeCalib_[SiPMID]; // packet Time is in clock ticks
+        float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod + timeCalib_[SiPMID]; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
