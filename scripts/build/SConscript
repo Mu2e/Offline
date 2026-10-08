@@ -41,4 +41,3 @@ exe_env.AlwaysBuild(env.Alias('INCPATH', [], incpath))
 # mode:python
 # End:
 # vi:syntax=python
-

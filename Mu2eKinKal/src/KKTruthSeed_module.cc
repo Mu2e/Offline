@@ -145,6 +145,8 @@ namespace mu2e {
     produces<KalSeedCollection>();
     produces<KalSeedMCAssns>();
     if(settings().extrapSettings()) extrap_ = std::make_unique<KKExtrap>(*settings().extrapSettings());
+    // the truth track extrapolates with the extension config's bfcorr_ and mindtstep_
+    if(extrap_) extrap_->checkConfig(exconfig_);
     if(truthSeedParamConstraints_.size() != KinKal::NParams())
       throw cet::exception("RECO") << "mu2e::KKTruthSeed: TruthSeedParameterConstraints must have "
         << KinKal::NParams() << " entries" << std::endl;
@@ -219,6 +221,14 @@ namespace mu2e {
       auto const htime = fpiece.range().mid();
       VEC3 tpos, tmom; double ttime = 0.0;
       if(!trueStateAt(mctrajs, det, fpiece.position3(htime), mass, tpos, tmom, ttime)) continue;
+      // a helix needs a usable local field: outside the map, or where the helix can't represent the true state there
+      // (null field, circle centered on the axis), the constructor would refuse it
+      if constexpr(!isLine){
+        VEC4 tpos4(tpos.X(),tpos.Y(),tpos.Z(),ttime);
+        MOM4 tmom4(tmom.X(),tmom.Y(),tmom.Z(),mass);
+        if(!kkbf_->usable(tpos) ||
+            !KTRAJ::constructible(KinKal::ParticleState(tpos4,tmom4,tcharge),VEC3(0.0,0.0,kkbf_->fieldVect(tpos).Z()))) continue;
+      }
       // the KTRAJ nominal BField: the local field for a helix; a fixed non-zero z for a field-free line
       // (KinematicLine requires a non-zero bnom for interface consistency).
       KTRAJ tpiece = [&]{
@@ -289,6 +299,12 @@ namespace mu2e {
     // without re-running the full extension schedule (which diverges a hit-less truth-pinned fit).
     truthConfig.bfcorr_ = exconfig_.bfcorr_;
     truthConfig.tol_    = exconfig_.tol_;
+    truthConfig.mindtstep_ = exconfig_.mindtstep_; // floors the extrapolation step too
+    // a field-corrected truth fit needs the reco domains, as in RegrowLoopHelix
+    if(truthConfig.bfcorr_ && truthDomains.empty()){
+      if(debug_ > 0) std::cout << "KKTruthSeed: no BField domains from " << recoseed.domainBounds().size() << " saved bounds; skipping" << std::endl;
+      return std::nullopt;
+    }
     auto ktrk_truth = std::make_unique<KKTRK>(truthConfig,*kkbf_,recoseed.particle(),truthTraj,
         nostrawhits,nostrawxings,nocalohits,truthParamHits,truthDomains);
     if(!ktrk_truth->fitStatus().usable()){
