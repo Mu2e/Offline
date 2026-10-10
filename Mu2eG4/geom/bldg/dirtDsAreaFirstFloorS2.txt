@@ -7,10 +7,10 @@ string dirt.dsArea.firstFloor.S2.name     = "dirtDsAreaFirstFloorS2";
 string dirt.dsArea.firstFloor.S2.material = "MBOverburden";
 
 double dirt.dsArea.firstFloor.S2.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.dsArea.firstFloor.S2.offsetFromFloorSurface.y = 7454.9;
+double dirt.dsArea.firstFloor.S2.offsetFromFloorSurface.y = 7493.;
 double dirt.dsArea.firstFloor.S2.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.dsArea.firstFloor.S2.yHalfThickness           = 88.9;
+double dirt.dsArea.firstFloor.S2.yHalfThickness           = 127.;
 
 vector<double> dirt.dsArea.firstFloor.S2.xPositions = {
 -2921.00, // 0
@@ -34,8 +34,8 @@ vector<double> dirt.dsArea.firstFloor.S2.xPositions = {
 31153.10, // 18
 31419.80, // 19
 31419.80, // 20
-13630.40, // 21
-13630.40, // 22
+13630.275, // 21
+13630.275, // 22
 11617.20, // 23
 11617.20, // 24
 -2921.00 // 25
@@ -64,8 +64,8 @@ vector<double> dirt.dsArea.firstFloor.S2.yPositions = {
 -25298.40, // 19
 -25908.00, // 20
 -25908.00, // 21
--14740.10, // 22
--14740.10, // 23
+-14827.27, // 22
+-14827.27, // 23
 -25908.00, // 24
 -25908.00 // 25
 };
