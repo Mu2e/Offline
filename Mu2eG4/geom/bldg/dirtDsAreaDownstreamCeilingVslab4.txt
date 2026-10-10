@@ -13,10 +13,10 @@ double dirt.dsArea.downstreamCeiling.vslab4.offsetFromMu2eOrigin.z   = -3581.4;
 double dirt.dsArea.downstreamCeiling.vslab4.yHalfThickness           = 876.3;
 
 vector<double> dirt.dsArea.downstreamCeiling.vslab4.xPositions = {
-  37896.8,   // v1
-  39928.8,   // v2
-  39928.8,   // v3
-  37896.8   // v4
+  37719.,   // v1
+  39751.,   // v2
+  39751.,   // v3
+  37719.   // v4
 };
 
 vector<double> dirt.dsArea.downstreamCeiling.vslab4.yPositions = {
