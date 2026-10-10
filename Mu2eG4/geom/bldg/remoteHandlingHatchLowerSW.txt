@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_remoteHatchLower.SW.ccl
+
+string building.remote.handling.Hatch.Lower.SW.name     = "remoteHandlingHatchLowerSW";
+
+string building.remote.handling.Hatch.Lower.SW.material = "CONCRETE_MARS";
+
+double building.remote.handling.Hatch.Lower.SW.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Hatch.Lower.SW.offsetFromFloorSurface.y = 5664.2;
+double building.remote.handling.Hatch.Lower.SW.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Hatch.Lower.SW.yHalfThickness           = 431.8;
+
+vector<double> building.remote.handling.Hatch.Lower.SW.xPositions = {
+  3403.6,   //
+  3403.6,   //
+  9550.4,   //
+  9550.4,   //
+  2946.4,   //
+  2946.4    //
+};
+
+vector<double> building.remote.handling.Hatch.Lower.SW.yPositions = {
+  16459.2,   //
+  13055.6,  //
+  13055.6,  //
+  12598.4,  //
+  12598.4,  //
+  16459.2   //
+};
+
+// Local Variables:
+// mode:c++
+// End:
