@@ -22,8 +22,8 @@ vector<double> building.central.stairwell.lower.ceiling.yPositions = {
   -12369.8,   // h
   -13589,     // h0
   -13589,     // h1
-  -14892.65,  // h2
-  -14892.65,  // h3
+  -15081.27,  // h2
+  -15081.27,  // h3
   -12369.8    // h4
 };
 

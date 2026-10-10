@@ -1,0 +1,26 @@
+string dirt.dsArea.upper2.name     = "dirtDsAreaUpper2";
+string dirt.dsArea.upper2.material = "MBOverburden";
+double dirt.dsArea.upper2.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.dsArea.upper2.offsetFromFloorSurface.y = 7188.2;
+double dirt.dsArea.upper2.offsetFromMu2eOrigin.z   = -3581.40;
+vector<int> dirt.dsArea.upper2.yreplace ={0 ,1 };
+double dirt.dsArea.upper2.yHalfThickness           = 177.8;
+vector<double> dirt.dsArea.upper2.xPositions = {
+29083.00, // 0
+13630.28, // 1
+13630.28, // 2
+29083.00 // 3
+};
+vector<double> dirt.dsArea.upper2.yPositions = {
+-50000.00, // 0
+-50000.00, // 1
+-12014.20, // 2
+-12014.20  // 3
+};
+int dirt.dsArea.upper2.Notch.numberOfNotches  = 1;
+vector<double> dirt.dsArea.upper2.Notch.halfDims.1 = {76.2,127.,3350};
+vector<double> dirt.dsArea.upper2.Notch.position.1 = {18000.,-14579.6,0.};
+string dirt.dsArea.upper2.Notch.orientation.1 = "500";
+// Local Variables:
+// mode:c++
+// End:
