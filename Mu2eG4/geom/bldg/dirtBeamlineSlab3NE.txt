@@ -2,18 +2,18 @@
 //
 //   geom/geom_beamline_dirtSlab2_N.ccl
 
-string dirt.beamline.slab2.NE.name     = "dirtBeamlineSlab2NE";
+string dirt.beamline.slab3.NE.name     = "dirtBeamlineSlab3NE";
 
-string dirt.beamline.slab2.NE.material = "MBOverburden";
+string dirt.beamline.slab3.NE.material = "MBOverburden";
 
-double dirt.beamline.slab2.NE.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.slab2.NE.offsetFromFloorSurface.y = 6324.6;
-double dirt.beamline.slab2.NE.offsetFromMu2eOrigin.z   = -3581.4;
+double dirt.beamline.slab3.NE.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.slab3.NE.offsetFromFloorSurface.y = 6959.6;
+double dirt.beamline.slab3.NE.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.slab2.NE.yHalfThickness           = 228.6;
+double dirt.beamline.slab3.NE.yHalfThickness           = 406.4;
 
-vector<int>    dirt.beamline.slab2.NE.xreplace   = { 13, 14 };
-vector<double> dirt.beamline.slab2.NE.xPositions = {
+vector<int>    dirt.beamline.slab3.NE.xreplace   = { 13, 14 };
+vector<double> dirt.beamline.slab3.NE.xPositions = {
   21158.2,   // x1
   21971,   // x2
   21971,   // x3
@@ -35,20 +35,20 @@ vector<double> dirt.beamline.slab2.NE.xPositions = {
   20744.5  // SE corner escape hatch
 };
 
-vector<int>    dirt.beamline.slab2.NE.yreplace   = { 14, 15 };
-vector<double> dirt.beamline.slab2.NE.yPositions = {
+vector<int>    dirt.beamline.slab3.NE.yreplace   = { 14, 15 };
+vector<double> dirt.beamline.slab3.NE.yPositions = {
   2616.2,   // x1
   2616.2,   // x2
-  -431.8,   // x3
-  -431.8,   // x4
+  2438.4,   // x3
+  2438.4,   // x4
   2616.2,   // x5
   2616.2,   // x6
-  -431.8,   // x7
-  -431.8,   // x8
+  2438.4,   // x7
+  2438.4,   // x8
   2616.2,   // x9
   2616.2,   // y0
-  -431.8,   // y1
-  -431.8,   // y2
+  2438.4,   // y1
+  2438.4,   // y2
   2616.2,   // y3
   2616.2,   // y4_to_E
   50000,   // NEcorner

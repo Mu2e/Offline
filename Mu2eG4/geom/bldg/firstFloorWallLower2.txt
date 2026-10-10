@@ -1,0 +1,18 @@
+string building.firstFloor.wall.lower2.name     = "firstFloorWallLower2";
+string building.firstFloor.wall.lower2.material = "CONCRETE_MARS";
+double building.firstFloor.wall.lower2.offsetFromMu2eOrigin.x   = 947.40;
+double building.firstFloor.wall.lower2.offsetFromFloorSurface.y = 6959.6;
+double building.firstFloor.wall.lower2.offsetFromMu2eOrigin.z   = -3581.40;
+double building.firstFloor.wall.lower2.yHalfThickness           = 406.40;
+vector<double> building.firstFloor.wall.lower2.xPositions = {
+21158.20, // 0
+21158.20, // 1
+14046.20, //  2
+14046.20 //   3
+};
+vector<double> building.firstFloor.wall.lower2.yPositions = {
+2438.35, // 1
+2031.95, // 2
+2031.95, // 3
+2438.35  // 4
+};
