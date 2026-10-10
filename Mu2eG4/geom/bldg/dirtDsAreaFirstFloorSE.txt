@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_DSarea_firstFloor_S.ccl
+
+string dirt.dsArea.firstFloor.SE.name     = "dirtDsAreaFirstFloorSE";
+
+string dirt.dsArea.firstFloor.SE.material = "MBOverburden";
+
+double dirt.dsArea.firstFloor.SE.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.firstFloor.SE.offsetFromFloorSurface.y = 7416.8;
+double dirt.dsArea.firstFloor.SE.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.firstFloor.SE.yHalfThickness           = 50.8;
+
+vector<double> dirt.dsArea.firstFloor.SE.xPositions = {
+44932.60, // w2
+44932.60, // u1
+38061.90, // t2
+38061.90  // b3
+};
+
+vector<double> dirt.dsArea.firstFloor.SE.yPositions = {
+-10668.00, // w2
+-9474.20, // u1
+-9474.20, // t2
+-10668.00 // b3
+};
+
+// Local Variables:
+// mode:c++
+// End:
