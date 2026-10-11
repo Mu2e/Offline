@@ -4,6 +4,8 @@
 
 #include "Offline/CRVDQM/inc/CRVStatusDQM.hh"
 
+#include "cetlib_except/exception.h"
+
 #include "TString.h"
 
 #include <algorithm>
@@ -61,9 +63,15 @@ const char* CRVStatusDQM::errorBitLabel(int bitIndex)
   return kErrorBitLabels[bitIndex];
 }
 
-CRVStatusDQM::CRVStatusDQM(const DQMHistSet::Config& hists) :
-    DQMClient("CRVStatusDQM", kBinningVersion, hists)
-{}
+CRVStatusDQM::CRVStatusDQM(const DQMHistSet::Config& hists, int configuration) :
+    DQMClient("CRVStatusDQM", kBinningVersion, hists, configurationName(configuration)),
+    bookedConfiguration_(configuration)
+{
+  if (configuration < 0 || configuration >= kNConfigurations) {
+    throw cet::exception("CRVStatusDQM")
+        << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
+  }
+}
 
 TH1F* CRVStatusDQM::linkLatencyByLink(int link) const
 {
@@ -76,6 +84,8 @@ TH1F* CRVStatusDQM::linkLatencyByLink(int link) const
 void CRVStatusDQM::book()
 {
   DQMHistSet& h = hists();
+  const DQMAxis kLink = linkAxis();
+  const int nLink = nLinks();
 
   h_nRocHeaders_ = h.book1<TH1F>("nRocHeaders", "ROC headers per event;N(ROC headers);Events",
                                  kRocHeaders);
@@ -130,9 +140,9 @@ void CRVStatusDQM::book()
   h_meanLatencyPerSubrun_ = h.book1<TH1F>(
       "meanLatencyPerSubrun", "Mean link latency per subrun;Mean latency;Subruns", kLatency);
 
-  h_linkLatencyByLink_.resize(kNLinks);
-  linkHists_.resize(kNLinks);
-  for (int link = 0; link < kNLinks; ++link) {
+  h_linkLatencyByLink_.resize(nLink);
+  linkHists_.resize(nLink);
+  for (int link = 0; link < nLink; ++link) {
     const int dtc = link / kNLinksPerDTC;
     const int roc = link % kNLinksPerDTC;
     h_linkLatencyByLink_[link] = h.book1<TH1F>(
@@ -291,13 +301,15 @@ void CRVStatusDQM::Fill(const CrvStatusCollection& crvStatus)
     const uint8_t dtcId = status.GetDTCID();
     const uint8_t linkId = status.GetLinkID();
     const uint16_t latency = status.GetLinkLatency();
-    const bool indexed = linkInRange(dtcId, linkId);
+    const bool indexed = linkInRange(dtcId, linkId) &&
+                         linkInConfiguration(bookedConfiguration_, globalLink(dtcId, linkId));
     const int link = indexed ? globalLink(dtcId, linkId) : -1;
     if (!indexed) {
       diag().Count("linkOutOfRange",
-                   Form("status from DTC %d link %d is outside the %d-link axis; the "
-                        "per-link histograms, rocCensus and errorBitsVsRoc skip it.",
-                        dtcId, linkId, kNLinks));
+                   Form("status from DTC %d link %d is outside the %d-link axis of the %s "
+                        "readout; the per-link histograms, rocCensus and errorBitsVsRoc "
+                        "skip it.",
+                        dtcId, linkId, nLinks(), configurationName(bookedConfiguration_)));
     }
 
     //link -1 (off the link axis) lands in underflow, so nothing is silently dropped

@@ -16,10 +16,11 @@ DQMHistSet::Config clientConfig(DQMHistSet::Config c)
 } // namespace
 
 DQMClient::DQMClient(const std::string& name, int binningVersion,
-                     const DQMHistSet::Config& hists) :
-    name_(name), binningVersion_(binningVersion), hists_(clientConfig(hists))
+                     const DQMHistSet::Config& hists, const std::string& variant) :
+    name_(name), binningVersion_(binningVersion), variant_(variant),
+    hists_(clientConfig(hists))
 {
-  hists_.SetVersion(name_, binningVersion_);
+  hists_.SetVersion(name_, binningVersion_, variant_);
   diag_.SetName(name_);
 }
 

@@ -45,12 +45,16 @@ namespace mu2e {
 
 class DQMClient {
 public:
+  // `variant` names the layout this client books for when its axes depend on
+  // one (a detector configuration); it goes into the dqmBinningVersion stamp
+  // and the catalogue header, so files of two variants are never merged.
   DQMClient(const std::string& name, int binningVersion,
-            const DQMHistSet::Config& hists);
+            const DQMHistSet::Config& hists, const std::string& variant = "");
   virtual ~DQMClient() = default;
 
   const std::string& name() const { return name_; }
   int binningVersion() const { return binningVersion_; }
+  const std::string& variant() const { return variant_; }
 
   // Books everything under `dir`, then freezes: a client's histogram set does
   // not depend on the input.
@@ -88,6 +92,7 @@ protected:
 private:
   std::string name_;
   int binningVersion_{0};
+  std::string variant_;
   DQMHistSet hists_;
   DQMSeriesSet series_;
   DQMDiagnostics diag_;

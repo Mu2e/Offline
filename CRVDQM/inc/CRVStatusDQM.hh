@@ -2,8 +2,8 @@
 #define CRVDQM_inc_CRVStatusDQM_hh
 // CRV ROC-status DQM client: firmware-health histograms for the otsdaq online
 // monitor and the offline DQM modules. Status is per DTC link; every per-link
-// object is booked up front for all CRVDQMRun1::kNLinks links, indexed
-// dtcId * nROCPerDTC + linkId.
+// object is booked up front for the links of the configuration the client is
+// constructed for (CRVDQMRun1::nLinks(c)), indexed dtcId * nROCPerDTC + linkId.
 //
 // Original Author: R. Mina
 
@@ -25,7 +25,7 @@ namespace mu2e {
 
 class CRVStatusDQM : public DQMClient {
 public:
-  static constexpr int kBinningVersion = 1;
+  static constexpr int kBinningVersion = 2;
 
   static constexpr int kNErrorBits = 8;       //MicroBunchStatus bits 24-31
   static constexpr int kErrorBitOffset = 24;
@@ -41,7 +41,7 @@ public:
   static constexpr DQMAxis kLatency{1024, 0., 4096.};
   static constexpr DQMAxis kErrorBit = DQMAxis::Counts(0, kNErrorBits - 1);
   static constexpr DQMAxis kPortFlag = DQMAxis::Counts(0, kNPortFlags - 1);
-  static constexpr DQMAxis kLink = DQMAxis::Counts(0, CRVDQMRun1::kNLinks - 1);
+  // The link axis is sized by the configuration: CRVDQMRun1::linkAxis(c).
   static constexpr DQMAxis kBool = DQMAxis::Counts(0, 1);
   static constexpr DQMAxis kDaqErrorCode = DQMAxis::Counts(0, kNDaqErrorCodes - 1);
   static constexpr DQMAxis kEwtMismatch = DQMAxis::Counts(-100, 100);
@@ -64,7 +64,14 @@ public:
     uint32_t microBunchStatus{0};
   };
 
-  explicit CRVStatusDQM(const DQMHistSet::Config& hists = {});
+  // `configuration` (CRVDQMRun1::Configuration) sizes the link axis and the
+  // per-link sets; fixed at construction and stamped as the binning variant.
+  explicit CRVStatusDQM(const DQMHistSet::Config& hists = {},
+                        int configuration = CRVDQMRun1::kRun1a);
+
+  int configuration() const { return bookedConfiguration_; }
+  int nLinks() const { return CRVDQMRun1::nLinks(bookedConfiguration_); }
+  DQMAxis linkAxis() const { return CRVDQMRun1::linkAxis(bookedConfiguration_); }
 
   void Fill(const CrvStatusCollection& crvStatus);
   void Fill(const CrvStatusCollection& crvStatus, const CrvDAQerrorCollection& crvDaqErrors);
@@ -148,6 +155,7 @@ private:
 
   std::vector<RocSnapshot> lastEventRocs_;
 
+  const int bookedConfiguration_;
   std::size_t nEventsWithRocHeader_{0};
   std::size_t nEventsWithAnyErrorBit_{0};
   std::size_t nEventsWithDaqErrors_{0};

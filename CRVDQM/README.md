@@ -8,14 +8,14 @@ package implements for the CRV.
 
 ```
 CRVDQM/
-  inc/CRVDQMRun1.hh       frozen Run 1 CRV layout (constants only)
+  inc/CRVDQMRun1.hh       frozen CRV layout: numbering, configurations (constants only)
   inc/CRVDQMLayout.hh     geometry/conditions -> what a CRV client needs
   inc/CRVDigiDQM.hh       digis: occupancy, ADC, TDC, timing
   inc/CRVStatusDQM.hh     ROC status packets and DAQ errors
   inc/CRVRecoDQM.hh       reco pulses and coincidence clusters, PE/MPV maps
   inc/CRVCFTime.hh        constant-fraction timing of a digi waveform
   fcl/prolog.fcl          CRVDQM.* client tables, offline and online
-  data/CRVDQM_binning_v1.txt   reference catalogue of the CRV histogram set
+  data/CRVDQM_binning_v<N>_<configuration>.txt   reference catalogues, one per configuration
 ```
 
 The art modules live outside Offline: offline ones in
@@ -33,15 +33,26 @@ calorimeter and tracker online DQM. Both link `Offline::CRVDQM`.
 200 ADC, `kDtCoincWindow` 20 ns, `kDtMinLayers` 3), and the two supported
 configurations:
 
-| Configuration | Geometry `crs.name` | Sectors |
-|---|---|---|
-| `run1a` | `run1a_v01` | T1, T2 |
-| `extracted` (KPP) | `extracted` (v02, v03), `extracted_v04` | EX, T1, T2, M1–M8 |
+| Configuration | Geometry `crs.name` | Sectors | Readout |
+|---|---|---|---|
+| `run1a` | `run1a_v01` | T1, T2 | 18 ROCs, 432 FEB ports |
+| `extracted` (KPP) | `extracted` (v02, v03), `extracted_v04` | EX, T1, T2, M1–M8 | 2 ROCs; ROC 1 ports 1–24, ROC 2 ports 2–7 (global FEB ID 0–30). ROC 2 is physical ROC 4 on DTC link 3 (unpacker `useROC4asROC2`), so DTC 0 links 0–3 are booked for status |
 
-Anything whose meaning depends on the configuration is booked once per
-configuration — per-sector occupancy, per-sector PE MPV, and the cluster
-position axes `X/Y/Z_<configuration>` (the counter envelope ± 5% of its span,
-100 bins). Every job books every family and fills the one its geometry names.
+A client is constructed for one configuration (`CRVDigiDQM(hists, cfg)`, the
+DQMHelpers *variant*) and books for it alone: the global-FEB, online-channel,
+FPGA-pair and DTC-link axes are sized by the layout's `nROC`/`nFebs`
+(`CRVDQMRun1::globalFebAxis(cfg)` etc.), the per-ROC and per-link sets run to
+`nROC`, and the per-sector occupancy, per-sector PE MPV and cluster position
+axes `X/Y/Z_<configuration>` (the counter envelope ± 5% of its span, 100
+bins) exist for that configuration only. The output is stamped
+`variant=<configuration>`. A digi or status block from a ROC, port or link the
+configuration does not read out is counted in the diagnostics
+(`onlineIdOutsideConfiguration`, `linkOutOfRange`) and left out; a geometry
+that names a different configuration at run start is refused by
+`SetConfiguration` (`configurationMismatch`) rather than filled into the wrong
+axes. The online modules take the configuration from FHiCL
+(`configuration : "extracted"`, their default), the offline modules default to
+`run1a`.
 
 ## The clients
 
@@ -63,7 +74,8 @@ dqm.SetFebTopology(topology, channelToLayer);
 
 A geometry that is not in the table, or a sector with no histograms, throws:
 that is a layout change and needs a version bump, not a silent empty plot.
-Redo the calls when the run changes, since the channel map can.
+Redo the calls when the run changes, since the channel map can. The
+configuration passed here must be the one the client was constructed for.
 
 **Partner-FEB timing.** One FEB reads two of the four layers on one side of one
 module, so a muon fires a handful of geometrically related FEBs. dt is measured
@@ -97,9 +109,12 @@ physics.analyzers.crvDigiDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
 
 ## Changing binning
 
-Follow the procedure in the `DQMHelpers` README. The CRV reference catalogue
-is `data/CRVDQM_binning_v<N>.txt`: two comment lines, then the dump that a
-module writes when its `catalogueFile` is set.
+Follow the procedure in the `DQMHelpers` README. The CRV reference catalogues
+are `data/CRVDQM_binning_v<N>_<configuration>.txt`, one per configuration:
+two comment lines, then the dump that a module writes when its
+`catalogueFile` is set, run against that configuration's geometry. Version 2
+introduced the per-configuration readout axes; `v1` is the pre-variant set
+with every configuration's family booked.
 
 ## Testing
 

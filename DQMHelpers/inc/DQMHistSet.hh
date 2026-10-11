@@ -128,7 +128,10 @@ public:
 
   // Identity of the client filling this set, written into the output as
   // dqmBinningVersion. A merging or metrics tool refuses to combine versions.
-  void SetVersion(const std::string& clientName, int binningVersion);
+  // `variant` names a layout the client was booked for (e.g. a detector
+  // configuration whose axes differ); empty when the client has only one.
+  void SetVersion(const std::string& clientName, int binningVersion,
+                  const std::string& variant = "");
   // No histogram may be booked after this; see Config::strictBooking.
   void FreezeBooking() { frozen_ = true; }
   // name, type and axes of every booked histogram, one per line: the reference
@@ -275,6 +278,7 @@ private:
   bool frozen_{false};
   std::string clientName_{};
   int binningVersion_{0};
+  std::string variant_{};
   DQMH1<TH1F> h_nEvents_;
 };
 

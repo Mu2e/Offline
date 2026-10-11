@@ -26,20 +26,32 @@ below.
 
 ## Three rules
 
-1. **Binning is hard-coded.** An axis is a `static constexpr DQMAxis` in the client
-   header. `book1`/`book2` take nothing else. No FHiCL path reaches a binning.
+1. **Binning is hard-coded.** An axis is a `constexpr DQMAxis` in the client
+   header, or a `constexpr` function of the client's *variant* (below).
+   `book1`/`book2` take nothing else. No FHiCL path reaches a binning.
    This is to enable merging/comparison across runs.
 2. **The histogram set is code.** A client books everything in `book()`, up
-   front, for the whole detector. Booking later, or booking one name twice,
-   throws. FHiCL chooses extra *copies* of a histogram and what is published.
+   front, for the whole detector of its variant. Booking later, or booking one
+   name twice, throws. FHiCL chooses extra *copies* of a histogram and what is
+   published.
 3. **Changing either is a version bump.** Edit the constant, bump the client's
    `kBinningVersion`, and regenerate the catalogue file (see
    [Changing binning](#changing-binning)).
 
 The point of all three is merging: files from different runs and different
-jobs of the same client `hadd` bin for bin, and a metrics tool can refuse to
-combine two binning versions because every client stamps
+jobs of the same client and variant `hadd` bin for bin, and a metrics tool can
+refuse to combine two binning versions because every client stamps
 `dqmBinningVersion` into its output directory.
+
+**Variants.** A client whose axes depend on the detector it reads out (which
+ROCs exist, how many FEB ports) takes that *configuration* in its constructor
+and books for it alone; the choice is fixed before `Book()` and stamped as
+`variant=<name>` next to the version, in the output and in the catalogue
+header. Each variant has its own catalogue file. This is still rule 1: the
+numbers are constants in code, chosen by one named switch, and two variants
+never merge. It is how the CRV clients serve the KPP (2 ROCs, 31 FEB ports)
+and Run 1 (18 ROCs, 432) without carrying the other's empty histograms
+(`Offline/CRVDQM/inc/CRVDQMRun1.hh`, `CRVDigiDQM(hists, configuration)`).
 
 ## Adding a subdetector
 
@@ -303,9 +315,9 @@ Owns the set, the series and the diagnostics.
 | `Fill(...)` — the client's own typed method | `beginEvent(clock)` first in `Fill` |
 
 Also `hists()`, `series()`, `diag()`, `nEvents()`, `run()`, `subrun()`,
-`booked()`, `name()`, `binningVersion()`. `Book()` writes a
-`dqmBinningVersion` `TNamed` into the client's directory and books `nEvents`
-for you — do not book your own.
+`booked()`, `name()`, `binningVersion()`, `variant()`. `Book()` writes a
+`dqmBinningVersion` `TNamed` (`<client> binningVersion=<N>[ variant=<name>]`)
+into the client's directory and books `nEvents` for you — do not book your own.
 
 ### `DQMDiagnostics`
 
@@ -425,7 +437,7 @@ says what it covers, e.g. `[last 50000 EWT: 1234-5678, 4321 events]`, and with
 2. Bump that client's `kBinningVersion`.
 3. Regenerate the catalogue: run a job with the module's `catalogueFile` set
    and copy the result over the client package's reference file (for the CRV,
-   `CRVDQM/data/CRVDQM_binning_v<N>.txt`).
+   `CRVDQM/data/CRVDQM_binning_v<N>_<variant>.txt`, one per variant).
 4. Say so in the PR: merging tools and the DQM database see a new version, and
    old files no longer combine with new ones.
 
