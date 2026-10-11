@@ -64,7 +64,7 @@ namespace mu2e {
     // width IS W_width, and the wing-asymmetry offset (delta_WlL-delta_WlR)/2
     // vanishes.
     //
-    // The bores are stepped in z, at x = +/-offset_Spot, y = 0. They are given 
+    // The bores are stepped in z, at x = +/-offset_Spot, y = 0. They are given
     // as radii rather than as apertures.
     //
     // Taking a separate constructor rather than defaulted arguments keeps

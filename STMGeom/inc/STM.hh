@@ -98,7 +98,7 @@ namespace mu2e {
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
 
     // True when the downstream shielding is the updated, hand-stacked version
-    // This is one switch for the whole downstream geometry 
+    // This is one switch for the whole downstream geometry
     bool handstacked() const { return _handstacked; }
 
 

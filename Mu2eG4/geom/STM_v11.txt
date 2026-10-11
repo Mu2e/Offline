@@ -129,7 +129,7 @@ double  stm.magnet.stand.legRadius                 = 50.0;
 // DOWNSTREAM
 // ===================================================================
 // double stm.z.allowed ommitted: old lead SSC and detectors are now
-// obsolete. Turn it back on only when detector support table 
+// obsolete. Turn it back on only when detector support table
 // stm.detector.stand or vd.STMFin are built.
 
 // ---- Downstream envelope ------------------------------------------
@@ -203,7 +203,7 @@ double  stm.HPGe.offset_HPGe                       = -10;
 // DOWNSTREAM: STM SHIELD HOUSE
 // ===================================================================
 // Everything downstream is positioned against STMShieldingRef, which
-// is the FRONT FACE OF THE STEEL SUPPORT CRADLE. This point moves if 
+// is the FRONT FACE OF THE STEEL SUPPORT CRADLE. This point moves if
 // the thickness of the borated polyethylene against the experiment
 // hall wall or the cable gap size is changed.
 
@@ -262,8 +262,8 @@ string stm.leadBrick.type3 = "2x4x4";
 // ---- Spot-Size Collimator ----------------------------------------
 //
 // The updated SSC is a single tungsten block, 6.4 x 3.2 x 4.0 in.
-// Symmetric design, almost half of the previous SSC size in both width 
-// and height. W_middle, delta_WlL and delta_WlR are therefore gone 
+// Symmetric design, almost half of the previous SSC size in both width
+// and height. W_middle, delta_WlL and delta_WlR are therefore gone
 // rather than retuned.
 
 bool   stm.STM_SSC.build     =  true;
@@ -283,9 +283,9 @@ double stm.STM_SSC.offset_Spot = 40.640; // = W_width/4, equal distance from the
 // This is NOT the front/back clearance; see ZGapBack = 4.35 mm.
 double stm.STM_SSC.leak      =  10.000;
 
-// Bore radii, as updated imperial sizes. The two bores are stepped 
-// in z: the wide one occupies the upstream slab and the narrow one the 
-// downstream slab, each centered in its own 50.8 mm half at 
+// Bore radii, as updated imperial sizes. The two bores are stepped
+// in z: the wide one occupies the upstream slab and the narrow one the
+// downstream slab, each centered in its own 50.8 mm half at
 // x = +/-offset_Spot, y = 0.
 double stm.STM_SSC.r_LaBr_f = 12.700;  // 0.500 in, upstream
 double stm.STM_SSC.r_HPGe_f = 12.700;  // 0.500 in, upstream
@@ -388,28 +388,28 @@ double stm.SSCSupport.top_T       =  19.050;  // 0.750 in
 //
 bool   stm.SSCFrontShield.build   = true;
 //
-// Centers below are written as if the coaxial alignment were perfect. 
-// The CAD contains an initial displacement of the whole structure from 
+// Centers below are written as if the coaxial alignment were perfect.
+// The CAD contains an initial displacement of the whole structure from
 // it, and that displacement is carried once here. In the construction code
 // the offset is applied to every object in the structure.
 double stm.SSCFrontShield.offsetX = 0.000;
 double stm.SSCFrontShield.offsetY = 0.000; //2.287; // for slightly higher front shield as in the CAD
 
-// LaBrSideBrickOffsetX is the offset of the LaBr side bricks from being 
-// flush with the outer radius of the downstream copper pipe's outer 
-// radius, in x. It being 0 means the inner face of the central slit is 
+// LaBrSideBrickOffsetX is the offset of the LaBr side bricks from being
+// flush with the outer radius of the downstream copper pipe's outer
+// radius, in x. It being 0 means the inner face of the central slit is
 // flush with the pipe's outer radius. The CAD has the inner face of the
 // LaBr side bricks 1.900 mm further out than the pipe's outer radius.
 // This value will be added to the x-coordinates of all the following
 // bricks, except for brickGroup2.center1, center2, and center4, which
 // are constrained by the position of poly2.
-double stm.SSCFrontShield.LaBrSideBrickOffsetX = 1.900; 
+double stm.SSCFrontShield.LaBrSideBrickOffsetX = 1.900;
 
-// Offset of the small poly block in front of the HPGe SSC from being 
-// coaxial with the HPGe side SSC hole, in x. This value will be added 
-// to the x-coordinates of the poly2 block, as well as the x-coordinates 
+// Offset of the small poly block in front of the HPGe SSC from being
+// coaxial with the HPGe side SSC hole, in x. This value will be added
+// to the x-coordinates of the poly2 block, as well as the x-coordinates
 // of brickGroup2.center1, center2, and center4,
-double stm.SSCFrontShield.poly2.offsetX = 0.000; 
+double stm.SSCFrontShield.poly2.offsetX = 0.000;
 
 // The brick wall: 4 courses in y (+2, +1, -1, -2 -- the 0 course is
 // the beam opening) x 2 courses in z.
@@ -417,7 +417,7 @@ double stm.SSCFrontShield.poly2.offsetX = 0.000;
 //     y = n * 50.800
 //     z = - 22.333 (distance from the front of the cradle)
 //         - (1.5-k) * 101.600
-// 
+//
 // The bricks come in groups, each group being the bricks of one type
 // that share an offset rule. They are named by type as every other
 // section names its bricks.
@@ -440,12 +440,12 @@ string stm.SSCFrontShield.brickGroup1.orientation = "100";
 
 // The opening course, partly filled either side of the beam aperture,
 // plus two bricks standing on the shelf.
-//   1,2  left of the aperture, one per z course. 
+//   1,2  left of the aperture, one per z course.
 //        x = - 40.640 - 55.880/2 (poly2 half-width)
 //            - 4*25.400 = -170.18
 //   3    right of it, 8 in deep so it spans both courses and sits at
 //        their midpoint,
-//        x = 40.640 + 3 * 25.400 = 116.840 
+//        x = 40.640 + 3 * 25.400 = 116.840
 //        z = -22.333 - 101.600 = -123.933
 //   4,5  on the shelf, turned so the 8 in side stands vertically
 //        x4 = - 40.640 - 55.880/2 -2*25.400 = -119.380
@@ -615,7 +615,7 @@ double stm.FrontShieldingRight.bore2OffsetY = 0.000;
 // appearing twice takes two holes -- so a future brick catching only
 // a single bore is one entry here, not a new brick type.
 //
-// The bore map is written out rather than worked out from the geometry. 
+// The bore map is written out rather than worked out from the geometry.
 // This is implemented as a cross-check method so constructor does not
 // quietly bore the lead bricks at unexpected locations.
 int stm.FrontShieldingRight.leadBoreMapN = 6;
@@ -633,7 +633,7 @@ string stm.FrontShieldingRight.BPlayer.material  = "Polyethylene092B050d095";
 double stm.FrontShieldingRight.BPlayer.thickness =  25.400;  // 1 in
 double stm.FrontShieldingRight.BPlayer.dyLower   = 187.482;
 double stm.FrontShieldingRight.BPlayer.dyUpper   = 218.918;
-// The bores are nominally coaxial with the SSC, 
+// The bores are nominally coaxial with the SSC,
 // FrontShieldingRight.bore<1/2>Offset<X/Y> are applied to the bore centers.
 
 // Aluminum support blocks
@@ -641,7 +641,7 @@ double stm.FrontShieldingRight.BPlayer.dyUpper   = 218.918;
 // both ends, 8 in deep to match the layer stack.
 string stm.FrontShieldingRight.block.material = "G4_Al";
 double stm.FrontShieldingRight.block.dx =  152.400;  // 6 in
-double stm.FrontShieldingRight.block.dy =   83.600;  // 
+double stm.FrontShieldingRight.block.dy =   83.600;  //
 double stm.FrontShieldingRight.block.dz =  203.200;  // 8 in
 int    stm.FrontShieldingRight.block.n  =    4;
 
@@ -655,7 +655,7 @@ double stm.FrontShieldingRight.pipe.rOutHPGe =  25.400;  // 1.0 in
 double stm.FrontShieldingRight.pipe.lenLaBr  = 489.100;
 double stm.FrontShieldingRight.pipe.lenHPGe  = 217.000;
 // Nominally coaxial with the SSC, but offsets
-// FrontShieldingRight.bore<1/2>Offset<X/Y> are applied to the bore 
+// FrontShieldingRight.bore<1/2>Offset<X/Y> are applied to the bore
 // centers for possible offsets.
 
 // Copper layer: a plate of trapezoid cross section swept along y
@@ -699,8 +699,8 @@ double stm.FrontShieldingRight.copperLining.holeRadius2 = 25.400; // - offset HP
 //   x  measured back from FrontShieldingRight.brickEndX. The brick
 //      block abuts the right half's -x course edge.
 //   y  the brick block stands on the baseplate and rises 16 in.
-//   z  the second layer (lead brick) shares the plane of the right 
-//      half's last lead layer; the poly sheets and the bricks behind 
+//   z  the second layer (lead brick) shares the plane of the right
+//      half's last lead layer; the poly sheets and the bricks behind
 //      them stack on downstream of it.
 bool   stm.FrontShieldingLeft.build = true;
 
@@ -828,7 +828,7 @@ string stm.FrontShieldingLeft.triangle.orientation = "300";
 // front shielding's front face. That point is
 //
 //   - flush with the +z side of the third lead layer of the front
-//     shielding (the fifth layer counting the borated poly), 
+//     shielding (the fifth layer counting the borated poly),
 //   - butting against the +x, -y, +z corner of that lead layer, and
 //   - the +x, -y, -z vertex of this wall's lead layers.
 //

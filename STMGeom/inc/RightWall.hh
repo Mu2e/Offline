@@ -1,7 +1,7 @@
 #ifndef STMGeom_RightWall_hh
 #define STMGeom_RightWall_hh
 
-// The right wall of the STM shield house: the wall on the +x side, 
+// The right wall of the STM shield house: the wall on the +x side,
 // running downstream from the front shielding.
 //
 // Five layers worked inward along -x from one reference vertex -- an

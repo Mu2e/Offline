@@ -419,7 +419,7 @@ namespace mu2e {
     // component; see STM::handstacked().
     stm._handstacked = _handstacked;
 
-    // The shared standard lead bricks. 
+    // The shared standard lead bricks.
     if (_handstacked) {
       stm._pLeadBrickParams = std::unique_ptr<LeadBrick>
               (new LeadBrick(_leadBrickNames,
