@@ -5,35 +5,51 @@
 #include "Offline/STMReco/fcl/prolog.fcl"
 BEGIN_PROLOG
 
-# Geometry, all in mm
+# Geometry, all in mm, Mu2e coordinates, for Offline/Mu2eG4/geom/STM_v11.txt.
+# Positions along z are derived from the cradle front (STMShieldingRef in
+# constructSTM.cc) at z = 40325.3; the SSC bores sit at x = beam -/+ 40.64
+# (stm.STM_SSC.offset_Spot), HPGe on -x and LaBr on +x.
 ComponentPositions : { # In beam order
-    Beam : {
+    Beam : { # DS axis. Not referenced by any fcl.
         x : -3904.0
         y : 0.0
     }
-    Absorber : { # 50mm x 50mm x 390mm
-        x : -3944.6
-        y : -24.9 # TODO - why is this not 0.0?
-        z : 39900
+    Absorber : { # Not referenced by any fcl. STM_v11 has no STM_Absorber; this is
+                 # its replacement in front of the HPGe bore, the SSCFrontShield poly2
+                 # block (55.88 x 50.8 x 152.4), at its center: z = 40325.3 - 200.133
+        x : -3944.64
+        y : 0.0
+        z : 40125.167
     }
-    VD101 : { # Centre
+    VD101 : { # Center of VD101 (STM_SpotSizeCollUpStr), 15 mm upstream of the cradle front.
+              # Used as InputX/Y/Z of ShiftVirtualDetectorStepPointMCs in
+              # Production/JobConfig/pileup/STM/STMResampler.fcl; that module takes only
+              # x and y from it and replaces z with OutputZ.
         x : -3904.0
         y : 0.0
-        z : 40301.0
+        z : 40310.3
     }
-    HPGe : { # aperture centre
-        x : -3944.6
+    HPGe : { # HPGe bore center, midway through the tungsten SSC: its upstream face is
+             # 4.35 mm (ZGap - ZGapBack) and its downstream face 105.95 mm past the cradle
+             # front. Used as the PhotonGun origin in Offline/STMMC/fcl/DetectorEfficiency.fcl,
+             # which fires along +z from here toward the HPGe.
+        x : -3944.64
         y : 0.0
-        z : 40404
+        z : 40380.45
     }
-    HPGeCrystalEndcapCentre : {
-        x : -3942.15
-        y : 0
-        z : 40677.44
-    }
-    LaBr : { # aperture centre
-        x : -3863.4
+    HPGeCrystalEndcapCentre : { # Not referenced by any fcl. Center of the HPGe crystal's
+                                # front face, 5.53 mm (window + air + capsule window) along
+                                # the 45-degree detector axis from the window, which sits at
+                                # x = beam - 40.64 + offset_HPGe (-10), z = 40325.3 + 327.4
+                                # (front shielding right copper lining back) + Z_HPGe (50.431)
+        x : -3958.55
         y : 0.0
+        z : 40707.04
+    }
+    LaBr : { # LaBr bore center. Not referenced by any fcl.
+        x : -3863.36
+        y : 0.0
+        z : 40380.45
     }
 }
 
@@ -50,21 +66,27 @@ VirtualDetectorCounter : {
     virtualDetectorIDs : [88, 89, 90, 100, 101]
 }
 
-# ShiftVirtualDetectorStepPointMCs_module.cc parameters
+# ShiftVirtualDetectorStepPointMCs_module.cc parameters, used only by
+# Production/JobConfig/pileup/STM/STMResampler.fcl (shiftStepsHPGe and
+# shiftStepsLaBr). The module scales step positions about the VD101 center
+# by OutputRadius/InputRadius and moves them to the output center.
 ShiftVD101Steps : {
     StepPointMCsTag : "compressDetStepMCsSTM:virtualdetector"
     VirtualDetectorID : 101
-    InputRadius : 200 # VD101 aperture radius
-    OutputRadius : 3.98942280401 # SSC aperture radius
-    HPGeUpStr : { # Position just upstream of absorber centered on the HPGe SSC aperture
-        x : -3944.6
+    InputRadius : 100 # VD101 radius, vd.STMSSCollUpStr.r
+    OutputRadius : 12.7 # upstream SSC bore radius, stm.STM_SSC.r_HPGe_f = r_LaBr_f
+    HPGeUpStr : { # Just upstream of the poly on the HPGe bore axis: SSCFrontShield poly1
+                  # (238.8 mm, bored only on the LaBr axis) then poly2 (152.4 mm), which
+                  # replace the old 390 mm absorber. poly1's upstream face is at
+                  # z = 40325.3 - 537.619 = 39787.681
+        x : -3944.64
         y : 0.0
-        z : 39906.0
+        z : 39787.6
     }
-    LaBrUpStr : { # Position just upstream of SSC centered on the Labr SSC aperture
-        x : -3863.4
+    LaBrUpStr : { # Just upstream of VD101 (0.1 mm below its center) on the LaBr bore axis
+        x : -3863.36
         y : 0.0
-        z : 40300.9
+        z : 40310.2
     }
     pdgID : 0
 }
