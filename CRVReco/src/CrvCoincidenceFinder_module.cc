@@ -27,7 +27,6 @@
 #include <array>
 #include <cmath>
 #include <map>
-#include <numeric>
 #include <set>
 #include <tuple>
 
@@ -68,8 +67,6 @@ namespace mu2e
       fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missing pulses for channels with the following channel statuses")};
       fhicl::Atom<bool>   ignoreSecondaryPulses{Name("ignoreSecondaryPulses"), Comment("ignore secondary pulses in a waveform.")};
       fhicl::Atom<bool>   addOppositeSidePulses{Name("addOppositeSidePulses"), Comment("add pulses that are not part of a coincidence at their own readout side to the coincidence cluster that contains the opposite end of the same counter"), true};
-      fhicl::Atom<bool>   mergeSharedWaveforms{Name("mergeSharedWaveforms"), Comment("merge clusters that contain pulses of the same waveform"), true};
-      fhicl::Atom<bool>   timeFromFirstPulses{Name("timeFromFirstPulses"), Comment("use only the first pulse of each waveform for the hit time and position calculation of the clusters"), true};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -95,8 +92,6 @@ namespace mu2e
     std::vector<int>                        _compensateChannelStatus;
     bool                                    _ignoreSecondaryPulses;
     bool                                    _addOppositeSidePulses;
-    bool                                    _mergeSharedWaveforms;
-    bool                                    _timeFromFirstPulses;
 
     int         _totalEvents;
     int         _totalEventsCoincidence;
@@ -175,7 +170,6 @@ namespace mu2e
     bool checkCombination(std::vector<CrvHit>::iterator layerIterators[], int n);
     void addOppositeSidePulses(const std::vector<CrvHit> &candidates, std::vector<std::vector<CrvHit> > &clusters,
                                double maxTimeDifference);
-    void mergeSharedWaveforms(std::vector<std::vector<CrvHit> > &clusters);
 
   };
 
@@ -191,8 +185,6 @@ namespace mu2e
     _compensateChannelStatus(conf().compensateChannelStatus()),
     _ignoreSecondaryPulses(conf().ignoreSecondaryPulses()),
     _addOppositeSidePulses(conf().addOppositeSidePulses()),
-    _mergeSharedWaveforms(conf().mergeSharedWaveforms()),
-    _timeFromFirstPulses(conf().timeFromFirstPulses()),
     _totalEvents(0),
     _totalEventsCoincidence(0)
   {
@@ -428,7 +420,6 @@ namespace mu2e
       //coincidences are found separately at each readout side, so a side that misses the required number of layers
       //(e.g. because the channels of some layers at this side are dead) contributes no pulses to the cluster, although the
       //same particle was seen at the other side. add those pulses to the cluster that contains the opposite end of their counter.
-      if(_mergeSharedWaveforms) mergeSharedWaveforms(coincidenceClusters);
       if(combineOppositeSides && _addOppositeSidePulses)
         addOppositeSidePulses(hitsFiltered, coincidenceClusters, clusterMaxTimeDifference+timeDifferenceOppositeSides);
 
@@ -502,14 +493,6 @@ namespace mu2e
       std::array<double, CRVId::nSidesPerBar> sideTimesMin{0,0};
       std::array<double, CRVId::nSidesPerBar> sideTimesMax{0,0};
       int lengthDirection=_sectorMap.at(cluster.begin()->_crvSector).lengthDirection;   //same for all counters of this cluster
-
-      //with timeFromFirstPulses, the side times use only the first pulse of each waveform (later pulses arrive ~50ns after it
-      //and would spoil the hit time and position calculation), unless a side has no such pulse
-      std::array<bool, CRVId::nSidesPerBar> sideHasFirstPulse{false,false};
-      for(const auto &hit : cluster)
-        if(hit._PEs>0.0 && hit._crvRecoPulse->GetSequenceIndex()==0) sideHasFirstPulse[hit._SiPM%CRVId::nSidesPerBar]=true;
-      std::array<size_t, CRVId::nSidesPerBar> sideTimingHits{0,0};
-      std::array<float, CRVId::nSidesPerBar>  sideTimingPEs{0,0};
       for(auto hit=cluster.begin(); hit!=cluster.end(); ++hit)
       {
         if(hit->_PEs<=0.0) continue;  //avoid dealing with hits that have no PEs
@@ -518,17 +501,13 @@ namespace mu2e
 
         sideHits[side]++;
         sidePEs[side]+=hit->_PEs;
-
-        if(_timeFromFirstPulses && sideHasFirstPulse[side] && hit->_crvRecoPulse->GetSequenceIndex()>0) continue;
-        sideTimingHits[side]++;
-        sideTimingPEs[side]+=hit->_PEs;
         sideTimes[side]+=hit->_time*hit->_PEs; //PE-weighted times
-        if(sideTimingHits[side]==1) {sideTimesMin[side]=hit->_time; sideTimesMax[side]=hit->_time;}
+        if(sideHits[side]==1) {sideTimesMin[side]=hit->_time; sideTimesMax[side]=hit->_time;}
         if(sideTimesMin[side]>hit->_time) sideTimesMin[side]=hit->_time;
         if(sideTimesMax[side]<hit->_time) sideTimesMax[side]=hit->_time;
       }
-      if(sideTimingPEs[0]>0) sideTimes[0]/=sideTimingPEs[0]; //find avg PE-weighted time by dividing by total PEs
-      if(sideTimingPEs[1]>0) sideTimes[1]/=sideTimingPEs[1];
+      if(sidePEs[0]>0) sideTimes[0]/=sidePEs[0]; //find avg PE-weighted time by dividing by total PEs
+      if(sidePEs[1]>0) sideTimes[1]/=sidePEs[1];
 
       bool hitPosAndTimeCalculated=false;
       double avgHitTime=0.0;
@@ -701,38 +680,6 @@ namespace mu2e
     } //loop until all hits in list of hits are distributed into clusters
   } //end finder clusters
 
-
-  //clusters that contain pulses of the same waveform are merged. normally the later pulses of a waveform (~50ns after
-  //the first pulse) end up in the cluster of the first pulses, but if one readout side is missing, they can form
-  //a coincidence and a cluster of their own.
-  void CrvCoincidenceFinder::mergeSharedWaveforms(std::vector<std::vector<CrvHit> > &clusters)
-  {
-    std::vector<size_t> parent(clusters.size());
-    std::iota(parent.begin(), parent.end(), 0);
-    auto root=[&parent](size_t i){while(parent[i]!=i) i=parent[i]=parent[parent[i]]; return i;};
-
-    std::map<size_t,size_t> waveformCluster;  //first digi index of a waveform -> cluster
-    for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)
-    {
-      for(const auto &hit : clusters[iCluster])
-      {
-        const std::vector<size_t> &waveformIndices=hit._crvRecoPulse->GetWaveformIndices();
-        if(waveformIndices.empty()) continue;
-        auto [iter,inserted]=waveformCluster.emplace(waveformIndices.front(),iCluster);
-        if(!inserted) parent[root(iCluster)]=root(iter->second);
-      }
-    }
-
-    std::vector<std::vector<CrvHit> > merged;
-    std::map<size_t,size_t> mergedIndex;  //root cluster -> index in merged
-    for(size_t iCluster=0; iCluster<clusters.size(); ++iCluster)
-    {
-      auto [iter,inserted]=mergedIndex.emplace(root(iCluster),merged.size());
-      if(inserted) merged.emplace_back();
-      merged[iter->second].insert(merged[iter->second].end(), clusters[iCluster].begin(), clusters[iCluster].end());
-    }
-    clusters.swap(merged);
-  }
 
   //a cluster can have a counter at one readout side only, if the other side did not form a coincidence by itself.
   //add the hits of the missing side, if their time difference to the hits at the opposite side is below maxTimeDifference:
