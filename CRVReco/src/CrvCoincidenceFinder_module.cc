@@ -66,7 +66,7 @@ namespace mu2e
       fhicl::Atom<double> timeOffset{Name("timeOffset"), Comment("additional time delay caused by electronics response and physical processes in ns")};
       fhicl::Sequence<int> compensateChannelStatus{Name("compensateChannelStatus"), Comment("compensate missing pulses for channels with the following channel statuses")};
       fhicl::Atom<bool>   ignoreSecondaryPulses{Name("ignoreSecondaryPulses"), Comment("ignore secondary pulses in a waveform.")};
-      fhicl::Atom<bool>   addOppositeSidePulses{Name("addOppositeSidePulses"), Comment("add pulses that are not part of a coincidence at their own readout side to the coincidence cluster that contains the opposite end of the same counter"), true};
+      fhicl::Atom<bool>   addOppositeSidePulses{Name("addOppositeSidePulses"), Comment("add pulses that are not part of a coincidence at their own readout side to the coincidence cluster that contains the opposite end of the same counter")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;

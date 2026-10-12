@@ -387,8 +387,6 @@ BEGIN_PROLOG
                                                  //are compensated by the other channel on the same counter side
       ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
-      mergeSharedWaveforms             : true   //merge clusters that contain pulses of the same waveform
-      timeFromFirstPulses              : true   //hit time and position of a cluster from the first pulse of each waveform only
     }
 
 
