@@ -64,7 +64,6 @@ namespace mu2e {
            nSigmaNoise_       (config().nSigmaNoise()),
            caphriEDepMax_     (config().caphriEDepMax()),
            caphriEDepMin_     (config().caphriEDepMin()),
-           ADCToMeV_          (config().ADCToMeV()),
            diagLevel_         (config().diagLevel())
         {
             produces<CaloHitCollection>("calo");
@@ -91,7 +90,6 @@ namespace mu2e {
         float  nSigmaNoise_;
         float  caphriEDepMax_;
         float  caphriEDepMin_;
-        float  ADCToMeV_;
         int    diagLevel_;
     };
 
