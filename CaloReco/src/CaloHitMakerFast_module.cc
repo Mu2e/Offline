@@ -79,7 +79,7 @@ namespace mu2e {
 
         using pulseMapType = std::map<unsigned, std::vector<HitInfo>>;
 
-        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intCalo, double pbtOffset);
+        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intCalo, double pbtOffset, CalCalib const& calCalib);
         void addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep);
 
         art::ProductToken<CaloDigiCollection>     caloDigisToken_;
