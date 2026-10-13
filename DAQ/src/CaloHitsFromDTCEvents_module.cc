@@ -89,6 +89,7 @@ private:
   mu2e::ProditionsHandle<mu2e::CalDAQMap> _calodaqconds_h;
 
   void analyze_calorimeter_(mu2e::CalDAQMap const& calodaqconds,
+                            mu2e::CalCalib const& calCalib,
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
@@ -210,7 +211,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
-      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, int_info);
+      analyze_calorimeter_(calodaqconds, calCalib, decoder, calo_hits, caphri_hits, int_info);
       for (size_t i = 0; i < decoder.block_count(); ++i) {
         totalSize += decoder.blockSizeBytes(i);
       }
@@ -246,7 +247,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
-    mu2e::CalDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    mu2e::CalDAQMap const& calodaqconds, mu2e::CalCalib const& calCalib, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
     std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {
