@@ -142,6 +142,7 @@ void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollectio
     int SiPMID = caloDigi.SiPMID();
     double t0 = caloDigi.t0() * CaloConst::_digitizationPeriod; // CaloDigi t0 is in digitizer clock ticks
     double adc2MeV = calCalib.ADC2MeV(SiPMID);
+    double timeOffset = calCalib.timeoffset(SiPMID);
 
     const std::vector<int>& waveform = caloDigi.waveform();
 
@@ -164,7 +165,7 @@ void CaloRecoDigiMaker::extractRecoDigi(const art::ValidHandle<CaloDigiCollectio
     for (int i = 0; i < waveformProcessor_->nPeaks(); ++i) {
       double eDep = waveformProcessor_->amplitude(i) * adc2MeV;
       double eDepErr = waveformProcessor_->amplitudeErr(i) * adc2MeV;
-      double time = waveformProcessor_->time(i) - pbtOffset; // correct to time since protons
+      double time = waveformProcessor_->time(i) - pbtOffset - timeOffset;
       double timeErr = waveformProcessor_->timeErr(i);
       bool isPileUp = waveformProcessor_->isPileUp(i);
       double chi2 = waveformProcessor_->chi2();
