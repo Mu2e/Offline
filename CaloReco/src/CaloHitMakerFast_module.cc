@@ -50,7 +50,6 @@ namespace mu2e {
             fhicl::Atom<float>         nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
-            fhicl::Atom<double>        ADCToMeV           { Name("ADCToMeV"),           Comment("ADC to MeV conversion factor") };
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
 
