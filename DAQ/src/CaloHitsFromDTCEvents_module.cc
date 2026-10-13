@@ -78,8 +78,6 @@ public:
   explicit CaloHitsFromDataDTCEvents(const art::EDProducer::Table<Config>& config);
   virtual ~CaloHitsFromDataDTCEvents() {}
 
-  virtual void beginRun(art::Run&) override;
-
   // --- Production:
   virtual void produce(Event&);
   virtual void endJob();
