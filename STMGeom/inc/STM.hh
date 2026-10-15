@@ -5,6 +5,7 @@
 //
 // Author: Anthony Palladino
 // Update: Haichuan Cao August 2023
+// Update: Yongyi Wu Sept-Oct 2026, hand-stacked downstream shielding
 
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -18,6 +19,15 @@
 #include "Offline/STMGeom/inc/ShieldPipe.hh"
 #include "Offline/STMGeom/inc/STM_SSC.hh"
 #include "Offline/STMGeom/inc/SSCSupport.hh"
+#include "Offline/STMGeom/inc/LeadBrick.hh"
+#include "Offline/STMGeom/inc/BrickWall.hh"
+#include "Offline/STMGeom/inc/SSCFrontShield.hh"
+#include "Offline/STMGeom/inc/FrontShieldingRight.hh"
+#include "Offline/STMGeom/inc/FrontShieldingLeft.hh"
+#include "Offline/STMGeom/inc/RightWall.hh"
+#include "Offline/STMGeom/inc/LeftWall.hh"
+#include "Offline/STMGeom/inc/TopWall.hh"
+#include "Offline/STMGeom/inc/BottomWall.hh"
 #include "Offline/STMGeom/inc/HPGeDetector.hh"
 #include "Offline/STMGeom/inc/LaBrDetector.hh"
 #include "Offline/STMGeom/inc/FrontShielding.hh"
@@ -60,6 +70,15 @@ namespace mu2e {
     ShieldPipe       const * getSTMShieldPipePtr()           const { return _pSTMShieldPipeParams.get(); }
     STM_SSC          const * getSTM_SSCPtr()                 const { return _pSTM_SSCParams.get(); }
     SSCSupport       const * getSSCSupportPtr()              const { return _pSSCSupportParams.get(); }
+    // The standard lead bricks, shared by every structure that stacks them.
+    LeadBrick        const * getLeadBrickPtr()               const { return _pLeadBrickParams.get(); }
+    SSCFrontShield   const * getSSCFrontShieldPtr()          const { return _pSSCFrontShieldParams.get(); }
+    FrontShieldingRight const * getFrontShieldingRightPtr()  const { return _pFrontShieldingRightParams.get(); }
+    FrontShieldingLeft  const * getFrontShieldingLeftPtr()   const { return _pFrontShieldingLeftParams.get(); }
+    RightWall           const * getRightWallPtr()            const { return _pRightWallParams.get(); }
+    LeftWall            const * getLeftWallPtr()             const { return _pLeftWallParams.get(); }
+    TopWall             const * getTopWallPtr()              const { return _pTopWallParams.get(); }
+    BottomWall          const * getBottomWallPtr()           const { return _pBottomWallParams.get(); }
 
     HPGeDetector     const * getHPGeDetectorPtr()            const { return _pSTMHPGeDetectorParams.get(); }
     LaBrDetector     const * getLaBrDetectorPtr()            const { return _pSTMLaBrDetectorParams.get(); }
@@ -77,6 +96,10 @@ namespace mu2e {
 
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
+
+    // True when the downstream shielding is the updated, hand-stacked version
+    // This is one switch for the whole downstream geometry
+    bool handstacked() const { return _handstacked; }
 
 
   private:
@@ -98,6 +121,14 @@ namespace mu2e {
     std::unique_ptr<ShieldPipe>       _pSTMShieldPipeParams;
     std::unique_ptr<STM_SSC>          _pSTM_SSCParams;
     std::unique_ptr<SSCSupport>       _pSSCSupportParams;
+    std::unique_ptr<LeadBrick>        _pLeadBrickParams;
+    std::unique_ptr<SSCFrontShield>   _pSSCFrontShieldParams;
+    std::unique_ptr<FrontShieldingRight> _pFrontShieldingRightParams;
+    std::unique_ptr<FrontShieldingLeft>  _pFrontShieldingLeftParams;
+    std::unique_ptr<RightWall>           _pRightWallParams;
+    std::unique_ptr<LeftWall>            _pLeftWallParams;
+    std::unique_ptr<TopWall>             _pTopWallParams;
+    std::unique_ptr<BottomWall>          _pBottomWallParams;
 
     std::unique_ptr<HPGeDetector>     _pSTMHPGeDetectorParams;
     std::unique_ptr<LaBrDetector>     _pSTMLaBrDetectorParams;
@@ -114,6 +145,8 @@ namespace mu2e {
     std::unique_ptr<STM_Absorber>          _pSTMSTM_AbsorberParams;
 
     CLHEP::Hep3Vector   _originInMu2e;
+
+    bool                _handstacked = false;
   };
 
 }
