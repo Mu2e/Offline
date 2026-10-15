@@ -1,0 +1,24 @@
+name: build-develop
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  push:
+    branches-ignore:
+      - develop
+      - stable
+    paths-ignore:
+      - 'docs/**'
+      - '.github/**'
+  pull_request:
+    branches: [ develop ]
+  schedule:
+    - cron: "0 7 * * *"
+
+  workflow_dispatch:
+
+
+jobs:
+  build_against_dev_release:
+    name: Build against develop
+    uses: Mu2e/.github/.github/workflows/mu2e-develop-cpp-ci.yml@stable
