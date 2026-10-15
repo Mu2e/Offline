@@ -32,7 +32,9 @@ cet_build_plugin(ReadTriggerInfo art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
+      Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::TrackerConditions
       Offline::TrackerGeom
       KinKal::Trajectory
 )
