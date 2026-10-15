@@ -3,12 +3,12 @@ name: Git Whitespace Check Workflow
 on:
   push:
     branches:
-      - develop
+      - main
     paths-ignore:
       - 'docs/**'
       - '.github/**'
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
   schedule:
     - cron: "0 7 * * *"
   workflow_dispatch:
