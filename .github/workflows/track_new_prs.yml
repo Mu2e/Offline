@@ -4,7 +4,7 @@ on:
     types:
       - opened
 jobs:
-  track_issue:
+  track_pr:
     runs-on: ubuntu-latest
     steps:
       - name: Get project data
