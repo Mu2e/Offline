@@ -5,13 +5,12 @@ name: build-develop
 on:
   push:
     branches-ignore:
-      - develop
-      - stable
+      - main
     paths-ignore:
       - 'docs/**'
       - '.github/**'
   pull_request:
-    branches: [ develop ]
+    branches: [ main ]
   schedule:
     - cron: "0 7 * * *"
 
