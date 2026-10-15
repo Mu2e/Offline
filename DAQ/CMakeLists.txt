@@ -54,6 +54,13 @@ cet_build_plugin(CaloDigisFromDTCEvents art::module
       artdaq-core-mu2e::Data_dict
 )
 
+cet_build_plugin(CreateEmptyCaloDigis art::module
+    REG_SOURCE src/CreateEmptyCaloDigis_module.cc
+    LIBRARIES REG
+      Offline::DAQ
+      Offline::RecoDataProducts
+)
+
 cet_build_plugin(CaloDigisToFragments art::module
     REG_SOURCE src/CaloDigisToFragments_module.cc
     LIBRARIES REG
