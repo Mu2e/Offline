@@ -17,6 +17,7 @@ namespace mu2e {
   using KinKal::SVEC3;
   using KinKal::DVEC;
   using KinKal::CAHint;
+  using KinKal::RefPieceStrategy;
   using KinKal::DPDV;
   using KinKal::MomBasis;
   using KinKal::NParams;
@@ -67,7 +68,7 @@ namespace mu2e {
         return rv;
       };
       // ElementXing interface
-      void updateReference(PTRAJ const& ptraj) override;
+      void updateReference(PTRAJ const& ptraj, RefPieceStrategy strategy) override;
       void updateState(MetaIterConfig const& config,bool first) override;
       Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
@@ -131,14 +132,14 @@ namespace mu2e {
     return active_ || (shptr_ && shptr_->hitState().active());
   }
 
-  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
+  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj, RefPieceStrategy strategy) {
     CAHint tphint(strawAxis()->timeAtMidpoint(),strawAxis()->timeAtMidpoint());
     if(ca_.usable()){
       tphint = ca_.hint();
     }else if(shptr_ && shptr_->closestApproach().usable()){
       tphint = shptr_->closestApproach().hint();
     }
-    PCA pca(ptraj,strawAxis(),tphint,precision());
+    PCA pca(ptraj,strawAxis(),tphint,precision(),strategy);
     ca_ = static_cast<CA>(pca);
   }
 
