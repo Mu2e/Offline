@@ -18,6 +18,7 @@
 // data
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 // tracking
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -193,6 +194,7 @@ namespace mu2e {
       unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
       _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);
       produces<TimeClusterCollection>();
+      produces<IntensityInfoTimeCluster>();
     }
 
   void TimeClusterFinder::beginJob() {
@@ -244,6 +246,7 @@ namespace mu2e {
         }
       }
     }
+    event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tccol->size())));
     event.put(std::move(tccol));
   }
 

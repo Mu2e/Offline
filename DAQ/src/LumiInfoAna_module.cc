@@ -169,7 +169,7 @@ void LumiInfoAna::fillTimeClusters(std::vector<art::Handle<mu2e::IntensityInfosT
     }
     _counter_by_object["time_clusters"] += handle->size();
     for(auto& info : *handle) {
-      _hNTimeClusters->Fill(info.nProtonTCs());
+      _hNTimeClusters->Fill(info.nTCs());
     }
   }
 }

@@ -13,6 +13,7 @@
 
 #include "Offline/RecoDataProducts/inc/StrawHitPosition.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -131,6 +132,7 @@ namespace mu2e {
     {
       _hist1 = TH1F("hist1" , "phi spectrum",_nphibins,_phimin,_phimax);
       produces<TimeClusterCollection>();
+      produces<IntensityInfoTimeCluster>();
 
       if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(config().DiagPlugin," ");
       else            _hmanager = std::make_unique<ModuleHistToolBase>();
@@ -207,6 +209,7 @@ namespace mu2e {
       int eventno = _iev;
       printf("Final tccol size = %i Input tccol size =  %i event = %i\n",newsize,oldsize,eventno);
     }
+    event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tccol1->size())));
     event.put(std::move(tccol1));
   }
 
