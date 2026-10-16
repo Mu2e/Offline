@@ -6,6 +6,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art_root_io/TFileService.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 // data
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -42,12 +43,14 @@ namespace mu2e {
       fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("Input tag for the tracker DAQ fragment collection")};
       fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("Input tag for the ProtonBunchTime")};
       fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("Input tag for the EventWindowMarker")};
+      fhicl::Atom<int>         maxWarnings           {Name("maxWarnings"           ), Comment("Maximum number of missing product warnings to print per product (< 0 for no limit)"), 10};
     };
 
     using Parameters = art::EDProducer::Table<Config>;
     explicit PrefetchDAQData(const Parameters&);
     virtual ~PrefetchDAQData();
     virtual void beginJob();
+    virtual void endJob();
     virtual void produce( art::Event& e);
 
     void   fake_access(const CaloDigi&    Digi);
@@ -57,6 +60,7 @@ namespace mu2e {
   private:
 
     bool findData(const art::Event& e);
+    template <class T> const T* fetch(const art::Event& e, const art::InputTag& tag, unsigned long& nMissing);
                                         // control flags
     int   _debugLevel;
     bool  _fetchCaloDigis;
@@ -81,6 +85,15 @@ namespace mu2e {
     const EventWindowMarker*       _ewm;
     const ProtonBunchTime*         _pbt;
     int                            _eventNum;
+                                        // missing product counters
+    int                            _maxWarnings;
+    unsigned long                  _nEvents;
+    unsigned long                  _nMissingCD;
+    unsigned long                  _nMissingSD;
+    unsigned long                  _nMissingCF;
+    unsigned long                  _nMissingTF;
+    unsigned long                  _nMissingEWM;
+    unsigned long                  _nMissingPBT;
   };
 
 //-----------------------------------------------------------------------------
@@ -99,7 +112,9 @@ namespace mu2e {
     _cfTag             (config().caloFragmentTag()),
     _tfTag             (config().trkFragmentTag()),
     _ewmTag            (config().ewmTag()),
-    _pbtTag            (config().pbtTag())
+    _pbtTag            (config().pbtTag()),
+    _maxWarnings       (config().maxWarnings()),
+    _nEvents(0), _nMissingCD(0), _nMissingSD(0), _nMissingCF(0), _nMissingTF(0), _nMissingEWM(0), _nMissingPBT(0)
   {}
 
   PrefetchDAQData::~PrefetchDAQData() {
@@ -107,6 +122,36 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void PrefetchDAQData::beginJob() {
+  }
+
+//-----------------------------------------------------------------------------
+  void PrefetchDAQData::endJob() {
+    const unsigned long nMissing = _nMissingCD + _nMissingSD + _nMissingCF + _nMissingTF + _nMissingEWM + _nMissingPBT;
+    if (nMissing > 0) {
+      mf::LogWarning("PrefetchDAQData") << "Missing products in " << _nEvents << " events:"
+                                        << " CaloDigis: "      << _nMissingCD
+                                        << " StrawDigis: "     << _nMissingSD
+                                        << " calo fragments: " << _nMissingCF
+                                        << " trk fragments: "  << _nMissingTF
+                                        << " EWM: "            << _nMissingEWM
+                                        << " PBT: "            << _nMissingPBT;
+    }
+  }
+
+//-----------------------------------------------------------------------------
+// Retrieve a product if present, counting and reporting (up to a limit) when it is not
+//-----------------------------------------------------------------------------
+  template <class T>
+  const T* PrefetchDAQData::fetch(const art::Event& evt, const art::InputTag& tag, unsigned long& nMissing) {
+    art::Handle<T> handle;
+    if (evt.getByLabel(tag, handle) && handle.isValid()) return handle.product();
+    ++nMissing;
+    if (_maxWarnings < 0 || nMissing <= static_cast<unsigned long>(_maxWarnings)) {
+      mf::LogWarning("PrefetchDAQData") << "Event " << evt.id() << ": product " << tag.encode()
+                                        << " not found, skipping it"
+                                        << ((nMissing == static_cast<unsigned long>(_maxWarnings)) ? ". Further warnings for this product suppressed" : "");
+    }
+    return nullptr;
   }
 
 //-----------------------------------------------------------------------------
@@ -132,25 +177,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Retrieve the data from the event
 //-----------------------------------------------------------------------------
-    if (_fetchCaloDigis) {
-      auto cdH = evt.getValidHandle<CaloDigiCollection>(_cdTag);
-      _cdcol = cdH.product();
-    }
-
-    if (_fetchTrkFragments) {
-      auto tfH = evt.getValidHandle<artdaq::Fragments>(_tfTag);
-      _tfcol = tfH.product();
-    }
-
-    if (_fetchCaloFragments) {
-      auto cfH = evt.getValidHandle<artdaq::Fragments>(_cfTag);
-      _cfcol = cfH.product();
-    }
-
-    if (_fetchStrawDigis) {
-      auto sdH = evt.getValidHandle<StrawDigiCollection>(_sdTag);
-      _sdcol = sdH.product();
-    }
+    if (_fetchCaloDigis)     _cdcol = fetch<CaloDigiCollection> (evt, _cdTag, _nMissingCD);
+    if (_fetchTrkFragments)  _tfcol = fetch<artdaq::Fragments>  (evt, _tfTag, _nMissingTF);
+    if (_fetchCaloFragments) _cfcol = fetch<artdaq::Fragments>  (evt, _cfTag, _nMissingCF);
+    if (_fetchStrawDigis)    _sdcol = fetch<StrawDigiCollection>(evt, _sdTag, _nMissingSD);
 
     if (_fetchAllFragments) {
       auto allH = evt.getMany<std::vector<artdaq::Fragment>>();
@@ -161,15 +191,8 @@ namespace mu2e {
       }
     }
 
-    if (_fetchEWM) {
-      auto handle = evt.getValidHandle<EventWindowMarker>(_ewmTag);
-      _ewm = handle.product();
-    }
-
-    if (_fetchPBT) {
-      auto handle = evt.getValidHandle<ProtonBunchTime>(_pbtTag);
-      _pbt = handle.product();
-    }
+    if (_fetchEWM) _ewm = fetch<EventWindowMarker>(evt, _ewmTag, _nMissingEWM);
+    if (_fetchPBT) _pbt = fetch<ProtonBunchTime>  (evt, _pbtTag, _nMissingPBT);
 
 //-----------------------------------------------------------------------------
 // prefetch data within the collections
@@ -212,6 +235,7 @@ namespace mu2e {
   void PrefetchDAQData::produce(art::Event& Event) {
 
     _eventNum = Event.event();
+    ++_nEvents;
 
     if (_debugLevel > 0) printf("[PrefetchDAQData::produce] event number: %10i\n",_eventNum);
 
