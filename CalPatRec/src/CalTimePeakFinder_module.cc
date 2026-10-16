@@ -28,6 +28,7 @@
 
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 //C++
@@ -60,6 +61,7 @@ namespace mu2e {
     consumes<ComboHitCollection>(_shLabel);
     consumes<CaloClusterCollection>(_ccmLabel);
     produces<TimeClusterCollection>();
+    produces<IntensityInfoTimeCluster>();
 
     if (_debugLevel != 0) _printfreq = 1;
 
@@ -153,6 +155,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // put reconstructed time peaks into the event record
 //-----------------------------------------------------------------------------
+    event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tcColl->size())));
     event.put(std::move(tcColl));
   }
 //-----------------------------------------------------------------------------

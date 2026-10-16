@@ -33,14 +33,15 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      fhicl::Atom<int>                   diagLevel     {Name("diagLevel")     , Comment("diagnostic Level"), 0};
-      fhicl::OptionalAtom<art::InputTag> caloTag       {Name("caloTag")       , Comment("Calo intensity info Tag")};
-      fhicl::OptionalAtom<art::InputTag> timeClusterTag{Name("timeClusterTag"), Comment("Time cluster intensity info Tag")};
-      fhicl::OptionalAtom<art::InputTag> trackerTag    {Name("trackerTag")    , Comment("Tracker intensity info Tag")};
-      fhicl::OptionalAtom<art::InputTag> headerTag     {Name("headerTag")     , Comment("Event header Tag")};
-      fhicl::OptionalAtom<int>           eventFreq     {Name("eventFreq")     , Comment("Frequency of event data product writing, defaulting to sub-runs if not set")};
-      fhicl::Atom<bool>                  passFirst     {Name("passFirst")     , Comment("Pass first event per sub-run to ensure the output file is prepared"), false};
-      fhicl::Atom<int>                   duplications  {Name("duplications")  , Comment("Duplicate input data N times"), 0};
+      fhicl::Atom<int>                   diagLevel         {Name("diagLevel")         , Comment("diagnostic level"), 0};
+      fhicl::OptionalAtom<art::InputTag> caloTag           {Name("caloTag")           , Comment("Calo intensity info tag")};
+      fhicl::OptionalAtom<art::InputTag> protonClusterTag  {Name("protonClusterTag")  , Comment("Proton time cluster intensity info tag")};
+      fhicl::OptionalAtom<art::InputTag> electronClusterTag{Name("electronClusterTag"), Comment("Electron time cluster intensity info tag")};
+      fhicl::OptionalAtom<art::InputTag> trackerTag        {Name("trackerTag")        , Comment("Tracker intensity info tag")};
+      fhicl::OptionalAtom<art::InputTag> headerTag         {Name("headerTag")         , Comment("Event header tag")};
+      fhicl::OptionalAtom<int>           eventFreq         {Name("eventFreq")         , Comment("Frequency of event data product writing, defaulting to sub-runs if not set")};
+      fhicl::Atom<bool>                  passFirst         {Name("passFirst")         , Comment("Pass first event per sub-run to ensure the output file is prepared"), false};
+      fhicl::Atom<int>                   duplications      {Name("duplications")      , Comment("Duplicate input data N times"), 0};
     };
 
     explicit LumiStreamFilter(const art::EDFilter::Table<Config>& config);
@@ -51,8 +52,10 @@ namespace mu2e {
     int           _diagLevel;
     art::InputTag _caloTag;
     bool          _useCalo;
-    art::InputTag _timeClusterTag;
-    bool          _useTimeCluster;
+    art::InputTag _protonClusterTag;
+    bool          _useProtonCluster;
+    art::InputTag _electronClusterTag;
+    bool          _useElectronCluster;
     art::InputTag _trackerTag;
     bool          _useTracker;
     art::InputTag _headerTag;
@@ -66,7 +69,8 @@ namespace mu2e {
     bool          _firstInSubrun;
 
     std::unique_ptr<mu2e::IntensityInfosCalo>        _caloInfos;
-    std::unique_ptr<mu2e::IntensityInfosTimeCluster> _timeClusterInfos;
+    std::unique_ptr<mu2e::IntensityInfosTimeCluster> _protonClusterInfos;
+    std::unique_ptr<mu2e::IntensityInfosTimeCluster> _electronClusterInfos;
     std::unique_ptr<mu2e::IntensityInfosTrackerHits> _trackerInfos;
     std::unique_ptr<mu2e::EventHeaders>              _headers;
   };
@@ -75,7 +79,8 @@ namespace mu2e {
     : art::EDFilter{config}
     , _diagLevel(config().diagLevel())
     , _useCalo(config().caloTag(_caloTag))
-    , _useTimeCluster(config().timeClusterTag(_timeClusterTag))
+    , _useProtonCluster(config().protonClusterTag(_protonClusterTag))
+    , _useElectronCluster(config().electronClusterTag(_electronClusterTag))
     , _useTracker(config().trackerTag(_trackerTag))
     , _useHeader(config().headerTag(_headerTag))
     , _useSubruns(!config().eventFreq(_eventFreq))
@@ -89,7 +94,8 @@ namespace mu2e {
     , _eventCount(0)
     , _firstInSubrun(true)
     , _caloInfos(nullptr)
-    , _timeClusterInfos(nullptr)
+    , _protonClusterInfos(nullptr)
+    , _electronClusterInfos(nullptr)
     , _trackerInfos(nullptr)
     , _headers(nullptr)
   {
@@ -101,8 +107,11 @@ namespace mu2e {
       std::cout << " useCalo = " << _useCalo;
       if(_useCalo) std::cout << " (" << _caloTag.encode().c_str() << ")";
       std::cout << std::endl;
-      std::cout << " useTimeCluster = " << _useTimeCluster;
-      if(_useTimeCluster) std::cout << " (" << _timeClusterTag.encode().c_str() << ")";
+      std::cout << " useProtonCluster = " << _useProtonCluster;
+      if(_useProtonCluster) std::cout << " (" << _protonClusterTag.encode().c_str() << ")";
+      std::cout << std::endl;
+      std::cout << " useElectronCluster = " << _useElectronCluster;
+      if(_useElectronCluster) std::cout << " (" << _electronClusterTag.encode().c_str() << ")";
       std::cout << std::endl;
       std::cout << " useTracker = " << _useTracker;
       if(_useTracker) std::cout << " (" << _trackerTag.encode().c_str() << ")";
@@ -119,10 +128,15 @@ namespace mu2e {
       if(!_useSubruns) produces<mu2e::IntensityInfosCalo>();
       produces<mu2e::IntensityInfosCalo, art::InSubRun>(_outName);
     }
-    if(_useTimeCluster) {
-      _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-      if(!_useSubruns) produces<mu2e::IntensityInfosTimeCluster>();
-      produces<mu2e::IntensityInfosTimeCluster, art::InSubRun>(_outName);
+    if(_useProtonCluster) {
+      _protonClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+      if(!_useSubruns) produces<mu2e::IntensityInfosTimeCluster>("proton");
+      produces<mu2e::IntensityInfosTimeCluster, art::InSubRun>(_outName + "Proton");
+    }
+    if(_useElectronCluster) {
+      _electronClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+      if(!_useSubruns) produces<mu2e::IntensityInfosTimeCluster>("electron");
+      produces<mu2e::IntensityInfosTimeCluster, art::InSubRun>(_outName + "Electron");
     }
     if(_useTracker) {
       _trackerInfos = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
@@ -136,9 +150,10 @@ namespace mu2e {
     }
     if(_useSubruns) _eventFreq = 0;
     else {
-      if(_caloInfos)        _caloInfos       ->reserve(_eventFreq);
-      if(_timeClusterInfos) _timeClusterInfos->reserve(_eventFreq);
-      if(_trackerInfos)     _trackerInfos    ->reserve(_eventFreq);
+      if(_caloInfos)            _caloInfos           ->reserve(_eventFreq);
+      if(_protonClusterInfos)   _protonClusterInfos  ->reserve(_eventFreq);
+      if(_electronClusterInfos) _electronClusterInfos->reserve(_eventFreq);
+      if(_trackerInfos)         _trackerInfos        ->reserve(_eventFreq);
     }
   }
 
@@ -157,16 +172,17 @@ namespace mu2e {
       << " events\n";
 
     // Add the data to the subrun
-    if(_useCalo)        sr.put(std::move(_caloInfos)       , _outName, art::fullSubRun());
-    if(_useTimeCluster) sr.put(std::move(_timeClusterInfos), _outName, art::fullSubRun());
-    if(_useTracker)     sr.put(std::move(_trackerInfos)    , _outName, art::fullSubRun());
-    if(_useHeader)      sr.put(std::move(_headers)         , _outName, art::fullSubRun());
+    if(_useCalo)            sr.put(std::move(_caloInfos)           , _outName              , art::fullSubRun());
+    if(_useProtonCluster)   sr.put(std::move(_protonClusterInfos)  , _outName + "Proton"  , art::fullSubRun());
+    if(_useElectronCluster) sr.put(std::move(_electronClusterInfos), _outName + "Electron", art::fullSubRun());
+    if(_useHeader)          sr.put(std::move(_headers)             , _outName              , art::fullSubRun());
 
     // Initialize new collections
-    if(_useCalo)         _caloInfos       = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
-    if(_useTimeCluster) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-    if(_useTracker)     _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-    if(_useHeader)      _headers          = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+    if(_useCalo)            _caloInfos            = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
+    if(_useProtonCluster)   _protonClusterInfos   = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+    if(_useElectronCluster) _electronClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+    if(_useTracker)         _trackerInfos         = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+    if(_useHeader)          _headers              = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
 
     _firstInSubrun = true;
     _eventCount    = 0;
@@ -204,20 +220,37 @@ namespace mu2e {
       }
     }
 
-    if(_useTimeCluster) {
+    if(_useProtonCluster) {
       art::Handle<mu2e::IntensityInfoTimeCluster> timeClusterH;
-      if(!event.getByLabel(_timeClusterTag, timeClusterH) || !timeClusterH.product()) {
+      if(!event.getByLabel(_protonClusterTag, timeClusterH) || !timeClusterH.product()) {
         std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
                   << ":" << subrunNumber << ":" << eventNumber
-                  << ": Time cluster intensity object not found!\n";
-        _timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster());  // add an empty one to maintain the list alignment
+                  << ": Proton time cluster intensity object not found!\n";
+        _protonClusterInfos->push_back(mu2e::IntensityInfoTimeCluster());  // add an empty one to maintain the list alignment
       } else {
         const auto timeClusterInfo = timeClusterH.product();
-        _timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster(*timeClusterInfo));
+        _protonClusterInfos->push_back(mu2e::IntensityInfoTimeCluster(*timeClusterInfo));
         if(_diagLevel > 2)
           std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
                     << ":" << subrunNumber << ":" << eventNumber
-                    << ": Retrieved time cluster information\n";
+                    << ": Retrieved proton time cluster information\n";
+      }
+    }
+
+    if(_useElectronCluster) {
+      art::Handle<mu2e::IntensityInfoTimeCluster> timeClusterH;
+      if(!event.getByLabel(_electronClusterTag, timeClusterH) || !timeClusterH.product()) {
+        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
+                  << ":" << subrunNumber << ":" << eventNumber
+                  << ": Electron time cluster intensity object not found!\n";
+        _electronClusterInfos->push_back(mu2e::IntensityInfoTimeCluster());  // add an empty one to maintain the list alignment
+      } else {
+        const auto timeClusterInfo = timeClusterH.product();
+        _electronClusterInfos->push_back(mu2e::IntensityInfoTimeCluster(*timeClusterInfo));
+        if(_diagLevel > 2)
+          std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
+                    << ":" << subrunNumber << ":" << eventNumber
+                    << ": Retrieved electron time cluster information\n";
       }
     }
 
@@ -263,7 +296,8 @@ namespace mu2e {
     if(_duplications > 0) {
       for(int icopy = 0; icopy < _duplications; ++icopy) {
         if(_useCalo) _caloInfos->push_back(_caloInfos->back());
-        if(_useTimeCluster) _timeClusterInfos->push_back(_timeClusterInfos->back());
+        if(_useProtonCluster) _protonClusterInfos->push_back(_protonClusterInfos->back());
+        if(_useElectronCluster) _electronClusterInfos->push_back(_electronClusterInfos->back());
         if(_useTracker) _trackerInfos->push_back(_trackerInfos->back());
         if(_useHeader) _headers->push_back(_headers->back());
       }
@@ -281,20 +315,23 @@ namespace mu2e {
                   << _eventCount << " events\n";
 
       // Add the data to the event
-      if(_useCalo)        event.put(std::move(_caloInfos));
-      if(_useTimeCluster) event.put(std::move(_timeClusterInfos));
-      if(_useTracker)     event.put(std::move(_trackerInfos));
-      if(_useHeader)      event.put(std::move(_headers));
+      if(_useCalo)            event.put(std::move(_caloInfos));
+      if(_useProtonCluster)   event.put(std::move(_protonClusterInfos), "proton");
+      if(_useElectronCluster) event.put(std::move(_electronClusterInfos), "electron");
+      if(_useTracker)         event.put(std::move(_trackerInfos));
+      if(_useHeader)          event.put(std::move(_headers));
 
       // Initialize new collections
-      if(_useCalo)        _caloInfos        = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
-      if(_useTimeCluster) _timeClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-      if(_useTracker)     _trackerInfos     = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
-      if(_useHeader)      _headers          = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
-      if(_useCalo)        _caloInfos       ->reserve(_eventFreq);
-      if(_useTimeCluster) _timeClusterInfos->reserve(_eventFreq);
-      if(_useTracker)     _trackerInfos    ->reserve(_eventFreq);
-      if(_useHeader)      _headers         ->reserve(_eventFreq);
+      if(_useCalo)            _caloInfos            = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
+      if(_useProtonCluster)   _protonClusterInfos   = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+      if(_useElectronCluster) _electronClusterInfos = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+      if(_useTracker)         _trackerInfos         = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);
+      if(_useHeader)          _headers              = std::unique_ptr<mu2e::EventHeaders>(new mu2e::EventHeaders);
+      if(_useCalo)            _caloInfos           ->reserve(_eventFreq);
+      if(_useProtonCluster)   _protonClusterInfos  ->reserve(_eventFreq);
+      if(_useElectronCluster) _electronClusterInfos->reserve(_eventFreq);
+      if(_useTracker)         _trackerInfos        ->reserve(_eventFreq);
+      if(_useHeader)          _headers             ->reserve(_eventFreq);
 
       // Reset the counter
       _eventCount = 0;
@@ -307,9 +344,13 @@ namespace mu2e {
         auto tmp_info = std::unique_ptr<mu2e::IntensityInfosCalo>(new mu2e::IntensityInfosCalo);
         event.put(std::move(tmp_info));
       }
-      if(_useTimeCluster) {
+      if(_useProtonCluster) {
         auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
-        event.put(std::move(tmp_info));
+        event.put(std::move(tmp_info), "proton");
+      }
+      if(_useElectronCluster) {
+        auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTimeCluster>(new mu2e::IntensityInfosTimeCluster);
+        event.put(std::move(tmp_info), "electron");
       }
       if(_useTracker) {
         auto tmp_info = std::unique_ptr<mu2e::IntensityInfosTrackerHits>(new mu2e::IntensityInfosTrackerHits);

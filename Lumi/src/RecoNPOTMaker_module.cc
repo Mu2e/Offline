@@ -199,7 +199,7 @@ namespace mu2e {
 
     // TZClusterFinder proton time clusters
     if(_tcIntInfoTZ) {
-      const int nTCs = _tcIntInfoTZ->nProtonTCs();
+      const int nTCs = _tcIntInfoTZ->nTCs();
       POT_TZTCs = POTfromTZTCs(nTCs);
       addPrediction(_Data, "TZTimeClusters", nTCs, POT_TZTCs);
     }
@@ -207,7 +207,7 @@ namespace mu2e {
 
     // DeltaFinder proton time clusters
     if(_tcIntInfoDF) {
-      const int nTCs = _tcIntInfoDF->nProtonTCs();
+      const int nTCs = _tcIntInfoDF->nTCs();
       POT_DFTCs = POTfromDFTCs(nTCs);
       addPrediction(_Data, "DFTimeClusters", nTCs, POT_DFTCs);
     }
