@@ -43,10 +43,28 @@ namespace mu2e {
       chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
+      // reference piece strategies, one per meta-iteration; absent keeps every meta-iteration on DOCA
+      auto refpieces = [&fitconfig](std::vector<std::string> const& names, const char* key) {
+        std::vector<KinKal::RefPieceStrategy> retval(fitconfig.miConfig().size(),KinKal::RefPieceStrategy::DOCA);
+        if(names.empty()) return retval;
+        if(names.size() != retval.size())
+          throw cet::exception("RECO")<<"mu2e::KKFitSettings: " << key << " has " << names.size() << " entries but MetaIterationSettings has " << retval.size() << std::endl;
+        for(size_t imeta=0; imeta < names.size(); ++imeta) {
+          if(names[imeta] != "DOCA" && names[imeta] != "TOCA")
+            throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown " << key << " value " << names[imeta] << ", must be DOCA or TOCA" << std::endl;
+          retval[imeta] = KinKal::refPieceStrategy(names[imeta]);
+        }
+        return retval;
+      };
+      std::vector<std::string> hitrefnames, xingrefnames;
+      auto hitrefs = refpieces(fitconfig.hitRefPiece().value_or(hitrefnames),"HitReferencePiece");
+      auto xingrefs = refpieces(fitconfig.xingRefPiece().value_or(xingrefnames),"XingReferencePiece");
       // set the schedule for the meta-iterations
       unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0), npdiag(0);
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig miconfig(std::get<0>(misetting));
+        miconfig.setHitRefPiece(hitrefs.at(config.schedule_.size()));
+        miconfig.setXingRefPiece(xingrefs.at(config.schedule_.size()));
         // parse StrawHit updaters, and add to the config of this meta-iteraion
         std::vector<std::string> anames;
         splitLine( std::get<1>(misetting), ":", anames);
