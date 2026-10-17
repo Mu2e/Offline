@@ -148,7 +148,7 @@ namespace mu2e {
       double tprec_; // TPOCA calculation nominal precision
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
       // parameters controlling adding hits
-      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_, maxStrawUposBuff_;
+      float maxStrawHitDoca_, maxStrawHitDt_, maxSeedStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_, maxStrawUposBuff_;
       int maxDStraw_; // maximum distance from the track a strawhit can be to consider it for adding.
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double strawradius_ = 0;
@@ -188,6 +188,7 @@ namespace mu2e {
     addrej_(fitconfig.addHitReject()),
     maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
+    maxSeedStrawHitDt_(fitconfig.maxSeedStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxStrawUposBuff_(fitconfig.maxStrawUposBuff()),
@@ -244,6 +245,8 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PCA between the seed trajectory and this straw
       PCA pca(ptraj, wline, hint, tprec_ );
+      // a TOCA far from the measured time is on the wrong turn of the seed; such a hit would stretch the fit time range
+      if(maxSeedStrawHitDt_ > 0.0 && fabs(pca.particleToca() - htime) > maxSeedStrawHitDt_) continue;
       // create the hit.  Note these may initially be unusable
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
       // create the material crossing, including this reference
