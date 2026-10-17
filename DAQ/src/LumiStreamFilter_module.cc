@@ -9,6 +9,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <artdaq-core-mu2e/Data/EventHeader.hh>
 #ifdef ONLINE_MODE
@@ -20,6 +21,7 @@
 #include "Offline/RecoDataProducts/inc/IntensityInfoTrackerHits.hh"
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <string>
 
@@ -46,8 +48,14 @@ namespace mu2e {
     explicit LumiStreamFilter(const art::EDFilter::Table<Config>& config);
     virtual bool filter(art::Event& event) override;
     virtual bool endSubRun(art::SubRun& sr) override;
+    virtual void endJob() override;
 
   private:
+    enum Input { kCalo = 0, kTimeCluster, kTracker, kHeader, kNInputs };
+    static constexpr std::array<const char*, kNInputs> _inputNames = {"Calo intensity info", "Time cluster intensity info",
+                                                                      "Tracker intensity info", "Event header"};
+    void warnMissing(const art::Event& event, Input input, const art::InputTag& tag);
+
     int           _diagLevel;
     art::InputTag _caloTag;
     bool          _useCalo;
@@ -64,6 +72,8 @@ namespace mu2e {
     std::string   _outName;
     long          _eventCount;
     bool          _firstInSubrun;
+    unsigned long _nEvents;
+    std::array<unsigned long, kNInputs> _nMissing;
 
     std::unique_ptr<mu2e::IntensityInfosCalo>        _caloInfos;
     std::unique_ptr<mu2e::IntensityInfosTimeCluster> _timeClusterInfos;
@@ -88,6 +98,8 @@ namespace mu2e {
 #endif
     , _eventCount(0)
     , _firstInSubrun(true)
+    , _nEvents(0)
+    , _nMissing{}
     , _caloInfos(nullptr)
     , _timeClusterInfos(nullptr)
     , _trackerInfos(nullptr)
@@ -142,6 +154,24 @@ namespace mu2e {
     }
   }
 
+  // Repeated warnings are rate-limited by the message facility configuration for this category
+  void LumiStreamFilter::warnMissing(const art::Event& event, Input input, const art::InputTag& tag) {
+    ++_nMissing[input];
+    mf::LogWarning("LumiStreamFilter")
+      << "Event " << event.id() << ": " << _inputNames[input] << " object not found ("
+      << tag.encode() << "), adding an empty one";
+  }
+
+  void LumiStreamFilter::endJob() {
+    for(int input = 0; input < kNInputs; ++input) {
+      if(_nMissing[input] > 0) {
+        mf::LogWarning("LumiStreamFilter")
+          << _inputNames[input] << " object not found in " << _nMissing[input] << " of " << _nEvents
+          << " events, an empty object was added for each";
+      }
+    }
+  }
+
   bool LumiStreamFilter::endSubRun(art::SubRun& sr) {
     art::SubRunNumber_t subrunNumber = sr.subRun();
     art::RunNumber_t    runNumber    = sr.run();
@@ -175,6 +205,7 @@ namespace mu2e {
 
   bool LumiStreamFilter::filter(art::Event& event) {
     ++_eventCount;  // increment the event counter
+    ++_nEvents;
 
     // for printout use
     const art::EventNumber_t  eventNumber  = event.event();
@@ -190,9 +221,7 @@ namespace mu2e {
     if(_useCalo) {
       art::Handle<mu2e::IntensityInfoCalo> caloH;
       if(!event.getByLabel(_caloTag, caloH) || !caloH.product()) {
-        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
-                  << ":" << subrunNumber << ":" << eventNumber
-                  << ": Calo intensity object not found!\n";
+        warnMissing(event, kCalo, _caloTag);
         _caloInfos->push_back(mu2e::IntensityInfoCalo());  // add an empty one to maintain the list alignment
       } else {
         const auto caloInfo = caloH.product();
@@ -207,9 +236,7 @@ namespace mu2e {
     if(_useTimeCluster) {
       art::Handle<mu2e::IntensityInfoTimeCluster> timeClusterH;
       if(!event.getByLabel(_timeClusterTag, timeClusterH) || !timeClusterH.product()) {
-        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
-                  << ":" << subrunNumber << ":" << eventNumber
-                  << ": Time cluster intensity object not found!\n";
+        warnMissing(event, kTimeCluster, _timeClusterTag);
         _timeClusterInfos->push_back(mu2e::IntensityInfoTimeCluster());  // add an empty one to maintain the list alignment
       } else {
         const auto timeClusterInfo = timeClusterH.product();
@@ -224,9 +251,7 @@ namespace mu2e {
     if(_useTracker) {
       art::Handle<mu2e::IntensityInfoTrackerHits> trackerH;
       if(!event.getByLabel(_trackerTag, trackerH) || !trackerH.product()) {
-        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
-                  << ":" << subrunNumber << ":" << eventNumber
-                  << ": Tracker intensity object not found!\n";
+        warnMissing(event, kTracker, _trackerTag);
         _trackerInfos->push_back(mu2e::IntensityInfoTrackerHits());  // add an empty one to maintain the list alignment
       } else {
         const auto trackerInfo = trackerH.product();
@@ -241,9 +266,7 @@ namespace mu2e {
     if(_useHeader) {
       art::Handle<mu2e::EventHeader> headerH;
       if(!event.getByLabel(_headerTag, headerH) || !headerH.product()) {
-        std::cout << "LumiStreamFilter::" << __func__ << ": Event " << runNumber
-                  << ":" << subrunNumber << ":" << eventNumber
-                  << ": Event Header not found!\n";
+        warnMissing(event, kHeader, _headerTag);
         _headers->push_back(mu2e::EventHeader());  // add an empty one to maintain the list alignment
       } else {
         const auto header = headerH.product();
