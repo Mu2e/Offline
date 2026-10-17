@@ -43,7 +43,6 @@ namespace mu2e {
       fhicl::Atom<std::string> trkFragmentTag        {Name("trkFragmentTag"        ), Comment("Input tag for the tracker DAQ fragment collection")};
       fhicl::Atom<std::string> pbtTag                {Name("pbtTag"                ), Comment("Input tag for the ProtonBunchTime")};
       fhicl::Atom<std::string> ewmTag                {Name("ewmTag"                ), Comment("Input tag for the EventWindowMarker")};
-      fhicl::Atom<int>         maxWarnings           {Name("maxWarnings"           ), Comment("Maximum number of missing product warnings to print per product (< 0 for no limit)"), 10};
     };
 
     using Parameters = art::EDProducer::Table<Config>;
@@ -86,7 +85,6 @@ namespace mu2e {
     const ProtonBunchTime*         _pbt;
     int                            _eventNum;
                                         // missing product counters
-    int                            _maxWarnings;
     unsigned long                  _nEvents;
     unsigned long                  _nMissingCD;
     unsigned long                  _nMissingSD;
@@ -113,7 +111,6 @@ namespace mu2e {
     _tfTag             (config().trkFragmentTag()),
     _ewmTag            (config().ewmTag()),
     _pbtTag            (config().pbtTag()),
-    _maxWarnings       (config().maxWarnings()),
     _nEvents(0), _nMissingCD(0), _nMissingSD(0), _nMissingCF(0), _nMissingTF(0), _nMissingEWM(0), _nMissingPBT(0)
   {}
 
@@ -139,18 +136,16 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// Retrieve a product if present, counting and reporting (up to a limit) when it is not
+// Retrieve a product if present, counting and reporting when it is not. Repeated
+// warnings are rate-limited by the message facility configuration for this category
 //-----------------------------------------------------------------------------
   template <class T>
   const T* PrefetchDAQData::fetch(const art::Event& evt, const art::InputTag& tag, unsigned long& nMissing) {
     art::Handle<T> handle;
     if (evt.getByLabel(tag, handle) && handle.isValid()) return handle.product();
     ++nMissing;
-    if (_maxWarnings < 0 || nMissing <= static_cast<unsigned long>(_maxWarnings)) {
-      mf::LogWarning("PrefetchDAQData") << "Event " << evt.id() << ": product " << tag.encode()
-                                        << " not found, skipping it"
-                                        << ((nMissing == static_cast<unsigned long>(_maxWarnings)) ? ". Further warnings for this product suppressed" : "");
-    }
+    mf::LogWarning("PrefetchDAQData") << "Event " << evt.id() << ": product " << tag.encode()
+                                      << " not found, skipping it";
     return nullptr;
   }
 

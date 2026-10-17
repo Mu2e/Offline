@@ -43,7 +43,6 @@ namespace mu2e {
       fhicl::OptionalAtom<int>           eventFreq     {Name("eventFreq")     , Comment("Frequency of event data product writing, defaulting to sub-runs if not set")};
       fhicl::Atom<bool>                  passFirst     {Name("passFirst")     , Comment("Pass first event per sub-run to ensure the output file is prepared"), false};
       fhicl::Atom<int>                   duplications  {Name("duplications")  , Comment("Duplicate input data N times"), 0};
-      fhicl::Atom<int>                   maxWarnings   {Name("maxWarnings")   , Comment("Maximum number of missing input warnings to print per input (< 0 for no limit)"), 10};
     };
 
     explicit LumiStreamFilter(const art::EDFilter::Table<Config>& config);
@@ -73,7 +72,6 @@ namespace mu2e {
     std::string   _outName;
     long          _eventCount;
     bool          _firstInSubrun;
-    int           _maxWarnings;
     unsigned long _nEvents;
     std::array<unsigned long, kNInputs> _nMissing;
 
@@ -100,7 +98,6 @@ namespace mu2e {
 #endif
     , _eventCount(0)
     , _firstInSubrun(true)
-    , _maxWarnings(config().maxWarnings())
     , _nEvents(0)
     , _nMissing{}
     , _caloInfos(nullptr)
@@ -157,14 +154,12 @@ namespace mu2e {
     }
   }
 
+  // Repeated warnings are rate-limited by the message facility configuration for this category
   void LumiStreamFilter::warnMissing(const art::Event& event, Input input, const art::InputTag& tag) {
-    const unsigned long count = ++_nMissing[input];
-    if(_maxWarnings < 0 || count <= static_cast<unsigned long>(_maxWarnings)) {
-      mf::LogWarning("LumiStreamFilter")
-        << "Event " << event.id() << ": " << _inputNames[input] << " object not found ("
-        << tag.encode() << "), adding an empty one"
-        << ((count == static_cast<unsigned long>(_maxWarnings)) ? ". Further warnings for this input suppressed" : "");
-    }
+    ++_nMissing[input];
+    mf::LogWarning("LumiStreamFilter")
+      << "Event " << event.id() << ": " << _inputNames[input] << " object not found ("
+      << tag.encode() << "), adding an empty one";
   }
 
   void LumiStreamFilter::endJob() {

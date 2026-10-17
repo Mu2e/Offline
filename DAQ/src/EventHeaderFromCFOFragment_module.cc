@@ -53,7 +53,6 @@ public:
     fhicl::Atom<bool>          ewm      {Name("createEWM"), Comment("Produce an event window marker object")};
     fhicl::Atom<bool>          isSim    {Name("isSim")    , Comment("Flag to indicate simulation processing"), false};
     fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
-    fhicl::Atom<int>           maxWarnings{Name("maxWarnings"), Comment("Maximum number of missing CFO data warnings to print"), 10};
   };
 
   // --- C'tor/d'tor:
@@ -71,13 +70,12 @@ private:
   bool          ewm_;
   bool          isSim_;
   int           diagLevel_;
-  int           maxWarnings_;
   // Counters for events without CFO data, reported at the end of the job
   unsigned long nEvents_      = 0;
   unsigned long nNoCFOHandle_ = 0;
   unsigned long nNoCFOFrags_  = 0;
 
-  void warnMissing(const Event& event, unsigned long count, const std::string& msg) const;
+  void warnMissing(const Event& event, const std::string& msg) const;
 };
 
 // ======================================================================
@@ -99,14 +97,11 @@ void art::EventHeaderFromCFOFragment::endJob() {
 
 // ----------------------------------------------------------------------
 
-void art::EventHeaderFromCFOFragment::warnMissing(const Event& event, unsigned long count,
-                                                  const std::string& msg) const {
-  if(maxWarnings_ < 0 || count <= static_cast<unsigned long>(maxWarnings_)) {
-    mf::LogWarning("EventHeaderFromCFOFragment")
-      << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
-      << "), producing a default EventHeader"
-      << ((count == static_cast<unsigned long>(maxWarnings_)) ? ". Further warnings suppressed" : "");
-  }
+// Repeated warnings are rate-limited by the message facility configuration for this category
+void art::EventHeaderFromCFOFragment::warnMissing(const Event& event, const std::string& msg) const {
+  mf::LogWarning("EventHeaderFromCFOFragment")
+    << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
+    << "), producing a default EventHeader";
 }
 
 art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
@@ -115,8 +110,7 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     cfoFragmentTag_(config().cfoTag()),
     ewm_(config().ewm()),
     isSim_(config().isSim()),
-    diagLevel_(config().diagLevel()),
-    maxWarnings_(config().maxWarnings()) {
+    diagLevel_(config().diagLevel()) {
   produces<mu2e::EventHeader>();
   if(ewm_) {
     TLOG(TLVL_DEBUG + 2) << "Producing EventWindowMarker";
@@ -151,7 +145,8 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
       event.put(std::move(pbt));
     }
     TLOG(TLVL_DEBUG + 1) << "No CFO fragments found";
-    warnMissing(event, ++nNoCFOHandle_, "No CFO fragment collection found");
+    ++nNoCFOHandle_;
+    warnMissing(event, "No CFO fragment collection found");
     return;
   }
 
@@ -184,7 +179,8 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
 
   } else {
     TLOG(TLVL_DEBUG + 3) << "No CFO fragments found in the event";
-    warnMissing(event, ++nNoCFOFrags_, "CFO fragment collection is empty");
+    ++nNoCFOFrags_;
+    warnMissing(event, "CFO fragment collection is empty");
   }
 
   event.put(std::move(evtHdr));
