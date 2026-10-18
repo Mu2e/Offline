@@ -67,5 +67,3 @@ physics.producers.binaryOutput.includeTracker : 1
 #physics.producers.binaryOutput.includeCalorimeter : 1
 physics.producers.binaryOutput.outputFile : "DTC_packets.bin"
 services.TFileService.fileName : "generateBinaryFromDigi_test.root"
-
-# physics.producers.binaryOutput.diagLevel : 10
