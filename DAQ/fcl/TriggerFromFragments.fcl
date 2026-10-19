@@ -10,7 +10,7 @@
 #
 # turn off MC version of digi crddeation (from digitize/prolog above)
 BEGIN_PROLOG
-TrigRecoSequences.cfoDataGen : [EWMProducer, CaloDigiMaker, TrigMakeSD, makeSD ]
+TrigRecoSequences.cfoDataGen : [EWMProducer, CaloDigiMaker, TrigMakeSD, makeSD, CrvDigi ]
 END_PROLOG
 #include "mu2e-trig-config/core/trigSequences.fcl"
 #
@@ -41,6 +41,12 @@ physics : {
       cfoTag : "daq:CFO"
       createEWM : true
       diagLevel : 1
+    }
+    CrvDigi :
+    {
+      module_type   : CrvDigisFromArtdaqFragmentsFEBII
+      diagLevel     : 0
+      useROC4asROC2 : true
     }
   }
   filters : {
