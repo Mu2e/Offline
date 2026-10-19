@@ -94,12 +94,12 @@ namespace mu2e {
       fhicl::Atom<float>           caloClusterSigma       {Name("caloClusterSigma"     ), Comment("error assigned to calo clust")  };
       fhicl::Atom<int>             minNHelixStrawHits     {Name("minNHelixStrawHits"   ), Comment("straw hit save threshold"    )  };
       fhicl::Atom<int>             minNHelixComboHits     {Name("minNHelixComboHits"   ), Comment("combo hit save threshold"    )  };
-      fhicl::Atom<int>             maxHelixCandidates     {Name("maxHelixCandidates"   ), Comment("save the best (most straw hits) of up to this many candidates per search; 1: save the first"), 1};
-      fhicl::Atom<int>             acceptHelixStrawHits   {Name("acceptHelixStrawHits" ), Comment("save a candidate with at least this many straw hits without searching further; <= 0: never"), 0};
-      fhicl::Atom<float>           minAliasGap            {Name("minAliasGap"          ), Comment("test the 2pi phi-z alias across the largest z gap of a helix's hits if it is at least this (mm); <= 0: off"), 0.f};
-      fhicl::Atom<float>           targetRefitSigma       {Name("targetRefitSigma"     ), Comment("if the best of the maxHelixCandidates (> 1) candidates has |d0| > this (mm), refit its circle through the stopping target (error = this) with a dphi/dz scan; the refit replaces it if it has at least as many straw hits; <= 0: off"), 0.f};
-      fhicl::Atom<float>           targetRefitPhiWindow   {Name("targetRefitPhiWindow" ), Comment("phi window (rad) for hits to count on a line in the target refit's dphi/dz scan"), 0.5f};
-      fhicl::Atom<int>             targetRefitDphiDzBins  {Name("targetRefitDphiDzBins"), Comment("dphi/dz bins per helicity in the target refit's dphi/dz scan"), 100};
+      fhicl::Atom<int>             maxHelixCandidates     {Name("maxHelixCandidates"   ), Comment("save the best (most straw hits) of up to this many candidates per search; 1: save the first")};
+      fhicl::Atom<int>             acceptHelixStrawHits   {Name("acceptHelixStrawHits" ), Comment("save a candidate with at least this many straw hits without searching further; <= 0: never")};
+      fhicl::Atom<float>           minAliasGap            {Name("minAliasGap"          ), Comment("test the 2pi phi-z alias across the largest z gap of a helix's hits if it is at least this (mm); <= 0: off")};
+      fhicl::Atom<float>           targetRefitSigma       {Name("targetRefitSigma"     ), Comment("if the best of the maxHelixCandidates (> 1) candidates has |d0| > this (mm), refit its circle through the stopping target (error = this) with a dphi/dz scan; the refit replaces it if it has at least as many straw hits; <= 0: off")};
+      fhicl::Atom<float>           targetRefitPhiWindow   {Name("targetRefitPhiWindow" ), Comment("phi window (rad) for hits to count on a line in the target refit's dphi/dz scan")};
+      fhicl::Atom<int>             targetRefitDphiDzBins  {Name("targetRefitDphiDzBins"), Comment("dphi/dz bins per helicity in the target refit's dphi/dz scan")};
       fhicl::Atom<float>           minHelixPerpMomentum   {Name("minHelixPerpMomentum" ), Comment("min pt of helix"             )  };
       fhicl::Atom<float>           maxHelixPerpMomentum   {Name("maxHelixPerpMomentum" ), Comment("max pt of helix"             )  };
       fhicl::Atom<float>           minHelixMomentum       {Name("minHelixMomentum"     ), Comment("min momentum of helix"       )  };
@@ -866,7 +866,8 @@ namespace mu2e {
       if(shouldExitForTimeout(__func__)) {
         if(_doTiming > 0) _watch->StopTime(__func__);
         if(_doTiming > 1) _watch->StopTime("triplet-i");
-        return false;
+        // keep the best candidate found before the timeout (maxHelixCandidates > 1)
+        return _candidates.empty() ? false : saveCandidates(tc, HSColl);
       }
       bool uselessSeed = true;
       setTripletI(i, tripletInfo, loopCondition);
@@ -946,14 +947,8 @@ namespace mu2e {
             if(_doTiming > 3) _watch->StopTime("triplet-k");
             return saveCandidates(tc, HSColl);
           } else if (nStrawHitsInHelix >= _minNHelixStrawHits && nComboHitsInHelix >= _minNHelixComboHits) {
-            saveHelix(tc, HSColl);
-            if (_diagLevel > 0) { _diagInfo.nHelices++; }
-            // we only want to search for another helix if we have enough remaining hits after saving helix
-            const int remainingStrawHits = nStrawHitsInTimeCluster - nStrawHitsInHelix;
-            const int remainingComboHits = nComboHitsInTimeCluster - nComboHitsInHelix;
-            const bool findAnotherHelix = remainingStrawHits >= _minNHelixStrawHits && remainingComboHits >= _minNHelixComboHits;
-            if(findAnotherHelix && _doAverageFlag) resetFlags(); // reset flags if needed
-
+            const bool findAnotherHelix = saveAndContinue(tc, HSColl, nStrawHitsInHelix, nComboHitsInHelix,
+                                                          nStrawHitsInTimeCluster, nComboHitsInTimeCluster);
             // Helix found, so we can exit this search
             if(_doTiming > 0) _watch->StopTime(__func__);
             if(_doTiming > 1) _watch->StopTime("triplet-i");
@@ -1000,7 +995,7 @@ namespace mu2e {
       _circleFitter.addPoint(0.f, 0.f, wT);
       for (size_t i = 0; i < _tcHits.size(); i++) {
         const auto& h = _tcHits[i];
-        if (!h.used || h.inHelix || h.hitIndice == HitType::STOPPINGTARGET || h.hitIndice == HitType::CALOCLUSTER) continue;
+        if (!h.used || h.inHelix || h.hitIndice == HitType::STOPPINGTARGET) continue; // a used calo cluster is kept, as in the other fits
         computeCircleError2(i, xC, yC);
         _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), 1.f / _tcHits[i].circleError2);
       }
@@ -1062,6 +1057,7 @@ namespace mu2e {
                                             int nStrawHitsInTimeCluster, int nComboHitsInTimeCluster) {
     saveHelix(tc, HSColl);
     if (_diagLevel > 0) { _diagInfo.nHelices++; }
+    // we only want to search for another helix if we have enough remaining hits after saving helix
     const int remainingStrawHits = nStrawHitsInTimeCluster - nStrawHitsInHelix;
     const int remainingComboHits = nComboHitsInTimeCluster - nComboHitsInHelix;
     const bool findAnotherHelix = remainingStrawHits >= _minNHelixStrawHits && remainingComboHits >= _minNHelixComboHits;
@@ -1725,12 +1721,14 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   bool AgnosticHelixFinder::resolveGapAlias() {
     if(_doTiming > 4) _watch->SetTime(__func__);
-    // used tracker hits, in decreasing z (the _tcHits order)
-    std::vector<size_t> idx;
+    // used tracker hits, in decreasing z (the _tcHits order); a used calo cluster is in the line
+    // fits, as in recoverPoints, on the high-z side of any tracker gap, but not in the gap search
+    std::vector<size_t> idx, calo;
     for (size_t i = 0; i < _tcHits.size(); i++) {
       const auto& h = _tcHits[i];
-      if (!h.used || h.inHelix || h.hitIndice == HitType::STOPPINGTARGET || h.hitIndice == HitType::CALOCLUSTER) continue;
-      idx.push_back(i);
+      if (!h.used || h.inHelix || h.hitIndice == HitType::STOPPINGTARGET) continue;
+      if (h.hitIndice == HitType::CALOCLUSTER) calo.push_back(i);
+      else                                     idx.push_back(i);
     }
     if (idx.size() < 4) { if(_doTiming > 4) _watch->StopTime(__func__); return false; }
     size_t igap = 0; // hits idx[0..igap] are on the high-z side
@@ -1741,17 +1739,23 @@ namespace mu2e {
     }
     if (gap < _minAliasGap) { if(_doTiming > 4) _watch->StopTime(__func__); return false; }
 
+    // the current line (shift 0) is refit over the same points as the alternatives
     const float radius = _circleFitter.radius();
-    float bestChi2 = _lineFitter.chi2Dof();
+    float bestChi2 = 0.f;
     int   bestShift = 0;
     ::LsqSums2 bestFitter;
-    for (int shift : {-1, 1}) {
+    for (int shift : {0, -1, 1}) {
       ::LsqSums2 fitter;
       for (size_t k = 0; k < idx.size(); ++k) {
         const auto& h = _tcHits[idx[k]];
         const int n = h.helixPhiCorrection + (k > igap ? shift : 0);
         fitter.addPoint(getPos(idx[k]).z(), h.helixPhi + _twopi * n, 1.f / h.helixPhiError2);
       }
+      for (auto i : calo) {
+        const auto& h = _tcHits[i];
+        fitter.addPoint(getPos(i).z(), h.helixPhi + _twopi * h.helixPhiCorrection, 1.f / h.helixPhiError2);
+      }
+      if (shift == 0) { bestChi2 = fitter.chi2Dof(); continue; }
       const float mom2 = computeHelixMomentum2(radius, fitter.dydx());
       if (mom2 < _minHelixMomentumSq || mom2 > _maxHelixMomentumSq) continue;
       if (fitter.chi2Dof() < bestChi2) {
@@ -1847,11 +1851,16 @@ namespace mu2e {
       _lineFitter.addPoint(z[k], phi[k] + _twopi * n, 1.f / h.helixPhiError2);
       _circleFitter.addPoint(getPos(cand[k]).x(), getPos(cand[k]).y(), 1.f / h.circleError2);
     }
-    // keep the calo cluster in the circle fit, as in the other fits
+    // keep a used calo cluster in the circle and line fits, as in the other fits
     for (size_t i = 0; i < _tcHits.size(); i++) {
-      const auto& h = _tcHits[i];
-      if (h.hitIndice == HitType::CALOCLUSTER && h.used && !h.inHelix)
-        _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), 1.f / h.circleError2);
+      auto& h = _tcHits[i];
+      if (h.hitIndice != HitType::CALOCLUSTER || !h.used || h.inHelix) continue;
+      computeCircleError2(i, xC, yC);
+      computeHelixPhi(i, xC, yC);
+      const float zC = getPos(i).z();
+      h.helixPhiCorrection = std::round((bestS * zC + bestPhi0 - h.helixPhi) / _twopi);
+      _circleFitter.addPoint(getPos(i).x(), getPos(i).y(), 1.f / h.circleError2);
+      _lineFitter.addPoint(zC, h.helixPhi + _twopi * h.helixPhiCorrection, 1.f / h.helixPhiError2);
     }
     return done(true);
   }

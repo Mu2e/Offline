@@ -22,6 +22,7 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/MCDataProducts/inc/StrawDigiMC.hh"
@@ -66,7 +67,7 @@ namespace mu2e {
     int _minHits;
     std::vector<std::string> _paths;
     std::vector<int> _pass; // per entry of _paths
-    float _bzConv = 0.; // mm per MeV/c
+    float _bzConv = 0.; // MeV/c per mm
     TTree* _tree = nullptr;
 
     // event
@@ -207,7 +208,7 @@ namespace mu2e {
       const auto& sgs = mc.earlyStrawGasStep();
       if (sgs.isNull()) continue;
       const auto& simp = sgs->simParticle();
-      if (std::abs(simp->pdgId()) != 11 && std::abs(simp->pdgId()) != 13) continue; // e+- and mu+-
+      if (std::abs(simp->pdgId()) != PDGCode::e_minus && std::abs(simp->pdgId()) != PDGCode::mu_minus) continue; // e+- and mu+-
       auto& in = info[simp];
       if (in.first == 0 || sgs->time() < in.second.first) in.second = {float(sgs->time()), float(sgs->momvec().mag())};
       ++in.first;
@@ -233,7 +234,7 @@ namespace mu2e {
       const auto pos = sgs->position();
       _pdg = sig->pdgId();
       _p = mom.mag(); _pt = mom.perp(); _pz = mom.z();
-      const float q = (sig->pdgId() == 11 || sig->pdgId() == 13 || sig->pdgId() == -211 || sig->pdgId() == -2212) ? -1. : 1.;
+      const float q = (sig->pdgId() == PDGCode::e_minus || sig->pdgId() == PDGCode::mu_minus) ? -1. : 1.; // only e+- and mu+- reach here
       _rtrue = _pt / std::fabs(_bzConv);
       _lambdatrue = _pz / std::fabs(_bzConv);
       // circle center: pos + R * q * sign(B) * (py, -px)/pT
@@ -251,6 +252,7 @@ namespace mu2e {
       shids.clear();
       chcol.fillStrawHitIndices(ich, shids);
       int nsig = 0;
+      // the straw hit index is the StrawDigiMC index: true while the hit makers don't filter (FilterHits false)
       for (auto sh : shids) {
         const auto& sgs = sdmcs.at(sh).earlyStrawGasStep();
         if (sgs.isNonnull() && sgs->simParticle() == sig) ++nsig;
