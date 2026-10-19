@@ -44,7 +44,8 @@ namespace mu2e {
     //expected intersections of the helix with the tracker plane faces inside the tracker
     //active radius. If a StrawNoSignal function is given, each face crossing is weighted by
     //the fraction of live straws (nearest straw in each layer) at the crossing point, so that
-    //dead panels and straws don't lower the ratio. Evaluated on the first call.
+    //dead panels and straws don't lower the ratio. A crossing with no straw of the face at that
+    //point (outside the panel's straws) keeps the weight 1. Evaluated on the first call.
     float  hitRatio         () const;
 
     void   dirOfProp(float& slope, float& slopeErr, float& chi2ndof);
