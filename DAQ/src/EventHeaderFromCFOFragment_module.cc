@@ -51,7 +51,7 @@ public:
     using Comment = fhicl::Comment;
     fhicl::Atom<art::InputTag> cfoTag   {Name("cfoTag"),    Comment("Input CFO fragment tag")};
     fhicl::Atom<bool>          ewm      {Name("createEWM"), Comment("Produce an event window marker object")};
-    fhicl::Atom<bool>          isSim    {Name("isSim")    , Comment("Flag to indicate simulation processing"), false};
+    fhicl::Atom<bool>          isSim    {Name("isSim")    , Comment("Simulation processing: no CFO data is expected, so missing CFO data is not a warning"), false};
     fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
   };
 
@@ -86,7 +86,9 @@ void art::EventHeaderFromCFOFragment::beginRun(art::Run& Run) {}
 
 void art::EventHeaderFromCFOFragment::endJob() {
   if(nNoCFOHandle_ > 0 || nNoCFOFrags_ > 0) {
-    mf::LogWarning("EventHeaderFromCFOFragment")
+    // Simulation has no CFO data, so the default header is the expected result there
+    if(isSim_ && diagLevel_ <= 0) return;
+    (isSim_ ? mf::LogInfo("EventHeaderFromCFOFragment") : mf::LogWarning("EventHeaderFromCFOFragment"))
       << "Default EventHeader produced without CFO data in " << nNoCFOHandle_ + nNoCFOFrags_
       << " of " << nEvents_ << " events (" << nNoCFOHandle_ << " with no CFO fragment collection, "
       << nNoCFOFrags_ << " with an empty CFO fragment collection)";
@@ -97,8 +99,17 @@ void art::EventHeaderFromCFOFragment::endJob() {
 
 // ----------------------------------------------------------------------
 
-// Repeated warnings are rate-limited by the message facility configuration for this category
+// Repeated warnings are rate-limited by the message facility configuration for this category.
+// In simulation no CFO data is expected, so this is only reported at diagLevel > 1.
 void art::EventHeaderFromCFOFragment::warnMissing(const Event& event, const std::string& msg) const {
+  if(isSim_) {
+    if(diagLevel_ > 1) {
+      mf::LogInfo("EventHeaderFromCFOFragment")
+        << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
+        << "), producing a default EventHeader";
+    }
+    return;
+  }
   mf::LogWarning("EventHeaderFromCFOFragment")
     << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
     << "), producing a default EventHeader";
@@ -126,16 +137,12 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   ++nEvents_;
 
   // Collection of CaloHits for the event
+  // Value-initialize so the defaults put without CFO data are well defined.
+  // The EWT is left at 0 in simulation for now.
   std::unique_ptr<mu2e::EventHeader>       evtHdr(new mu2e::EventHeader);
-  std::unique_ptr<mu2e::EventWindowMarker> ewm((ewm_) ? new mu2e::EventWindowMarker : nullptr);
-  std::unique_ptr<mu2e::ProtonBunchTime>   pbt((ewm_) ? new mu2e::ProtonBunchTime   : nullptr);
+  std::unique_ptr<mu2e::EventWindowMarker> ewm((ewm_) ? new mu2e::EventWindowMarker{} : nullptr);
+  std::unique_ptr<mu2e::ProtonBunchTime>   pbt((ewm_) ? new mu2e::ProtonBunchTime{}   : nullptr);
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
-
-  // Set values that are useful in simulations
-  if(isSim_) {
-    // Set the EWT to be the art event number for now
-    evtHdr->ewt = static_cast<long unsigned int>(event.event());
-  }
 
   // Check for the CFO fragment list
   if(!event.getByLabel(cfoFragmentTag_, cfoFragmentHandle)) {
