@@ -17,6 +17,7 @@
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitDirection.hh"
 
 //CLHEP
@@ -134,6 +135,7 @@ namespace mu2e {
     consumes<ComboHitCollection>(hit_tag_);
     consumes<CaloClusterCollection>(calo_cluster_tag_);
     produces<TimeClusterCollection>();
+    produces<IntensityInfoTimeCluster>();
   }
 
   //-----------------------------------------------------------------------------
@@ -313,6 +315,7 @@ namespace mu2e {
              moduleDescription().moduleLabel().c_str(), __func__, event.run(), event.subRun(), event.event(), out_tcs->size());
     }
     ntime_clusters_ += out_tcs->size();
+    event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(out_tcs->size())));
     event.put(std::move(out_tcs));
   }
 

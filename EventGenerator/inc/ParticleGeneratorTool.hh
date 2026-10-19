@@ -6,6 +6,7 @@
 #include <string>
 
 #include "CLHEP/Vector/LorentzVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include "art/Utilities/ToolConfigTable.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
@@ -28,6 +29,8 @@ namespace mu2e {
       PDGCode::type pdgId;
       ProcessCode creationCode;
       CLHEP::HepLorentzVector fourmom;
+      CLHEP::Hep3Vector positionOffset{0., 0., 0.}; // production point relative to the muon stop (mm), e.g. a displaced decay
+      double timeDelay = 0.; // production time relative to the muon decay/capture time (ns)
     };
 
     virtual void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& materialName,

@@ -15,17 +15,17 @@ namespace mu2e {
   {
   public:
     IntensityInfoTimeCluster() {}
-    IntensityInfoTimeCluster(unsigned short nProtonTCs):
-      nProtonTCs_(nProtonTCs)
+    IntensityInfoTimeCluster(unsigned short nTCs):
+      nTCs_(nTCs)
     {}
 
 
-    void setNProtonTCs     (unsigned short tmp) {nProtonTCs_   = tmp;}
+    void setNTCs(unsigned short tmp) {nTCs_ = tmp;}
 
-    unsigned short nProtonTCs   () const { return nProtonTCs_  ; }
+    unsigned short nTCs() const { return nTCs_; }
 
   private:
-    unsigned short  nProtonTCs_   = 0;
+    unsigned short  nTCs_ = 0;
   };
 
   typedef std::vector<mu2e::IntensityInfoTimeCluster> IntensityInfosTimeCluster;

@@ -113,6 +113,8 @@ namespace mu2e {
 
       // *** Now loop over the individual pipes ***
       for ( int ip = 0; ip < nPipe; ip++ ) {
+        // skip obsolete pump pipes
+        if (!isBend && it== 2 && ( ip == 0 || ip == 2 ) )  continue;
 
         double len = pLeng[it][ip];
         // Make the container ("mother") volume for the type.
@@ -123,14 +125,14 @@ namespace mu2e {
         if ( isBend ) {
           motherTubeName << "pBendType" << it+1 << "PBend" << ip+1;
         } else {
-          motherTubeName << "pipeType" << it+1 << "Pipe" << ip+1;
+            motherTubeName << "pipeType" << it+1 << "Pipe" << ip+1;
         }
 
         std::ostringstream motherName;
         if ( isBend ) {
           motherName << "pBendLogicVolType" << it+1 << "PBend" << ip+1;
         } else {
-          motherName << "pipeLogicVolType" << it+1 << "Pipe" << ip+1;
+            motherName << "pipeLogicVolType" << it+1 << "Pipe" << ip+1;
         }
 
         CLHEP::HepRotation* pipeRotat = new
@@ -139,7 +141,6 @@ namespace mu2e {
 
         CLHEP::Hep3Vector pipePosInMu2e = pCent[it][ip]
           - parent.centerInMu2e();
-
 
         VolumeInfo motherLogVol;
         if ( isBend ) {

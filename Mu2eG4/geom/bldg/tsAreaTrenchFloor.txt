@@ -7,10 +7,10 @@ string building.tsArea.trench.floor.name     = "tsAreaTrenchFloor";
 string building.tsArea.trench.floor.material = "CONCRETE_MARS";
 
 double building.tsArea.trench.floor.offsetFromMu2eOrigin.x   = 947.4;
-double building.tsArea.trench.floor.offsetFromFloorSurface.y = -1143;
+double building.tsArea.trench.floor.offsetFromFloorSurface.y = -1066.78;
 double building.tsArea.trench.floor.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.tsArea.trench.floor.yHalfThickness           = 76.2;
+double building.tsArea.trench.floor.yHalfThickness           = 152.4;
 
 vector<double> building.tsArea.trench.floor.xPositions = {
   2870.2,   // T0

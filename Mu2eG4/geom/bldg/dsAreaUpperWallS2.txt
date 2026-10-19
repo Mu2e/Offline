@@ -1,0 +1,22 @@
+string building.dsArea.upper.wall.S2.name     = "dsAreaUpperWallS2";
+string building.dsArea.upper.wall.S2.material = "CONCRETE_MARS";
+double building.dsArea.upper.wall.S2.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.upper.wall.S2.offsetFromFloorSurface.y = 7188.2;
+double building.dsArea.upper.wall.S2.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.upper.wall.S2.yHalfThickness           = 177.8;
+vector<double> building.dsArea.upper.wall.S2.xPositions = {
+14046.2,   // a
+14046.2,   // b
+21158.2,   // c
+21158.2,   // d
+19573.95,   // e
+19573.95    // f
+};
+vector<double> building.dsArea.upper.wall.S2.yPositions = {
+-11404.6, // a
+-12014.2, // b
+-12014.2, // c
+-11658.6, // d
+-11658.6, // e
+-11404.6  // f
+};

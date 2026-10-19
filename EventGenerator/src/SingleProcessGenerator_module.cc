@@ -147,9 +147,9 @@ namespace mu2e {
       output->emplace_back(mustop,
                            d.creationCode,
                            d.pdgId,
-                           mustop->endPosition(),
+                           mustop->endPosition() + d.positionOffset,
                            d.fourmom,
-                           time
+                           time + d.timeDelay
                            );
 
     }

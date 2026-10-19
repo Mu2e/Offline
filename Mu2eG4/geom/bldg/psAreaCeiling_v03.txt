@@ -7,10 +7,10 @@ string building.psArea.ceiling.name     = "psAreaCeiling";
 string building.psArea.ceiling.material = "CONCRETE_MARS";
 
 double building.psArea.ceiling.offsetFromMu2eOrigin.x   = 947.4;
-double building.psArea.ceiling.offsetFromFloorSurface.y = 5638.8;
+double building.psArea.ceiling.offsetFromFloorSurface.y = 6273.8;
 double building.psArea.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.psArea.ceiling.yHalfThickness           = 457.2;
+double building.psArea.ceiling.yHalfThickness           = 1092.2;
 
 vector<double> building.psArea.ceiling.xPositions = {
   -2006.6,   // b1

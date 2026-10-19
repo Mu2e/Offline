@@ -7,7 +7,7 @@ Lumi : {
             module_type      : RecoNPOTMaker
             caloIntInfoTag   : "CaloHitMakerFast"
             trkHitIntInfoTag : "TTmakeSH"
-            tcIntInfoTZTag   : "TTTZClusterFinder"
+            tcIntInfoTZTag   : "TrigTZClusterFinder:proton"
             tcIntInfoDFTag   : "TTflagPH"
             debugLevel       : 0
         }
@@ -29,7 +29,7 @@ Lumi : {
             caloTag    : "CaloHitMakerFast"
             thCollTag  : "TTmakeSH"
             dfCollTag  : "TTflagPH"
-            tcCollTag  : "TTTZClusterFinder"
+            tcCollTag  : "TrigTZClusterFinder:proton"
             recoPOTTag : "RecoNPOTMaker"
             MCPOTTag   : "PBISim"
             processName: "lumiAna"

@@ -212,7 +212,8 @@ namespace mu2e {
       consumes<ComboHitCollection>(_chLabel);
       consumes<CaloClusterCollection>(_ccLabel);
       produces<TimeClusterCollection>();
-      produces<IntensityInfoTimeCluster>();
+      produces<IntensityInfoTimeCluster>("electron");
+      produces<IntensityInfoTimeCluster>("proton");
       if(_protonTCs) produces<TimeClusterCollection>("proton");
 
 
@@ -298,18 +299,20 @@ namespace mu2e {
 
     _data._event = &event;
 
-    std::unique_ptr<IntensityInfoTimeCluster> iiTC(new IntensityInfoTimeCluster);
+    std::unique_ptr<IntensityInfoTimeCluster> iiTC_e(new IntensityInfoTimeCluster);
+    std::unique_ptr<IntensityInfoTimeCluster> iiTC_p(new IntensityInfoTimeCluster);
     std::unique_ptr<TimeClusterCollection>    tcColl(new TimeClusterCollection);
     std::unique_ptr<TimeClusterCollection>    protonTCColl = (_protonTCs) ? std::make_unique<TimeClusterCollection>() : nullptr;
 
     _data._tcColl = tcColl.get();
-    _data._iiTC = iiTC.get();
+    _data._iiTC = iiTC_p.get();
     _data._protonTCColl = (_protonTCs) ? protonTCColl.get() : nullptr;
 
     bool ok = findData(event);
 
     if (ok) { findClusters(*_data._tcColl); }
     else    { printf("%s ERROR: No straw hits found in event %i\n",oname,_iev); }
+    iiTC_e->setNTCs(tcColl->size());
 
     if (_diagLevel > 0) { _hmanager->fillHistograms(&_data);}
 
@@ -320,7 +323,8 @@ namespace mu2e {
       std::erase_if(*tcColl, [](const TimeCluster& tc) { return !tc.hasCaloCluster();});
     }
     event.put(std::move(tcColl));
-    event.put(std::move(iiTC));
+    event.put(std::move(iiTC_e), "electron");
+    event.put(std::move(iiTC_p), "proton");
     if(_protonTCs) event.put(std::move(protonTCColl), "proton");
 
     _timeoutGuard.reset();
@@ -792,7 +796,7 @@ namespace mu2e {
       }
     }
 
-    outIITC.setNProtonTCs(nProtons);
+    outIITC.setNTCs(nProtons);
 
   }
 

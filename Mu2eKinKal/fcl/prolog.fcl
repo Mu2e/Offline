@@ -492,6 +492,7 @@ Mu2eKinKal : {
     module_type : LoopHelixFit
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
+      MaxSeedStrawHitDt : 200.0 # ns; drop seed hits whose TOCA lands on another turn of the seed helix
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
       SaveDomains : true
