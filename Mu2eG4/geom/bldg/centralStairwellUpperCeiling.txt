@@ -1,0 +1,28 @@
+
+string building.central.stairwell.upper.ceiling.name     = "CentralStairwellUpperCeiling";
+
+string building.central.stairwell.upper.ceiling.material = "CONCRETE_MARS";
+
+double building.central.stairwell.upper.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.central.stairwell.upper.ceiling.offsetFromFloorSurface.y = 7658.1;
+double building.central.stairwell.upper.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.central.stairwell.upper.ceiling.yHalfThickness           = 114.3;
+
+vector<double> building.central.stairwell.upper.ceiling.xPositions = {
+  13233.4,    // 1
+  13233.4,    // 2
+  12014.2,   // 3
+  12014.2    // 4
+};
+
+vector<double> building.central.stairwell.upper.ceiling.yPositions = {
+  -20262.87,  // 1
+  -15081.27,  // 2
+  -15081.27,  // 3
+  -20262.87   // 4
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -20,8 +20,8 @@ vector<double> building.backfill.TSarea-W.1UpperNotchUpper2.xPositions = {
 };
 
 vector<double> building.backfill.TSarea-W.1UpperNotchUpper2.yPositions = {
-   2438.3,   // F0
-   2438.3,   // F1
+   0.,   // F0
+   0.,   // F1
   -609.6,   // F2
   -609.6   // F3
 };

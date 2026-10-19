@@ -455,7 +455,18 @@
  <class name="std::vector<mu2e::IntensityInfoTrackerHits>" />
  <class name="mu2e::IntensityInfosTrackerHits" />
  <class name="art::Wrapper<mu2e::IntensityInfosTrackerHits>" />
- <class name="mu2e::IntensityInfoTimeCluster"/>
+ <class name="mu2e::IntensityInfoTimeCluster" ClassVersion="10"/>
+<!-- Up to class version 1 the time cluster count was stored as nProtonTCs_. From version 10 it is the generic
+     nTCs_, and this rule reads the old member into the new one. -->
+<ioread sourceClass="mu2e::IntensityInfoTimeCluster"
+        version="[1]"
+        source="unsigned short nProtonTCs_;"
+        targetClass="mu2e::IntensityInfoTimeCluster"
+        target="nTCs_">
+<![CDATA[
+  nTCs_ = onfile.nProtonTCs_;
+]]>
+</ioread>
  <class name="art::Wrapper<mu2e::IntensityInfoTimeCluster>"/>
  <class name="std::vector<mu2e::IntensityInfoTimeCluster>" />
  <class name="mu2e::IntensityInfosTimeCluster" />

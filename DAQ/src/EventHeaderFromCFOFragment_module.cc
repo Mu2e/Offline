@@ -26,6 +26,7 @@
 
 // C++
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <array>
 #include <list>
@@ -88,10 +89,12 @@ void art::EventHeaderFromCFOFragment::endJob() {
   if(nNoCFOHandle_ > 0 || nNoCFOFrags_ > 0) {
     // Simulation has no CFO data, so the default header is the expected result there
     if(isSim_ && diagLevel_ <= 0) return;
-    (isSim_ ? mf::LogInfo("EventHeaderFromCFOFragment") : mf::LogWarning("EventHeaderFromCFOFragment"))
-      << "Default EventHeader produced without CFO data in " << nNoCFOHandle_ + nNoCFOFrags_
-      << " of " << nEvents_ << " events (" << nNoCFOHandle_ << " with no CFO fragment collection, "
-      << nNoCFOFrags_ << " with an empty CFO fragment collection)";
+    std::ostringstream msg;
+    msg << "Default EventHeader produced without CFO data in " << nNoCFOHandle_ + nNoCFOFrags_
+        << " of " << nEvents_ << " events (" << nNoCFOHandle_ << " with no CFO fragment collection, "
+        << nNoCFOFrags_ << " with an empty CFO fragment collection)";
+    if(isSim_) mf::LogInfo   ("EventHeaderFromCFOFragment") << msg.str();
+    else       mf::LogWarning("EventHeaderFromCFOFragment") << msg.str();
   } else if(diagLevel_ > 0) {
     mf::LogInfo("EventHeaderFromCFOFragment") << "Found CFO data in all " << nEvents_ << " events";
   }

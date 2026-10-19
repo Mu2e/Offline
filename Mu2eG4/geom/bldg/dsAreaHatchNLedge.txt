@@ -20,8 +20,8 @@ vector<double> building.dsArea.hatchnledge.xPositions = {
 vector<double> building.dsArea.hatchnledge.yPositions = {
   -1041.4,   // B
   -1041.4,   // C
-  -1397.0,   // C1
-  -1397.0   // E
+  -1524.0,   // C1
+  -1524.0   // E
 };
 
 // Local Variables:
