@@ -142,8 +142,17 @@ namespace mu2e {
     const int nStraws = best->nStraws();
     float rho0   = strawRho(0);
     float rhoMax = strawRho(nStraws-1);
+    // no straw of this face at the crossing (radially outside the panel, or beyond the straw
+    // ends, e.g. between the panels of the face): keep the weight without the status
+    if (bestRho < rho0 || bestRho > rhoMax) return 1.;
     int   sEst   = (rhoMax > rho0) ? std::lround((bestRho-rho0)/(rhoMax-rho0)*(nStraws-1)) : 0;
     sEst = std::clamp(sEst, 0, nStraws-1);
+    {
+      const Straw& straw = best->getStraw(sEst);
+      const auto&  mid   = straw.getMidPoint();
+      const auto&  dir   = straw.getDirection();
+      if (std::fabs((X-mid.x())*dir.x() + (Y-mid.y())*dir.y()) > straw.halfLength()) return 1.;
+    }
 
     float nLive(0);
     for (int layer=0; layer<StrawId::_nlayers; ++layer) {
