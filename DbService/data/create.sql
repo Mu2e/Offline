@@ -416,6 +416,14 @@ CREATE TABLE cal.energycalib
 GRANT SELECT ON cal.energycalib TO PUBLIC;
 GRANT INSERT ON cal.energycalib TO cal_role;
 
+CREATE TABLE cal.timecalib
+  (cid INTEGER,
+   roid INTEGER, tcorr NUMERIC,
+   CONSTRAINT cal_timecalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.timecalib TO PUBLIC;
+GRANT INSERT ON cal.timecalib TO cal_role;
+
+
 CREATE TABLE cal.channels
   (cid INTEGER,
    rawid INTEGER, roid INTEGER,
