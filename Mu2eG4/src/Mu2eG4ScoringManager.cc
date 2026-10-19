@@ -47,11 +47,13 @@
 
 namespace mu2e {
 
-  Mu2eG4ScoringManager::Mu2eG4ScoringManager(G4ScoringManager* fSMan,
-                                             const Mu2eG4Config::Scoring& configScore,
+  // The G4ScoringManager is created only when scoring is enabled. Its existence alone changes the
+  // physics setup: G4PhysicsListHelper::AddTransportation() builds G4CoupledTransportation instead
+  // of G4Transportation on any thread that has one.
+  Mu2eG4ScoringManager::Mu2eG4ScoringManager(const Mu2eG4Config::Scoring& configScore,
                                              const Mu2eG4Config::Physics& configPhysics,
                                              const Mu2eG4Config::Debug&   configDebug):
-     fSMan_        (fSMan),
+     fSMan_        (configScore.enabled() ? G4ScoringManager::GetScoringManager() : nullptr),
      configPhysics_(configPhysics),
      enabled_      (configScore.enabled()),
      meshNames_    (configScore.meshNames()),
@@ -211,6 +213,7 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoringManager::reset()
   {
+    if (!enabled_) return;
     for (size_t i=0;i<fSMan_->GetNumberOfMesh();++i) fSMan_->GetMesh(i)->ResetScore();
   }
 
