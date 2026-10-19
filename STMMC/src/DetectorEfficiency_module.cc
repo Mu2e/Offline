@@ -75,7 +75,7 @@ namespace mu2e {
     };
 
     void DetectorEfficiency::endJob() {
-        mf::LogInfo log("Detector Efficiency");
+        mf::LogInfo log("DetectorEfficiency");
         log << "========= Data summary =========\n";
         log << "Accepted steps: " << acceptedSteps << "\n";
         log << "Rejected steps: " << rejectedSteps << "\n";

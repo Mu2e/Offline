@@ -65,6 +65,7 @@ namespace mu2e
       uint8_t GetLinkStatus() const                {return _linkStatus;}
       uint16_t GetLinkLatency() const               {return _linkLatency;}
       std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII> &GetROCHeader() {return _rocHeader;}
+      const std::vector<CRVDataDecoder::CRVROCStatusPacketFEBII> &GetROCHeader() const {return _rocHeader;}
       bool HasROCHeader() const                    {return !_rocHeader.empty();}
 
       // --- MicroBunchStatus accessors (32-bit CRV ROC status word) ---

@@ -16,6 +16,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -51,7 +52,6 @@ namespace mu2e {
 
        std::string  _caloDigiModuleLabel;
        std::string  _caloShowerSimModuleLabel;
-       double       _digiSampling;
        int          _minDigiHitLength;
 
        TH1F*  _firstAmpOk;
@@ -82,7 +82,6 @@ namespace mu2e {
       art::EDAnalyzer(pset),
       _caloDigiModuleLabel     (pset.get<std::string> ("caloDigiModuleLabel")),
       _caloShowerSimModuleLabel(pset.get<std::string> ("caloShowerSimModuleLabel")),
-      _digiSampling            (pset.get<double>      ("digiSampling")),
       _minDigiHitLength        (pset.get<int>         ("minDigiHitLength"))
    {}
 
@@ -182,7 +181,7 @@ namespace mu2e {
           y.clear();
           for (int i=0;i<wfsize;++i)
           {
-              x.push_back(t0 + (i+0.5)*_digiSampling);
+              x.push_back(t0 + (i+0.5)*CaloConst::_digitizationPeriod);
               y.push_back(waveform.at(wfindex+i));
           }
 

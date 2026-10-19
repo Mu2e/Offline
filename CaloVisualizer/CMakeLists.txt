@@ -10,11 +10,16 @@ cet_make_library(
       ROOT::RIO
 )
 
+# THMu2eCaloDisk[Bin] use ClassDef, so their Class(), Streamer() and vtables
+# exist only in the rootcling-generated source.  LIB_TARGET puts that source
+# into CaloVisualizer itself instead of a separate CaloVisualizer_dict library:
+# otherwise libCaloVisualizer.so has unresolved references to its own
+# dictionary, which NO_UNDEFINED (-Wl,--unresolved-symbols=ignore-in-shared-libs)
+# rejects.  This matches what the scons build does via make_dict_and_map().
 art_dictionary( NO_CHECK_CLASS_VERSION
+  LIB_TARGET CaloVisualizer
   CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
   CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-  DICTIONARY_LIBRARIES
-    Offline::CaloVisualizer
 )
 
 install_source(SUBDIRS src)

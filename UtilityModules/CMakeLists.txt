@@ -22,6 +22,14 @@ cet_build_plugin(RecoNullProducer art::module
       Offline::SeedService
 )
 
+cet_build_plugin(StageNormalizationCounter art::module
+    REG_SOURCE src/StageNormalizationCounter_module.cc
+    LIBRARIES REG      
+      Offline::DataProducts
+      Offline::MCDataProducts
+      messagefacility::MF_MessageLogger
+)
+
 cet_build_plugin(StopSelection art::module
     REG_SOURCE src/StopSelection_module.cc
     LIBRARIES REG      

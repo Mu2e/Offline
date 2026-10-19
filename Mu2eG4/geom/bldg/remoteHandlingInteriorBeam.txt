@@ -7,10 +7,10 @@ string building.remote.handling.Interior.Beam.name     = "remoteHandlingInterior
 string building.remote.handling.Interior.Beam.material = "CONCRETE_MARS";
 
 double building.remote.handling.Interior.Beam.offsetFromMu2eOrigin.x   = 947.4;
-double building.remote.handling.Interior.Beam.offsetFromFloorSurface.y = 4178.3;
+double building.remote.handling.Interior.Beam.offsetFromFloorSurface.y = 4191;
 double building.remote.handling.Interior.Beam.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.remote.handling.Interior.Beam.yHalfThickness           = 215.9;
+double building.remote.handling.Interior.Beam.yHalfThickness           = 228.55;
 
 vector<double> building.remote.handling.Interior.Beam.xPositions = {
   -11709.4,   // P0

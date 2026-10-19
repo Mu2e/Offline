@@ -39,6 +39,7 @@
 #include "Offline/Mu2eG4/inc/validGeometryOrThrow.hh"
 #include "Offline/Mu2eG4/inc/writePhysicalVolumes.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
+#include "Offline/Mu2eG4/inc/seedG4EngineFromEventID.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Offline/Mu2eG4/inc/Mu2eG4VisCommands.hh"
 #endif
@@ -82,7 +83,6 @@
 #include "Geant4/G4RunManagerKernel.hh"
 #include "Geant4/G4RunManager.hh"
 #include "Geant4/G4SDManager.hh"
-#include "Geant4/G4ScoringManager.hh"
 
 // C++ includes.
 #include <iostream>
@@ -199,8 +199,7 @@ namespace mu2e {
     multiStagePars_(pars().inputs()),
     simStage_(-1u),
     _runManager(std::make_unique<G4RunManager>()),
-    _scorer(std::make_unique<Mu2eG4ScoringManager>(G4ScoringManager::GetScoringManager(),
-                                                   conf_.scoring(),conf_.physics(),conf_.debug())),
+    _scorer(std::make_unique<Mu2eG4ScoringManager>(conf_.scoring(),conf_.physics(),conf_.debug())),
     _warnEveryNewRun(pars().debug().warnEveryNewRun()),
     _exportPDTStart(pars().debug().exportPDTStart()),
     _exportPDTEnd(pars().debug().exportPDTEnd()),
@@ -438,6 +437,10 @@ namespace mu2e {
           << "Mu2eG4::produce() Error: inconsistent simStage: "
           <<simStage_<<" vs "<<pvstage<<"\n";
       }
+    }
+
+    if(conf_.seedFromEventID()) {
+      seedG4EngineFromEventID(event.id(), conf_.salt());
     }
 
     // Run G4 for this event and access the completed event.

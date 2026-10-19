@@ -25,8 +25,7 @@ namespace mu2e {
 
 
     public:
-      Mu2eG4ScoringManager(G4ScoringManager* fSMan,
-                           const Mu2eG4Config::Scoring& configScoring,
+      Mu2eG4ScoringManager(const Mu2eG4Config::Scoring& configScoring,
                            const Mu2eG4Config::Physics& configPhysics,
                            const Mu2eG4Config::Debug&   configDebug);
      ~Mu2eG4ScoringManager() = default;

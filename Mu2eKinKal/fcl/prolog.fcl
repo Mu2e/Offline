@@ -53,6 +53,7 @@ Mu2eKinKal : {
      DivergenceGap : 20 # mm
      BFieldCorrection : false
      BCorrTolerance : 1e-2 # momemntum fraction
+     MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
      ProcessEnds : false
      MetaIterationSettings : [
        # annealing temp, strawhit updater algorithm
@@ -89,6 +90,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : false
     BCorrTolerance : 1e-2 # relative momemntum precision
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
@@ -128,6 +130,7 @@ Mu2eKinKal : {
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
@@ -194,6 +197,7 @@ Mu2eKinKal : {
     DivergenceGap : 10 # mm
     BFieldCorrection : true
     BCorrTolerance : 1e-2 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     ProcessEnds : false
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
@@ -227,6 +231,7 @@ Mu2eKinKal : {
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : []
     CADSHUSettings : []
     StrawXingUpdaterSettings : []
@@ -244,6 +249,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : false
     BCorrTolerance : 1e-2 # relative momemntum precision
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
@@ -283,6 +289,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
@@ -358,6 +365,7 @@ Mu2eKinKal : {
     DivergenceGap : 100 # mm
     ProcessEnds : true
     BCorrTolerance : 1e-4
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [ [ 0.0, "" ] ]
     CADSHUSettings : [ ]
     BkgANNSHUSettings : [ ]
@@ -484,6 +492,7 @@ Mu2eKinKal : {
     module_type : LoopHelixFit
     KKFitSettings : {
       @table::Mu2eKinKal.KKFIT
+      MaxSeedStrawHitDt : 200.0 # ns; drop seed hits whose TOCA lands on another turn of the seed helix
       SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
       # save trajectories in the Detector region
       SaveDomains : true
@@ -506,7 +515,10 @@ Mu2eKinKal : {
 
   KLSeedFit : {
     module_type : KinematicLineFit
-    KKFitSettings: @local::Mu2eKinKal.KKFIT
+    KKFitSettings: {
+      @table::Mu2eKinKal.KKFIT
+      SaveTrajectory : T0  # KKFIT does not set this and it is mandatory; matches the sibling CHSeedFit
+    }
     FitSettings : @local::Mu2eKinKal.CHSEEDFIT
     ExtensionSettings : {
       @table::Mu2eKinKal.CHSEEDEXT
@@ -604,8 +616,8 @@ Mu2eKinKal : {
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
       SaveTrajectory : Full
-      SaveDomains : false  # the truth track has no BField domains (upstream bfcorr=false); SaveDomains:true
-                           # would deref rbegin() of an empty domain set in KKFit::createSeed (SIGSEGV)
+      SaveDomains : false  # the truth track has no BField domains (upstream bfcorr=false), so this
+                           # is the honest setting; SaveDomains:true is a no-op here, not a crash
       SampleSurfaces : ["TT_Front","TT_Back","TT_Outer",
         "CRV_T1","CRV_T2","CRV_T3","CRV_T4","CRV_T5",
         "CRV_R1","CRV_R2","CRV_R3","CRV_R4","CRV_R5","CRV_R6",
@@ -630,7 +642,7 @@ Mu2eKinKal : {
     }
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back","TT_Mid","TT_Back"]
+      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back"]
       AddHits : false
       SaveDomains : true
       SaveTrajectory : Full

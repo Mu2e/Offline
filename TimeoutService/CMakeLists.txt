@@ -4,6 +4,7 @@ cet_make_library(
     LIBRARIES PUBLIC
       art::Framework_Principal
       art::Framework_Services_Registry
+      art::Utilities
       fhiclcpp::fhiclcpp
       fhiclcpp::types
 )

@@ -223,8 +223,8 @@ namespace mu2e {
 
   void StrawElectronics::uncalibrateTimes(TrkTypes::TDCTimes &times, const StrawId &id) const {
     if (!overrideDbTimeOffsets()){
-      times[StrawEnd::hv] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
-      times[StrawEnd::cal] -= _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
+      times[StrawEnd::hv] -= _timeOffsetPanel[id.uniquePanel()] + _timeOffsetStrawHV[id.uniqueStraw()];
+      times[StrawEnd::cal] -= _timeOffsetPanel[id.uniquePanel()] + _timeOffsetStrawCal[id.uniqueStraw()];
     }
   }
 

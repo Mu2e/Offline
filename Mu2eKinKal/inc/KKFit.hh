@@ -118,7 +118,7 @@ namespace mu2e {
       // sample the fit at the specificed surfaces
       void sampleFit(KKTRK& kktrk) const;
       // save the complete fit trajectory as a seed
-      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker) const;
+      KalSeed createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker, TrackerStatus const& trackerStatus) const;
       TimeRange range(KKSTRAWHITCOL const& strawhits, KKCALOHITCOL const& calohits, KKSTRAWXINGCOL const& strawxings) const; // time range from a set of hits and element Xings
       bool useCalo() const { return usecalo_; }
       bool correctMaterial() const { return matcorr_; }
@@ -148,7 +148,7 @@ namespace mu2e {
       double tprec_; // TPOCA calculation nominal precision
       StrawHitFlag addsel_, addrej_; // selection and rejection flags when adding hits
       // parameters controlling adding hits
-      float maxStrawHitDoca_, maxStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_, maxStrawUposBuff_;
+      float maxStrawHitDoca_, maxStrawHitDt_, maxSeedStrawHitDt_, maxStrawDoca_, maxStrawDocaCon_, maxStrawUposBuff_;
       int maxDStraw_; // maximum distance from the track a strawhit can be to consider it for adding.
       // cached info computed from the tracker, used in hit adding; these must be lazy-evaluated as the tracker doesn't exist on construction
       mutable double strawradius_ = 0;
@@ -188,6 +188,7 @@ namespace mu2e {
     addrej_(fitconfig.addHitReject()),
     maxStrawHitDoca_(fitconfig.maxStrawHitDOCA()),
     maxStrawHitDt_(fitconfig.maxStrawHitDt()),
+    maxSeedStrawHitDt_(fitconfig.maxSeedStrawHitDt()),
     maxStrawDoca_(fitconfig.maxStrawDOCA()),
     maxStrawDocaCon_(fitconfig.maxStrawDOCAConsistency()),
     maxStrawUposBuff_(fitconfig.maxStrawUposBuff()),
@@ -244,6 +245,8 @@ namespace mu2e {
       CAHint hint(ptime,htime);
       // compute PCA between the seed trajectory and this straw
       PCA pca(ptraj, wline, hint, tprec_ );
+      // a TOCA far from the measured time is on the wrong turn of the seed; such a hit would stretch the fit time range
+      if(maxSeedStrawHitDt_ > 0.0 && fabs(pca.particleToca() - htime) > maxSeedStrawHitDt_) continue;
       // create the hit.  Note these may initially be unusable
       hits.push_back(std::make_shared<KKSTRAWHIT>(kkbf, pca, combohit, straw, strawidx, strawresponse));
       // create the material crossing, including this reference
@@ -673,7 +676,7 @@ namespace mu2e {
     return TimeRange(tmin,tmax);
   }
 
-  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker) const {
+  template <class KTRAJ> KalSeed KKFit<KTRAJ>::createSeed(KKTRK const& kktrk, TrkFitFlag const& seedflag, Calorimeter const& calo, Tracker const& nominalTracker, TrackerStatus const& trackerStatus) const {
     TrkFitFlag fflag(seedflag);  // initialize the flag with the seed fit flag
     if(kktrk.fitStatus().usable()){
       fflag.merge(TrkFitFlag::kalmanOK);
@@ -759,6 +762,7 @@ namespace mu2e {
     for(auto const& sxing : kktrk.strawXings()) {
       // create and fill the flag
       StrawFlag flag;
+      if(trackerStatus.noSignal(sxing->strawId()) || trackerStatus.suppress(sxing->strawId()))flag.merge(StrawFlag::dead);
       if(sxing->active())flag.merge(StrawFlag::active);
       if(sxing->strawHitPtr()){
         flag.merge(StrawFlag::hashit);
@@ -787,7 +791,9 @@ namespace mu2e {
           // skip 'zero-range' segments.  By convention, sample the state at the mid-time
           if(traj->range().range() > minrange) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
-        if(savedomains_){
+        // a fit that ran without BField correction has no domains at all; the trailing push_back
+        // below would then dereference rbegin() of an empty set, which is undefined behaviour
+        if(savedomains_ && !kktrk.domains().empty()){
           kseed._domainbounds.reserve(kktrk.domains().size()+1);
           for (auto const& domain : kktrk.domains()){
             kseed._domainbounds.push_back(domain->begin());

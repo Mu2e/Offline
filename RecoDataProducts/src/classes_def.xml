@@ -30,7 +30,22 @@
  <class name="art::Wrapper<mu2e::CosmicTrackSeedPtrCollection>"/>
 
 <!--  ********* calorimeter  ********* -->
- <class name="mu2e::CaloDigi"/>
+ <class name="mu2e::CaloDigi" ClassVersion="10"/>
+<!-- Up to class version 1 (files written before Offline#2022) CaloDigi stored t0_ in ns. From version 10 it stores
+     t0tick_ in digitizer clock ticks, and this rule converts version-1 files on read, so every reader sees ticks.
+     The stored member has a new name because ROOT skips a rule whose source and target member share one.
+     Version-1 files that already hold ticks are converted too and read wrong: CaloDigis from detector data written
+     by earlier releases, and files digitized with Offline#2022 before class version 10. -->
+<ioread sourceClass="mu2e::CaloDigi"
+        version="[1]"
+        source="int t0_;"
+        targetClass="mu2e::CaloDigi"
+        target="t0tick_"
+        include="cmath, Offline/DataProducts/inc/CaloConst.hh">
+<![CDATA[
+  t0tick_ = static_cast<int>(std::lround(onfile.t0_ / mu2e::CaloConst::_digitizationPeriod));
+]]>
+</ioread>
  <class name="mu2e::CaloDigiCollection"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
@@ -440,7 +455,18 @@
  <class name="std::vector<mu2e::IntensityInfoTrackerHits>" />
  <class name="mu2e::IntensityInfosTrackerHits" />
  <class name="art::Wrapper<mu2e::IntensityInfosTrackerHits>" />
- <class name="mu2e::IntensityInfoTimeCluster"/>
+ <class name="mu2e::IntensityInfoTimeCluster" ClassVersion="10"/>
+<!-- Up to class version 1 the time cluster count was stored as nProtonTCs_. From version 10 it is the generic
+     nTCs_, and this rule reads the old member into the new one. -->
+<ioread sourceClass="mu2e::IntensityInfoTimeCluster"
+        version="[1]"
+        source="unsigned short nProtonTCs_;"
+        targetClass="mu2e::IntensityInfoTimeCluster"
+        target="nTCs_">
+<![CDATA[
+  nTCs_ = onfile.nProtonTCs_;
+]]>
+</ioread>
  <class name="art::Wrapper<mu2e::IntensityInfoTimeCluster>"/>
  <class name="std::vector<mu2e::IntensityInfoTimeCluster>" />
  <class name="mu2e::IntensityInfosTimeCluster" />
@@ -457,7 +483,6 @@
  <class name="mu2e::STMWaveformDigi"/>
  <class name="mu2e::STMWaveformDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMWaveformDigiCollection>"/>
- <class name="art::Ptr<mu2e::STMWaveformDigi>"/>
  <class name="mu2e::STMPHDigi"/>
  <class name="mu2e::STMPHDigiCollection"/>
  <class name="art::Wrapper<mu2e::STMPHDigiCollection>"/>
@@ -467,6 +492,16 @@
  <class name="mu2e::STMFragmentSummary"/>
  <class name="mu2e::STMFragmentSummaryCollection"/>
  <class name="art::Wrapper<mu2e::STMFragmentSummaryCollection>"/>
+ <class name="mu2e::STMEventHeader"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMWaveformDigi>>>"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMPHDigi>>>"/>
+ <class name="std::pair<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>"/>
+ <class name="std::map<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>"/>
+ <class name="art::Wrapper<std::map<mu2e::STMEventHeader, std::vector<mu2e::STMHit>>>"/>
 
  <!--  ********* MSD ********* -->
   <class name="mu2e::MSDHit"/>

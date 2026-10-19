@@ -17,6 +17,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // utiliites
@@ -150,6 +151,7 @@ namespace mu2e {
     TrkFitFlag goodline_;
     bool saveall_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
+    ProditionsHandle<TrackerStatus> trackerStatus_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
@@ -217,6 +219,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
       if(print_ > 0) std::cout << config_;
     }
 
@@ -242,6 +246,7 @@ namespace mu2e {
 
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
@@ -313,11 +318,12 @@ namespace mu2e {
           // extrapolate as required
           if(goodfit && extrap_) extrap_->extrapolate(*kktrk);
           bool save = goodFit(*kktrk);
-          if(save || saveall_){
+          // a fit that failed before its trajectory was built has nothing to save
+          if((save || saveall_) && kktrk->hasTraj()){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);
-            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
+            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
@@ -356,8 +362,17 @@ namespace mu2e {
     return seedtraj;
   }
   bool KinematicLineFit::goodFit(KKTRK const& ktrk) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    return ktrk.fitStatus().usable();
+    bool retval = ktrk.fitStatus().usable();
+    // a usable fit can still have diverged from its hits: test the fit where the active straw hits are
+    if(retval){
+      for(auto const& shptr : ktrk.strawHits()) {
+        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+          retval = false;
+          break;
+        }
+      }
+    }
+    return retval;
   }
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {

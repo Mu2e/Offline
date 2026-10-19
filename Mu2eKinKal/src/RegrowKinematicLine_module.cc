@@ -17,6 +17,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
@@ -64,6 +65,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <map>
 #include <vector>
 #include <memory>
 
@@ -137,6 +139,7 @@ namespace mu2e {
     private:
       int debug_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<TrackerStatus> trackerStatus_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // refit configuration object, containing the fit schedule
@@ -178,6 +181,7 @@ namespace mu2e {
   {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
@@ -196,11 +200,16 @@ namespace mu2e {
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> rgkseedcol(new KalSeedCollection );
     std::unique_ptr<KalSeedMCAssns> ksmca;
+    // KalSeedMCAssns is a single flat product spanning every KalSeedCollection SelectRecoMC was
+    // configured with, so it cannot be indexed by this module's position within its own input
+    // collection. Build the KalSeed -> KalSeedMC lookup once per event instead.
+    std::map<art::Ptr<KalSeed>,art::Ptr<KalSeedMC>> mcmap;
     // deal with MC
     if(fillMCAssns_){
       ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
       if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: No KalSeedMCAssns found" << endl;
       ksmca = std::unique_ptr<KalSeedMCAssns>(new KalSeedMCAssns);
+      for(auto const& assn : *ksmca_H) mcmap[assn.first] = assn.second;
     }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
@@ -242,15 +251,14 @@ namespace mu2e {
           // convert to seed output format
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
-          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
           rgkseedcol->push_back(rgks);
           if(fillMCAssns_){
             // find the MC assns
-            auto ksmcai = (*ksmca_H)[iseed];
             auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
-            // test this is the right ptr
-            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: wrong KalSeed ptr"<< std::endl;
-            auto mcseedp = ksmcai.second;
+            auto imc = mcmap.find(origksp);
+            if(imc == mcmap.end())throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: can't find MC associated with KalSeed"<< std::endl;
+            auto mcseedp = imc->second;
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
             ksmca->addSingle(rgksp,mcseedp);
             // add the original too

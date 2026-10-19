@@ -15,18 +15,16 @@
 #include "artdaq-core-mu2e/Overlays/FragmentType.hh"
 #include <artdaq-core/Data/Fragment.hh>
 
+#include "Offline/CaloConditions/inc/CalCalib.hh"
 #include "Offline/CaloConditions/inc/CalDAQMap.hh"
+#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
-#include "Offline/DAQ/inc/CaloDAQUtilities.hh"
-#include "Offline/RecoDataProducts/inc/CaloHit.hh"
-#include "Offline/DataProducts/inc/CaloConst.hh"
-
 #include <iostream>
-
 #include <string>
-
 #include <array>
 #include <list>
 #include <memory>
@@ -55,8 +53,6 @@ public:
     fhicl::Atom<int> data_type{fhicl::Name("dataType"),
                                fhicl::Comment("Data type (0:standard, 1:debug, 2:counters)"), 0};
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"), fhicl::Comment("diagnostic level")};
-    fhicl::Atom<float> digiSampling{fhicl::Name("digiSampling"),
-                                    fhicl::Comment("calorimeter sampling period in ns")};
     fhicl::Atom<float> deltaTPulses{
         fhicl::Name("deltaTPulses"),
         fhicl::Comment(
@@ -82,16 +78,16 @@ public:
   explicit CaloHitsFromDataDTCEvents(const art::EDProducer::Table<Config>& config);
   virtual ~CaloHitsFromDataDTCEvents() {}
 
-  virtual void beginRun(art::Run&) override;
-
   // --- Production:
   virtual void produce(Event&);
   virtual void endJob();
 
 private:
+  mu2e::ProditionsHandle<mu2e::CalCalib> _caloCalib_h;
   mu2e::ProditionsHandle<mu2e::CalDAQMap> _calodaqconds_h;
 
   void analyze_calorimeter_(mu2e::CalDAQMap const& calodaqconds,
+                            mu2e::CalCalib const& calCalib,
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
@@ -105,7 +101,6 @@ private:
   int diagLevel_;
 
   art::InputTag caloFragmentsTag_;
-  float digiSampling_;
   float deltaTPulses_, hitEDepMax_, hitEDepMin_, caphriEDepMax_, caphriEDepMin_, nPEperMeV_,
       noise2_, nSigmaNoise_;
 
@@ -115,9 +110,6 @@ private:
       pulseMap_; // Temporary hack until the Calorimeter channel map is finalized
   mu2e::CaloDAQUtilities caloDAQUtil_;
 
-  std::array<float, mu2e::CaloConst::_nCrystalChannel> peakADC2MeV_;
-  std::array<float, mu2e::CaloConst::_nCrystalChannel> timeCalib_;
-
   long int total_events;
   long int total_hits;
   long int total_hits_good;
@@ -126,17 +118,6 @@ private:
 };
 
 // ======================================================================
-
-void art::CaloHitsFromDataDTCEvents::beginRun(art::Run& Run) {
-
-  // FIX ME!
-  // here we need to load the prodition-service with the calibrations
-  // for converting teh peakADC into MeV and sync times
-  for (size_t i = 0; i < peakADC2MeV_.size(); ++i) {
-    peakADC2MeV_[i] = 0.0461333;
-    timeCalib_[i] = 0.;
-  }
-}
 
 void art::CaloHitsFromDataDTCEvents::addPulse(
     uint16_t& crystalID, float& time, float& eDep,
@@ -183,7 +164,7 @@ void art::CaloHitsFromDataDTCEvents::addPulse(
 art::CaloHitsFromDataDTCEvents::CaloHitsFromDataDTCEvents(
     const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config}, data_type_(config().data_type()),
-    diagLevel_(config().diagLevel()), digiSampling_(config().digiSampling()),
+    diagLevel_(config().diagLevel()),
     deltaTPulses_(config().deltaTPulses()), hitEDepMax_(config().hitEDepMax()),
     hitEDepMin_(config().hitEDepMin()), caphriEDepMax_(config().caphriEDepMax()),
     caphriEDepMin_(config().caphriEDepMin()), nPEperMeV_(config().nPEperMeV()),
@@ -207,6 +188,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
   art::EventNumber_t eventNumber = event.event();
 
   mu2e::CalDAQMap const& calodaqconds = _calodaqconds_h.get(event.id());
+  mu2e::CalCalib const& calCalib = _caloCalib_h.get(event.id());
 
   // Collection of CaloHits for the event
   std::unique_ptr<mu2e::CaloHitCollection> calo_hits(new mu2e::CaloHitCollection);
@@ -227,7 +209,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
-      analyze_calorimeter_(calodaqconds, decoder, calo_hits, caphri_hits, int_info);
+      analyze_calorimeter_(calodaqconds, calCalib, decoder, calo_hits, caphri_hits, int_info);
       for (size_t i = 0; i < decoder.block_count(); ++i) {
         totalSize += decoder.blockSizeBytes(i);
       }
@@ -263,7 +245,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 } // produce()
 
 void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
-    mu2e::CalDAQMap const& calodaqconds, const mu2e::CalorimeterDataDecoder& cc,
+    mu2e::CalDAQMap const& calodaqconds, mu2e::CalCalib const& calCalib, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
     std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {
@@ -316,6 +298,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
 
         //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
@@ -331,8 +315,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
-        float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+        float eDep = thisHitPeak * adc2MeV;
+        float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod - timeOffset; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];
@@ -391,6 +375,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
 
         //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
@@ -406,8 +392,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
-        float eDep = thisHitPeak * peakADC2MeV_[SiPMID];
-        float time = thisHitPacket.Time + peakIndex * digiSampling_ + timeCalib_[SiPMID];
+        float eDep = thisHitPeak * adc2MeV;
+        float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod - timeOffset; // packet Time is in clock ticks
 
         bool isCaphri = offlineId.crystal().isCaphri();
         if(!isCaphri) ++nhits[offlineId.crystal().disk()];

@@ -4,6 +4,7 @@
 // Structs for configuring the Mu2e KinKal fit
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Tuple.h"
@@ -35,6 +36,8 @@ namespace mu2e {
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
+      fhicl::Atom<double> minDomainTimeStep { Name("MinDomainTimeStep"), Comment("Minimum BField domain time step (ns); 0 leaves it unbounded"), 0.0 };
+      fhicl::OptionalAtom<double> domainMargin { Name("DomainMargin"), Comment("Maximum time a BField domain may extend beyond the active range (ns, >= 0); absent leaves domains unconfined") };
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
@@ -83,6 +86,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
+      fhicl::Atom<float> maxSeedStrawHitDt { Name("MaxSeedStrawHitDt"), Comment("Max |seed particle TOCA - hit time| for a straw hit to enter the initial fit (ns); 0 keeps every hit"), 0.0 };
       fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<bool> skipStrawCheck { Name("SkipStrawCheck"), Comment("Skip rho and panel longitudinal checks when adding straws") };
       fhicl::Atom<float> addStrawMinDz { Name("AddStrawMinDz"), Comment("For tracks more vertical than this add all straws") };

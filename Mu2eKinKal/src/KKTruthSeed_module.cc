@@ -28,6 +28,9 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
+
 // data
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
@@ -108,7 +111,8 @@ namespace mu2e {
       std::optional<KalSeed> createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
           KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
           DetectorSystem const& det, ParticleDataList const& ptable,
-          Calorimeter const& calo, Tracker const& nominalTracker) const;
+          Calorimeter const& calo, Tracker const& nominalTracker,
+          TrackerStatus const& trackerStatus) const;
 
       int debug_;
       art::ProductToken<KalSeedCollection> kseedcol_T_;
@@ -141,6 +145,8 @@ namespace mu2e {
     produces<KalSeedCollection>();
     produces<KalSeedMCAssns>();
     if(settings().extrapSettings()) extrap_ = std::make_unique<KKExtrap>(*settings().extrapSettings());
+    // the truth track extrapolates with the extension config's bfcorr_ and mindtstep_
+    if(extrap_) extrap_->checkConfig(exconfig_);
     if(truthSeedParamConstraints_.size() != KinKal::NParams())
       throw cet::exception("RECO") << "mu2e::KKTruthSeed: TruthSeedParameterConstraints must have "
         << KinKal::NParams() << " entries" << std::endl;
@@ -188,7 +194,8 @@ namespace mu2e {
   std::optional<KalSeed> KKTruthSeed::createTruthSeed(KinKal::ParticleTrajectory<KTRAJ> const& recotraj,
       KalSeed const& recoseed, KKFit<KTRAJ>& kkfit, MCTrajectoryCollection const& mctrajs,
       DetectorSystem const& det, ParticleDataList const& ptable,
-      Calorimeter const& calo, Tracker const& nominalTracker) const {
+      Calorimeter const& calo, Tracker const& nominalTracker,
+      TrackerStatus const& trackerStatus) const {
     using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
     using KKTRK = KKTrack<KTRAJ>;
     using KKSTRAWHITCOL = std::vector<std::shared_ptr<KKStrawHit<KTRAJ>>>;
@@ -214,6 +221,14 @@ namespace mu2e {
       auto const htime = fpiece.range().mid();
       VEC3 tpos, tmom; double ttime = 0.0;
       if(!trueStateAt(mctrajs, det, fpiece.position3(htime), mass, tpos, tmom, ttime)) continue;
+      // a helix needs a usable local field: outside the map, or where the helix can't represent the true state there
+      // (null field, circle centered on the axis), the constructor would refuse it
+      if constexpr(!isLine){
+        VEC4 tpos4(tpos.X(),tpos.Y(),tpos.Z(),ttime);
+        MOM4 tmom4(tmom.X(),tmom.Y(),tmom.Z(),mass);
+        if(!kkbf_->usable(tpos) ||
+            !KTRAJ::constructible(KinKal::ParticleState(tpos4,tmom4,tcharge),VEC3(0.0,0.0,kkbf_->fieldVect(tpos).Z()))) continue;
+      }
       // the KTRAJ nominal BField: the local field for a helix; a fixed non-zero z for a field-free line
       // (KinematicLine requires a non-zero bnom for interface consistency).
       KTRAJ tpiece = [&]{
@@ -284,6 +299,12 @@ namespace mu2e {
     // without re-running the full extension schedule (which diverges a hit-less truth-pinned fit).
     truthConfig.bfcorr_ = exconfig_.bfcorr_;
     truthConfig.tol_    = exconfig_.tol_;
+    truthConfig.mindtstep_ = exconfig_.mindtstep_; // floors the extrapolation step too
+    // a field-corrected truth fit needs the reco domains, as in RegrowLoopHelix
+    if(truthConfig.bfcorr_ && truthDomains.empty()){
+      if(debug_ > 0) std::cout << "KKTruthSeed: no BField domains from " << recoseed.domainBounds().size() << " saved bounds; skipping" << std::endl;
+      return std::nullopt;
+    }
     auto ktrk_truth = std::make_unique<KKTRK>(truthConfig,*kkbf_,recoseed.particle(),truthTraj,
         nostrawhits,nostrawxings,nocalohits,truthParamHits,truthDomains);
     if(!ktrk_truth->fitStatus().usable()){
@@ -295,7 +316,7 @@ namespace mu2e {
     // the reco does. The truth track has no straw hits, so without this the KalSeed's detector time range
     // is undefined and the CRV crossings are not recorded -- leaving trktruthsegs empty at the CRV.
     kkfit.sampleFit(*ktrk_truth);
-    auto tsseed = kkfit.createSeed(*ktrk_truth,recoseed.status(),calo,nominalTracker);
+    auto tsseed = kkfit.createSeed(*ktrk_truth,recoseed.status(),calo,nominalTracker,trackerStatus);
     // carry the reco fit's hit metadata onto the truth KalSeed (the truth-constrained fit has no detector
     // hits, but EventNtuple consumers use the hit list for bookkeeping)
     tsseed._hits = recoseed.hits();
@@ -308,6 +329,8 @@ namespace mu2e {
     GeomHandle<Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<DetectorSystem> det;
+    ProditionsHandle<TrackerStatus> trackerStatus_h;
+    auto const& trackerStatus = trackerStatus_h.getPtr(event.id()).get();
     auto const& ptable = *GlobalConstantsHandle<ParticleDataList>();
 
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
@@ -337,13 +360,13 @@ namespace mu2e {
       std::optional<KalSeed> tsseed;
       if(kseed.loopHelixFit()){
         auto recotraj = kseed.loopHelixFitTrajectory();
-        tsseed = createTruthSeed<KinKal::LoopHelix>(*recotraj,kseed,lhfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::LoopHelix>(*recotraj,kseed,lhfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else if(kseed.centralHelixFit()){
         auto recotraj = kseed.centralHelixFitTrajectory();
-        tsseed = createTruthSeed<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::CentralHelix>(*recotraj,kseed,chfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else if(kseed.kinematicLineFit()){
         auto recotraj = kseed.kinematicLineFitTrajectory();
-        tsseed = createTruthSeed<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h);
+        tsseed = createTruthSeed<KinKal::KinematicLine>(*recotraj,kseed,klfit_,mctrajs,*det,ptable,*calo_h,*nominalTracker_h,*trackerStatus);
       } else {
         throw cet::exception("RECO") << "mu2e::KKTruthSeed: KalSeed is not a LoopHelix, CentralHelix, or KinematicLine fit" << std::endl;
       }

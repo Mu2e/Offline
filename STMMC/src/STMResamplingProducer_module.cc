@@ -68,7 +68,7 @@ namespace mu2e {
   };
 
   void STMResamplingProducer::endJob() {
-    mf::LogInfo log("STMResamplingProducer summary");
+    mf::LogInfo log("STMResamplingProducer");
     log << "No. kept StepPointMCs: " << includedStepPointMCs  << "\n";
     return;
   };

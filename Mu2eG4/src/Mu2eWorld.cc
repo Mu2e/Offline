@@ -37,6 +37,7 @@
 #include "Offline/Mu2eG4/inc/constructWorldVolume.hh"
 #include "Offline/Mu2eG4/inc/constructHall.hh"
 #include "Offline/Mu2eG4/inc/constructProtonBeamDump.hh"
+#include "Offline/Mu2eG4/inc/constructExtMonFNAL.hh"
 #include "Offline/Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Offline/Mu2eG4/inc/constructCRV.hh"
 #include "Offline/Mu2eG4/inc/constructExternalShielding.hh"
@@ -175,11 +176,25 @@ namespace mu2e {
   }
 
   // This is the callback called by G4 via void WorldMaker::ConstructSDandField()
+  // G4 calls it once on every thread, and the Mu2eG4MT workers call it concurrently.
   void Mu2eWorld::constructSDandField(){
+
+    // SimpleConfig records every default it returns, and the AntiLeakRegistry
+    // is a plain container: neither is safe to use from two threads at once.
+    std::lock_guard<std::mutex> lock(constructSDandFieldMutex_);
 
     sdHelper_->instantiateLVSDs(_config);
     instantiateSensitiveDetectors();
     constructBFieldAndManagers();
+
+    // Local magnet fields, under the same conditions as their volumes in constructWorld()
+    constructExtMonFNALMagnetFields(_config);
+    if ( _config.getBool("mstm.build", false) ) {
+      constructMSTMMagneticField(_config);
+    }
+    if ( _config.getBool("hasSTM",false) ) {
+      constructSTMMagneticField();
+    }
 
   }
 

@@ -7,6 +7,7 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "cetlib_except/exception.h"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
@@ -122,6 +123,18 @@ namespace mu2e
     art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
+    // any of these products can legitimately be absent from a file whose intermediate CRV
+    // collections were dropped, so say which one is missing instead of dereferencing an
+    // invalid handle (CrvMCHelper.cc and CrvCoincidenceClusterMatchMC_module.cc guard the same way)
+    if(!crvPhotonsCollection.isValid())
+      throw cet::exception("SIM")<<"mu2e::CrvPlot: no CrvPhotonsCollection with label "<<_crvPhotonsModuleLabel<<std::endl;
+    if(!crvSiPMChargesCollection.isValid())
+      throw cet::exception("SIM")<<"mu2e::CrvPlot: no CrvSiPMChargesCollection with label "<<_crvSiPMChargesModuleLabel<<std::endl;
+    if(!crvDigiCollection.isValid())
+      throw cet::exception("SIM")<<"mu2e::CrvPlot: no CrvDigiCollection with label "<<_crvDigiModuleLabel<<std::endl;
+    if(!crvRecoPulseCollection.isValid())
+      throw cet::exception("SIM")<<"mu2e::CrvPlot: no CrvRecoPulseCollection with label "<<_crvRecoPulsesModuleLabel<<std::endl;
+
     auto const& calib = _calib_h.get(event.id());
 
     GeomHandle<CosmicRayShield> CRS;
@@ -233,8 +246,10 @@ namespace mu2e
 //waveforms
       std::vector<std::vector<double> > ADCs[4];  //there can be multiple disconnected ADC waveforms per SiPM
       std::vector<std::vector<double> > times[4];
-      double scale[4]={NAN};
-      double maxADC[4]={NAN};
+      // NB: `double x[4]={NAN};` would set only element 0 to NAN and value-initialize 1-3 to 0.0,
+      // which silently defeats the isnan() "no digis" guard below for SiPMs 1-3
+      double scale[4]={NAN,NAN,NAN,NAN};
+      double maxADC[4]={NAN,NAN,NAN,NAN};
       CrvDigiCollection::const_iterator digis;
       for(digis=crvDigiCollection->begin(); digis!=crvDigiCollection->end(); ++digis)
       {

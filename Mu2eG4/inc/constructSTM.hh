@@ -13,6 +13,10 @@ namespace mu2e {
 
   void constructSTM(const SimpleConfig& _config);
 
+  // The field of the magnet built by constructSTM().
+  // Call from ConstructSDandField(), on every thread.
+  void constructSTMMagneticField();
+
 }
 
 #endif /* Mu2eG4_constructSTM_hh */

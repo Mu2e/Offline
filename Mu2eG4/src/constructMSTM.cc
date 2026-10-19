@@ -407,19 +407,8 @@ namespace mu2e {
                                                   doSurfaceCheck
                                                   );
 
-    // Create a magnetic field inside the window (hole) of the magnet box
-    // Note the local values for the stepper etc...
-    // Geant4 should take ownership of the objects created here
-
-    const double mstmMagnetField = _config.getDouble("mstm.magnet.field");
-
-    G4MagneticField        *localMagField        = new G4UniformMagField(G4ThreeVector(mstmMagnetField*CLHEP::tesla,0.0,0.0));//This makes negatively charged particles go towards the floor
-    G4Mag_EqRhs            *MagRHS               = new G4Mag_UsualEqRhs(localMagField);
-    G4MagIntegratorStepper *localMagStepper      = new G4ExactHelixStepper(MagRHS); // we use a specialized stepper
-    G4ChordFinder          *localMagChordFinder  = new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,localMagStepper);
-    G4FieldManager         *localMagFieldManager = new G4FieldManager(localMagField,localMagChordFinder,false);// pure magnetic filed does not change energy
-
-    mstmMagneticFieldBoxInfo.logical->SetFieldManager(localMagFieldManager, true); // last "true" arg propagates field to all volumes it contains
+    // The magnetic field inside the window (hole) of the magnet box
+    // is attached by constructMSTMMagneticField().
 
     G4UserLimits* mstmMagStepLimit = new G4UserLimits(5.*CLHEP::mm);
     mstmMagneticFieldBoxInfo.logical->SetUserLimits(mstmMagStepLimit);
@@ -947,6 +936,29 @@ namespace mu2e {
       std::cout << __func__ << " mstmMotherPositionInMu2e = " << mstmMotherPositionInMu2e << endl;
       std::cout << __func__ << " mstmReferencePositionInMu2e = " << mstmReferencePositionInMu2e << endl;
     }
+
+  }
+
+  // Field managers are per-thread objects in Geant4 MT.  One built in
+  // constructMSTM(), in Construct(), would run only on the master and be shared
+  // by every worker, so this is called from ConstructSDandField(), once on each thread.
+  void constructMSTMMagneticField(const SimpleConfig& _config){
+
+    Mu2eG4Helper& helper  = *(art::ServiceHandle<Mu2eG4Helper>());
+    AntiLeakRegistry& reg = helper.antiLeakRegistry();
+
+    // Note the local values for the stepper etc...
+    const double mstmMagnetField = _config.getDouble("mstm.magnet.field");
+
+    G4MagneticField        *localMagField        = reg.add(new G4UniformMagField(G4ThreeVector(mstmMagnetField*CLHEP::tesla,0.0,0.0)));//This makes negatively charged particles go towards the floor
+    G4Mag_EqRhs            *MagRHS               = reg.add(new G4Mag_UsualEqRhs(localMagField));
+    G4MagIntegratorStepper *localMagStepper      = reg.add(new G4ExactHelixStepper(MagRHS)); // we use a specialized stepper
+    G4ChordFinder          *localMagChordFinder  = reg.add(new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,localMagStepper));
+    // Owned by this thread's G4FieldManagerStore, which deletes it with the
+    // thread's G4RunManagerKernel.
+    G4FieldManager         *localMagFieldManager = new G4FieldManager(localMagField,localMagChordFinder,false);// pure magnetic filed does not change energy
+
+    helper.locateVolInfo("mstmMagneticField").logical->SetFieldManager(localMagFieldManager, true); // last "true" arg propagates field to all volumes it contains
 
   }
 

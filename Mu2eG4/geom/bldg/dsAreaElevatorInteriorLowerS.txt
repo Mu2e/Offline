@@ -9,8 +9,8 @@ vector<double> building.dsArea.elevator.interior.lower.S.xPositions = {
 35839.40, // 1
 35585.40, // 2
 35585.40, // 3
-29794.20, // 4
-29794.20 // 5
+35433., // 4
+35433. // 5
 };
 vector<double> building.dsArea.elevator.interior.lower.S.yPositions = {
 -14427.20, // 0

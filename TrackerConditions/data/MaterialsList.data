@@ -17,6 +17,7 @@ CO2  0.001842 0. 0. -2 1 Carbon 0 2 Oxygen 0 -10 -20 -30 20.0 1.0 gas
 HDPE      0.96        0.   0.   -2      4  Hydrogen 0    2 Carbon 0    -10 -20 -30    20.0   1.0   solid
 # 90:10 by volume
 HeCF4  0.0005331 0. 0. 2 0.334 Helium 0 0.666 CF4 1 -10 -20 -30 20.0 1.0 gas
+CF4          0.00249  0.  0.  -2  1  Carbon  0  4  Fluorine  0  -10  -20  -30  20.0  1.0  gas
 Kapton       1.4300    0.   0.   -4    37    Carbon     0 6 Oxygen 0 2 Nitrogen 0 6 Hydrogen 0    -10     -20     -30     20.0    1.0    solid
 Mylar       1.4    0.   0.   -3    10    Carbon     0 4 Oxygen 0 8 Hydrogen 0    -10     -20     -30     20.0    1.0    solid
 # specific mu2e materials

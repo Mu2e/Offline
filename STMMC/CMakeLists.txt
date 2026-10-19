@@ -43,6 +43,14 @@ cet_build_plugin(HPGeWaveformsFromStepPointMCs art::module
       Offline::STMConditions
       Offline::GlobalConstantsService
 )
+
+cet_build_plugin(LaBrTree art::module
+    REG_SOURCE src/LaBrTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(PHTree art::module
     REG_SOURCE src/PHTree_module.cc
     LIBRARIES REG
@@ -87,7 +95,15 @@ cet_build_plugin(VDResamplerConfigure art::module
     REG_SOURCE src/VDResamplerConfigure_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(VDResamplerReconfigure art::module
+    REG_SOURCE src/VDResamplerReconfigure_module.cc
+    LIBRARIES REG
+      Offline::GeneralUtilities
       Offline::MCDataProducts
 )
 
@@ -95,6 +111,18 @@ cet_build_plugin(VDResamplerTrain art::module
     REG_SOURCE src/VDResamplerTrain_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
+      Offline::GeneralUtilities
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
+      Offline::SeedService
+)
+
+cet_build_plugin(VDResamplerTrainFromRoot art::module
+    REG_SOURCE src/VDResamplerTrainFromRoot_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
@@ -106,6 +134,7 @@ cet_build_plugin(VDResamplerGenerateFromModel art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DataProducts
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
@@ -117,10 +146,21 @@ cet_build_plugin(VDResamplerGenerateMix art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::DataProducts
+      Offline::GeneralUtilities
       Offline::GlobalConstantsService
       Offline::MachineLearningTools
       Offline::MCDataProducts
       Offline::SeedService
+)
+
+cet_build_plugin(VDResamplerRegeneratePlots art::module
+    REG_SOURCE src/VDResamplerRegeneratePlots_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GeneralUtilities
+      Offline::GlobalConstantsService
+      Offline::MachineLearningTools
+      Offline::MCDataProducts
 )
 
 install_source(SUBDIRS src)

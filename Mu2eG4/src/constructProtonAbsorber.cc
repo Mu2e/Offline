@@ -739,7 +739,7 @@ namespace mu2e {
 
             //extend the box so that it notches through at either end, not just the center
             const double notchExtension = (opaVersion > 2) ?
-              (rin - sqrt(rin*rin-notchWidth*notchWidth)) : 0.;
+              (rin - sqrt(rin*rin-(notchWidth/2.)*(notchWidth/2.))) : 0.;
 
             G4Box* notch = new G4Box("notch", notchWidth/2.*CLHEP::mm,
                                      (notchHeight+notchExtension)/2.*CLHEP::mm, hl*1.1 );

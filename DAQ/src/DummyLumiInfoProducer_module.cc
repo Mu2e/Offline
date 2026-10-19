@@ -72,7 +72,7 @@ namespace mu2e
         caloInfo->addCaphriHit(energy, index);
       }
 
-      timeClusterInfo->setNProtonTCs((eventNumber * prime_1) % (prime_2));
+      timeClusterInfo->setNTCs((eventNumber * prime_1) % (prime_2));
 
       trackerInfo->setNTrackerHits((eventNumber * prime_1) % (prime_4));
     }

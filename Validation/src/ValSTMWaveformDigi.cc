@@ -31,3 +31,18 @@ int mu2e::ValSTMWaveformDigi::fill(
   }
   return 0;
 }
+
+int mu2e::ValSTMWaveformDigi::fill(
+    const mu2e::STMWaveformDigiCollectionMap& map, art::Event const& event) {
+  // increment this by 1 any time the defnitions of the histograms or the
+  // histogram contents change, and will not match previous versions
+  _hVer->Fill(0.0);
+
+  // for STM data, each art::Event contains many mu2e events (EWTs) and so we
+  // are storing them in a map
+  for (auto& mu2e_evt : map) {
+    const auto& coll = mu2e_evt.second;
+    fill(coll, event);
+  }
+  return 0;
+}

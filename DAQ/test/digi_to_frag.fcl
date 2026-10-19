@@ -43,10 +43,8 @@ physics : {
       debugBits : [ "bit0:0", "bit1:0" ]
       saveWaveforms : true
       missingDTCHeaders : false
-      keyOnMnid : false
-      allowOfflineFallbackWhenPanelMapMissing : true
-      forceOfflineAddressing : true
-      geography : []
+      addressing : "geographic"
+      onMissingRow : "skip"        ## not used when addressing is "geographic"
     }
   }
 

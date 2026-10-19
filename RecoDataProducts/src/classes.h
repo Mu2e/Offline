@@ -99,6 +99,7 @@
 #include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 #include "Offline/RecoDataProducts/inc/STMFragmentSummary.hh"
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 
 // MSD
 #include "Offline/RecoDataProducts/inc/MSDHit.hh"

@@ -66,6 +66,25 @@ namespace mu2e {
     _hSTdP = tfs.make<TH1D>( "STdP", "Momentum Change Crossing a ST Foil;MeV", 100, -1.0, 0.0);
     _hNIPA = tfs.make<TH1D>( "NIPA", "Number of IPA intersections", 20, -0.5, 19.5);
     _hIPAdP = tfs.make<TH1D>( "IPAdP", "Momentum Change Crossing the IPA;MeV", 100, -0.5, 0.0);
+    // one labelled bin per CRV sector SurfaceId, so new sectors appear without code changes
+    for (auto const& [sid, sname] : SurfaceIdDetail::names()) {
+      if (sid >= SurfaceIdDetail::CRV_EX && sid < SurfaceIdDetail::CRV_StrongBack) {
+        int ibin = static_cast<int>(_crvbin.size()) + 1;
+        _crvbin[sid] = ibin;
+      }
+    }
+    _hNCRV = tfs.make<TH1D>( "NCRV", "Number of CRV sector intersections", 20, -0.5, 19.5);
+    _hCRVSector = tfs.make<TH1D>( "CRVSector", "CRV sector intersected", _crvbin.size(), 0.5, _crvbin.size()+0.5);
+    for (auto const& [sid, ibin] : _crvbin) _hCRVSector->GetXaxis()->SetBinLabel(ibin, SurfaceIdDetail::names().at(sid).c_str());
+    _hCRVInBounds = tfs.make<TH1D>( "CRVInBounds", "CRV intersection inside the sector bounds", 2, -0.5, 1.5);
+    _hCRVdT = tfs.make<TH1D>( "CRVdT", "CRV intersection time - t0;ns", 100, -100.0, 100.0);
+    _hCRVMom = tfs.make<TH1D>( "CRVMom", "Momentum at the CRV;MeV/c", 100, 0.0, 50000.0);
+    _hCRVMomErr = tfs.make<TH1D>( "CRVMomRelErr", "Relative momentum error at the CRV", 100, 0.0, 0.5);
+    _hCRVdP = tfs.make<TH1D>( "CRVdP", "Momentum Change Crossing a CRV sector;MeV", 100, -150.0, 0.0);
+    _hCRVx = tfs.make<TH1D>( "CRVx", "CRV intersection x;mm", 100, -8000.0, 4000.0);
+    _hCRVy = tfs.make<TH1D>( "CRVy", "CRV intersection y;mm", 100, -3000.0, 6000.0);
+    _hCRVz = tfs.make<TH1D>( "CRVz", "CRV intersection z;mm", 100, -10000.0, 20000.0);
+    _hNCRVSB = tfs.make<TH1D>( "NCRVSB", "Number of CRV strongback intersections", 20, -0.5, 19.5);
     int ibin = 1;
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Primary");  // bin 1, first visible
     _hCuts->GetXaxis()->SetBinLabel(ibin++, "MC Momentum");
@@ -89,7 +108,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(14.0);
+    _hVer->Fill(15.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -172,6 +191,29 @@ namespace mu2e {
       _hNIPA->Fill(ipainters.size());
       for (auto ipainter : ipainters)
         _hIPAdP->Fill(ipainter->dMom());
+      unsigned ncrv(0), ncrvsb(0);
+      for (auto const& inter : ks.intersections()) {
+        auto sid = inter.surfaceId().id().id();
+        if (sid == SurfaceIdDetail::CRV_StrongBack) {
+          ++ncrvsb;
+          continue;
+        }
+        auto ibin = _crvbin.find(sid);
+        if (ibin == _crvbin.end()) continue;
+        ++ncrv;
+        _hCRVSector->Fill(ibin->second);
+        _hCRVInBounds->Fill(inter.inBounds() ? 1.0 : 0.0);
+        _hCRVdT->Fill(inter.time() - ks.t0Val());
+        _hCRVMom->Fill(inter.mom());
+        if (inter.mom() > 0.0) _hCRVMomErr->Fill(inter.momerr()/inter.mom());
+        _hCRVdP->Fill(inter.dMom());
+        auto pos = inter.position3();
+        _hCRVx->Fill(pos.X());
+        _hCRVy->Fill(pos.Y());
+        _hCRVz->Fill(pos.Z());
+      }
+      _hNCRV->Fill(ncrv);
+      _hNCRVSB->Fill(ncrvsb);
 
       _hp->Fill(p*recoCharge);
       _hp2->Fill(p*recoCharge);

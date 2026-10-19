@@ -53,6 +53,7 @@ namespace mu2e {
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // clone op for reinstantiation
       KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          KinKal::ResidualHit<KTRAJ>(rhs),
           bfield_(rhs.bfield()),
           whstate_(rhs.hitState()),
           dVar_(rhs.dVar_),
@@ -163,7 +164,7 @@ namespace mu2e {
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(mtime-chit_.driftTime(),mtime);
     PCA pca(ptraj,wirePtr(),tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
-    double dz = straw().origin().z() - ca_.particlePoca().Z();
+    double dz = straw().origin().z() - pca.particlePoca().Z();
     double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
     if((!pca.usable()) || fabs(dz) >  maxdz) {
       tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),mtime-chit_.driftTime()),mtime);
