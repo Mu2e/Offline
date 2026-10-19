@@ -4,10 +4,10 @@ string dirt.dsArea.alcove.stairwell.name     = "dirtDsAreaAlcoveStairwell";
 string dirt.dsArea.alcove.stairwell.material = "MBOverburden";
 
 double dirt.dsArea.alcove.stairwell.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.dsArea.alcove.stairwell.offsetFromFloorSurface.y = 3606.8;
+double dirt.dsArea.alcove.stairwell.offsetFromFloorSurface.y = 3429.;
 double dirt.dsArea.alcove.stairwell.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.dsArea.alcove.stairwell.yHalfThickness           = 3759.2;
+double dirt.dsArea.alcove.stairwell.yHalfThickness           = 3581.4;
 
 vector<double> dirt.dsArea.alcove.stairwell.xPositions = {
   13233.4,   // g1

@@ -16,8 +16,8 @@ double dirt.central.stairwell.lower3.yHalfThickness           = 1260.45;
 // conflict as that volume's rotation angle is not exactly pi/2
 vector<double> dirt.central.stairwell.lower3.xPositions = {
   9956.801,   // g1
-  11617.2,   // g2
-  11617.2,    // g3
+  11366.5,   // g2
+  11366.5,    // g3
   9956.801   // g4
 };
 
