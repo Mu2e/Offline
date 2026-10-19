@@ -175,6 +175,7 @@ namespace mu2e {
     if(_useCalo)            sr.put(std::move(_caloInfos)           , _outName              , art::fullSubRun());
     if(_useProtonCluster)   sr.put(std::move(_protonClusterInfos)  , _outName + "Proton"  , art::fullSubRun());
     if(_useElectronCluster) sr.put(std::move(_electronClusterInfos), _outName + "Electron", art::fullSubRun());
+    if(_useTracker)         sr.put(std::move(_trackerInfos)        , _outName              , art::fullSubRun());
     if(_useHeader)          sr.put(std::move(_headers)             , _outName              , art::fullSubRun());
 
     // Initialize new collections
