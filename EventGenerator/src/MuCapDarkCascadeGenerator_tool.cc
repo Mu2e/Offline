@@ -21,10 +21,10 @@
 // fraction of chi2 decaying inside the region is reported in the SpectrumConfig ("chi2DecayInRegion")
 // so samples can be normalized. The A' decay is always prompt.
 //
-// The mu- + nucleon system follows the same nuclear model as MuCapBNVGenerator (see
-// MuonNucleonKinematics.hh). All decays are isotropic in the parent rest frame (no spin
-// correlations or matrix elements).
-// See BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package) for details.
+// The mu- + nucleon system follows the configured nuclear model, as in MuCapBNVGenerator (see
+// MuonNucleonKinematics.hh and the BNVNuclearModel tables in EventGenerator/fcl/prolog.fcl).
+// The masses, nuclear parameters and (for a long-lived chi2) the decay region have no defaults.
+// All decays are isotropic in the parent rest frame (no spin correlations or matrix elements).
 //
 // Michael MacKenzie, 2026
 
@@ -46,6 +46,8 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/TableFragment.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -63,25 +65,18 @@ namespace mu2e {
 
       fhicl::Atom<std::string> recoil{Name("recoil"),
           Comment("Particle produced with chi2: \"chi0\" (mu- p --> chi0 chi2) or \"electron\" (mu- n --> e- chi2)"), "chi0"};
-      fhicl::Atom<double> m0{Name("m0"), Comment("chi0 mass (MeV/c^2)"), 0.};
-      fhicl::Atom<double> m1{Name("m1"), Comment("chi1 mass (MeV/c^2)"), 900.};
-      fhicl::Atom<double> m2{Name("m2"), Comment("chi2 mass (MeV/c^2)"), 1030.};
-      fhicl::Atom<double> mA{Name("mA"), Comment("Dark photon A' mass (MeV/c^2)"), 20.};
-      fhicl::Atom<std::string> nuclearModel{Name("nuclearModel"),
-          Comment("Nucleon model: \"fermiGas\" (Fermi gas spectator), \"nucleus\" (residual nucleus in the phase space),"
-                  " or \"free\" (nucleon at rest, no binding)"), "nucleus"};
-      fhicl::Atom<double> fermiMomentum{Name("fermiMomentum"),
-          Comment("Fermi gas k_F (MeV/c). Default: Moniz et al. (1971) value for Mg (A=24), the closest measured nucleus to Al"), 235.};
-      fhicl::Atom<double> removalEnergy{Name("removalEnergy"),
-          Comment("Nucleon removal energy (MeV). Negative uses the model default: the Moniz et al. Mg value (32 MeV) for fermiGas,"
-                  " the 27Al ground state separation energy (S_p = 8.27, S_n = 13.06 MeV) for nucleus"), -1.};
+      fhicl::OptionalAtom<double> m0{Name("m0"), Comment("chi0 mass (MeV/c^2), required for (and only allowed with) recoil \"chi0\"")};
+      fhicl::Atom<double> m1{Name("m1"), Comment("chi1 mass (MeV/c^2)")};
+      fhicl::Atom<double> m2{Name("m2"), Comment("chi2 mass (MeV/c^2)")};
+      fhicl::Atom<double> mA{Name("mA"), Comment("Dark photon A' mass (MeV/c^2)")};
+      fhicl::TableFragment<MuonNucleonKinematics::NuclearConfig> nuclear;
       fhicl::Atom<double> chi2Lifetime{Name("chi2Lifetime"), Comment("chi2 proper lifetime (ns); 0 for a prompt decay"), 0.};
-      fhicl::Atom<double> maxTransverseFlight{Name("maxTransverseFlight"),
-          Comment("Keep chi2 decays within this transverse distance of the muon stop (mm). Default: tracker straw outer radius"), 700.};
-      fhicl::Atom<double> minLongitudinalFlight{Name("minLongitudinalFlight"),
-          Comment("Keep chi2 decays at least this far along z from the muon stop (mm; negative is upstream)"), -1500.};
-      fhicl::Atom<double> maxLongitudinalFlight{Name("maxLongitudinalFlight"),
-          Comment("Keep chi2 decays at most this far along z from the muon stop (mm). Default: target to the last tracker plane"), 5800.};
+      fhicl::OptionalAtom<double> maxTransverseFlight{Name("maxTransverseFlight"),
+          Comment("Keep chi2 decays within this transverse distance of the muon stop (mm); required if chi2Lifetime > 0")};
+      fhicl::OptionalAtom<double> minLongitudinalFlight{Name("minLongitudinalFlight"),
+          Comment("Keep chi2 decays at least this far along z from the muon stop (mm; negative is upstream); required if chi2Lifetime > 0")};
+      fhicl::OptionalAtom<double> maxLongitudinalFlight{Name("maxLongitudinalFlight"),
+          Comment("Keep chi2 decays at most this far along z from the muon stop (mm); required if chi2Lifetime > 0")};
       fhicl::Atom<double> rate{Name("rate"), Comment("Rate per muon capture, only used when not generating as a primary"), 0.};
       fhicl::Atom<bool> makeHistograms{Name("makeHistograms"), Comment("Make histograms of the generated kinematics"), false};
       fhicl::Atom<int> verbosity{Name("verbosity"), Comment("Verbosity level"), 0};
@@ -109,13 +104,11 @@ namespace mu2e {
     bool _onShell; // chi2 --> chi1 A' is open
     PDGCode::type _nucleonPdg;
     double _nucleonMass;
-    MuonNucleonKinematics::Model _model;
-    double _fermiMomentum;
-    double _removalEnergy;
+    MuonNucleonKinematics::NuclearParameters _nuclear;
     double _chi2Lifetime;
-    double _maxTransverseFlight;
-    double _minLongitudinalFlight;
-    double _maxLongitudinalFlight;
+    double _maxTransverseFlight = 0.;
+    double _minLongitudinalFlight = 0.;
+    double _maxLongitudinalFlight = 0.;
     double _rate;
     bool _makeHistograms;
     int _verbosity;
@@ -148,13 +141,8 @@ namespace mu2e {
     _m1(conf().m1()),
     _m2(conf().m2()),
     _mA(conf().mA()),
-    _model(MuonNucleonKinematics::parseModel(conf().nuclearModel())),
-    _fermiMomentum(conf().fermiMomentum()),
-    _removalEnergy(conf().removalEnergy()),
+    _nuclear(MuonNucleonKinematics::parseConfig(conf().nuclear(), "MuCapDarkCascadeGenerator")),
     _chi2Lifetime(conf().chi2Lifetime()),
-    _maxTransverseFlight(conf().maxTransverseFlight()),
-    _minLongitudinalFlight(conf().minLongitudinalFlight()),
-    _maxLongitudinalFlight(conf().maxLongitudinalFlight()),
     _rate(conf().rate()),
     _makeHistograms(conf().makeHistograms()),
     _verbosity(conf().verbosity())
@@ -169,14 +157,13 @@ namespace mu2e {
     // Charge conservation: mu- p --> chi0 chi2 (neutral), mu- n --> e- chi2
     _nucleonPdg  = (_electronRecoil) ? PDGCode::neutron : PDGCode::proton;
     _nucleonMass = pdt->particle(_nucleonPdg).mass();
-    _m0          = (_electronRecoil) ? _me : conf().m0();
-
-    if(_fermiMomentum < 0.) throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: negative Fermi momentum\n";
-    if(_removalEnergy < 0.) {
-      if(_model == MuonNucleonKinematics::Model::fermiGas) _removalEnergy = 32.;
-      else if(_model == MuonNucleonKinematics::Model::nucleus) _removalEnergy = (_nucleonPdg == PDGCode::proton) ? 8.271 : 13.058;
-      else _removalEnergy = 0.;
+    double m0 = 0.;
+    const bool hasM0 = conf().m0(m0);
+    if(hasM0 == _electronRecoil) {
+      throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: m0 must " << ((_electronRecoil) ? "not " : "")
+                                        << "be set for recoil \"" << conf().recoil() << "\"\n";
     }
+    _m0 = (_electronRecoil) ? _me : m0;
 
     if(_m0 < 0. || _m1 < 0. || _mA < 0.) throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: negative mass\n";
     if(_m2 <= _m1 + 2.*_me) {
@@ -188,8 +175,18 @@ namespace mu2e {
     }
     _onShell = _m2 > _m1 + _mA;
     if(_chi2Lifetime < 0.) throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: negative chi2 lifetime\n";
-    if(_maxTransverseFlight <= 0. || _minLongitudinalFlight >= _maxLongitudinalFlight) {
-      throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: empty chi2 fiducial decay region\n";
+    const bool hasRho  = conf().maxTransverseFlight(_maxTransverseFlight);
+    const bool hasZMin = conf().minLongitudinalFlight(_minLongitudinalFlight);
+    const bool hasZMax = conf().maxLongitudinalFlight(_maxLongitudinalFlight);
+    const bool hasRegion = hasRho && hasZMin && hasZMax;
+    if(_chi2Lifetime > 0.) {
+      if(!hasRegion) {
+        throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: a long-lived chi2 requires maxTransverseFlight,"
+                                          << " minLongitudinalFlight, and maxLongitudinalFlight\n";
+      }
+      if(_maxTransverseFlight <= 0. || _minLongitudinalFlight >= _maxLongitudinalFlight) {
+        throw cet::exception("BADCONFIG") << "MuCapDarkCascadeGenerator: empty chi2 fiducial decay region\n";
+      }
     }
 
     if(_verbosity > 0) {
@@ -215,23 +212,26 @@ namespace mu2e {
       _hCosOpen  = tfdir.make<TH1F>("hCosOpen" , "e^{+}e^{-} opening angle;cos(#theta_{ee})", 100, -1., 1.);
       _hERecoil  = tfdir.make<TH1F>("hERecoil" , "Recoil (#chi_{0} or e^{-}) energy;E (MeV)", 200, 0., 200.);
       _hEpVsEm   = tfdir.make<TH2F>("hEpVsEm"  , "Positron vs. electron energy;E_{-} (MeV);E_{+} (MeV)", 100, 0., 200., 100, 0., 200.);
-      _hDecayLength = tfdir.make<TH1F>("hDecayLength", "#chi_{2} flight distance (accepted decays);L (mm)", 200, 0., 8000.);
-      _hDecayDelay  = tfdir.make<TH1F>("hDecayDelay" , "#chi_{2} decay delay in the lab (accepted decays);#Deltat (ns)", 200, 0., 2000.);
-      _hDecayRhoVsZ = tfdir.make<TH2F>("hDecayRhoVsZ", "#chi_{2} decay point relative to the stop;#Deltaz (mm);#rho (mm)",
-                                       150, _minLongitudinalFlight, _maxLongitudinalFlight, 70, 0., _maxTransverseFlight);
+      if(_chi2Lifetime > 0.) {
+        _hDecayLength = tfdir.make<TH1F>("hDecayLength", "#chi_{2} flight distance (accepted decays);L (mm)", 200, 0., 8000.);
+        _hDecayDelay  = tfdir.make<TH1F>("hDecayDelay" , "#chi_{2} decay delay in the lab (accepted decays);#Deltat (ns)", 200, 0., 2000.);
+        _hDecayRhoVsZ = tfdir.make<TH2F>("hDecayRhoVsZ", "#chi_{2} decay point relative to the stop;#Deltaz (mm);#rho (mm)",
+                                         150, _minLongitudinalFlight, _maxLongitudinalFlight, 70, 0., _maxTransverseFlight);
+      }
     }
   }
 
   //================================================================
   void MuCapDarkCascadeGenerator::finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) {
     _isPrimary = isPrimary;
+    MuonNucleonKinematics::checkMaterial(_nuclear, material, "MuCapDarkCascadeGenerator");
     GlobalConstantsHandle<PhysicsParams> phy;
     const double muonEnergy = phy->getMuonEnergy(material);
     // Nuclear mass of the initial nucleus, from the atomic mass
     const double nucleusMass = phy->getAtomicMass(material)*CLHEP::amu_c2
       - phy->getAtomicNumber(material)*GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus).mass();
     _kinematics = std::make_unique<MuonNucleonKinematics>(eng, muonEnergy, _nucleonMass, nucleusMass,
-                                                          _model, _fermiMomentum, _removalEnergy);
+                                                          _nuclear);
     _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, _rate);
     _randExp = std::make_unique<CLHEP::RandExponential>(eng);
 
@@ -305,9 +305,11 @@ namespace mu2e {
         _hCosOpen->Fill(em.vect().unit().dot(ep.vect().unit()));
         _hERecoil->Fill(recoil.e());
         _hEpVsEm->Fill(em.e(), ep.e());
-        _hDecayLength->Fill(offset.mag());
-        _hDecayDelay->Fill(delay);
-        _hDecayRhoVsZ->Fill(offset.z(), offset.perp());
+        if(_chi2Lifetime > 0.) {
+          _hDecayLength->Fill(offset.mag());
+          _hDecayDelay->Fill(delay);
+          _hDecayRhoVsZ->Fill(offset.z(), offset.perp());
+        }
       }
     }
     return res;

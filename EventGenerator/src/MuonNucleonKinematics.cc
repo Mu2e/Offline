@@ -22,16 +22,44 @@ namespace mu2e {
   }
 
   //================================================================
+  MuonNucleonKinematics::NuclearParameters MuonNucleonKinematics::parseConfig(const NuclearConfig& conf, const std::string& caller) {
+    NuclearParameters par{parseModel(conf.nuclearModel()), conf.nuclearMaterial()};
+    const bool hasKF = conf.fermiMomentum(par.fermiMomentum);
+    const bool hasRemoval = conf.removalEnergy(par.removalEnergy);
+    const bool needKF = par.model == Model::fermiGas;
+    const bool needRemoval = par.model != Model::free;
+    if(hasKF != needKF) {
+      throw cet::exception("BADCONFIG") << caller << ": fermiMomentum must " << ((needKF) ? "" : "not ")
+                                        << "be set for nuclearModel \"" << conf.nuclearModel() << "\"\n";
+    }
+    if(hasRemoval != needRemoval) {
+      throw cet::exception("BADCONFIG") << caller << ": removalEnergy must " << ((needRemoval) ? "" : "not ")
+                                        << "be set for nuclearModel \"" << conf.nuclearModel() << "\"\n";
+    }
+    if(par.fermiMomentum < 0.) throw cet::exception("BADCONFIG") << caller << ": negative Fermi momentum\n";
+    if(par.removalEnergy < 0.) throw cet::exception("BADCONFIG") << caller << ": negative removal energy\n";
+    return par;
+  }
+
+  //================================================================
+  void MuonNucleonKinematics::checkMaterial(const NuclearParameters& par, const std::string& material, const std::string& caller) {
+    if(par.material != material) {
+      throw cet::exception("BADCONFIG") << caller << ": nuclear parameters configured for \"" << par.material
+                                        << "\" but the stopping target material is \"" << material << "\"\n";
+    }
+  }
+
+  //================================================================
   MuonNucleonKinematics::MuonNucleonKinematics(CLHEP::HepRandomEngine& eng,
                                                double muonEnergy, double nucleonMass, double nucleusMass,
-                                               Model model, double fermiMomentum, double removalEnergy) :
+                                               const NuclearParameters& par) :
     _muonEnergy(muonEnergy),
     _nucleonMass(nucleonMass),
     _nucleusMass(nucleusMass),
-    _residualMass(nucleusMass - nucleonMass + removalEnergy),
-    _model(model),
-    _fermiMomentum(fermiMomentum),
-    _removalEnergy(removalEnergy),
+    _residualMass(nucleusMass - nucleonMass + par.removalEnergy),
+    _model(par.model),
+    _fermiMomentum(par.fermiMomentum),
+    _removalEnergy(par.removalEnergy),
     _randFlat(eng),
     _randomUnitSphere(eng)
   {}

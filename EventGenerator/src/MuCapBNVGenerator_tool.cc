@@ -8,11 +8,13 @@
 // by mass only and enter the kinematics but are not written out.
 //
 // Kinematics: the muon is taken at rest with its bound 1s total energy (PhysicsParams muonEnergy)
-// and the struck nucleon follows a Fermi gas spectator model. The final state is distributed
+// and the struck nucleon follows the configured nuclear model (no defaults, see the
+// BNVNuclearModel tables in EventGenerator/fcl/prolog.fcl). The final state is distributed
 // according to pure n-body Lorentz-invariant phase space at the invariant mass W of the
 // annihilating system (see MuonNucleonKinematics.hh).
 // No matrix element and no intra-nuclear final-state interactions of the produced hadrons are
-// applied. See BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package) for the physics motivation.
+// applied. For the light dark sector final states see Fox et al., arXiv:2407.03450, and for the
+// B = L = 1 boson see Heeck, arXiv:2009.01256.
 //
 // Michael MacKenzie, 2026 (based on MuCapProtonGenerator_tool.cc and RMCGenerator_tool.cc)
 
@@ -36,6 +38,7 @@
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
+#include "fhiclcpp/types/TableFragment.h"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -62,14 +65,7 @@ namespace mu2e {
       fhicl::OptionalSequence<fhicl::Table<InvisibleConfig>> invisibles{Name("invisibles"),
           Comment("Invisible final state particles, included in the kinematics but not written out")};
       fhicl::Atom<std::string> nucleon{Name("nucleon"), Comment("Annihilated bound nucleon: \"proton\" or \"neutron\""), "proton"};
-      fhicl::Atom<std::string> nuclearModel{Name("nuclearModel"),
-          Comment("Nucleon model: \"fermiGas\" (Fermi gas spectator), \"nucleus\" (residual nucleus in the phase space),"
-                  " or \"free\" (nucleon at rest, no binding)"), "fermiGas"};
-      fhicl::Atom<double> fermiMomentum{Name("fermiMomentum"),
-          Comment("Fermi gas k_F (MeV/c). Default: Moniz et al. (1971) value for Mg (A=24), the closest measured nucleus to Al"), 235.};
-      fhicl::Atom<double> removalEnergy{Name("removalEnergy"),
-          Comment("Nucleon removal energy (MeV). Negative uses the model default: the Moniz et al. Mg value (32 MeV) for fermiGas,"
-                  " the 27Al ground state separation energy (S_p = 8.27, S_n = 13.06 MeV) for nucleus"), -1.};
+      fhicl::TableFragment<MuonNucleonKinematics::NuclearConfig> nuclear;
       fhicl::Atom<double> rate{Name("rate"), Comment("BNV rate per muon capture, only used when not generating as a primary"), 0.};
       fhicl::Atom<bool> requireSpinStatistics{Name("requireSpinStatistics"),
           Comment("Throw if the final state has an odd number of fermions (angular momentum cannot be conserved)"), true};
@@ -100,9 +96,7 @@ namespace mu2e {
     std::vector<double> _masses;
     PDGCode::type _nucleonPdg;
     double _nucleonMass;
-    MuonNucleonKinematics::Model _model;
-    double _fermiMomentum;
-    double _removalEnergy;
+    MuonNucleonKinematics::NuclearParameters _nuclear;
     double _rate;
     bool _makeHistograms;
     int _verbosity;
@@ -124,9 +118,7 @@ namespace mu2e {
 
   //================================================================
   MuCapBNVGenerator::MuCapBNVGenerator(Parameters const& conf) :
-    _model(MuonNucleonKinematics::parseModel(conf().nuclearModel())),
-    _fermiMomentum(conf().fermiMomentum()),
-    _removalEnergy(conf().removalEnergy()),
+    _nuclear(MuonNucleonKinematics::parseConfig(conf().nuclear(), "MuCapBNVGenerator")),
     _rate(conf().rate()),
     _makeHistograms(conf().makeHistograms()),
     _verbosity(conf().verbosity())
@@ -139,13 +131,6 @@ namespace mu2e {
     else throw cet::exception("BADCONFIG") << "MuCapBNVGenerator: nucleon \"" << conf().nucleon()
                                            << "\" not defined, only \"proton\" or \"neutron\" are allowed\n";
     _nucleonMass = pdt->particle(_nucleonPdg).mass();
-
-    if(_fermiMomentum < 0.) throw cet::exception("BADCONFIG") << "MuCapBNVGenerator: negative Fermi momentum\n";
-    if(_removalEnergy < 0.) {
-      if(_model == MuonNucleonKinematics::Model::fermiGas) _removalEnergy = 32.;
-      else if(_model == MuonNucleonKinematics::Model::nucleus) _removalEnergy = (_nucleonPdg == PDGCode::proton) ? 8.271 : 13.058;
-      else _removalEnergy = 0.;
-    }
 
 
     // The final state particles
@@ -207,8 +192,8 @@ namespace mu2e {
       }
       std::cout << "\n[MuCapBNVGenerator] Visible Delta B = " << dB << ", visible Delta L = " << dL
                 << " (not counting invisibles), final state fermions = " << nFermions << std::endl;
-      std::cout << "[MuCapBNVGenerator] Nuclear model = " << conf().nuclearModel()
-                << " (k_F = " << _fermiMomentum << " MeV/c, removal energy = " << _removalEnergy << " MeV)" << std::endl;
+      std::cout << "[MuCapBNVGenerator] Nuclear model = " << conf().nuclear().nuclearModel() << " for " << _nuclear.material
+                << " (k_F = " << _nuclear.fermiMomentum << " MeV/c, removal energy = " << _nuclear.removalEnergy << " MeV)" << std::endl;
     }
 
     if(_makeHistograms) {
@@ -232,13 +217,14 @@ namespace mu2e {
   //================================================================
   void MuCapBNVGenerator::finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string& material, const bool isPrimary) {
     _isPrimary = isPrimary;
+    MuonNucleonKinematics::checkMaterial(_nuclear, material, "MuCapBNVGenerator");
     GlobalConstantsHandle<PhysicsParams> phy;
     const double muonEnergy = phy->getMuonEnergy(material); // bound muon total energy
     // Nuclear mass of the initial nucleus, from the atomic mass
     const double nucleusMass = phy->getAtomicMass(material)*CLHEP::amu_c2
       - phy->getAtomicNumber(material)*GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus).mass();
     _kinematics = std::make_unique<MuonNucleonKinematics>(eng, muonEnergy, _nucleonMass, nucleusMass,
-                                                          _model, _fermiMomentum, _removalEnergy);
+                                                          _nuclear);
     _randomPoissonQ = std::make_unique<CLHEP::RandPoissonQ>(eng, _rate);
 
     const double wmax = _kinematics->maxInvariantMass();

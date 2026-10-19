@@ -1,6 +1,6 @@
 #
 # Generator-level validation of the BNV muon capture tools (no Geant4), see
-# BNVAna/doc/BNVMuonCapture.md (BNVAna analysis package). Change decayProducts to any BNVMuonCapture.* entry.
+# EventGenerator/fcl/prolog.fcl. Change decayProducts to any BNVMuonCapture.* or BNVMuonCaptureScan.* entry.
 #
 # mu2e -c Offline/EventGenerator/test/bnv_muon_capture_test.fcl -n 20000
 #

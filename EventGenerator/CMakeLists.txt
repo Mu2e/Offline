@@ -27,6 +27,7 @@ cet_make_library(
       Offline::SeedService
       Offline::StoppingTargetGeom
       CRY
+      fhiclcpp::types
 )
 
 cet_build_plugin(AntiProtonGun art::module
