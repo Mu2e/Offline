@@ -205,7 +205,7 @@ namespace mu2e
       fhicl::Atom<float>                             minArcGap            { Name("minArcGap"),           Comment("Minimum distance between helix arcs of same curve direction"), -1.};
       fhicl::Sequence<fhicl::Table<HelixCutsConfig>> HelixCuts            { Name("HelixCuts"),           Comment("Helix cut sets")};
       fhicl::Atom<bool>                              doHistograms         { Name("doHistograms"),        Comment("Make debug histograms"), false};
-      fhicl::Atom<bool>                              useTrackerStatus     { Name("useTrackerStatus"),    Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio"), true};
+      fhicl::Atom<bool>                              useTrackerStatus     { Name("useTrackerStatus"),    Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio")};
     };
 
 

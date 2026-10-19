@@ -213,7 +213,7 @@ namespace mu2e
       fhicl::Atom<bool>               noFilter             { Name("noFilter"),                Comment("don't apply the filter decision"), false};
       fhicl::Atom<unsigned>           minNHelices          { Name("minNHelices"),             Comment("minimum number of helices passing the cuts"), 1};
       fhicl::Atom<float>              maxDt0               { Name("maxDt0"),                  Comment("maximum difference in time between helices"), -1};
-      fhicl::Atom<bool>               useTrackerStatus     { Name("useTrackerStatus"),        Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio"), true};
+      fhicl::Atom<bool>               useTrackerStatus     { Name("useTrackerStatus"),        Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio")};
     };
 
 

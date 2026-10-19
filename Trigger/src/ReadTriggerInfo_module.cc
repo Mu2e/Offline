@@ -194,7 +194,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
       fhicl::Atom<string>            processName        {Name("processName"        ), Comment("globalTrigger"                             ), ""  };
-      fhicl::Atom<bool>              useTrackerStatus   {Name("useTrackerStatus"   ), Comment("don't count straws without signal (TrackerStatus) as expected hits in the helix hit ratio; set as in the HelixFilter"), true };
+      fhicl::Atom<bool>              useTrackerStatus   {Name("useTrackerStatus"   ), Comment("don't count straws without signal (TrackerStatus) as expected hits in the helix hit ratio; set as in the HelixFilter") };
     };
 
     explicit ReadTriggerInfo(const art::EDAnalyzer::Table<Config>& config);
@@ -264,7 +264,7 @@ namespace mu2e {
 
     const mu2e::Tracker*      _tracker = nullptr;
     ProditionsHandle<TrackerStatus> _trackerStatus_h;
-    bool                      _useTrackerStatus = true;
+    bool                      _useTrackerStatus;
     HelixTool::StrawNoSignal  _noSignal;  // straws not counted as expected hits in the helix hit ratio; empty: all straws live
 
     float  _minPOT, _maxPOT;
