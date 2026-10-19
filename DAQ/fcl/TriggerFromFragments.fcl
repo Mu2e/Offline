@@ -1,0 +1,100 @@
+#
+# Run the trigger from fragments
+#
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Production/JobConfig/digitize/prolog.fcl"
+#include "Production/JobConfig/common/prolog.fcl"
+#include "mu2e-trig-config/core/trigProducers.fcl"
+#include "mu2e-trig-config/core/trigRecoSequences.fcl"
+#
+# turn off MC version of digi crddeation (from digitize/prolog above)
+BEGIN_PROLOG
+TrigRecoSequences.cfoDataGen : [EWMProducer, CaloDigiMaker, TrigMakeSD, makeSD ]
+END_PROLOG
+#include "mu2e-trig-config/core/trigSequences.fcl"
+#
+process_name: Trigger
+source : { module_type : RootInput }
+services : @local::Services.Reco
+physics : {
+  producers : {
+    @table::TrigProducers.producers
+    @table::Digitize.producers
+    EWMProducer: {
+      @table::CommonMC.DigiProducers.EWMProducer
+      SpillType: 0
+    }
+    CaloDigiMaker : @local::DAQ.producers.CaloDigis
+    TrigMakeSD: {
+      module_type: StrawDigisFromArtdaqFragments
+      saveWaveforms : true
+      diagLevel     : 0  # not used yet
+      missingDTCHeaders : false
+      debugBits: []
+      debugMode: 0
+      addressing: "byLink"
+      onMissingRow: "skip"
+    }
+    EWMProducer : {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag : "daq:CFO"
+      createEWM : true
+      diagLevel : 1
+    }
+  }
+  filters : {
+    @table::TrigFilters.filters
+    @table::Digitize.filters
+    @table::Trig_extrPosMenuPSConfig
+  }
+
+  @table::TrigSequences
+}
+
+outputs: {
+  DigiOutput : {
+      module_type : RootOutput
+      SelectEvents : [
+        @sequence::Digitize.TrkTriggers,
+        @sequence::Digitize.CaloTriggers
+      ]
+    fileName    : "dig.owner.desc.version.sequencer.art"
+    outputCommands : [
+      "drop *_*_*_*",
+      @sequence::Digitize.GeneralProducts,
+      @sequence::Digitize.DigiProducts,
+      @sequence::Digitize.TriggerProducts
+    ]
+  }
+}
+# final config
+#include "Offline/CRVReco/fcl/epilog_extracted.fcl"
+#include "Production/JobConfig/common/epilog.fcl"
+#
+# duplicate makeSD
+physics.producers.makeSD : @local::physics.producers.TrigMakeSD
+
+physics.EndPath : [ DigiOutput]
+physics.trigger_paths : @local::Trig_extrPosMenu.trigger_paths
+physics.end_paths : [ EndPath ]
+
+#include "mu2e-trig-config/core/trigDigiInputsEpilog.fcl"
+#include "PassN/Tracker/TrkDigi_epilog.fcl"
+#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
+#
+# temporary calibrations
+#include "PassN/Tracker/trackercalibrations.fcl"
+services.DbService.purpose : "TRACKER_VST"
+services.DbService.version: v2_0
+services.DbService.textFile : [
+  "Offline/TrackerConditions/data/TrkPanelMap.txt",
+  "PassN/Tracker/trackercalibrations.txt"]
+services.GeometryService.bFieldFile: "Offline/Mu2eG4/geom/bfgeom_no_field.txt"
+services.GeometryService.inputFile: "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+physics.filters.CstCosmicTrackSeedSDCountFilter.strawDigiCollection: "TrigMakeSD"
+physics.filters.CstTimeClusterSDCountFilter.strawDigiCollection: "TrigMakeSD"
+physics.filters.MinBiasSDCountFilter.strawDigiCollection: "TrigMakeSD"
+physics.producers.TrigMakeSH.StrawDigiCollectionTag: "TrigMakeSD"
+physics.producers.TrigOffSpMakeSH.StrawDigiCollectionTag: "TrigMakeSD"
+services.ProditionsService.trackerPanelMap.useDb : true
