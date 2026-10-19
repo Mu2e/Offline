@@ -246,7 +246,10 @@ namespace mu2e {
       // a non-finite truth piece would poison the ParameterHit weights and abort the event
       bool finite = true;
       for(size_t ipar = 0; ipar < KinKal::NParams(); ++ipar) finite &= std::isfinite(tpiece.params().parameters()[ipar]);
-      if(!finite) continue;
+      if(!finite){
+        if(debug_ > 0) std::cout << "KKTruthSeed: non-finite truth piece at t " << htime << "; skipping" << std::endl;
+        continue;
+      }
       truthpt.append(tpiece);
       truthHitTimes.emplace_back(htime);
     }
