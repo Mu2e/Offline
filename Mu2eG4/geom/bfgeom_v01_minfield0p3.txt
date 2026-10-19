@@ -1,0 +1,16 @@
+//
+// bfgeom_v01 with KinKal low-field protection at 0.3 T.
+//
+// bfield.minUsableField is the smallest |B| (T) KinKal uses for field-corrected transport; see
+// bfgeom_v01_minfield.txt. 0.3 T hands off to geometric continuation while real bending remains, so it
+// trades extrapolation accuracy for stability. Reconstruction only: Geant4 ignores it.
+
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+
+double bfield.minUsableField = 0.3;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

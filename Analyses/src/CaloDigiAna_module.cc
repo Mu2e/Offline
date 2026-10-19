@@ -5,6 +5,7 @@
 // Original author
 
 // ROOT includes
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "TH1F.h"
 #include "TF1.h"
 #include "TFile.h"
@@ -145,7 +146,7 @@ namespace mu2e {
       diskId     = _calorimeter->crystal(crystalID).diskID();
       ++nDigi[diskId];
 
-      _histDisk[diskId]._hCDT0           ->Fill(caloDigi->t0());
+      _histDisk[diskId]._hCDT0           ->Fill(caloDigi->t0() * CaloConst::_digitizationPeriod); // ticks -> ns
       _histDisk[diskId]._hCDROId         ->Fill(roId);
 
       pulse      = &caloDigi->waveform();

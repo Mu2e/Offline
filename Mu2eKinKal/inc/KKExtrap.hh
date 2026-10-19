@@ -19,6 +19,7 @@
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
+#include "cetlib_except/exception.h"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include <unordered_set>
 #include <map>
@@ -41,6 +42,8 @@ namespace mu2e {
   class KKExtrap {
     public:
       explicit KKExtrap(KKExtrapConfig const& exconfig);
+      // throw at configuration if the fit config's minimum domain step can't fit this extrapolation's maximum step
+      void checkConfig(KinKal::Config const& config) const;
       // extrapolation functions; these are templated on the type of trajectory
       template <class KTRAJ> void extrapolate(KKTrack<KTRAJ>& ktrk) const;
       template <class KTRAJ> bool extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir trkdir) const;
@@ -79,6 +82,12 @@ namespace mu2e {
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV())
   {}
+
+  inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
+    if(config.bfcorr_ && config.mindtstep_ > maxdtstep_)
+      throw cet::exception("RECO") << "mu2e::KKExtrap: MinDomainTimeStep " << config.mindtstep_
+        << " ns exceeds ExtrapolationSettings.MaxDtStep " << maxdtstep_ << " ns" << std::endl;
+  }
 
   template <class KTRAJ> void KKExtrap::extrapolate(KKTrack<KTRAJ>& ktrk) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;

@@ -6,6 +6,7 @@ using namespace std;
 #include "CLHEP/Vector/Rotation.h"
 #include "Offline/CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVDigitizationPeriod.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
@@ -987,7 +988,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     {
       const mu2e::CaloDigi& calodigi = *iter;
       size_t crystalid = mu2e::CaloSiPMId(calodigi.SiPMID()).crystal().id();
-      double time = calodigi.t0();
+      double time = calodigi.t0() * mu2e::CaloConst::_digitizationPeriod; // ticks -> ns
       std::map<size_t,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
       {

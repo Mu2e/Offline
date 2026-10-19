@@ -13,6 +13,7 @@
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CaloConditions/inc/CalSimParams.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
@@ -71,9 +72,8 @@ namespace mu2e {
             pbtmcTag_          (config().pbtmcTag()),
             digitizationStart_ (config().digitizationStart()),
             digitizationEnd_   (config().digitizationEnd()),
-            digiSampling_      (config().pulseCache().digiSampling()),
             bufferDigi_        (config().bufferDigi()),
-            startTimeBuffer_   (config().pulseCache().digiSampling()*config().bufferDigi()),
+            startTimeBuffer_   (CaloConst::_digitizationPeriod*config().bufferDigi()),
             maxADCCounts_      ((1 << config().nBits()) -1),
             pulseCache_        (CaloPulseUtil(config().pulseCache())),
             nBinsPeak_         (config().nBinsPeak()),
@@ -116,7 +116,6 @@ namespace mu2e {
        float                   digitizationStart_;
        float                   digitizationEnd_;
        float                   timeFromProtonsToDRMarker_;
-       float                   digiSampling_;
        unsigned                bufferDigi_;
        float                   startTimeBuffer_;
        int                     maxADCCounts_;
@@ -181,9 +180,9 @@ namespace mu2e {
       calorimeter_ = ch.get();
 
       if (calorimeter_->nCrystals()<1 || calorimeter_->G4Info().get<int>("nSiPMPerCrystal")<1) return;
-      int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / digiSampling_;
+      int waveformSize = (digitizationEnd_ - digitizationStart_ + startTimeBuffer_) / CaloConst::_digitizationPeriod;
       if (ewMarker.spillType() != EventWindowMarker::SpillType::onspill) {
-        waveformSize = (ewMarker.eventLength() - digitizationStart_ + startTimeBuffer_) / digiSampling_;
+        waveformSize = (ewMarker.eventLength() - digitizationStart_ + startTimeBuffer_) / CaloConst::_digitizationPeriod;
       }
 
       int nWaveforms   = calorimeter_->nCrystals()*calorimeter_->G4Info().get<int>("nSiPMPerCrystal");
@@ -267,7 +266,7 @@ namespace mu2e {
           for (const auto PEtime : CaloShowerRO.PETime()) {
               //PE time is given in DR frame, we need to subtract the event window start and the digi Start time
               float       time           = PEtime + pbtmc.pbtime_- digitizationStart_ + timeFromProtonsToDRMarker_ + startTimeBuffer_;
-              unsigned    startSample    = std::max(0u,unsigned(time/digiSampling_));
+              unsigned    startSample    = std::max(0u,unsigned(time/CaloConst::_digitizationPeriod));
               const auto& pulse          = pulseCache_.digitizedPulse(time);
               unsigned    stopSample     = std::min(startSample+pulse.size(), waveform.size());
 
@@ -298,8 +297,8 @@ namespace mu2e {
        for (size_t ihit=0;ihit<hitStarts.size();++ihit) {
            size_t sampleStart = hitStarts[ihit];
            size_t sampleStop  = hitStops[ihit];
-           size_t t0          = size_t(sampleStart*digiSampling_ + digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_);
-           // t0 is given in the "digitizer time frame", might need to give it into ticks - simpli divide by
+           // t0 in digitizer clock ticks, in the digitizer (DR marker) frame, as the DIRAC hit packet reports it
+           int    t0          = int(sampleStart) + std::lround((digitizationStart_ - timeFromProtonsToDRMarker_ - startTimeBuffer_)/CaloConst::_digitizationPeriod);
 
            std::vector<int> wfsample{};
            wfsample.reserve(sampleStop-sampleStart);
@@ -308,7 +307,7 @@ namespace mu2e {
            // only consider hits above digitizationStart
            size_t peakPosition(0u);
            for (auto i = 0u; i<wfsample.size();++i) {
-              if (t0+i*digiSampling_+timeFromProtonsToDRMarker_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
+              if ((t0+int(i))*CaloConst::_digitizationPeriod+timeFromProtonsToDRMarker_ >= digitizationStart_ && wfsample[i]>=wfsample[peakPosition]) peakPosition=i;
            }
            if (diagLevel_ >2) std::cout<<"[CaloDigiMaker] Start=" << sampleStart << " Stop=" << sampleStop
                                        << " peak in position " << peakPosition << std::endl;

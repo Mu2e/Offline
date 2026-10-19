@@ -219,6 +219,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
       if(print_ > 0) std::cout << config_;
     }
 
@@ -316,7 +318,8 @@ namespace mu2e {
           // extrapolate as required
           if(goodfit && extrap_) extrap_->extrapolate(*kktrk);
           bool save = goodFit(*kktrk);
-          if(save || saveall_){
+          // a fit that failed before its trajectory was built has nothing to save
+          if((save || saveall_) && kktrk->hasTraj()){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);

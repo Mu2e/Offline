@@ -1,8 +1,13 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using Grad = ROOT::Math::SMatrix<double,3>;
   using SVEC3 = KinKal::SVEC3;
+
+  KKBField::KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) :
+    KinKal::BFieldMap(GeomHandle<BFieldConfig>()->minUsableField()), bfmgr_(bfmgr), det_(det) {}
 
   VEC3 KKBField::fieldVect(VEC3 const& position) const {
     // change coordinates to mu2e; the map should be native in detector coordinates FIXME!

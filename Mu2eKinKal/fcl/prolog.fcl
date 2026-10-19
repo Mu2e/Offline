@@ -53,6 +53,7 @@ Mu2eKinKal : {
      DivergenceGap : 20 # mm
      BFieldCorrection : false
      BCorrTolerance : 1e-2 # momemntum fraction
+     MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
      ProcessEnds : false
      MetaIterationSettings : [
        # annealing temp, strawhit updater algorithm
@@ -89,6 +90,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : false
     BCorrTolerance : 1e-2 # relative momemntum precision
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
@@ -128,6 +130,7 @@ Mu2eKinKal : {
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
@@ -194,6 +197,7 @@ Mu2eKinKal : {
     DivergenceGap : 10 # mm
     BFieldCorrection : true
     BCorrTolerance : 1e-2 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     ProcessEnds : false
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
@@ -227,6 +231,7 @@ Mu2eKinKal : {
     BFieldCorrection : false
     ProcessEnds : false
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : []
     CADSHUSettings : []
     StrawXingUpdaterSettings : []
@@ -244,6 +249,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : false
     BCorrTolerance : 1e-2 # relative momemntum precision
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithm
       [ 2.0, "CADSHU" ],
@@ -283,6 +289,7 @@ Mu2eKinKal : {
     BFieldCorrection : true
     ProcessEnds : true
     BCorrTolerance : 1e-4 # momemntum fraction
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [
       # annealing temp, strawhit updater algorithms
       [ 2.0, "CADSHU" ],
@@ -358,6 +365,7 @@ Mu2eKinKal : {
     DivergenceGap : 100 # mm
     ProcessEnds : true
     BCorrTolerance : 1e-4
+    MinDomainTimeStep : 0.0 # (ns); 0 leaves the BField domain step unbounded
     MetaIterationSettings : [ [ 0.0, "" ] ]
     CADSHUSettings : [ ]
     BkgANNSHUSettings : [ ]

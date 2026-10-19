@@ -1,0 +1,17 @@
+//
+// bfgeom_v01 with KinKal low-field protection enabled at the null-field threshold.
+//
+// bfield.minUsableField is the smallest |B| (T) KinKal uses for field-corrected transport. Below it, and
+// outside the maps, bfcorr extrapolation hands off to geometric free-particle continuation instead of
+// building domains on a field it can't parameterize. 1e-6 T is KinKal's null-field value
+// (BFieldMap::zeroField), so this only removes the degenerate samples. Reconstruction only: Geant4 ignores it.
+
+#include "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+
+double bfield.minUsableField = 1.0e-6;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

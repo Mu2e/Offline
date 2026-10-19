@@ -12,9 +12,13 @@ cet_build_plugin(CaloHitMakerFast art::module
     REG_SOURCE src/CaloHitMakerFast_module.cc
     LIBRARIES REG
       Offline::CaloReco
-      
+
+      Offline::CaloConditions
+      Offline::CalorimeterGeom
       Offline::DataProducts
       Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::ProditionsService
       Offline::RecoDataProducts
 )
 

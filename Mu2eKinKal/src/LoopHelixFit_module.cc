@@ -225,6 +225,8 @@ namespace mu2e {
       }
       // setup extrapolation
       if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
 
       // setup optional fit finalization; this just updates the internals, not the fit result itself
       if(settings().finalSettings()){
@@ -366,7 +368,8 @@ namespace mu2e {
     }
     if(print_>0) printf("[LoopHelixFit::%s] After extending the fit : goodFit = %o, fitcon = %.4f, nHits = %2lu, %lu calo-hits\n",
         __func__, goodfit, ktrk->fitStatus().chisq_.probability(), ktrk->strawHits().size(), ktrk->caloHits().size());
-    if((!goodfit) && (! saveall_)) ktrk.reset();
+    // a fit that failed before its trajectory was built has nothing to save
+    if(!ktrk->hasTraj() || ((!goodfit) && (! saveall_))) ktrk.reset();
     return ktrk;
   }
 
