@@ -184,7 +184,7 @@ namespace mu2e {
         for (const auto& cont : *handle) {
           artdaq::ContainerFragment contf(cont);
           if (contf.fragment_type() != mu2e::FragmentType::DTCEVT) {
-            break;
+            continue;
           }
 
           nfragments += contf.block_count();
