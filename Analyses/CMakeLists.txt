@@ -1,3 +1,16 @@
+cet_build_plugin(AprHelixTruthAna art::module
+    REG_SOURCE src/AprHelixTruthAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      ROOT::Tree
+)
+
 cet_build_plugin(BFieldPlotter art::module
     REG_SOURCE src/BFieldPlotter_module.cc
     LIBRARIES REG
