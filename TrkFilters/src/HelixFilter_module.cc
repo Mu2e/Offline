@@ -58,6 +58,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::OptionalAtom<double>             minEDepAvg           {     Name("minEDepAvg"),              Comment("Minimum mean straw hit energy deposit (MeV)")};
+      fhicl::OptionalAtom<double>             maxEDepAvg           {     Name("maxEDepAvg"),              Comment("Maximum mean straw hit energy deposit (MeV)")};
       fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
       fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
@@ -86,6 +88,8 @@ namespace mu2e
           config.minAbsLambda(_minlambda);
           config.maxNLoops(_maxnloops);
           config.minNLoops(_minnloops);
+          config.minEDepAvg(_minedep);
+          config.maxEDepAvg(_maxedep);
           _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
           _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
@@ -130,12 +134,14 @@ namespace mu2e
         const float slope          = Helix.recoDir().slope();
         const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
+        const float edep           = Helix.hits().eDepAvg(); // straw hit weighted, as AgnosticHelixFinder maxEDepAvg
 
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
                     << " p = " << hmom << " pT = " << hpT
-                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
+                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig
+                    << " eDepAvg = " << edep << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -151,6 +157,8 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
+            edep       >= _minedep       &&
+            edep       <= _maxedep       &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
@@ -185,6 +193,8 @@ namespace mu2e
       double        _minlambda       = 0.;  // the cut is applied to |lambda|
       double        _maxnloops       = std::numeric_limits<double>::max();
       double        _minnloops       = 0.;
+      double        _minedep         = std::numeric_limits<double>::lowest();
+      double        _maxedep         = std::numeric_limits<double>::max();
       bool          _useSlopeSigMin  = false;
       double        _slopeSigMin     = 0.;
       bool          _useSlopeSigMax  = false;
