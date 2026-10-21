@@ -48,8 +48,8 @@ namespace mu2e {
             fhicl::Atom<float>         nPEperMeV          { Name("nPEperMeV"),          Comment("number of photo-electrons per MeV") };
             fhicl::Atom<float>         noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
             fhicl::Atom<float>         nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
-            fhicl::Atom<float>         minEDep            { Name("minEDep"),            Comment("Minimum energy deposition to consider a hit")};
-            fhicl::Atom<int>           minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit")};
+            fhicl::Atom<float>         minEDep            { Name("minEDep"),            Comment("Minimum energy deposition to consider a hit"), 0.0 };
+            fhicl::Atom<int>           minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit"), 5};
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
