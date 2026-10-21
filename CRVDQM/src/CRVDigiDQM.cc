@@ -5,6 +5,8 @@
 #include "Offline/CRVDQM/inc/CRVDigiDQM.hh"
 #include "Offline/CRVDQM/inc/CRVCFTime.hh"
 
+#include "cetlib_except/exception.h"
+
 #include "TString.h"
 
 #include <algorithm>
@@ -27,10 +29,16 @@ const char* CRVDigiDQM::dtClassName(int c)
   }
 }
 
-CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists) :
-    DQMClient("CRVDigiDQM", kBinningVersion, hists),
-    nDigisOffline_(kNOfflineChannels, 0)
-{}
+CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration) :
+    DQMClient("CRVDigiDQM", kBinningVersion, hists, configurationName(configuration)),
+    bookedConfiguration_(configuration)
+{
+  if (configuration < 0 || configuration >= kNConfigurations) {
+    throw cet::exception("CRVDigiDQM")
+        << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
+  }
+  nDigisOffline_.assign(CRVDQMRun1::nOfflineChannels(configuration), 0);
+}
 
 TH2F* CRVDigiDQM::dtPartner(int dtClass) const
 {
@@ -43,6 +51,12 @@ TH2F* CRVDigiDQM::dtPartner(int dtClass) const
 void CRVDigiDQM::book()
 {
   DQMHistSet& h = hists();
+  const int cfg = bookedConfiguration_;
+  const DQMAxis kGlobalFeb = CRVDQMRun1::globalFebAxis(cfg);
+  const DQMAxis kGlobalFebEdges = CRVDQMRun1::globalFebEdgesAxis(cfg);
+  const DQMAxis kOnlineChannel = CRVDQMRun1::onlineChannelAxis(cfg);
+  const DQMAxis kFpgaPair = CRVDQMRun1::fpgaPairAxis(cfg);
+  const DQMAxis kOfflineChannel = CRVDQMRun1::offlineChannelAxis(cfg);
 
   h1_digisPerEvt_ = h.book1<TH1F>("h1_digisPerEvt", "Hits / event;Hits / event;Events",
                                   kDigisPerEvt);
@@ -67,8 +81,8 @@ void CRVDigiDQM::book()
   hSiPM_ = h.book1<TH1D>("SiPM", "SiPM", kSiPM);
   hADC_ = h.book1<TH1D>("ADC", "ADC in waveform", kAdcSample);
 
-  h_crvDigiRatesROC_.resize(kNROC);
-  for (int roc = 1; roc <= kNROC; ++roc) {
+  h_crvDigiRatesROC_.resize(nROC());
+  for (int roc = 1; roc <= nROC(); ++roc) {
     h_crvDigiRatesROC_[roc - 1] =
         h.book1<TH1F>(Form("crvDigiRates_ROC%d", roc),
                       Form("crvDigiRates_ROC%d;Online channel in ROC ((ROC port/FEB ID-1)#times64+FEB channel);Digis", roc),
@@ -106,20 +120,16 @@ void CRVDigiDQM::book()
       "febNoGroup", "Events where this FEB had hits but no group formed;global FEB ID ((ROC-1)#times24+(FEB-1));Events",
       kGlobalFeb);
 
-  // Every configuration's family is booked; a job fills only its own.
-  h_sectorOccupancy_.resize(kNConfigurations);
-  h_sectorOccupancy2_.resize(kNConfigurations);
-  for (int c = 0; c < kNConfigurations; ++c) {
-    for (int s = 0; s < kLayouts[c].nSectors; ++s) {
-      const std::string tag = "_CRVsector" + sectorTag(c, s);
-      const std::string title = ";Digis per channel and event;Channels";
-      h_sectorOccupancy_[c].push_back(h.bookSummary1<TH1F>(
-          "crvDigisPerChannelAndEvent" + tag, "crvDigisPerChannelAndEvent" + tag + title,
-          kDigisPerChannelAndEvent));
-      h_sectorOccupancy2_[c].push_back(h.bookSummary1<TH1F>(
-          "crvDigisPerChannelAndEvent2" + tag, "crvDigisPerChannelAndEvent2" + tag + title,
-          kDigisPerChannelAndEvent2));
-    }
+  // The booked configuration's per-sector family; the names carry it.
+  for (int s = 0; s < kLayouts[cfg].nSectors; ++s) {
+    const std::string tag = "_CRVsector" + sectorTag(cfg, s);
+    const std::string title = ";Digis per channel and event;Channels";
+    h_sectorOccupancy_.push_back(h.bookSummary1<TH1F>(
+        "crvDigisPerChannelAndEvent" + tag, "crvDigisPerChannelAndEvent" + tag + title,
+        kDigisPerChannelAndEvent));
+    h_sectorOccupancy2_.push_back(h.bookSummary1<TH1F>(
+        "crvDigisPerChannelAndEvent2" + tag, "crvDigisPerChannelAndEvent2" + tag + title,
+        kDigisPerChannelAndEvent2));
   }
 
   g_digisVsEwt_ = &series().book(
@@ -134,8 +144,25 @@ void CRVDigiDQM::book()
 
 void CRVDigiDQM::SetConfiguration(int configuration, const std::vector<int>& channelToSector)
 {
-  configuration_ = configuration;
   channelToSector_ = channelToSector;
+  if (configuration != bookedConfiguration_) {
+    configuration_ = -1;
+    diag().Count("configurationMismatch",
+                 Form("the geometry names configuration %s but this client was booked for "
+                      "%s; the per-sector occupancy stays empty and digis beyond the booked "
+                      "readout range are skipped.",
+                      configurationName(configuration),
+                      configurationName(bookedConfiguration_)));
+    return;
+  }
+  configuration_ = configuration;
+  if (channelToSector.size() > nDigisOffline_.size()) {
+    diag().Count("geometryChannelsOutsideConfiguration",
+                 Form("the geometry has %zu offline channels, more than the %zu the %s "
+                      "configuration books; the channels past them have no occupancy.",
+                      channelToSector.size(), nDigisOffline_.size(),
+                      configurationName(bookedConfiguration_)));
+  }
 }
 
 void CRVDigiDQM::SetFebTopology(const std::vector<FebTopology>& febTopology,
@@ -162,8 +189,12 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
     const int roc = static_cast<int>(digi.GetROC());
     const int feb = static_cast<int>(digi.GetFEB());
     const int febChannel = static_cast<int>(digi.GetFEBchannel());
-    const bool online = onlineIdInRange(roc, feb, febChannel);
-    const int globalFeb = online ? globalFebId(roc, feb) : -1;
+    const bool validId = onlineIdInRange(roc, feb, febChannel);
+    const int globalFeb = validId ? globalFebId(roc, feb) : -1;
+    // On the booked axes: the ROC is one the configuration reads out and the
+    // FEB port is inside its dense range.
+    const bool online = validId && roc <= nROC() &&
+                        febInConfiguration(bookedConfiguration_, globalFeb);
 
     if (online) {
       h1_channels_.Fill(onlineChannel(roc, feb, febChannel));
@@ -171,11 +202,17 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
       h_crvDigiRatesROC_[roc - 1].Fill(rocChannel(feb, febChannel));
       h_crvDigiRates_.Fill(febChannel, globalFeb);
       activeGlobalFebs_.insert(globalFeb);
-    } else {
+    } else if (!validId) {
       diag().Count("onlineIdOutOfRange",
                    "a digi's ROC/FEB/channel is outside CRVId (ROC 1-18, FEB 1-24, "
                    "channel 0-63); it is left out of the online-indexed histograms "
                    "and the timing.");
+    } else {
+      diag().Count("onlineIdOutsideConfiguration",
+                   Form("a digi's ROC/FEB is outside the %s readout (%d ROCs, global FEB "
+                        "ID < %d) this client was booked for; it is left out of the "
+                        "online-indexed histograms and the timing.",
+                        configurationName(bookedConfiguration_), nROC(), nFebs()));
     }
 
     const auto& adcs = digi.GetADCs();
@@ -195,11 +232,16 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
     int offline = -1;
     if (sipm >= 0 && barIndex >= 0) {
       offline = barIndex * static_cast<int>(CRVId::nChanPerBar) + sipm;
-      if (offline < kNOfflineChannels) {
+      if (CRVDQMRun1::offlineChannelInConfiguration(bookedConfiguration_, offline)) {
         ++nDigisOffline_[offline];
         h_crvDigisPerChannel_.Fill(offline);
       } else {
-        offline = -1;
+        diag().Count("offlineChannelOutsideConfiguration",
+                     Form("a digi's offline channel is outside the %d channels of the %s "
+                          "configuration this client was booked for; it is left out of "
+                          "crvDigisPerChannel and the per-sector occupancy.",
+                          CRVDQMRun1::nOfflineChannels(bookedConfiguration_),
+                          configurationName(bookedConfiguration_)));
       }
     }
 
@@ -443,8 +485,8 @@ void CRVDigiDQM::fillSectorOccupancy()
     return;
   }
   const double invN = 1.0 / static_cast<double>(nEvents());
-  const auto& family = h_sectorOccupancy_[configuration_];
-  const auto& family2 = h_sectorOccupancy2_[configuration_];
+  const auto& family = h_sectorOccupancy_;
+  const auto& family2 = h_sectorOccupancy2_;
   for (std::size_t channel = 0; channel < channelToSector_.size(); ++channel) {
     const int sector = channelToSector_[channel];
     if (sector < 0 || static_cast<std::size_t>(sector) >= family.size() ||

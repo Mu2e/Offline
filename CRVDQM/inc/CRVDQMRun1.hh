@@ -5,13 +5,26 @@
 // and the selection constants that decide what the timing histograms contain.
 //
 // The CRV DQM histogram set is built from these constants and nothing else, so
-// it is the same in every job and merges across run periods. Every value here
-// is under the clients' kBinningVersion: changing one is a version bump.
+// it is the same in every job of a configuration and merges across run
+// periods. Every value here is under the clients' kBinningVersion: changing
+// one is a version bump.
 //
 // Configurations (Offline/DQMHelpers/README.md has the sources):
-//   run1a      Run 1A/1B, geometry run1a_v01: sectors T1 (17 modules), T2 (3)
+//   run1a      Run 1A/1B, geometry run1a_v01: sectors T1 (17 modules), T2 (3);
+//              the full CRVId address space, 18 ROCs / 432 FEB ports.
 //   extracted  KPP, geometries extracted_v02..v04: EX, T1, T2 and muon taggers
-//              M1-M8 (v04). Envelope is the union over v02-v04.
+//              M1-M8 (v04). Envelope is the union over v02-v04. Read out by
+//              2 ROCs: ROC 1 fully populated (24 ports), ROC 2 on ports 2-7,
+//              so global FEB IDs 0-23 and 25-30 (24 is the empty port 1).
+//              ROC 2 is physically ROC 4 on DTC link 3: the unpacker's
+//              useROC4asROC2 renumbers its digis, but a status block keeps
+//              the physical link, so links 0-3 of DTC 0 are booked and the
+//              second ROC's status is on link 3 (links 1 and 2 stay empty).
+//
+// A client books its FEB-, channel- and link-indexed histograms for one
+// configuration (CRVDigiDQM(hists, configuration)); the layout's nROC / nFebs /
+// nLinks / nOfflineChannels size those axes through the helpers at the bottom.
+// The numbering itself (globalFebId etc.) is the same for every configuration.
 //
 // Original Author: R. Mina
 
@@ -31,6 +44,7 @@ constexpr int kNChanPerROC = kNFebPerROC * kNChanPerFEB;
 constexpr int kNFebs = kNROC * kNFebPerROC;               //432
 constexpr int kNOnlineChannels = kNFebs * kNChanPerFEB;   //27648
 constexpr int kNOfflineChannels = static_cast<int>(CRVId::nChannels);
+constexpr int kNChanPerBar = static_cast<int>(CRVId::nChanPerBar);
 constexpr int kNFPGAPerFEB = static_cast<int>(CRVId::nFPGAPerFEB);
 constexpr int kNChanPerFPGA = static_cast<int>(CRVId::nChanPerFPGA);
 // Unordered FPGA pairs on one FEB, same FPGA included: 10.
@@ -83,13 +97,27 @@ struct Layout {
   // Counter envelope in Mu2e coordinates [mm], measured from each geometry.
   double lo[3];
   double hi[3];
+  // Readout booked: ROCs (dense from ROC 1, as the digis number them), FEB
+  // ports and DTC links. nFebs is the dense global FEB ID range 0..nFebs-1 and
+  // need not be a multiple of kNFebPerROC when the last ROC is partly
+  // populated. nLinks is the physical link range 0..nLinks-1
+  // (dtcId*nROCPerDTC + linkId, as the status blocks carry it), which can
+  // exceed nROC when the ROCs are not on consecutive links.
+  int nROC;
+  int nFebs;
+  int nLinks;
+  // Offline channels booked (bar index x kNChanPerBar + SiPM, dense per
+  // geometry): those of the configuration's largest geometry.
+  int nOfflineChannels;
 };
 
 constexpr Layout kLayouts[kNConfigurations] = {
-    {"run1a", 2, {"T1", "T2"}, {-6904., 4736., 3962.}, {-904., 4844., 20610.}},
+    {"run1a", 2, {"T1", "T2"}, {-6904., 4736., 3962.}, {-904., 4844., 20610.},
+     kNROC, kNFebs, kNLinks, 1280 * kNChanPerBar},  //run1a_v01: 1280 bars
     {"extracted", 11,
      {"EX", "T1", "T2", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"},
-     {-6904., 4227., 20975.}, {-904., 4719., 24716.}},
+     {-6904., 4227., 20975.}, {-904., 4719., 24716.},
+     2, kNFebPerROC + 7, 4, 576 * kNChanPerBar},  //extracted_v04: 576 bars (v02, v03: 512)
 };
 
 // Geometry crs.name -> configuration. extracted_v01..v03 all say "extracted".
@@ -111,6 +139,59 @@ constexpr DQMAxis positionAxis(int configuration, int coordinate)
   const Layout& l = kLayouts[configuration];
   const double pad = kPosMargin * (l.hi[coordinate] - l.lo[coordinate]);
   return DQMAxis(kNPosBins, l.lo[coordinate] - pad, l.hi[coordinate] + pad);
+}
+
+// Readout-indexed axes of a configuration. Counts() axes are centred on the
+// integer; the *Edges axes run 0..n for the 2D maps that index by bin.
+constexpr int nROC(int configuration) { return kLayouts[configuration].nROC; }
+constexpr int nFebs(int configuration) { return kLayouts[configuration].nFebs; }
+constexpr int nLinks(int configuration) { return kLayouts[configuration].nLinks; }
+constexpr int nOnlineChannels(int configuration)
+{
+  return nFebs(configuration) * kNChanPerFEB;
+}
+constexpr DQMAxis globalFebAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nFebs(configuration) - 1);
+}
+constexpr DQMAxis globalFebEdgesAxis(int configuration)
+{
+  return DQMAxis(nFebs(configuration), 0., nFebs(configuration));
+}
+constexpr DQMAxis onlineChannelAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nOnlineChannels(configuration) - 1);
+}
+constexpr DQMAxis fpgaPairAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nFebs(configuration) * kNFpgaPairs - 1);
+}
+constexpr DQMAxis linkAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nLinks(configuration) - 1);
+}
+// Offline-channel axis of a configuration (crvDigisPerChannel, crvPEsVsChannel).
+constexpr int nOfflineChannels(int configuration)
+{
+  return kLayouts[configuration].nOfflineChannels;
+}
+constexpr DQMAxis offlineChannelAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nOfflineChannels(configuration) - 1);
+}
+// A readout address inside the configuration's booked range: filling code
+// uses this, not onlineIdInRange, to decide whether a digi has a bin.
+constexpr bool febInConfiguration(int configuration, int globalFeb)
+{
+  return globalFeb >= 0 && globalFeb < nFebs(configuration);
+}
+constexpr bool linkInConfiguration(int configuration, int link)
+{
+  return link >= 0 && link < nLinks(configuration);
+}
+constexpr bool offlineChannelInConfiguration(int configuration, int channel)
+{
+  return channel >= 0 && channel < nOfflineChannels(configuration);
 }
 
 const char* configurationName(int configuration);

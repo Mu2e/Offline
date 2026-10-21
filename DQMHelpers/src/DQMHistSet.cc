@@ -119,8 +119,11 @@ void DQMHistSet::Book(art::TFileDirectory dir)
 {
   dir_ = dir;
   if (!clientName_.empty()) {
-    const std::string stamp =
+    std::string stamp =
         clientName_ + " binningVersion=" + std::to_string(binningVersion_);
+    if (!variant_.empty()) {
+      stamp += " variant=" + variant_;
+    }
     dir_->makeAndRegister<TNamed>("dqmBinningVersion", stamp.c_str(),
                                   "dqmBinningVersion", stamp.c_str());
   }
@@ -130,15 +133,21 @@ void DQMHistSet::Book(art::TFileDirectory dir)
   }
 }
 
-void DQMHistSet::SetVersion(const std::string& clientName, int binningVersion)
+void DQMHistSet::SetVersion(const std::string& clientName, int binningVersion,
+                            const std::string& variant)
 {
   clientName_ = clientName;
   binningVersion_ = binningVersion;
+  variant_ = variant;
 }
 
 void DQMHistSet::WriteCatalogue(std::ostream& out) const
 {
-  out << "# " << clientName_ << " binningVersion=" << binningVersion_ << "\n";
+  out << "# " << clientName_ << " binningVersion=" << binningVersion_;
+  if (!variant_.empty()) {
+    out << " variant=" << variant_;
+  }
+  out << "\n";
   for (const auto& owner : entries_) {
     const Entry& entry = *owner;
     const TH1* h = entry.job != nullptr ? entry.job : entry.windowLive;

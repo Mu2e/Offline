@@ -4,6 +4,8 @@
 
 #include "Offline/CRVDQM/inc/CRVRecoDQM.hh"
 
+#include "cetlib_except/exception.h"
+
 #include "TF1.h"
 #include "TFitResult.h"
 #include "TMath.h"
@@ -75,14 +77,22 @@ namespace mu2e {
 
 using namespace CRVDQMRun1;
 
-CRVRecoDQM::CRVRecoDQM(const DQMHistSet::Config& hists) :
-    DQMClient("CRVRecoDQM", kBinningVersion, hists),
-    offlineToOnline_(kNOfflineChannels, -1)
-{}
+CRVRecoDQM::CRVRecoDQM(const DQMHistSet::Config& hists, int configuration) :
+    DQMClient("CRVRecoDQM", kBinningVersion, hists, configurationName(configuration)),
+    bookedConfiguration_(configuration)
+{
+  if (configuration < 0 || configuration >= kNConfigurations) {
+    throw cet::exception("CRVRecoDQM")
+        << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
+  }
+  offlineToOnline_.assign(nOfflineChannels(configuration), -1);
+}
 
 void CRVRecoDQM::book()
 {
   DQMHistSet& h = hists();
+  const int cfg = bookedConfiguration_;
+  const DQMAxis kGlobalFebEdges = globalFebEdgesAxis(cfg);
 
   h_nEventsWithClusters_ = h.book1<TH1F>(
       "nEventsWithCoincidenceClusters", "Events with a coincidence cluster;;Events", kOne);
@@ -90,26 +100,22 @@ void CRVRecoDQM::book()
       "crvCoincidencesClusters", "crvCoincidenceClusters:sectorType", kSectorType);
   h_PEsVsChannel_ = h.book2<TH2F>(
       "crvPEsVsChannel",
-      "PE of coincidence-cluster pulses;Offline channel (bar#times4+SiPM);PE", kOfflineChannel,
-      kPE);
+      "PE of coincidence-cluster pulses;Offline channel (bar#times4+SiPM);PE",
+      offlineChannelAxis(cfg), kPE);
 
   // Fit results, filled once at end of job: bar charts, the MPV is the bin content.
   h_PEsMPV_ = h.bookSummary2<TH2F>(
       "crvPEsMPV", "crvPEsMPV:FEBchannel:FEB;FEB channel;global FEB ID ((ROC-1)#times24+(FEB-1))", kFebChannelEdges,
       kGlobalFebEdges);
-  h_PEsMPVROC_.resize(kNROC);
-  for (int roc = 1; roc <= kNROC; ++roc) {
+  h_PEsMPVROC_.resize(nROC(cfg));
+  for (int roc = 1; roc <= nROC(cfg); ++roc) {
     h_PEsMPVROC_[roc - 1] = h.bookSummary1<TH1F>(
         Form("crvPEsMPV_ROC%d", roc),
         Form("crvPEsMPV_ROC%d;Online channel in ROC ((ROC port/FEB ID-1)#times64+FEB channel);PE MPV", roc), kRocChannelEdges);
   }
-  h_PEsMPVSector_.resize(kNConfigurations);
-  for (int c = 0; c < kNConfigurations; ++c) {
-    for (int s = 0; s < kLayouts[c].nSectors; ++s) {
-      const std::string name = "crvPEsMPV_CRVsector" + sectorTag(c, s);
-      h_PEsMPVSector_[c].push_back(
-          h.bookSummary1<TH1F>(name, name + ";PE MPV;Channels", kPE));
-    }
+  for (int s = 0; s < kLayouts[cfg].nSectors; ++s) {
+    const std::string name = "crvPEsMPV_CRVsector" + sectorTag(cfg, s);
+    h_PEsMPVSector_.push_back(h.bookSummary1<TH1F>(name, name + ";PE MPV;Channels", kPE));
   }
 
   // Names and titles are those of Mu2e/DQM DqmCrv_module.cc (ValCrvRecoPulse +
@@ -135,15 +141,12 @@ void CRVRecoDQM::book()
   h_t2c_ = h.book1<TH1D>("t2c", "clus start time", kTime2);
 
   static const char* kCoordinate[3] = {"X", "Y", "Z"};
-  h_position_.resize(kNConfigurations);
-  for (int c = 0; c < kNConfigurations; ++c) {
-    for (int i = 0; i < 3; ++i) {
-      h_position_[c].push_back(h.book1<TH1D>(
-          Form("%s_%s", kCoordinate[i], kLayouts[c].name),
-          Form("clus %s (%s);%s [mm];Clusters", kCoordinate[i], kLayouts[c].name,
-               kCoordinate[i]),
-          positionAxis(c, i)));
-    }
+  for (int i = 0; i < 3; ++i) {
+    h_position_.push_back(h.book1<TH1D>(
+        Form("%s_%s", kCoordinate[i], kLayouts[cfg].name),
+        Form("clus %s (%s);%s [mm];Clusters", kCoordinate[i], kLayouts[cfg].name,
+             kCoordinate[i]),
+        positionAxis(cfg, i)));
   }
 }
 
@@ -155,27 +158,42 @@ TH1F* CRVRecoDQM::PEsMPVROC(int roc) const
   return h_PEsMPVROC_[roc - 1];
 }
 
-TH1F* CRVRecoDQM::PEsMPVSector(int configuration, int sector) const
+TH1F* CRVRecoDQM::PEsMPVSector(int sector) const
 {
-  if (configuration < 0 || static_cast<std::size_t>(configuration) >= h_PEsMPVSector_.size() ||
-      sector < 0 || static_cast<std::size_t>(sector) >= h_PEsMPVSector_[configuration].size()) {
+  if (sector < 0 || static_cast<std::size_t>(sector) >= h_PEsMPVSector_.size()) {
     return nullptr;
   }
-  return h_PEsMPVSector_[configuration][sector];
+  return h_PEsMPVSector_[sector];
 }
 
-TH1D* CRVRecoDQM::position(int configuration, int coordinate) const
+TH1D* CRVRecoDQM::position(int coordinate) const
 {
-  if (configuration < 0 || static_cast<std::size_t>(configuration) >= h_position_.size()) {
+  if (coordinate < 0 || static_cast<std::size_t>(coordinate) >= h_position_.size()) {
     return nullptr;
   }
-  return h_position_[configuration][coordinate];
+  return h_position_[coordinate];
 }
 
 void CRVRecoDQM::SetConfiguration(int configuration, const std::vector<int>& channelToSector)
 {
-  configuration_ = configuration;
   channelToSector_ = channelToSector;
+  if (configuration != bookedConfiguration_) {
+    configuration_ = -1;
+    diag().Count("configurationMismatch",
+                 Form("the geometry names configuration %s but this client was booked for "
+                      "%s; cluster positions and the per-sector MPV stay empty.",
+                      configurationName(configuration),
+                      configurationName(bookedConfiguration_)));
+    return;
+  }
+  configuration_ = configuration;
+  if (channelToSector.size() > offlineToOnline_.size()) {
+    diag().Count("geometryChannelsOutsideConfiguration",
+                 Form("the geometry has %zu offline channels, more than the %zu the %s "
+                      "configuration books; the channels past them are not fitted.",
+                      channelToSector.size(), offlineToOnline_.size(),
+                      configurationName(bookedConfiguration_)));
+  }
 }
 
 void CRVRecoDQM::Fill(const CrvCoincidenceClusterCollection& clusters)
@@ -223,7 +241,7 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
       for (int i = 0; i < 3; ++i) {
         const DQMAxis a = positionAxis(configuration_, i);
         outside = outside || pos[i] < a.lo || pos[i] >= a.hi;
-        h_position_[configuration_][i].Fill(pos[i]);
+        h_position_[i].Fill(pos[i]);
       }
       if (outside) {
         diag().Count("clusterOutsideEnvelope",
@@ -246,10 +264,13 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
       const int channel = pulse.GetScintillatorBarIndex().asInt() *
                               static_cast<int>(CRVId::nChanPerBar) +
                           pulse.GetSiPMNumber();
-      if (channel < 0 || channel >= kNOfflineChannels) {
-        diag().Count("offlineChannelOutOfRange",
-                     "a reco pulse's offline channel is outside CRVId; it is left out of "
-                     "crvPEsVsChannel.");
+      if (!offlineChannelInConfiguration(bookedConfiguration_, channel)) {
+        diag().Count("offlineChannelOutsideConfiguration",
+                     Form("a reco pulse's offline channel is outside the %d channels of the "
+                          "%s configuration this client was booked for; it is left out of "
+                          "crvPEsVsChannel and the MPV maps.",
+                          nOfflineChannels(bookedConfiguration_),
+                          configurationName(bookedConfiguration_)));
         continue;
       }
       h_PEsVsChannel_.Fill(channel, pulse.GetPEs());
@@ -394,6 +415,14 @@ void CRVRecoDQM::endJob()
     const int febChannel = online % kNChanPerFEB;
     const int roc = globalFeb / kNFebPerROC + 1;
     const int feb = globalFeb % kNFebPerROC + 1;
+    if (roc > nROC(bookedConfiguration_) ||
+        !febInConfiguration(bookedConfiguration_, globalFeb)) {
+      diag().Count("onlineIdOutsideConfiguration",
+                   Form("a channel's ROC/FEB is outside the %s readout this client was "
+                        "booked for; the online MPV maps leave it out.",
+                        configurationName(bookedConfiguration_)));
+      continue;
+    }
     h_PEsMPVROC_[roc - 1].Fill(rocChannel(feb, febChannel), results[channel].mpv);
     h_PEsMPV_.Fill(febChannel, globalFeb, results[channel].mpv);
   }
@@ -402,7 +431,7 @@ void CRVRecoDQM::endJob()
     return;
   }
   //an unfittable channel enters as zero, which is what makes it visible
-  const auto& family = h_PEsMPVSector_[configuration_];
+  const auto& family = h_PEsMPVSector_;
   for (std::size_t channel = 0; channel < channelToSector_.size() && channel < results.size();
        ++channel) {
     const int sector = channelToSector_[channel];
