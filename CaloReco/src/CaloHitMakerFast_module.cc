@@ -49,7 +49,7 @@ namespace mu2e {
             fhicl::Atom<float>         noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
             fhicl::Atom<float>         nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
             fhicl::Atom<float>         minEDep            { Name("minEDep"),            Comment("Minimum energy deposition to consider a hit"), 0.0 };
-            fhicl::Atom<int>           minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit"), 5};
+            fhicl::Atom<uint>          minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit"), 5};
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
@@ -63,8 +63,8 @@ namespace mu2e {
            nPEperMeV_         (config().nPEperMeV()),
            noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
            nSigmaNoise_       (config().nSigmaNoise()),
-           minWfmLength_      (config().minWfmLength()),
            minEDep_           (config().minEDep()),
+           minWfmLength_      (config().minWfmLength()),
            caphriEDepMax_     (config().caphriEDepMax()),
            caphriEDepMin_     (config().caphriEDepMin()),
            diagLevel_         (config().diagLevel())
@@ -92,7 +92,7 @@ namespace mu2e {
         float  noise2_;
         float  nSigmaNoise_;
         float  minEDep_;
-        int    minWfmLength_;
+        uint   minWfmLength_;
         float  caphriEDepMax_;
         float  caphriEDepMin_;
         int    diagLevel_;
