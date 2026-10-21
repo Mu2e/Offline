@@ -41,13 +41,18 @@ configurations:
 A client is constructed for one configuration (`CRVDigiDQM(hists, cfg)`, the
 DQMHelpers *variant*) and books for it alone: the global-FEB, online-channel,
 FPGA-pair and DTC-link axes are sized by the layout's `nROC`/`nFebs`
-(`CRVDQMRun1::globalFebAxis(cfg)` etc.), the per-ROC and per-link sets run to
+(`CRVDQMRun1::globalFebAxis(cfg)` etc.), the offline-channel axis of
+`crvDigisPerChannel` and `crvPEsVsChannel` by `nOfflineChannels` (4 × the bar
+count of the configuration's largest geometry: 5120 for `run1a_v01`, 2304 for
+`extracted_v04`), the per-ROC and per-link sets run to
 `nROC`, and the per-sector occupancy, per-sector PE MPV and cluster position
 axes `X/Y/Z_<configuration>` (the counter envelope ± 5% of its span, 100
 bins) exist for that configuration only. The output is stamped
 `variant=<configuration>`. A digi or status block from a ROC, port or link the
-configuration does not read out is counted in the diagnostics
-(`onlineIdOutsideConfiguration`, `linkOutOfRange`) and left out; a geometry
+configuration does not read out, or with an offline channel past its axis, is
+counted in the diagnostics (`onlineIdOutsideConfiguration`, `linkOutOfRange`,
+`offlineChannelOutsideConfiguration`; a geometry with more channels than that
+axis, `geometryChannelsOutsideConfiguration`) and left out; a geometry
 that names a different configuration at run start is refused by
 `SetConfiguration` (`configurationMismatch`) rather than filled into the wrong
 axes. The online modules take the configuration from FHiCL
@@ -114,7 +119,9 @@ are `data/CRVDQM_binning_v<N>_<configuration>.txt`, one per configuration:
 two comment lines, then the dump that a module writes when its
 `catalogueFile` is set, run against that configuration's geometry. Version 2
 introduced the per-configuration readout axes; `v1` is the pre-variant set
-with every configuration's family booked.
+with every configuration's family booked. Version 3 (`CRVDigiDQM`,
+`CRVRecoDQM`; `CRVStatusDQM` stays at 2) sizes the offline-channel axis of
+`crvDigisPerChannel` and `crvPEsVsChannel` by configuration.
 
 ## Testing
 

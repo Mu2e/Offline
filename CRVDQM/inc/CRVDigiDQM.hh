@@ -34,7 +34,7 @@ namespace mu2e {
 
 class CRVDigiDQM : public DQMClient {
 public:
-  static constexpr int kBinningVersion = 2;
+  static constexpr int kBinningVersion = 3;
 
   // Axes. Each quantity whose range differs by orders of magnitude between
   // on-spill Run 1 and the ~400 us KPP readout window has a short view and a
@@ -48,12 +48,12 @@ public:
   static constexpr DQMAxis kFebChannel = DQMAxis::Counts(0, CRVDQMRun1::kNChanPerFEB - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  static constexpr DQMAxis kOfflineChannel = DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kBarId{200, -0.5, CRVId::nBars - 0.5};
   static constexpr DQMAxis kSiPM = DQMAxis::Counts(0, 3);
-  // The global FEB ID, online channel and FPGA-pair axes are sized by the
-  // configuration: CRVDQMRun1::globalFebAxis(c), onlineChannelAxis(c),
-  // globalFebEdgesAxis(c), fpgaPairAxis(c).
+  // The global FEB ID, online channel, FPGA-pair and offline channel axes are
+  // sized by the configuration: CRVDQMRun1::globalFebAxis(c),
+  // onlineChannelAxis(c), globalFebEdgesAxis(c), fpgaPairAxis(c),
+  // offlineChannelAxis(c).
   static constexpr DQMAxis kDtFpga = DQMAxis::Symmetric(50., 0.5);
   static constexpr DQMAxis kDigisPerChannelAndEvent{200, 0., 0.1};
   static constexpr DQMAxis kDigisPerChannelAndEvent2{250, 0., 5.};
@@ -92,8 +92,8 @@ public:
     bool valid{false};
   };
 
-  // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed
-  // axes and chooses the per-sector family; it is fixed at construction,
+  // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed and
+  // offline-channel axes and chooses the per-sector family; it is fixed at construction,
   // before Book(), and stamped into the output as the binning variant.
   explicit CRVDigiDQM(const DQMHistSet::Config& hists = {},
                       int configuration = CRVDQMRun1::kRun1a);
@@ -107,7 +107,8 @@ public:
   // channelToSector: offline channel -> index into the configuration's
   // CRVDQMRun1 sector list, -1 to skip the channel. A configuration other
   // than the booked one is refused (diagnostic), since its sector family and
-  // readout axes were not booked.
+  // readout axes were not booked; geometry channels past the booked offline
+  // channel axis are counted (diagnostic) and have no occupancy.
   void SetConfiguration(int configuration, const std::vector<int>& channelToSector);
   // febTopology indexed by global FEB ID; channelToLayer by offline channel.
   // Without it the partner-dt histograms stay empty.

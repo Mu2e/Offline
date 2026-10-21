@@ -79,13 +79,13 @@ using namespace CRVDQMRun1;
 
 CRVRecoDQM::CRVRecoDQM(const DQMHistSet::Config& hists, int configuration) :
     DQMClient("CRVRecoDQM", kBinningVersion, hists, configurationName(configuration)),
-    bookedConfiguration_(configuration),
-    offlineToOnline_(kNOfflineChannels, -1)
+    bookedConfiguration_(configuration)
 {
   if (configuration < 0 || configuration >= kNConfigurations) {
     throw cet::exception("CRVRecoDQM")
         << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
   }
+  offlineToOnline_.assign(nOfflineChannels(configuration), -1);
 }
 
 void CRVRecoDQM::book()
@@ -100,8 +100,8 @@ void CRVRecoDQM::book()
       "crvCoincidencesClusters", "crvCoincidenceClusters:sectorType", kSectorType);
   h_PEsVsChannel_ = h.book2<TH2F>(
       "crvPEsVsChannel",
-      "PE of coincidence-cluster pulses;Offline channel (bar#times4+SiPM);PE", kOfflineChannel,
-      kPE);
+      "PE of coincidence-cluster pulses;Offline channel (bar#times4+SiPM);PE",
+      offlineChannelAxis(cfg), kPE);
 
   // Fit results, filled once at end of job: bar charts, the MPV is the bin content.
   h_PEsMPV_ = h.bookSummary2<TH2F>(
@@ -187,6 +187,13 @@ void CRVRecoDQM::SetConfiguration(int configuration, const std::vector<int>& cha
     return;
   }
   configuration_ = configuration;
+  if (channelToSector.size() > offlineToOnline_.size()) {
+    diag().Count("geometryChannelsOutsideConfiguration",
+                 Form("the geometry has %zu offline channels, more than the %zu the %s "
+                      "configuration books; the channels past them are not fitted.",
+                      channelToSector.size(), offlineToOnline_.size(),
+                      configurationName(bookedConfiguration_)));
+  }
 }
 
 void CRVRecoDQM::Fill(const CrvCoincidenceClusterCollection& clusters)
@@ -257,10 +264,13 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
       const int channel = pulse.GetScintillatorBarIndex().asInt() *
                               static_cast<int>(CRVId::nChanPerBar) +
                           pulse.GetSiPMNumber();
-      if (channel < 0 || channel >= kNOfflineChannels) {
-        diag().Count("offlineChannelOutOfRange",
-                     "a reco pulse's offline channel is outside CRVId; it is left out of "
-                     "crvPEsVsChannel.");
+      if (!offlineChannelInConfiguration(bookedConfiguration_, channel)) {
+        diag().Count("offlineChannelOutsideConfiguration",
+                     Form("a reco pulse's offline channel is outside the %d channels of the "
+                          "%s configuration this client was booked for; it is left out of "
+                          "crvPEsVsChannel and the MPV maps.",
+                          nOfflineChannels(bookedConfiguration_),
+                          configurationName(bookedConfiguration_)));
         continue;
       }
       h_PEsVsChannel_.Fill(channel, pulse.GetPEs());

@@ -31,13 +31,13 @@ const char* CRVDigiDQM::dtClassName(int c)
 
 CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration) :
     DQMClient("CRVDigiDQM", kBinningVersion, hists, configurationName(configuration)),
-    bookedConfiguration_(configuration),
-    nDigisOffline_(kNOfflineChannels, 0)
+    bookedConfiguration_(configuration)
 {
   if (configuration < 0 || configuration >= kNConfigurations) {
     throw cet::exception("CRVDigiDQM")
         << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
   }
+  nDigisOffline_.assign(CRVDQMRun1::nOfflineChannels(configuration), 0);
 }
 
 TH2F* CRVDigiDQM::dtPartner(int dtClass) const
@@ -56,6 +56,7 @@ void CRVDigiDQM::book()
   const DQMAxis kGlobalFebEdges = CRVDQMRun1::globalFebEdgesAxis(cfg);
   const DQMAxis kOnlineChannel = CRVDQMRun1::onlineChannelAxis(cfg);
   const DQMAxis kFpgaPair = CRVDQMRun1::fpgaPairAxis(cfg);
+  const DQMAxis kOfflineChannel = CRVDQMRun1::offlineChannelAxis(cfg);
 
   h1_digisPerEvt_ = h.book1<TH1F>("h1_digisPerEvt", "Hits / event;Hits / event;Events",
                                   kDigisPerEvt);
@@ -155,6 +156,13 @@ void CRVDigiDQM::SetConfiguration(int configuration, const std::vector<int>& cha
     return;
   }
   configuration_ = configuration;
+  if (channelToSector.size() > nDigisOffline_.size()) {
+    diag().Count("geometryChannelsOutsideConfiguration",
+                 Form("the geometry has %zu offline channels, more than the %zu the %s "
+                      "configuration books; the channels past them have no occupancy.",
+                      channelToSector.size(), nDigisOffline_.size(),
+                      configurationName(bookedConfiguration_)));
+  }
 }
 
 void CRVDigiDQM::SetFebTopology(const std::vector<FebTopology>& febTopology,
@@ -224,11 +232,16 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
     int offline = -1;
     if (sipm >= 0 && barIndex >= 0) {
       offline = barIndex * static_cast<int>(CRVId::nChanPerBar) + sipm;
-      if (offline < kNOfflineChannels) {
+      if (CRVDQMRun1::offlineChannelInConfiguration(bookedConfiguration_, offline)) {
         ++nDigisOffline_[offline];
         h_crvDigisPerChannel_.Fill(offline);
       } else {
-        offline = -1;
+        diag().Count("offlineChannelOutsideConfiguration",
+                     Form("a digi's offline channel is outside the %d channels of the %s "
+                          "configuration this client was booked for; it is left out of "
+                          "crvDigisPerChannel and the per-sector occupancy.",
+                          CRVDQMRun1::nOfflineChannels(bookedConfiguration_),
+                          configurationName(bookedConfiguration_)));
       }
     }
 

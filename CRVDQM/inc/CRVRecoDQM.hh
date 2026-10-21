@@ -30,17 +30,15 @@ namespace mu2e {
 
 class CRVRecoDQM : public DQMClient {
 public:
-  static constexpr int kBinningVersion = 2;
+  static constexpr int kBinningVersion = 3;
 
   static constexpr DQMAxis kOne{1, 0.5, 1.5};
   static constexpr DQMAxis kSectorType{10, 0., 10.};
   static constexpr DQMAxis kPE{75, 0., 150.};
-  static constexpr DQMAxis kOfflineChannel =
-      DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  // The global FEB ID axis is sized by the configuration:
-  // CRVDQMRun1::globalFebEdgesAxis(c).
+  // The global FEB ID and offline channel axes are sized by the configuration:
+  // CRVDQMRun1::globalFebEdgesAxis(c), offlineChannelAxis(c).
   // DqmCrv / ValCrv* plots. "2" is the full-readout-window view: KPP windows
   // reach ~410 us.
   static constexpr DQMAxis kNPulses{101, -0.5, 100.5};
@@ -75,8 +73,9 @@ public:
   static std::vector<LandauGaussResult> FitPEsVsChannel(const TH2& peVsChannel);
 
   // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed MPV
-  // maps, chooses the per-sector family and the cluster position axes; fixed
-  // at construction and stamped as the binning variant.
+  // maps and the offline channel axis of crvPEsVsChannel, chooses the
+  // per-sector family and the cluster position axes; fixed at construction
+  // and stamped as the binning variant.
   explicit CRVRecoDQM(const DQMHistSet::Config& hists = {},
                       int configuration = CRVDQMRun1::kRun1a);
 
@@ -85,7 +84,8 @@ public:
   // Caller-injected layout, callable any time after Book(). channelToSector:
   // offline channel -> index into the configuration's CRVDQMRun1 sector list,
   // -1 to skip it (how a caller drops notConnected channels). A configuration
-  // other than the booked one is refused (diagnostic).
+  // other than the booked one is refused (diagnostic); geometry channels past
+  // the booked offline channel axis are counted (diagnostic) and not fitted.
   void SetConfiguration(int configuration, const std::vector<int>& channelToSector);
 
   void Fill(const CrvCoincidenceClusterCollection& clusters);

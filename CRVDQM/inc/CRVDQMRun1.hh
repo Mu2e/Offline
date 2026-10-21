@@ -22,9 +22,9 @@
 //              second ROC's status is on link 3 (links 1 and 2 stay empty).
 //
 // A client books its FEB-, channel- and link-indexed histograms for one
-// configuration (CRVDigiDQM(hists, configuration)); the layout's nROC / nFebs
-// size those axes through the helpers at the bottom. The numbering itself
-// (globalFebId etc.) is the same for every configuration.
+// configuration (CRVDigiDQM(hists, configuration)); the layout's nROC / nFebs /
+// nLinks / nOfflineChannels size those axes through the helpers at the bottom.
+// The numbering itself (globalFebId etc.) is the same for every configuration.
 //
 // Original Author: R. Mina
 
@@ -44,6 +44,7 @@ constexpr int kNChanPerROC = kNFebPerROC * kNChanPerFEB;
 constexpr int kNFebs = kNROC * kNFebPerROC;               //432
 constexpr int kNOnlineChannels = kNFebs * kNChanPerFEB;   //27648
 constexpr int kNOfflineChannels = static_cast<int>(CRVId::nChannels);
+constexpr int kNChanPerBar = static_cast<int>(CRVId::nChanPerBar);
 constexpr int kNFPGAPerFEB = static_cast<int>(CRVId::nFPGAPerFEB);
 constexpr int kNChanPerFPGA = static_cast<int>(CRVId::nChanPerFPGA);
 // Unordered FPGA pairs on one FEB, same FPGA included: 10.
@@ -105,15 +106,18 @@ struct Layout {
   int nROC;
   int nFebs;
   int nLinks;
+  // Offline channels booked (bar index x kNChanPerBar + SiPM, dense per
+  // geometry): those of the configuration's largest geometry.
+  int nOfflineChannels;
 };
 
 constexpr Layout kLayouts[kNConfigurations] = {
     {"run1a", 2, {"T1", "T2"}, {-6904., 4736., 3962.}, {-904., 4844., 20610.},
-     kNROC, kNFebs, kNLinks},
+     kNROC, kNFebs, kNLinks, 1280 * kNChanPerBar},  //run1a_v01: 1280 bars
     {"extracted", 11,
      {"EX", "T1", "T2", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"},
      {-6904., 4227., 20975.}, {-904., 4719., 24716.},
-     2, kNFebPerROC + 7, 4},
+     2, kNFebPerROC + 7, 4, 576 * kNChanPerBar},  //extracted_v04: 576 bars (v02, v03: 512)
 };
 
 // Geometry crs.name -> configuration. extracted_v01..v03 all say "extracted".
@@ -166,6 +170,15 @@ constexpr DQMAxis linkAxis(int configuration)
 {
   return DQMAxis::Counts(0, nLinks(configuration) - 1);
 }
+// Offline-channel axis of a configuration (crvDigisPerChannel, crvPEsVsChannel).
+constexpr int nOfflineChannels(int configuration)
+{
+  return kLayouts[configuration].nOfflineChannels;
+}
+constexpr DQMAxis offlineChannelAxis(int configuration)
+{
+  return DQMAxis::Counts(0, nOfflineChannels(configuration) - 1);
+}
 // A readout address inside the configuration's booked range: filling code
 // uses this, not onlineIdInRange, to decide whether a digi has a bin.
 constexpr bool febInConfiguration(int configuration, int globalFeb)
@@ -175,6 +188,10 @@ constexpr bool febInConfiguration(int configuration, int globalFeb)
 constexpr bool linkInConfiguration(int configuration, int link)
 {
   return link >= 0 && link < nLinks(configuration);
+}
+constexpr bool offlineChannelInConfiguration(int configuration, int channel)
+{
+  return channel >= 0 && channel < nOfflineChannels(configuration);
 }
 
 const char* configurationName(int configuration);
