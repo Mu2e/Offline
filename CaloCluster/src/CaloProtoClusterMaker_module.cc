@@ -118,6 +118,7 @@ namespace mu2e {
       //fill data structures
       for (const auto& hit : CaloHits)
       {
+          if (!hit.crystalID().isValid()) continue; //Exclude pin diodes
           if (hit.energyDep() < EnoiseCut_) continue;
           caloIdHitMap[hit.crystalID()].push_back(&hit);
           if (hit.energyDep() > EminSeed_ ) seedList.insert(&hit);

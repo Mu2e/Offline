@@ -94,7 +94,13 @@ namespace mu2e {
 
       std::vector<size_t> hits;
       hits.reserve(caloHits.size());
-      for (size_t i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
+      for (size_t i=0;i<caloHits.size();++i) {
+          if (caloHits[i].crystalID().isValid() //Exclude pin diodes
+              && caloHits[i].energyDep() > EnoiseCut_
+              && caloHits[i].nSiPMs() >= minSiPMPerHit_) {
+                hits.emplace_back(i);
+          }
+      }
 
       auto functorTime = [&caloHits](auto a, auto b) {
           auto dt = caloHits[a].time() - caloHits[b].time();
