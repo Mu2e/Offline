@@ -48,6 +48,8 @@ namespace mu2e {
             fhicl::Atom<float>         nPEperMeV          { Name("nPEperMeV"),          Comment("number of photo-electrons per MeV") };
             fhicl::Atom<float>         noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
             fhicl::Atom<float>         nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
+            fhicl::Atom<float>         minEDep            { Name("minEDep"),            Comment("Minimum energy deposition to consider a hit"), 0.0 };
+            fhicl::Atom<uint>          minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit"), 5};
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
@@ -61,6 +63,8 @@ namespace mu2e {
            nPEperMeV_         (config().nPEperMeV()),
            noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
            nSigmaNoise_       (config().nSigmaNoise()),
+           minEDep_           (config().minEDep()),
+           minWfmLength_      (config().minWfmLength()),
            caphriEDepMax_     (config().caphriEDepMax()),
            caphriEDepMin_     (config().caphriEDepMin()),
            diagLevel_         (config().diagLevel())
@@ -87,6 +91,8 @@ namespace mu2e {
         float  nPEperMeV_;
         float  noise2_;
         float  nSigmaNoise_;
+        float  minEDep_;
+        uint   minWfmLength_;
         float  caphriEDepMax_;
         float  caphriEDepMin_;
         int    diagLevel_;
@@ -138,7 +144,10 @@ namespace mu2e {
        for (const auto index : digis)
        {
            const auto& caloDigi = caloDigis[index];
+           if (!CaloSiPMId(caloDigi.SiPMID()).crystal().isValid()) continue; //Skip pin diodes
            int crystalID   = CaloSiPMId(caloDigi.SiPMID()).crystal().id();
+
+           if (caloDigi.waveform().size() < minWfmLength_) continue; //Skip short waveforms
 
            size_t nSamPed  = caloDigi.peakpos() > 3 ? 4 : std::max(caloDigi.peakpos()-1, 1);
            double baseline(0);
@@ -151,7 +160,7 @@ namespace mu2e {
            double time     = (caloDigi.t0() + caloDigi.peakpos())*CaloConst::_digitizationPeriod - pbtOffset - timeOffset; //Giani's definition; t0 in ticks
            //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*CaloConst::_digitizationPeriod - pbtOffset - timeOffset; //Bertrand's definition
 
-           //FIXME! I think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
+           if (eDep < minEDep_) continue; //Bad or noise pulse
 
            addPulse(pulseMap, crystalID, time, eDep);
            if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;
