@@ -1,29 +1,23 @@
 // Top level geometry file for commissioning running with tracker and calorimeter positions adjusted
 // for combined run 125470.
 // Tracker position from laser tracker (Dylan Palo) and tracker-crv matching (docdb-57589)
-// Calorimeter position hand tune to correct mean trkcalohit.cdepth
+// Calorimeter position hand tuned to correct mean trkcalohit.cdepth
+// compared to v01, disk 0 shifted to nominal distance from disk 1
 #include "Offline/Mu2eG4/geom/geom_common_extracted.txt"
 
-// Extend fake DS3 volume to contain detector train, ~1250mm longer than nominal
-double garage.zOffset   = 14014.0;  // for creating special garageFakeDS(2/3)Vacuum volume
-double garage.ds3UpstreamExtension = 1250.0; // DS3 front now at DS frame z = 8339 - 1250 = 7089
+// Extend fake DS3 volume to contain detector train
+double garage.ds3UpstreamExtension = 1236.0;
 
 // tracker shifted by 1236 mm (DS frame front = 22939 - 1635.5 - 14014 = 7289.5)
 double tracker.mother.z0          =  22939.0;
 double tracker.z0                   = 22935.0;
 double mu2e.detectorSystemZ0 = 22935.;
 
-// calo shifted to 2299.9 and 3455.9 in tracker frame
-double calorimeter.caloMotherZ0                 = 25617.0;
-double calorimeter.caloMotherZ1                 = 27234.0;
-double calorimeter.calorimeterZFront            = 25618.0;
+// disk 0 shifted upstream 701 mm, disk separation increased by 456 mm
+double calorimeter.caloMotherZ0                 = 25597.0;
+double calorimeter.caloMotherZ1                 = 26975.0;
+double calorimeter.calorimeterZFront            = 25598.0;
 vector<double> calorimeter.diskZMotherShift   = {0.0,700.0};
 
 // MBS: remain 10 mm behind the calorimeter mother
-double mbs.MBSCZ              = 29287.0;
-
-// Tracker cable run: keep the downstream end at nominal (17106 in DS frame),
-// extend upstream to 31.5 mm behind the tracker mother (nominal gap).
-// Tracker mother back in DS frame: 24574.5 - 14014 = 10560.5
-double    ds.CableRunTrk.zC        = 13849.0; // spans 10592 - 17106
-double    ds.CableRunTrk.length    = 3257.0;  // halflength (nominal 2632)
+double mbs.MBSCZ              = 29028.0;
