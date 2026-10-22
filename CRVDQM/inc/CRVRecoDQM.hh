@@ -30,16 +30,15 @@ namespace mu2e {
 
 class CRVRecoDQM : public DQMClient {
 public:
-  static constexpr int kBinningVersion = 1;
+  static constexpr int kBinningVersion = 3;
 
   static constexpr DQMAxis kOne{1, 0.5, 1.5};
   static constexpr DQMAxis kSectorType{10, 0., 10.};
   static constexpr DQMAxis kPE{75, 0., 150.};
-  static constexpr DQMAxis kOfflineChannel =
-      DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  static constexpr DQMAxis kGlobalFebEdges{CRVDQMRun1::kNFebs, 0., CRVDQMRun1::kNFebs};
+  // The global FEB ID and offline channel axes are sized by the configuration:
+  // CRVDQMRun1::globalFebEdgesAxis(c), offlineChannelAxis(c).
   // DqmCrv / ValCrv* plots. "2" is the full-readout-window view: KPP windows
   // reach ~410 us.
   static constexpr DQMAxis kNPulses{101, -0.5, 100.5};
@@ -73,11 +72,20 @@ public:
   // gives an unfitted result.
   static std::vector<LandauGaussResult> FitPEsVsChannel(const TH2& peVsChannel);
 
-  explicit CRVRecoDQM(const DQMHistSet::Config& hists = {});
+  // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed MPV
+  // maps and the offline channel axis of crvPEsVsChannel, chooses the
+  // per-sector family and the cluster position axes; fixed at construction
+  // and stamped as the binning variant.
+  explicit CRVRecoDQM(const DQMHistSet::Config& hists = {},
+                      int configuration = CRVDQMRun1::kRun1a);
+
+  int configuration() const { return bookedConfiguration_; }
 
   // Caller-injected layout, callable any time after Book(). channelToSector:
   // offline channel -> index into the configuration's CRVDQMRun1 sector list,
-  // -1 to skip it (how a caller drops notConnected channels).
+  // -1 to skip it (how a caller drops notConnected channels). A configuration
+  // other than the booked one is refused (diagnostic); geometry channels past
+  // the booked offline channel axis are counted (diagnostic) and not fitted.
   void SetConfiguration(int configuration, const std::vector<int>& channelToSector);
 
   void Fill(const CrvCoincidenceClusterCollection& clusters);
@@ -91,7 +99,7 @@ public:
   TH2F* PEsVsChannel() const { return h_PEsVsChannel_; }  //the mergeable fit input
   TH2F* PEsMPV() const { return h_PEsMPV_; }  //FEB channel vs global FEB ID
   TH1F* PEsMPVROC(int roc) const;  //online channel within ROC, roc 1-based
-  TH1F* PEsMPVSector(int configuration, int sector) const;
+  TH1F* PEsMPVSector(int sector) const;  //of the booked configuration
 
   TH1D* NPulses() const { return h_NPulses_; }
   TH1D* NPulse2() const { return h_NPulse2_; }
@@ -110,10 +118,10 @@ public:
   TH1D* PEc() const { return h_PEc_; }
   TH1D* tc() const { return h_tc_; }
   TH1D* t2c() const { return h_t2c_; }
-  // Cluster position, one set per configuration: X(c), Y(c), Z(c).
-  TH1D* X(int configuration) const { return position(configuration, 0); }
-  TH1D* Y(int configuration) const { return position(configuration, 1); }
-  TH1D* Z(int configuration) const { return position(configuration, 2); }
+  // Cluster position on the booked configuration's envelope: X_<name> etc.
+  TH1D* X() const { return position(0); }
+  TH1D* Y() const { return position(1); }
+  TH1D* Z() const { return position(2); }
 
   std::size_t nEventsWithClusters() const { return nEventsWithClusters_; }
   std::size_t nClusters() const { return nClusters_; }
@@ -125,7 +133,7 @@ private:
   void book() override;
   void endJob() override;
 
-  TH1D* position(int configuration, int coordinate) const;
+  TH1D* position(int coordinate) const;
   void fillClusters(const CrvCoincidenceClusterCollection& clusters);
   void fillRecoPulses(const CrvRecoPulseCollection& recoPulses);
 
@@ -134,7 +142,7 @@ private:
   DQMH2<TH2F> h_PEsVsChannel_;
   DQMH2<TH2F> h_PEsMPV_;
   std::vector<DQMH1<TH1F>> h_PEsMPVROC_;
-  std::vector<std::vector<DQMH1<TH1F>>> h_PEsMPVSector_;  //[configuration][sector]
+  std::vector<DQMH1<TH1F>> h_PEsMPVSector_;  //[sector] of the booked configuration
 
   DQMH1<TH1D> h_NPulses_;
   DQMH1<TH1D> h_NPulse2_;
@@ -153,9 +161,10 @@ private:
   DQMH1<TH1D> h_PEc_;
   DQMH1<TH1D> h_tc_;
   DQMH1<TH1D> h_t2c_;
-  std::vector<std::vector<DQMH1<TH1D>>> h_position_;  //[configuration][x,y,z]
+  std::vector<DQMH1<TH1D>> h_position_;  //[x,y,z] of the booked configuration
 
-  int configuration_{-1};
+  const int bookedConfiguration_;
+  int configuration_{-1};  //set by SetConfiguration; the booked one or -1
   std::vector<int> channelToSector_;
   // Online channel of each offline channel, learned from the pulses themselves,
   // so the online MPV maps need no channel map. -1 until seen.

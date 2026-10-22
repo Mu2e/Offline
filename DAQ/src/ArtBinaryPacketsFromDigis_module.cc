@@ -130,6 +130,8 @@ constexpr int START_SAMPLES = 5; // 0 indexed
 constexpr int NUM_SAMPLES = 15;
 constexpr int LOWER_TDC = 16000;
 constexpr int UPPER_TDC = 64000;
+constexpr size_t TRK_MAIN_PACKET_SAMPLES = 3; // ADC samples carried in the main tracker packet
+constexpr size_t TRK_ADC_PACKET_SAMPLES = 12; // ADC samples carried in each extra ADC packet
 
 //--------------------------------------------------------------------
 //
@@ -147,12 +149,8 @@ public:
     fhicl::Atom<int> includeCalorimeter{Name("includeCalorimeter"),
                                         Comment("include Calorimeter digis")};
     fhicl::Atom<int> includeCrv{Name("includeCrv"), Comment("include Crv digis")};
-    fhicl::Atom<int> includeDMAHeaders{Name("includeDMAHeaders"), Comment("include DMA Headers")};
     fhicl::Atom<int> generateBinaryFile{Name("generateBinaryFile"), Comment("generate BinaryFile")};
     fhicl::Atom<std::string> outputFile{Name("outputFile"), Comment("output File name")};
-    fhicl::Atom<int> generateTextFile{Name("generateTextFile"), Comment("generate Text File")};
-    fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("diagLevel")};
-    fhicl::Atom<int> maxFullPrint{Name("maxFullPrint"), Comment("maxFullPrint")};
     fhicl::Atom<art::InputTag> sdtoken{Name("strawDigiCollection"),
                                        Comment("Straw digi collection name")};
     fhicl::Atom<art::InputTag> cdtoken{Name("caloDigiCollection"),
@@ -181,7 +179,6 @@ private:
   int _includeTracker;
   int _includeCalorimeter;
   int _includeCrv;
-  int _includeDMAHeaders;
 
   // -- include proditions handling
   ProditionsHandle<CalDAQMap> _calodaqconds_h;
@@ -224,8 +221,6 @@ private:
 
   //--------------------------------------------------------------------------------
 
-  int _generateTextFile;
-
   // Label of the module that made the hits.
   art::ProductToken<StrawDigiCollection> const _sdtoken;
   art::ProductToken<StrawDigiADCWaveformCollection> const _sdadctoken;
@@ -234,6 +229,7 @@ private:
 
   size_t _numWordsWritten;
   size_t _numEventsProcessed;
+  size_t _numShortWaveformsSkipped; // tracker hits dropped for having too few ADC samples
 
   const Calorimeter* _calorimeter; // cached pointer to the calorimeter geometry
 
@@ -535,15 +531,17 @@ void ArtBinaryPacketsFromDigis::fillTrackerDataPacket(const StrawDigi& SD,
   headerData.PacketCount++;
 
   TrkTypes::ADCWaveform const& theWaveform = SDADC.samples();
-  size_t numADCPackets = static_cast<size_t>((theWaveform.size() - 3) / 12);
+  // The caller guarantees theWaveform.size() >= TRK_MAIN_PACKET_SAMPLES
+  size_t numADCPackets = (theWaveform.size() - TRK_MAIN_PACKET_SAMPLES) / TRK_ADC_PACKET_SAMPLES;
   TrkData.mainPacket.NumADCPackets = numADCPackets;
-  for (size_t i = 0; i < 3; i++) {
+  for (size_t i = 0; i < TRK_MAIN_PACKET_SAMPLES; i++) {
     TrkData.mainPacket.SetWaveform(i, theWaveform[i]);
   }
   for (size_t i = 0; i < numADCPackets; i++) {
     TrackerADCPacket adcPacket;
-    for (size_t j = 0; j < 12; j++) {
-      adcPacket.SetWaveform(j, theWaveform[3 + i * 12 + j]);
+    for (size_t j = 0; j < TRK_ADC_PACKET_SAMPLES; j++) {
+      adcPacket.SetWaveform(j,
+                            theWaveform[TRK_MAIN_PACKET_SAMPLES + i * TRK_ADC_PACKET_SAMPLES + j]);
     }
     TrkData.adcPacketVec.push_back(adcPacket);
     headerData.TransferByteCount += sizeof(TrackerADCPacket);
@@ -555,14 +553,13 @@ ArtBinaryPacketsFromDigis::ArtBinaryPacketsFromDigis(const art::EDProducer::Tabl
     art::EDProducer{config}, _generateTimestampTable(config().generateTimestampTable()),
     _tableFile(config().tableFile()), _timestampOffset(config().timestampOffset()),
     _includeTracker(config().includeTracker()), _includeCalorimeter(config().includeCalorimeter()),
-    _includeCrv(config().includeCrv()), _includeDMAHeaders(config().includeDMAHeaders()),
-    _generateBinaryFile(config().generateBinaryFile()), _outputFile(config().outputFile()),
-    _generateTextFile(config().generateTextFile()),
+    _includeCrv(config().includeCrv()), _generateBinaryFile(config().generateBinaryFile()),
+    _outputFile(config().outputFile()),
     _sdtoken{consumes<mu2e::StrawDigiCollection>(config().sdtoken())},
     _sdadctoken{consumes<mu2e::StrawDigiADCWaveformCollection>(config().sdtoken())},
     _cdtoken{consumes<mu2e::CaloDigiCollection>(config().cdtoken())},
     _crvtoken{consumes<mu2e::CrvDigiCollection>(config().crvtoken())}, _numWordsWritten(0),
-    _numEventsProcessed(0) {
+    _numEventsProcessed(0), _numShortWaveformsSkipped(0) {
 
   produces<timestamp>();
 
@@ -600,6 +597,12 @@ void ArtBinaryPacketsFromDigis::endJob() {
   TLOG(TLVL_DEBUG + 0) << "BinaryPacketsFromDataBlocks: "
                        << "Finished writing " << _numWordsWritten << " words from "
                        << _numEventsProcessed << " events to " << _outputFile;
+
+  if (_numShortWaveformsSkipped > 0) {
+    mf::LogWarning("ArtBinaryPacketsFromDigis")
+        << "Skipped " << _numShortWaveformsSkipped << " tracker hits with fewer than "
+        << TRK_MAIN_PACKET_SAMPLES << " ADC samples";
+  }
 }
 
 void ArtBinaryPacketsFromDigis::produce(art::Event& evt) {
@@ -1008,6 +1011,15 @@ void ArtBinaryPacketsFromDigis::processTrackerData(art::Event& evt, uint64_t& ev
             (plane * 6) + panel; // strawId().uniquePanel() would provide the ROCID
         uint8_t thisDTCID = static_cast<uint8_t>(globalROCID / number_of_rocs_per_dtc);
         if (panel == rocID && thisDTCID == dtcID) {
+          if (SDADC.samples().size() < TRK_MAIN_PACKET_SAMPLES) {
+            // Too short to fill even the main packet: report and skip the hit
+            ++_numShortWaveformsSkipped;
+            mf::LogWarning("ArtBinaryPacketsFromDigis")
+                << "Skipping tracker hit in straw " << SD.strawId() << " with "
+                << SDADC.samples().size() << " ADC samples (need at least "
+                << TRK_MAIN_PACKET_SAMPLES << ")";
+            continue;
+          }
           trackerData.back().second.emplace_back();
           fillTrackerDataPacket(SD, SDADC, trackerData.back().second.back(),
                                 trackerData.back().first);

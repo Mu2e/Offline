@@ -4,9 +4,11 @@
 // otsdaq online monitor and the offline DQM modules alike. No GeometryService:
 // the caller injects the sector map and the FEB topology.
 //
-// Every histogram is booked up front for the full CRVId address space and the
-// CRVDQMRun1 configurations, on the fixed axes below, so every job writes the
-// same set and files merge across run periods.
+// Every histogram is booked up front, on the fixed axes below, for the one
+// CRVDQMRun1 configuration the client is constructed for: that configuration
+// sizes the FEB-, channel- and link-indexed axes (its layout's nROC / nFebs)
+// and picks the per-sector family. Every job of a configuration writes the
+// same set, stamped `variant=<configuration>`, and files merge within it.
 //
 // Original Author: R. Mina
 
@@ -32,7 +34,7 @@ namespace mu2e {
 
 class CRVDigiDQM : public DQMClient {
 public:
-  static constexpr int kBinningVersion = 1;
+  static constexpr int kBinningVersion = 3;
 
   // Axes. Each quantity whose range differs by orders of magnitude between
   // on-spill Run 1 and the ~400 us KPP readout window has a short view and a
@@ -43,17 +45,15 @@ public:
   static constexpr DQMAxis kAdcSample{128, 0., 4096.};
   static constexpr DQMAxis kTdc{200, 0., 200.};
   static constexpr DQMAxis kTdc2{1024, 0., 40960.};
-  static constexpr DQMAxis kOnlineChannel = DQMAxis::Counts(0, CRVDQMRun1::kNOnlineChannels - 1);
   static constexpr DQMAxis kFebChannel = DQMAxis::Counts(0, CRVDQMRun1::kNChanPerFEB - 1);
-  static constexpr DQMAxis kGlobalFeb = DQMAxis::Counts(0, CRVDQMRun1::kNFebs - 1);
   static constexpr DQMAxis kRocChannelEdges{CRVDQMRun1::kNChanPerROC, 0., CRVDQMRun1::kNChanPerROC};
   static constexpr DQMAxis kFebChannelEdges{CRVDQMRun1::kNChanPerFEB, 0., CRVDQMRun1::kNChanPerFEB};
-  static constexpr DQMAxis kGlobalFebEdges{CRVDQMRun1::kNFebs, 0., CRVDQMRun1::kNFebs};
-  static constexpr DQMAxis kOfflineChannel = DQMAxis::Counts(0, CRVDQMRun1::kNOfflineChannels - 1);
   static constexpr DQMAxis kBarId{200, -0.5, CRVId::nBars - 0.5};
   static constexpr DQMAxis kSiPM = DQMAxis::Counts(0, 3);
-  static constexpr DQMAxis kFpgaPair =
-      DQMAxis::Counts(0, CRVDQMRun1::kNFebs * CRVDQMRun1::kNFpgaPairs - 1);
+  // The global FEB ID, online channel, FPGA-pair and offline channel axes are
+  // sized by the configuration: CRVDQMRun1::globalFebAxis(c),
+  // onlineChannelAxis(c), globalFebEdgesAxis(c), fpgaPairAxis(c),
+  // offlineChannelAxis(c).
   static constexpr DQMAxis kDtFpga = DQMAxis::Symmetric(50., 0.5);
   static constexpr DQMAxis kDigisPerChannelAndEvent{200, 0., 0.1};
   static constexpr DQMAxis kDigisPerChannelAndEvent2{250, 0., 5.};
@@ -92,11 +92,23 @@ public:
     bool valid{false};
   };
 
-  explicit CRVDigiDQM(const DQMHistSet::Config& hists = {});
+  // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed and
+  // offline-channel axes and chooses the per-sector family; it is fixed at construction,
+  // before Book(), and stamped into the output as the binning variant.
+  explicit CRVDigiDQM(const DQMHistSet::Config& hists = {},
+                      int configuration = CRVDQMRun1::kRun1a);
+
+  int configuration() const { return bookedConfiguration_; }
+  int nROC() const { return CRVDQMRun1::nROC(bookedConfiguration_); }
+  int nFebs() const { return CRVDQMRun1::nFebs(bookedConfiguration_); }
+  DQMAxis globalFebAxis() const { return CRVDQMRun1::globalFebAxis(bookedConfiguration_); }
 
   // Caller-injected layout; either may be called at any time after Book().
   // channelToSector: offline channel -> index into the configuration's
-  // CRVDQMRun1 sector list, -1 to skip the channel.
+  // CRVDQMRun1 sector list, -1 to skip the channel. A configuration other
+  // than the booked one is refused (diagnostic), since its sector family and
+  // readout axes were not booked; geometry channels past the booked offline
+  // channel axis are counted (diagnostic) and have no occupancy.
   void SetConfiguration(int configuration, const std::vector<int>& channelToSector);
   // febTopology indexed by global FEB ID; channelToLayer by offline channel.
   // Without it the partner-dt histograms stay empty.
@@ -184,14 +196,15 @@ private:
   DQMH1<TH1F> h_groupsPerEvent2_;
   DQMH1<TH1F> h_sectorsPerEvent_;
   DQMH1<TH1F> h_febNoGroup_;
-  // [configuration][sector], short and full view
-  std::vector<std::vector<DQMH1<TH1F>>> h_sectorOccupancy_;
-  std::vector<std::vector<DQMH1<TH1F>>> h_sectorOccupancy2_;
+  // [sector] of the booked configuration, short and full view
+  std::vector<DQMH1<TH1F>> h_sectorOccupancy_;
+  std::vector<DQMH1<TH1F>> h_sectorOccupancy2_;
 
   DQMSeries* g_digisVsEwt_{nullptr};
   DQMSeries* g_digisAvgVsEwt_{nullptr};
 
-  int configuration_{-1};
+  const int bookedConfiguration_;
+  int configuration_{-1};  //set by SetConfiguration; the booked one or -1
   std::vector<int> channelToSector_;
   std::vector<FebTopology> febTopology_;
   std::vector<int> channelToLayer_;

@@ -4,8 +4,10 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Sequence.h"
 
+#include "Offline/CaloConditions/inc/CalCalib.hh"
 #include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
@@ -46,9 +48,10 @@ namespace mu2e {
             fhicl::Atom<float>         nPEperMeV          { Name("nPEperMeV"),          Comment("number of photo-electrons per MeV") };
             fhicl::Atom<float>         noiseLevelMeV      { Name("noiseLevelMeV"),      Comment("Noise level in MeV") };
             fhicl::Atom<float>         nSigmaNoise        { Name("nSigmaNoise"),        Comment("Maxnumber of sigma Noise to combine digi") };
+            fhicl::Atom<float>         minEDep            { Name("minEDep"),            Comment("Minimum energy deposition to consider a hit"), 0.0 };
+            fhicl::Atom<uint>          minWfmLength       { Name("minWfmLength"),       Comment("Minimum waveform length to consider a hit"), 5};
             fhicl::Atom<float>         caphriEDepMax      { Name("caphriEDepMax"),      Comment("Maximum CAPHRI hit energy in MeV")};
             fhicl::Atom<float>         caphriEDepMin      { Name("caphriEDepMin"),      Comment("Minimum CAPHRI hit energy in MeV")};
-            fhicl::Atom<double>        ADCToMeV           { Name("ADCToMeV"),           Comment("ADC to MeV conversion factor") };
             fhicl::Atom<int>           diagLevel          { Name("diagLevel"),          Comment("Diag Level"),0 };
         };
 
@@ -60,9 +63,10 @@ namespace mu2e {
            nPEperMeV_         (config().nPEperMeV()),
            noise2_            (config().noiseLevelMeV()*config().noiseLevelMeV()),
            nSigmaNoise_       (config().nSigmaNoise()),
+           minEDep_           (config().minEDep()),
+           minWfmLength_      (config().minWfmLength()),
            caphriEDepMax_     (config().caphriEDepMax()),
            caphriEDepMin_     (config().caphriEDepMin()),
-           ADCToMeV_          (config().ADCToMeV()),
            diagLevel_         (config().diagLevel())
         {
             produces<CaloHitCollection>("calo");
@@ -74,9 +78,11 @@ namespace mu2e {
 
 
     private:
+        ProditionsHandle<mu2e::CalCalib> calCalibHandle_;
+
         using pulseMapType = std::map<unsigned, std::vector<HitInfo>>;
 
-        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intCalo, double pbtOffset);
+        void extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intCalo, double pbtOffset, CalCalib const& calCalib);
         void addPulse(pulseMapType& pulseMap, unsigned crystalID, float time, float eDep);
 
         art::ProductToken<CaloDigiCollection>     caloDigisToken_;
@@ -85,9 +91,10 @@ namespace mu2e {
         float  nPEperMeV_;
         float  noise2_;
         float  nSigmaNoise_;
+        float  minEDep_;
+        uint   minWfmLength_;
         float  caphriEDepMax_;
         float  caphriEDepMin_;
-        float  ADCToMeV_;
         int    diagLevel_;
     };
 
@@ -101,6 +108,7 @@ namespace mu2e {
         auto pbtH = event.getValidHandle(pbttoken_);
         const ProtonBunchTime& pbt(*pbtH);
         double pbtOffset = pbt.pbtime_;
+        CalCalib const& calCalib = calCalibHandle_.get(event.id());
 
         const auto& caloDigisHandle = event.getValidHandle(caloDigisToken_);
         const auto& caloDigis(*caloDigisHandle);
@@ -108,7 +116,7 @@ namespace mu2e {
         auto caloHitsColl   = std::make_unique<CaloHitCollection>();
         auto caphriHitsColl = std::make_unique<CaloHitCollection>();
         auto intInfo        = std::make_unique<IntensityInfoCalo>();
-        extractHits(caloDigis,*caloHitsColl,*caphriHitsColl,*intInfo,pbtOffset);
+        extractHits(caloDigis,*caloHitsColl,*caphriHitsColl,*intInfo,pbtOffset,calCalib);
 
         event.put(std::move(caloHitsColl),  "calo");
         event.put(std::move(caphriHitsColl),"caphri");
@@ -120,7 +128,7 @@ namespace mu2e {
 
 
    //--------------------------------------------------------------------------------------------------------------
-   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset)
+   void CaloHitMakerFast::extractHits(const CaloDigiCollection& caloDigis, CaloHitCollection& caloHitsColl, CaloHitCollection& caphriHitsColl, IntensityInfoCalo& intInfo, double pbtOffset, CalCalib const& calCalib)
    {
        std::vector<size_t> digis(caloDigis.size());
        std::iota(digis.begin(),digis.end(),0);
@@ -136,16 +144,23 @@ namespace mu2e {
        for (const auto index : digis)
        {
            const auto& caloDigi = caloDigis[index];
+           if (!CaloSiPMId(caloDigi.SiPMID()).crystal().isValid()) continue; //Skip pin diodes
            int crystalID   = CaloSiPMId(caloDigi.SiPMID()).crystal().id();
+
+           if (caloDigi.waveform().size() < minWfmLength_) continue; //Skip short waveforms
 
            size_t nSamPed  = caloDigi.peakpos() > 3 ? 4 : std::max(caloDigi.peakpos()-1, 1);
            double baseline(0);
            for (size_t i=0; i<nSamPed; ++i){ baseline += caloDigi.waveform().at(i);}
            baseline /= nSamPed;
 
-           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*ADCToMeV_;//FIXME! we should use the function ::Peak2MeV, I also think that we should: (i) discard the hit if eDep is <0 (noise/stange pulse), (ii) require a minimum pulse length. gianipez
-           double time     = (caloDigi.t0() + caloDigi.peakpos())*CaloConst::_digitizationPeriod - pbtOffset;        //Giani's definition; t0 in ticks
-           //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*CaloConst::_digitizationPeriod - pbtOffset; //Bertrand's definition
+           double adc2MeV = calCalib.ADC2MeV(caloDigi.SiPMID());
+           double timeOffset = calCalib.timeoffset(caloDigi.SiPMID());
+           double eDep     = (caloDigi.waveform().at(caloDigi.peakpos())-baseline)*adc2MeV;
+           double time     = (caloDigi.t0() + caloDigi.peakpos())*CaloConst::_digitizationPeriod - pbtOffset - timeOffset; //Giani's definition; t0 in ticks
+           //double time     = (caloDigi.t0() + caloDigi.peakpos()+0.5)*CaloConst::_digitizationPeriod - pbtOffset - timeOffset; //Bertrand's definition
+
+           if (eDep < minEDep_) continue; //Bad or noise pulse
 
            addPulse(pulseMap, crystalID, time, eDep);
            if (diagLevel_ > 2) std::cout<<"[CaloHitMakerFast] extracted Digi with crystalID="<<crystalID<<" eDep="<<eDep<<"\t time=" <<time<<std::endl;

@@ -150,7 +150,7 @@ namespace mu2e {
     // ---------------------
     // make proton predicted plots
     // ---------------------
-    int nProtonsCounted = (int)Data->_iiTC->nProtonTCs();
+    int nProtonsCounted = (int)Data->_iiTC->nTCs();
     Hist->nProtonsPred->Fill(nProtonsCounted);
 
     // ---------------------

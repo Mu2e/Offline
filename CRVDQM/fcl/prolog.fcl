@@ -75,7 +75,9 @@ CRVDQM : {
     }
   }
 
-  # --- online (otsdaq CrvStatusMetrics): status summaries -------------------
+  # --- online (otsdaq CrvDQM): status summaries -----------------------------
+  # The summary histograms of the status client, shipped under their own
+  # names; pair with StatusLinksOnline below, or use this alone.
   StatusOnline : {
     hists : {
       @table::DQMHelpers.Hists.Online
@@ -96,7 +98,7 @@ CRVDQM : {
           publish  : true
         },
 
-        # The summaries CrvStatusMetrics ships today, under the same names.
+        # The summaries, under the names the GUI knows.
         { match : "errorBitsVsRoc"    modes : [ "job" ]  publish : true },
         { match : "errorBits"         modes : [ "job" ]  publish : true },
         { match : "nRocHeaders"       modes : [ "job" ]  publish : true },
@@ -115,9 +117,9 @@ CRVDQM : {
   }
 
   # --- online (otsdaq CrvDQM): per-link status pages ------------------------
-  # CrvStatusMetrics publishes the summaries above; this ships only the per-link
-  # views, so nothing goes out twice. The invalid-latency windows are kept (not
-  # published) because CrvDQM draws and ships their ratio as a live rate.
+  # Only the per-link views; the summaries are StatusOnline above. The
+  # invalid-latency windows are kept (not published) because CrvDQM draws and
+  # ships their ratio as a live rate.
   StatusLinksOnline : {
     hists : {
       @table::DQMHelpers.Hists.Online

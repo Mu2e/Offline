@@ -190,6 +190,7 @@ void mu2e::CaloDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEvent
     currentEvent.AddSubEvent(newSubEvt);
   } else {
     subEvt->AddDataBlock(thisBlock);
+    currentEvent.UpdateHeader(); // update the byte count
   }
 }
 

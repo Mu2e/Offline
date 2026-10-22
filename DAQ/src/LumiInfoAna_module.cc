@@ -29,6 +29,8 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <algorithm>
+#include <cctype>
 
 // ======================================================================
 namespace mu2e {
@@ -67,6 +69,8 @@ private:
   TH1* _hCaphriEnergy;
   TH1* _hNCaphriHits;
   TH1* _hNTimeClusters;
+  TH1* _hNProtonTCs;
+  TH1* _hNElectronTCs;
   TH1* _hNTrackerHits;
   TH1* _hSubRuns;
 };
@@ -92,7 +96,9 @@ void LumiInfoAna::beginJob() {
   _hCaphriEnergy  = infoDir.make<TH1F>("hCaphriEnergy", "CAPHRI energy;Energy (MeV);Events", 100, 0., 10.);
   _hNCaphriHits   = infoDir.make<TH1F>("hNCaphriHits", "N(CAPHRI hits);N(hits);Events", 100, 0., 100.);
   _hNTrackerHits  = infoDir.make<TH1F>("hNTrackerHits", "N(tracker hits);N(hits);Events", 100, 0., 10000.);
-  _hNTimeClusters = infoDir.make<TH1F>("hNTimeClusters", "N(time clusters);N(time clusters);Events", 100, 0., 100.);
+  _hNTimeClusters = infoDir.make<TH1F>("hNTimeClusters", "N(time clusters), other instances;N(time clusters);Events", 100, 0., 100.);
+  _hNProtonTCs    = infoDir.make<TH1F>("hNProtonTCs", "N(proton time clusters);N(time clusters);Events", 100, 0., 100.);
+  _hNElectronTCs  = infoDir.make<TH1F>("hNElectronTCs", "N(electron time clusters);N(time clusters);Events", 100, 0., 100.);
   _hSubRuns       = infoDir.make<TH1F>("hSubRuns", "Sub-Runs;Sub-Run;Events", 100, 0., 100.);
 }
 
@@ -167,9 +173,21 @@ void LumiInfoAna::fillTimeClusters(std::vector<art::Handle<mu2e::IntensityInfosT
       }
       continue;
     }
-    _counter_by_object["time_clusters"] += handle->size();
+    // Separate the proton and electron counts using the product instance name
+    std::string instance = handle.provenance()->productInstanceName();
+    std::transform(instance.begin(), instance.end(), instance.begin(), [](unsigned char c) { return std::tolower(c); });
+    TH1* hist = _hNTimeClusters;
+    std::string counter = "time_clusters";
+    if(instance.find("proton") != std::string::npos) {
+      hist = _hNProtonTCs;
+      counter = "proton_time_clusters";
+    } else if(instance.find("electron") != std::string::npos) {
+      hist = _hNElectronTCs;
+      counter = "electron_time_clusters";
+    }
+    _counter_by_object[counter] += handle->size();
     for(auto& info : *handle) {
-      _hNTimeClusters->Fill(info.nProtonTCs());
+      hist->Fill(info.nTCs());
     }
   }
 }
