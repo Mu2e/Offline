@@ -36,7 +36,7 @@ namespace mu2e {
         return rv;
       };
       // ElementXing interface
-      void updateReference(PTRAJ const& ptraj, KinKal::RefPieceStrategy) override; // the intersection time sets the piece, so the strategy does not apply
+      void updateReference(PTRAJ const& ptraj, unsigned) override; // the intersection time sets the piece, so the piece-move limit does not apply
       void updateState(MetaIterConfig const& config,bool first) override;
       Parameters params() const override;
       double time() const override { return inter_.time_; }
@@ -77,7 +77,7 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KinKal::RefPieceStrategy) {
+  template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, unsigned) {
     auto const& neartrajptr = ptraj.nearestTraj(inter_.time_);
     if(neartrajptr != reftrajptr_){
       // traj has changed; try intersecting with this piece
