@@ -83,7 +83,7 @@ namespace mu2e {
       auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
       auto const& distResidual() const { return resids_[Mu2eKinKal::dresid];}
       double time() const override { return ca_.particleToca(); }
-      void updateReference(PTRAJ const& ptraj, unsigned maxiter) override;
+      void updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) override;
       KTRAJPTR refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // re-override; even though this is implemented in the base class
@@ -157,10 +157,11 @@ namespace mu2e {
     return CA(utraj,wirePtr(),ca.hint(),ca.precision());
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj, unsigned maxiter) {
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
     auto mtime =wire().timeAtMidpoint();
+    unsigned maxiter = miconfig.hitPieceIter();
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(mtime-chit_.driftTime(),mtime);
     PCA pca(ptraj,wirePtr(),tphint,precision(),maxiter);
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
