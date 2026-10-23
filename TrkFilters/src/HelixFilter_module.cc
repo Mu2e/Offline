@@ -94,7 +94,8 @@ namespace mu2e
           config.minNLoops(_minnloops);
           config.minEDepAvg(_minedep);
           config.maxEDepAvg(_maxedep);
-          _useMass = config.minMass(_minmass) | config.maxMass(_maxmass);
+          _useMinMass = config.minMass(_minmass);
+          _useMaxMass = config.maxMass(_maxmass);
           _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
           _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
@@ -169,7 +170,8 @@ namespace mu2e
             hmom       <= _maxmom        &&
             edep       >= _minedep       &&
             edep       <= _maxedep       &&
-            (!_useMass || (mass > 0.f && mass >= _minmass && mass <= _maxmass)) &&
+            (!_useMinMass || (mass > 0.f && mass >= _minmass)) &&
+            (!_useMaxMass || mass <= _maxmass) &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
@@ -206,7 +208,8 @@ namespace mu2e
       double        _minnloops       = 0.;
       double        _minedep         = std::numeric_limits<double>::lowest();
       double        _maxedep         = std::numeric_limits<double>::max();
-      bool          _useMass         = false; // unphysical masses fail if a mass cut is set
+      bool          _useMinMass      = false; // unphysical masses fail only if a minimum mass cut is set
+      bool          _useMaxMass      = false;
       double        _minmass         = 0.;
       double        _maxmass         = std::numeric_limits<double>::max();
       bool          _useSlopeSigMin  = false;
