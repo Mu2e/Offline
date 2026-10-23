@@ -543,8 +543,30 @@ namespace mu2e {
 
       // Define the z offset from stmDnStrEnvPositionInMu2e to the dnstr plate of the SSC (copper)
       STM_SSC const & pSTM_SSCParams = *stmgh.getSTM_SSCPtr();
-      FrontShielding const & pFrontShieldingParams = *stmgh.getFrontShieldingPtr();
-      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + pFrontShieldingParams.Front_Thickness() - c.getDouble("stm.BackShielding.BPThick") - c.getDouble("stm.BackShielding.ShieldingPipeGap");
+
+      // The z of the front shielding's downstream face, measured from
+      // STMShieldingRef (the reference constructSTM places the downstream
+      // STM from). VD88, VD89 and VD90 are placed a set distance behind
+      // it; in VD101 and VD116 it cancels.
+      //
+      // Earlier description (STM_v09 and before): this is
+      // FrontShielding::Front_Thickness(), whereas constructSTM places the
+      // detectors from Front_T = Front_Thickness() + STM_SSC.ZGap. The two
+      // differ by ZGap (12.7 mm), so VD89 and VD90 end up 13.7 mm in front
+      // of their detectors rather than the 1 mm their offsets intend, and
+      // VD88 12.7 mm further upstream than its offset says. This is left
+      // as it is so that the VD positions behind past analyses are not
+      // disturbed.
+      //
+      // Updated (hand-stacked) description: the back face of the right
+      // half's copper lining, the same Front_T constructSTM uses, so the
+      // VD offsets below hold as designed (VD89 and VD90 1 mm in front of
+      // their detectors).
+      const double frontShieldingBackZ = stmgh.handstacked()
+        ? stmgh.getFrontShieldingRightPtr()->backZ()
+        : stmgh.getFrontShieldingPtr()->Front_Thickness();
+
+      const double stmDnStrEnvToSSCBack = -stmDnStrEnvPositionInMu2e.z() + pSTM_SSCParams.originInMu2e().z() - (pSTM_SSCParams.Wdepth_f()/2) + frontShieldingBackZ - c.getDouble("stm.BackShielding.BPThick") - c.getDouble("stm.BackShielding.ShieldingPipeGap");
 
       if ( c.getBool("vd.STMUpStr.build", false) ) {//VD86, xy plane size of CRV 1mm downstream from CRS
       CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, 1.0-vd->_halfLength);
@@ -631,7 +653,7 @@ namespace mu2e {
       if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD101, just upstream of Spot Size Collimator
         double VD101_offset = 15.0;
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
-          - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
+          - frontShieldingBackZ // Get to front of SSC
           - VD101_offset // Avoid the overlap
           - vd->_halfLength; // position of the VD
         CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
@@ -647,9 +669,12 @@ namespace mu2e {
       }
 
       if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {//VD116, 2.5 m upstream of Spot Size Collimator
-        double VD116_offset =  2.5*CLHEP::m;
+        // How far upstream of STMShieldingRef (the SSC cradle's front in
+        // the updated geometry) the VD sits. A new key; geometry files
+        // from before it existed lack it and keep the original 2.5 m.
+        double VD116_offset =  c.getDouble("vd.STMUpStrLarge.offset", 2.5*CLHEP::m);
         double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
-          - pFrontShieldingParams.Front_Thickness() // Get to front of SSC
+          - frontShieldingBackZ // Get to front of SSC
           - VD116_offset - vd->_halfLength; // position of the VD
         CLHEP::Hep3Vector vdPositionWRTparent(0.0, 0.0, zOffset);
         vd->addVirtualDetector(VirtualDetectorId::STM_UpStrLarge, //ID
