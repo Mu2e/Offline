@@ -1,9 +1,9 @@
 #ifndef MakeCrvRecoPulses_h
 #define MakeCrvRecoPulses_h
 
+#include <array>
+#include <cstdint>
 #include <vector>
-#include <TF1.h>
-#include <TGraph.h>
 
 namespace mu2eCrv
 {
@@ -13,7 +13,7 @@ class MakeCrvRecoPulses
   public:
   MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                     float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
-                    float LEtimeFactor, float pulseThreshold, float pulseAreaThreshold, float doublePulseSeparation);
+                    float LEtimeFactor, int samplesBefore, int samplesAfter);
   void         SetWaveform(const std::vector<int16_t> &waveform, uint16_t startTDC,
                            float digitizationPeriod, float pedestal, float calibrationFactor,
                            float calibrationFactorPulseHeight);
@@ -29,44 +29,33 @@ class MakeCrvRecoPulses
   const std::vector<bool>   &GetFailedFits() const     {return _failedFits;}
 
   private:
-  MakeCrvRecoPulses();
-  void FillGraphAndFindPeaks(const std::vector<int16_t> &waveform, uint16_t startTDC,
-                             float digitizationPeriod, float pedestal,
-                             TGraph &g, std::vector<std::pair<size_t,size_t> > &peaks);
-  void RangeFinder(const std::vector<int16_t> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end);
-  bool FailedFit(TFitResultPtr fr);
+  typedef std::array<double,3> Vec3;
 
-  TF1    _f1;
+  struct FitResult
+  {
+    Vec3   par;
+    double chi2;
+    bool   converged;
+    bool   hessianOk;
+  };
+
+  MakeCrvRecoPulses();
+  bool FindNextPeak(const std::vector<double> &y, int start, int &peakStart, int &peakEnd, int &fitStart, int &fitEnd) const;
+  FitResult FitGumbel(const std::vector<double> &t, const std::vector<double> &y,
+                      const Vec3 &p0, const Vec3 &lower, const Vec3 &upper) const;
+
   float  _minADCdifference;
   float  _defaultBeta;
   float  _minBeta, _maxBeta;
   float  _maxTimeDifference;
   float  _minPulseHeightRatio, _maxPulseHeightRatio;
   float  _LEtimeFactor;
-  float  _pulseThreshold;
-  float  _pulseAreaThreshold;
-  float  _doublePulseSeparation;
+  int    _samplesBefore, _samplesAfter;
 
   std::vector<float>  _PEs, _PEsPulseHeight;
   std::vector<double> _pulseTimes, _LEtimes;
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
-  std::vector<bool>   _zeroNdf, _failedFits, _duplicateNoFitPulses, _separatedDoublePulses;
-
-  public:
-  const std::vector<float>  &GetPEsNoFit() const        {return _PEsNoFit;}
-  const std::vector<double> &GetPulseTimesNoFit() const {return _pulseTimesNoFit;}
-  const std::vector<double> &GetPulseStarts() const     {return _pulseStart;}
-  const std::vector<double> &GetPulseEnds() const       {return _pulseEnd;}
-  const std::vector<bool>   &GetDuplicateNoFitPulses() const  {return _duplicateNoFitPulses;}
-  const std::vector<bool>   &GetSeparatedDoublePulses() const {return _separatedDoublePulses;}
-
-  private:
-  void NoFitOption(const std::vector<int16_t> &waveform, const std::vector<std::pair<size_t,size_t> > &peaks,
-                   uint16_t startTDC, float digitizationPeriod, float pedestal, float calibrationFactor);
-  std::vector<float>  _PEsNoFit;
-  std::vector<double> _pulseTimesNoFit;
-  std::vector<double> _pulseStart;
-  std::vector<double> _pulseEnd;
+  std::vector<bool>   _zeroNdf, _failedFits;
 };
 
 }

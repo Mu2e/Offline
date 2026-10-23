@@ -29,7 +29,7 @@ namespace mu2e {
     Mu2eG4SensitiveDetector(name,config),_nro(0)
   {
     GeomHandle<Calorimeter> cg;
-    _nro  = cg->caloInfo().getInt("nSiPMPerCrystal");
+    _nro  = cg->G4Info().get<int>("nSiPMPerCrystal");
   }
 
   G4bool CaloReadoutSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)

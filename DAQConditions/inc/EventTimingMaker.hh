@@ -8,6 +8,7 @@
 
 #include "Offline/DAQConditions/inc/EventTiming.hh"
 #include "Offline/DAQConfig/inc/EventTimingConfig.hh"
+#include "Offline/DbTables/inc/DAQTiming.hh"
 
 
 namespace mu2e {
@@ -16,6 +17,7 @@ namespace mu2e {
   public:
     EventTimingMaker(EventTimingConfig const& config):_config(config) {}
     EventTiming::ptr_t fromFcl();
+    EventTiming::ptr_t fromDb(DAQTiming::cptr_t dt_p);
 
   private:
 

@@ -142,6 +142,10 @@ namespace mu2e {
       if(config.hasName(name)) _RMCrecoilEnergyFit[material]  = config.getDouble(name);
       name = "physicsParams."+material+".RMCdeltaMassFit";
       if(config.hasName(name)) _RMCdeltaMassFit[material]     = config.getDouble(name);
+      name = "physicsParams."+material+".RMCKMaxKnockout.0";
+      if(config.hasName(name)) _RMCKMaxKnockout0n[material]   = config.getDouble(name);
+      name = "physicsParams."+material+".RMCKMaxKnockout.1";
+      if(config.hasName(name)) _RMCKMaxKnockout1n[material]   = config.getDouble(name);
 
     }
 

@@ -20,6 +20,7 @@ double calorimeter.diskOutRailZLength         = 30.;
 double calorimeter.diskOutRailROut            = 719.;
 double calorimeter.diskStepThickness          = 3.;
 vector<double> calorimeter.diskZMotherShift   = {0.0,700.0};
+string calorimeter.diskCrystalFile            = "Offline/CalorimeterGeom/data/crystalPos.txt";
 
 double calorimeter.crystalXYLength            = 34.0;
 double calorimeter.crystalZLength             = 200.0;

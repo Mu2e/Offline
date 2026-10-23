@@ -20,8 +20,9 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoringManager.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4ScoreWriter.hh"
-#include "Offline/Mu2eG4/inc/scorerDoseEffective.hh"
-#include "Offline/Mu2eG4/inc/scorerDelayedDose.hh"
+#include "Offline/Mu2eG4/inc/scorerDoseType.hh"
+#include "Offline/Mu2eG4/inc/scorerDosePrompt.hh"
+#include "Offline/Mu2eG4/inc/scorerDoseResidual.hh"
 #include "Offline/Mu2eG4Helper/inc/Mu2eG4Helper.hh"
 
 #include "G4ScoringManager.hh"
@@ -46,11 +47,13 @@
 
 namespace mu2e {
 
-  Mu2eG4ScoringManager::Mu2eG4ScoringManager(G4ScoringManager* fSMan,
-                                             const Mu2eG4Config::Scoring& configScore,
+  // The G4ScoringManager is created only when scoring is enabled. Its existence alone changes the
+  // physics setup: G4PhysicsListHelper::AddTransportation() builds G4CoupledTransportation instead
+  // of G4Transportation on any thread that has one.
+  Mu2eG4ScoringManager::Mu2eG4ScoringManager(const Mu2eG4Config::Scoring& configScore,
                                              const Mu2eG4Config::Physics& configPhysics,
                                              const Mu2eG4Config::Debug&   configDebug):
-     fSMan_        (fSMan),
+     fSMan_        (configScore.enabled() ? G4ScoringManager::GetScoringManager() : nullptr),
      configPhysics_(configPhysics),
      enabled_      (configScore.enabled()),
      meshNames_    (configScore.meshNames()),
@@ -131,17 +134,23 @@ namespace mu2e {
           case ScorerCode::VolumeFlux:
               mesh->SetPrimitiveScorer(new G4PSVolumeFlux3D(psName,1));
               break;
-          case ScorerCode::DoseEffective:
-              mesh->SetPrimitiveScorer(new scorerDoseEffective(psName,configPhysics_,1));
+          case ScorerCode::PromptDoseEff:
+              mesh->SetPrimitiveScorer(new scorerDosePrompt(psName,scorerDoseType::Effective,configPhysics_,1));
               break;
-          case ScorerCode::DelayedDose:
-              mesh->SetPrimitiveScorer(new scorerDelayedDose(psName,configPhysics_,1));
+          case ScorerCode::PromptDoseAmb:
+              mesh->SetPrimitiveScorer(new scorerDosePrompt(psName,scorerDoseType::Ambient,configPhysics_,1));
+              break;
+          case ScorerCode::ResidualDoseEff:
+              mesh->SetPrimitiveScorer(new scorerDoseResidual(psName,scorerDoseType::Effective,configPhysics_,1));
+              break;
+          case ScorerCode::ResidualDoseAmb:
+              mesh->SetPrimitiveScorer(new scorerDoseResidual(psName,scorerDoseType::Ambient,configPhysics_,1));
               break;
           default:
              throw cet::exception("BADINPUT")<<"Mu2eG4ScoringManager: unsupported scorer "<<psName<<". "
-                                             <<"Choose among CellFlux, DoseDeposit, EnergyDeposit, "
-                                             <<"FlatSurfaceFlux, TrackCounter, PassageCellFlux, VolumeFlux, "
-                                             <<"DoseEffective DelayedDose\n";
+                                             <<"Choose among CellFlux, FlatSurfaceFlux, PassageCellFlux, "
+                                             <<"VolumeFlux, DoseDeposit, EnergyDeposit, TrackCounter, "
+                                             <<"PromptDoseEff, ResidualDoseEff, PromptDoseAmb, or ResidualDoseAmb\n";
         }
 
         //optionaly add a particle filter
@@ -204,6 +213,7 @@ namespace mu2e {
   //------------------------------------------------------------------------------------------------------------
   void Mu2eG4ScoringManager::reset()
   {
+    if (!enabled_) return;
     for (size_t i=0;i<fSMan_->GetNumberOfMesh();++i) fSMan_->GetMesh(i)->ResetScore();
   }
 
@@ -212,12 +222,16 @@ namespace mu2e {
   Mu2eG4ScoringManager::ScorerCode Mu2eG4ScoringManager::hashScorer(const G4String& str)
   {
     if (str.find("CellFlux")        != std::string::npos) return ScorerCode::CellFlux;
-    if (str.find("FlatSurfaceFlux") != std::string::npos) return ScorerCode::FlatSurfaceFlux;
     if (str.find("DoseDeposit")     != std::string::npos) return ScorerCode::DoseDeposit;
     if (str.find("EnergyDeposit")   != std::string::npos) return ScorerCode::EnergyDeposit;
+    if (str.find("FlatSurfaceFlux") != std::string::npos) return ScorerCode::FlatSurfaceFlux;
+    if (str.find("PassageCellFlux") != std::string::npos) return ScorerCode::PassageCellFlux;
+    if (str.find("VolumeFlux")      != std::string::npos) return ScorerCode::VolumeFlux;
     if (str.find("TrackCounter")    != std::string::npos) return ScorerCode::TrackCounter;
-    if (str.find("DoseEffective")   != std::string::npos) return ScorerCode::DoseEffective;
-    if (str.find("DelayedDose")     != std::string::npos) return ScorerCode::DelayedDose;
+    if (str.find("PromptDoseEff")   != std::string::npos) return ScorerCode::PromptDoseEff;
+    if (str.find("ResidualDoseEff") != std::string::npos) return ScorerCode::ResidualDoseEff;
+    if (str.find("PromptDoseAmb")   != std::string::npos) return ScorerCode::PromptDoseAmb;
+    if (str.find("ResidualDoseAmb") != std::string::npos) return ScorerCode::ResidualDoseAmb;
     return ScorerCode::Unknown;
   }
 

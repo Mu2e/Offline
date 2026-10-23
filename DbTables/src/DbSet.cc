@@ -34,14 +34,16 @@ DbSet::EIoV DbSet::find(int tid, uint32_t run, uint32_t subrun) const {
       int dr = run - r.iov().endRun();
       int ds = subrun + DbIoV::maxSubrun() - r.iov().endSubrun();
       if (dr == 0) ds = subrun - r.iov().endSubrun();
-      if (dr > 0 && ds > 0 && (dr < brr || (dr == brr && ds < bsr))) {
+      if ( (dr > 0 || ( dr == 0 && ds > 0)) &&
+           (dr < brr || (dr == brr && ds < bsr)) ) {
         brr = dr;
         bsr = ds;
         br = r;
       }
     }                    // loop over Rows for table type
     if (br.cid() > 0) {  // then something was found
-      return br;
+      // return a ad-hoc subrun IoV so this nearest result can be cached
+      return EIoV(br.cid(),DbIoV(run,subrun,run,subrun));
     }
   }  // try nearest match
 

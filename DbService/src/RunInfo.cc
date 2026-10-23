@@ -1,42 +1,149 @@
 #include "Offline/DbService/inc/RunInfo.hh"
-#include "Offline/GeneralUtilities/inc/splitString.hh"
+
+#include "Offline/GeneralUtilities/inc/TimeUtility.hh"
+
 #include "cetlib_except/exception.h"
+
+#include <ctime>
+#include <string>
+
+#include "nlohmann/json.hpp"
 
 using namespace mu2e;
 
 //**************************************************
-
-RunInfo::RunInfo(std::string csv, std::string conditions,
-                 std::string transitions) {
-  //  run_number,run_type,condition_id,artdaq_partition,host_name,configuration_name,configuration_version,context_name,context_version,trigger_table_name,trigger_table_version,online_software_version,commit_time,shifter_note
-  // 1,4,7,14,mu2edaq13.fnal.gov,dcsConfig,53,dcsContext,52,None,None,None,2024-05-06 16:17:21.973417-05:00,None
-  _csv = csv;
-  StringVec sv = splitString(csv);
-  if (sv.size() != 14) {
-    throw cet::exception("RUNTOOL_BAD_INFO_CSV")
-        << " RunInfo: failed to construct from " << sv.size() << "fields in\n"
-        << csv << "\n";
+// Collect the cat-2 DbService CID table entries for this run.  Only the "TRG"
+// config holds the CID tables, so restrict the lookup to that config.  This
+// avoids emitting multiple concatenated (and hence invalid) JSON documents.
+std::string RunInfo::dbTables2(bool qjson) const {
+  for (auto const& config : _configs) {
+    if (config.subsystem() != "TRG") {
+      continue;
+    }
+    std::string tables = config.dbTables2(qjson);
+    if (!tables.empty()) {
+      return tables;
+    }
   }
 
-  _run_number = std::stoi(sv[0]);
-  _run_type = std::stoi(sv[1]);
-  _condition_id = std::stoi(sv[2]);
-  _artdaq_partition = std::stoi(sv[3]);
-  _host_name = sv[4];
-  _configuration_name = sv[5];
-  _configuration_version = std::stoi(sv[6]);
-  _context_name = sv[7];
-  _context_version = std::stoi(sv[8]);
-  _trigger_table_name = sv[9];
-  if(sv[10]=="None") {
-    _trigger_table_version = 0;
-  } else {
-    _trigger_table_version = std::stoi(sv[10]);
-  }
-  _online_software_version = sv[11];
-  _commit_time = sv[12];
-  _shifter_note = sv[13];
+  // No TRG config, or it had no CID entries.  Return an empty JSON array when
+  // JSON output was requested, otherwise an empty string.
+  return qjson ? "[]" : std::string();
+}
 
-  _conditions = conditions;
-  _transitions = transitions;
+//**************************************************
+// Collect the cat-3 DbService table key-value pairs across every config for
+// this run.  Several configs can contribute pairs, so when JSON output is
+// requested the individual per-config objects are merged into a single JSON
+// object (an empty object "{}" if nothing is found).
+std::string RunInfo::dbTables3(bool qjson) const {
+  // TRG/Gateway/CFO/DQM configs are excluded from the cat-3 merge -- they
+  // don't carry relevant DBServiceTables content, and including them is what
+  // originally produced colliding keys across configs (see
+  // RUNINFO_DUPLICATE_TABLE below). Shared by both branches deliberately:
+  // this used to live only in the qjson branch below, which meant `runTool
+  // -q` (text) and `runTool -q -j` (JSON) silently reported different table
+  // sets for the same run -- a single predicate used by both means that
+  // can't happen again by the two conditions drifting apart.
+  auto excluded = [](const RunConfig& config) {
+    return config.subsystem() == "TRG" || config.subsystem() == "Gateway" ||
+           config.subsystem() == "CFO" || config.subsystem() == "DQM";
+  };
+
+  if (qjson) {
+    nlohmann::json merged = nlohmann::json::object();
+    for (auto const& config : _configs) {
+      if (excluded(config)) {
+        continue;
+      }
+      std::string tables = config.dbTables3(qjson);
+      if (tables.empty()) {
+        continue;
+      }
+      nlohmann::json part = nlohmann::json::parse(tables, nullptr, false);
+      if (part.is_discarded() || !part.is_object()) {
+        continue;
+      }
+      for (auto it = part.begin(); it != part.end(); ++it) {
+        if (merged.contains(it.key())) {
+          throw cet::exception("RUNINFO_DUPLICATE_TABLE")
+              << "RunInfo::dbTables3() found duplicate table key \"" << it.key()
+              << "\" across run configs\n";
+        }
+        merged[it.key()] = it.value();
+      }
+    }
+    return merged.dump(1, ' ');
+  }
+
+  // Non-JSON: concatenate the per-config values, one per line.
+  std::string result;
+  for (auto const& config : _configs) {
+    if (excluded(config)) {
+      continue;
+    }
+    std::string tables = config.dbTables3(qjson);
+    if (!tables.empty()) {
+      result += tables;
+      result += "\n";
+    }
+  }
+  if (!result.empty() && result.back() == '\n') {
+    result.pop_back();
+  }
+  return result;
+}
+
+//**************************************************
+int RunInfo::isDone(int timeout_seconds) const {
+  // Check if we have the required data
+  if (_transitions.empty() || _subruns.empty()) {
+    throw cet::exception("RUNINFO_INCOMPLETE")
+        << "RunInfo::isDone() cannot determine status: "
+        << "transitions or subruns list is empty\n";
+  }
+
+  // Get the last transition
+  const RunTransition& lastTransition = _transitions.back();
+  int lastTransitionType = lastTransition.typeId();
+
+  // Check for user stop (transitions 0, 1, 6, 7)
+  if (lastTransitionType == 0 || lastTransitionType == 1 ||
+      lastTransitionType == 6 || lastTransitionType == 7) {
+    return 1;  // user stop
+  }
+
+  // Check for error stop (transition 2)
+  if (lastTransitionType == 2) {
+    return 2;  // error stop
+  }
+
+  // Check for timeout (probable crash)
+  // Get the last transition time
+  std::string lastTransTime = lastTransition.transitionTime();
+  std::time_t lastTransTimeT;
+  int rc = TimeUtility::parseTimeTZ(lastTransTime, lastTransTimeT);
+  if (rc != 0) {
+    throw cet::exception("RUNINFO_BAD_TIME")
+        << "RunInfo::isDone() cannot parse transition time: " << lastTransTime
+        << "\n";
+  }
+
+  // Get the last subrun stop time
+  const RunSubRun& lastSubrun = _subruns.back();
+  std::time_t lastSubrunTimeT = lastSubrun.stopTimeUnix();
+
+  // Use the more recent of the two times
+  std::time_t lastActivityTime = std::max(lastTransTimeT, lastSubrunTimeT);
+
+  // Get current time
+  std::time_t currentTime = std::time(nullptr);
+
+  // Check if timeout exceeded
+  if ((currentTime - lastActivityTime) > timeout_seconds) {
+    return 3;  // probably crash end
+  }
+
+  // Still running
+  return 0;
 }

@@ -1,8 +1,13 @@
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
+#include "Offline/BFieldGeom/inc/BFieldConfig.hh"
+#include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using Grad = ROOT::Math::SMatrix<double,3>;
   using SVEC3 = KinKal::SVEC3;
+
+  KKBField::KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) :
+    KinKal::BFieldMap(GeomHandle<BFieldConfig>()->minUsableField()), bfmgr_(bfmgr), det_(det) {}
 
   VEC3 KKBField::fieldVect(VEC3 const& position) const {
     // change coordinates to mu2e; the map should be native in detector coordinates FIXME!
@@ -26,9 +31,10 @@ namespace mu2e {
     SVEC3 dBdxv(dBdx.X(),dBdx.Y(), dBdx.Z());
     SVEC3 dBdyv(dBdy.X(),dBdy.Y(), dBdy.Z());
     SVEC3 dBdzv(dBdz.X(),dBdz.Y(), dBdz.Z());
-    retval.Place_in_row(dBdxv,0,0);
-    retval.Place_in_row(dBdyv,1,0);
-    retval.Place_in_row(dBdzv,2,0);
+    // Grad(i,j) = dB_i/dx_j, so the derivative along an axis fills a column, not a row
+    retval.Place_in_col(dBdxv,0,0);
+    retval.Place_in_col(dBdyv,0,1);
+    retval.Place_in_col(dBdzv,0,2);
     return retval;
   }
   // numerical derivatives for now: TODO!

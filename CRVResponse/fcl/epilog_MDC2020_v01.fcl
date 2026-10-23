@@ -1,0 +1,64 @@
+# CRV configuration for MDC2020: 25 sectors, matching crv_counters_v09.
+#
+# Sibling of epilog_run1a_v01.fcl and used the same way -- included AFTER the
+# job's prolog so that it wins. Production selects it through
+# Production/JobConfig/common/MDC2020.fcl, together with the MDC2020 geometry,
+# because the CRV sector list and the geometry are one decision: the counter
+# set is defined by the geometry.
+#
+# Values are copied verbatim from CRVResponse/fcl/prolog_v11.fcl. Sectors C1
+# and C2 are the CRV-Cryo-Inner modules and carry scintillation yield 0; they
+# exist in the geometry only so that older files stay readable.
+#
+physics.producers.CrvPhotons.CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","T5","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
+physics.producers.CrvPhotons.reflectors                : [  0 ,  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
+physics.producers.CrvPhotons.lookupTableFileNames      : ["CRVConditions/v6_0/LookupTable_4550_0",  //R1
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //R2
+                                   "CRVConditions/v6_0/LookupTable_1045_1",  //R3
+                                   "CRVConditions/v6_0/LookupTable_3040_0",  //R4
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //R5
+                                   "CRVConditions/v6_0/LookupTable_3200_0",  //R6
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //L1
+                                   "CRVConditions/v6_0/LookupTable_4550_0",  //L2
+                                   "CRVConditions/v6_0/LookupTable_3200_0",  //L3
+                                   "CRVConditions/v6_0/LookupTable_6000_1",  //T1
+                                   "CRVConditions/v6_0/LookupTable_6000_1",  //T2
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T3
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T4
+                                   "CRVConditions/v6_0/LookupTable_6000_0",  //T5
+                                   "CRVConditions/v6_0/LookupTable_5000_1",  //E1
+                                   "CRVConditions/v6_0/LookupTable_5000_1",  //E2
+                                   "CRVConditions/v6_0/LookupTable_6900_1",  //U
+                                   "CRVConditions/v6_0/LookupTable_5700_0",  //D1
+                                   "CRVConditions/v6_0/LookupTable_2370_1",  //D2
+                                   "CRVConditions/v6_0/LookupTable_2370_1",  //D3
+                                   "CRVConditions/v6_0/LookupTable_5700_0",  //D4
+                                   "CRVConditions/v6_0/LookupTable_900_1",   //C1
+                                   "CRVConditions/v6_0/LookupTable_900_1",   //C2
+                                   "CRVConditions/v6_0/LookupTable_2100_1",  //C3
+                                   "CRVConditions/v6_0/LookupTable_1550_1"]  //C4
+
+                                //all measurements were done at 1m away from SiPM with a reference date of 12/2023
+                                //see doc-db 56425
+                                //CRV-Top (1.8mm) modules: 39794 - based on comparison between Wideband measurements and fined-tuned simulation
+                                //                         (all counters come from scintillator batch 1)
+                                //CRV-Top (1.4mm) modules: 30482 - based on comparions between UVA measurements of 1.4mm and 1.8mm CRV-Top modules (adjusted for age)
+                                //                         (most counters come from scintillator batch 1)
+                                //                         assuming 2.5% aging per year
+                                //                         T (1.4mm) measured 2/2022 and age adjusted to 12/2023: 42.4PEs (average)
+                                //                         T (1.8mm) measured 4/2022-12/2022 and age adjusted to 12/2023: 55.4PEs (average)
+                                //                         --> photon yield ratio: 0.766 --> 39794*0.766=30482
+                                //CRV-TS modules:          30482 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //CRV-R19-T module:        30482 - same as CRV-Top (1.4mm), because all counters come from scintillator batch 1
+                                //all other modules:       28610 - counters come from scintillator batch 2, with a photon yield ratio of 1.07/1.14
+                                //CRV-U, CRV-TS-Ext:       23841 - reference CRV-Top (1.8mm) was measured at 3.0V overvoltage,
+                                //                         but CRV-U/CRV-TS-Ext will run at 2.5V --> scale to 2.5/3.0
+physics.producers.CrvPhotons.scintillationYields       : [28610,28610,30482,28610,28610,28610,  //R1...6
+                                   28610,28610,28610,                    //L1...3
+                                   30482,30482,39794,39794,30482,        //T1...5
+                                   23841,23841,                          //E1,E2
+                                   23841,                                //U
+                                   28610,28610,28610,28610,              //D1...4
+                                   0,0,28610,28610]                      //C1...4
+
+physics.producers.CrvPhotons.photonYieldScaleFactor                : 0.84  //scale factor applied to photon yields to mimic aging

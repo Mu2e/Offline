@@ -30,7 +30,7 @@ public:
                                             fhicl::Comment("Candidate CrvDigiCollection")};
     fhicl::Atom<bool> failOnMismatch{fhicl::Name("failOnMismatch"),
                                      fhicl::Comment("Throw if any mismatch is found"),
-                                     false};
+                                     true};
     fhicl::Atom<int> diagLevel{fhicl::Name("diagLevel"),
                                fhicl::Comment("Diagnostic verbosity"),
                                0};

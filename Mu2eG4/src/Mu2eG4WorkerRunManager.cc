@@ -26,6 +26,7 @@
 #include "Offline/Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Offline/Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Offline/Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Offline/Mu2eG4/inc/seedG4EngineFromEventID.hh"
 
 //G4 includes
 #include "Geant4/G4WorkerThread.hh"
@@ -282,19 +283,12 @@ namespace mu2e {
 
     if(eventHasToBeSeeded)
       {
-        string msg = "r" + to_string(evtID.run())
-          + "s" + to_string(evtID.subRun())
-          + "e" + to_string(evtID.event()) + salt_;
-        std::hash<string> hf;
-        long rn1 = hf(msg+"1") & 0xFFFFFFFF;
-        long rn2 = hf(msg+"2") & 0xFFFFFFFF;
-        long seeds[3] = { rn1, rn2, 0 };
-        G4Random::setTheSeeds(seeds,-1);
+        const auto seeds = seedG4EngineFromEventID(evtID, salt_);
         runIsSeeded = true;
 
         if(m_mtDebugOutput > 1) {
           G4cout << "--> Event " << anEvent->GetEventID() << " starts with initial seeds ("
-                 << rn1 << "," << rn2 << ")." << G4endl;
+                 << seeds[0] << "," << seeds[1] << ")." << G4endl;
         }
 
       }

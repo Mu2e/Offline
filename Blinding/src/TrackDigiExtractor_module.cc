@@ -43,7 +43,11 @@ namespace mu2e{
           fhicl::Comment("art::InputTag of StrawDigis associated with StrawHits")
         };
 
-        // calorimeter...
+        // calorimeter
+        fhicl::Atom<art::InputTag> calodigi_tag{
+          fhicl::Name("CaloDigiCollection"),
+          fhicl::Comment("art::InputTag of CaloDigis ultimately associated with KalSeed")
+        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -53,6 +57,7 @@ namespace mu2e{
       art::InputTag _kalseed_tag;
       art::InputTag _strawhit_tag;
       art::InputTag _strawdigi_tag;
+      art::InputTag _calodigi_tag;
 
     private:
       void produce(art::Event&);
@@ -62,13 +67,16 @@ namespace mu2e{
       art::EDProducer(config),
       _kalseed_tag(config().kalseed_tag()),
       _strawhit_tag(config().strawhit_tag()),
-      _strawdigi_tag(config().strawdigi_tag()){
+      _strawdigi_tag(config().strawdigi_tag()),
+      _calodigi_tag(config().calodigi_tag()){
     this->consumes<KalSeedCollection>(_kalseed_tag);
     this->consumes<StrawHitCollection>(_strawhit_tag);
     this->consumes<StrawDigiCollection>(_strawdigi_tag);
     this->consumes<StrawDigiADCWaveformCollection>(_strawdigi_tag);
+    this->consumes<CaloDigiCollection>(_calodigi_tag);
     this->produces<StrawDigiCollection>();
     this->produces<StrawDigiADCWaveformCollection>();
+    this->produces<CaloDigiCollection>();
   }
 
   void TrackDigiExtractor::produce(art::Event& event){
@@ -77,6 +85,7 @@ namespace mu2e{
     auto strawhits = event.getValidHandle<StrawHitCollection>(_strawhit_tag);
     auto strawdigis = event.getValidHandle<StrawDigiCollection>(_strawdigi_tag);
     auto strawadcss = event.getValidHandle<StrawDigiADCWaveformCollection>(_strawdigi_tag);
+    auto calodigis = event.getValidHandle<CaloDigiCollection>(_calodigi_tag);
 
     // sanity checks
     if (strawhits->size() != strawdigis->size()){
@@ -91,6 +100,7 @@ namespace mu2e{
     // deep-copy digis underlying tracks
     auto ext_strawdigis = std::make_unique<StrawDigiCollection>();
     auto ext_strawadcss = std::make_unique<StrawDigiADCWaveformCollection>();
+    auto ext_calodigis = std::make_unique<CaloDigiCollection>();
     for (const auto& kalseed: *kalseeds){
       // tracker
       auto seeds = kalseed.hits();
@@ -110,12 +120,27 @@ namespace mu2e{
         ext_strawadcss->push_back(adcs);
       }
 
-      // calorimeter...
+      // calorimeter
+      if (kalseed.hasCaloCluster()){
+        const auto& cseed = kalseed.caloHit();
+        const auto& cluster = cseed.caloCluster();
+        const auto& hits = cluster->caloHitsPtrVector();
+        for (const auto& hit: hits){
+          const auto& recos = hit->recoCaloDigis();
+          for (const auto& reco: recos){
+            const auto& ptr = reco->caloDigiPtr();
+            auto digi = CaloDigi(ptr->SiPMID(), ptr->t0(),
+                                 ptr->waveform(), ptr->peakpos());
+            ext_calodigis->push_back(digi);
+          }
+        }
+      }
     }
 
     // place into event
     event.put(std::move(ext_strawdigis));
     event.put(std::move(ext_strawadcss));
+    event.put(std::move(ext_calodigis));
   }
 } // namespace mu2e
 

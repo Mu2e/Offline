@@ -67,7 +67,6 @@ cet_make_exec(NAME valCompare
     SOURCE src/valCompare_main.cc
     LIBRARIES
       Offline::Validation_Root
-      Offline::Validation_dict
 
 )
 
@@ -75,15 +74,19 @@ cet_build_plugin(Validation art::module
     REG_SOURCE src/Validation_module.cc
     LIBRARIES REG
       Offline::Validation_Root
-      Offline::Validation_dict
 
 )
 
+# The TVal* classes use ClassDef, so their Class(), Streamer() and vtables exist
+# only in the rootcling-generated source.  LIB_TARGET puts that source into
+# Validation_Root itself instead of a separate Validation_dict library:
+# otherwise libValidation_Root.so has unresolved references to its own
+# dictionary, which NO_UNDEFINED (-Wl,--unresolved-symbols=ignore-in-shared-libs)
+# rejects.  This matches what the scons build does via make_dict_and_map().
 art_dictionary( NO_CHECK_CLASS_VERSION
+  LIB_TARGET Validation_Root
   CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/root/classes_def.xml
   CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/root/classes.h
-  DICTIONARY_LIBRARIES
-    Offline::Validation_Root
  )
 
 install_source(SUBDIRS src root)

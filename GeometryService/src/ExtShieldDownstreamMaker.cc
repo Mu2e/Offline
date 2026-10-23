@@ -150,6 +150,7 @@ namespace mu2e {
     std::vector<std::string>          holeOri;
     std::vector<CLHEP::Hep3Vector>    notchLoc;
     std::vector<std::vector<double> > notchDim;
+    std::vector<int>                  boxTypes;
     outlines                         .reserve(nBoxesTot);
     lengths                          .reserve(nBoxesTot);
     tols                             .reserve(nBoxesTot);
@@ -160,6 +161,7 @@ namespace mu2e {
     nNotches                         .reserve(nBoxesTot);
     holeID                           .reserve(nBoxesTot);
     notchID                          .reserve(nBoxesTot);
+    boxTypes                         .reserve(nBoxesTot);
 
     // Helper variables for building lists of holes and notches
     int holeIdx = 0;
@@ -172,6 +174,7 @@ namespace mu2e {
         lengths.push_back(lengthOfType[it]);   // from the type-specified
         tols.push_back(tolsOfType[it]);        // info filled above
         mats.push_back(materialOfType[it]);
+        boxTypes.push_back(it+1);              // 1-based type number for this box
 
 
         // Location of the center of the box in Mu2e coords
@@ -301,7 +304,9 @@ namespace mu2e {
                                                                      holeOri,
                                                                      notchID,
                                                                      notchLoc,
-                                                                     notchDim)
+                                                                     notchDim,
+                                                                     boxTypes,
+                                                                     nType)
                                              );
 
     //----------------------------------------------------------------

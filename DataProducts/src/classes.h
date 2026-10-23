@@ -4,6 +4,7 @@
 //
 
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Sampled.h"
 #include "cetlib/map_vector.h"
 #include "boost/array.hpp"
 #include <vector>
@@ -64,6 +65,7 @@
 // Filter
 #include "Offline/DataProducts/inc/FilterFraction.hh"
 #include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
+#include "Offline/DataProducts/inc/StageNormalization.hh"
 
 // General
 #include "Offline/DataProducts/inc/SurfaceId.hh"

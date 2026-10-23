@@ -18,14 +18,14 @@ physics :{
     printModule : {
       module_type : PrintModule
       primaryParticlePrinter : {
-        verbose : 2
+        verbose : 1
       }
     } # printModule
 
 
   }  # analyzers
 
-  ana       : [ printModule, printProductList ]
+  ana       : [ printModule]
   end_paths : [ ana ]
 
 }

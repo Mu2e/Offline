@@ -31,6 +31,7 @@ using namespace CLHEP;
 #include <string>
 #include <vector>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 namespace mu2e
@@ -57,6 +58,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::OptionalAtom<double>             minEDepAvg           {     Name("minEDepAvg"),              Comment("Minimum mean straw hit energy deposit (MeV)")};
+      fhicl::OptionalAtom<double>             maxEDepAvg           {     Name("maxEDepAvg"),              Comment("Maximum mean straw hit energy deposit (MeV)")};
       fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
       fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
@@ -85,6 +88,8 @@ namespace mu2e
           config.minAbsLambda(_minlambda);
           config.maxNLoops(_maxnloops);
           config.minNLoops(_minnloops);
+          config.minEDepAvg(_minedep);
+          config.maxEDepAvg(_maxedep);
           _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
           _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
@@ -129,12 +134,14 @@ namespace mu2e
         const float slope          = Helix.recoDir().slope();
         const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
+        const float edep           = Helix.hits().eDepAvg(); // straw hit weighted, as AgnosticHelixFinder maxEDepAvg
 
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
                     << " p = " << hmom << " pT = " << hpT
-                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
+                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig
+                    << " eDepAvg = " << edep << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -150,6 +157,8 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
+            edep       >= _minedep       &&
+            edep       <= _maxedep       &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             hRatio     >= _minHitRatio ) {
@@ -163,31 +172,37 @@ namespace mu2e
         }
         return false;
       }
+      // Every threshold below is filled through fhicl::OptionalAtom::operator()(T&),
+      // which leaves its target untouched when the key is absent.  The initializers
+      // are therefore the values used when a key is not configured, and each one is
+      // chosen so that the corresponding comparison in checkHelix() is a no-op.
       bool          _configured;
-      bool          _hascc; // Calo Cluster
-      bool          _doHelicityCheck;
-      int           _hel;
-      int           _minnstrawhits;
-      double        _minHitRatio;
-      double        _minmom, _maxmom;
-      double        _maxpT;
-      double        _minpT;
-      double        _maxchi2XY;
-      double        _maxchi2PhiZ;
-      double        _maxd0;
-      double        _mind0;
-      double        _maxlambda;
-      double        _minlambda;
-      double        _maxnloops;
-      double        _minnloops;
-      bool          _useSlopeSigMin;
-      double        _slopeSigMin;
-      bool          _useSlopeSigMax;
-      double        _slopeSigMax;
+      bool          _hascc           = false; // Calo Cluster
+      bool          _doHelicityCheck = false;
+      int           _hel             = 0;
+      int           _minnstrawhits   = 0;
+      double        _minHitRatio     = 0.;
+      double        _minmom          = 0.;
+      double        _maxmom          = std::numeric_limits<double>::max();
+      double        _minpT           = 0.;
+      double        _maxchi2XY       = std::numeric_limits<double>::max();
+      double        _maxchi2PhiZ     = std::numeric_limits<double>::max();
+      double        _maxd0           = std::numeric_limits<double>::max();
+      double        _mind0           = std::numeric_limits<double>::lowest();
+      double        _maxlambda       = std::numeric_limits<double>::max();
+      double        _minlambda       = 0.;  // the cut is applied to |lambda|
+      double        _maxnloops       = std::numeric_limits<double>::max();
+      double        _minnloops       = 0.;
+      double        _minedep         = std::numeric_limits<double>::lowest();
+      double        _maxedep         = std::numeric_limits<double>::max();
+      bool          _useSlopeSigMin  = false;
+      double        _slopeSigMin     = 0.;
+      bool          _useSlopeSigMax  = false;
+      double        _slopeSigMax     = 0.;
       TrkFitFlag    _goodh; // helix fit flag
-      bool          _prescaleUsingD0Phi;
+      bool          _prescaleUsingD0Phi = false;
       PhiPrescalingParams     _prescalerPar;
-      const Tracker*_myTracker;
+      const Tracker*_myTracker     = nullptr;
     };
 
     struct Config{
@@ -246,13 +261,13 @@ namespace mu2e
 
   void HelixFilter::beginJob() {
     if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
     if ( (!_posHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
     if ( (!_negHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
   }
 

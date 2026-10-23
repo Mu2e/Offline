@@ -1,5 +1,6 @@
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <sstream>

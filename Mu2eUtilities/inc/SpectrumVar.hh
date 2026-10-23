@@ -5,11 +5,11 @@
 
 namespace mu2e {
 
-  enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERY, MOMENTUM };
+  enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERGY, MOMENTUM };
 
   inline SpectrumVar    parseSpectrumVar(const std::string& name) {
     if (name == "totalEnergy"  )  return TOTAL_ENERGY;
-    if (name == "kineticEnergy")  return KINETIC_ENERY;
+    if (name == "kineticEnergy")  return KINETIC_ENERGY;
     if (name == "momentum"     )  return MOMENTUM;
     throw cet::exception("BADCONFIG")<<"parseSpectrumVar(): unknown spectrum variable "<<name<<"\n";
   }

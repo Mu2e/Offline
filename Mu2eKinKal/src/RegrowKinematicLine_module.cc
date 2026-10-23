@@ -17,6 +17,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
@@ -54,7 +55,6 @@
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHitCluster.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawXing.hh"
@@ -65,6 +65,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <map>
 #include <vector>
 #include <memory>
 
@@ -79,7 +80,6 @@ namespace mu2e {
   using Mu2eKinKal::KKFinalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
-  using KKMaterialConfig = KKMaterial::Config;
   using SDIS = std::set<StrawDigiIndex>;
 
   using Name    = fhicl::Name;
@@ -91,7 +91,6 @@ namespace mu2e {
     fhicl::Atom<art::InputTag> indexMap {Name("StrawDigiIndexMap"), Comment("Map between original and reduced ComboHits") };
     fhicl::OptionalAtom<art::InputTag> kalSeedMCAssns {Name("KalSeedMCAssns"), Comment("Association to KalSeedMC. If set, regrown KalSeeds will be associated with the same KalSeedMC as the original") };
     fhicl::Table<KKFitConfig> kkfitSettings { Name("KKFitSettings") };
-    fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
     fhicl::Table<KKConfig> fitSettings { Name("RefitSettings") };
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
   };
@@ -119,6 +118,9 @@ namespace mu2e {
       using KKCALOHIT = KKCaloHit<KTRAJ>;
       using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
       using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+      using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+      using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+      using PARAMHITCOL = std::vector<PARAMHITPTR>;
       using KKFIT = KKFit<KTRAJ>;
 
       using MEAS = KinKal::Hit<KTRAJ>;
@@ -130,8 +132,6 @@ namespace mu2e {
       using DOMAINPTR = std::shared_ptr<KinKal::Domain>;
       using DOMAINCOL = std::set<DOMAINPTR>;
 
-      using KKMaterialConfig = KKMaterial::Config;
-
       explicit RegrowKinematicLine(const Parameters& settings);
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
@@ -139,11 +139,11 @@ namespace mu2e {
     private:
       int debug_;
       ProditionsHandle<StrawResponse> strawResponse_h_;
+      ProditionsHandle<TrackerStatus> trackerStatus_h_;
       ProditionsHandle<Tracker> alignedTracker_h_;
       std::unique_ptr<KinKal::BFieldMap> kkbf_;
       Config config_; // refit configuration object, containing the fit schedule
       KKFIT kkfit_;
-      KKMaterial kkmat_;
       art::ProductToken<KalSeedCollection> kseedcol_T_;
       art::ProductToken<ComboHitCollection> chcol_T_;
       art::ProductToken<IndexMap> indexmap_T_;
@@ -156,7 +156,6 @@ namespace mu2e {
   debug_(settings().debug()),
   config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
   kkfit_(settings().kkfitSettings()),
-  kkmat_(settings().matSettings()),
   kseedcol_T_(consumes<KalSeedCollection>(settings().kalSeedCollection())),
   chcol_T_(consumes<ComboHitCollection>(settings().comboHitCollection())),
   indexmap_T_(consumes<IndexMap>(settings().indexMap())),
@@ -164,7 +163,7 @@ namespace mu2e {
   {
     produces<KKTRKCOL>();
     produces<KalSeedCollection>();
-    if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings(),kkmat_);
+    if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
     if( fillMCAssns_){
       consumes<KalSeedMCAssns>(ksmca_T_);
       produces <KalSeedMCAssns>();
@@ -182,9 +181,11 @@ namespace mu2e {
   {
     // proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     GeomHandle<mu2e::Tracker> nominalTracker_h;
     GeomHandle<Calorimeter> calo_h;
+
    // find input event data
     auto kseed_H = event.getValidHandle<KalSeedCollection>(kseedcol_T_);
     const auto& kseedcol = *kseed_H;
@@ -199,11 +200,16 @@ namespace mu2e {
     unique_ptr<KKTRKCOL> ktrkcol(new KKTRKCOL );
     unique_ptr<KalSeedCollection> rgkseedcol(new KalSeedCollection );
     std::unique_ptr<KalSeedMCAssns> ksmca;
+    // KalSeedMCAssns is a single flat product spanning every KalSeedCollection SelectRecoMC was
+    // configured with, so it cannot be indexed by this module's position within its own input
+    // collection. Build the KalSeed -> KalSeedMC lookup once per event instead.
+    std::map<art::Ptr<KalSeed>,art::Ptr<KalSeedMC>> mcmap;
     // deal with MC
     if(fillMCAssns_){
       ksmca_H = event.getHandle<KalSeedMCAssns>(ksmca_T_);
       if(!ksmca_H)throw cet::exception("RECO")<<"mu2e::RegrowKinematicLine: No KalSeedMCAssns found" << endl;
       ksmca = std::unique_ptr<KalSeedMCAssns>(new KalSeedMCAssns);
+      for(auto const& assn : *ksmca_H) mcmap[assn.first] = assn.second;
     }
     size_t iseed(0);
     for (auto const& kseed : kseedcol) {
@@ -215,13 +221,14 @@ namespace mu2e {
       KKSTRAWXINGCOL strawxings;
       strawxings.reserve(kseed.straws().size());
       KKCALOHITCOL calohits;
+      PARAMHITCOL paramhits;
       DOMAINCOL domains;
       // create the trajectory. This is done here to be strongly typed
       auto goodhits = kkfit_.regrowComponents(kseed, chcol, indexmap,
-          *tracker,*calo_h,*strawresponse,*kkbf_, kkmat_.strawMaterial(),
-          trajptr, strawhits, calohits, strawxings, domains);
+          *tracker,*calo_h,*strawresponse,*kkbf_,
+          trajptr, strawhits, calohits, paramhits, strawxings, domains);
       if(debug_ > 0){
-        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits and " << domains.size() << " domains, status = " << goodhits << std::endl;
+        std::cout << "Regrew " << strawhits.size() << " straw hits, " << strawxings.size() << " straw xings, " << calohits.size() << " CaloHits, " << paramhits.size() << " ParameterHits, and " << domains.size() << " domains, status = " << goodhits << std::endl;
       }
       if(debug_ > 2){
         unsigned nhactive(0);
@@ -234,7 +241,7 @@ namespace mu2e {
       if(debug_ > 5)static_cast<KinKal::PiecewiseTrajectory<KTRAJ>*>(trajptr.get())->print(std::cout,2);
       if(goodhits){
       // create the KKTrack from these components
-        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,domains);
+        auto ktrk = std::make_unique<KKTRK>(config_,*kkbf_,kseed.particle(),trajptr,strawhits,strawxings,calohits,paramhits,domains);
         if(ktrk && ktrk->fitStatus().usable()){
           if(debug_ > 0) std::cout << "RegrowKinematicLine: successful track refit" << std::endl;
           // extrapolate as requested
@@ -244,15 +251,14 @@ namespace mu2e {
           // convert to seed output format
           TrkFitFlag fitflag = kseed.status();
           fitflag.merge(TrkFitFlag::Regrown);
-          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h);
+          auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
           rgkseedcol->push_back(rgks);
           if(fillMCAssns_){
             // find the MC assns
-            auto ksmcai = (*ksmca_H)[iseed];
             auto origksp = art::Ptr<KalSeed>(kseed_H,iseed);
-            // test this is the right ptr
-            if(ksmcai.first != origksp)throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: wrong KalSeed ptr"<< std::endl;
-            auto mcseedp = ksmcai.second;
+            auto imc = mcmap.find(origksp);
+            if(imc == mcmap.end())throw cet::exception("Reco")<<"mu2e::RegrowKinematicLine: can't find MC associated with KalSeed"<< std::endl;
+            auto mcseedp = imc->second;
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
             ksmca->addSingle(rgksp,mcseedp);
             // add the original too

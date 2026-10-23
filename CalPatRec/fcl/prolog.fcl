@@ -491,15 +491,18 @@ CalPatRec : { @table::CalPatRec
         CalTimeClusterFinder : {
             module_type                : CalLineTimePeakFinder
             DiagLevel                  : 0
-            ComboHitCollectionLabel    : "makeSH"
+            ComboHitCollectionLabel    : "makePH"
             CaloClusterCollectionLabel : "CaloClusterMaker"
             MinTimeClusterHits         : 3
             MinCaloClusterEnergy       : 50.
             HitTimeSigmaThresh         : 3.
             HitXYSigmaThresh           : 3.
             MinHitRadius               : 350.
-            StoppingTargetRadius       : 150.
+            StoppingTargetRadius       : 200.
             ClusterRadius              : 50.
+            StrawEDepMin               : 0.
+            StrawEDepMax               : 0.003 # electron-like
+            IgnoreTarget               : false
             ParticleBeta               : 1.
             FitDirection               : "downstream"
         }

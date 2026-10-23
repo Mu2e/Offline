@@ -27,6 +27,7 @@ public:
   constexpr static uint16_t _nCaphriCrystal = 4;
   // crystal numbers, not SiPM channels. Only in disk 0.
   constexpr static std::array<uint16_t, _nCaphriCrystal> _caphriId = {582, 609, 610, 637};
+  constexpr static uint16_t _laserBoardId = 160;
 
   constexpr static uint16_t _nChannel =
       _nCrystalChannel + _nPINDiodPerDisk * _nDisk + _nPINDiodeLaserBox;
@@ -37,6 +38,9 @@ public:
   constexpr static uint16_t _nRawChannel = _nChPerDIRAC * _nDIRAC;
 
   constexpr static uint16_t _invalid = 9999;
+
+  // DIRAC ADC sampling period in ns. CaloDigi::t0() is in units of this period (digitizer clock ticks).
+  constexpr static double _digitizationPeriod = 5.0;
 
   using CaloSiPMId_type = std::uint16_t;
 

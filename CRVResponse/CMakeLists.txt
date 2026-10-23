@@ -66,6 +66,7 @@ cet_build_plugin(CrvPlot art::module
       Offline::CRVConditions
       Offline::DataProducts
       Offline::GeometryService
+      Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::ProditionsService
       Offline::RecoDataProducts

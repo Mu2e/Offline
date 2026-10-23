@@ -387,7 +387,7 @@ namespace mu2e {
               ++stepPtMap2[step.volumeId()];
 
 
-              CLHEP::Hep3Vector hitPos  = cal.geomUtil().mu2eToCrystal(step.volumeId(),step.position());
+              CLHEP::Hep3Vector hitPos  = cal.mu2eToCrystal(step.volumeId(),step.position());
               _hCaCrystalXY->Fill(hitPos.x(),hitPos.y());
 
               if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint )

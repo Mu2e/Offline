@@ -6,11 +6,12 @@
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::SVEC3;
@@ -164,7 +165,7 @@ namespace mu2e {
         varscale_ = 1.0;
     }
     // update the material xings from gas, straw wall, and wire
-    smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
+    smat_.findXings(ca_.tpData(),sxconfig_.nsig_,mxings_,sxconfig_.diag_);
     // update the effect these have on the parameters
     fparams_ = this->parameterChange(varscale_);
   }

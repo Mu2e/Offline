@@ -1,14 +1,12 @@
 //
-// Create a disk and fills it with crystals.
-// We assume that the real crystal position is close to the ideal one (at most a few mm differences).
-// If not, the crystal navigation needs to be rewritten.
+// Create a disk and fills it with crystals. Crystal numbering is all local here
 //
 // Original author B Echenard
 //
-
 #include "Offline/CalorimeterGeom/inc/Disk.hh"
 #include "Offline/CalorimeterGeom/inc/SquareMapper.hh"
 #include "Offline/CalorimeterGeom/inc/SquareShiftMapper.hh"
+#include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/TwoVector.h"
@@ -16,352 +14,249 @@
 
 #include <algorithm>
 #include <map>
+#include <fstream>
+#include <ranges>
 
 namespace mu2e {
 
+  Disk::Disk(unsigned id, double rCrystalIn, double rCrystalOut,
+             double nominalCellSize, double nominalCellLength, unsigned offset,
+             const CLHEP::Hep3Vector& crystalOrigInDisk,
+             const std::string& crystalFileName) :
+    id_(id),
+    crystals_(),
+    diskInfo_(),
+    radiusInCrystal_(rCrystalIn),
+    radiusOutCrystal_(rCrystalOut),
+    nominalCellSize_(nominalCellSize),
+    crystalOffset_(offset),
+    mapToCrystal_(),
+    crystalToMap_()
+  {
+     crystalMap_ = std::make_shared<SquareShiftMapper>();
+     fillCrystals(crystalOrigInDisk, nominalCellLength, crystalFileName );
+  }
 
-      Disk::Disk(int id, double rCrystalIn, double rCrystalOut, double nominalCellSize,
-                 double nominalCellLength, int offset, const CLHEP::Hep3Vector& diskOriginToCrystalOrigin) :
-        id_(id),
-        crystalList_(),
-        geomInfo_(),
-        radiusInCrystal_(rCrystalIn),
-        radiusOutCrystal_(rCrystalOut),
-        nominalCellSize_(nominalCellSize),
-        globalCrystalOffset_(offset),
-        mapToCrystal_(),
-        crystalToMap_(),
-        rowMax_(0)
-      {
-          crystalMap_ = std::shared_ptr<CrystalMapper>(new SquareShiftMapper());
 
-          fillCrystalsIdeal(diskOriginToCrystalOrigin, nominalCellLength); //See note in DiskCalorimeterMaker
-          //fillCrystals(diskOriginToCrystalOrigin);    //See note in DiskCalorimeterMaker
+  //-----------------------------------------------------------------------------
+  // take the crystals from their measured location and correlate them with ideal map location
+  void Disk::fillCrystals(const CLHEP::Hep3Vector& crystalOrigInDisk,
+                          double nominalCellLength,
+                          const std::string& fileName)
+  {
+    //Start by reading the actual location of the crystals from the file
+    ConfigFileLookupPolicy configFile;
+    std::string fullFileName = configFile(fileName);
+
+    std::ifstream crysFile;
+    crysFile.open(fullFileName);
+    if (!crysFile.is_open()) {
+      throw cet::exception("DISK_OPEN_FAILED")<<"failed to open file " << fullFileName << "\n";
+    }
+
+    std::vector<CLHEP::Hep3Vector> realPos;
+    float  x,y;
+    unsigned did,cidx;
+    while (crysFile >> did >> cidx >> x >> y){
+      if (did != id_) continue;
+      if (realPos.size() != cidx) throw cet::exception("DISK_READ_FAILED")<<" invalid crystal index " << cidx << "\n";
+      realPos.emplace_back(x,y,0);
+    }
+    crysFile.close();
+
+
+    // Match the crystals to the ideal location map to facilitate navigation
+    unsigned nCrystal(0);
+    unsigned nRingsMax   = unsigned(1.5*radiusOutCrystal_/nominalCellSize_);
+    unsigned nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
+    mapToCrystal_.assign(nCrystalMap, Crystal::invalidID_);
+
+    for (unsigned mapIdx=0;mapIdx<nCrystalMap;++mapIdx) {
+      const double halfCell = 0.5*nominalCellSize_;
+      const auto& posIdeal  = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
+      const auto match      = std::ranges::find_if(realPos, [&](const auto& p){
+        return std::abs(p.x()-posIdeal.x()) < halfCell && std::abs(p.y()-posIdeal.y()) < halfCell; });
+      if (match == realPos.end()) continue;
+
+      CLHEP::Hep3Vector size(nominalCellSize_,nominalCellSize_,nominalCellLength);
+      CLHEP::Hep3Vector pos = *match + crystalOrigInDisk;
+      checkPosition(pos,size,nCrystal);
+
+      mapToCrystal_[mapIdx] = nCrystal;
+      crystalToMap_.emplace_back(mapIdx);
+      crystals_.emplace_back(Crystal(nCrystal, id_, pos, size));
+      ++nCrystal;
+    }
+  }
+
+
+  //-----------------------------------------------------------------------------
+  void Disk::checkPosition(const CLHEP::Hep3Vector& pos, const CLHEP::Hep3Vector& size, unsigned crystalID) const
+  {
+    const float overlapFraction(0.499);
+    for (const auto& other : crystals_) {
+      float dx = std::abs(other.localPosition().x()-pos.x());
+      float dy = std::abs(other.localPosition().y()-pos.y());
+      float sx = overlapFraction*(other.size().x() + size.x());
+      float sy = overlapFraction*(other.size().y() + size.y());
+
+      if (dx < sx && dy < sy) throw cet::exception("DISK_POS_FAILED")<<
+          "crystals" << crystalID << " and " << other.localID()<<" overlap\n";
+    }
+  }
+
+
+  //-----------------------------------------------------------------------------
+  std::vector<unsigned> Disk::idxFromRow(int thisRow) const
+  {
+    std::vector<unsigned> cryList;
+    for (size_t i=0;i<crystals_.size();++i){
+      int irow = crystalMap_->rowFromIndex(crystalToMap_[i]);
+      if (irow == thisRow) cryList.emplace_back(i);
+    }
+    return cryList;
+  }
+
+
+  //-----------------------------------------------------------------------------
+  // Position needs to be in the Disk frame
+  bool Disk::isInsideDisk(const CLHEP::Hep3Vector& posInDisk) const
+  {
+    if (posInDisk.z() < -diskInfo_.size().z()/2.0 || posInDisk.z() > diskInfo_.size().z()/2.0) return false;
+    float radius = posInDisk.perp();
+    if (radius < diskInfo_.size().x() || radius > diskInfo_.size().y()) return false;
+    return true;
+  }
+
+
+
+  //-----------------------------------------------------------------------------
+  // Position needs to be in the DiskFF frame
+  bool Disk::isInsideCrystal(const CLHEP::Hep3Vector& pos) const
+  {
+    const double tolerance(1e-6);
+    if (pos.z() < -tolerance) return false;
+    if (pos.z() > diskInfo_.crystalZLength()+tolerance) return false;
+    if (idxFromPosition(pos) == Crystal::invalidID_) return false;
+    return true;
+  }
+
+  //-----------------------------------------------------------------------------
+  // Position needs to be in the DiskFF frame
+  unsigned Disk::idxFromPosition(const CLHEP::Hep3Vector& pos) const
+  {
+    // First, filter out obvious misses
+    const double tolerance(1e-6);
+    float perp = pos.perp();
+    if (perp < diskInfo_.size().x() ||
+        perp > diskInfo_.size().y() ||
+        pos.z() < -tolerance        ||
+        pos.z() > diskInfo_.crystalZLength()+tolerance) return Crystal::invalidID_;
+
+    // now look at crystal closest to ideal position - should work most of the time
+    auto mapIdx = crystalMap_->indexFromXY(pos.x()/nominalCellSize_,pos.y()/nominalCellSize_);
+    if (isCrystalIdxValid(mapIdx)) {
+      if (isInsideCrystal(mapToCrystal_[mapIdx],pos)) return mapToCrystal_[mapIdx];
+
+      // if no match, look at neighbors (likely there)
+      const int level(1);
+      const auto neighbors(crystalMap_->neighbors(mapIdx,level));
+      for (const auto& idx : neighbors) {
+         if (isCrystalIdxValid(idx) && isInsideCrystal(mapToCrystal_[idx],pos)) return mapToCrystal_[idx];
       }
-
-
-
-      //-----------------------------------------------------------------------------
-      // take the crystals from the ideal map, keeping only the crystals inside the annulus
-      void Disk::fillCrystalsIdeal(const CLHEP::Hep3Vector& crystalOriginInDisk, double nominalCellLength)
-      {
-         int nCrystal(0);
-         int nRingsMax   = int(1.5*radiusOutCrystal_/nominalCellSize_);
-         int nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
-
-         mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, invalidID_);
-
-         for (int mapIdx=0;mapIdx<nCrystalMap;++mapIdx)
-         {
-             CLHEP::Hep2Vector xy  = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
-             if (!isInsideDisk(xy.x(),xy.y(),nominalCellSize_,nominalCellSize_))  continue;
-
-             //these crystals have been manually removed from the map by hand....
-             if (std::abs(xy.x()-257.25) < 1.0  &&  std::abs(xy.y()-583.1) < 1.0) continue;
-             if (std::abs(xy.x()-257.25) < 1.0  &&  std::abs(xy.y()+583.1) < 1.0) continue;
-             if (std::abs(xy.x()+257.25) < 1.0  &&  std::abs(xy.y()-583.1) < 1.0) continue;
-             if (std::abs(xy.x()+257.25) < 1.0  &&  std::abs(xy.y()+583.1) < 1.0) continue;
-
-             CLHEP::Hep3Vector size(nominalCellSize_,nominalCellSize_,nominalCellLength);
-             CLHEP::Hep3Vector posFF(xy.x(),xy.y(),0);
-             CLHEP::Hep3Vector pos = posFF + crystalOriginInDisk;
-
-             rowMax_ = std::max(rowMax_,std::abs(crystalMap_->rowFromIndex(mapIdx)));
-
-             mapToCrystal_[mapIdx] = nCrystal;
-             crystalToMap_.push_back(mapIdx);
-             crystalList_.push_back(Crystal(nCrystal, id_, pos, pos, size));
-
-             ++nCrystal;
-         }
-      }
-
-      //-----------------------------------------------------------------------------
-      // fill the crystal from the real position with the measured dimensions
-      void Disk::fillCrystals(const CLHEP::Hep3Vector& crystalOriginInDisk)
-      {
-         /*
-         int nRingsMax   = int(1.5*radiusOutCrystal_/nominalCellSize_);
-         int nCrystalMap = crystalMap_->nCrystalMax(nRingsMax);
-         mapToCrystal_.insert(mapToCrystal_.begin(), nCrystalMap, invalidID_);
-
-         //yes, this will be correctly done later
-         WhateverDatabaseReader reader; // <-- this is the link to the database
-
-         for (int i=0;i<reader.getNCrystals();++i)
-         {
-             // get position and width here
-             CLHEP::Hep3Vector posFF = reader.position(i);
-             CLHEP::Hep3Vector pos   = posFF + crystalOriginInDisk;
-             CLHEP::Hep3Vector size  = reader.size(i);
-
-             int mapIdx = crystalMap_->indexFromXY(pos.x()/nominalCellSize_,pos.y()/nominalCellSize_);
-             CLHEP::Hep2Vector idealPosition = nominalCellSize_*crystalMap_->xyFromIndex(mapIdx);
-
-             mapToCrystal_[mapIdx] = i;
-             crystalToMap_.push_back(mapIdx);
-             crystalList_.push_back( Crystal(nCrystal, id_, pos, idealPosition, size) );
-         }
-
-         fixCrystalPosition();
-         */
-      }
-
-
-      //-----------------------------------------------------------------------------
-      bool Disk::isInsideDisk(double x, double y, double widthX, double widthY) const
-      {
-         std::vector<double> apexX = crystalMap_->apexX();
-         std::vector<double> apexY = crystalMap_->apexY();
-
-         for (size_t i=1;i<apexX.size();++i)
-         {
-             CLHEP::Hep2Vector p0(x + widthX*apexX[i-1], y + widthY*apexY[i-1]);
-             CLHEP::Hep2Vector p1(x + widthX*apexX[i],   y + widthY*apexY[i]);
-
-             // shortest distance between the segment P0-P1 and the origin.
-             CLHEP::Hep2Vector v = p1-p0;
-             double t = -p0*v/(v*v);
-             double mindist = (p0+t*v).mag();
-             if (t < 0.0) mindist = p0.mag();
-             if (t > 1.0) mindist = p1.mag();
-
-             //farthest distance is always at an apex
-             double maxdist = std::max(p0.mag(),p1.mag());
-
-             if (mindist < radiusInCrystal_ || maxdist > radiusOutCrystal_) return false;
-         }
-
-         return true;
-      }
-
-      //-----------------------------------------------------------------------------
-      //check crystal overlaps (row after row) and move crystal around to fix boundary crossings
-      void Disk::fixCrystalPosition()
-      {
-         std::map<int,std::vector<size_t>> rowToCrystalId;
-         for (size_t cryId=0;cryId<crystalList_.size();++cryId){
-            int irow = crystalMap_->rowFromIndex(crystalToMap_[cryId]);
-            rowToCrystalId[irow].push_back(cryId);
-         }
-
-         double ymaxPrevious(-1e6);
-         for (auto& kv : rowToCrystalId){
-           auto& cryList = kv.second;
-
-           //order the crystal ids by increasing x coordinate in a given row
-           auto sortFunctor = [this](const auto i, const auto j)
-                                  {return crystalList_[i].localPosition().x() <
-                                            crystalList_[j].localPosition().x();};
-           std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
-
-           //check if the crystals overlap in Y with the row below and fix the position
-           double ymax(-1e6);
-           for (const auto& cryIdx : cryList) {
-              double crYmin    = crystalList_[cryIdx].localPosition().y()-crystalList_[cryIdx].size().y()/2.0;
-              double tolerance = crYmin - ymaxPrevious;
-              if (tolerance < 0) {
-                 auto newPosition = crystalList_[cryIdx].localPosition() - CLHEP::Hep3Vector(0,tolerance,0);
-                 crystalList_[cryIdx].setLocalPosition(newPosition);
-              }
-              ymax = std::max(ymax,crystalList_[cryIdx].localPosition().y()+crystalList_[cryIdx].size().y()/2.0);
-           }
-           ymaxPrevious = ymax;
-
-           //check if the crystal overlap in X, and move them to the right if needed
-           //double origXend = crystalList_[cryList.back()].localPosition().x();
-           for (size_t i=1;i<cryList.size();++i) {
-              size_t idx0 = cryList[i-1];
-              size_t idx1 = cryList[i];
-              double crXmax0 = crystalList_[idx0].localPosition().x()+crystalList_[idx0].size().x()/2.0;
-              double crXmin1 = crystalList_[idx1].localPosition().x()-crystalList_[idx1].size().x()/2.0;
-              double tolerance = crXmin1 - crXmax0;
-              if (tolerance < 0) {
-                 auto newPosition = crystalList_[idx1].localPosition() - CLHEP::Hep3Vector(tolerance,0,0);
-                 crystalList_[idx1].setLocalPosition(newPosition);
-              }
-           }
-
-           //recenter all crystals by shifting them to the left if we had to adjust some
-           //double newXend = crystalList_[cryList.back()].localPosition().x();
-           //double shiftPerCrystal = (newXend-origXend)/2.0;
-           //if (shiftPerCrystal>0){
-           //  for (const auto& cryIdx : cryList) {
-           //      auto newPosition = crystalList_[cryIdx].localPosition() - CLHEP::Hep3Vector(shiftPerCrystal,0,0);
-           //      crystalList_[cryIdx].setLocalPosition(newPosition);
-           //   }
-           //}
-
-           // check that all crystals are still in the disk enveloppe
-           for (const auto& cryIdx : cryList) {
-             auto position = crystalList_[cryIdx].localPosition();
-             auto size     = crystalList_[cryIdx].size();
-             if (!isInsideDisk(position.x(),position.y(),size.x(),size.y()))
-               throw cet::exception("Disk") << " The crystal at position="<<position<<" does not fit inside the disk...\n";
-           }
-         }
-      }
-
-
-
-
-
-
-
-      //-----------------------------------------------------------------------------
-      //calculate the bounding box surrounding a row of crystals
-      void Disk::boundingBoxes(int thisRow, std::vector<double>& params) const
-      {
-         params.clear();
-
-         std::vector<size_t> cryList;
-         for (size_t i=0;i<crystalList_.size();++i){
-           int irow = crystalMap_->rowFromIndex(crystalToMap_[i]);
-           if (irow == thisRow) cryList.push_back(i);
-         }
-         if (cryList.empty()) return;
-
-         auto sortFunctor = [this](const auto i, const auto j)
-                                  {return crystalList_[i].localPosition().x() <
-                                          crystalList_[j].localPosition().x();};
-         std::sort(std::begin(cryList),std::end(cryList),sortFunctor);
-
-         double ymin(1e6),ymax(-1e6),xInmin(-1e6),xImax(1e6);
-         for (size_t i=0;i<cryList.size();++i) {
-           ymin = std::min(ymin,crystalList_[cryList[i]].localPosition().y()-crystalList_[cryList[i]].size().y()/2.0);
-           ymax = std::max(ymax,crystalList_[cryList[i]].localPosition().y()+crystalList_[cryList[i]].size().y()/2.0);
-           if (i==0) continue;
-           double x0 = crystalList_[cryList[i-1]].localPosition().x()+crystalList_[cryList[i-1]].size().x()/2.0;
-           double x1 = crystalList_[cryList[i]].localPosition().x()  -crystalList_[cryList[i]].size().x()/2.0;
-           if (x1-x0 > 2*crystalList_[cryList[i]].size().x()){xInmin = x0; xImax=x1;}
-         }
-
-         double xOutmin = crystalList_[cryList.front()].localPosition().x()-crystalList_[cryList.front()].size().x()/2.0;
-         double xOutmax = crystalList_[cryList.back()].localPosition().x() +crystalList_[cryList.back()].size().x()/2.0;
-         params.push_back(xOutmin);
-         params.push_back(xOutmax);
-         params.push_back(ymin);
-         params.push_back(ymax);
-         if (xInmin>-1e5) {params.push_back(xInmin);params.push_back(xImax);}
-      }
-
-
-      //-----------------------------------------------------------------------------
-      int Disk::idMinCrystalInside(int row) const
-      {
-         if (std::abs(row) > rowMax_) return invalidID_;
-         int idx(0);
-         while (mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)] == invalidID_) ++idx;
-         return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];
-      }
-
-      //-----------------------------------------------------------------------------
-      int Disk::idMaxCrystalInside(int row) const
-      {
-         if (std::abs(row) > rowMax_) return invalidID_;
-         int idx = int(radiusOutCrystal_/nominalCellSize_)+2;
-         while ( !isMapIdxValid(crystalMap_->indexFromRowCol(row,idx)) ) --idx;
-         while ( mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)]==invalidID_ && idx>0) --idx;
-         return mapToCrystal_[crystalMap_->indexFromRowCol(row,idx)];
-      }
-
-
-
-      //-----------------------------------------------------------------------------
-      int Disk::idxFromPosition(double x, double y) const
-      {
-         // this only works for ideal crystal placement
-         //int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
-         //if (mapIdx < mapToCrystal_.size() ) return mapToCrystal_.at(mapIdx);
-         //return invalidID_;
-
-         int mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
-
-         if (isCrystalIdxValid(mapIdx) && isInsideCrystal(mapToCrystal_[mapIdx],x,y)) return mapToCrystal_[mapIdx];
-
-         const int level(1);
-         const auto neighbors(crystalMap_->neighbors(mapIdx,level));
-         for (const auto& idx : neighbors) {
-            if (isCrystalIdxValid(idx) && isInsideCrystal(mapToCrystal_[idx],x,y)) return mapToCrystal_[idx];
-         }
-
-         return invalidID_;
-      }
-
-
-
-
-      //-----------------------------------------------------------------------------
-      bool Disk::isInsideCrystal(int icry, double x, double y) const
-      {
-         if (icry >= static_cast<int>(crystalList_.size())) return false;
-         return crystalMap_->isInsideCrystal(x, y, crystalList_[icry].localPosition(), crystalList_[icry].size());
-      }
-
-
-      //-----------------------------------------------------------------------------
-      //find the local indexes of the crystal neighbors for a given level (level = number of rings away)
-      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level) const
-      {
-         std::vector<int> list;
-         std::vector<int> temp(crystalMap_->neighbors(crystalToMap_.at(crystalId),level));
-
-         for (const auto& mapIdx : temp) {
-           if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_.at(mapIdx));
-         }
-         return list;
-      }
-
-
-      //-----------------------------------------------------------------------------
-      //find the nearest crystals from the position based on ideal mapping
-      std::vector<int> Disk::nearestNeighborsFromPos(double x, double y) const
-      {
-         int level(1);
-         std::vector<int> list;
-
-         auto mapIdx = crystalMap_->indexFromXY(x/nominalCellSize_,y/nominalCellSize_);
-         if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_.at(mapIdx));
-
-         while (list.empty()) {
-           for (auto mapIdx : crystalMap_->neighbors(mapIdx,level)) {
-             if (isCrystalIdxValid(mapIdx)) list.push_back(mapToCrystal_[mapIdx]);
-           }
-           ++level;
-         }
-         return list;
-      }
-
-
-
-     //-----------------------------------------------------------------------------
-     const bool Disk::isCrystalIdxValid(int i) const {
-       return i < static_cast<int>(mapToCrystal_.size()) && mapToCrystal_[i]!=invalidID_;
-     }
-
-     //-----------------------------------------------------------------------------
-     const bool Disk::isMapIdxValid(int i) const {
-       return i < static_cast<int>(mapToCrystal_.size());
-     }
-
-
-     //-----------------------------------------------------------------------------
-     void Disk::print(std::ostream &os) const
-     {
-         os<<"Disk                  "<<id_<<std::endl;
-         os<<"Number of crystals    "<<crystalList_.size()<<std::endl;
-         os<<"Radius In             "<<geomInfo_.innerEnvelopeR()<<std::endl;
-         os<<"Radius Out            "<<geomInfo_.outerEnvelopeR()<<std::endl;
-         os<<"origin                "<<geomInfo_.originLocal()<<std::endl;
-         os<<"origin Mu2e           "<<geomInfo_.origin()<<std::endl;
-         os<<"size                  "<<geomInfo_.size()<<std::endl;
-         os<<"rotation              "<<geomInfo_.rotation()<<std::endl;
-         os<<"originToCrystalOrigin "<<geomInfo_.originToCrystalOrigin()<<std::endl;
-         os<<"z Front               "<<geomInfo_.frontFaceCenter().z()<<std::endl;
-         os<<"z Back                "<<geomInfo_.backFaceCenter().z()<<std::endl;
-         os<<"r In tracker          "<<geomInfo_.innerEnvelopeR()<<std::endl;
-         os<<"r Out tracker         "<<geomInfo_.outerEnvelopeR()<<std::endl;
-     }
+    }
+
+    // last chance, look at all crystals
+    for (size_t icry=0;icry<crystals_.size();++icry){
+      if (isInsideCrystal(icry,pos)) return icry;
+    }
+
+    return Crystal::invalidID_;
+  }
+
+  //-----------------------------------------------------------------------------
+  // Position needs to be in the DiskFF frame
+  bool Disk::isInsideCrystal(unsigned icry, const CLHEP::Hep3Vector& pos) const
+  {
+    if (icry >= crystals_.size()) return false;
+
+    const auto& cpos  = crystals_[icry].localPosition();
+    const auto& csize = crystals_[icry].size();
+    if (std::abs(cpos.x()-pos.x()) > 0.5*csize.x() ) return false;
+    if (std::abs(cpos.y()-pos.y()) > 0.5*csize.y() ) return false;
+    if (pos.z() < -1e-6 || pos.z() > csize.z()     ) return false;
+
+    return true;
+  }
+
+  //-----------------------------------------------------------------------------
+  //find the indices of the crystal neighbors for a given level (level = number of rings away)
+  // local in, local out
+  std::vector<unsigned> Disk::neighbors(unsigned localId, unsigned level) const
+  {
+    std::vector<unsigned> list;
+    const auto mapNbrs = crystalMap_->neighbors(crystalToMap_.at(localId), level);
+    for (const auto& mapIdx : mapNbrs)
+      if (isCrystalIdxValid(mapIdx)) list.emplace_back(mapToCrystal_.at(mapIdx));
+    return list;
+  }
+
+  //-----------------------------------------------------------------------------
+  bool Disk::isCrystalIdxValid(unsigned i) const {
+    return i < mapToCrystal_.size() && mapToCrystal_[i] != Crystal::invalidID_;
+  }
+
+  //-----------------------------------------------------------------------------
+  //Move and rotate the disk. The displacement and rotation are relatives
+  void Disk::moveDisk(const CLHEP::Hep3Vector& shift, const CLHEP::HepRotation& rot)
+  {
+    diskInfo_.setPose(diskInfo_.origin() + shift, diskInfo_.rotation() * rot);
+    for (auto& c : crystals_) c.setPosition(diskInfo_.toGlobal(c.localPosition()));
+  }
+
+  //-----------------------------------------------------------------------------
+  void Disk::moveCrystal(unsigned localId, const CLHEP::Hep3Vector& shift)
+  {
+    auto& crystal = crystals_.at(localId);
+    crystal.setLocalPosition(crystal.localPosition() + shift);
+    crystal.setPosition(diskInfo_.toGlobal(crystal.localPosition()));
+  }
+
+
+  //-----------------------------------------------------------------------------
+  CLHEP::Hep3Vector Disk::mu2eToDisk  (const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toLocal(p);
+  }
+
+  CLHEP::Hep3Vector Disk::diskToMu2e  (const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toGlobal(p);
+  }
+
+  CLHEP::Hep3Vector Disk::mu2eToDiskFF(const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toLocalFF(p);
+  }
+
+  CLHEP::Hep3Vector Disk::diskFFToMu2e(const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toGlobalFF(p);
+  }
+
+  CLHEP::Hep3Vector Disk::mu2eToCrystal(unsigned localId, const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toLocal(p) - crystal(localId).localPosition();
+  }
+
+  CLHEP::Hep3Vector Disk::crystalToMu2e(unsigned localId, const CLHEP::Hep3Vector& p) const {
+    return diskInfo_.toGlobal(p + crystal(localId).localPosition());
+  }
+
+
+  //-----------------------------------------------------------------------------
+  void Disk::print(std::ostream &os) const
+  {
+     os<<"Disk                  "<<id_<<std::endl;
+     os<<"Number of crystals    "<<crystals_.size()<<std::endl;
+     os<<"Crystal offset        "<<crystalOffset_<<std::endl;
+     diskInfo_.print(os);
+  }
 
 }
 

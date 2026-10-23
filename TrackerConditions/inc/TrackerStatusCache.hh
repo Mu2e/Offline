@@ -44,6 +44,10 @@ namespace mu2e {
         DbIoV iov;
         iov.setMax(); // start with full IOV range
         if(_useDb) {
+          _tpls_p->get(eid);
+          _tpas_p->get(eid);
+          _tssl_p->get(eid);
+          _tsss_p->get(eid);
           iov.overlap(_tpls_p->iov());
           iov.overlap(_tpas_p->iov());
           iov.overlap(_tssl_p->iov());

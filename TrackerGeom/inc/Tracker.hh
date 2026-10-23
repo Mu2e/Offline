@@ -46,6 +46,16 @@ namespace mu2e {
     // construct from a set of straws and their global properties.
     Tracker(StrawCollection const& straws, StrawProperties const& sprops,const TrackerG4InfoPtr& g4tracker, PEType const& pexists);
 
+    // The panels and planes hold pointers into this object's own straw and panel
+    // arrays, so the compiler-generated copy would leave the copy referring to the
+    // straws and panels of the original.  This copy constructor re-points them at
+    // the content of the copy.  Note that the TrackerG4Info is deliberately shared
+    // with the original: it describes the nominal G4 model and does not depend on
+    // the (possibly aligned) straw positions.
+    Tracker(Tracker const& other);
+    // ProditionsEntity deletes assignment, so a Tracker can be copy constructed but
+    // not assigned.  Accept the compiler generated destructor.
+
     // accessors
     // origin in nominal tracker coordinate system
     const xyzVec& origin() const { return _origin; }
@@ -94,6 +104,9 @@ namespace mu2e {
     bool planeExists(StrawId const& id) const { return _planeExists[id.plane()]; }
 
     private:
+    // Re-point the panel and plane pointers at this object's own content.
+    void rebindConstituents();
+
     xyzVec _origin;
     // global straw properties
     StrawProperties _strawprops;

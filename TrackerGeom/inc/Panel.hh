@@ -17,8 +17,13 @@
 
 namespace mu2e {
 
+  class Tracker;
+
   class Panel{
     using xyzVec = CLHEP::Hep3Vector; // switch to XYZVec TODO
+
+    // Tracker re-points the straw pointers when it is copied
+    friend class Tracker;
 
     public:
     using StrawCollection = std::array<const Straw*, StrawId::_nstraws>;
@@ -85,6 +90,11 @@ namespace mu2e {
     std::string name( std::string const& base ) const;
 
     private:
+    // Fill the straw pointers from the given collection.  This is used both when
+    // building a panel and when a Tracker is copied, since the pointers must then
+    // refer to the straws owned by the copy and not to those of the original.
+    void rebindStraws( TrackerStrawCollection const& straws );
+
     StrawId _id; // only the plane and panel fields are used to define a panel
     xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame
     HepTransform  _UVWtoDS; // transform from this panel's frame to the DS frame

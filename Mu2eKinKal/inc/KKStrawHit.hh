@@ -23,6 +23,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // Other
@@ -52,6 +53,7 @@ namespace mu2e {
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // clone op for reinstantiation
       KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          KinKal::ResidualHit<KTRAJ>(rhs),
           bfield_(rhs.bfield()),
           whstate_(rhs.hitState()),
           dVar_(rhs.dVar_),
@@ -162,7 +164,7 @@ namespace mu2e {
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(mtime-chit_.driftTime(),mtime);
     PCA pca(ptraj,wirePtr(),tphint,precision());
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
-    double dz = straw().origin().z() - ca_.particlePoca().Z();
+    double dz = straw().origin().z() - pca.particlePoca().Z();
     double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
     if((!pca.usable()) || fabs(dz) >  maxdz) {
       tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),mtime-chit_.driftTime()),mtime);
@@ -178,10 +180,12 @@ namespace mu2e {
     auto cashu = miconfig.findUpdater<CADSHU>();
     auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
+    auto diagshu = miconfig.findUpdater<PanelDiagSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
       auto dinfo = fillDriftInfo(ca);
       // there can be multiple updaters: apply them all
+      if(diagshu)whstate_ = diagshu->wireHitState(whstate_,straw_.id());
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);

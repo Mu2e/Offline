@@ -614,8 +614,8 @@ chi2dXY = bestHelix.fita_zt_;
     float caloPhi(-999),caloZ(-9999);
     if (circle.caloPtr_ && circle.caloPtr_->energyDep()>ccMinEnergy_){
       const auto& caloCluster    = *(circle.caloPtr_);
-      const auto  caloPosInMu2e  = cal_->geomUtil().diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
-      const auto  caloPosInTrk   = cal_->geomUtil().mu2eToTracker(caloPosInMu2e);
+      const auto  caloPosInMu2e  = cal_->diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
+      const auto  caloPosInTrk   = cal_->mu2eToTracker(caloPosInMu2e);
       caloZ                      = caloPosInTrk.z();
       caloPhi                    = polyAtan2(caloPosInTrk.y()-circle.y_,caloPosInTrk.x()-circle.x_);
     }
@@ -684,8 +684,8 @@ chi2dXY = bestHelix.fita_zt_;
 
     if (circle.caloPtr_ && circle.caloPtr_->energyDep()>ccMinEnergy_){
       const auto& caloCluster    = *(circle.caloPtr_);
-      const auto  caloPosInMu2e  = cal_->geomUtil().diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
-      const auto  caloPosInTrk   = cal_->geomUtil().mu2eToTracker(caloPosInMu2e);
+      const auto  caloPosInMu2e  = cal_->diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
+      const auto  caloPosInTrk   = cal_->mu2eToTracker(caloPosInMu2e);
       float caloPhi              = polyAtan2(caloPosInTrk.y()-circle.y_,caloPosInTrk.x()-circle.x_);
       int   nloop   = round((caloPhi-(caloPosInTrk.z()-circle.fitb_zp_)/circle.fita_zp_)/6.283185);
       float phiLoop = caloPhi - nloop*6.283185;
@@ -712,8 +712,8 @@ chi2dXY = bestHelix.fita_zt_;
 
     if (circle.caloPtr_ && circle.caloPtr_->energyDep()>ccMinEnergy_){
       const auto& caloCluster    = *(circle.caloPtr_);
-      const auto  posInMu2e      = cal_->geomUtil().diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
-      const auto  caloClusterPos = cal_->geomUtil().mu2eToTracker(posInMu2e);
+      const auto  posInMu2e      = cal_->diskFFToMu2e(caloCluster.diskID(),caloCluster.cog3Vector());
+      const auto  caloClusterPos = cal_->mu2eToTracker(posInMu2e);
       tzFitter.add(caloClusterPos.z(),caloCluster.time(),ccWeight_);
     }
 

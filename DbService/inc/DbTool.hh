@@ -61,6 +61,7 @@ class DbTool {
   int printAdhoc();
 
   std::string getResult() { return _result; }
+  void clearResult() { _result.clear(); }
   int printCIDLine(int cid, int indent = 0);
   int printIOVLine(int iov, int details = 0, int indent = 0);
   int printGIDLine(int gid, int details = 0, int indent = 0);
@@ -85,6 +86,12 @@ class DbTool {
   int commitVersion();
   int commitPatch();
   int verifySet();
+
+  // when committing several items, sometime the later items depend
+  // on fnding the earlier items in the cached val structure
+  // this is a way to refresh the val structure after the earlier commits
+  // Take caution with local caching of val info..
+  int refresh();
 
   int testUrl();
 
@@ -134,12 +141,6 @@ class DbTool {
   // expand a gid into a vetor of iovs for each tid
   // extend because it does not zero eset
   int extendEiovMap(int gid, eiovMap& eset, int& minrun, int& maxrun);
-
-  // when committing several items, sometime the later items depend
-  // on fnding the earlier items in the cached val structure
-  // this is a way to refresh the val structure after the earlier commits
-  // Take caution with local caching of val info..
-  int refresh();
 
   int _verbose;
   bool _pretty;

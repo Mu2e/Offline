@@ -9,45 +9,58 @@
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/CRV.hh"
-#include "Offline/KinKalGeom/inc/TestCRV.hh"
 #include "Offline/KinKalGeom/inc/Calo.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "KinKal/Geometry/Surface.hh"
+#include "KinKal/Geometry/Plane.hh"
+#include "KinKal/Geometry/Rectangle.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
-#include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include <memory>
 #include <map>
 #include <vector>
+#include <string>
 namespace mu2e {
-  class KinKalGeom : public Detector, public ProditionsEntity {
+  class KinKalGeom : public Detector {
     public:
       using SurfacePtr = std::shared_ptr<KinKal::Surface>;
+      using RecPtr = std::shared_ptr<KinKal::Rectangle>;
+      using PlanePtr = std::shared_ptr<KinKal::Plane>;
       using SurfacePair =std::pair<const SurfaceId, SurfacePtr >;
       using SurfacePairCollection = std::vector<SurfacePair>;
       using SurfacePairIter = std::multimap<SurfaceId,SurfacePtr>::const_iterator;
       using KKGMap = std::multimap<SurfaceId,SurfacePtr>;
-      // default constructor, now using GeometryService
-      KinKalGeom();
+      struct PassiveMaterialPlane {
+        SurfaceId sid_;
+        PlanePtr surface_;  // any planar surface: Rectangle (concrete/strongback/CRV) or Annulus (DS end walls)
+        std::string material_;
+        double thickness_;
+        PassiveMaterialPlane(SurfaceId const& sid, PlanePtr const& surface, std::string const& material, double thickness) :
+          sid_(sid), surface_(surface), material_(material), thickness_(thickness) {}
+      };
+      using PassiveMaterialPlaneCollection = std::vector<PassiveMaterialPlane>;
+      // default constructor, now using GeometryService to create content
+      KinKalGeom(){}
       // accessor to the raw map
       auto const& map() const { return map_; }
       // find all surfaces that match an Id. Return vector can have >1 entry if the wildcard index (-1) is provided
       void surfaces(SurfaceId const& sid, std::vector<SurfacePair>& surfs) const;
       // find all surfaces that match a vector of Ids
       void surfaces(std::vector<SurfaceId> const& ids, std::vector<SurfacePair>& surfs) const;
-      // hierarchical accessors: return the underlying objects, not the unique_ptrs
-      auto const& DS() const {return *ds_; }
-      auto const& ST() const {return *st_; }
-      auto const& tracker() const {return *tracker_; }
-      auto const& calo() const {return *calo_; }
-      auto const& TCRV() const {return *tcrv_; }
+      // hierarchical accessors
+      auto const& DS() const {return ds_; }
+      auto const& ST() const {return st_; }
+      auto const& tracker() const {return tracker_; }
+      auto const& calo() const {return calo_; }
+      auto const& CRV() const {return crv_; }
+      auto const& passiveMaterialPlanes() const { return passiveMaterialPlanes_; }
     private:
       // local copy of detector objects; these hold the actual (typed) surface objects
       std::unique_ptr<KKGeom::Tracker> tracker_;
       std::unique_ptr<KKGeom::DetectorSolenoid> ds_;
       std::unique_ptr<KKGeom::StoppingTarget> st_;
       std::unique_ptr<KKGeom::Calo> calo_;
-      //KKGeom::CRV crv_;
-      std::unique_ptr<KKGeom::TestCRV> tcrv_;
+      std::unique_ptr<KKGeom::CRV> crv_;
+      PassiveMaterialPlaneCollection passiveMaterialPlanes_;
       // the map used to find surfaces by Id
       KKGMap map_;
       // allow GeometryService to access internals, to avoid link loop

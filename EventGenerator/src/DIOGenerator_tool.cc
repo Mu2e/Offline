@@ -1,8 +1,8 @@
 #include "art/Utilities/ToolMacros.h"
 #include "cetlib_except/exception.h"
 
-#include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/RandGeneral.h"
+#include "CLHEP/Random/RandFlat.h"
 
 #include "Offline/EventGenerator/inc/ParticleGeneratorTool.hh"
 
@@ -15,6 +15,8 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
 #include "fhiclcpp/types/DelegatedParameter.h"
+
+#include <iostream>
 
 namespace mu2e {
   class DIOGenerator : public ParticleGeneratorTool {
@@ -34,7 +36,8 @@ namespace mu2e {
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
       _czmin(conf().czmin()),
       _czmax(conf().czmax()),
-      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {
       if(_czmin > _czmax || _czmin < -1. || _czmax > 1.) throw cet::exception("BADCONFIG") << "DIOGenerator cos(theta_z) range is not defined\n";
 
@@ -45,37 +48,26 @@ namespace mu2e {
       }
 
       auto fullconfig = conf().spectrum.get<fhicl::ParameterSet>();
-      fullconfig.erase(std::string("elow"));
-      fullconfig.erase(std::string("ehi"));
-      fullconfig.put(std::string("elow"),double(0.0));
-      fullconfig.put(std::string("ehi"),double(0.0));
-      BinnedSpectrum fullspect(fullconfig);
-      double fullintegral(0.0);
-      for(size_t ibin=0;ibin < fullspect.getNbins();++ibin){
-        fullintegral += fullspect.getPDF(ibin);
-      }
-      // correct for the missing prediction near threshold, assuming the rate falls to 0 linearly.
-      double pmin = _spectrum.getAbscissa(0);
-      double pdfmin = _spectrum.getPDF(0);
-      double binsize = _spectrum.getBinWidth();
-      fullintegral += 0.5*pdfmin*pmin/binsize;
-      std::cout << "Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
-      std::cout << "Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
-      std::cout << "Full Spectrum min " << fullspect.getAbscissa(0) << " max " << fullspect.getAbscissa(fullspect.getNbins()-1) << std::endl;
-      std::cout << "Restricted Spectrum integral " << integral << std::endl;
-      std::cout << "Restricted Spectrum integral*cos(theta_z) restriction " << integral*((_czmax - _czmin)/2.) << std::endl;
-      std::cout << "Full Spectrum integral " << fullintegral << std::endl;
-      std::cout << "Sampled spectrum fraction " << integral/fullintegral << std::endl;
-      std::cout << "Sampled spectrum fraction (with cos(theta_z)) " << (integral/fullintegral)*((_czmax - _czmin)/2.) << std::endl;
+      _emin = fullconfig.get<double>("elow", _spectrum.getXMin());
+      _emax = fullconfig.get<double>("ehi", _spectrum.getXMax());
+      _energyFraction = calculateBinnedSpectrumEnergyFraction(fullconfig, "elow", "ehi", true, 0.); // energy fraction, correcting for missing 0 - 1 MeV component
+
+      std::cout << "[" << __func__ << "] Cos(theta_z) min " << _czmin << " max " << _czmax << std::endl;
+      std::cout << "[" << __func__ << "] Restricted Spectrum min " << _spectrum.getAbscissa(0) << " max " << _spectrum.getAbscissa(_spectrum.getNbins()-1) << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction " << _energyFraction << std::endl;
+      std::cout << "[" << __func__ << "] Sampled spectrum fraction (with cos(theta_z)) " << (_energyFraction)*((_czmax - _czmin)/2.) << std::endl;
 
     }
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
-    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&) override {
+    void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&, const bool isPrimary) override {
+      _isPrimary = isPrimary;
       _randomUnitSphere = std::make_unique<RandomUnitSphere>(eng, _czmin, _czmax);
       _randSpectrum = std::make_unique<CLHEP::RandGeneral>(eng, _spectrum.getPDF(), _spectrum.getNbins());
+      _randFlat = std::make_unique<CLHEP::RandFlat>(eng);
     }
 
   private:
@@ -85,23 +77,31 @@ namespace mu2e {
     const double _czmin;
     const double _czmax;
     BinnedSpectrum    _spectrum;
+    double _emin;
+    double _emax;
+    double _energyFraction;
+    bool _flatSpectrum;
 
     std::unique_ptr<RandomUnitSphere>   _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
+    std::unique_ptr<CLHEP::RandFlat>    _randFlat;
   };
 
 
   std::vector<ParticleGeneratorTool::Kinematic> DIOGenerator::generate() {
     std::vector<ParticleGeneratorTool::Kinematic>  res;
+    const double r = _energyFraction*(_czmax - _czmin)/2.; // reduce the rate by the spectrum restriction
+    if(_isPrimary || _randFlat->fire() <= r) {
 
-    double energy = _spectrum.sample(_randSpectrum->fire());
+      double energy = _spectrum.sample(_randSpectrum->fire());
 
-    const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
-    CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
-    CLHEP::HepLorentzVector fourmom(p3, energy);
+      const double p = energy * sqrt(1 - std::pow(_mass/energy,2));
+      CLHEP::Hep3Vector p3 = _randomUnitSphere->fire(p);
+      CLHEP::HepLorentzVector fourmom(p3, energy);
 
-    ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
-    res.emplace_back(k);
+      ParticleGeneratorTool::Kinematic k{_pdgId, ProcessCode::mu2eMuonDecayAtRest, fourmom};
+      res.emplace_back(k);
+    }
 
     return res;
   }
@@ -116,6 +116,14 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> DIOGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->add_var(SpectrumConfig::RestrictedVar("energy", _energyFraction    , _emin , _emax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz"  , (_czmax - _czmin)/2., _czmin, _czmax));
+    return config;
   }
 
 }

@@ -471,13 +471,13 @@ namespace mu2e {
     //Default is trigger-level TZClusterFinder
     art::Handle<IntensityInfoTimeCluster> tcInt;
     _event->getByLabel(_tcCollTag, tcInt);
-    if (tcInt.isValid()) { _eventData.nProtonsTZ_  = tcInt->nProtonTCs();}
+    if (tcInt.isValid()) { _eventData.nProtonsTZ_  = tcInt->nTCs();}
     else { std::cout << "Time cluster intensity info is not valid" << std::endl;}
 
     //Use DeltaFinder Module
     art::Handle<IntensityInfoTimeCluster> dfInt;
     _event->getByLabel(_dfCollTag, dfInt);
-    if (dfInt.isValid()) { _eventData.nProtonsDF_ = dfInt->nProtonTCs();}
+    if (dfInt.isValid()) { _eventData.nProtonsDF_ = dfInt->nTCs();}
     else { std::cout << "Delta-Finder intensity info is not valid" << std::endl;}
 
     //--------------Get the EventData from IntensityInfoTrackerHits--------------

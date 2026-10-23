@@ -6,6 +6,7 @@
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -21,13 +22,16 @@ namespace mu2e {
     CosmicTrack const& track() const { return _track; }
     TrkFitFlag const& status() const { return _status; }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
+    art::Ptr<CaloCluster> const& caloCluster() const { return _caloCluster; }
     ComboHitCollection const& hits() const { return _straw_chits; }
+    bool hasCaloCluster() const { return _caloCluster.isNonnull(); }
 
     TrkT0                     _t0;              // t0 for this track
     CosmicTrack              _track;             // Cosmic track created from these hits
     TrkFitFlag                     _status;      // status of processes used to create this seed
     // helixOK: ???, helixConverged: ???, circleInit: ???, Straight: ???, hitsOK: ???
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
+    art::Ptr<CaloCluster>    _caloCluster; // associated calo cluster
     ComboHitCollection       _straw_chits;    // get the straw level hits and store here (need to find panel hits first)
 
     // For future use only

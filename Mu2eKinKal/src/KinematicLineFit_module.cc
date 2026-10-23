@@ -17,6 +17,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/StrawResponse.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 // utiliites
@@ -47,12 +48,11 @@
 // Mu2eKinKal
 #include "Offline/Mu2eKinKal/inc/KKFit.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitSettings.hh"
-#include "Offline/Mu2eKinKal/inc/KKMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
-#include "Offline/Mu2eKinKal/inc/ExtrapolateTCRV.hh"
 #include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
 // root
 #include "TH1F.h"
@@ -80,6 +80,9 @@ namespace mu2e {
   using KKCALOHIT = KKCaloHit<KTRAJ>;
   using KKCALOHITPTR = std::shared_ptr<KKCALOHIT>;
   using KKCALOHITCOL = std::vector<KKCALOHITPTR>;
+  using PARAMHIT = KinKal::ParameterHit<KTRAJ>;
+  using PARAMHITPTR = std::shared_ptr<PARAMHIT>;
+  using PARAMHITCOL = std::vector<PARAMHITPTR>;
   using MEAS = KinKal::Hit<KTRAJ>;
   using MEASPTR = std::shared_ptr<MEAS>;
   using MEASCOL = std::vector<MEASPTR>;
@@ -104,7 +107,6 @@ namespace mu2e {
   using KKConfig = Mu2eKinKal::KinKalConfig;
   using KKFitConfig = Mu2eKinKal::KKFitConfig;
   using KKModuleConfig = Mu2eKinKal::KKModuleConfig;
-  using KKMaterialConfig = KKMaterial::Config;
 
   class KinematicLineFit : public art::EDProducer {
     using Name    = fhicl::Name;
@@ -113,7 +115,7 @@ namespace mu2e {
     struct KKLineModuleConfig : public KKModuleConfig {
       fhicl::Sequence<art::InputTag> seedCollections         {Name("CosmicTrackSeedCollections"),     Comment("Seed fit collections to be processed ") };
       fhicl::Atom<float> seedmom { Name("SeedMomentum"), Comment("Initial momentum value")};
-      fhicl::Sequence<float> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
+      fhicl::Sequence<double> paramconstraints { Name("ParameterConstraints"), Comment("Sigma of direct gaussian constraints on each parameter (0=no constraint)")};
       fhicl::Sequence<std::string> sampleSurfaces { Name("SampleSurfaces"), Comment("When creating the KalSeed, sample the fit at these surfaces") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
@@ -126,8 +128,7 @@ namespace mu2e {
       fhicl::Table<KKFitConfig> mu2eSettings { Name("KKFitSettings") };
       fhicl::Table<KKConfig> fitSettings { Name("FitSettings") };
       fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
-      fhicl::Table<KKMaterialConfig> matSettings { Name("MaterialSettings") };
-      fhicl::OptionalTable<Mu2eKinKal::KKExtrapConfig> Extrapolation { Name("Extrapolation") };
+      fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
       fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
     };
 
@@ -150,28 +151,25 @@ namespace mu2e {
     TrkFitFlag goodline_;
     bool saveall_;
     ProditionsHandle<StrawResponse> strawResponse_h_;
+    ProditionsHandle<TrackerStatus> trackerStatus_h_;
     ProditionsHandle<Tracker> alignedTracker_h_;
     int print_;
     float seedmom_;
+    std::vector<double> paramconstraints_;
     PDGCode::type fpart_;
     TrkFitDirection fdir_;
     KKFIT kkfit_; // fit helper
-    KKMaterial kkmat_; // material helper
     DMAT seedcov_; // seed covariance matrix
-    std::array<double,KinKal::NParams()> paramconstraints_;
+    bool constraining_;
     double mass_; // particle mass
     int charge_; // particle charge
     std::unique_ptr<KKBField> kkbf_;
     double intertol_; // surface intersection tolerance (mm)
     double sampletbuff_; // simple time buffer; replace this with extrapolation TODO
     bool sampleinrange_, sampleinbounds_; // require samples to be in range or on surface
-    SurfaceIdCollection ssids_; // surface IDs to sample
-    KinKalGeom::SurfacePairCollection sample_; // surfaces to sample the fit
-    bool extrapolate_, toCRV_;
-    double maxdt_ = 0.0, btol_ = 0.0, minv_ = 0.0;
-    int extrapdebug_ = 0;
-    double tcrvthick_ = 150.0; // CRV sector thickness: should come from geometry service TODO
-    std::unique_ptr<KKExtrap> extrap_; // calorimeter and other extrapolations
+    std::unique_ptr<KKExtrap> extrap_; // extrapolation helper
+    SurfaceIdCollection ssids_;
+    KinKalGeom::SurfacePairCollection surfacess_to_sample_; // surfaces to sample the fit
     Config config_; // initial fit configuration object
     Config exconfig_; // extension configuration object
   };
@@ -183,14 +181,13 @@ namespace mu2e {
     saveall_(settings().modSettings().saveAll()),
     print_(settings().modSettings().printLevel()),
     seedmom_(settings().modSettings().seedmom()),
+    paramconstraints_(settings().modSettings().paramconstraints()),
     fpart_(static_cast<PDGCode::type>(settings().modSettings().fitParticle())),
     kkfit_(settings().mu2eSettings()),
-    kkmat_(settings().matSettings()),
     intertol_(settings().modSettings().interTol()),
     sampletbuff_(settings().modSettings().sampleTBuff()),
     sampleinrange_(settings().modSettings().sampleInRange()),
     sampleinbounds_(settings().modSettings().sampleInBounds()),
-    extrapolate_(false), toCRV_(false),
     config_(Mu2eKinKal::makeConfig(settings().fitSettings())),
     exconfig_(Mu2eKinKal::makeConfig(settings().extSettings()))
     {
@@ -208,35 +205,23 @@ namespace mu2e {
       for(size_t ipar=0;ipar < seederrors.size(); ++ipar){
         seedcov_[ipar][ipar] = seederrors[ipar]*seederrors[ipar];
       }
-      auto const& tempconstraints = settings().modSettings().paramconstraints();
-      if (tempconstraints.size() == 0){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-          paramconstraints_[ipar] = 0.0;
-      }else if (tempconstraints.size() == KinKal::NParams()){
-        for (size_t ipar=0;ipar<KinKal::NParams();ipar++)
-          paramconstraints_[ipar] = tempconstraints[ipar];
-      }else{
+      constraining_ = false;
+      if (paramconstraints_.size() == KinKal::NParams()){
+        for (size_t ipar=0;ipar<KinKal::NParams();ipar++){
+          if (paramconstraints_[ipar] > 0)
+            constraining_ = true;
+        }
+      }else if (paramconstraints_.size() > 0){
         throw cet::exception("RECO")<<"mu2e::KinematicLineFit: Parameter constraint configuration error"<< endl;
       }
-      // store surface IDs to be resolved when geometry is available
       for(auto const& sidname : settings().modSettings().sampleSurfaces()) {
-        ssids_.push_back(SurfaceId(sidname,-1)); // match all elements
+        ssids_.push_back(SurfaceId(sidname,SurfaceId::allIndices_)); // match all elements
       }
-      // configure extrapolation
-      if(settings().Extrapolation()){
-        extrapolate_ = true;
-        // create KKExtrap for calorimeter and upstream extrapolations
-        extrap_ = std::make_unique<KKExtrap>(*settings().Extrapolation(),kkmat_);
-        // global configs
-        maxdt_ = settings().Extrapolation()->MaxDt();
-        btol_ =  settings().extSettings().btol(); // use the same BField cor. tolerance as in fit extension
-        extrapdebug_ =  settings().Extrapolation()->Debug();
-      }
-
-
+      // setup extrapolation
+      if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
+      // extrapolation runs under the extension config when there is one
+      if(extrap_) extrap_->checkConfig(exconfig_.schedule().size() > 0 ? exconfig_ : config_);
       if(print_ > 0) std::cout << config_;
-
-
     }
 
   KinematicLineFit::~KinematicLineFit(){}
@@ -252,15 +237,16 @@ namespace mu2e {
     kkbf_ = std::make_unique<KKBField>(*bfmgr,*det);
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
-    kkg.surfaces(ssids_,sample_);
+    kkg_h->surfaces(ssids_,surfacess_to_sample_);
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
     GeomHandle<mu2e::Calorimeter> calo_h;
     GeomHandle<mu2e::Tracker> nominalTracker_h;
+
     // find current proditions
     auto const& strawresponse = strawResponse_h_.getPtr(event.id());
+    auto const& trackerstatus = trackerStatus_h_.getPtr(event.id()).get();
     auto const& tracker = alignedTracker_h_.getPtr(event.id()).get();
     // find input hits
     auto ch_H = event.getValidHandle<ComboHitCollection>(chcol_T_);
@@ -298,7 +284,7 @@ namespace mu2e {
           KKSTRAWXINGCOL strawxings;
           strawhits.reserve(strawHitIdxs.size());
           strawxings.reserve(strawHitIdxs.size());
-          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, kkmat_.strawMaterial(), pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
+          kkfit_.makeStrawHits(*tracker, *strawresponse, *kkbf_, pseedtraj, *chcolptr, strawHitIdxs, strawhits, strawxings);
 
           //here
           KKCALOHITCOL calohits;
@@ -311,25 +297,33 @@ namespace mu2e {
           }
           // set the seed range given the hit TPOCA values
           seedtraj.range() = kkfit_.range(strawhits,calohits, strawxings);
+
+          // create parameter constraint, use seedtrajectory parameters
+          PARAMHITCOL paramhits;
+          if (constraining_){
+            kkfit_.makeSeedParamHit(seedtraj,paramconstraints_,paramhits);
+          }
+
           if(print_ > 0){
             //std::cout << "Seed line parameters " << hseed.track() << std::endl;
             seedtraj.print(std::cout,print_);
           }
           // create and fit the track
-          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramconstraints_);
+          auto kktrk = make_unique<KKTRK>(config_,*kkbf_,seedtraj,fpart_,kkfit_.strawHitClusterer(),strawhits,strawxings,calohits,paramhits);
           auto goodfit = goodFit(*kktrk);
           if(goodfit && exconfig_.schedule().size() > 0){
-            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, kkmat_.strawMaterial(), chcol, *calo_h, cc_H, *kktrk );
+            kkfit_.extendTrack(exconfig_,*kkbf_, *tracker,*strawresponse, chcol, *calo_h, cc_H, *kktrk );
           }
           goodfit = goodFit(*kktrk);
           // extrapolate as required
-          if(goodfit && extrapolate_) extrapolate(*kktrk);
+          if(goodfit && extrap_) extrap_->extrapolate(*kktrk);
           bool save = goodFit(*kktrk);
-          if(save || saveall_){
+          // a fit that failed before its trajectory was built has nothing to save
+          if((save || saveall_) && kktrk->hasTraj()){
             TrkFitFlag fitflag(hptr->status());
             fitflag.merge(TrkFitFlag::KKLine);
             sampleFit(*kktrk);
-            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h);
+            auto kkseed = kkfit_.createSeed(*kktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
             kkseedcol->push_back(kkseed);
             kkseedcol->back()._status.merge(TrkFitFlag::KKLine);
             // fill assns with the cosmic seed
@@ -368,8 +362,17 @@ namespace mu2e {
     return seedtraj;
   }
   bool KinematicLineFit::goodFit(KKTRK const& ktrk) const {
-    // require physical consistency: fit can succeed but the result can have changed charge or helicity
-    return ktrk.fitStatus().usable();
+    bool retval = ktrk.fitStatus().usable();
+    // a usable fit can still have diverged from its hits: test the fit where the active straw hits are
+    if(retval){
+      for(auto const& shptr : ktrk.strawHits()) {
+        if(shptr->active() && !Mu2eKinKal::inDetector(ktrk.fitTraj().position3(shptr->time()))){
+          retval = false;
+          break;
+        }
+      }
+    }
+    return retval;
   }
 
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
@@ -379,7 +382,7 @@ namespace mu2e {
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
-    for(auto const& surf : sample_){
+    for(auto const& surf : surfacess_to_sample_){
       // search for intersections with each surface from the begining
       double tstart = tbeg;
       bool goodinter(true);
@@ -402,41 +405,6 @@ namespace mu2e {
         }
       }
     }
-  }
-
-  void KinematicLineFit::extrapolate(KKTRK& ktrk) const {
-    GeomHandle<mu2e::KinKalGeom> kkg_h;
-    auto const& kkg = *kkg_h;
-    // extrapolate to the extracted CRV. This function should be migrated to KKExtrap TODO
-    auto TCRV = ExtrapolateTCRV(maxdt_,btol_,intertol_,minv_,kkg.TCRV(),extrapdebug_);
-
-    auto const& ftraj = ktrk.fitTraj();
-    static const SurfaceId TCRVSID("TCRV");
-    auto dir0 = ftraj.direction(ftraj.t0());
-    TimeDir tdir = (dir0.Y() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
-    bool hadintersection = false;
-    do {
-      // iterate until the extrapolation condition is met
-      double time = starttime;
-      double tstart = time;
-      while(fabs(time-tstart) < TCRV.maxDt() && TCRV.needsExtrapolation(ftraj,tdir) ){
-        TimeRange range = tdir == TimeDir::forwards ? TimeRange(time,time+TCRV.step()) : TimeRange(time-TCRV.step(),time);
-        ktrk.extendTraj(range);
-        time = tdir == TimeDir::forwards ? range.end() : range.begin();
-      }
-      hadintersection = false;
-      if (TCRV.intersection().good()){
-        hadintersection = true;
-        // we have a good intersection. Use this to create a Shell material Xing
-        auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
-        // TODO add DS and shielding material
-        KKCRVXINGPTR crvxingptr = std::make_shared<KKCRVXING>(TCRV.module(), TCRVSID, *kkmat_.STMaterial(),TCRV.intersection(),reftrajptr,tcrvthick_,TCRV.interTolerance());
-        ktrk.addTCRVXing(crvxingptr,tdir);
-      }
-    } while(hadintersection);
-    // apply additional extrapolations (calorimeter, tracker ends, IPA, ST, etc) via KKExtrap if configured
-    if(extrap_) extrap_->extrapolate(ktrk);
   }
 }
 DEFINE_ART_MODULE(mu2e::KinematicLineFit)

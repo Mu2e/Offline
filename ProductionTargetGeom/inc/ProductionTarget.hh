@@ -78,18 +78,18 @@ namespace mu2e {
     bool addFilletToPlateCore = false;
     bool addFilletToPlateLug = false;
     double plateFilletRadius = 0.0;
-    
+
     // Support ring fillet parameters
     bool addFilletToSupportRingLug = false;
     double supportRingLugFilletRadius = 0.0;
-    
+
     // Support ring cutout parameters
     bool addCutoutToSupportRing = false;
     int nSupportRingCutouts = 0;
     std::vector<double> supportRingCutoutAngles;
     double supportRingCutoutInnerRadius = 0.0;
     double supportRingCutoutTilt = 0.0;
-    
+
     // Support wheel parameters
     bool supportsBuild = false;
     double supportWheelRIn = 0.0;
@@ -115,400 +115,400 @@ namespace mu2e {
   };
 
   class ProductionTarget : virtual public Detector {
-  public:
+    public:
 
-    // cylinder parameters
-    std::string tier1TargetType() const {return _tier1TargetType;}
-    int    version() const { return _version; }
-    double rOut() const { return _rOut; }
-    double halfLength() const { return _halfLength; }
-    double envHalfLength() const { return _envelHalfLength; }
+      // cylinder parameters
+      std::string tier1TargetType() const {return _tier1TargetType;}
+      int    version() const { return _version; }
+      double rOut() const { return _rOut; }
+      double halfLength() const { return _halfLength; }
+      double envHalfLength() const { return _envelHalfLength; }
 
-    // Parameters for version 2 for stiffening parts
-    double nFins       () const   { return _nFins;    }
-    double finHeight   () const   { return _finHeight;    }
-    double finThickness() const   { return _finThickness; }
-    double hubDistUS() const      { return _hubDistUS;    }
-    double hubDistDS() const      { return _hubDistDS;    }
-    double hubAngleUS() const     { return _hubAngleUS;   }
-    double hubAngleDS() const     { return _hubAngleDS;   }
-    double hubOverhangUS() const  { return _hubOverhangUS;}
-    double hubOverhangDS() const  { return _hubOverhangDS;}
-    double hubLenUS() const       { return _hubLenUS;     }
-    double hubLenDS() const       { return _hubLenDS;     }
-    void   setHubLenUS(double& aLen ) { _hubLenUS = aLen; }
-    void   setHubLenDS(double& aLen ) { _hubLenDS = aLen; }
-
-
-    // in mu2e coordinates
-    const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
-
-    // this is used to transorm particle momentum and position from
-    // the PrimaryProtonGun frame to the Mu2e frame
-    const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
-
-    const CLHEP::Hep3Vector& haymanPosition() const { return _haymanProdTargetPosition; }
+      // Parameters for version 2 for stiffening parts
+      double nFins       () const   { return _nFins;    }
+      double finHeight   () const   { return _finHeight;    }
+      double finThickness() const   { return _finThickness; }
+      double hubDistUS() const      { return _hubDistUS;    }
+      double hubDistDS() const      { return _hubDistDS;    }
+      double hubAngleUS() const     { return _hubAngleUS;   }
+      double hubAngleDS() const     { return _hubAngleDS;   }
+      double hubOverhangUS() const  { return _hubOverhangUS;}
+      double hubOverhangDS() const  { return _hubOverhangDS;}
+      double hubLenUS() const       { return _hubLenUS;     }
+      double hubLenDS() const       { return _hubLenDS;     }
+      void   setHubLenUS(double& aLen ) { _hubLenUS = aLen; }
+      void   setHubLenDS(double& aLen ) { _hubLenDS = aLen; }
 
 
+      // in mu2e coordinates
+      const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
 
-    // "passive" rotation, used for placing the production target.
-    // This is the inverse of protonBeamRotation.
-    const CLHEP::HepRotation& productionTargetRotation() const { return _protonBeamInverseRotation; }
+      // this is used to transorm particle momentum and position from
+      // the PrimaryProtonGun frame to the Mu2e frame
+      const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
 
-    const Polycone * getHubsRgtPtr() const {return _pHubsRgtParams/*.get()*/;}
-    const Polycone * getHubsLftPtr() const {return _pHubsLftParams/*.get()*/;}
-    const std::map<double, CLHEP::Hep3Vector> & anchoringPntsRgt() const { return _anchoringPntsRgt; }
-    const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
+      const CLHEP::Hep3Vector& haymanPosition() const { return _haymanProdTargetPosition; }
 
-    ~ProductionTarget() override {
 
-      if (!_tier1TargetType.empty()){
-        delete _pHubsRgtParams;
-        delete _pHubsLftParams;
+
+      // "passive" rotation, used for placing the production target.
+      // This is the inverse of protonBeamRotation.
+      const CLHEP::HepRotation& productionTargetRotation() const { return _protonBeamInverseRotation; }
+
+      const Polycone * getHubsRgtPtr() const {return _pHubsRgtParams/*.get()*/;}
+      const Polycone * getHubsLftPtr() const {return _pHubsLftParams/*.get()*/;}
+      const std::map<double, CLHEP::Hep3Vector> & anchoringPntsRgt() const { return _anchoringPntsRgt; }
+      const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
+
+      ~ProductionTarget() override {
+
+        if (!_tier1TargetType.empty()){
+          delete _pHubsRgtParams;
+          delete _pHubsLftParams;
+        }
       }
-    }
-    ProductionTarget( ProductionTarget const&  ) = default;
-    ProductionTarget( ProductionTarget&&       ) = default;
-    ProductionTarget& operator=(ProductionTarget const&  ) = default;
-    ProductionTarget& operator=(ProductionTarget &&      ) = default;
+      ProductionTarget( ProductionTarget const&  ) = default;
+      ProductionTarget( ProductionTarget&&       ) = default;
+      ProductionTarget& operator=(ProductionTarget const&  ) = default;
+      ProductionTarget& operator=(ProductionTarget &&      ) = default;
 
 
-    //
-    // accessors for hayman v2
-    std::string haymanTargetType()           const  {return _haymanTargetType;}
-    double halfHaymanLength()                const  {return _halfHaymanLength;}
-    std::string targetCoreMaterial()         const  {return _targetCoreMaterial;}
-    std::string targetFinMaterial()          const  {return _targetFinMaterial;}
-    std::string targetVacuumMaterial()       const  {return _targetVacuumMaterial;}
-    std::string supportRingMaterial()        const  {return _supportRingMaterial;}
-    std::string spokeMaterial()              const  {return _spokeMaterial;}
+      //
+      // accessors for hayman v2
+      std::string haymanTargetType()           const  {return _haymanTargetType;}
+      double halfHaymanLength()                const  {return _halfHaymanLength;}
+      std::string targetCoreMaterial()         const  {return _targetCoreMaterial;}
+      std::string targetFinMaterial()          const  {return _targetFinMaterial;}
+      std::string targetVacuumMaterial()       const  {return _targetVacuumMaterial;}
+      std::string supportRingMaterial()        const  {return _supportRingMaterial;}
+      std::string spokeMaterial()              const  {return _spokeMaterial;}
 
-    double rotHaymanX()                      const  {return _rotHaymanX;}
-    double rotHaymanY()                      const  {return _rotHaymanY;}
-    double rotHaymanZ()                      const  {return _rotHaymanZ;}
-    CLHEP::Hep3Vector haymanProdTargetPosition()           const {return _haymanProdTargetPosition; }
-    int numberOfTargetSections()                           const {return _numberOfTargetSections;}
-    std::vector<double> startingSectionThickness()         const {return _startingSectionThickness;}
-    std::vector<int> numberOfSegmentsPerSection()          const {return _numberOfSegmentsPerSection;}
-    std::vector<double> thicknessOfSegmentPerSection()     const {return _thicknessOfSegmentPerSection;}
-    std::vector<double> heightOfRectangularGapPerSection() const {return _heightOfRectangularGapPerSection;}
-    std::vector<double> thicknessOfGapPerSection()         const {return _thicknessOfGapPerSection;}
-    int nHaymanFins()                       const {return _nHaymanFins;}
-    std::vector<double> finAngles()         const {return _finAngles;}
-    double haymanFinThickness()                   const {return _haymanFinThickness;}
-    double finOuterRadius()                 const {return _finOuterRadius;}
-    double supportRingLength()              const {return _supportRingLength;}
-    double supportRingInnerRadius()         const {return _supportRingInnerRadius;}
-    double supportRingOuterRadius()         const {return _supportRingOuterRadius;}
-    double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
-    double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
+      double rotHaymanX()                      const  {return _rotHaymanX;}
+      double rotHaymanY()                      const  {return _rotHaymanY;}
+      double rotHaymanZ()                      const  {return _rotHaymanZ;}
+      CLHEP::Hep3Vector haymanProdTargetPosition()           const {return _haymanProdTargetPosition; }
+      int numberOfTargetSections()                           const {return _numberOfTargetSections;}
+      std::vector<double> startingSectionThickness()         const {return _startingSectionThickness;}
+      std::vector<int> numberOfSegmentsPerSection()          const {return _numberOfSegmentsPerSection;}
+      std::vector<double> thicknessOfSegmentPerSection()     const {return _thicknessOfSegmentPerSection;}
+      std::vector<double> heightOfRectangularGapPerSection() const {return _heightOfRectangularGapPerSection;}
+      std::vector<double> thicknessOfGapPerSection()         const {return _thicknessOfGapPerSection;}
+      int nHaymanFins()                       const {return _nHaymanFins;}
+      std::vector<double> finAngles()         const {return _finAngles;}
+      double haymanFinThickness()                   const {return _haymanFinThickness;}
+      double finOuterRadius()                 const {return _finOuterRadius;}
+      double supportRingLength()              const {return _supportRingLength;}
+      double supportRingInnerRadius()         const {return _supportRingInnerRadius;}
+      double supportRingOuterRadius()         const {return _supportRingOuterRadius;}
+      double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
+      double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
 
-    //define the supports for the Hayman_v2
-    bool                       supportsBuild       () const {return _supportsBuild       ;}
-    double                     supportWheelRIn     () const {return _supportWheelRIn     ;}
-    double                     supportWheelROut    () const {return _supportWheelROut    ;}
-    double                     supportWheelHL      () const {return _supportWheelHL      ;}
-    std::string                supportWheelMaterial() const {return _supportWheelMaterial;}
-    int                        nSpokesPerSide      () const {return _nSpokesPerSide      ;}
-    //features on the bicycle wheel
-    const std::vector<double>& supportWheelFeatureAngles() const {return _supportWheelFeatureAngles;}
-    const std::vector<double>& supportWheelFeatureArcs  () const {return _supportWheelFeatureArcs  ;}
-    const std::vector<double>& supportWheelFeatureRIns  () const {return _supportWheelFeatureRIns  ;}
-    //rods in the support wheel
-    const std::vector<double>& supportWheelRodHL          () const {return _supportWheelRodHL          ;}
-    const std::vector<double>& supportWheelRodOffset      () const {return _supportWheelRodOffset      ;}
-    const std::vector<double>& supportWheelRodPinOffset   () const {return _supportWheelRodPinOffset   ;} //only used for Stickman_v_1_0
-    const std::vector<double>& supportWheelRodRadius      () const {return _supportWheelRodRadius      ;}
-    const std::vector<double>& supportWheelRodRadialOffset() const {return _supportWheelRodRadialOffset;}
-    const std::vector<double>& supportWheelRodWireOffsetD () const {return _supportWheelRodWireOffsetD ;}
-    const std::vector<double>& supportWheelRodWireOffsetU () const {return _supportWheelRodWireOffsetU ;}
-    const std::vector<double>& supportWheelRodAngles      () const {return _supportWheelRodAngles      ;}
+      //define the supports for the Hayman_v2
+      bool                       supportsBuild       () const {return _supportsBuild       ;}
+      double                     supportWheelRIn     () const {return _supportWheelRIn     ;}
+      double                     supportWheelROut    () const {return _supportWheelROut    ;}
+      double                     supportWheelHL      () const {return _supportWheelHL      ;}
+      std::string                supportWheelMaterial() const {return _supportWheelMaterial;}
+      int                        nSpokesPerSide      () const {return _nSpokesPerSide      ;}
+      //features on the bicycle wheel
+      const std::vector<double>& supportWheelFeatureAngles() const {return _supportWheelFeatureAngles;}
+      const std::vector<double>& supportWheelFeatureArcs  () const {return _supportWheelFeatureArcs  ;}
+      const std::vector<double>& supportWheelFeatureRIns  () const {return _supportWheelFeatureRIns  ;}
+      //rods in the support wheel
+      const std::vector<double>& supportWheelRodHL          () const {return _supportWheelRodHL          ;}
+      const std::vector<double>& supportWheelRodOffset      () const {return _supportWheelRodOffset      ;}
+      const std::vector<double>& supportWheelRodPinOffset   () const {return _supportWheelRodPinOffset   ;} //only used for Stickman_v_1_0
+      const std::vector<double>& supportWheelRodRadius      () const {return _supportWheelRodRadius      ;}
+      const std::vector<double>& supportWheelRodRadialOffset() const {return _supportWheelRodRadialOffset;}
+      const std::vector<double>& supportWheelRodWireOffsetD () const {return _supportWheelRodWireOffsetD ;}
+      const std::vector<double>& supportWheelRodWireOffsetU () const {return _supportWheelRodWireOffsetU ;}
+      const std::vector<double>& supportWheelRodAngles      () const {return _supportWheelRodAngles      ;}
 
-    //spoke parameters
-    const std::vector<double>& spokeTargetAnglesD() const {return _spokeTargetAnglesD;}
-    const std::vector<double>& spokeTargetAnglesU() const {return _spokeTargetAnglesU;}
-    double                     spokeRadius       () const {return _spokeRadius       ;}
+      //spoke parameters
+      const std::vector<double>& spokeTargetAnglesD() const {return _spokeTargetAnglesD;}
+      const std::vector<double>& spokeTargetAnglesU() const {return _spokeTargetAnglesU;}
+      double                     spokeRadius       () const {return _spokeRadius       ;}
 
-    double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
-    double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
+      double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
+      double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
 
-    //accessors for Stickman_v_1_0
-    std::string stickmanTargetType()              const {return _stickmanTargetType;}
-    double      halfStickmanLength()              const {return _halfStickmanLength;}
-    int         numberOfPlates()                  const {return _numberOfPlates;}
-    std::string plateMaterial(int i)              const {return _plateMaterial.at(i);}
-    const std::vector<std::string>& plateMaterial() const {return _plateMaterial;}
-    double      plateROut(int i)                  const {return _plateROut.at(i);}
-    const std::vector<double>& plateROut()        const {return _plateROut;}
-    int         nStickmanFins()                   const {return _nStickmanFins;}
-    double      plateFinAngle(int i)              const {return _plateFinAngles.at(i);}
-    const std::vector<double>&      plateFinAngles()       const {return _plateFinAngles;}
-    double      plateFinOuterRadius()             const {return _plateFinOuterRadius;}
-    double      plateFinWidth()                   const {return _plateFinWidth;}
-    double      plateCenterToLugCenter()          const {return _plateCenterToLugCenter;}
-    double      plateLugInnerRadius()             const {return _plateLugInnerRadius;}
-    double      plateLugOuterRadius()             const {return _plateLugOuterRadius;}
-    double      plateThickness(int i)             const {return _plateThickness.at(i);}
-    const std::vector<double>&      plateThickness()       const {return _plateThickness;}
-    double      plateLugThickness(int i)          const {return _plateLugThickness.at(i);}
-    const std::vector<double>&      plateLugThickness()    const {return _plateLugThickness;}
-    bool        addFilletToPlateCore()            const {return _addFilletToPlateCore;}
-    bool        addFilletToPlateLug()             const {return _addFilletToPlateLug;}
-    double      plateFilletRadius()               const {return _plateFilletRadius;}
-    std::string rodMaterial()                 const {return _rodMaterial;}
-    double      rodRadius()                       const {return _rodRadius;}
-    double      rodHalfLength()                   const {return _rodHalfLength;}
-    std::string spacerMaterial()              const {return _spacerMaterial;}
-    double      spacerHalfLength()                const {return _spacerHalfLength;}
-    double      spacerOuterRadius()               const {return _spacerOuterRadius;}
-    double      spacerInnerRadius()               const {return _spacerInnerRadius;}
-    std::string stickmanSupportRingMaterial()     const {return _stickmanSupportRingMaterial;}
-    double      stickmanSupportRingLength()       const {return _stickmanSupportRingLength;}
-    double      stickmanSupportRingInnerRadius()  const {return _stickmanSupportRingInnerRadius;}
-    double      stickmanSupportRingOuterRadius()  const {return _stickmanSupportRingOuterRadius;}
-    double      supportRingLugOuterRadius()       const {return _supportRingLugOuterRadius;}
-    bool        addFilletToSupportRingLug()       const {return _addFilletToSupportRingLug;}
-    double      supportRingLugFilletRadius()      const {return _supportRingLugFilletRadius;}
-    bool        addCutoutToSupportRing()          const {return _addCutoutToSupportRing;}
-    int         nSupportRingCutouts()             const {return _nSupportRingCutouts;}
-    double      supportRingCutoutAngle(int i)     const {return _supportRingCutoutAngles.at(i);}
-    const std::vector<double>&      supportRingCutoutAngles()    const {return _supportRingCutoutAngles;}
-    double      supportRingCutoutInnerRadius()    const {return _supportRingCutoutInnerRadius;}
-    double      supportRingCutoutTilt()           const {return _supportRingCutoutTilt;}
-    double      supportRingCutoutOffset()         const {return _supportRingCutoutOffset;}
-    double      rotStickmanX()                    const {return _rotStickmanX;}
-    double      rotStickmanY()                    const {return _rotStickmanY;}
-    double      rotStickmanZ()                    const {return _rotStickmanZ;}
-    CLHEP::Hep3Vector stickmanProdTargetPosition() const {return _stickmanProdTargetPosition;}
+      //accessors for Stickman_v_1_0
+      std::string stickmanTargetType()              const {return _stickmanTargetType;}
+      double      halfStickmanLength()              const {return _halfStickmanLength;}
+      int         numberOfPlates()                  const {return _numberOfPlates;}
+      std::string plateMaterial(int i)              const {return _plateMaterial.at(i);}
+      const std::vector<std::string>& plateMaterial() const {return _plateMaterial;}
+      double      plateROut(int i)                  const {return _plateROut.at(i);}
+      const std::vector<double>& plateROut()        const {return _plateROut;}
+      int         nStickmanFins()                   const {return _nStickmanFins;}
+      double      plateFinAngle(int i)              const {return _plateFinAngles.at(i);}
+      const std::vector<double>&      plateFinAngles()       const {return _plateFinAngles;}
+      double      plateFinOuterRadius()             const {return _plateFinOuterRadius;}
+      double      plateFinWidth()                   const {return _plateFinWidth;}
+      double      plateCenterToLugCenter()          const {return _plateCenterToLugCenter;}
+      double      plateLugInnerRadius()             const {return _plateLugInnerRadius;}
+      double      plateLugOuterRadius()             const {return _plateLugOuterRadius;}
+      double      plateThickness(int i)             const {return _plateThickness.at(i);}
+      const std::vector<double>&      plateThickness()       const {return _plateThickness;}
+      double      plateLugThickness(int i)          const {return _plateLugThickness.at(i);}
+      const std::vector<double>&      plateLugThickness()    const {return _plateLugThickness;}
+      bool        addFilletToPlateCore()            const {return _addFilletToPlateCore;}
+      bool        addFilletToPlateLug()             const {return _addFilletToPlateLug;}
+      double      plateFilletRadius()               const {return _plateFilletRadius;}
+      std::string rodMaterial()                 const {return _rodMaterial;}
+      double      rodRadius()                       const {return _rodRadius;}
+      double      rodHalfLength()                   const {return _rodHalfLength;}
+      std::string spacerMaterial()              const {return _spacerMaterial;}
+      double      spacerHalfLength()                const {return _spacerHalfLength;}
+      double      spacerOuterRadius()               const {return _spacerOuterRadius;}
+      double      spacerInnerRadius()               const {return _spacerInnerRadius;}
+      std::string stickmanSupportRingMaterial()     const {return _stickmanSupportRingMaterial;}
+      double      stickmanSupportRingLength()       const {return _stickmanSupportRingLength;}
+      double      stickmanSupportRingInnerRadius()  const {return _stickmanSupportRingInnerRadius;}
+      double      stickmanSupportRingOuterRadius()  const {return _stickmanSupportRingOuterRadius;}
+      double      supportRingLugOuterRadius()       const {return _supportRingLugOuterRadius;}
+      bool        addFilletToSupportRingLug()       const {return _addFilletToSupportRingLug;}
+      double      supportRingLugFilletRadius()      const {return _supportRingLugFilletRadius;}
+      bool        addCutoutToSupportRing()          const {return _addCutoutToSupportRing;}
+      int         nSupportRingCutouts()             const {return _nSupportRingCutouts;}
+      double      supportRingCutoutAngle(int i)     const {return _supportRingCutoutAngles.at(i);}
+      const std::vector<double>&      supportRingCutoutAngles()    const {return _supportRingCutoutAngles;}
+      double      supportRingCutoutInnerRadius()    const {return _supportRingCutoutInnerRadius;}
+      double      supportRingCutoutTilt()           const {return _supportRingCutoutTilt;}
+      double      supportRingCutoutOffset()         const {return _supportRingCutoutOffset;}
+      double      rotStickmanX()                    const {return _rotStickmanX;}
+      double      rotStickmanY()                    const {return _rotStickmanY;}
+      double      rotStickmanZ()                    const {return _rotStickmanZ;}
+      CLHEP::Hep3Vector stickmanProdTargetPosition() const {return _stickmanProdTargetPosition;}
 
-    std::string hayman_v_2_0 = "Hayman_v_2_0";
-    std::string tier1 = "MDC2018";
-    std::string stickman_v_1_0 = "Stickman_v_1_0";
+      std::string hayman_v_2_0 = "Hayman_v_2_0";
+      std::string tier1 = "MDC2018";
+      std::string stickman_v_1_0 = "Stickman_v_1_0";
 
-    CLHEP::Hep3Vector targetPositionByVersion() const {
-      if (_haymanTargetType == hayman_v_2_0){
-        return _haymanProdTargetPosition;}
-      else if  (_tier1TargetType == tier1){
-        return _prodTargetPosition;}
-      else if (_stickmanTargetType == stickman_v_1_0){
-        return _stickmanProdTargetPosition;}
-      else throw cet::exception("BADCONFIG")
-             << "in ProductionTarget.hh, no valid target specified"<< std::endl;
-    }
-    double targetHalfLengthByVersion() const {
-     if (_haymanTargetType == hayman_v_2_0){
-        return _halfHaymanLength;}
-     else if  (_tier1TargetType == tier1){
-       return _halfLength;}
-     else if (_stickmanTargetType == stickman_v_1_0){
-       return _halfStickmanLength;}
-     else throw cet::exception("BADCONFIG")
-            << "in ProductionTarget.hh, no valid target specified"<< std::endl;
-    }
+      CLHEP::Hep3Vector targetPositionByVersion() const {
+        if (_haymanTargetType == hayman_v_2_0){
+          return _haymanProdTargetPosition;}
+        else if  (_tier1TargetType == tier1){
+          return _prodTargetPosition;}
+        else if (_stickmanTargetType == stickman_v_1_0){
+          return _stickmanProdTargetPosition;}
+        else throw cet::exception("BADCONFIG")
+          << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+      }
+      double targetHalfLengthByVersion() const {
+        if (_haymanTargetType == hayman_v_2_0){
+          return _halfHaymanLength;}
+        else if  (_tier1TargetType == tier1){
+          return _halfLength;}
+        else if (_stickmanTargetType == stickman_v_1_0){
+          return _halfStickmanLength;}
+        else throw cet::exception("BADCONFIG")
+          << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+      }
 
-    // Configuration method for additional Stickman parameters
-    void configureStickman(const StickmanConfigParams& configParams);
+      // Configuration method for additional Stickman parameters
+      void configureStickman(const StickmanConfigParams& configParams);
 
-    //----------------------------------------------------------------
+      //----------------------------------------------------------------
 
-  private:
-    friend class ProductionTargetMaker;
+    private:
+      friend class ProductionTargetMaker;
 
-    // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
-    ProductionTarget(std::string tier1TargetType, int version, double rOut, double halfLength, double rotX,
-                     double rotY, const CLHEP::Hep3Vector& position,
-                     int    nFins,
-                     double finHeight, double finThickness,
-                     double hubDistUS, double hubDistDS,
-                     double hubAngleUS, double hubAngleDS,
-                     double hubOverhangUS, double hubOverhangDS );
+      // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
+      ProductionTarget(std::string tier1TargetType, int version, double rOut, double halfLength, double rotX,
+          double rotY, const CLHEP::Hep3Vector& position,
+          int    nFins,
+          double finHeight, double finThickness,
+          double hubDistUS, double hubDistDS,
+          double hubAngleUS, double hubAngleDS,
+          double hubOverhangUS, double hubOverhangDS );
 
-    ProductionTarget(
-                     std::string haymanTargetType, int version
-                     ,double productionTargetMotherOuterRadius
-                     ,double productionTargetMotherHalfLength
-                     ,double rOut
-                     ,double halfHaymanLength
-                     ,double rotHaymanX
-                     ,double rotHaymanY
-                     ,double rotHaymanZ
-                     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
-                     ,std::string targetCoreMaterial
-                     ,std::string targetFinMaterial
-                     ,std::string targetVacuumMaterial
-                     ,std::string supportRingMaterial
-                     ,std::string spokeMaterial
-                     ,int numberOfTargetSections
-                     ,std::vector<double> startingSectionThickness
-                     ,std::vector<int> numberOfSegmentsPerSection
-                     ,std::vector<double> thicknessOfSegmentPerSection
-                     ,std::vector<double> heightOfRectangularGapPerSection
-                     ,std::vector<double> thicknessOfGapPerSection
-                     ,int nHaymanFins
-                     ,std::vector<double> finAngles
-                     ,double haymanFinThickness
-                     ,double finOuterRadius
-                     ,double supportRingLength
-                     ,double supportRingInnerRadius
-                     ,double supportRingOuterRadius
-                     ,double supportRingCutoutThickness
-                     ,double supportRingCutoutLength
-                     );
+      ProductionTarget(
+          std::string haymanTargetType, int version
+          ,double productionTargetMotherOuterRadius
+          ,double productionTargetMotherHalfLength
+          ,double rOut
+          ,double halfHaymanLength
+          ,double rotHaymanX
+          ,double rotHaymanY
+          ,double rotHaymanZ
+          ,const CLHEP::Hep3Vector& haymanProdTargetPosition
+          ,std::string targetCoreMaterial
+          ,std::string targetFinMaterial
+          ,std::string targetVacuumMaterial
+          ,std::string supportRingMaterial
+          ,std::string spokeMaterial
+          ,int numberOfTargetSections
+          ,std::vector<double> startingSectionThickness
+          ,std::vector<int> numberOfSegmentsPerSection
+          ,std::vector<double> thicknessOfSegmentPerSection
+          ,std::vector<double> heightOfRectangularGapPerSection
+          ,std::vector<double> thicknessOfGapPerSection
+          ,int nHaymanFins
+          ,std::vector<double> finAngles
+          ,double haymanFinThickness
+          ,double finOuterRadius
+          ,double supportRingLength
+          ,double supportRingInnerRadius
+          ,double supportRingOuterRadius
+          ,double supportRingCutoutThickness
+          ,double supportRingCutoutLength
+          );
 
-    ProductionTarget(
-                     std::string stickmanTargetType
-                     ,int version
-                     ,const StickmanEnvelopeParams& envelopeParams
-                     ,const StickmanPlateParams& plateParams
-                     ,const StickmanRodParams& rodParams
-                     ,const StickmanSpacerParams& spacerParams
-                     ,const StickmanSupportRingParams& supportRingParams
-                     );
+      ProductionTarget(
+          std::string stickmanTargetType
+          ,int version
+          ,const StickmanEnvelopeParams& envelopeParams
+          ,const StickmanPlateParams& plateParams
+          ,const StickmanRodParams& rodParams
+          ,const StickmanSpacerParams& spacerParams
+          ,const StickmanSupportRingParams& supportRingParams
+          );
 
-    CLHEP::HepRotation _protonBeamRotation;
+      CLHEP::HepRotation _protonBeamRotation;
 
-    // can't return by const ref if invert on the fly so need to store redundant data
-    CLHEP::HepRotation _protonBeamInverseRotation;// FIXME: should be transient
+      // can't return by const ref if invert on the fly so need to store redundant data
+      CLHEP::HepRotation _protonBeamInverseRotation;// FIXME: should be transient
 
-//    std::unique_ptr<Polycone> _pHubsRgtParams;
-//    std::unique_ptr<Polycone> _pHubsLftParams;
-    // Fixme: replace with unique_ptr.
-    Polycone * _pHubsRgtParams;
-    Polycone * _pHubsLftParams;
-    std::map<double,CLHEP::Hep3Vector> _anchoringPntsRgt;
-    std::map<double,CLHEP::Hep3Vector> _anchoringPntsLft;
+      //    std::unique_ptr<Polycone> _pHubsRgtParams;
+      //    std::unique_ptr<Polycone> _pHubsLftParams;
+      // Fixme: replace with unique_ptr.
+      Polycone * _pHubsRgtParams;
+      Polycone * _pHubsLftParams;
+      std::map<double,CLHEP::Hep3Vector> _anchoringPntsRgt;
+      std::map<double,CLHEP::Hep3Vector> _anchoringPntsLft;
 
-    CLHEP::Hep3Vector _prodTargetPosition;
+      CLHEP::Hep3Vector _prodTargetPosition;
 
-    std::string _tier1TargetType;
-    std::string _haymanTargetType;
+      std::string _tier1TargetType;
+      std::string _haymanTargetType;
 
-    int    _version;
-    double _productionTargetMotherOuterRadius;
-    double _productionTargetMotherHalfLength;
-    double _rOut;
-    double _halfLength;
-    double _envelHalfLength;
+      int    _version;
+      double _productionTargetMotherOuterRadius;
+      double _productionTargetMotherHalfLength;
+      double _rOut;
+      double _halfLength;
+      double _envelHalfLength;
 
-    // version 1+ parameters
-    int    _nFins;
-    double _finHeight;
-    double _finThickness;
-    double _hubDistUS;
-    double _hubDistDS;
-    double _hubAngleUS;
-    double _hubAngleDS;
-    double _hubOverhangUS;
-    double _hubOverhangDS;
-    double _hubLenUS;
-    double _hubLenDS;
-
-
-    // hayman parameters
+      // version 1+ parameters
+      int    _nFins;
+      double _finHeight;
+      double _finThickness;
+      double _hubDistUS;
+      double _hubDistDS;
+      double _hubAngleUS;
+      double _hubAngleDS;
+      double _hubOverhangUS;
+      double _hubOverhangDS;
+      double _hubLenUS;
+      double _hubLenDS;
 
 
-    double _halfHaymanLength;
-    double _rotHaymanX;
-    double _rotHaymanY;
-    double _rotHaymanZ;
-    CLHEP::Hep3Vector _haymanProdTargetPosition;
+      // hayman parameters
 
-    std::string _targetCoreMaterial;
-    std::string _targetFinMaterial;
-    std::string _targetVacuumMaterial;
-    std::string _supportRingMaterial;
-    std::string _spokeMaterial;
-    int _numberOfTargetSections;
-    std::vector<double> _startingSectionThickness;
-    std::vector<int> _numberOfSegmentsPerSection;
-    std::vector<double> _thicknessOfSegmentPerSection;
-    std::vector<double> _heightOfRectangularGapPerSection;
-    std::vector<double> _thicknessOfGapPerSection;
-    int _nHaymanFins;
-    std::vector<double> _finAngles;
-    double _haymanFinThickness;
-    double _finOuterRadius;
-    double _supportRingLength;
-    double _supportRingInnerRadius;
-    double _supportRingOuterRadius;
-    double _supportRingCutoutThickness;
-    double _supportRingCutoutLength;
 
-    //parameters for the support wheel
-    bool                _supportsBuild       ; //whether or not to build the supports
-    double              _supportWheelRIn     ;
-    double              _supportWheelROut    ;
-    double              _supportWheelHL      ; //half thickness in z
-    std::string         _supportWheelMaterial;
+      double _halfHaymanLength;
+      double _rotHaymanX;
+      double _rotHaymanY;
+      double _rotHaymanZ;
+      CLHEP::Hep3Vector _haymanProdTargetPosition;
 
-    //parameters for the non-wheel features near the support rods that are on the wheel
-    std::vector<double> _supportWheelFeatureAngles;
-    std::vector<double> _supportWheelFeatureArcs  ;
-    std::vector<double> _supportWheelFeatureRIns  ;
+      std::string _targetCoreMaterial;
+      std::string _targetFinMaterial;
+      std::string _targetVacuumMaterial;
+      std::string _supportRingMaterial;
+      std::string _spokeMaterial;
+      int _numberOfTargetSections;
+      std::vector<double> _startingSectionThickness;
+      std::vector<int> _numberOfSegmentsPerSection;
+      std::vector<double> _thicknessOfSegmentPerSection;
+      std::vector<double> _heightOfRectangularGapPerSection;
+      std::vector<double> _thicknessOfGapPerSection;
+      int _nHaymanFins;
+      std::vector<double> _finAngles;
+      double _haymanFinThickness;
+      double _finOuterRadius;
+      double _supportRingLength;
+      double _supportRingInnerRadius;
+      double _supportRingOuterRadius;
+      double _supportRingCutoutThickness;
+      double _supportRingCutoutLength;
 
-    //parameters for rods in the support wheel
-    std::vector<double> _supportWheelRodHL          ; //includes length through the wheel
-    std::vector<double> _supportWheelRodOffset      ; //z offset with respect to the wheel
-    std::vector<double> _supportWheelRodPinOffset   ; //pinhole offset from support wheel center plane, used for Stickman only
-    std::vector<double> _supportWheelRodRadius      ; //radius of the rod
-    std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
-    std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)
-    std::vector<double> _supportWheelRodWireOffsetU ; //z offset from the end of the rod the wire connects (upstream)
-    std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is
+      //parameters for the support wheel
+      bool                _supportsBuild       ; //whether or not to build the supports
+      double              _supportWheelRIn     ;
+      double              _supportWheelROut    ;
+      double              _supportWheelHL      ; //half thickness in z
+      std::string         _supportWheelMaterial;
 
-    //parameters for the wires (spokes) connecting the support wheel and the target
-    // std::string         _spokeMaterial; (defined above)
-    int                 _nSpokesPerSide    ; //also constrains the number of rods in the support wheel
-    std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
-    std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
-    double              _spokeRadius       ; //radius of the wire
+      //parameters for the non-wheel features near the support rods that are on the wheel
+      std::vector<double> _supportWheelFeatureAngles;
+      std::vector<double> _supportWheelFeatureArcs  ;
+      std::vector<double> _supportWheelFeatureRIns  ;
 
-    // Stickman_v_1_0 parameters
-    std::string _stickmanTargetType;
-    double      _halfStickmanLength;
-    double      _rotStickmanX;
-    double      _rotStickmanY;
-    double      _rotStickmanZ;
-    CLHEP::Hep3Vector _stickmanProdTargetPosition;
-    int         _numberOfPlates;
-    std::vector<std::string> _plateMaterial;
-    std::vector<double>      _plateROut;
-    int         _nStickmanFins;
-    std::vector<double>      _plateFinAngles;
-    double      _plateFinOuterRadius;
-    double      _plateFinWidth;
-    double      _plateCenterToLugCenter;
-    double      _plateLugInnerRadius;
-    double      _plateLugOuterRadius;
-    std::vector<double>      _plateThickness;
-    std::vector<double>      _plateLugThickness;
-    bool        _addFilletToPlateCore;
-    bool        _addFilletToPlateLug;
-    double      _plateFilletRadius;
-    std::string _rodMaterial;
-    double      _rodRadius;
-    double      _rodHalfLength;
-    std::string _spacerMaterial;
-    double      _spacerHalfLength;
-    double      _spacerOuterRadius;
-    double      _spacerInnerRadius;
-    std::string _stickmanSupportRingMaterial;
-    double      _stickmanSupportRingLength;
-    double      _stickmanSupportRingInnerRadius;
-    double      _stickmanSupportRingOuterRadius;
-    double      _supportRingLugOuterRadius;
-    bool        _addFilletToSupportRingLug;
-    double      _supportRingLugFilletRadius;
-    bool        _addCutoutToSupportRing;
-    int         _nSupportRingCutouts;
-    std::vector<double> _supportRingCutoutAngles;
-    double      _supportRingCutoutInnerRadius;
-    double      _supportRingCutoutTilt;
-    double      _supportRingCutoutOffset;
+      //parameters for rods in the support wheel
+      std::vector<double> _supportWheelRodHL          ; //includes length through the wheel
+      std::vector<double> _supportWheelRodOffset      ; //z offset with respect to the wheel
+      std::vector<double> _supportWheelRodPinOffset   ; //pinhole offset from support wheel center plane, used for Stickman only
+      std::vector<double> _supportWheelRodRadius      ; //radius of the rod
+      std::vector<double> _supportWheelRodRadialOffset; //radius from the wheel center the rod is centered at
+      std::vector<double> _supportWheelRodWireOffsetD ; //z offset from the end of the rod the wire connects (downstream)
+      std::vector<double> _supportWheelRodWireOffsetU ; //z offset from the end of the rod the wire connects (upstream)
+      std::vector<double> _supportWheelRodAngles      ; //angle about the wheel the rod is
 
-    // Needed for persistency
-    template<class T> friend class art::Wrapper;
-    ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}
+      //parameters for the wires (spokes) connecting the support wheel and the target
+      // std::string         _spokeMaterial; (defined above)
+      int                 _nSpokesPerSide    ; //also constrains the number of rods in the support wheel
+      std::vector<double> _spokeTargetAnglesD; //angle about the target the wire connects to (downstream)
+      std::vector<double> _spokeTargetAnglesU; //angle about the target the wire connects to (upstream)
+      double              _spokeRadius       ; //radius of the wire
+
+      // Stickman_v_1_0 parameters
+      std::string _stickmanTargetType;
+      double      _halfStickmanLength;
+      double      _rotStickmanX;
+      double      _rotStickmanY;
+      double      _rotStickmanZ;
+      CLHEP::Hep3Vector _stickmanProdTargetPosition;
+      int         _numberOfPlates;
+      std::vector<std::string> _plateMaterial;
+      std::vector<double>      _plateROut;
+      int         _nStickmanFins;
+      std::vector<double>      _plateFinAngles;
+      double      _plateFinOuterRadius;
+      double      _plateFinWidth;
+      double      _plateCenterToLugCenter;
+      double      _plateLugInnerRadius;
+      double      _plateLugOuterRadius;
+      std::vector<double>      _plateThickness;
+      std::vector<double>      _plateLugThickness;
+      bool        _addFilletToPlateCore;
+      bool        _addFilletToPlateLug;
+      double      _plateFilletRadius;
+      std::string _rodMaterial;
+      double      _rodRadius;
+      double      _rodHalfLength;
+      std::string _spacerMaterial;
+      double      _spacerHalfLength;
+      double      _spacerOuterRadius;
+      double      _spacerInnerRadius;
+      std::string _stickmanSupportRingMaterial;
+      double      _stickmanSupportRingLength;
+      double      _stickmanSupportRingInnerRadius;
+      double      _stickmanSupportRingOuterRadius;
+      double      _supportRingLugOuterRadius;
+      bool        _addFilletToSupportRingLug;
+      double      _supportRingLugFilletRadius;
+      bool        _addCutoutToSupportRing;
+      int         _nSupportRingCutouts;
+      std::vector<double> _supportRingCutoutAngles;
+      double      _supportRingCutoutInnerRadius;
+      double      _supportRingCutoutTilt;
+      double      _supportRingCutoutOffset;
+
+      // Needed for persistency
+      template<class T> friend class art::Wrapper;
+      ProductionTarget():_pHubsRgtParams(NULL), _pHubsLftParams(NULL) {}
   };
 }
 

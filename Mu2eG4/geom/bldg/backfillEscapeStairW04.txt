@@ -15,14 +15,14 @@ double building.backfill.escape.stair.W04.yHalfThickness           = 3022.6;
 vector<double> building.backfill.escape.stair.W04.xPositions = {
   14303.3,   // SW03
   14542.6,   // bESW4_01
-  14444.1,   // b02
+  14443.8,   // Q
   14204.5   // b03
 };
 
 vector<double> building.backfill.escape.stair.W04.yPositions = {
   12372.5,   // SW03
   11385,   // bESW4_01
-  11359.9,   // b02
+  11361.3,   // Q
   12348.6   // b03
 };
 

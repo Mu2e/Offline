@@ -11,6 +11,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Assns.h"
@@ -18,6 +19,7 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/GenParticleSPMHistory.hh"
 
@@ -52,6 +54,7 @@ namespace mu2e {
   public:
     explicit FromStepPointMCs(fhicl::ParameterSet const& pset);
     void produce(art::Event& event) override;
+    void endSubRun(art::SubRun& sr) override;
 
   private:
     typedef std::vector<art::InputTag> InputTags;
@@ -68,6 +71,7 @@ namespace mu2e {
   {
     produces<GenParticleCollection>();
     produces<GenParticleSPMHistory>();
+    produces<SpectrumConfig, art::InSubRun>();
 
     typedef std::vector<std::string> Strings;
     Strings tagstr(pset.get<Strings>("inputTags", Strings()));
@@ -143,6 +147,11 @@ namespace mu2e {
 
     event.put(std::move(output));
     event.put(std::move(history));
+  }
+
+  void FromStepPointMCs::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    sr.put(std::move(config), art::fullSubRun());
   }
 } // namespace mu2e
 

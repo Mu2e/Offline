@@ -21,7 +21,7 @@ vector<double> building.floor.remote.xPositions = {
   3708.4,   // FR6
   11074.4,   // FR7
   11072.5,   // FR8
-  9163.95,   // BNW03
+  9161.32,   // BNW03
   9312.4,   // BNW00
   2787.8,   // FN7
   1193.8   // FN6
@@ -35,8 +35,8 @@ vector<double> building.floor.remote.yPositions = {
   13716,   // FR5
   16002,   // FR6
   16002,   // FR7
-  10544.1,   // FR8
-  10080.4,   // BNW03
+  10550.5,   // FR8
+  10091.85,   // BNW03
   9436.98,   // BNW00
   7842.4,   // FN7
   6248.4   // FN6

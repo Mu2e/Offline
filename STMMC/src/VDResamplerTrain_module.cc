@@ -5,397 +5,384 @@
 //      Stage 2: conditional model for (p_r', p_phi', p_z' | t', x', y')
 //   2) a single unconditional score-based diffusion model for
 //      (t', x', y', p_r', p_phi', p_z')
-// and store the trained model parameters in CSV files.
+// and store the trained model parameters in binary .dat files.
 // note that p_z are filtered and only hits with positive p_z are kept
 // Yongyi Wu, Mar. 2026
 
-// stdlib includes
-#include <cmath>
-#include <iostream>
-#include <fstream>
 #include <memory>
 
-#include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
+#include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"
+#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
 
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-// art includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-
-// exception handling
-#include "cetlib_except/exception.h"
-
-// fhicl includes
 #include "canvas/Utilities/InputTag.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
-
-// message handling
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// Offline includes
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
-#include "Offline/STMMC/inc/VDResamplerTransforms.hh"
-
-typedef unsigned long VolumeId_type;
 
 namespace mu2e {
   class VDResamplerTrain : public art::EDAnalyzer {
     public:
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
+      using Name    = fhicl::Name;
+      using Comment = fhicl::Comment;
       struct Config {
-        fhicl::Atom<art::InputTag> StepPointMCsTag{   Name("StepPointMCsTag"),         Comment("Tag identifying the StepPointMCs")};
-        fhicl::Atom<art::InputTag> SimParticlemvTag{  Name("SimParticlemvTag"),        Comment("Tag identifying the SimParticlemv")};
-        fhicl::Atom<bool> SBDMuseTwoStageTraining{    Name("SBDMuseTwoStageTraining"), Comment("If true, train the two-stage factorized model. If false, train all 6 dimensions at once."), true};
-        fhicl::Atom<std::string> SBDMallAtOnceModelFile{ Name("SBDMallAtOnceModelFile"), Comment("CSV filename for the all-at-once 6D SBDM model parameters"), ""};
-        fhicl::Atom<std::string> SBDMstage1ModelFile{ Name("SBDMstage1ModelFile"),     Comment("CSV filename for the trained stage-1 SBDM model parameters"), ""};
-        fhicl::Atom<std::string> SBDMstage2ModelFile{ Name("SBDMstage2ModelFile"),     Comment("CSV filename for the trained stage-2 SBDM model parameters"), ""};
-        fhicl::Atom<int> VirtualDetectorID{           Name("VirtualDetectorID"),       Comment("ID of the virtual detector to train on"),                        116};
-        fhicl::Atom<double> VDz0{                     Name("VDz0"),                    Comment("z coordinate of the virtual detector"),                          37700.39};
-        fhicl::Atom<double> VDr{                      Name("VDr"),                     Comment("VD radius"),                                                     2000.0 };
-        fhicl::Atom<int> pdgID{                       Name("pdgID"),                   Comment("pdgID of the particle to train on"),                             22};
-        fhicl::Atom<int> SBDMhidden{                  Name("SBDMhidden"),              Comment("Size of hidden layers in the SBDM neural network"),              128};
-        fhicl::Atom<int> SBDMlayers{                  Name("SBDMlayers"),              Comment("Number of layers in the SBDM neural network"),                   4};
-        fhicl::Atom<std::string> SBDMoptimizer{       Name("SBDMoptimizer"),           Comment("Optimizer for training the SBDM neural network (SGD or ADAM)"), "ADAM"};
-        fhicl::Atom<double> SBDMadamBeta1{            Name("SBDMadamBeta1"),           Comment("Adam optimizer beta1 parameter"),                                0.9};
-        fhicl::Atom<double> SBDMadamBeta2{            Name("SBDMadamBeta2"),           Comment("Adam optimizer beta2 parameter"),                                0.999};
-        fhicl::Atom<double> SBDMadamEps{              Name("SBDMadamEps"),             Comment("Adam optimizer epsilon parameter"),                              1e-8};
-        fhicl::Atom<std::string> SBDMnoiseSchedule{   Name("SBDMnoiseSchedule"),       Comment("Noise schedule for the SBDM (LINEAR or COSINE)"),                "COSINE"};
-        fhicl::Atom<double> SBDMbetaMin{              Name("SBDMbetaMin"),             Comment("Minimum noise schedule parameter (for LINEAR schedule)") ,       1e-4};
-        fhicl::Atom<double> SBDMbetaMax{              Name("SBDMbetaMax"),             Comment("Maximum noise schedule parameter (for LINEAR schedule)"),        0.02};
-        fhicl::Atom<double> SBDMcosineOffset{         Name("SBDMcosineOffset"),        Comment("Offset parameter (for cosine schedule)"),                        0.008};
-        fhicl::Atom<int> SBDMbatchSize{               Name("SBDMbatchSize"),           Comment("Batch size for training the SBDM"),                              32};
-        fhicl::Atom<double> SBDMgradientClip{         Name("SBDMgradientClip"),        Comment("Gradient clipping threshold for training the SBDM"),             1.0};
-        fhicl::Atom<double> SBDMlearningRate{         Name("SBDMlearningRate"),        Comment("Learning rate for training the SBDM"),                           1e-3};
-        fhicl::Atom<int> SBDMdiffusionSteps{          Name("SBDMdiffusionSteps"),      Comment("Number of steps in the diffusion process for the SBDM"),         200};
-        fhicl::Atom<int> SBDMtrainingSize{            Name("SBDMtrainingSize"),        Comment("Size of the training data for the SBDM"),                        -1}; // -1 means use all available data
-        fhicl::Atom<int> SBDMtrainingEpochs{          Name("SBDMtrainingEpochs"),      Comment("Number of epochs to train the selected SBDM mode"),              10};
+        fhicl::Atom<art::InputTag> StepPointMCsTag{ Name("StepPointMCsTag"), Comment("Tag identifying the StepPointMCs") };
+        fhicl::Atom<art::InputTag> SimParticlemvTag{ Name("SimParticlemvTag"), Comment("Tag identifying the SimParticlemv") };
+        fhicl::Atom<bool>        SBDMuseTwoStageTraining{    Name("SBDMuseTwoStageTraining"),    Comment("If true, train two-stage model; if false, train all 6 dimensions at once."), true };
+        fhicl::Atom<std::string> SBDMallAtOnceModelFile{    Name("SBDMallAtOnceModelFile"),    Comment("Model output filename (.dat) for the all-at-once 6D model"),  "" };
+        fhicl::Atom<std::string> SBDMstage1ModelFile{        Name("SBDMstage1ModelFile"),        Comment("Model output filename (.dat) for the stage-1 model"),         "" };
+        fhicl::Atom<std::string> SBDMstage2ModelFile{        Name("SBDMstage2ModelFile"),        Comment("Model output filename (.dat) for the stage-2 model"),         "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointAllAtOnceModelFile{ Name("SBDMloadCheckPointAllAtOnceModelFile"), Comment("Checkpoint file to load for the all-at-once model (.dat, or legacy .bin/.csv)"), "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointStage1ModelFile{    Name("SBDMloadCheckPointStage1ModelFile"),    Comment("Checkpoint file to load for the stage-1 model (.dat, or legacy .bin/.csv)"),    "" };
+        fhicl::Atom<std::string> SBDMloadCheckPointStage2ModelFile{    Name("SBDMloadCheckPointStage2ModelFile"),    Comment("Checkpoint file to load for the stage-2 model (.dat, or legacy .bin/.csv)"),    "" };
+        fhicl::Atom<bool>       SBDMpromoteEMA{                           Name("SBDMpromoteEMA"),                           Comment("Promote EMA weights to network (and reset optimizer) once at the start of training"), false };
+        // VirtualDetectorID / VDz0 / VDr now come from the training plan's common_training_config, 
+        // and no longer individually configured. pdgID stays as each generated fcl trains one particle.
+        fhicl::Atom<std::string> trainingPlanFile{ Name("trainingPlanFile"), Comment("The SAME training plan fhicl the job was configured from; supplies VirtualDetectorID / VDz0 / VDr") };
+        fhicl::Atom<int>    pdgID{             Name("pdgID"),             Comment("pdgID of the particle to train on") };
+        fhicl::Atom<std::string> SBDMmomentumBasis{ Name("SBDMmomentumBasis"), Comment("Momentum transform basis: V1_CYLINDRICAL, V2_PTOT_SLOPES, V2_PTOT_SLOPES_ASINH, V3_PTOT_SLOPES_ASINH_TIME_ASINH"), "V2_PTOT_SLOPES" };
+        fhicl::Atom<std::string> SBDMpositionBasis{ Name("SBDMpositionBasis"), Comment("Radial position map u(rho), rho=r/VDr: V1_ATANH, V2_ATANH_SQRT, V3_ATANH_SQ"), "V1_ATANH" };
+        fhicl::Atom<int>    SBDMtimeEmbeddingDim{ Name("SBDMtimeEmbeddingDim"), Comment("Time embedding dimension"),            0 };
+        fhicl::Sequence<int> SBDMinputEmbeddingDims{     Name("SBDMinputEmbeddingDims"),     Comment("Per-state-dim Fourier depth: [] none, [k] broadcast, or length-dim list; each 0 or even >= 2"),     std::vector<int>() };
+        fhicl::Sequence<int> SBDMconditionEmbeddingDims{ Name("SBDMconditionEmbeddingDims"), Comment("Per-condition-dim Fourier depth: [] none, [k] broadcast, or length-condDim list; each 0 or even >= 2"), std::vector<int>() };
+        fhicl::Atom<int>    SBDMhidden{        Name("SBDMhidden"),        Comment("Size of hidden layers"),                     128 };
+        fhicl::Atom<int>    SBDMlayers{        Name("SBDMlayers"),        Comment("Number of layers"),                          4 };
+        fhicl::Atom<std::string> SBDMoptimizer{ Name("SBDMoptimizer"),   Comment("Optimizer (SGD or ADAM)"),                   "ADAM" };
+        fhicl::Atom<double> SBDMadamBeta1{     Name("SBDMadamBeta1"),     Comment("Adam beta1"),                                0.9 };
+        fhicl::Atom<double> SBDMadamBeta2{     Name("SBDMadamBeta2"),     Comment("Adam beta2"),                                0.999 };
+        fhicl::Atom<double> SBDMadamEps{       Name("SBDMadamEps"),       Comment("Adam epsilon"),                              1e-8 };
+        fhicl::Atom<std::string> SBDMnoiseSchedule{ Name("SBDMnoiseSchedule"), Comment("Noise schedule (LINEAR/COSINE/LOGSIG)"), "COSINE" };
+        fhicl::Atom<double> SBDMbetaMin{       Name("SBDMbetaMin"),       Comment("Min beta (LINEAR schedule)"),                1e-4 };
+        // Continuous VP-SDE: beta(t) is a rate integrated over t in [0,1], not a DDPM per-step beta.
+        // The integral ~0.5*betaMax must be O(a few) to fully noise the data by t=1; the old 0.02
+        // (DDPM per-step value, meant to sum over ~1000 steps) left sigma(1)~0.1, not ~1.
+        fhicl::Atom<double> SBDMbetaMax{       Name("SBDMbetaMax"),       Comment("Max beta (LINEAR schedule)"),                20.0 };
+        fhicl::Atom<double> SBDMcosineOffset{  Name("SBDMcosineOffset"),  Comment("Offset (COSINE schedule)"),                  0.008 };
+        fhicl::Atom<double> SBDMlogSigMin{     Name("SBDMlogSigMin"),     Comment("Min sigma (LOGSIG schedule)"),               1e-5 };
+        fhicl::Atom<double> SBDMlogSigMax{     Name("SBDMlogSigMax"),     Comment("Max sigma (LOGSIG schedule)"),               1.0 };
+        fhicl::Atom<std::string> SBDMpredictionTarget{ Name("SBDMpredictionTarget"), Comment("Network regression target: SCORE, EPS, or V (v-prediction)"), "SCORE" };
+        // Deprecated: superseded by SBDMpredictionTarget. If set, true->EPS, false->SCORE.
+        fhicl::OptionalAtom<bool> SBDMepsPrediction{ Name("SBDMepsPrediction"), Comment("DEPRECATED: use SBDMpredictionTarget. true->EPS, false->SCORE") };
+        fhicl::Atom<double> SBDMlossWeightPower{ Name("SBDMlossWeightPower"), Comment("Loss weight power"),                     2.0 };
+        fhicl::Atom<int>    SBDMbatchSize{     Name("SBDMbatchSize"),     Comment("Batch size"),                                32 };
+        fhicl::Atom<double> SBDMgradientClip{  Name("SBDMgradientClip"),  Comment("Gradient clip threshold"),                   1.0 };
+        fhicl::Atom<double> SBDMlearningRate{  Name("SBDMlearningRate"),  Comment("Learning rate"),                             1e-3 };
+        fhicl::Atom<bool>   SBDMbiasLowSigma{  Name("SBDMbiasLowSigma"), Comment("Bias training samples towards low-sigma"),   false };
+        fhicl::Atom<double> SBDMtLowBound{     Name("SBDMtLowBound"),     Comment("Lower bound clamp on t for training"),       0.0 };
+        fhicl::Atom<double> SBDMtFocusLow{      Name("SBDMtFocusLow"),      Comment("Low edge of t focus window"),                                  0.0 };
+        fhicl::Atom<double> SBDMtFocusHigh{     Name("SBDMtFocusHigh"),     Comment("High edge of t focus window"),                                 0.0 };
+        fhicl::Atom<double> SBDMtFocusFraction{ Name("SBDMtFocusFraction"), Comment("Realized fraction of training samples inside the t focus window; the rest are drawn from its complement (0 = disabled)"), 0.0 };
+        fhicl::Atom<bool>   SBDMuseDimWeightController{      Name("SBDMuseDimWeightController"),      Comment("Use adaptive per-dimension gradient weighting"), false };
+        fhicl::Atom<double> SBDMdimWeightControllerEMADecay{ Name("SBDMdimWeightControllerEMADecay"), Comment("EMA decay for dimension weight controller"),     0.99 };
+        fhicl::Atom<bool>   SBDMuseEMANetwork{      Name("SBDMuseEMANetwork"),      Comment("Maintain EMA copy of network for inference"), false };
+        fhicl::Atom<double> SBDMemaNetworkDecay{    Name("SBDMemaNetworkDecay"),    Comment("Decay for EMA network"),                      0.9999 };
+        fhicl::Atom<int>    SBDMdiffusionSteps{     Name("SBDMdiffusionSteps"),     Comment("Diffusion steps"),                            200 };
+        fhicl::Atom<int>    SBDMtrainingSize{       Name("SBDMtrainingSize"),       Comment("Training data size (-1 = all)"),               -1 };
+        // Samples DRAWN per epoch (0 = one full pass over the dataset). Values above the dataset size
+        // cycle the data (with reshuffle-on-wrap) so an epoch is a fixed amount of optimization work.
+        // SBDMtrainingSubsetSizePerEpoch is the deprecated former name, still accepted; the new key
+        // wins when both are set to a non-zero value.
+        fhicl::Atom<int>    SBDMsamplesDrawnPerEpoch{ Name("SBDMsamplesDrawnPerEpoch"), Comment("Samples drawn per epoch (0 = full set; >N cycles the data)"), 0 };
+        fhicl::Atom<int>    SBDMtrainingSubsetSizePerEpoch{ Name("SBDMtrainingSubsetSizePerEpoch"), Comment("[deprecated: use SBDMsamplesDrawnPerEpoch] Subset size per epoch (0 = full set)"), 0 };
+        fhicl::Atom<int>    SBDMtrainingEpochs{     Name("SBDMtrainingEpochs"),     Comment("Number of training epochs"),                  10 };
+        fhicl::Sequence<int> SaveEpochs{ Name("SaveEpochs"), Comment("Epochs at which to save checkpoint models"), std::vector<int>() };
+        fhicl::Atom<bool>   SBDMautoCurriculumPlanner{ Name("SBDMautoCurriculumPlanner"), Comment("Train each curriculum phase until loss converges instead of for a fixed epoch count"), false };
+        fhicl::Atom<int>    SBDMplannerSmoothWindow{    Name("SBDMplannerSmoothWindow"),    Comment("Planner: trailing moving-average window for smoothing per-epoch loss"), 10 };
+        fhicl::Atom<double> SBDMplannerMinDelta{        Name("SBDMplannerMinDelta"),        Comment("Planner: relative improvement of smoothed loss counted as progress"), 0.005 };
+        fhicl::Atom<int>    SBDMplannerPatience{        Name("SBDMplannerPatience"),        Comment("Planner: consecutive non-improving epochs to declare convergence"), 20 };
+        fhicl::Atom<int>    SBDMplannerMinEpochsPerPhase{ Name("SBDMplannerMinEpochsPerPhase"), Comment("Planner: minimum epochs per phase before convergence can fire (auto-raised to >= smoothWindow+patience)"), 30 };
+        fhicl::Atom<int>    SBDMplannerMaxEpochsPerPhase{ Name("SBDMplannerMaxEpochsPerPhase"), Comment("Planner: hard cap per phase; hitting it aborts training with a warning"), 100 };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumEpochs{             Name("SBDMtrainingCurriculumEpochs"),             Comment("Epochs per curriculum phase"),                std::vector<int>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumLossWeightPower{    Name("SBDMtrainingCurriculumLossWeightPower"),    Comment("Loss weight power per curriculum phase"),     std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumGradientClip{       Name("SBDMtrainingCurriculumGradientClip"),       Comment("Gradient clip per curriculum phase"),         std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumLearningRate{       Name("SBDMtrainingCurriculumLearningRate"),       Comment("Learning rate per curriculum phase"),         std::vector<double>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumBiasLowSigma{       Name("SBDMtrainingCurriculumBiasLowSigma"),       Comment("BiasLowSigma per curriculum phase"),          std::vector<bool>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTLowBound{          Name("SBDMtrainingCurriculumTLowBound"),          Comment("tLowBound per curriculum phase"),             std::vector<double>() };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumBatchSize{          Name("SBDMtrainingCurriculumBatchSize"),          Comment("Batch size per curriculum phase"),            std::vector<int>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumPromoteEMA{         Name("SBDMtrainingCurriculumPromoteEMA"),         Comment("If true, promote EMA to network when entering this curriculum phase"),               std::vector<bool>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumUseDimWeightController{ Name("SBDMtrainingCurriculumUseDimWeightController"), Comment("Enable per-dimension gradient weight controller per curriculum phase"), std::vector<bool>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumUsePeakWindowLoss{ Name("SBDMtrainingCurriculumUsePeakWindowLoss"), Comment("Auto-planner: plateau on the peak-window (feature-region) loss instead of the aggregate loss, per curriculum phase (requires SBDMpeakWindow* configured)"), std::vector<bool>() };
+        fhicl::Sequence<bool>   SBDMtrainingCurriculumUsePeakSampling{ Name("SBDMtrainingCurriculumUsePeakSampling"), Comment("Per curriculum phase: enable peak-window importance (emphasis) sampling. Empty defaults to true for all phases. When false, the phase draws uniformly (no oversampling, wIS=1) even if SBDMpeakWindow* is configured"), std::vector<bool>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumPeakAlpha{ Name("SBDMtrainingCurriculumPeakAlpha"), Comment("Per-phase override of peak importance-sampling alpha for ALL windows (1=unbiased, <1=up-weight feature); negative = use base SBDMpeakAlphas. Empty = no override."), std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusLow{          Name("SBDMtrainingCurriculumTFocusLow"),          Comment("t focus window low edge per curriculum phase"),       std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusHigh{         Name("SBDMtrainingCurriculumTFocusHigh"),         Comment("t focus window high edge per curriculum phase"),      std::vector<double>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumTFocusFraction{     Name("SBDMtrainingCurriculumTFocusFraction"),     Comment("Realized in-window t focus fraction per curriculum phase (rest drawn from complement)"),       std::vector<double>() };
+        // Per-phase samples drawn per epoch. SBDMtrainingCurriculumSamplesDrawnPerEpoch is the
+        // preferred name; SBDMtrainingCurriculumSubsetSizePerEpoch is the deprecated former name,
+        // still accepted. The new key wins when it is non-empty.
+        fhicl::Sequence<int>    SBDMtrainingCurriculumSamplesDrawnPerEpoch{ Name("SBDMtrainingCurriculumSamplesDrawnPerEpoch"), Comment("Samples drawn per epoch per curriculum phase (0 = full set; >N cycles the data)"), std::vector<int>() };
+        fhicl::Sequence<int>    SBDMtrainingCurriculumSubsetSizePerEpoch{ Name("SBDMtrainingCurriculumSubsetSizePerEpoch"), Comment("[deprecated: use SBDMtrainingCurriculumSamplesDrawnPerEpoch] Training subset size per epoch per curriculum phase (0 = full set)"), std::vector<int>() };
+        fhicl::Sequence<double> SBDMtrainingCurriculumMinDelta{ Name("SBDMtrainingCurriculumMinDelta"), Comment("Auto-planner minDelta per curriculum phase (relative smoothed-loss improvement threshold; empty = use SBDMplannerMinDelta)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMdenoiseDiagnosticTs{ Name("SBDMdenoiseDiagnosticTs"), Comment("If non-empty, run the one-step denoising diagnostic at these t values INSTEAD of training"), std::vector<double>() };
+        fhicl::Atom<int>        SBDMdenoiseDiagnosticSamples{ Name("SBDMdenoiseDiagnosticSamples"), Comment("Samples per t value for the denoising diagnostic"), 100000 };
+        fhicl::Atom<bool>       SBDMdenoiseDiagnosticUseEMA{ Name("SBDMdenoiseDiagnosticUseEMA"), Comment("Network used by the diagnostics: true = EMA network when available, false = base network. Match the generation config's useEMANetworkIfAvailable"), true };
+        fhicl::Sequence<double> SBDMpartialReverseT0s{ Name("SBDMpartialReverseT0s"), Comment("If non-empty, run the partial-reverse sampling diagnostic from these t0 values INSTEAD of training"), std::vector<double>() };
+        fhicl::Atom<int>        SBDMpartialReverseSamples{ Name("SBDMpartialReverseSamples"), Comment("Samples per t0 value for the partial-reverse diagnostic"), 20000 };
+        fhicl::Atom<bool>       SBDMpartialReverseUseHeun{ Name("SBDMpartialReverseUseHeun"), Comment("Use Heun's method in the partial-reverse diagnostic sampler"), true };
+        fhicl::Atom<bool>       SBDMpartialReverseUseSDE{ Name("SBDMpartialReverseUseSDE"), Comment("Use the SDE solver in the partial-reverse diagnostic sampler"), true };
+        fhicl::Atom<int>        SBDMpartialReverseDiffusionSteps{ Name("SBDMpartialReverseDiffusionSteps"), Comment("Diffusion steps for the partial-reverse diagnostic sampler (-1 = model's configured value)"), -1 };
+        fhicl::Atom<double>     SBDMpartialReverseSdeToOdeSigmaThreshold{ Name("SBDMpartialReverseSdeToOdeSigmaThreshold"), Comment("Switch from SDE to ODE when sigma falls below this threshold in the partial-reverse diagnostic sampler (-1 = always use SBDMpartialReverseUseSDE setting)"), -1.0 };
+        fhicl::Atom<bool>       SBDMcondLossDiagnostic{ Name("SBDMcondLossDiagnostic"), Comment("If true, write the conditional eps-loss-vs-sigma diagnostic (split by SBDMpeakWindow*) INSTEAD of training"), false };
+        fhicl::Atom<int>        SBDMcondLossDiagnosticSamples{ Name("SBDMcondLossDiagnosticSamples"), Comment("Samples for the conditional-loss diagnostic"), 200000 };
+        fhicl::Atom<bool>       SBDMfeatureBlockDiagnostic{ Name("SBDMfeatureBlockDiagnostic"), Comment("If true, write the first-layer feature-block weight/grad magnitude diagnostic INSTEAD of training"), false };
+        fhicl::Atom<int>        SBDMfeatureBlockDiagnosticSamples{ Name("SBDMfeatureBlockDiagnosticSamples"), Comment("Draws used to accumulate the gradient for the feature-block diagnostic"), 50000 };
+        // Peak importance sampling: parallel sequences, one entry per window (all same length; empty = disabled).
+        fhicl::Sequence<int>    SBDMpeakWindowDims{  Name("SBDMpeakWindowDims"),  Comment("Per-window normalized state-coordinate index (e.g. pz = 5 all-at-once, 2 stage-2)"), std::vector<int>() };
+        fhicl::Sequence<double> SBDMpeakWindowLows{  Name("SBDMpeakWindowLows"),  Comment("Per-window lower edge in TRANSFORMED (pre-z-score) units, e.g. log(pz/p0), inclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakWindowHighs{ Name("SBDMpeakWindowHighs"), Comment("Per-window upper edge in TRANSFORMED (pre-z-score) units, exclusive"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakGMaxes{      Name("SBDMpeakGMaxes"),      Comment("Per-window sampling-fraction ceiling at low sigma (0<gMax<1; sum<1)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakSigma0s{     Name("SBDMpeakSigma0s"),     Comment("Per-window Gaussian sigma-taper scale (~ feature width)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakAlphas{      Name("SBDMpeakAlphas"),      Comment("Per-window 1=unbiased, <1=up-weight"), std::vector<double>() };
+        // Peak TAGGING (distinct from the importance-sampling windows above): gives the V2
+        // stage-2 model an extra discrete condition dim naming which monoenergetic line the
+        // event's pTotal falls on (0 = none, k+1 = the k-th configured line). Use it when a
+        // line's OTHER observables (e.g. arrival time) differ in shape from the neighbouring
+        // continuum, which the z-scored log(pTotal) condition cannot resolve on its own.
+        // Both sequences are in RAW MeV/c and must be the same length; empty = disabled.
+        fhicl::Sequence<double> SBDMpeakTagCenters{    Name("SBDMpeakTagCenters"),    Comment("Per-tag line center in RAW MeV/c on pTotal (e.g. 1.809 for the 1809 keV line)"), std::vector<double>() };
+        fhicl::Sequence<double> SBDMpeakTagHalfWidths{ Name("SBDMpeakTagHalfWidths"), Comment("Per-tag inclusive half-window in RAW MeV/c; a hit is tagged when |pTot-center| <= halfWidth. Windows must be disjoint"), std::vector<double>() };
       };
       using Parameters = art::EDAnalyzer::Table<Config>;
       explicit VDResamplerTrain(const Parameters& conf);
-      void analyze(const art::Event& e);
-      void endJob();
+      void analyze(const art::Event& e) override;
+      void endJob() override;
+
     private:
-      art::RandomNumberGenerator::base_engine_t& engine;
-      CLHEP::RandFlat randFlat_;
+      art::RandomNumberGenerator::base_engine_t& engine_;
+      CLHEP::RandFlat   randFlat_;
       CLHEP::RandGaussQ randGaussQ_;
-      art::ProductToken<StepPointMCCollection> StepPointMCsToken;
-      art::ProductToken<SimParticleCollection> SimParticlemvToken;
-
-      // SBDM model + data
-      bool useTwoStageTraining = true;
-      std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel;
-      std::unique_ptr<ScoreBasedDiffusionModel> stage1Model;
-      std::unique_ptr<ScoreBasedDiffusionModel> stage2Model;
-      std::vector<DiffusionTrainingSample> allAtOnceTrainingData;
-      std::vector<DiffusionTrainingSample> stage1TrainingData;
-      std::vector<DiffusionTrainingSample> stage2TrainingData;
-      std::string SBDMallAtOnceModelFile;
-      std::string SBDMstage1ModelFile;
-      std::string SBDMstage2ModelFile;
-      VolumeId_type VirtualDetectorID = 0;
-      double VDz0 = 0.0;
-      double VDr = 0.0;
-      int pdgID = 0;
-      int trainingEpochs = 0;
-      int trainingSize = -1;
-
-      // variables to read from the art event
-      int stepPdgId = 0;
-      double x = 0.0, y = 0.0, z = 0.0, time = 0.0;
-      double px = 0.0, py = 0.0, pz = 0.0;
-      VolumeId_type virtualdetectorId = 0;
-
-      // transform variables for training data preparation
-      double x0 = VDResampler::kX0;
-      double y0 = VDResampler::kY0;
-      // time scaling
-      double t0 = VDResampler::kT0;
-      double tScale = VDResampler::kTScale;
-      // momentum scaling
-      double p0 = VDResampler::kP0;
+      art::ProductToken<StepPointMCCollection> StepPointMCsToken_;
+      art::ProductToken<SimParticleCollection> SimParticlemvToken_;
+      VDResampler::TrainState state_;
+      // Accumulates pz-fallback hits across analyze() calls; a single summary
+      // warning is emitted in endJob (V2 slope basis only; see PzFallbackStats).
+      VDResampler::PzFallbackStats pzFallback_;
   };
 
   VDResamplerTrain::VDResamplerTrain(const Parameters& conf) :
     art::EDAnalyzer(conf),
-    engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
-    randFlat_(engine),
-    randGaussQ_(engine),
-    StepPointMCsToken(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
-    SimParticlemvToken(consumes<SimParticleCollection>(conf().SimParticlemvTag())),
-    useTwoStageTraining(conf().SBDMuseTwoStageTraining()),
-    SBDMallAtOnceModelFile(conf().SBDMallAtOnceModelFile()),
-    SBDMstage1ModelFile(conf().SBDMstage1ModelFile()),
-    SBDMstage2ModelFile(conf().SBDMstage2ModelFile()),
-    VirtualDetectorID(conf().VirtualDetectorID()),
-    VDz0(conf().VDz0()),
-    VDr(conf().VDr()),
-    pdgID(conf().pdgID()),
-    trainingEpochs(conf().SBDMtrainingEpochs()),
-    trainingSize(conf().SBDMtrainingSize())
+    engine_     (createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+    randFlat_   (engine_),
+    randGaussQ_ (engine_),
+    StepPointMCsToken_(consumes<StepPointMCCollection>(conf().StepPointMCsTag())),
+    SimParticlemvToken_(consumes<SimParticleCollection>(conf().SimParticlemvTag()))
   {
-    // Validate geometry configuration
-    if (VDr <= 0.0) {
-        throw cet::exception("VDResamplerTrain")
-            << "VDr must be positive (got " << VDr << "); "
-            << "rho = r/VDr would produce inf/NaN in training data.";
-    }
-    if (!std::isfinite(VDz0)) {
-        throw cet::exception("VDResamplerTrain")
-            << "VDz0 must be finite (got " << VDz0 << ").";
-    }
-
-    // optimizer selection
-    ScoreBasedDiffusionModel::OptimizerType opt;
-    if (conf().SBDMoptimizer() == "SGD") {
-        opt = ScoreBasedDiffusionModel::OptimizerType::SGD;
+    // Populate shared state from fhicl config
+    state_.allAtOnceModelFile  = conf().SBDMallAtOnceModelFile();
+    state_.stage1ModelFile     = conf().SBDMstage1ModelFile();
+    state_.stage2ModelFile     = conf().SBDMstage2ModelFile();
+    state_.ckptAllAtOnceFile   = conf().SBDMloadCheckPointAllAtOnceModelFile();
+    state_.ckptStage1File      = conf().SBDMloadCheckPointStage1ModelFile();
+    state_.ckptStage2File      = conf().SBDMloadCheckPointStage2ModelFile();
+    state_.useTwoStageTraining = conf().SBDMuseTwoStageTraining();
+    state_.momentumBasis       = VDResampler::parseMomentumBasis(conf().SBDMmomentumBasis(), "VDResamplerTrain");
+    state_.positionBasis       = VDResampler::parsePositionBasis(conf().SBDMpositionBasis(), "VDResamplerTrain");
+    // Geometry from the training plan's common_training_config, so it cannot drift from the
+    // coordinate system the generate side inverts in.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
+      throw cet::exception("VDResamplerTrain")
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) comes from.";
+    const fhicl::ParameterSet plan = ParameterSetFromFile(planFile).pSet();
+    if (!plan.has_key("common_training_config"))
+      throw cet::exception("VDResamplerTrain")
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common = plan.get<fhicl::ParameterSet>("common_training_config");
+    state_.virtualDetectorID   = static_cast<unsigned long>(common.get<int>("VirtualDetectorID"));
+    state_.VDz0                = common.get<double>("VDz0");
+    state_.VDr                 = common.get<double>("VDr");
+    state_.pdgID               = conf().pdgID();
+    state_.trainingEpochs      = conf().SBDMtrainingEpochs();
+    state_.trainingSize        = conf().SBDMtrainingSize();
+    state_.saveEpochs          = conf().SaveEpochs();
+    state_.autoPlanner              = conf().SBDMautoCurriculumPlanner();
+    state_.plannerSmoothWindow      = conf().SBDMplannerSmoothWindow();
+    state_.plannerMinDelta          = conf().SBDMplannerMinDelta();
+    state_.plannerPatience          = conf().SBDMplannerPatience();
+    state_.plannerMinEpochsPerPhase = conf().SBDMplannerMinEpochsPerPhase();
+    state_.plannerMaxEpochsPerPhase = conf().SBDMplannerMaxEpochsPerPhase();
+    state_.curriculumEpochs              = conf().SBDMtrainingCurriculumEpochs();
+    state_.curriculumLossWeightPower     = conf().SBDMtrainingCurriculumLossWeightPower();
+    state_.curriculumGradientClip        = conf().SBDMtrainingCurriculumGradientClip();
+    state_.curriculumLearningRate        = conf().SBDMtrainingCurriculumLearningRate();
+    state_.curriculumBiasLowSigma        = conf().SBDMtrainingCurriculumBiasLowSigma();
+    state_.curriculumTLowBound           = conf().SBDMtrainingCurriculumTLowBound();
+    state_.curriculumBatchSize           = conf().SBDMtrainingCurriculumBatchSize();
+    state_.promoteEMAOnStart             = conf().SBDMpromoteEMA();
+    state_.curriculumPromoteEMA          = conf().SBDMtrainingCurriculumPromoteEMA();
+    state_.curriculumUseDimWeightController = conf().SBDMtrainingCurriculumUseDimWeightController();
+    state_.curriculumUsePeakWindowLoss   = conf().SBDMtrainingCurriculumUsePeakWindowLoss();
+    state_.curriculumUsePeakSampling     = conf().SBDMtrainingCurriculumUsePeakSampling();
+    state_.curriculumPeakAlpha           = conf().SBDMtrainingCurriculumPeakAlpha();
+    state_.curriculumTFocusLow           = conf().SBDMtrainingCurriculumTFocusLow();
+    state_.curriculumTFocusHigh          = conf().SBDMtrainingCurriculumTFocusHigh();
+    state_.curriculumTFocusFraction      = conf().SBDMtrainingCurriculumTFocusFraction();
+    // Prefer the new SamplesDrawnPerEpoch key; fall back to the deprecated SubsetSizePerEpoch
+    // name (warn once) so existing plan files keep working.
+    if (!conf().SBDMtrainingCurriculumSamplesDrawnPerEpoch().empty()) {
+        state_.curriculumSamplesDrawnPerEpoch = conf().SBDMtrainingCurriculumSamplesDrawnPerEpoch();
     } else {
-        if (conf().SBDMoptimizer() != "ADAM") {
+        state_.curriculumSamplesDrawnPerEpoch = conf().SBDMtrainingCurriculumSubsetSizePerEpoch();
+        if (!state_.curriculumSamplesDrawnPerEpoch.empty())
             mf::LogWarning("VDResamplerTrain")
-                << "Unrecognized SBDMoptimizer value \"" << conf().SBDMoptimizer()
-                << "\"; falling back to ADAM.";
-        }
-        opt = ScoreBasedDiffusionModel::OptimizerType::ADAM;
+                << "SBDMtrainingCurriculumSubsetSizePerEpoch is deprecated; "
+                << "rename it to SBDMtrainingCurriculumSamplesDrawnPerEpoch.";
+    }
+    state_.curriculumMinDelta            = conf().SBDMtrainingCurriculumMinDelta();
+    state_.denoiseDiagnosticTs           = conf().SBDMdenoiseDiagnosticTs();
+    state_.denoiseDiagnosticSamples      = conf().SBDMdenoiseDiagnosticSamples();
+    state_.denoiseDiagnosticUseEMA       = conf().SBDMdenoiseDiagnosticUseEMA();
+    state_.partialReverseT0s             = conf().SBDMpartialReverseT0s();
+    state_.partialReverseSamples         = conf().SBDMpartialReverseSamples();
+    state_.partialReverseUseHeun         = conf().SBDMpartialReverseUseHeun();
+    state_.partialReverseUseSDE          = conf().SBDMpartialReverseUseSDE();
+    state_.partialReverseDiffusionSteps  = conf().SBDMpartialReverseDiffusionSteps();
+    state_.partialReverseSdeToOdeSigmaThreshold = conf().SBDMpartialReverseSdeToOdeSigmaThreshold();
+    state_.condLossDiagnostic            = conf().SBDMcondLossDiagnostic();
+    state_.condLossDiagnosticSamples     = conf().SBDMcondLossDiagnosticSamples();
+    state_.featureBlockDiagnostic        = conf().SBDMfeatureBlockDiagnostic();
+    state_.featureBlockDiagnosticSamples = conf().SBDMfeatureBlockDiagnosticSamples();
+    VDResampler::assemblePeakWindows(state_,
+        conf().SBDMpeakWindowDims(), conf().SBDMpeakWindowLows(), conf().SBDMpeakWindowHighs(),
+        conf().SBDMpeakGMaxes(), conf().SBDMpeakSigma0s(), conf().SBDMpeakAlphas(), "VDResamplerTrain");
+    VDResampler::assemblePeakTags(state_,
+        conf().SBDMpeakTagCenters(), conf().SBDMpeakTagHalfWidths(), "VDResamplerTrain");
+
+    VDResampler::validateGeometry(state_.VDr, state_.VDz0, "VDResamplerTrain");
+    // Resolve the prediction target up front so the curriculum builder can coerce
+    // lossWeightPower to 0 under V (and so p.predictionTarget reuses the same result).
+    ScoreBasedDiffusionModel::PredictionTarget predictionTarget;
+    {
+        bool epsValue = false;
+        bool epsSet = conf().SBDMepsPrediction(epsValue); // OptionalAtom: true if present
+        predictionTarget = VDResampler::resolvePredictionTarget(
+            conf().SBDMpredictionTarget(), epsSet, epsValue, "VDResamplerTrain");
     }
 
-    // noise schedule
-    ScoreBasedDiffusionModel::NoiseScheduleType sched;
-    if (conf().SBDMnoiseSchedule() == "LINEAR") {
-        sched = ScoreBasedDiffusionModel::NoiseScheduleType::LINEAR;
-    } else {
-        if (conf().SBDMnoiseSchedule() != "COSINE") {
-            mf::LogWarning("VDResamplerTrain")
-                << "Unrecognized SBDMnoiseSchedule value \"" << conf().SBDMnoiseSchedule()
-                << "\"; falling back to COSINE.";
-        }
-        sched = ScoreBasedDiffusionModel::NoiseScheduleType::COSINE;
+    // Prefer the new SBDMsamplesDrawnPerEpoch; fall back to the deprecated
+    // SBDMtrainingSubsetSizePerEpoch (warn once) so existing configs keep working. This is the
+    // non-curriculum default; the per-phase curriculum key is handled separately above.
+    int samplesDrawnPerEpoch = conf().SBDMsamplesDrawnPerEpoch();
+    if (samplesDrawnPerEpoch == 0 && conf().SBDMtrainingSubsetSizePerEpoch() != 0) {
+        samplesDrawnPerEpoch = conf().SBDMtrainingSubsetSizePerEpoch();
+        mf::LogWarning("VDResamplerTrain")
+            << "SBDMtrainingSubsetSizePerEpoch is deprecated; rename it to SBDMsamplesDrawnPerEpoch.";
     }
 
-    if (useTwoStageTraining) {
-      // create stage-1 model for (t', x', y')
-      stage1Model = std::make_unique<ScoreBasedDiffusionModel>(
-          randFlat_,
-          randGaussQ_,
-          3, // dim
-          0, // conditionDim
-          conf().SBDMhidden(),
-          conf().SBDMlayers(),
-          opt,
-          conf().SBDMadamBeta1(),
-          conf().SBDMadamBeta2(),
-          conf().SBDMadamEps(),
-          sched,
-          conf().SBDMbetaMin(),
-          conf().SBDMbetaMax(),
-          conf().SBDMcosineOffset(),
-          conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
-          conf().SBDMdiffusionSteps()
-      );
+    VDResampler::validateAndBuildCurriculum(state_, "VDResamplerTrain",
+        conf().SBDMlossWeightPower(), conf().SBDMgradientClip(), conf().SBDMlearningRate(),
+        conf().SBDMbiasLowSigma(),   conf().SBDMtLowBound(),    conf().SBDMbatchSize(),
+        conf().SBDMtFocusLow(),      conf().SBDMtFocusHigh(),   conf().SBDMtFocusFraction(),
+        /*defaultPromoteEMA=*/false, conf().SBDMuseDimWeightController(),
+        samplesDrawnPerEpoch, predictionTarget);
 
-      // create stage-2 model for (p_r', p_phi', p_z' | t', x', y')
-      stage2Model = std::make_unique<ScoreBasedDiffusionModel>(
-          randFlat_,
-          randGaussQ_,
-          3, // dim
-          3, // conditionDim
-          conf().SBDMhidden(),
-          conf().SBDMlayers(),
-          opt,
-          conf().SBDMadamBeta1(),
-          conf().SBDMadamBeta2(),
-          conf().SBDMadamEps(),
-          sched,
-          conf().SBDMbetaMin(),
-          conf().SBDMbetaMax(),
-          conf().SBDMcosineOffset(),
-          conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
-          conf().SBDMdiffusionSteps()
-      );
-      // allocate memory according to the training size (if specified, otherwise will grow dynamically)
-      if (trainingSize > 0) {
-        stage1TrainingData.reserve(trainingSize);
-        stage2TrainingData.reserve(trainingSize);
-      } else {
-        stage1TrainingData.reserve(1000);
-        stage2TrainingData.reserve(1000);
-      }
-    } else {
-      allAtOnceModel = std::make_unique<ScoreBasedDiffusionModel>(
-          randFlat_,
-          randGaussQ_,
-          6, // dim
-          0, // conditionDim
-          conf().SBDMhidden(),
-          conf().SBDMlayers(),
-          opt,
-          conf().SBDMadamBeta1(),
-          conf().SBDMadamBeta2(),
-          conf().SBDMadamEps(),
-          sched,
-          conf().SBDMbetaMin(),
-          conf().SBDMbetaMax(),
-          conf().SBDMcosineOffset(),
-          conf().SBDMbatchSize(),
-          conf().SBDMgradientClip(),
-          conf().SBDMlearningRate(),
-          conf().SBDMdiffusionSteps()
-      );
-      // allocate memory according to the training size (if specified, otherwise will grow dynamically)
-      if (trainingSize > 0) {
-        allAtOnceTrainingData.reserve(trainingSize);
-      } else {
-        allAtOnceTrainingData.reserve(1000);
-      }
-    }
-  };
+    VDResampler::ModelBuildParams p;
+    p.timeEmbeddingDim           = conf().SBDMtimeEmbeddingDim();
+    p.inputEmbeddingDims         = conf().SBDMinputEmbeddingDims();
+    p.conditionEmbeddingDims     = conf().SBDMconditionEmbeddingDims();
+    p.hidden                     = conf().SBDMhidden();
+    p.layers                     = conf().SBDMlayers();
+    p.optimizer                  = VDResampler::parseOptimizer(conf().SBDMoptimizer(), "VDResamplerTrain");
+    p.adamBeta1                  = conf().SBDMadamBeta1();
+    p.adamBeta2                  = conf().SBDMadamBeta2();
+    p.adamEps                    = conf().SBDMadamEps();
+    p.noiseSchedule              = VDResampler::parseNoiseSchedule(conf().SBDMnoiseSchedule(), "VDResamplerTrain");
+    p.betaMin                    = conf().SBDMbetaMin();
+    p.betaMax                    = conf().SBDMbetaMax();
+    p.cosineOffset               = conf().SBDMcosineOffset();
+    p.logSigMin                  = conf().SBDMlogSigMin();
+    p.logSigMax                  = conf().SBDMlogSigMax();
+    p.predictionTarget           = predictionTarget; // resolved above (before the curriculum build)
+    p.lossWeightPower            = conf().SBDMlossWeightPower();
+    p.batchSize                  = conf().SBDMbatchSize();
+    p.gradientClip               = conf().SBDMgradientClip();
+    p.learningRate               = conf().SBDMlearningRate();
+    p.useDimWeightController     = conf().SBDMuseDimWeightController();
+    p.dimWeightControllerEMADecay= conf().SBDMdimWeightControllerEMADecay();
+    p.useEMANetwork              = conf().SBDMuseEMANetwork();
+    p.emaNetworkDecay            = conf().SBDMemaNetworkDecay();
+    p.diffusionSteps             = conf().SBDMdiffusionSteps();
+    VDResampler::buildModels(state_, p, randFlat_, randGaussQ_, "VDResamplerTrain");
+  }
 
   void VDResamplerTrain::analyze(const art::Event& event) {
-    // Get the data products from the event
-    auto const& StepPointMCs = event.getProduct(StepPointMCsToken);
-    if (StepPointMCs.empty())
-      return;
-    auto const& SimParticles = event.getProduct(SimParticlemvToken);
-    if (SimParticles.empty())
-      return;
+    auto const& StepPointMCs = event.getProduct(StepPointMCsToken_);
+    if (StepPointMCs.empty()) return;
+    auto const& SimParticles = event.getProduct(SimParticlemvToken_);
+    if (SimParticles.empty()) return;
 
-    // Loop over all VD hits
     for (const StepPointMC& step : StepPointMCs) {
-      // Get the associated particle
       const SimParticle& particle = SimParticles.at(step.trackId());
+      int    stepPdgId       = particle.pdgId();
+      auto   vdId            = step.virtualDetectorId();
+      double pz              = step.momentum().z();
+      if (vdId != state_.virtualDetectorID || (stepPdgId != state_.pdgID && state_.pdgID != 0) || pz <= 0)
+        continue;
 
-      // Extract the parameters
-      stepPdgId = particle.pdgId();
-      virtualdetectorId = step.virtualDetectorId();
-      time = step.time();
-      x = step.position().x(); // This coordinate is in Mu2e frame, will be shifted to relative x w.r.t. the beamline
-      y = step.position().y();
-      z = step.position().z();
-      px = step.momentum().x();
-      py = step.momentum().y();
-      pz = step.momentum().z();
+      double x    = step.position().x();
+      double y    = step.position().y();
+      double z    = step.position().z();
+      double px   = step.momentum().x();
+      double py   = step.momentum().y();
+      double time = step.time();
 
-      if (virtualdetectorId != VirtualDetectorID || (stepPdgId != pdgID && pdgID != 0) || pz <= 0)
-        continue; // Filter hits based on the virtual detector ID, particle type, and pz
-
-      double x_trans = 0.0;
-      double y_trans = 0.0;
-      double t_trans = 0.0;
-      double pr_t = 0.0;
-      double pphi_t = 0.0;
-      double pz_t = 0.0;
+      // mom0/mom1/mom2 are the three transformed momentum values in state_.momentumBasis.
+      double x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t;
       VDResampler::forwardTransformSample(
-        x,
-        y,
-        z,
-        time,
-        px,
-        py,
-        pz,
-        x0,
-        y0,
-        t0,
-        tScale,
-        p0,
-        VDr,
-        VDz0,
-        x_trans,
-        y_trans,
-        t_trans,
-        pr_t,
-        pphi_t,
-        pz_t
-      );
+          x, y, z, time, px, py, pz,
+          VDResampler::kX0, VDResampler::kY0, VDResampler::kT0, VDResampler::kTScale, VDResampler::kP0,
+          state_.VDr, state_.VDz0,
+          x_trans, y_trans, t_trans, mom0_t, mom1_t, mom2_t,
+          state_.momentumBasis, &pzFallback_, state_.positionBasis);
 
-      if (useTwoStageTraining) {
-        DiffusionTrainingSample stage1Sample;
-        stage1Sample.x = {t_trans, x_trans, y_trans};
-        stage1TrainingData.push_back(std::move(stage1Sample));
+      // Raw |p| in MeV/c, used only to evaluate the peak class label (see collectSample).
+      const double pTotRaw = std::sqrt(px*px + py*py + pz*pz);
 
-        DiffusionTrainingSample stage2Sample;
-        stage2Sample.x = {pr_t, pphi_t, pz_t};
-        stage2Sample.cond = {t_trans, x_trans, y_trans};
-        stage2TrainingData.push_back(std::move(stage2Sample));
-      } else {
-        DiffusionTrainingSample allAtOnceSample;
-        allAtOnceSample.x = {t_trans, x_trans, y_trans, pr_t, pphi_t, pz_t};
-        allAtOnceTrainingData.push_back(std::move(allAtOnceSample));
-      }
-    };
-    return;
-  };
+      VDResampler::accumulateNorm(state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t);
+      VDResampler::collectSample (state_, t_trans, x_trans, y_trans, mom0_t, mom1_t, mom2_t, pTotRaw);
+    }
+  }
 
   void VDResamplerTrain::endJob() {
+    // Single summary warning for any pz fallbacks accumulated during analyze().
+    if (pzFallback_.count > 0) {
+      std::ostringstream oss;
+      oss << "pz fell below kPzSafetyEpsilon (" << VDResampler::kPzSafetyEpsilon << ") in "
+          << pzFallback_.count << " hit(s); the floor was used in the extrapolation and the "
+          << "slope division (pz>0 expected from the selection). First "
+          << pzFallback_.firstValues.size() << " offending pz value(s):";
+      for (double v : pzFallback_.firstValues) oss << ' ' << v;
+      mf::LogWarning("VDResamplerTrain") << oss.str();
+    }
+    // Hits whose extrapolated radius landed outside VDr are moved to the rim, which changes
+    // the position they train on rather than merely guarding a divide.
+    if (pzFallback_.clampCount > 0) {
+      std::ostringstream oss;
+      oss << "rho = r/VDr reached or exceeded 1 in " << pzFallback_.clampCount
+          << " hit(s), which were clamped to the rim. First " << pzFallback_.firstRhos.size()
+          << " offending rho value(s):";
+      for (double v : pzFallback_.firstRhos) oss << ' ' << v;
+      mf::LogWarning("VDResamplerTrain") << oss.str();
+    }
+    VDResampler::runTraining(state_, "VDResamplerTrain");
+  }
 
-      if (useTwoStageTraining && (stage1TrainingData.empty() || stage2TrainingData.empty())) {
-        mf::LogWarning("VDResamplerTrain") << "No training data collected.";
-        return;
-      }
-      if (!useTwoStageTraining && allAtOnceTrainingData.empty()) {
-        mf::LogWarning("VDResamplerTrain") << "No training data collected.";
-        return;
-      }
-
-      // if SBDMtrainingSize is set and smaller than the collected training data,
-      // truncate the training data to the specified size.
-      if (useTwoStageTraining) {
-        if(trainingSize > 0 && (int)stage1TrainingData.size() > trainingSize)
-          stage1TrainingData.resize(trainingSize);
-        if(trainingSize > 0 && (int)stage2TrainingData.size() > trainingSize)
-          stage2TrainingData.resize(trainingSize);
-
-        if (SBDMstage1ModelFile.empty() || SBDMstage2ModelFile.empty()) {
-          throw cet::exception("VDResamplerTrain") << "Two-stage training requires both SBDMstage1ModelFile and SBDMstage2ModelFile.";
-        }
-
-        mf::LogInfo("VDResamplerTrain")
-            << "Training stage-1 diffusion model with " << stage1TrainingData.size()
-            << " samples and " << trainingEpochs << " epochs...";
-        stage1Model->train(stage1TrainingData, trainingEpochs);
-        stage1Model->saveModel(SBDMstage1ModelFile);
-        mf::LogInfo("VDResamplerTrain") << "Stage-1 model saved to " << SBDMstage1ModelFile;
-
-        mf::LogInfo("VDResamplerTrain")
-            << "Training stage-2 diffusion model with " << stage2TrainingData.size()
-            << " samples and " << trainingEpochs << " epochs...";
-        stage2Model->train(stage2TrainingData, trainingEpochs);
-        stage2Model->saveModel(SBDMstage2ModelFile);
-        mf::LogInfo("VDResamplerTrain") << "Stage-2 model saved to " << SBDMstage2ModelFile;
-
-      } else {
-        if(trainingSize > 0 && (int)allAtOnceTrainingData.size() > trainingSize)
-          allAtOnceTrainingData.resize(trainingSize);
-
-        if (SBDMallAtOnceModelFile.empty()) {
-          throw cet::exception("VDResamplerTrain") << "All-at-once training requires SBDMallAtOnceModelFile.";
-        }
-
-        mf::LogInfo("VDResamplerTrain")
-            << "Training all-at-once diffusion model with " << allAtOnceTrainingData.size()
-            << " samples and " << trainingEpochs << " epochs...";
-        allAtOnceModel->train(allAtOnceTrainingData, trainingEpochs);
-        allAtOnceModel->saveModel(SBDMallAtOnceModelFile);
-
-        mf::LogInfo("VDResamplerTrain") << "All-at-once model saved to " << SBDMallAtOnceModelFile;
-      }
-
-     return;
-  };
-
-}; // end namespace mu2e
+} // namespace mu2e
 
 DEFINE_ART_MODULE(mu2e::VDResamplerTrain)

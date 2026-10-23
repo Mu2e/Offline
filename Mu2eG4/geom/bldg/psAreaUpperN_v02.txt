@@ -17,8 +17,8 @@ vector<double> building.psArea.upper.N.xPositions = {
 vector<double> building.psArea.upper.N.yPositions = {
 2050.90, // 0
 3349.22, // 1
-6502.40, // 2
-6502.40, // 3
+6857.90, // 2
+6857.90, // 3
 2765.96, // 4
 1432.28, // 5
 1728.59, // 6

@@ -40,6 +40,7 @@ GRANT UPDATE ON val.tables_tid_seq TO manager_role;
 CREATE TABLE val.calibrations
   (cid SERIAL, 
   tid INTEGER NOT NULL,
+  chash TEXT NOT NULL DEFAULT '',
   create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
   create_user TEXT NOT NULL,  
   CONSTRAINT calibrations_pk PRIMARY KEY (cid), 
@@ -414,6 +415,14 @@ CREATE TABLE cal.energycalib
    CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
 GRANT SELECT ON cal.energycalib TO PUBLIC;
 GRANT INSERT ON cal.energycalib TO cal_role;
+
+CREATE TABLE cal.timecalib
+  (cid INTEGER,
+   roid INTEGER, tcorr NUMERIC,
+   CONSTRAINT cal_timecalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.timecalib TO PUBLIC;
+GRANT INSERT ON cal.timecalib TO cal_role;
+
 
 CREATE TABLE cal.channels
   (cid INTEGER,

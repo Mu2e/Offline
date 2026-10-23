@@ -5,6 +5,8 @@ EventTiming : {
    verbose : 0
 
    # ns
+   CRVTrackerTimeOffset : 0.0
+   CaloTrackerTimeOffset : 0.0
    TimeFromProtonsToDRMarker : 200.0
    # clock counts
    OffSpillEventLength : 4000

@@ -1,0 +1,12 @@
+//
+// Conical proton absorber geometry file.
+// Correced Dimensions and endRing Material
+// See Doc-57487-v3
+//
+
+#include "Offline/Mu2eG4/geom/protonAbsorber_cylindrical_v04.txt"
+
+//Corrected Dimensions - overwriting previous entries
+double protonabsorber.ipa.endRingHalfLength = 3.175; // 1/4" long in the z-direction
+double protonabsorber.ipa.endRingRadialLength = 19.05; // 3/4" long in the r-direction
+string protonabsorber.ipa.endRingMaterial = "IPAPolystyrene"; //Changed Material

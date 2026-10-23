@@ -35,12 +35,10 @@ namespace mu2e {
     KinKal::VEC3 momentum3() const { return _pstate.momentum3(); }
     KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
-    // convert content to a LoopHelix
-    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(_pstate, bnom(),timeRange()); }
-    // convert to a CentralHelix
-    KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(_pstate, bnom(),timeRange()); }
-    // convert to a KinematicLine
-    KinKal::KinematicLine kinematicLine() const { return KinKal::KinematicLine(_pstate, bnom(),timeRange()); }
+    // convert content to a Trajectory. Optionally override the particle mass
+    KinKal::LoopHelix loopHelix(double mass = -1.0) const;
+    KinKal::CentralHelix centralHelix(double mass = -1.0) const;
+    KinKal::KinematicLine kinematicLine(double mass = -1.0) const;
     double const& tmin() const { return _tmin; }
     double const& tmax() const { return _tmax; }
     KinKal::TimeRange timeRange() const;
