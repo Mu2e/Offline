@@ -9,6 +9,7 @@
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/CRV.hh"
+#include "Offline/KinKalGeom/inc/Calo.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "KinKal/Geometry/Surface.hh"
 #include "KinKal/Geometry/Plane.hh"
@@ -49,6 +50,7 @@ namespace mu2e {
       auto const& DS() const {return ds_; }
       auto const& ST() const {return st_; }
       auto const& tracker() const {return tracker_; }
+      auto const& calo() const {return calo_; }
       auto const& CRV() const {return crv_; }
       auto const& passiveMaterialPlanes() const { return passiveMaterialPlanes_; }
     private:
@@ -56,6 +58,7 @@ namespace mu2e {
       std::unique_ptr<KKGeom::Tracker> tracker_;
       std::unique_ptr<KKGeom::DetectorSolenoid> ds_;
       std::unique_ptr<KKGeom::StoppingTarget> st_;
+      std::unique_ptr<KKGeom::Calo> calo_;
       std::unique_ptr<KKGeom::CRV> crv_;
       PassiveMaterialPlaneCollection passiveMaterialPlanes_;
       // the map used to find surfaces by Id

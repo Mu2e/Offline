@@ -55,11 +55,13 @@ namespace mu2e {
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
       template <class KTRAJ> void toTrackerPerimeter(KKTrack<KTRAJ>& ktrk) const;
+      template <class KTRAJ> void toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk) const;
 
     private:
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
+      bool toCaloD0_, toCaloD1_;
       // IPA/ST thicknesses are nominal literals, consistent with the rest of KinKalGeom, whose IPA
       // (single Cylinder) and ST (uniform Annulus foils) surfaces are themselves hard-coded nominal
       // placeholders (see KinKalGeomMaker::makeDS/makeTarget). Sourcing these from the real geometry
@@ -80,7 +82,9 @@ namespace mu2e {
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
     upstream_(extrapconfig.Upstream()),
-    toCRV_(extrapconfig.ToCRV())
+    toCRV_(extrapconfig.ToCRV()),
+    toCaloD0_(extrapconfig.ToCaloD0()),
+    toCaloD1_(extrapconfig.ToCaloD1())
   {}
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
@@ -96,6 +100,8 @@ namespace mu2e {
     auto dir0 = ftraj.direction(ftraj.t0());
     TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     if(toTrackerPerimeter_)toTrackerPerimeter(ktrk);
+    if(toCaloD0_)toCaloDisk(ktrk,0);
+    if(toCaloD1_)toCaloDisk(ktrk,1);
     if(upstream_){
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -183,6 +189,45 @@ namespace mu2e {
     };
     recordFace(TimeDir::backwards);
     recordFace(TimeDir::forwards);
+  }
+
+  // Extrapolate a fit to a calorimeter disk (0 or 1) and record the intersections with its front/back faces
+  // and inner/outer edges
+  template <class KTRAJ> void KKExtrap::toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk) const {
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    auto const& calo = *kkg_h->calo();
+    bool d0 = idisk == 0;
+    auto const& front = d0 ? calo.EMC_Disk_0_Front() : calo.EMC_Disk_1_Front();
+    auto const& back  = d0 ? calo.EMC_Disk_0_Back()  : calo.EMC_Disk_1_Back();
+    auto const& inner = d0 ? calo.EMC_Disk_0_Inner() : calo.EMC_Disk_1_Inner();
+    auto const& outer = d0 ? calo.EMC_Disk_0_Outer() : calo.EMC_Disk_1_Outer();
+    static const SurfaceId frontsid[2] = {SurfaceId("EMC_Disk_0_Front"), SurfaceId("EMC_Disk_1_Front")};
+    static const SurfaceId backsid[2]  = {SurfaceId("EMC_Disk_0_Back"),  SurfaceId("EMC_Disk_1_Back")};
+    static const SurfaceId innersid[2] = {SurfaceId("EMC_Disk_0_Inner"), SurfaceId("EMC_Disk_1_Inner")};
+    static const SurfaceId outersid[2] = {SurfaceId("EMC_Disk_0_Outer"), SurfaceId("EMC_Disk_1_Outer")};
+    auto const& ftraj = ktrk.fitTraj();
+    auto dir0 = ftraj.direction(ftraj.t0());
+    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
+    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
+    ExtrapolateToZ caloFront(maxdt_,maxdtstep_,btol_,intertol_,front.center().Z(),debug_);
+    ExtrapolateToZ caloBack(maxdt_,maxdtstep_,btol_,intertol_,back.center().Z(),debug_);
+    if(debug_ > 0)std::cout << "toCaloDisk " << idisk << " front z " << front.center().Z() << " back z " << back.center().Z() << std::endl;
+    auto tocalofront = ktrk.extrapolate(fronttdir,caloFront);
+    auto tocaloback = ktrk.extrapolate(backtdir,caloBack);
+    // record the calo disk intersections, using the full trajectory range
+    if(tocalofront){
+      auto frontinter = KinKal::intersect(ftraj,front,ftraj.range(),intertol_,fronttdir);
+      if(frontinter.good()) ktrk.addIntersection(frontsid[idisk],frontinter);
+    }
+    if(tocaloback){
+      auto backinter = KinKal::intersect(ftraj,back,ftraj.range(),intertol_,backtdir);
+      if(backinter.good())ktrk.addIntersection(backsid[idisk],backinter);
+    }
+    // get intersections with inner and outer cylinders
+    auto innerinter = KinKal::intersect(ftraj,inner,ftraj.range(),intertol_);
+    if(innerinter.good()) ktrk.addIntersection(innersid[idisk],innerinter);
+    auto outerinter = KinKal::intersect(ftraj,outer,ftraj.range(),intertol_);
+    if(outerinter.good()) ktrk.addIntersection(outersid[idisk],outerinter);
   }
 
   template <class KTRAJ> bool KKExtrap::extrapolateIPA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {

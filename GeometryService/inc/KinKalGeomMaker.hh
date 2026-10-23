@@ -18,6 +18,7 @@ namespace mu2e {
       void makeTracker();
       void makeDS();
       void makeTarget();
+      void makeCalo();
       void makeCRV();
       void makePassiveMaterials();
       // append one averaged rectangular concrete passive-material plane (see .cc)

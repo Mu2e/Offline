@@ -80,7 +80,15 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::CRV_M7, "CRV_M7"),
     std::make_pair(SurfaceIdEnum::CRV_M8, "CRV_M8"),
     std::make_pair(SurfaceIdEnum::CRV_StrongBack, "CRV_StrongBack"),
-    std::make_pair(SurfaceIdEnum::DS_HatchConcrete, "DS_HatchConcrete")
+    std::make_pair(SurfaceIdEnum::DS_HatchConcrete, "DS_HatchConcrete"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Outer, "EMC_Disk_0_Outer"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Inner, "EMC_Disk_0_Inner"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Inner, "EMC_Disk_1_Inner"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Outer, "EMC_Disk_1_Outer"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Front, "EMC_Disk_0_Front"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Front, "EMC_Disk_1_Front"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_Back, "EMC_Disk_0_Back"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Back, "EMC_Disk_1_Back")
     };
 
     constexpr std::size_t nSurfaceIdNames = sizeof(surfaceIdNames)/sizeof(surfaceIdNames[0]);

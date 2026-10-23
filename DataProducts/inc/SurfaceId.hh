@@ -36,10 +36,12 @@ namespace mu2e {
         CRV_C3=262, CRV_C4,                                   // legacy MDC2020/crv_counters_v07-v09; retire once those datasets are no longer used
         CRV_M1=270, CRV_M2, CRV_M3, CRV_M4, CRV_M5, CRV_M6, CRV_M7, CRV_M8, // CRV-Muon-Taggers (Mu2e/Offline PR #1864)
         CRV_StrongBack=280,                                   // CRV module Al strongback (tracker-side support plate)
-        DS_HatchConcrete=300                                  // detector-area hatch concrete block approximation
+        DS_HatchConcrete=300,                                 // detector-area hatch concrete block approximation
+        EMC_Disk_0_Outer=310, EMC_Disk_0_Inner, EMC_Disk_1_Inner, EMC_Disk_1_Outer, // calorimeter disk bounding surfaces
+        EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back
       };
       // Update this counter whenever you add/remove surface IDs from the enum above.
-      static constexpr std::size_t nSurfaceIds = 64;
+      static constexpr std::size_t nSurfaceIds = 72;
       static std::string const& typeName();
       static std::map<enum_type,std::string> const& names();
   };

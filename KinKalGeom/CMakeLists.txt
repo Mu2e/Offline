@@ -1,5 +1,6 @@
 cet_make_library(
     SOURCE
+      src/Calo.cc
       src/KinKalGeom.cc
       src/KKMaterial.cc
       src/KKStrawMaterial.cc

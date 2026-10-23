@@ -60,7 +60,17 @@ namespace mu2e {
       vdmap_[VirtualDetectorId(VirtualDetectorId::TT_Back)] = SurfaceId("TT_Back");
       vdmap_[VirtualDetectorId(VirtualDetectorId::TT_OutSurf)] = SurfaceId("TT_Outer");
       vdmap_[VirtualDetectorId(VirtualDetectorId::TT_InSurf)] = SurfaceId("TT_Inner");
-    }
+
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_SurfIn)] = SurfaceId("EMC_Disk_0_Front");
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_SurfIn)] = SurfaceId("EMC_Disk_1_Front");
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_SurfOut)] = SurfaceId("EMC_Disk_0_Back");
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_SurfOut)] = SurfaceId("EMC_Disk_1_Back");
+
+      vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_EdgeIn)] = SurfaceId("EMC_Disk_0_Inner");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_EdgeIn)] = SurfaceId("EMC_Disk_1_Inner");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_0_EdgeOut)] = SurfaceId("EMC_Disk_0_Outer");
+       vdmap_[VirtualDetectorId(VirtualDetectorId::EMC_Disk_1_EdgeOut)] = SurfaceId("EMC_Disk_1_Outer");
+}
 
   void MakeSurfaceSteps::produce(art::Event& event) {
     GeomHandle<DetectorSystem> det;
@@ -72,6 +82,7 @@ namespace mu2e {
     for(auto const& vdspmc : vdspmccol) {
       // only some VDs are kept
       auto isid = vdmap_.find(vdspmc.virtualDetectorId());
+      if(debug_ > 0) std::cout<<" VID "<<vdspmc.virtualDetectorId().name()<<std::endl;
       if(isid != vdmap_.end())ssc->emplace_back(isid->second,vdspmc,det); // no aggregation of VD hits
     }
     auto nvdsteps = ssc->size();
