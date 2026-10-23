@@ -1,6 +1,8 @@
 #include <cmath>
 #include <stddef.h>
+#include <algorithm>
 #include <array>
+#include <utility>
 #include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -22,9 +24,10 @@
 
 namespace mu2e {
 
-  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) {
+  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker, StrawNoSignal NoSignal) {
     _hel           = Helix;
     _tracker       = MyTracker;
+    _noSignal      = std::move(NoSignal);
     _trackerRIn    = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().innerRadius();
     _trackerROut   = _tracker->g4Tracker()->getInnerTrackerEnvelopeParams().outerRadius();
 
@@ -66,38 +69,106 @@ namespace mu2e {
 
     //here we evaluate once the impact parameter
     _d0 = robustHel->rcent  () - robustHel->radius ();
+  }
 
 
-    // we now estiamte the ratio of the number of measured hits to the number of the expected ones
-    // we make a few assumptions and appriximations:
+  float  HelixTool::hitRatio() const {
+    if (_hitRatio >= 0.) return _hitRatio;
+
+    // ratio of the number of measured hits to the number of expected ones: count the plane
+    // faces the helix crosses inside the tracker active radius, weighted by the fraction of
+    // live straws at the crossing
+    const mu2e::RobustHelix& robustHel = _hel->helix();
     float    expected_faces(1e-6);
     for (size_t planeId=0; planeId<_tracker->nPlanes(); planeId++) {
-      const Plane* pln = &_tracker->getPlane(planeId);
-      int   nPanels = pln->nPanels();
-      if (nPanels == 0 )         continue;
-      std::array<int,2>   idPanels = {0, (nPanels-1)};
+      const Plane& pln = _tracker->getPlane(planeId);
+      if (pln.nPanels() == 0 )         continue;
 
-      for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
-        const Panel* panel = &pln->getPanel(ipn);
-        float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-        // if (z < z_first_hit )  continue;
-        // if (z > z_last_hit  )  continue;
+      for (uint16_t face=0; face<StrawId::_nfaces; ++face){
+        // panel number 'face' is on that face
+        const Panel& panel = pln.getPanel(face);
+        float    z = (panel.getStraw(0).getMidPoint().z()+panel.getStraw(1).getMidPoint().z())/2.;
 
         XYZVectorF  pos;
         pos.SetZ(z);
-        robustHel->position(pos);
+        robustHel.position(pos);
 
         //now check that we are in the active area of tracker
         float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
         if (hitR < _trackerRIn )  continue;
         if (hitR > _trackerROut)  continue;
 
-        ++expected_faces;
-      }//end loop over the two panels
+        expected_faces += _noSignal ? liveFraction(pln, face, pos.x(), pos.y()) : 1.;
+      }//end loop over the two faces
     }//end loop over the planes
 
-    //each plane has two layers of panels. We are assuming 2 ComboHits per face
     _hitRatio = _nStrawHits/expected_faces;
+    return _hitRatio;
+  }
+
+
+  float  HelixTool::liveFraction(const Plane& Pln, uint16_t Face, float X, float Y) const {
+    // find the panel of this face covering the crossing point: the one whose outward direction,
+    // perpendicular to its straws in the transverse plane, is closest to the crossing direction
+    const Panel* best(nullptr);
+    float        bestRho(0), nx(0), ny(0);
+    for (int ipn=Face; ipn<int(Pln.nPanels()); ipn+=StrawId::_nfaces) {
+      const Panel& panel = Pln.getPanel(ipn);
+      const auto&  mid   = panel.getStraw(0).getMidPoint();
+      const auto&  dir   = panel.getStraw(0).getDirection();
+      float        along = mid.x()*dir.x() + mid.y()*dir.y();
+      float        px    = mid.x() - along*dir.x();
+      float        py    = mid.y() - along*dir.y();
+      float        norm  = sqrtf(px*px + py*py);
+      if (norm <= 0.)  continue;
+      px /= norm;
+      py /= norm;
+      float        rho   = X*px + Y*py;
+      if (best == nullptr || rho > bestRho) {
+        best    = &panel;
+        bestRho = rho;
+        nx      = px;
+        ny      = py;
+      }
+    }
+    if (best == nullptr) return 1.;
+
+    // straws are ordered radially (straw 0 innermost), alternating between the two layers:
+    // estimate the straw at the crossing and take the nearest straw of each layer around it
+    auto  strawRho = [&](int s) {
+      const auto& mid = best->getStraw(s).getMidPoint();
+      return float(mid.x()*nx + mid.y()*ny);
+    };
+    const int nStraws = best->nStraws();
+    float rho0   = strawRho(0);
+    float rhoMax = strawRho(nStraws-1);
+    // no straw of this face at the crossing (radially outside the panel, or beyond the straw
+    // ends, e.g. between the panels of the face): keep the weight without the status
+    if (bestRho < rho0 || bestRho > rhoMax) return 1.;
+    int   sEst   = (rhoMax > rho0) ? std::lround((bestRho-rho0)/(rhoMax-rho0)*(nStraws-1)) : 0;
+    sEst = std::clamp(sEst, 0, nStraws-1);
+    {
+      const Straw& straw = best->getStraw(sEst);
+      const auto&  mid   = straw.getMidPoint();
+      const auto&  dir   = straw.getDirection();
+      if (std::fabs((X-mid.x())*dir.x() + (Y-mid.y())*dir.y()) > straw.halfLength()) return 1.;
+    }
+
+    float nLive(0);
+    for (int layer=0; layer<StrawId::_nlayers; ++layer) {
+      int   nearest(-1);
+      float dmin(0);
+      for (int s=std::max(0, sEst-2); s<=std::min(nStraws-1, sEst+2); ++s) {
+        if (best->getStraw(s).id().layer() != layer) continue;
+        float d = std::fabs(strawRho(s) - bestRho);
+        if (nearest < 0 || d < dmin) {
+          nearest = s;
+          dmin    = d;
+        }
+      }
+      if (nearest >= 0 && !_noSignal(best->getStraw(nearest).id())) ++nLive;
+    }
+    return nLive/StrawId::_nlayers;
   }
 
 

@@ -17,6 +17,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 
 // data
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -104,6 +106,7 @@ namespace mu2e
       }
       void setB(const float bz0) { _bz0 = bz0; }
       void setTracker(const Tracker* tracker) { _tracker = tracker; }
+      void setNoSignal(const HelixTool::StrawNoSignal& noSignal) { _noSignal = noSignal; }
       bool applyCuts(const HelixSeed& helix) {
         if(_debugLevel > 2) std::cout << "Testing helix:\n";
 
@@ -121,7 +124,7 @@ namespace mu2e
         if(_minPt       > 0. && pt  < _minPt)                        return false;
 
         // initialize the helix tool
-        HelixTool hTool(&helix, _tracker);
+        HelixTool hTool(&helix, _tracker, _noSignal);
 
         // geometric selections
         const Helicity hel         = helix.helix().helicity();
@@ -148,16 +151,15 @@ namespace mu2e
         const float chi2XY         = helix.helix().chi2dXY();
         const float chi2PhiZ       = helix.helix().chi2dZPhi();
         const int   nhits          = hTool.nstrawhits();
-        const float hRatio         = hTool.hitRatio();
         const bool  hasCluster     = helix.caloCluster().isNonnull();
         if(_debugLevel > 2) std::cout << " chi2XY = " << chi2XY << " chi2PhiZ = " << chi2PhiZ
-                                      << " nhits = " << nhits << " hitRatio = " << hRatio << " hasCC = " << hasCluster << std::endl;
+                                      << " nhits = " << nhits << " hitRatio = " << hTool.hitRatio() << " hasCC = " << hasCluster << std::endl;
 
         if(chi2XY > _maxChi2XY)                                      return false;
         if(chi2PhiZ > _maxChi2PhiZ)                                  return false;
         if(nhits < _minNStrawHits)                                   return false;
-        if(hRatio < _minHitRatio)                                    return false;
         if(_requireCaloCluster && !hasCluster)                       return false;
+        if(_minHitRatio > 0. && hTool.hitRatio() < _minHitRatio)     return false; // last: the most expensive
 
         if(_debugLevel > 2) std::cout << "  --> passed all cuts\n";
         // passes all cuts
@@ -186,6 +188,7 @@ namespace mu2e
 
       double _bz0                      =  1.   ;
       const Tracker* _tracker          = nullptr;
+      HelixTool::StrawNoSignal _noSignal;          // empty: all straws live
       int    _debugLevel               =  0    ;
     };
 
@@ -202,6 +205,7 @@ namespace mu2e
       fhicl::Atom<float>                             minArcGap            { Name("minArcGap"),           Comment("Minimum distance between helix arcs of same curve direction"), -1.};
       fhicl::Sequence<fhicl::Table<HelixCutsConfig>> HelixCuts            { Name("HelixCuts"),           Comment("Helix cut sets")};
       fhicl::Atom<bool>                              doHistograms         { Name("doHistograms"),        Comment("Make debug histograms"), false};
+      fhicl::Atom<bool>                              useTrackerStatus     { Name("useTrackerStatus"),    Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio")};
     };
 
 
@@ -258,9 +262,12 @@ namespace mu2e
     // cut sets
     std::vector<HelixCuts> _helixCuts;
     bool          _doHistograms;
+    bool          _useTrackerStatus;
 
     double         _bz0;
     const Tracker* _tracker;
+    ProditionsHandle<TrackerStatus> _trackerStatus_h;
+    HelixTool::StrawNoSignal        _noSignal; // empty: all straws live
 
     // counters
     unsigned      _nevt, _npass;
@@ -280,6 +287,7 @@ namespace mu2e
     , _maxOverlap        (config().maxOverlap())
     , _minArcGap         (config().minArcGap())
     , _doHistograms      (config().doHistograms())
+    , _useTrackerStatus  (config().useTrackerStatus())
     , _nevt              (0)
     , _npass             (0)
     {
@@ -353,7 +361,7 @@ namespace mu2e
     float helSum = 0.;
     for(auto index : indices) {
       const HelixSeed& helix = hcol->at(index);
-      HelixTool hTool(&helix, _tracker);
+      HelixTool hTool(&helix, _tracker, _noSignal);
       constexpr float mmToMeV = 3./10.;
 
       Hist->p              ->Fill(_bz0 * mmToMeV * helix.helix().momentum());
@@ -515,6 +523,13 @@ namespace mu2e
   //--------------------------------------------------------------------------------------
   bool MultiHelixFilter::filter(art::Event& event){
     ++_nevt;
+
+    // straws without signal are not counted as expected hits in the helix hit ratio
+    if(_useTrackerStatus) {
+      const TrackerStatus* status = &_trackerStatus_h.get(event.id());
+      _noSignal = [status](StrawId const& sid) { return status->noSignal(sid) || status->suppress(sid); };
+      for(auto& cuts : _helixCuts) cuts.setNoSignal(_noSignal);
+    }
 
     // create the output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);

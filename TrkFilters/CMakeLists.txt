@@ -6,7 +6,9 @@ cet_build_plugin(HelixFilter art::module
       Offline::GeneralUtilities
       Offline::GeometryService
       Offline::Mu2eUtilities
+      Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::TrackerConditions
       Offline::TrackerGeom
 )
 
@@ -24,7 +26,9 @@ cet_build_plugin(MultiHelixFilter art::module
       Offline::GeneralUtilities
       Offline::GeometryService
       Offline::Mu2eUtilities
+      Offline::ProditionsService
       Offline::RecoDataProducts
+      Offline::TrackerConditions
       Offline::TrackerGeom
 )
 
