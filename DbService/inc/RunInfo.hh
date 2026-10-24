@@ -70,6 +70,17 @@ class RunInfo {
   // If qjson=false -> returns one VALUE per line (flat list).
   std::string dbTables3(bool qjson = false) const;
 
+  // Summarize the trigger menu for this run.  Only the "TRG" config carries
+  // the TriggerConfigTable, so the lookup is restricted to that config,
+  // exactly as dbTables2 above.
+  // If qjson=true  -> a JSON object; "found":false with empty fields when the
+  //                   run has no trigger menu, so the schema shape doesn't
+  //                   depend on whether one was found.
+  // If qjson=false -> the human-readable block, or an empty string when the
+  //                   run has no trigger menu -- the caller decides how to
+  //                   report that (runTool prints a one-line notice).
+  std::string triggerMenu(bool qjson = false) const;
+
   // Check if run is done and return status code
   // Returns:
   //   0 = still running

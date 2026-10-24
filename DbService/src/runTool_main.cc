@@ -3,6 +3,7 @@
 // which reads data from the run conditions database
 //
 
+#include "Offline/DbService/inc/RunConfig.hh"
 #include "Offline/DbService/inc/RunSelect.hh"
 #include "Offline/DbService/inc/RunTool.hh"
 #include "Offline/GeneralUtilities/inc/ParseCLI.hh"
@@ -49,6 +50,8 @@ int main(int argc, char** argv) {
     cli.addSwitch("", "subruns", "s", "subruns", false, "also print subruns");
     cli.addSwitch("", "blob", "b", "blob", true,
                   "print formatted JSON blob for specified subsystem");
+    cli.addSwitch("", "trigger", "g", "trigger", false,
+                  "print the trigger menu summary (paths, bits, prescales)");
     cli.addSwitch("", "dbtables", "q", "dbtables", false,
                   "print the cat 3 DbService tables");
     cli.addSwitch("", "cidtables", "e", "cidtables", false,
@@ -112,13 +115,16 @@ int main(int argc, char** argv) {
     bool transitions = cli.getBool("", "transitions");
     bool subruns = cli.getBool("", "subruns");
     std::string blob_subsystem = cli.getString("", "blob");
+    bool trigger = cli.getBool("", "trigger");
     bool dbtables = cli.getBool("", "dbtables");
     bool cidtables = cli.getBool("", "cidtables");
     bool json = cli.getBool("", "json");
 
-    // If blob subsystem or dbtables is specified, we need to fetch configs
-    bool need_configs =
-        configs || !blob_subsystem.empty() || dbtables || cidtables;
+    // If blob subsystem, dbtables or the trigger summary is specified, we need
+    // to fetch configs -- the trigger menu is read out of the TRG config's
+    // settings blob, so it costs no query of its own beyond that fetch.
+    bool need_configs = configs || !blob_subsystem.empty() || trigger ||
+                        dbtables || cidtables;
 
 
     // Query and print runs
@@ -189,6 +195,56 @@ int main(int argc, char** argv) {
       return 0;
     }
 
+
+    // Handle trigger menu output: the TriggerConfigTable summary carried in
+    // the run's TRG config -- each trigger path with its bit, enabled flag,
+    // and the prescale and output streams of every event mode.
+    //
+    // Follows the --blob pattern below rather than the single-run restriction
+    // of -q/-e above: every run's output is labeled (text) or carries its own
+    // "run" field (JSON), so a multi-run selection is both valid and useful --
+    // comparing the menu across a range is the obvious question to ask of it,
+    // and neighbouring runs do differ.
+    if (trigger) {
+      nlohmann::json trigArr = nlohmann::json::array();  // used only when json
+      bool first = true;
+
+      for (auto const& rr : runvec) {
+        std::string menu = rr.triggerMenu(json);
+
+        if (json) {
+          // RunInfo::triggerMenu() guarantees a complete object in JSON mode
+          // (the found=false schema when the run has no menu), so a parse
+          // failure here would mean a bug in the builder rather than bad
+          // input. Degrade to a not-found entry instead of throwing out of the
+          // whole listing, matching how the settings column is parsed
+          // non-throwingly everywhere else in this file.
+          nlohmann::json entry = nlohmann::json::parse(menu, nullptr, false);
+          if (entry.is_discarded() || !entry.is_object()) {
+            entry = nlohmann::json::parse(
+                RunConfig::triggerMenuNotFound(rr.runNumber()), nullptr, false);
+          }
+          trigArr.push_back(entry);
+        } else {
+          // Blank line between runs: each run's summary is a multi-line block,
+          // so back-to-back headers would otherwise be hard to pick out.
+          if (!first) std::cout << "\n";
+          first = false;
+          std::cout << "Run " << rr.runNumber() << ":\n";
+          if (menu.empty()) {
+            std::cout << "  no trigger menu (no TRG config for this run, or no"
+                         " TriggerConfigTable in it)\n";
+          } else {
+            std::cout << menu << "\n";
+          }
+        }
+      }
+
+      if (json) {
+        std::cout << trigArr.dump(1, ' ') << "\n";
+      }
+      return 0;
+    }
 
     // Handle JSON blob output for specific subsystem
     if (!blob_subsystem.empty()) {
