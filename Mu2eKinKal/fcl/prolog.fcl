@@ -559,8 +559,15 @@ Mu2eKinKal : {
       SaveTrajectory : T0
       SaveDomains : false
     }
-    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.CHSEEDEXT
+    # straw hits keep the piece holding their hint time (TOCA); material crossings follow the closest approach (DOCA)
+    FitSettings : {
+      @table::Mu2eKinKal.CHSEEDFIT
+      HitReferencePiece : [ "TOCA", "TOCA", "TOCA", "TOCA" ]
+    }
+    ExtensionSettings : {
+      @table::Mu2eKinKal.CHSEEDEXT
+      HitReferencePiece : [ "TOCA", "TOCA", "TOCA", "TOCA" ]
+    }
     ModuleSettings : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors
@@ -574,8 +581,15 @@ Mu2eKinKal : {
       SaveTrajectory : Detector
       SaveDomains : true
     }
-    FitSettings : @local::Mu2eKinKal.CHSEEDFIT
-    ExtensionSettings : @local::Mu2eKinKal.CHDRIFTEXT
+    # straw hits keep the piece holding their hint time (TOCA); material crossings follow the closest approach (DOCA)
+    FitSettings : {
+      @table::Mu2eKinKal.CHSEEDFIT
+      HitReferencePiece : [ "TOCA", "TOCA", "TOCA", "TOCA" ]
+    }
+    ExtensionSettings : {
+      @table::Mu2eKinKal.CHDRIFTEXT
+      HitReferencePiece : [ "TOCA", "TOCA", "TOCA", "TOCA", "TOCA", "TOCA", "TOCA", "TOCA", "TOCA" ]
+    }
     ModuleSettings : {
       @table::Mu2eKinKal.CENTRALHELIX
       @table::Mu2eKinKal.KKPrecursors

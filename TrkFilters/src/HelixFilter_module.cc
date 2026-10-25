@@ -27,9 +27,11 @@
 // helper function
 #include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace CLHEP;
 // c++
+#include <cmath>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -62,6 +64,8 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
       fhicl::OptionalAtom<double>             minEDepAvg           {     Name("minEDepAvg"),              Comment("Minimum mean straw hit energy deposit (MeV)")};
       fhicl::OptionalAtom<double>             maxEDepAvg           {     Name("maxEDepAvg"),              Comment("Maximum mean straw hit energy deposit (MeV)")};
+      fhicl::OptionalAtom<double>             minMass              {     Name("minMass"),                 Comment("Minimum mass (MeV) from the momentum and the helix t vs z slope")};
+      fhicl::OptionalAtom<double>             maxMass              {     Name("maxMass"),                 Comment("Maximum mass (MeV) from the momentum and the helix t vs z slope")};
       fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
       fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
@@ -92,6 +96,8 @@ namespace mu2e
           config.minNLoops(_minnloops);
           config.minEDepAvg(_minedep);
           config.maxEDepAvg(_maxedep);
+          _useMinMass = config.minMass(_minmass);
+          _useMaxMass = config.maxMass(_maxmass);
           _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
           _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
@@ -142,13 +148,18 @@ namespace mu2e
         const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
         const float edep           = Helix.hits().eDepAvg(); // straw hit weighted, as AgnosticHelixFinder maxEDepAvg
+        // mass from the momentum and the velocity along z from the t vs z slope (ns/mm), using only hit times:
+        // m^2 = (pz/beta_z)^2 - p^2, beta_z = 1/(|dt/dz| c). Negative if unphysical (no slope or beta > 1)
+        const float pz             = lambda*mm2MeV;
+        const float m2             = std::pow(pz*std::fabs(slope)*CLHEP::c_light, 2) - hmom*hmom;
+        const float mass           = (m2 > 0.f) ? std::sqrt(m2) : -1.f;
 
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
                     << " p = " << hmom << " pT = " << hpT
                     << " nLoops = " << nLoops << " hRatio = "<< helTool.hitRatio() << " slopeSignedSig = " << slopeSignedSig
-                    << " eDepAvg = " << edep << std::endl;
+                    << " eDepAvg = " << edep << " mass = " << mass << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -166,6 +177,8 @@ namespace mu2e
             hmom       <= _maxmom        &&
             edep       >= _minedep       &&
             edep       <= _maxedep       &&
+            (!_useMinMass || (mass > 0.f && mass >= _minmass)) &&
+            (!_useMaxMass || mass <= _maxmass) &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
             (_minHitRatio <= 0. || helTool.hitRatio() >= _minHitRatio) ) { // hit ratio last: it is the most expensive
@@ -202,6 +215,10 @@ namespace mu2e
       double        _minnloops       = 0.;
       double        _minedep         = std::numeric_limits<double>::lowest();
       double        _maxedep         = std::numeric_limits<double>::max();
+      bool          _useMinMass      = false; // unphysical masses fail only if a minimum mass cut is set
+      bool          _useMaxMass      = false;
+      double        _minmass         = 0.;
+      double        _maxmass         = std::numeric_limits<double>::max();
       bool          _useSlopeSigMin  = false;
       double        _slopeSigMin     = 0.;
       bool          _useSlopeSigMax  = false;
