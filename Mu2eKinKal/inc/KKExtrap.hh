@@ -55,7 +55,7 @@ namespace mu2e {
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
       template <class KTRAJ> void toTrackerPerimeter(KKTrack<KTRAJ>& ktrk) const;
-      template <class KTRAJ> void toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk) const;
+      template <class KTRAJ> void toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk, double tref, TimeDir tdir) const;
 
     private:
       int debug_;
@@ -97,11 +97,11 @@ namespace mu2e {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     // define the time direction according to the fit direction inside the tracker
     auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
+    // capture t0 now: once the fit is extrapolated upstream, ftraj.t0() can resolve onto the reflected leg
+    double t0 = ftraj.t0();
+    auto dir0 = ftraj.direction(t0);
     TimeDir tdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
     if(toTrackerPerimeter_)toTrackerPerimeter(ktrk);
-    if(toCaloD0_)toCaloDisk(ktrk,0);
-    if(toCaloD1_)toCaloDisk(ktrk,1);
     if(upstream_){
       double starttime = tdir == TimeDir::forwards ? ftraj.range().end() : ftraj.range().begin();
       // extrapolate through the IPA in this direction.
@@ -139,6 +139,12 @@ namespace mu2e {
       extrapolatePassiveMaterial(ktrk,TimeDir::forwards);
       extrapolateCRV(ktrk,TimeDir::forwards);
     }
+    // calorimeter disks MUST stay after all material passes: the calo extension adds no material, and running it
+    // first moves DS shell crossings onto interior pieces where they are dropped (see PR #2059)
+    // the calo is downstream of the tracker, opposite to the upstream direction tdir
+    TimeDir calotdir = tdir == TimeDir::forwards ? TimeDir::backwards : TimeDir::forwards;
+    if(toCaloD0_)toCaloDisk(ktrk,0,t0,calotdir);
+    if(toCaloD1_)toCaloDisk(ktrk,1,t0,calotdir);
   }
 
   // Extrapolate a fit to the tracker perimeter (the closed cylinder bounding the active volume) and record
@@ -192,9 +198,11 @@ namespace mu2e {
   }
 
   // Extrapolate a fit to a calorimeter disk (0 or 1) and record the intersections with its front/back faces
-  // and inner/outer edges
-  template <class KTRAJ> void KKExtrap::toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk) const {
+  // and inner/outer edges. tref is a time inside the tracker and tdir the time direction towards the calo, both
+  // taken before any extrapolation
+  template <class KTRAJ> void KKExtrap::toCaloDisk(KKTrack<KTRAJ>& ktrk, int idisk, double tref, TimeDir tdir) const {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
+    if(!kkg_h->calo()) return; // no calorimeter in this geometry
     auto const& calo = *kkg_h->calo();
     bool d0 = idisk == 0;
     auto const& front = d0 ? calo.EMC_Disk_0_Front() : calo.EMC_Disk_1_Front();
@@ -206,27 +214,22 @@ namespace mu2e {
     static const SurfaceId innersid[2] = {SurfaceId("EMC_Disk_0_Inner"), SurfaceId("EMC_Disk_1_Inner")};
     static const SurfaceId outersid[2] = {SurfaceId("EMC_Disk_0_Outer"), SurfaceId("EMC_Disk_1_Outer")};
     auto const& ftraj = ktrk.fitTraj();
-    auto dir0 = ftraj.direction(ftraj.t0());
-    TimeDir fronttdir = (dir0.Z() > 0) ? TimeDir::backwards : TimeDir::forwards;
-    TimeDir backtdir = (dir0.Z() > 0) ? TimeDir::forwards : TimeDir::backwards;
-    ExtrapolateToZ caloFront(maxdt_,maxdtstep_,btol_,intertol_,front.center().Z(),debug_);
+    // extend to the back face; the front face and edges are then covered by the trajectory too
     ExtrapolateToZ caloBack(maxdt_,maxdtstep_,btol_,intertol_,back.center().Z(),debug_);
     if(debug_ > 0)std::cout << "toCaloDisk " << idisk << " front z " << front.center().Z() << " back z " << back.center().Z() << std::endl;
-    auto tocalofront = ktrk.extrapolate(fronttdir,caloFront);
-    auto tocaloback = ktrk.extrapolate(backtdir,caloBack);
-    // record the calo disk intersections, using the full trajectory range
-    if(tocalofront){
-      auto frontinter = KinKal::intersect(ftraj,front,ftraj.range(),intertol_,fronttdir);
-      if(frontinter.good()) ktrk.addIntersection(frontsid[idisk],frontinter);
-    }
-    if(tocaloback){
-      auto backinter = KinKal::intersect(ftraj,back,ftraj.range(),intertol_,backtdir);
-      if(backinter.good())ktrk.addIntersection(backsid[idisk],backinter);
-    }
+    if(!ktrk.extrapolate(tdir,caloBack)) return;
+    // record the calo disk intersections, searching outward from the tracker interior only: after upstream
+    // extrapolation the far end piece is a nominal-field helix whose range can reach back to the calo z
+    TimeRange const rng = tdir == TimeDir::forwards ?
+      TimeRange(tref,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tref);
+    auto frontinter = KinKal::intersect(ftraj,front,rng,intertol_,tdir);
+    if(frontinter.good()) ktrk.addIntersection(frontsid[idisk],frontinter);
+    auto backinter = KinKal::intersect(ftraj,back,rng,intertol_,tdir);
+    if(backinter.good())ktrk.addIntersection(backsid[idisk],backinter);
     // get intersections with inner and outer cylinders
-    auto innerinter = KinKal::intersect(ftraj,inner,ftraj.range(),intertol_);
+    auto innerinter = KinKal::intersect(ftraj,inner,rng,intertol_,tdir);
     if(innerinter.good()) ktrk.addIntersection(innersid[idisk],innerinter);
-    auto outerinter = KinKal::intersect(ftraj,outer,ftraj.range(),intertol_);
+    auto outerinter = KinKal::intersect(ftraj,outer,rng,intertol_,tdir);
     if(outerinter.good()) ktrk.addIntersection(outersid[idisk],outerinter);
   }
 

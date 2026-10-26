@@ -405,8 +405,8 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : false
-    ToCaloD0 : true
-    ToCaloD1 : true
+    ToCaloD0 : false
+    ToCaloD1 : false
   }
 
   KLXTRAP : {

@@ -127,8 +127,8 @@ namespace mu2e {
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
-      fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces"), false };
-      fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces"), false };
+      fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces") };
+      fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces") };
     };
   }
 }

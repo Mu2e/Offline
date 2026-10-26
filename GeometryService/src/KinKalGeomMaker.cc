@@ -61,6 +61,8 @@ namespace mu2e {
 
   void KinKalGeomMaker::makeCalo() {
     // construct calorimeter geometry from GeometryService
+    art::ServiceHandle<GeometryService> geomService;
+    if(!geomService->hasElement<Calorimeter>()) return;
     auto const& calo_det = *(GeomHandle<mu2e::Calorimeter>());
     GeomHandle<DetectorSystem> det;
     auto toDetectorZ = [&det](double zmu2e) {
@@ -75,16 +77,14 @@ namespace mu2e {
     double r1_inner = geom1.innerEnvelopeR();
     double r1_outer = geom1.outerEnvelopeR();
 
-    // disk centers and front/back faces, converted from Mu2e to detector coordinates
-    double z0 = toDetectorZ(geom0.origin().z());
-    double z1 = toDetectorZ(geom1.origin().z());
+    // disk front/back faces, converted from Mu2e to detector coordinates
     double z0_front = toDetectorZ(geom0.origin().z() - 0.5*geom0.size().z());
     double z0_back  = toDetectorZ(geom0.origin().z() + 0.5*geom0.size().z());
     double z1_front = toDetectorZ(geom1.origin().z() - 0.5*geom1.size().z());
     double z1_back  = toDetectorZ(geom1.origin().z() + 0.5*geom1.size().z());
 
     // Construct Calo with geometry in detector coordinates
-    kkg_->calo_ = std::make_unique<KKGeom::Calo>(z0, z1, r0_inner, r0_outer, r1_inner, r1_outer, z0_front, z0_back, z1_front, z1_back);
+    kkg_->calo_ = std::make_unique<KKGeom::Calo>(r0_inner, r0_outer, r1_inner, r1_outer, z0_front, z0_back, z1_front, z1_back);
     auto const& calo = *kkg_->calo_;
 
     // Add all calo surfaces to the map
