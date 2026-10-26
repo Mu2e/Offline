@@ -1,17 +1,20 @@
 //
-// Run 1A geometry with a Bayesian-optimized muon stopping target: design
-// foilspfbpz07R11_00 of the Mu2e/Mu2eBO "foilspfbpz" study (green star on the
-// Mu2e Genesis poster), the best design within the deployed tracker-damage budget.
+// Run 1A geometry with a 49-foil muon stopping target whose foil holes open up
+// along the beam. Everything except the stopping target is the Run 1A production
+// geometry (geom_run1_a.txt).
 //
-// Everything except the stopping target is the Run 1A production geometry. The
-// study's proxy for the conversion sensitivity, S/sqrt(B), is 4.15 (+27%) against
-// 3.26 for the 37-foil target in geom_run1_a.txt, at 0.98 times that target's
-// tracker radiation dose from the beam flash.
-//
-// 49 aluminum foils spread over 1066.7 mm (the 37-foil target spans 800 mm) around
-// the same center. Outer radius, hole radius, thickness and position each follow a
+// 49 aluminum foils over 1066.7 mm (the 37-foil target: 800 mm) around the same
+// center. Outer radius, hole radius, thickness and position each follow a
 // quadratic profile through three control points (upstream / middle / downstream):
-// outer radius 100/103/117 mm, hole radius 9/27/41 mm, full thickness 36/143/72 um.
+//   outer radius   100 / 103 / 117 mm   (37-foil target: 75 mm)
+//   hole radius      9 /  27 /  41 mm   (21.5 mm)
+//   full thickness  36 / 143 /  72 um   (106 um)
+//
+// Origin: design foilspfbpz07R11_00 of the Bayesian optimization of the stopping
+// target (Mu2e/Mu2eBO, study "foilspfbpz", August 2026): the best design within
+// the deployed target's tracker radiation dose from the beam flash. Its fast
+// proxy for the conversion sensitivity, S/sqrt(B), is 4.15 against 3.26 for the
+// 37-foil target (+27%), at 0.98 times that target's tracker dose.
 //
 
 #include "Offline/Mu2eG4/geom/geom_run1_a.txt"
