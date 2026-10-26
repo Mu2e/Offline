@@ -254,8 +254,10 @@ namespace mu2e
       //a correction for this undershoot needs to be applies.
       //this correction factor needs to be found independently and requires that the peak is at a certain index.
       //ignore pulse if peak is outside of index range or if the difference between 1st sample and adjusted 12th sample is too large.
-      if(_pedestalAdjustment && ADCs.size()>=12)
+      if(_pedestalAdjustment)
       {
+        if(ADCs.size()<12 && (_usePedestalAdjustmentSample10 || _usePedestalAdjustmentSample11)) continue;
+
         auto ADCpeak=std::max_element(ADCs.begin(),ADCs.end());
         size_t  ADCpeakPos=std::distance(ADCs.begin(),ADCpeak);
         if(ADCpeakPos<_pedestalAdjustmentFirstPeakPos || ADCpeakPos>_pedestalAdjustmentLastPeakPos) continue;
@@ -283,7 +285,7 @@ namespace mu2e
       //adjustment using the last ADC sample as done for dark counts cannot be done, since signal pulses are much longer.
       //due to strong sample-to-sample fluctuations, this is not a very precise pedestal value but it is sufficient for pulses > 5PEs.
       //values for _pedestalUndershootThreshold at 100000 turns it off. a value of -100000 uses the first sample as pedestal for every pulse.
-      if(pedestal-((float)ADCs.at(0))>_pedestalUndershootThreshold)
+      if(pedestal-((float)ADCs.at(0))>_pedestalUndershootThreshold && !_pedestalAdjustment)  //apply only if not doing _pedestalAdjustement above
       {
         pedestal=ADCs.at(0);
         pedestalFromDB=false;
@@ -291,6 +293,7 @@ namespace mu2e
 
       //global pedestal adjustment
       pedestal+=_pedestalOffset;
+      if(_pedestalOffset!=0) pedestalFromDB=false;
 
       //get calibration values
       double calibPulseArea = calib.pulseArea(channel);
