@@ -6,11 +6,11 @@ CaloBaselineAna : {
     module_type : BaselineAnalyzer
     caloDigiTag : CaloDigis
     verbosity : 0
-    writeTXT : false
     writeCSV : true
     writePDF : true
-    thresholdOffset : 100
-    thresholdOffsetPin : 100
+    thresholdOffset : [ 20 ]
+    thresholdOffsetPin : [ 20 ]
+    Nsigma : [ 5 ]
 }
 
 NoiseAnalysis: {

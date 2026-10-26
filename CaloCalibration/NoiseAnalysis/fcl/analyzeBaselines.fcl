@@ -15,6 +15,8 @@ source : {
 
 services : {
 
+  TFileService : { fileName : "baselines_%R.root" }
+
   #@local::Services.Reco
   GeometryService : {
     inputFile: "Offline/Mu2eG4/geom/geom_common.txt"
@@ -49,12 +51,13 @@ physics : {
     Baselines : {
         module_type : BaselineAnalyzer
         caloDigiTag : CaloDigis
-        verbosity : 0
-        writeTXT : false
+        verbosity : 1
         writeCSV : true
         writePDF : true
-        thresholdOffset : 100
-        thresholdOffsetPin : 100
+        thresholdOffset : [ 20, 30 ]
+        thresholdOffsetPin : [ 20, 30 ]
+        Nsigma : [ 5 ]
+        maxSamples : -1
     }
 
   }
@@ -67,3 +70,9 @@ physics : {
 }
 
 services.scheduler.wantSummary: true
+
+# Suppress informational ROOT messages (e.g. "no dictionary for class pair<TString,TString>")
+services.message : @local::default_message
+services.message.destinations.log.categories.Root_Information : { limit : 0 }
+
+services.ProditionsService.calDAQConditions.fileSpec : "Offline/CaloConditions/data/nominal_laserswap.txt"
