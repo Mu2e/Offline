@@ -581,7 +581,7 @@ void mu2e::BaselineAnalyzer::WriteThresholds(size_t iCombo) {
     for (int c = 0; c < 20; c++) {
       if (all_thresholds[b].find(c) == all_thresholds[b].end()) {
         bool pindiode = (channelType[b][c] == mu2e::CaloConst::detType::PINDiode);
-        all_thresholds[b][c] = all_baselines[b][c] + std::max(nsigma * minimumStdDev_ + (pindiode ? offsetPin : offset), minimumThreshold_);
+        all_thresholds[b][c] = all_baselines[b][c] + std::max(nsigma * minimumStdDev_ + (pindiode ? offsetPin : offset), double(minimumThreshold_));
       }
     }
   }
