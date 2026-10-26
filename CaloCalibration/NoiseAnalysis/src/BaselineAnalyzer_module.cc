@@ -580,7 +580,7 @@ void mu2e::BaselineAnalyzer::WriteThresholds(size_t iCombo) {
     int b = board_pair.first;
     for (int c = 0; c < 20; c++) {
       if (all_thresholds[b].find(c) == all_thresholds[b].end()) {
-        all_thresholds[b][c] = all_baselines[b][c] + std::max(offset, minimumThreshold_);
+        all_thresholds[b][c] = all_baselines[b][c] + std::max(nsigma * minimumStdDev_ + (pindiode ? offsetPin : offset), minimumThreshold_);
       }
     }
   }
