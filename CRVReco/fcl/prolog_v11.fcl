@@ -412,7 +412,7 @@ BEGIN_PROLOG
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
       ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform
-      addOppositeSidePulses            : false  //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
+      addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
     }
 
 
