@@ -167,6 +167,7 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
   // Getting CRY particles. Generate secondaries until you find one that intersects with the
   // projected box
   while (!passed) {
+    genParts.clear(); // drop the particles of a shower rejected by maxShowerEn
     std::vector<CRYParticle*> secondaries;
     _cryGen->genEvent(&secondaries);
     _numEvents++;
