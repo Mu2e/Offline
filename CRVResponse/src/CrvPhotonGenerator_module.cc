@@ -308,7 +308,10 @@ namespace mu2e
 
           double t1 = step.startTime();
           double t2 = step.endTime();
-          if(isnan(t1) || isnan(t2)) continue;  //This situation was observed once. Not sure how it happened.
+          //CrvSteps made before the fix of Mu2e/Offline#2072 have a NaN endTime if the particle stopped in the bar.
+          //Such a step lasts less than 1 ns, so its start time is used as its end time.
+          if(isnan(t2)) t2 = t1;
+          if(isnan(t1)) continue;
 
           if(!_simulateNZS && spillType==EventWindowMarker::SpillType::onspill)  //remove steps that will never produce digis (if on-spill and not NZS) to save time
           {

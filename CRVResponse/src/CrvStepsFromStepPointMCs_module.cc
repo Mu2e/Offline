@@ -310,7 +310,9 @@ namespace mu2e
         if(radicand<0) radicand=0;  //shouldn't happen except due to numerical precision
         double avgBeta   = sqrt(radicand);
         double velocity  = avgBeta*CLHEP::c_light;
-        endTime         += last->stepLength()/velocity;
+        //a particle that stops in the bar ends with a zero-length at-rest step (decay, capture, annihilation),
+        //which has zero velocity and takes no time
+        if(last->stepLength()>0.0) endTime += last->stepLength()/velocity;
 
         // create the CrvStep and emplace it back into the vector of crvSteps
         crvSteps->emplace_back(first->barIndex(), edep, startTime, endTime,
