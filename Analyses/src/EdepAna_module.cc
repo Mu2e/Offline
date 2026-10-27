@@ -44,6 +44,12 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
       fhicl::Atom<art::InputTag> genCountTag    { Name("GenCountTag")             , Comment("GenCount tag"), "genCounter" };
+      fhicl::Atom<double>        trkStepEMin    { Name("TrkStepEnergyThreshold")  , Comment("StrawGasStep ionizing energy threshold for counting hits (MeV)") };
+      fhicl::Atom<double>        trkStepTMin    { Name("TrkStepTimeMin")          , Comment("StrawGasStep minimum time for counting hits (ns)") };
+      fhicl::Atom<double>        trkStepTMax    { Name("TrkStepTimeMax")          , Comment("StrawGasStep maximum time for counting hits (ns)") };
+      fhicl::Atom<double>        caloStepEMin   { Name("CaloStepEnergyThreshold") , Comment("CaloShowerStep visible energy threshold for counting hits (MeV)") };
+      fhicl::Atom<double>        caloStepTMin   { Name("CaloStepTimeMin")         , Comment("CaloShowerStep minimum time for counting hits (ns)") };
+      fhicl::Atom<double>        caloStepTMax   { Name("CaloStepTimeMax")         , Comment("CaloShowerStep maximum time for counting hits (ns)") };
       fhicl::Atom<int>           debugLevel     { Name("DebugLevel")              , Comment("Debug level"), 0 };
     };
 
@@ -96,6 +102,12 @@ namespace mu2e {
       float event_calo_edep;
       float event_calo_edep_vis;
       float event_trk_edep;
+      int   event_calo_nsteps;           // all CaloShowerSteps
+      int   event_calo_nsteps_ecut;      // above the energy threshold
+      int   event_calo_nsteps_ecut_tcut; // above the energy threshold and in the time window
+      int   event_trk_nsteps;            // all StrawGasSteps
+      int   event_trk_nsteps_ecut;
+      int   event_trk_nsteps_ecut_tcut;
       float weight;
       int   run;
       int   subrun;
@@ -198,6 +210,11 @@ namespace mu2e {
     f->SetParLimits(3, 0.01, 100.); // b
     f->SetParameters(h->GetMaximum(), mean_seed, 0.5, fwhm_seed/5.);
     auto fit_res = h->Fit(f, "QNSR");
+    if(!fit_res.Get()) { // e.g. empty fit range
+      std::cerr << "Fit failed: no fit result" << std::endl;
+      delete f;
+      return -1;
+    }
     mean = f->GetParameter(1);
     const double max_val = f->GetMaximum();
     const double half_max = max_val / 2.;
@@ -223,6 +240,12 @@ namespace mu2e {
     art::InputTag straw_gas_tag_;
     art::InputTag step_point_tag_;
     art::InputTag gen_count_tag_;
+    double trk_step_emin_;
+    double trk_step_tmin_;
+    double trk_step_tmax_;
+    double calo_step_emin_;
+    double calo_step_tmin_;
+    double calo_step_tmax_;
     int debug_level_;
     std::unique_ptr<StopWatch> watch_ = std::make_unique<StopWatch>();
 
@@ -237,6 +260,8 @@ namespace mu2e {
     double total_calo_edep_ = 0.;
     double total_calo_edep_vis_ = 0.;
     double total_tracker_edep_ = 0.;
+    double total_calo_nsteps_[3] = {0., 0., 0.}; // raw, energy cut, energy + time cut
+    double total_trk_nsteps_ [3] = {0., 0., 0.};
     unsigned long ngen_ = 0;
   };
 
@@ -248,6 +273,12 @@ namespace mu2e {
     , straw_gas_tag_(conf().strawGasStepTag())
     , step_point_tag_(conf().stepPointTag())
     , gen_count_tag_(conf().genCountTag())
+    , trk_step_emin_(conf().trkStepEMin())
+    , trk_step_tmin_(conf().trkStepTMin())
+    , trk_step_tmax_(conf().trkStepTMax())
+    , calo_step_emin_(conf().caloStepEMin())
+    , calo_step_tmin_(conf().caloStepTMin())
+    , calo_step_tmax_(conf().caloStepTMax())
     , debug_level_(conf().debugLevel())
   {
     // register products consumed
@@ -283,6 +314,12 @@ namespace mu2e {
     tree_->Branch("event_calo_edep"         , &data_.event_calo_edep);
     tree_->Branch("event_calo_edep_vis"     , &data_.event_calo_edep_vis);
     tree_->Branch("event_trk_edep"          , &data_.event_trk_edep);
+    tree_->Branch("event_calo_nsteps"          , &data_.event_calo_nsteps);
+    tree_->Branch("event_calo_nsteps_ecut"     , &data_.event_calo_nsteps_ecut);
+    tree_->Branch("event_calo_nsteps_ecut_tcut", &data_.event_calo_nsteps_ecut_tcut);
+    tree_->Branch("event_trk_nsteps"           , &data_.event_trk_nsteps);
+    tree_->Branch("event_trk_nsteps_ecut"      , &data_.event_trk_nsteps_ecut);
+    tree_->Branch("event_trk_nsteps_ecut_tcut" , &data_.event_trk_nsteps_ecut_tcut);
     tree_->Branch("run"                     , &data_.run);
     tree_->Branch("subrun"                  , &data_.subrun);
     tree_->Branch("event"                   , &data_.event);
@@ -410,19 +447,30 @@ namespace mu2e {
 
     if(debug_level_ > 0) watch_->SetTime("event info computation");
 
+    // Approximate hit counts: count steps, steps above an energy threshold, and steps above the threshold in the time window
+    int trkNSteps[3] = {0, 0, 0};
     double totalTrackerE = 0.;
     if(straw_step_col_) {
       for(const auto& step : *straw_step_col_) {
         const double e = step.ionizingEdep();
         totalTrackerE += e;
+        ++trkNSteps[0];
+        if(e <= trk_step_emin_) continue;
+        ++trkNSteps[1];
+        if(step.time() >= trk_step_tmin_ && step.time() <= trk_step_tmax_) ++trkNSteps[2];
       }
     }
 
+    int caloNSteps[3] = {0, 0, 0};
     double totalCaloE(0.), totalCaloEVis(0.);
     if(shower_col_) {
       for(const auto& css : *shower_col_) {
         totalCaloEVis += css.energyDepBirks(); // visible energy
         totalCaloE    += css.energyDepG4(); // total energy
+        ++caloNSteps[0];
+        if(css.energyDepBirks() <= calo_step_emin_) continue;
+        ++caloNSteps[1];
+        if(css.time() >= calo_step_tmin_ && css.time() <= calo_step_tmax_) ++caloNSteps[2];
       }
     }
 
@@ -446,6 +494,12 @@ namespace mu2e {
     data_.event_calo_edep = totalCaloE;
     data_.event_calo_edep_vis = totalCaloEVis;
     data_.event_trk_edep  = totalTrackerE;
+    data_.event_calo_nsteps           = caloNSteps[0];
+    data_.event_calo_nsteps_ecut      = caloNSteps[1];
+    data_.event_calo_nsteps_ecut_tcut = caloNSteps[2];
+    data_.event_trk_nsteps            = trkNSteps[0];
+    data_.event_trk_nsteps_ecut       = trkNSteps[1];
+    data_.event_trk_nsteps_ecut_tcut  = trkNSteps[2];
     data_.nprim = (primary_) ? int(primary_->primarySimParticles().size()) : 0;
     if(data_.nprim >= kMaxPrimaries) throw cet::exception("Analysis") << "Too many primary particles!"
                                                                            << "N(primaries) = " << data_.nprim
@@ -482,6 +536,10 @@ namespace mu2e {
     total_calo_edep_vis_ += info_.weight_ * totalCaloEVis;
     if(totalCaloEVis > 50.) events_above_50_mev_ += info_.weight_;
     total_tracker_edep_ += info_.weight_ * totalTrackerE;
+    for(int i = 0; i < 3; ++i) {
+      total_calo_nsteps_[i] += info_.weight_ * caloNSteps[i];
+      total_trk_nsteps_ [i] += info_.weight_ * trkNSteps [i];
+    }
 
     if(debug_level_ > 0) watch_->StopTime("event info computation");
 
@@ -566,6 +624,20 @@ namespace mu2e {
       << "  Events with calo Edep > 50 MeV: " << events_above_50_mev_ << std::endl
       << "  Average tracker energy deposition per event: " << averageTrkEdep << " MeV" << std::endl
       << "  Average tracker energy deposition per gen event: " << averageTrkEdepGen << " MeV" << std::endl;
+
+    // Approximate hit counts from step counts
+    auto printCounts = [&](const char* det, const double* counts, const double emin, const double tmin, const double tmax) {
+      std::cout << std::format("  {} step counts (E > {:g} MeV, {:g} <= t <= {:g} ns):", det, emin, tmin, tmax) << std::endl;
+      const char* labels[3] = {"all", "E cut", "E + t cut"};
+      for(int i = 0; i < 3; ++i) {
+        const double perEvent = (total_events_ > 0) ? counts[i] / total_events_ : -1.;
+        const double perGen   = (ngen_         > 0) ? counts[i] / ngen_         : -1.;
+        std::cout << std::format("    {:<10}: total = {:<12g} per event = {:<12.5g} per gen event = {:.5g}",
+                                 labels[i], counts[i], perEvent, perGen) << std::endl;
+      }
+    };
+    printCounts("Calo"   , total_calo_nsteps_, calo_step_emin_, calo_step_tmin_, calo_step_tmax_);
+    printCounts("Tracker", total_trk_nsteps_ , trk_step_emin_ , trk_step_tmin_ , trk_step_tmax_ );
   }
 
 }
