@@ -32,6 +32,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 
 //Data products
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
@@ -192,6 +194,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag>     genCountTag        {Name("genCount"           ), Comment("GenEventCount label"                       ), "genCounter" };
       fhicl::Atom<art::InputTag>     PBITag             {Name("PBITag"             ), Comment("ProtonBunchIntensity label"                ), "PBISim" };
       fhicl::Atom<string>            processName        {Name("processName"        ), Comment("globalTrigger"                             ), ""  };
+      fhicl::Atom<bool>              useTrackerStatus   {Name("useTrackerStatus"   ), Comment("don't count straws without signal (TrackerStatus) as expected hits in the helix hit ratio; set as in the HelixFilter") };
     };
 
     explicit ReadTriggerInfo(const art::EDAnalyzer::Table<Config>& config);
@@ -260,6 +263,9 @@ namespace mu2e {
     occupancyHist_            _occupancyHist;
 
     const mu2e::Tracker*      _tracker = nullptr;
+    ProditionsHandle<TrackerStatus> _trackerStatus_h;
+    bool                      _useTrackerStatus;
+    HelixTool::StrawNoSignal  _noSignal;  // straws not counted as expected hits in the helix hit ratio; empty: all straws live
 
     float  _minPOT, _maxPOT;
     const int _genOccIndex;
@@ -284,6 +290,7 @@ namespace mu2e {
     _maxPOT              (3.5e8                      ),
     _genOccIndex         (2*_nTrackTrig + _nCaloTrig )
   {
+    _useTrackerStatus = config().useTrackerStatus();
 
     _trigAll.        resize(_nMaxTrig);
     _trigFinal.      resize(_nMaxTrig);
@@ -765,6 +772,11 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::analyze(const art::Event& event) {
+    // same definition of the helix hit ratio as in HelixFilter
+    if (_useTrackerStatus) {
+      const TrackerStatus* status = &_trackerStatus_h.get(event.id());
+      _noSignal = [status](StrawId const& sid) { return status->noSignal(sid) || status->suppress(sid); };
+    }
 
     if(!_useNGen) _nProcess += 1;
 
@@ -1011,7 +1023,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed* HSeed, helixInfoHist_& Hist) {
     if(!Hist._hHelInfo[HelTrigIndex][0]) throw cet::exception("BADCONFIG") << __func__ << ": Helix histogram index " << HelTrigIndex << " not initialized\n";
-    HelixTool helTool(HSeed, _tracker);
+    HelixTool helTool(HSeed, _tracker, _noSignal);
 
     int        nch       = (int)HSeed->hits().size();
     int        nsh(0);

@@ -17,6 +17,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 // data
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
@@ -114,6 +116,8 @@ namespace mu2e
       HelixCutsTool():_configured(false){};
 
       void setTrackerGeomHandle(const Tracker* TrackerGeom) { _myTracker = TrackerGeom; }
+      // straws without signal are not counted as expected hits in the hit ratio; nullptr: all straws live
+      void setTrackerStatus(const TrackerStatus* Status) { _trackerStatus = Status; }
 
       int   evalIPAPresc(const float &phi0){
         int val= (_prescalerPar._amplitude - (_prescalerPar._amplitude-1)*sin(_prescalerPar._frequency*phi0 + _prescalerPar._phase));
@@ -126,7 +130,11 @@ namespace mu2e
         //check the helicity
         if (_doHelicityCheck && !(Helix.helix().helicity() == Helicity(_hel)))  return false;
         float mm2MeV = 3./10.;//FIXME!
-        HelixTool helTool(&Helix, _myTracker);
+        HelixTool::StrawNoSignal noSignal;
+        if (_trackerStatus) {
+          noSignal = [status = _trackerStatus](StrawId const& sid) { return status->noSignal(sid) || status->suppress(sid); };
+        }
+        HelixTool helTool(&Helix, _myTracker, noSignal);
         // compute the helix momentum.  Note this is in units of mm!!!
         float hmom       = Helix.helix().momentum()*mm2MeV;
         int   nstrawhits = helTool.nstrawhits();
@@ -136,7 +144,6 @@ namespace mu2e
         float d0         = Helix.helix().rcent() - Helix.helix().radius();
         float lambda     = std::fabs(Helix.helix().lambda());
         float nLoops     = helTool.nLoops();
-        float hRatio     = helTool.hitRatio();
         const float slope          = Helix.recoDir().slope();
         const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
@@ -151,7 +158,7 @@ namespace mu2e
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
                     << " p = " << hmom << " pT = " << hpT
-                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig
+                    << " nLoops = " << nLoops << " hRatio = "<< helTool.hitRatio() << " slopeSignedSig = " << slopeSignedSig
                     << " eDepAvg = " << edep << " mass = " << mass << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
@@ -174,7 +181,7 @@ namespace mu2e
             (!_useMaxMass || mass <= _maxmass) &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
-            hRatio     >= _minHitRatio ) {
+            (_minHitRatio <= 0. || helTool.hitRatio() >= _minHitRatio) ) { // hit ratio last: it is the most expensive
           //now check if we want to prescake or not
           if (_prescaleUsingD0Phi) {
             float phiAtD0   = Helix.helix().fcent();
@@ -220,6 +227,7 @@ namespace mu2e
       bool          _prescaleUsingD0Phi = false;
       PhiPrescalingParams     _prescalerPar;
       const Tracker*_myTracker     = nullptr;
+      const TrackerStatus* _trackerStatus = nullptr;
     };
 
     struct Config{
@@ -232,6 +240,7 @@ namespace mu2e
       fhicl::Atom<bool>               noFilter             { Name("noFilter"),                Comment("don't apply the filter decision"), false};
       fhicl::Atom<unsigned>           minNHelices          { Name("minNHelices"),             Comment("minimum number of helices passing the cuts"), 1};
       fhicl::Atom<float>              maxDt0               { Name("maxDt0"),                  Comment("maximum difference in time between helices"), -1};
+      fhicl::Atom<bool>               useTrackerStatus     { Name("useTrackerStatus"),        Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio")};
     };
 
 
@@ -256,6 +265,8 @@ namespace mu2e
     bool          _noFilter;
     unsigned      _minNHelices;
     float         _maxDt0;
+    bool          _useTrackerStatus;
+    ProditionsHandle<TrackerStatus> _trackerStatus_h;
 
     bool  checkHelixFromHelicity(const HelixSeed&helix);
   };
@@ -270,7 +281,8 @@ namespace mu2e
     _npass(0),
     _noFilter          (config().noFilter()),
     _minNHelices       (config().minNHelices()),
-    _maxDt0            (config().maxDt0())
+    _maxDt0            (config().maxDt0()),
+    _useTrackerStatus  (config().useTrackerStatus())
     {
       produces<TriggerInfo>();
       if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
@@ -318,6 +330,11 @@ namespace mu2e
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
+    if (_useTrackerStatus) {
+      const TrackerStatus& trackerStatus = _trackerStatus_h.get(evt.id());
+      _posHelCuts.setTrackerStatus(&trackerStatus);
+      _negHelCuts.setTrackerStatus(&trackerStatus);
+    }
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
