@@ -1,14 +1,15 @@
 # Count per-event tracker, calorimeter and CRV occupancy (collection sizes) into a TTree
 #
 # The default tags are those of reconstructed (mcs) files. In mcs files the digi collections
-# (StrawDigis, CaloDigis, CrvDigis, CRV pulses and coincidence clusters) are SelectReco subsets kept
-# for the reconstructed objects, not
-# the full detector occupancy, so they are skipped here. For digi (dig) files, set e.g.
+# (StrawDigis, CaloDigis, CrvDigis) and the CRV pulses and coincidence clusters are SelectReco
+# subsets kept for the reconstructed objects, not the full detector occupancy, so they are skipped
+# here. For digi (dig) files, set e.g.
 #   physics.analyzers.OccupancyAna.StrawDigiCollection : "makeSD"
 #   physics.analyzers.OccupancyAna.CaloDigiCollection  : "CaloDigiMaker"
 #   physics.analyzers.OccupancyAna.CrvDigiCollection   : "CrvDigi"
-# and empty the reconstructed collection tags. A configured collection missing from an event is
-# counted as -1 (or throws with RequireAll : true); an empty tag skips that collection.
+# and remove the reconstructed collection tags. A collection left out of the configuration is
+# skipped; a configured collection missing from an event is counted as -1 (or throws with
+# RequireAll : true). In both cases its per-plane / per-disk arrays are -1 as well.
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -27,16 +28,16 @@ physics : {
   analyzers : {
     OccupancyAna : {
       module_type                     : OccupancyAna
-      StrawDigiCollection             : ""
+      # StrawDigiCollection           : "makeSD"
       StrawHitCollection              : "makeSH"      # single-straw ComboHits
       ComboHitCollection              : "makePH"      # panel ComboHits
-      CaloDigiCollection              : ""
-      CaloRecoDigiCollection          : ""
+      # CaloDigiCollection            : "CaloDigiMaker"
+      # CaloRecoDigiCollection        : "CaloRecoDigiMaker"
       CaloHitCollection               : "CaloHitMaker"
       CaloClusterCollection           : "CaloClusterMaker"
-      CrvDigiCollection               : ""
-      CrvRecoPulseCollection          : ""
-      CrvCoincidenceClusterCollection : ""            # SelectReco subset in mcs files
+      # CrvDigiCollection             : "CrvDigi"
+      # CrvRecoPulseCollection        : "CrvRecoPulses"
+      # CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
       # Window for the *_sel hit counts (times in ns, energy in MeV)
       HitTimeMin                      : -1.e9
       HitTimeMax                      : 1.e9
