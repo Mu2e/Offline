@@ -44,12 +44,12 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
       fhicl::Atom<art::InputTag> genCountTag    { Name("GenCountTag")             , Comment("GenCount tag"), "genCounter" };
-      fhicl::Atom<double>        trkStepEMin    { Name("TrkStepEnergyThreshold")  , Comment("StrawGasStep ionizing energy threshold for counting hits (MeV)"), 0.0005 };
-      fhicl::Atom<double>        trkStepTMin    { Name("TrkStepTimeMin")          , Comment("StrawGasStep minimum time for counting hits (ns)"), 500. };
-      fhicl::Atom<double>        trkStepTMax    { Name("TrkStepTimeMax")          , Comment("StrawGasStep maximum time for counting hits (ns)"), 1.e9 };
-      fhicl::Atom<double>        caloStepEMin   { Name("CaloStepEnergyThreshold") , Comment("CaloShowerStep visible energy threshold for counting hits (MeV)"), 0.5 };
-      fhicl::Atom<double>        caloStepTMin   { Name("CaloStepTimeMin")         , Comment("CaloShowerStep minimum time for counting hits (ns)"), 500. };
-      fhicl::Atom<double>        caloStepTMax   { Name("CaloStepTimeMax")         , Comment("CaloShowerStep maximum time for counting hits (ns)"), 1.e9 };
+      fhicl::Atom<double>        trkStepEMin    { Name("TrkStepEnergyThreshold")  , Comment("StrawGasStep ionizing energy threshold for counting hits (MeV)") };
+      fhicl::Atom<double>        trkStepTMin    { Name("TrkStepTimeMin")          , Comment("StrawGasStep minimum time for counting hits (ns)") };
+      fhicl::Atom<double>        trkStepTMax    { Name("TrkStepTimeMax")          , Comment("StrawGasStep maximum time for counting hits (ns)") };
+      fhicl::Atom<double>        caloStepEMin   { Name("CaloStepEnergyThreshold") , Comment("CaloShowerStep visible energy threshold for counting hits (MeV)") };
+      fhicl::Atom<double>        caloStepTMin   { Name("CaloStepTimeMin")         , Comment("CaloShowerStep minimum time for counting hits (ns)") };
+      fhicl::Atom<double>        caloStepTMax   { Name("CaloStepTimeMax")         , Comment("CaloShowerStep maximum time for counting hits (ns)") };
       fhicl::Atom<int>           debugLevel     { Name("DebugLevel")              , Comment("Debug level"), 0 };
     };
 
@@ -210,6 +210,11 @@ namespace mu2e {
     f->SetParLimits(3, 0.01, 100.); // b
     f->SetParameters(h->GetMaximum(), mean_seed, 0.5, fwhm_seed/5.);
     auto fit_res = h->Fit(f, "QNSR");
+    if(!fit_res.Get()) { // e.g. empty fit range
+      std::cerr << "Fit failed: no fit result" << std::endl;
+      delete f;
+      return -1;
+    }
     mean = f->GetParameter(1);
     const double max_val = f->GetMaximum();
     const double half_max = max_val / 2.;
@@ -622,7 +627,7 @@ namespace mu2e {
 
     // Approximate hit counts from step counts
     auto printCounts = [&](const char* det, const double* counts, const double emin, const double tmin, const double tmax) {
-      std::cout << std::format("  {} step counts (E > {:g} MeV, {:g} < t < {:g} ns):", det, emin, tmin, tmax) << std::endl;
+      std::cout << std::format("  {} step counts (E > {:g} MeV, {:g} <= t <= {:g} ns):", det, emin, tmin, tmax) << std::endl;
       const char* labels[3] = {"all", "E cut", "E + t cut"};
       for(int i = 0; i < 3; ++i) {
         const double perEvent = (total_events_ > 0) ? counts[i] / total_events_ : -1.;

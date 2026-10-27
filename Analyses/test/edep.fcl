@@ -23,6 +23,13 @@ physics : {
       StrawGasStepCollection   : "compressDetStepMCs"
       StepPointMCCollection    : "compressDetStepMCs:virtualdetector"
       Primary                  : "FindMCPrimary"
+      # Step counting cuts to approximate hit counts (energies in MeV, times in ns)
+      TrkStepEnergyThreshold   : 0.0005
+      TrkStepTimeMin           : 500.
+      TrkStepTimeMax           : 1.e9
+      CaloStepEnergyThreshold  : 0.5
+      CaloStepTimeMin          : 500.
+      CaloStepTimeMax          : 1.e9
       DebugLevel               : 0
     }
   }
