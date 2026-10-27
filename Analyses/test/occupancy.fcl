@@ -1,0 +1,50 @@
+# Count per-event tracker, calorimeter and CRV occupancy (collection sizes) into a TTree
+#
+# The default tags are those of reconstructed (mcs) files. In mcs files the digi collections
+# (StrawDigis, CaloDigis, CrvDigis, CRV pulses and coincidence clusters) are SelectReco subsets kept
+# for the reconstructed objects, not
+# the full detector occupancy, so they are skipped here. For digi (dig) files, set e.g.
+#   physics.analyzers.OccupancyAna.StrawDigiCollection : "makeSD"
+#   physics.analyzers.OccupancyAna.CaloDigiCollection  : "CaloDigiMaker"
+#   physics.analyzers.OccupancyAna.CrvDigiCollection   : "CrvDigi"
+# and empty the reconstructed collection tags. A configured collection missing from an event is
+# counted as -1 (or throws with RequireAll : true); an empty tag skips that collection.
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : Occupancy
+
+services : @local::Services.Core
+
+source: {
+  module_type: RootInput
+}
+services.TFileService.fileName : "nts.owner.occupancy.version.sequencer.root"
+
+physics : {
+
+  analyzers : {
+    OccupancyAna : {
+      module_type                     : OccupancyAna
+      StrawDigiCollection             : ""
+      StrawHitCollection              : "makeSH"      # single-straw ComboHits
+      ComboHitCollection              : "makePH"      # panel ComboHits
+      CaloDigiCollection              : ""
+      CaloRecoDigiCollection          : ""
+      CaloHitCollection               : "CaloHitMaker"
+      CaloClusterCollection           : "CaloClusterMaker"
+      CrvDigiCollection               : ""
+      CrvRecoPulseCollection          : ""
+      CrvCoincidenceClusterCollection : ""            # SelectReco subset in mcs files
+      # Window for the *_sel hit counts (times in ns, energy in MeV)
+      HitTimeMin                      : -1.e9
+      HitTimeMax                      : 1.e9
+      CaloHitEnergyMin                : 0.
+      RequireAll                      : false
+      DebugLevel                      : 0
+    }
+  }
+  EndPath : [ OccupancyAna ]
+  end_paths : [ EndPath ]
+}
