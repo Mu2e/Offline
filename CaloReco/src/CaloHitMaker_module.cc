@@ -135,7 +135,7 @@ namespace mu2e {
 
         std::vector<CaloRecoDigiPtr> buffer{};
         int nSiPM(0);
-        double timeW(0),timeWtot(0),eDepW(0),eDepWtot(0);
+        double timeW(0),timeWtot(0),timeSum(0),eDepW(0),eDepWtot(0);
 
         while (endHit != hits.end())
         {
@@ -145,8 +145,8 @@ namespace mu2e {
 
             if (deltaTime > time4Merge_)
             {
-                double time    = timeW/timeWtot;
-                double timeErr = 1.0/sqrt(timeWtot);
+                double time    = timeWtot > 0 ? timeW/timeWtot     : timeSum/nSiPM;
+                double timeErr = timeWtot > 0 ? 1.0/sqrt(timeWtot) : 0.0;
                 double eDep    = eDepW/eDepWtot;
                 double eDepErr = 1.0/sqrt(eDepWtot);
 
@@ -156,6 +156,7 @@ namespace mu2e {
                 buffer.clear();
                 timeW      = 0.0;
                 timeWtot   = 0.0;
+                timeSum    = 0.0;
                 eDepW      = 0.0;
                 eDepWtot   = 0.0;
                 nSiPM      = 0;
@@ -163,9 +164,16 @@ namespace mu2e {
              }
              else
              {
+                // A digi with a zero or non-finite time error (e.g. the fit of a saturated pulse) would
+                // give an infinite weight and a NaN hit time, so it is left out of the weighted mean.
+                // If no digi of the hit has a usable error, the hit time is their plain mean, with error 0.
                 double wt  = 1.0/(*endHit)->timeErr()/(*endHit)->timeErr();
-                timeWtot   += wt;
-                timeW      += wt*(*endHit)->time();
+                if (std::isfinite(wt))
+                {
+                    timeWtot   += wt;
+                    timeW      += wt*(*endHit)->time();
+                }
+                timeSum    += (*endHit)->time();
 
                 wt  = 1.0/(*endHit)->energyDepErr()/(*endHit)->energyDepErr();
                 eDepWtot   += wt;
@@ -185,8 +193,8 @@ namespace mu2e {
           }
 
           //flush last buffer
-          double time    = timeW/timeWtot;
-          double timeErr = 1.0/sqrt(timeWtot);
+          double time    = timeWtot > 0 ? timeW/timeWtot     : timeSum/nSiPM;
+          double timeErr = timeWtot > 0 ? 1.0/sqrt(timeWtot) : 0.0;
           double eDep    = eDepW/eDepWtot;
           double eDepErr = 1.0/sqrt(eDepWtot);
           fillBuffer(crystalId, nSiPM, time, timeErr, eDep, eDepErr, buffer, caloHits);
