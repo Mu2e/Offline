@@ -390,6 +390,8 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : true
     ToCRV : false
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   LHSEEDXTRAP : {
@@ -403,6 +405,8 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : false
+    ToCaloD0 : false
+    ToCaloD1 : false
   }
 
   KLXTRAP : {
@@ -416,6 +420,8 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : true
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   CHXTRAP : {
@@ -429,6 +435,8 @@ Mu2eKinKal : {
     BackToTracker : false
     ToOPA : false
     ToCRV : true
+    ToCaloD0 : true
+    ToCaloD1 : true
   }
 
   CENTRALHELIX : {

@@ -16,6 +16,8 @@
 #include "Offline/KinKalGeom/inc/DetectorSolenoid.hh"
 #include "Offline/KinKalGeom/inc/StoppingTarget.hh"
 #include "Offline/KinKalGeom/inc/CRV.hh"
+#include "Offline/KinKalGeom/inc/Calo.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -32,7 +34,6 @@
 namespace mu2e {
   using KinKal::VEC3;
   using KinKal::Cylinder;
-  using KinKal::Disk;
   using KinKal::Surface;
   using KinKal::Frustrum;
   using KinKal::Annulus;
@@ -54,7 +55,47 @@ namespace mu2e {
     makeTarget();
     makeCRV();
     makePassiveMaterials();
+    makeCalo();
     return kkg_;
+  }
+
+  void KinKalGeomMaker::makeCalo() {
+    // construct calorimeter geometry from GeometryService
+    art::ServiceHandle<GeometryService> geomService;
+    if(!geomService->hasElement<Calorimeter>()) return;
+    auto const& calo_det = *(GeomHandle<mu2e::Calorimeter>());
+    GeomHandle<DetectorSystem> det;
+    auto toDetectorZ = [&det](double zmu2e) {
+      return VEC3(det->toDetector(CLHEP::Hep3Vector(0.0,0.0,zmu2e))).Z();
+    };
+
+    // Extract geometry from the first two disks (D0 and D1)
+    auto const& geom0 = calo_det.disk(0).diskInfo();
+    auto const& geom1 = calo_det.disk(1).diskInfo();
+    double r0_inner = geom0.innerEnvelopeR();
+    double r0_outer = geom0.outerEnvelopeR();
+    double r1_inner = geom1.innerEnvelopeR();
+    double r1_outer = geom1.outerEnvelopeR();
+
+    // disk front/back faces, converted from Mu2e to detector coordinates
+    double z0_front = toDetectorZ(geom0.origin().z() - 0.5*geom0.size().z());
+    double z0_back  = toDetectorZ(geom0.origin().z() + 0.5*geom0.size().z());
+    double z1_front = toDetectorZ(geom1.origin().z() - 0.5*geom1.size().z());
+    double z1_back  = toDetectorZ(geom1.origin().z() + 0.5*geom1.size().z());
+
+    // Construct Calo with geometry in detector coordinates
+    kkg_->calo_ = std::make_unique<KKGeom::Calo>(r0_inner, r0_outer, r1_inner, r1_outer, z0_front, z0_back, z1_front, z1_back);
+    auto const& calo = *kkg_->calo_;
+
+    // Add all calo surfaces to the map
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Outer),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_OuterPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Inner),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_InnerPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Inner),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_InnerPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Outer),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_OuterPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Front),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_FrontPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Front),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_FrontPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_BackPtr())));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_BackPtr())));
   }
 
   // sort by transverse distance
@@ -89,9 +130,9 @@ namespace mu2e {
     auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),orvd,halfLen);
     auto inner = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,zMidLocal),irvd,halfLen);
     // expand the disk radii to the DS
-    auto front = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zFrontLocal),irds);
-    auto mid = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zMidLocal),irds);
-    auto back = std::make_shared<Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zBackLocal),irds);
+    auto front = std::make_shared<KinKal::Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zFrontLocal),irds);
+    auto mid = std::make_shared<KinKal::Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zMidLocal),irds);
+    auto back = std::make_shared<KinKal::Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zBackLocal),irds);
     // add all these to the map
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TT_Mid),std::static_pointer_cast<Surface>(mid)));
@@ -133,8 +174,8 @@ namespace mu2e {
     //
     auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),ds->rIn1(),ds->halfLength());
     auto outer= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-1482),ds->rOut2(),ds->halfLength()); // bounding surfaces
-    auto front= std::make_shared<Disk>(outer->frontDisk());
-    auto back= std::make_shared<Disk>(outer->backDisk());
+    auto front= std::make_shared<KinKal::Disk>(outer->frontDisk());
+    auto back= std::make_shared<KinKal::Disk>(outer->backDisk());
     KKGeom::DetectorSolenoid::MaterialCylinderCollection materialCylinders;
     auto toDetectorZ = [&det](double zmu2e) {
       return VEC3(det->toDetector(CLHEP::Hep3Vector(0.0,0.0,zmu2e))).Z();
@@ -203,8 +244,8 @@ namespace mu2e {
 
     // hard-coded for now
     auto ipa= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-2770),300.0,500.0);
-    auto ipafront= std::make_shared<Disk>(ipa->frontDisk());
-    auto ipaback= std::make_shared<Disk>(ipa->backDisk());
+    auto ipafront= std::make_shared<KinKal::Disk>(ipa->frontDisk());
+    auto ipaback= std::make_shared<KinKal::Disk>(ipa->backDisk());
     auto opa= std::make_shared<Frustrum>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-3766),454.0,728.4,2125.0); // inner surface
     auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-5967),235.0,525.0); // back surface
 
@@ -225,8 +266,8 @@ namespace mu2e {
     // currently use hard-coded geometry
     auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-4300),75,400.0);
     auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-4300),21.5,400.0);
-    auto front= std::make_shared<Disk>(outer->frontDisk());
-    auto back= std::make_shared<Disk>(outer->backDisk());
+    auto front= std::make_shared<KinKal::Disk>(outer->frontDisk());
+    auto back= std::make_shared<KinKal::Disk>(outer->backDisk());
     double startz = -4700;
     double endz = -3900;
     double dz = (endz-startz)/36.0;
