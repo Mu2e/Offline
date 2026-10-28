@@ -218,6 +218,10 @@ namespace mu2e {
     ExtrapolateToZ caloBack(maxdt_,maxdtstep_,btol_,intertol_,back.center().Z(),debug_);
     if(debug_ > 0)std::cout << "toCaloDisk " << idisk << " front z " << front.center().Z() << " back z " << back.center().Z() << std::endl;
     if(!ktrk.extrapolate(tdir,caloBack)) return;
+    if(debug_ > 0)std::cout << "toCaloDisk " << idisk << " tref " << tref << " range " << ftraj.range().begin() << " " << ftraj.range().end() << std::endl;
+    // tref is the helix time at z=0, which can lie outside the trajectory (e.g. hits in one tracker half only):
+    // clamp it into the range as toTrackerPerimeter does, otherwise the TimeRange below is invalid and throws
+    ftraj.range().forceRange(tref);
     // record the calo disk intersections, searching outward from the tracker interior only: after upstream
     // extrapolation the far end piece is a nominal-field helix whose range can reach back to the calo z
     TimeRange const rng = tdir == TimeDir::forwards ?
