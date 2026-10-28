@@ -292,6 +292,15 @@ cet_build_plugin(Mu2eG4StudyReadBack art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(OccupancyAna art::module
+    REG_SOURCE src/OccupancyAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::DataProducts
+      Offline::RecoDataProducts
+)
+
 cet_build_plugin(ParticleIDScan art::module
     REG_SOURCE src/ParticleIDScan_module.cc
     LIBRARIES REG
