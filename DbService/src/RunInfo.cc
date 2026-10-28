@@ -32,6 +32,28 @@ std::string RunInfo::dbTables2(bool qjson) const {
 }
 
 //**************************************************
+// Summarize the trigger menu for this run.  Only the "TRG" config carries the
+// TriggerConfigTable, so restrict the lookup to that config -- the same
+// restriction, and for the same reason, as dbTables2 above.
+std::string RunInfo::triggerMenu(bool qjson) const {
+  for (auto const& config : _configs) {
+    if (config.subsystem() != "TRG") {
+      continue;
+    }
+    std::string menu = config.triggerMenu(qjson);
+    if (!menu.empty()) {
+      return menu;
+    }
+  }
+
+  // No TRG config, or it carried no TriggerConfigTable.  In JSON mode return
+  // the full schema with "found":false rather than an empty object, so a
+  // consumer sees the same keys either way; in text mode return nothing and
+  // let the caller word the notice.
+  return qjson ? RunConfig::triggerMenuNotFound(runNumber()) : std::string();
+}
+
+//**************************************************
 // Collect the cat-3 DbService table key-value pairs across every config for
 // this run.  Several configs can contribute pairs, so when JSON output is
 // requested the individual per-config objects are merged into a single JSON
