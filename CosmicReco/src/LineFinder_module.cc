@@ -1,4 +1,18 @@
 //
+// Find straight lines in time clusters (cosmic-ray seeds for KinematicLineFit).
+//
+// With MaxLines > 1, the search is iterative: after each line is found, its hits are removed from the time cluster and
+// the search is repeated on the rest, as long as at least minPeak hits remain. Each line becomes its own seed with the
+// same time cluster, e.g. for a cosmic and a secondary in time with it. MaxLines = 1 (the default) is a single search.
+//
+// With MaxWireDistPull > 0, a hit counts for a line only if the line also agrees with the hit's position along the wire
+// (within MaxWireDistPull * wireRes), not only with the wire (maxDOCA). Without it, any line in the plane of a near-
+// vertical cosmic's straws passes close to many of its wires. All hits within maxDOCA of a line are still removed
+// before the next search.
+//
+// With SkipFlatLines, candidate lines exactly parallel to the planes (dz = 0, from two hits at the same z) are skipped.
+// KinematicLineFit divides by the track's z direction when it looks for more straws (KKFit::addStrawHits), and fails
+// with an out-of-range straw index on such a seed. CosmicShowerFilter removes most clusters that make these lines.
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -40,6 +54,7 @@
 #include <float.h>
 #include <vector>
 #include <map>
+#include <algorithm>
 
 namespace mu2e{
 
@@ -56,6 +71,9 @@ namespace mu2e{
         fhicl::Atom<int> ntsteps{Name("NTSteps"), Comment("Number of transverse steps per straw")};
         fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res")};
         fhicl::Atom<unsigned> nmax{Name("MaxPairs"), Comment("Max pairs to try")};
+        fhicl::Atom<unsigned> maxLines{Name("MaxLines"), Comment("Max lines per time cluster, each found after removing the previous lines' hits"), 1};
+        fhicl::Atom<float> maxWireDistPull{Name("MaxWireDistPull"), Comment("Max |line - hit position along the wire| / wireRes for a hit to count; <= 0: no cut"), 0.};
+        fhicl::Atom<bool> skipFlatLines{Name("SkipFlatLines"), Comment("Skip candidate lines parallel to the planes (dz = 0), which KKLine cannot fit"), false};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
         fhicl::Atom<art::InputTag> ccToken{Name("CaloClusterCollection"),Comment("tag for calo cluster collection"), ""};
@@ -79,6 +97,9 @@ namespace mu2e{
       int _Nsteps, _Ntsteps;
       float _stepSize;
       unsigned _nmax;
+      unsigned _maxLines;
+      float _maxWireDistPull;
+      bool _skipFlatLines;
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
       art::InputTag  _ccToken;
@@ -89,8 +110,14 @@ namespace mu2e{
       art::Handle<CaloClusterCollection> _cccolH;
       const Calorimeter* _calorimeter;
 
-      int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed);
+      // fills used with the entries of shiv on the line
+      int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed,
+                   std::vector<StrawHitIndex>& used);
       void addClusterToSeed(CosmicTrackSeed& tseed);
+      // whether the line's position along the wire (dist) agrees with the hit's, if MaxWireDistPull is set
+      bool onWire(const ComboHit& hit, double dist) const {
+        return _maxWireDistPull <= 0. || std::abs(dist - hit.wireDist()) < _maxWireDistPull*hit.wireRes();
+      }
 };
 
 
@@ -104,6 +131,9 @@ namespace mu2e{
         _Ntsteps (conf().ntsteps()),
         _stepSize (conf().stepsize()),
         _nmax (conf().nmax()),
+        _maxLines (conf().maxLines()),
+        _maxWireDistPull (conf().maxWireDistPull()),
+        _skipFlatLines (conf().skipFlatLines()),
         _chToken (conf().chToken()),
         _tcToken (conf().tcToken()),
         _ccToken (conf().ccToken()),
@@ -111,6 +141,7 @@ namespace mu2e{
         _cccol(nullptr),
         _calorimeter(nullptr)
 {
+  if(_maxLines < 1) throw cet::exception("CONFIG") << "[LineFinder] MaxLines must be at least 1\n";
   consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);
   if(_addCaloClusters) {
@@ -151,21 +182,26 @@ void LineFinder::produce(art::Event& event ) {
     auto chcp = chcol.fillStrawHitIndices(tclust.hits(),shiv,StrawIdMask::uniquestraw);
     auto chc = *chcp;
 
-    CosmicTrackSeed tseed;
-    tseed._straw_chits.setAsSubset(chH,StrawIdMask::uniquestraw);
-
-    tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-    tseed._track.converged = true;
-
     if(_diag > 2) std::cout << "  Time cluster " << index << " has " << tclust.hits().size() << " hits"
                            << " and " << chc.size() << " straw hits\n";
-    int seedSize = findLine(chc, shiv, event, tseed);
-    if (_diag > 1)
-      std::cout << "[LineFinder::" << __func__ <<"] Line seed N(hits) = " << seedSize << std::endl;
 
-    if (seedSize >= _minPeak){
+    // search for lines among the hits not on an earlier line
+    for (unsigned iline=0; iline < _maxLines && shiv.size() >= (size_t) _minPeak; ++iline){
+      CosmicTrackSeed tseed;
+      tseed._straw_chits.setAsSubset(chH,StrawIdMask::uniquestraw);
+
+      tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
+      tseed._track.converged = true;
+
+      std::vector<StrawHitIndex> used;
+      int seedSize = findLine(chc, shiv, event, tseed, used);
+      if (_diag > 1)
+        std::cout << "[LineFinder::" << __func__ <<"] Line " << iline << " seed N(hits) = " << seedSize
+                  << " of " << shiv.size() << std::endl;
+
+      if (seedSize < _minPeak) break;
       if (_diag > 0)
-        std::cout << "LineFinder: found line (N(hits) = " << seedSize << ")"
+        std::cout << "LineFinder: found line " << iline << " (N(hits) = " << seedSize << ")"
                   << " " << tseed._track.FitParams.T0
                   << " " << tseed._track.FitParams.A0
                   << " " << tseed._track.FitParams.B0
@@ -179,13 +215,20 @@ void LineFinder::produce(art::Event& event ) {
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
       seed_col->push_back(tseed);
+
+      // remove this line's hits before the next search
+      std::sort(used.begin(), used.end());
+      shiv.erase(std::remove_if(shiv.begin(), shiv.end(),
+                                [&used](StrawHitIndex ih){ return std::binary_search(used.begin(), used.end(), ih); }),
+                 shiv.end());
     }
   }
 
   event.put(std::move(seed_col));
 }
 
-int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed){
+int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed,
+                         std::vector<StrawHitIndex>& used){
 
   //mu2e::GeomHandle<mu2e::Tracker> th;
   auto tracker = _alignedTracker_h.getPtr(event.id());//th.get();
@@ -215,6 +258,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
           CLHEP::Hep3Vector jpos = shC[jloc].posCLHEP() + strawj.getDirection()*shC[jloc].wireRes()*_stepSize*js;
 
           CLHEP::Hep3Vector newdir = (jpos-ipos).unit();
+          if (_skipFlatLines && newdir.z() == 0.) continue; // parallel to the planes (see SkipFlatLines)
           CLHEP::Hep3Vector icross = (jpos-ipos).cross(strawi.getDirection()).unit();
           CLHEP::Hep3Vector jcross = (jpos-ipos).cross(strawj.getDirection()).unit();
           for (int its=-1*_Ntsteps;its<_Ntsteps+1;its++){
@@ -231,7 +275,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
                 TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
                     ipos, newdir);
                 double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
-                if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
+                if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength() && onWire(shC[kloc], dist)){
                   count += 1;
                   ll += pow(dist-shC[kloc].wireDist(),2)/shC[kloc].wireVar();
                 }
@@ -273,6 +317,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
         seedInt, seedDir);
     double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
     if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
+      used.push_back(kloc); // removed before the next search, even if off the line along the wire
+      if (!onWire(shC[kloc], dist)) continue;
       double traj_time = ((pca.point2() - seedInt).dot(seedDir.unit()))/299.9;
       double hit_t0 = shC[kloc].time() - shC[kloc].driftTime() - shC[kloc].propTime() - traj_time;
       avg_t0 += hit_t0;
