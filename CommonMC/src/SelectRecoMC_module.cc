@@ -66,6 +66,7 @@ namespace mu2e {
         fhicl::Atom<bool> saveEnergySteps           { Name("SaveEnergySteps"),                 Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
         fhicl::Atom<bool> saveUnused                { Name("SaveUnusedDigiMCs"),               Comment("Save StrawDigiMCs from particles used in any fit"), true};
         fhicl::Atom<bool> saveAllUnused             { Name("SaveAllUnusedDigiMCs"),            Comment("Save all StrawDigiMCs from particles used in any fit"), false};
+        fhicl::Atom<bool> saveAllCrv                { Name("SaveAllCrvDigis"),                 Comment("Save all CrvDigis and CrvRecoPulses, not only those in coincidences or from the primary"), false};
         fhicl::Atom<art::InputTag> PP               { Name("PrimaryParticle"),                 Comment("PrimaryParticle")};
         fhicl::Atom<art::InputTag> CCC              { Name("CaloClusterCollection"),           Comment("CaloClusterCollection")};
         fhicl::Sequence<art::InputTag> CrvCCCs      { Name("CrvCoincidenceClusterCollections"),Comment("CrvCoincidenceClusterCollections")};
@@ -75,6 +76,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> SDMCC            { Name("StrawDigiMCCollection"),           Comment("StrawDigiMCCollection")};
         fhicl::Atom<art::InputTag> CRVDC            { Name("CrvDigiCollection"),               Comment("CrvDigiCollection")};
         fhicl::Atom<art::InputTag> CRVDMCC          { Name("CrvDigiMCCollection"),             Comment("CrvDigiMCCollection")};
+        fhicl::Atom<art::InputTag> CRVRPC           { Name("CrvRecoPulseCollection"),          Comment("CrvRecoPulseCollection, used with SaveAllCrvDigis"), art::InputTag("CrvRecoPulses")};
         fhicl::Atom<art::InputTag> PBTMC            { Name("PBTMC"),                           Comment("ProtonBunchTimeMC")};
         fhicl::Atom<art::InputTag> EWM              { Name("EventWindowMarker"),               Comment("EventWindowMarker")};
         fhicl::Sequence<std::string> KalSeeds       { Name("KalSeedCollections"),              Comment("KalSeedCollections")};
@@ -102,8 +104,8 @@ namespace mu2e {
       void fillCalo          (art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,PrimaryParticle const& pp, RecoCount& nrec);
       int _debug;
       bool _trkonly;
-      bool _saveallenergy, _saveunused, _saveallunused;
-      art::InputTag _pp, _ccc, _sdc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _pbtmc, _ewm, _vdspc;
+      bool _saveallenergy, _saveunused, _saveallunused, _saveallcrv;
+      art::InputTag _pp, _ccc, _sdc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _crvrpc, _pbtmc, _ewm, _vdspc;
       std::vector<std::string> _kscs, _hscs;
       std::vector<art::InputTag> _tccs, _crvcccs;
       double _ccme;
@@ -122,6 +124,7 @@ namespace mu2e {
     _saveallenergy(config().saveEnergySteps()),
     _saveunused(config().saveUnused()),
     _saveallunused(config().saveAllUnused()),
+    _saveallcrv(config().saveAllCrv()),
     _pp(config().PP()),
     _ccc(config().CCC()),
     _sdc(config().SDC()),
@@ -130,6 +133,7 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdc(config().CRVDC()),
     _crvdmcc(config().CRVDMCC()),
+    _crvrpc(config().CRVRPC()),
     _pbtmc(config().PBTMC()),
     _ewm(config().EWM()),
     _vdspc(config().VDSPC()),
@@ -144,6 +148,7 @@ namespace mu2e {
       consumes<CaloDigiCollection>(_cdc);
       consumes<CaloClusterCollection>(_ccc);
       consumes<CrvDigiCollection>(_crvdc);
+      if (_saveallcrv) consumes<CrvRecoPulseCollection>(_crvrpc);
       consumesMany<KalSeedCollection>();
       for (const auto& i_tag : _crvcccs) {
         consumes<CrvCoincidenceClusterCollection>(i_tag);
@@ -540,6 +545,15 @@ namespace mu2e {
     std::vector<std::unique_ptr<CrvCoincidenceClusterCollection>> scrvcccs;
 
     std::set<uint16_t> crvindices;
+    // optionally keep every digi and every pulse; the pulses are copied in their original order,
+    // so each one keeps its index
+    art::ProductID crvrpcpid;
+    if(_saveallcrv){
+      auto crvrpch = event.getValidHandle<CrvRecoPulseCollection>(_crvrpc);
+      crvrpcpid = crvrpch.id();
+      *scrvrpc = *crvrpch;
+      for(size_t index=0; index < crvdc.size(); ++index) crvindices.insert(index);
+    }
     for (size_t i_tag = 0; i_tag < _crvcccs.size(); ++i_tag) {
       auto crvccch = event.getValidHandle<CrvCoincidenceClusterCollection>(_crvcccs.at(i_tag));
       auto const& crvccc = *crvccch;
@@ -548,6 +562,12 @@ namespace mu2e {
       for(auto const& crvcc: crvccc) {
         std::vector<art::Ptr<CrvRecoPulse>> pulses;
         for(auto const& crvrp : crvcc.GetCrvRecoPulses()){
+          if(_saveallcrv){
+            // the pulse was already copied, at the same index
+            if(crvrp.id() != crvrpcpid)throw cet::exception("Reco")<<"mu2e::SelectRecoMC: CrvCoincidenceCluster pulses are not from "<< _crvrpc << std::endl;
+            pulses.emplace_back(CrvRecoPulseCollectionPID,crvrp.key(),CrvRecoPulseCollectionGetter);
+            continue;
+          }
           // deep-copy the pulses used in coincidences: the digi indices are updated later
           // the map must be used to connect them
           scrvrpc->push_back(*crvrp);
