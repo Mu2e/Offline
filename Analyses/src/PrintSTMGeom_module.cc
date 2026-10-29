@@ -4,7 +4,7 @@
 //
 // Original author Rob Kutschke
 // Modified by A. Palladino
-//
+// Updated by Y. Wu Oct-2026 after STM shield house overhaul (hand-stacked)
 
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -18,6 +18,7 @@
 #include "art/Framework/Principal/Event.h"
 
 // C++ includes.
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -209,55 +210,162 @@ namespace mu2e {
       //double ExtShieldDownstream.holeLengthType11Box4Hole1 =  915.0;
 
       GeomHandle<STM> STM;
+      PermanentMagnet const & magnet = *STM->getSTMMagnetPtr();
+      ShieldPipe      const & shield = *STM->getSTMShieldPipePtr();
 
-      const double crvShieldPipeZcenter  =   STM->getSTMMagnetPtr()->originInMu2e().z()
-                                          - STM->getSTMMagnetPtr()->zHalfLength()
-                                          - STM->getSTMShieldPipePtr()->dnStrSpace()
-                                          - 2.0*STM->getSTMShieldPipePtr()->dnStrWallHalflength()
-                                          - STM->getSTMShieldPipePtr()->pipeHalfLength();
-      const double crvShieldPipeZmin  =  crvShieldPipeZcenter - STM->getSTMShieldPipePtr()->pipeHalfLength();
-      const double crvShieldPipeZmax  =  crvShieldPipeZcenter + STM->getSTMShieldPipePtr()->pipeHalfLength();
-      std::cout << __func__ << " STM CRVshield cylinder z center = "<<crvShieldPipeZcenter<<std::endl;
-      std::cout << __func__ << " STM CRVshield cylinder z extent = ["<<crvShieldPipeZmin<<","<<crvShieldPipeZmax<<"]"<<std::endl;
-      std::cout << __func__ << " STM CRVshield cylinder r inner  = "<<STM->getSTMShieldPipePtr()->radiusIn()<<std::endl;
-      std::cout << __func__ << " STM CRVshield cylinder r outer  = "<<STM->getSTMShieldPipePtr()->radiusOut()<<std::endl;
+      // The CRV shield pipe and mating block, placed as constructSTM
+      // places them: the block sits DnStrSpace + DnStrWall.gap upstream of
+      // the magnet (a virtual one when the magnet is not built, kept as an
+      // anchor), and the pipe hangs off the block's upstream face when
+      // matchPipeBlock is set, or 0.1 mm further upstream otherwise, then
+      // shifted by upStrAirGap.
+      const double blockHalfLength = shield.dnStrWallHalflength();
+      const double blockZcenter = magnet.originInMu2e().z() - magnet.zHalfLength()
+                                - shield.dnStrSpace() - blockHalfLength - shield.dnStrWallGap();
+      const double pipeZcenter = blockZcenter
+                               + (shield.matchPipeBlock() ? blockHalfLength : -blockHalfLength - 0.1)
+                               - shield.pipeHalfLength() + shield.upStrAirGap();
+      if (shield.build()) {
+        std::cout << __func__ << " STM CRVshield cylinder z center = "<<pipeZcenter<<std::endl;
+        std::cout << __func__ << " STM CRVshield cylinder z extent = ["<<pipeZcenter-shield.pipeHalfLength()<<","<<pipeZcenter+shield.pipeHalfLength()<<"]"<<std::endl;
+        std::cout << __func__ << " STM CRVshield cylinder r inner  = "<<shield.radiusIn()<<std::endl;
+        std::cout << __func__ << " STM CRVshield cylinder r outer  = "<<shield.radiusOut()<<std::endl;
+        if (shield.buildMatingBlock()) {
+          std::cout << __func__ << " STM CRVshield wall z center     = "<<blockZcenter<<std::endl;
+          std::cout << __func__ << " STM CRVshield wall z extent     = ["<<blockZcenter-blockHalfLength<<","<<blockZcenter+blockHalfLength<<"]"<<std::endl;
+        }
+      }
 
-      const double crvShieldWallZcenter  =   STM->getSTMMagnetPtr()->originInMu2e().z()
-                                          - STM->getSTMMagnetPtr()->zHalfLength()
-                                          - STM->getSTMShieldPipePtr()->dnStrSpace()
-                                          - STM->getSTMShieldPipePtr()->dnStrWallHalflength();
-      const double crvShieldWallZmin  =  crvShieldWallZcenter - STM->getSTMShieldPipePtr()->dnStrWallHalflength();
-      const double crvShieldWallZmax  =  crvShieldWallZcenter + STM->getSTMShieldPipePtr()->dnStrWallHalflength();
-      std::cout << __func__ << " STM CRVshield wall z center     = "<<crvShieldWallZcenter<<std::endl;
-      std::cout << __func__ << " STM CRVshield wall z extent     = ["<<crvShieldWallZmin<<","<<crvShieldWallZmax<<"]"<<std::endl;
+      if (magnet.build()) {
+        std::cout << __func__ << " STM magnet center               = "<<magnet.originInMu2e()<< std::endl;
+        std::cout << __func__ << " STM magnet z halflength         = "<<magnet.zHalfLength()<< std::endl;
+        std::cout << __func__ << " STM magnet z extent             = ["<<magnet.originInMu2e().z()-magnet.zHalfLength()<<","<<magnet.originInMu2e().z()+magnet.zHalfLength()<<"]"<<std::endl;
+        std::cout << __func__ << " STM magnet x opening halflength = "<<magnet.xHoleHalfLength()<<std::endl;
+        std::cout << __func__ << " STM magnet y opening halflength = "<<magnet.yHoleHalfLength()<<std::endl;
+      }
 
-      std::cout << __func__ << " STM magnet center               = "<<STM->getSTMMagnetPtr()->originInMu2e()<< std::endl;
-      std::cout << __func__ << " STM magnet z halflength         = "<<STM->getSTMMagnetPtr()->zHalfLength()<< std::endl;
-      std::cout << __func__ << " STM magnet z extent             = ["<<STM->getSTMMagnetPtr()->originInMu2e().z()-STM->getSTMMagnetPtr()->zHalfLength()<<","<<STM->getSTMMagnetPtr()->originInMu2e().z()+STM->getSTMMagnetPtr()->zHalfLength()<<"]"<<std::endl;
-      std::cout << __func__ << " STM magnet x opening halflength = "<<STM->getSTMMagnetPtr()->xHoleHalfLength()<<std::endl;
-      std::cout << __func__ << " STM magnet y opening halflength = "<<STM->getSTMMagnetPtr()->yHoleHalfLength()<<std::endl;
+      STMCollimator const & fov = *STM->getSTMFOVCollimatorPtr();
+      if (fov.build()) {
+        std::cout<<__func__<<" STM FOV Coll (lead) z_center              = "<< fov.originInMu2e().z() <<std::endl;
+        std::cout<<__func__<<" STM FOV Coll (lead) z_halflength          = "<< fov.halfLength()<<std::endl;
+        std::cout<<__func__<<" STM FOV Coll (lead) z_min                 = "<< fov.originInMu2e().z()-fov.halfLength()<<std::endl;
+        std::cout<<__func__<<" STM FOV Coll (lead) z_max                 = "<< fov.originInMu2e().z()+fov.halfLength()<<std::endl;
+        std::cout<<__func__<<" STM FOV Coll hole r                       = "<< fov.hole1RadiusUpStr() <<std::endl;
+        if (fov.linerBuild()) {
+          std::cout<<__func__<<" STM FOV Coll (poly) z_center              = "<< fov.originInMu2e().z() <<std::endl;
+          std::cout<<__func__<<" STM FOV Coll (poly) z_halflength          = "<< fov.linerHalfLength() <<std::endl;
+          std::cout<<__func__<<" STM FOV Coll (poly) z_min                 = "<< fov.originInMu2e().z()-fov.linerHalfLength() <<std::endl;
+          std::cout<<__func__<<" STM FOV Coll (poly) z_max                 = "<< fov.originInMu2e().z()+fov.linerHalfLength() <<std::endl;
+        }
+        // Only when the absorber is built does the geometry file carry its size.
+        if (_config->getBool("stm.FOVcollimator.absorber.build", false)) {
+          std::cout<<__func__<<" STM FOV Coll (poly) absorber z_halflength = "<< _config->getDouble("stm.FOVcollimator.absorber.halfLength") <<std::endl;
+        }
+      }
 
+      STMCollimator const & ssc = *STM->getSTMSSCollimatorPtr();
+      if (ssc.build()) {
+        std::cout<<__func__<<" STM SS Coll (lead)     z_center     = "<< ssc.originInMu2e().z() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)     z_halflength = "<< ssc.halfLength() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)     z_min        = "<< ssc.originInMu2e().z()-ssc.halfLength() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (lead)     z_max        = "<< ssc.originInMu2e().z()+ssc.halfLength() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (liner material)        = "<< ssc.linerMaterial()<<std::endl;
+        std::cout<<__func__<<" STM SS Coll (tungsten) r_DnStr left = "<< ssc.hole1RadiusDnStr() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (tungsten) r_DnStr right= "<< ssc.hole2RadiusDnStr() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (tungsten) x_halfwidth  = "<< ssc.linerHalfWidth() <<std::endl;
+        std::cout<<__func__<<" STM SS Coll (tungsten) y_halfheight = "<< ssc.linerHalfHeight()<<std::endl;
+      }
 
-      std::cout<<__func__<<" STM FOV Coll (lead) z_center              = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_halflength          = "<< STM->getSTMFOVCollimatorPtr()->halfLength()<<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_min                 = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z()-STM->getSTMFOVCollimatorPtr()->halfLength()<<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (lead) z_max                 = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z()+STM->getSTMFOVCollimatorPtr()->halfLength()<<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_center              = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_halflength          = "<< STM->getSTMFOVCollimatorPtr()->linerHalfLength() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_min                 = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z()-STM->getSTMFOVCollimatorPtr()->linerHalfLength() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) z_max                 = "<< STM->getSTMFOVCollimatorPtr()->originInMu2e().z()+STM->getSTMFOVCollimatorPtr()->linerHalfLength() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) r                     = "<< STM->getSTMFOVCollimatorPtr()->hole1RadiusUpStr() <<std::endl;
-      std::cout<<__func__<<" STM FOV Coll (poly) absorber z_halflength = "<< _config->getDouble("stm.FOVcollimator.absorber.halfLength") <<std::endl;
+      // ---- Hand-stacked shield house: what the beam passes, in Mu2e z ----
+      //
+      // Everything downstream is placed in constructSTM from its
+      // STMShieldingRef -- the front face of the SSC's steel cradle --
+      // which is the SSC origin less Wdepth_f/2 and the back shielding's
+      // BPThick + ShieldingPipeGap. The positions below are rebuilt from
+      // that same point, so they are where the pieces are actually built.
+      // x is given from the beam axis (the SSC centre), y from bore height.
+      if (STM->handstacked()) {
+        STM_SSC       const & tungsten = *STM->getSTM_SSCPtr();
+        BackShielding const & back     = *STM->getBackShieldingPtr();
+        const double R = tungsten.originInMu2e().z() - tungsten.Wdepth_f()/2
+                       - back.BPThick() - back.STMShieldingPipeGap();
+        std::cout<<__func__<<" STM cradle front (STMShieldingRef) z = "<< R <<std::endl;
 
-      std::cout<<__func__<<" STM SS Coll (lead)     z_center     = "<< STM->getSTMSSCollimatorPtr()->originInMu2e().z() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)     z_halflength = "<< STM->getSTMSSCollimatorPtr()->halfLength() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)     z_min        = "<< STM->getSTMSSCollimatorPtr()->originInMu2e().z()-STM->getSTMSSCollimatorPtr()->halfLength() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (lead)     z_max        = "<< STM->getSTMSSCollimatorPtr()->originInMu2e().z()+STM->getSTMSSCollimatorPtr()->halfLength() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (liner material)        = "<< STM->getSTMSSCollimatorPtr()->linerMaterial()<<std::endl;
-      std::cout<<__func__<<" STM SS Coll (tungsten) r_DnStr left = "<< STM->getSTMSSCollimatorPtr()->hole1RadiusDnStr() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (tungsten) r_DnStr right= "<< STM->getSTMSSCollimatorPtr()->hole2RadiusDnStr() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (tungsten) x_halfwidth  = "<< STM->getSTMSSCollimatorPtr()->linerHalfWidth() <<std::endl;
-      std::cout<<__func__<<" STM SS Coll (tungsten) y_halfheight = "<< STM->getSTMSSCollimatorPtr()->linerHalfHeight()<<std::endl;
+        if (STM->getSSCFrontShieldPtr()->build()) {
+          SSCFrontShield const & fs = *STM->getSSCFrontShieldPtr();
+          std::cout<<__func__<<" STM SSC front shield poly1 z extent  = ["
+                   << R + fs.poly1Center().z() - fs.poly1Dim().z()/2 <<","
+                   << R + fs.poly1Center().z() + fs.poly1Dim().z()/2 <<"], bore r = "
+                   << fs.poly1BoreR() <<" at x = "
+                   << fs.poly1Center().x() + fs.poly1BoreDX() <<std::endl;
+          std::cout<<__func__<<" STM SSC front shield poly2 z extent  = ["
+                   << R + fs.poly2Center().z() - fs.poly2Dim().z()/2 <<","
+                   << R + fs.poly2Center().z() + fs.poly2Dim().z()/2 <<"], centre x = "
+                   << fs.poly2Center().x() <<std::endl;
+        }
+
+        if (tungsten.build()) {
+          const double front = R + tungsten.ZGap() - tungsten.ZGapBack();
+          std::cout<<__func__<<" STM SSC (tungsten) z extent          = ["
+                   << front <<","<< front + tungsten.Wdepth_f() + tungsten.Wdepth_b() <<"]"<<std::endl;
+          std::cout<<__func__<<" STM SSC (tungsten) bores at x = +/-  "<< tungsten.offset_Spot()
+                   <<": r LaBr/HPGe front slab = "<< tungsten.r_LaBr_f() <<"/"<< tungsten.r_HPGe_f()
+                   <<", back slab = "<< tungsten.r_LaBr_b() <<"/"<< tungsten.r_HPGe_b() <<std::endl;
+        }
+
+        FrontShieldingRight const & fsr = *STM->getFrontShieldingRightPtr();
+        if (fsr.build()) {
+          if (!fsr.leadLayers().empty()) {
+            std::cout<<__func__<<" STM front shielding (right) z extent = ["
+                     << R + fsr.leadLayers().front().origin().z() <<","<< R + fsr.backZ()
+                     <<"] (to the copper lining's back)"<<std::endl;
+            for (auto const & b : fsr.leadLayers().front().bores()) {
+              std::cout<<__func__<<" STM front shielding (right) bore    "<< b.axis
+                       <<": r = "<< b.radius <<" at x = "<< b.center.x()
+                       <<", y = "<< b.center.y() <<std::endl;
+            }
+          }
+          for (auto const & p : fsr.pipes()) {
+            std::cout<<__func__<<" STM front shielding copper pipe      at x = "<< p.center.x()
+                     <<": r = ["<< p.rIn <<","<< p.rOut <<"], z extent = ["
+                     << R + p.center.z() - p.halfLength <<","<< R + p.center.z() + p.halfLength
+                     <<"]"<<std::endl;
+          }
+          for (size_t i = 0; i < fsr.plate().holeRadius.size(); ++i) {
+            std::cout<<__func__<<" STM copper lining hole "<< fsr.plate().bores[i]
+                     <<"             r = "<< fsr.plate().holeRadius[i] <<std::endl;
+          }
+        }
+
+        for (auto const & b : STM->getInnerShieldingPtr()->bores()) {
+          std::cout<<__func__<<" STM inner shielding bore             "<< b.axis
+                   <<": r = "<< b.radius <<" at x = "<< b.center.x()
+                   <<", y = "<< b.center.y() <<std::endl;
+        }
+
+        // The detectors, from the same front-shielding back face
+        // constructSTM places them from.
+        const double frontT = R + fsr.backZ();
+        LaBrDetector const & labr = *STM->getLaBrDetectorPtr();
+        if (labr.build()) {
+          std::cout<<__func__<<" STM LaBr window front z              = "<< frontT + labr.Z_LaBr()
+                   <<" at x = "<< tungsten.offset_Spot() + labr.offset_LaBr() <<std::endl;
+        }
+        HPGeDetector const & hpge = *STM->getHPGeDetectorPtr();
+        if (hpge.build()) {
+          std::cout<<__func__<<" STM HPGe front face centre z         = "<< frontT + hpge.Z_HPGe()
+                   <<" at x = "<< -tungsten.offset_Spot() + hpge.offset_HPGe()
+                   <<"; most upstream point (endcap rim) z = "
+                   << frontT + hpge.Z_HPGe() - hpge.EndcapR()*std::sqrt(2.)/2 <<std::endl;
+        }
+
+        std::cout<<__func__<<" STM house lead back z (FrontToWall)  = "<< R + tungsten.FrontToWall() <<std::endl;
+        if (back.build()) {
+          std::cout<<__func__<<" STM back poly z extent               = ["
+                   << R + tungsten.FrontToWall() + back.STMShieldingPipeGap() <<","
+                   << R + tungsten.FrontToWall() + back.STMShieldingPipeGap() + back.BPThick() <<"]"<<std::endl;
+        }
+      }
 
 
       //std::cout<<__func__<<" STM SS Coll (tungsten) z_min        = "<< stmSSCollPositionInMu2e2.z()-stmSSCollHalfLength2 <<std::endl;
