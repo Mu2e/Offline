@@ -82,9 +82,17 @@ namespace mu2e {
     if(neartrajptr != reftrajptr_){
       // traj has changed; try intersecting with this piece
       reftrajptr_ = neartrajptr;
-      inter_ = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
-      // I should test if this is in range, but there's a missing piece in the ptraj intersection here that I don't know what direction,
-      // to go, and there can be multiple intersections. Not clear if there's a good answer here TODO
+      auto newinter = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
+      // a crossing inside the fit can move into a neighboring piece (ie when the fit is split into BField domains):
+      // search the full trajectory near the previous crossing
+      if(!(newinter.onsurface_ && newinter.inrange_)){
+        static const double dt(1.0); // ns
+        newinter = KinKal::intersect(ptraj,*surf_,KinKal::TimeRange(inter_.time_-dt,inter_.time_+dt),tol_);
+        if(newinter.onsurface_ && newinter.inrange_)reftrajptr_ = ptraj.nearestTraj(newinter.time_);
+      }
+      // keep the previous crossing rather than one with an invalid time if the surface can't be found
+      if(newinter.onsurface_ && newinter.inrange_)inter_ = newinter;
+      // there can be multiple intersections. Not clear if there's a good answer here TODO
     }
   }
 

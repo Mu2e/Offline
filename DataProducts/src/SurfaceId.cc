@@ -88,7 +88,9 @@ namespace mu2e {
     std::make_pair(SurfaceIdEnum::EMC_Disk_0_Front, "EMC_Disk_0_Front"),
     std::make_pair(SurfaceIdEnum::EMC_Disk_1_Front, "EMC_Disk_1_Front"),
     std::make_pair(SurfaceIdEnum::EMC_Disk_0_Back, "EMC_Disk_0_Back"),
-    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Back, "EMC_Disk_1_Back")
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_Back, "EMC_Disk_1_Back"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_0_FrontPanel, "EMC_Disk_0_FrontPanel"),
+    std::make_pair(SurfaceIdEnum::EMC_Disk_1_FrontPanel, "EMC_Disk_1_FrontPanel")
     };
 
     constexpr std::size_t nSurfaceIdNames = sizeof(surfaceIdNames)/sizeof(surfaceIdNames[0]);
