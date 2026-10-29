@@ -7,6 +7,7 @@
 
 // C++ include files
 #include <iostream>
+#include <map>
 #include <utility>
 
 // Framework include files
@@ -338,7 +339,27 @@ namespace mu2e {
 
       if(_bfConfig->getBool("hasBFieldManager",false)){
         std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_bfConfig, beamline).getBFieldConfig() );
-        BFieldManagerMaker bfmgr(*bfc);
+        // Per-map field scales come from the geometry file, so a geometry
+        // can carry its own field: double bfield.mapScale.<map name> = <factor>;
+        const std::string scalePrefix = "bfield.mapScale.";
+        std::vector<std::string> bfNames;
+        _bfConfig->getNames(bfNames);
+        for (auto const& name : bfNames) {
+          if (name.rfind(scalePrefix, 0) == 0) {
+            throw cet::exception("GEOM")
+              << name << " is set in the bfield file " << _bFieldFile
+              << "; per-map scales are read from the geometry file only\n";
+          }
+        }
+        std::map<std::string, double> mapScales;
+        std::vector<std::string> names;
+        _config->getNames(names);
+        for (auto const& name : names) {
+          if (name.rfind(scalePrefix, 0) == 0) {
+            mapScales[name.substr(scalePrefix.size())] = _config->getDouble(name);
+          }
+        }
+        BFieldManagerMaker bfmgr(*bfc, mapScales);
         addDetector(std::move(bfc));
         addDetector(bfmgr.getBFieldManager());
       }
