@@ -97,17 +97,47 @@ namespace mu2e {
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_BackPtr())));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_BackPtr())));
 
+    // Crystal case inner support (see caloBuildCase in Mu2eG4/src/constructDiskCalorimeter.cc): the case runs from the
+    // crystal caps to the back of the crystals, and holds solid aluminium rings at its front, middle and back, between
+    // the case inner radius and the carbon fiber ring that separates them from the crystals
+    auto const& g4info = calo_det.G4Info();
+    double const capthick = g4info.get<double>("crystalCapZLength");
+    double const caselen = g4info.get<double>("diskCaseZLength");
+    double const alrin = g4info.get<double>("diskInAlRingRIn");
+    double const alzlen = g4info.get<double>("diskInAlRingZLength");
+    double const cfrin = g4info.get<double>("diskInCFRingRIn");
+    double const cfrout = g4info.get<double>("diskInCFRingROut");
+    // KinKal material for the aluminium (G4_Al) rings, named per subsystem like the front panel pipes
+    std::array<std::string,KKGeom::CaloInnerSupport::nmaterials> const ringmats = {"CaloRingAl",g4info.get<std::string>("innerCFRingMaterial")};
+    static const SurfaceIdEnum::enum_type ringsid[2] = {SurfaceIdEnum::EMC_Disk_0_InnerRing, SurfaceIdEnum::EMC_Disk_1_InnerRing};
+    for(int idisk=0; idisk < 2; ++idisk){
+      using Support = KKGeom::CaloInnerSupport;
+      double const zfront = toDetectorZ(calo_det.disk(idisk).diskInfo().frontFaceCenter().z() - capthick);
+      double const zback = zfront + caselen;
+      double const zmid = 0.5*(zfront+zback);
+      auto const center = det->toDetector(calo_det.disk(idisk).diskInfo().origin());
+      Support support(ringsid[idisk],VEC3(center.x(),center.y(),zfront),alrin,cfrin,cfrout,zfront,zback,ringmats);
+      support.addRing(Support::Ring{alrin,cfrin,zfront,zfront+alzlen,Support::aluminium});
+      support.addRing(Support::Ring{alrin,cfrin,zmid-0.5*alzlen,zmid+0.5*alzlen,Support::aluminium});
+      support.addRing(Support::Ring{alrin,cfrin,zback-alzlen,zback,Support::aluminium});
+      support.addRing(Support::Ring{cfrin,cfrout,zfront,zback,Support::carbon});
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alFront),std::static_pointer_cast<Surface>(support.front())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alHole),std::static_pointer_cast<Surface>(support.inner())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::cfRing),std::static_pointer_cast<Surface>(support.cfInner())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::cfFront),std::static_pointer_cast<Surface>(support.front())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alRing),std::static_pointer_cast<Surface>(support.cfInner())));
+      kkg_->caloInnerSupports_.push_back(std::move(support));
+    }
+
     // Front panel passive material: a carbon fiber / foam / carbon fiber sandwich directly upstream of the
     // crystal caps (see caloBuildFrontPlate in Mu2eG4/src/constructDiskCalorimeter.cc). Each layer is an
     // annulus carrying its full thickness; index 0 is the upstream carbon skin, 1 the foam, 2 the downstream skin.
     // The cooling pipes embedded in the foam (index 3) are described by their centerlines, see makeCaloPipes
-    auto const& g4info = calo_det.G4Info();
     if(!g4info.get<bool>("hasFrontPanel")) return;
     double const fprin = g4info.get<double>("FPInnerRadius");
     double const fprout = g4info.get<double>("FPOuterRadius");
     double const carbonthick = g4info.get<double>("FPCarbonZLength");
     double const foamthick = g4info.get<double>("FPFoamZLength");
-    double const capthick = g4info.get<double>("crystalCapZLength");
     std::string const carbonmat = g4info.get<std::string>("FPCarbonMaterial");
     std::string const foammat = g4info.get<std::string>("FPFoamMaterial");
     static const SurfaceIdEnum::enum_type fpsid[2] = {SurfaceIdEnum::EMC_Disk_0_FrontPanel, SurfaceIdEnum::EMC_Disk_1_FrontPanel};

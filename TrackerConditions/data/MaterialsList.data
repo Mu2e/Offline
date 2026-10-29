@@ -35,6 +35,8 @@ AluminumHoneycomb  0.03       0.   0.   +1    100.0e-2    Aluminum   0    -10 -2
 CarbonFiber_resin  1.1        0.   0.   -3    5    Hydrogen   0    5    Carbon   0    2    Oxygen   0    -10 -20 -30     20.0    1.0    solid
 # calorimeter front panel cooling pipe walls (G4_Al)
 CaloPipeAl         2.700000   0.   0.   +1    100.0e-2    Aluminum   0    24.01000 106.40000 -30     20.0    1.0    solid
+# calorimeter crystal case inner rings (G4_Al)
+CaloRingAl         2.700000   0.   0.   +1    100.0e-2    Aluminum   0    24.01000 106.40000 -30     20.0    1.0    solid
 # 46% (by mass) 1.8 g/cm3 carbon fibers in resin: density 0.46*1.8 + 0.54*1.1
 CarbonFiber        1.422      0.   0.   +2    46.0e-2    Carbon   0    54.0e-2    CarbonFiber_resin   1    -10 -20 -30     20.0    1.0    solid
 # DS materials

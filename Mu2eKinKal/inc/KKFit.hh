@@ -414,6 +414,7 @@ namespace mu2e {
   // KKExtrap only adds crossings beyond the end of the fit, so crossings between the two would otherwise be lost.
   // Adding material moves the trajectory downstream of it, which can move a crossing near the panel inner edge from
   // the hole onto the panel, so the search is repeated after each refit for the layers not yet in the fit.
+  // The crystal case inner support rings crossed by tracks entering the case at its inner edge are added the same way.
   // Front panel material isn't added when the fit is regrown TODO
   template <class KTRAJ> void KKFit<KTRAJ>::addCaloMaterial(KKTRK& kktrk) const {
     using KKMATRECXING = typename KKTRK::KKMATRECXING;
@@ -452,8 +453,28 @@ namespace mu2e {
               inter,ptraj.nearestTraj(inter.time_),thickness,intertol_));
         if(print_ > 1)std::cout << "Adding calo front panel material " << layer.sid_ << " pass " << ipass << " thickness " << thickness << " " << inter << std::endl;
       }
-      if(matxings.empty())break;
-      kktrk.addFitMaterialPlaneXings(matxings);
+      // crystal case inner support rings: entered at most once per disk, through the case front or from the hole
+      typename KKTRK::KKMATCYLXINGCOL cylxings;
+      for(auto const& support : kkg_h->caloInnerSupports()){
+        using Support = KKGeom::CaloInnerSupport;
+        auto ringid = support.surfaceId(Support::alFront).id();
+        auto isring = [&ringid](auto const& matxing){ return matxing->surfaceId().id() == ringid; };
+        if(std::any_of(kktrk.materialPlaneXings().begin(),kktrk.materialPlaneXings().end(),isring) ||
+            std::any_of(kktrk.materialCylXings().begin(),kktrk.materialCylXings().end(),isring))continue;
+        for(auto const& sxing : caloSupportXings(ptraj,support,srange,intertol_)){
+          auto sid = support.surfaceId(sxing.xing_);
+          auto const& dmat = *kkmat_h->material(support.materialName(Support::material(sxing.xing_)));
+          auto reftraj = ptraj.nearestTraj(sxing.inter_.time_);
+          if(sxing.xing_ == Support::alFront || sxing.xing_ == Support::cfFront)
+            matxings.push_back(std::make_shared<KKMATRECXING>(support.front(),sid,dmat,sxing.inter_,reftraj,sxing.thickness(),intertol_));
+          else
+            cylxings.push_back(std::make_shared<typename KKTRK::KKMATCYLXING>(sxing.xing_ == Support::alHole ? support.inner() : support.cfInner(),
+                  sid,dmat,sxing.inter_,reftraj,sxing.thickness(),intertol_));
+          if(print_ > 1)std::cout << "Adding calo inner ring material " << sid << " pass " << ipass << " path " << sxing.path_ << " " << sxing.inter_ << std::endl;
+        }
+      }
+      if(matxings.empty() && cylxings.empty())break;
+      kktrk.addFitMaterialXings(matxings,cylxings);
     }
   }
 

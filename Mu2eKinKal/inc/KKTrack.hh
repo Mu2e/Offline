@@ -136,8 +136,8 @@ namespace mu2e {
       void addMaterialCylXing(KKMATCYLXINGPTR const& matxing,TimeDir const& tdir);
       // add passive rectangular material Xing
       void addMaterialPlaneXing(KKMATRECXINGPTR const& matxing,TimeDir const& tdir);
-      // add passive planar material Xings inside the fit range, refitting the track
-      void addFitMaterialPlaneXings(KKMATRECXINGCOL const& matxings);
+      // add passive planar and cylindrical material Xings inside the fit range, refitting the track
+      void addFitMaterialXings(KKMATRECXINGCOL const& planexings, KKMATCYLXINGCOL const& cylxings);
       // add IPA Xing
       void addIPAXing(KKIPAXINGPTR const& ipaxing,TimeDir const& tdir);
       // add ST Xing
@@ -326,12 +326,14 @@ namespace mu2e {
     matcylxings_.push_back(matxingptr);
   }
 
-  template <class KTRAJ> void KKTrack<KTRAJ>::addFitMaterialPlaneXings(KKMATRECXINGCOL const& matxings) {
+  template <class KTRAJ> void KKTrack<KTRAJ>::addFitMaterialXings(KKMATRECXINGCOL const& planexings, KKMATCYLXINGCOL const& cylxings) {
     EXINGCOL exings;
-    for(auto const& matxing : matxings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
+    for(auto const& matxing : planexings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
+    for(auto const& matxing : cylxings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
     MEASCOL nohits;
     this->extend(this->config(),nohits,exings);
-    for(auto const& matxing : matxings)matrecxings_.emplace_back(matxing);
+    for(auto const& matxing : planexings)matrecxings_.emplace_back(matxing);
+    for(auto const& matxing : cylxings)matcylxings_.emplace_back(matxing);
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addMaterialPlaneXing(KKMATRECXINGPTR const& matxingptr,TimeDir const& tdir) {

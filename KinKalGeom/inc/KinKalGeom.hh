@@ -11,6 +11,7 @@
 #include "Offline/KinKalGeom/inc/CRV.hh"
 #include "Offline/KinKalGeom/inc/Calo.hh"
 #include "Offline/KinKalGeom/inc/CaloFrontPanelPipes.hh"
+#include "Offline/KinKalGeom/inc/CaloInnerSupport.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "KinKal/Geometry/Surface.hh"
 #include "KinKal/Geometry/Plane.hh"
@@ -59,6 +60,8 @@ namespace mu2e {
       auto const& caloMaterialPlanes() const { return caloMaterialPlanes_; }
       // cooling pipes inside the calorimeter front panels, one entry per disk
       auto const& caloFrontPanelPipes() const { return caloFrontPanelPipes_; }
+      // aluminium and carbon fiber rings at the inner edge of the crystal case, one entry per disk
+      auto const& caloInnerSupports() const { return caloInnerSupports_; }
     private:
       // local copy of detector objects; these hold the actual (typed) surface objects
       std::unique_ptr<KKGeom::Tracker> tracker_;
@@ -69,6 +72,7 @@ namespace mu2e {
       PassiveMaterialPlaneCollection passiveMaterialPlanes_;
       PassiveMaterialPlaneCollection caloMaterialPlanes_;
       std::vector<KKGeom::CaloFrontPanelPipes> caloFrontPanelPipes_;
+      std::vector<KKGeom::CaloInnerSupport> caloInnerSupports_;
       // the map used to find surfaces by Id
       KKGMap map_;
       // allow GeometryService to access internals, to avoid link loop

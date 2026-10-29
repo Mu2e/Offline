@@ -114,6 +114,7 @@ namespace mu2e {
        calo_->G4Info_.set("FPCarbonZLength",        config.getDouble("calorimeter.FPCarbonZLength") );     //Z length of carbon fiber panel on front plate
        calo_->G4Info_.set("FPFoamMaterial",         config.getString("calorimeter.FPFoamMaterial") );      //Material of foam inside front plate
        calo_->G4Info_.set("FPCarbonMaterial",       config.getString("calorimeter.FPCarbonMaterial") );    //Material of carbon fiber panels on front plate
+       calo_->G4Info_.set("innerCFRingMaterial",    config.getString("calorimeter.innerCFRingMaterial","CarbonFiber") ); //Material of carbon fiber ring inside disk
        calo_->G4Info_.set("FPCoolPipeTorRadius",    config.getDouble("calorimeter.FPCoolPipeTorRadius") ); //Tor radius of front plate outer cooling pipe
        calo_->G4Info_.set("FPCoolPipeRadius",       config.getDouble("calorimeter.FPCoolPipeRadius") );    //Inner radius of front plate outer cooling pipe
        calo_->G4Info_.set("FPCoolPipeThickness",    config.getDouble("calorimeter.FPCoolPipeThickness") ); //Thickness of front plate outer cooling pipe
