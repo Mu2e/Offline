@@ -188,10 +188,14 @@ namespace mu2e {
 
       /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
 
+      // Both ends in the Mu2e frame: coll5pos is local to TS5 and targetOffset
+      // is relative to the DS2 center, so they cannot be mixed directly.
+      const double coll5OutZ = vd->getGlobal(VirtualDetectorId::Coll5_Out).z();
+      const double stInZ     = vd->getGlobal(VirtualDetectorId::ST_In).z();
       if ( verbosityLevel > 0 ) {
-        std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
+        std::cout << "STMUpstream between Coll5_Out z = " << coll5OutZ << " and ST_In z = " << stInZ << std::endl;
       }
-      const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
+      const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), 0.5*(coll5OutZ+stInZ) - ds2centerInMu2e.z());
       vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
                               ds2centerInMu2e,0,STMOffset);
 
