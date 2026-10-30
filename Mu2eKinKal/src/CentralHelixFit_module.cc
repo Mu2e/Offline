@@ -439,7 +439,12 @@ namespace mu2e {
       // loop to find multiple intersections
       while(goodinter && cur_inter < max_inter) {
         cur_inter += 1;
-        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart)+sampletbuff_);
+        double tmax = std::max(ftraj.range().end(),tstart)+sampletbuff_;
+        if(ktrk.rangedOut()){ // a particle that ranges out stops there
+          tmax = std::min(tmax,ktrk.rangeOutTime());
+          if(tstart >= tmax) break;
+        }
+        TimeRange irange(tstart,tmax);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(goodinter) {
