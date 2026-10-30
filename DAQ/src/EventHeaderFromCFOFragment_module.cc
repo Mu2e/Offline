@@ -11,7 +11,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
-#include "canvas/Utilities/Exception.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // artdaq
@@ -137,6 +137,12 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     produces<mu2e::ProtonBunchTime>();
   }
   if(isSim_) TLOG(TLVL_DEBUG + 2) << "Assuming simulation inputs!";
+  // Match mode selects on the instance name only, so an empty instance would match nothing
+  if(cfoMatch_ && cfoTag_.instance().empty()) {
+    throw cet::exception("EventHeaderFromCFOFragment")
+      << "cfoTagMatch requires cfoTag with a product instance name (e.g. daq:CFO), got '"
+      << cfoTag_.encode() << "'";
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -156,7 +162,7 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   if(cfoMatch_) { // select by product instance name only
     const auto handles = event.getMany<artdaq::Fragments>(art::ProductInstanceNameSelector{cfoTag_.instance()});
     if(handles.size() > 1) {
-      throw art::Exception(art::errors::LogicError)
+      throw cet::exception("EventHeaderFromCFOFragment")
         << "Event " << event.id() << ": " << handles.size() << " fragment collections have product instance name '"
         << cfoTag_.instance() << "', expected at most one";
     }
