@@ -50,10 +50,11 @@ public:
   struct Config {
     using Name    = fhicl::Name;
     using Comment = fhicl::Comment;
-    fhicl::Atom<art::InputTag> cfoTag   {Name("cfoTag"),    Comment("Input CFO fragment tag")};
-    fhicl::Atom<bool>          ewm      {Name("createEWM"), Comment("Produce an event window marker object")};
-    fhicl::Atom<bool>          isSim    {Name("isSim")    , Comment("Simulation processing: no CFO data is expected, so missing CFO data is not a warning"), false};
-    fhicl::Atom<int>           diagLevel{Name("diagLevel"), Comment("diagnostic level"), 0};
+    fhicl::Atom<std::string> cfoTag     {Name("cfoTag")     , Comment("Input CFO fragment tag")};
+    fhicl::Atom<bool>        cfoTagMatch{Name("cfoTagMatch"), Comment("Find a fragment collection instance name matching the CFO fragment tag"), false};
+    fhicl::Atom<bool>        ewm        {Name("createEWM")  , Comment("Produce an event window marker object")};
+    fhicl::Atom<bool>        isSim      {Name("isSim")      , Comment("Simulation processing: no CFO data is expected, so missing CFO data is not a warning"), false};
+    fhicl::Atom<int>         diagLevel  {Name("diagLevel")  , Comment("diagnostic level"), 0};
   };
 
   // --- C'tor/d'tor:
@@ -67,10 +68,11 @@ public:
   void produce(Event&) override;
 
 private:
-  art::InputTag cfoFragmentTag_;
-  bool          ewm_;
-  bool          isSim_;
-  int           diagLevel_;
+  std::string cfoTag_;
+  bool        cfoMatch_;
+  bool        ewm_;
+  bool        isSim_;
+  int         diagLevel_;
   // Counters for events without CFO data, reported at the end of the job
   unsigned long nEvents_      = 0;
   unsigned long nNoCFOHandle_ = 0;
@@ -108,20 +110,21 @@ void art::EventHeaderFromCFOFragment::warnMissing(const Event& event, const std:
   if(isSim_) {
     if(diagLevel_ > 1) {
       mf::LogInfo("EventHeaderFromCFOFragment")
-        << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
+        << "Event " << event.id() << ": " << msg << " (" << cfoTag_
         << "), producing a default EventHeader";
     }
     return;
   }
   mf::LogWarning("EventHeaderFromCFOFragment")
-    << "Event " << event.id() << ": " << msg << " (" << cfoFragmentTag_.encode()
+    << "Event " << event.id() << ": " << msg << " (" << cfoTag_
     << "), producing a default EventHeader";
 }
 
 art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     const art::EDProducer::Table<Config>& config) :
     art::EDProducer{config},
-    cfoFragmentTag_(config().cfoTag()),
+    cfoTag_(config().cfoTag()),
+    cfoMatch_(config().cfoTagMatch()),
     ewm_(config().ewm()),
     isSim_(config().isSim()),
     diagLevel_(config().diagLevel()) {
@@ -148,7 +151,18 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
 
   // Check for the CFO fragment list
-  if(!event.getByLabel(cfoFragmentTag_, cfoFragmentHandle)) {
+  if(cfoMatch_) { // check all fragment collections
+    for(auto const& handle : event.getMany<artdaq::Fragments>()) {
+      if(!handle.isValid()) continue;
+      // Match the product instance name (e.g. "CFO"), whether produced by daq or aggregator
+      if(handle.provenance()->productInstanceName() != cfoTag_) continue;
+      cfoFragmentHandle = handle;
+    }
+  } else { // get this specific collection
+    event.getByLabel(cfoTag_, cfoFragmentHandle);
+  }
+
+  if(!cfoFragmentHandle.isValid()) {
     event.put(std::move(evtHdr));
     if(ewm_) {
       event.put(std::move(ewm));
