@@ -690,6 +690,9 @@ namespace mu2e {
     if(kktrk.fitStatus().status_ == Status::converged) fflag.merge(TrkFitFlag::kalmanConverged);
     if(matcorr_)fflag.merge(TrkFitFlag::MatCorr);
     if(kktrk.config().bfcorr_ )fflag.merge(TrkFitFlag::BFCorr);
+    // extrapolation flags describe this track only, not the seed it was regrown from
+    fflag.clear(TrkFitFlag::ExtrapFailed);
+    fflag.clear(TrkFitFlag::RangedOut);
     if(!kktrk.extrapolationFailures().empty())fflag.merge(TrkFitFlag::ExtrapFailed);
     if(kktrk.rangedOut())fflag.merge(TrkFitFlag::RangedOut);
     // explicit T0 is needed for backwards-compatibility; sample from the appropriate trajectory piece

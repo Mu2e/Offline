@@ -19,16 +19,12 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <new>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 namespace mu2e {
-  using KinKal::TimeDir;
-  using KinKal::TimeRange;
-  using KinKal::Intersection;
-  using KinKal::VEC3;
-  using KinKal::timeDirSign;
-
   // one surface the sweep can cross
   struct SweepTarget {
     enum Effect { record=0, cylshell, ipashell, stfoil, planeshell, crvsector }; // what a crossing adds to the track
@@ -60,11 +56,11 @@ namespace mu2e {
 
   class ExtrapolateSweep {
     public:
-      struct Crossing { size_t itarget_ = 0; Intersection inter_; };
-      ExtrapolateSweep(SweepTargetCollection const& targets, TimeDir tdir, double maxdt, double maxdtstep, double dptol,
+      struct Crossing { size_t itarget_ = 0; KinKal::Intersection inter_; };
+      ExtrapolateSweep(SweepTargetCollection const& targets, KinKal::TimeDir tdir, double maxdt, double maxdtstep, double dptol,
           double intertol, double minv, int debug) : targets_(targets), tdir_(tdir), maxDt_(maxdt), maxDtStep_(maxdtstep),
       dptol_(dptol), intertol_(intertol), minv_(minv), debug_(debug), active_(targets.size()), count_(targets.size(),0),
-      tlast_(targets.size(),0.0), episodes_(targets.size()), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
+      tlast_(targets.size(),0.0), coslast_(targets.size(),1.0), episodes_(targets.size()), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
         for(size_t itg = 0; itg < targets_.size(); ++itg){
           active_[itg] = targets_[itg].active_;
           planes_[itg] = dynamic_cast<KinKal::Plane const*>(targets_[itg].surf_);
@@ -76,15 +72,16 @@ namespace mu2e {
       double maxDtStep() const { return maxDtStep_; }
       double dpTolerance() const { return dptol_; }
       int debug() const { return debug_; }
-      // false (stop extending) once a crossing is cached, nothing driving is reachable, or a watched reflection happened
-      template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, TimeDir tdir) const;
+      // false (stop extending) once a crossing is cached, nothing driving is reachable, a watched reflection happened or the search failed
+      template <class KTRAJ> bool needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KinKal::TimeDir tdir) const;
+      bool failed() const { return !error_.empty(); }
+      std::string const& error() const { return error_; } // why the search failed; KinKal's walk never sees the exception
       // sweep control
       void start(double tcursor) { searched_ = tcursor; found_ = reflected_ = false; }
       void limit(double tlimit, bool recordonly) { limited_ = true; tlimit_ = tlimit; recordonly_ = recordonly; }
       void unlimit() { limited_ = recordonly_ = false; }
       void watchReflection(double vbsign) { vbsign_ = vbsign; reflected_ = false; }
       void setActive(size_t itg, bool active) { active_[itg] = active; }
-      bool isActive(size_t itg) const { return active_[itg]; }
       bool hasCrossing() const { return found_; }
       bool reflected() const { return reflected_; }
       Crossing const& crossing() const { return crossing_; }
@@ -92,23 +89,25 @@ namespace mu2e {
       // mark the cached crossing processed and move the search start to it
       void accept();
     private:
+      template <class KTRAJ> bool extend(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const;
       bool usable(size_t itg) const;
-      bool withinReach(size_t itg, VEC3 const& pos, double reach) const;
+      bool withinReach(size_t itg, KinKal::VEC3 const& pos, double reach) const;
       template <class KTRAJ> bool search(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, double tend) const;
-      template <class KTRAJ> bool firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, TimeRange win, Intersection& inter) const;
-      template <class KTRAJ, class VISIT> bool visitPlaneExtrema(KTRAJ const& piece, KinKal::Plane const& plane, TimeRange const& range, VISIT&& visit) const;
-      template <class KTRAJ> Intersection planeCrossing(KTRAJ const& piece, KinKal::Plane const& plane, TimeRange const& query) const;
-      template <class KTRAJ> void ownBoundary(KTRAJ const& piece, SweepTarget const& tg, Intersection& inter) const;
-      template <class KTRAJ> bool seam(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, Intersection const& inter) const;
+      template <class KTRAJ> bool firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, KinKal::TimeRange win, KinKal::Intersection& inter) const;
+      template <class KTRAJ, class VISIT> bool visitPlaneExtrema(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& range, VISIT&& visit) const;
+      template <class KTRAJ> KinKal::Intersection planeCrossing(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& query) const;
+      template <class KTRAJ> void ownBoundary(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const;
+      template <class KTRAJ> bool seam(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, KinKal::Intersection const& inter) const;
       template <class KTRAJ> bool departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, size_t previous, double accepted, double proposed) const;
       template <class KTRAJ> bool reachable(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const;
       SweepTargetCollection const& targets_;
-      TimeDir tdir_;
+      KinKal::TimeDir tdir_;
       double maxDt_, maxDtStep_, dptol_, intertol_, minv_;
       int debug_;
       std::vector<bool> active_; // per target
       std::vector<unsigned> count_; // crossings processed per target
       std::vector<double> tlast_; // time of the last processed crossing per target
+      std::vector<double> coslast_; // |cos| between the surface normal and the direction at that crossing
       std::vector<int> doneGroups_; // groups whose first crossing is processed
       struct SeamEpisode { size_t itarget_; double time_; };
       std::vector<std::vector<SeamEpisode>> episodes_; // accepted seam episodes per eligible target, including self
@@ -120,6 +119,7 @@ namespace mu2e {
       mutable double searched_ = 0.0; // the trajectory is searched up to this time
       mutable bool found_ = false, reflected_ = false;
       mutable Crossing crossing_;
+      mutable std::string error_;
       static constexpr unsigned maxRootTrials_ = 256; // per target, piece and window
   };
 
@@ -133,11 +133,11 @@ namespace mu2e {
   }
 
   // A trajectory moves at most speed x time, so a surface farther than that from the window start cannot be crossed in it.
-  inline bool ExtrapolateSweep::withinReach(size_t itg, VEC3 const& pos, double reach) const {
+  inline bool ExtrapolateSweep::withinReach(size_t itg, KinKal::VEC3 const& pos, double reach) const {
     if(planes_[itg]) return std::fabs(planes_[itg]->distance(pos)) <= reach;
     if(cylinders_[itg]){
       auto const& cyl = *cylinders_[itg];
-      VEC3 rel = pos - cyl.center();
+      KinKal::VEC3 rel = pos - cyl.center();
       double along = rel.Dot(cyl.axis());
       double rho = (rel - along*cyl.axis()).R();
       if(std::fabs(rho - cyl.radius()) > reach) return false;
@@ -153,6 +153,7 @@ namespace mu2e {
     double time = crossing_.inter_.time_;
     ++count_[itg];
     tlast_[itg] = time;
+    coslast_[itg] = std::fabs(crossing_.inter_.norm_.Dot(crossing_.inter_.pdir_));
     if(tg.group_ >= 0) doneGroups_.push_back(tg.group_);
     if((tg.effect_ == SweepTarget::planeshell || tg.effect_ == SweepTarget::crvsector || tg.effect_ == SweepTarget::stfoil) && tg.pl_){
       for(size_t other = 0; other < targets_.size(); ++other){
@@ -172,15 +173,29 @@ namespace mu2e {
     found_ = false;
   }
 
-  template <class KTRAJ> bool ExtrapolateSweep::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, TimeDir) const {
+  template <class KTRAJ> bool ExtrapolateSweep::needsExtrapolation(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KinKal::TimeDir) const {
+    if(failed()) return false;
+    try {
+      return extend(ptraj);
+    } catch(std::bad_alloc const&) {
+      throw;
+    } catch(std::exception const& err) {
+      // a problem with this track must not reach KinKal's field walk, which would mark the whole fit unusable
+      error_ = err.what();
+      found_ = false;
+      return false;
+    }
+  }
+
+  template <class KTRAJ> bool ExtrapolateSweep::extend(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const {
     found_ = false;
-    double sgn = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
-    double tend = tdir_ == TimeDir::forwards ? ptraj.range().end() : ptraj.range().begin();
+    double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
+    double tend = tdir_ == KinKal::TimeDir::forwards ? ptraj.range().end() : ptraj.range().begin();
     if(limited_ && sgn*(tend - tlimit_) > 0.0) tend = tlimit_;
     if(search(ptraj,tend)) return false;
     if(limited_) return false;
     if(vbsign_ != 0.0){
-      auto const& ktraj = tdir_ == TimeDir::forwards ? ptraj.back() : ptraj.front();
+      auto const& ktraj = tdir_ == KinKal::TimeDir::forwards ? ptraj.back() : ptraj.front();
       double vb = ktraj.velocity(tend).Dot(ktraj.bnom().Unit())*sgn;
       if(vb*vbsign_ < 0.0){
         if(debug_ > 1) std::cout << "Sweep: reflection at time " << tend << " z " << ktraj.position3(tend).Z() << std::endl;
@@ -192,13 +207,13 @@ namespace mu2e {
   }
 
   template <class KTRAJ, class VISIT> bool ExtrapolateSweep::visitPlaneExtrema(KTRAJ const& piece,
-      KinKal::Plane const& plane, TimeRange const& range, VISIT&& visit) const {
+      KinKal::Plane const& plane, KinKal::TimeRange const& range, VISIT&& visit) const {
     double omega = 0.0;
     if constexpr(requires { piece.Omega(); }) omega = std::fabs(piece.Omega());
     else if constexpr(requires { piece.omega(); }) omega = std::fabs(piece.omega());
     if(!std::isfinite(omega)) throw std::runtime_error("KKExtrap: nonfinite plane angular frequency");
     if(omega == 0.0) return false;
-    double sign = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
+    double sign = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
     double pi = std::acos(-1.0), base = sign > 0.0 ? range.begin() : range.end();
     double stop = sign > 0.0 ? range.end() : range.begin();
     double half = base+pi/omega, quarter = base+0.5*pi/omega;
@@ -235,15 +250,15 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ> Intersection ExtrapolateSweep::planeCrossing(KTRAJ const& piece,
-      KinKal::Plane const& plane, TimeRange const& query) const {
+  template <class KTRAJ> KinKal::Intersection ExtrapolateSweep::planeCrossing(KTRAJ const& piece,
+      KinKal::Plane const& plane, KinKal::TimeRange const& query) const {
     auto distance = [&](double time){
       double value = plane.distance(piece.position3(time));
       if(!std::isfinite(value)) throw std::runtime_error("KKExtrap: nonfinite plane distance");
       return value;
     };
     auto root = [&](double time){
-      Intersection inter;
+      KinKal::Intersection inter;
       inter.time_ = time;
       inter.pos_ = piece.position3(time);
       inter.pdir_ = piece.direction(time);
@@ -253,14 +268,14 @@ namespace mu2e {
       inter.inrange_ = query.inRange(time) && piece.range().inRange(time);
       return inter;
     };
-    double cursor = tdir_ == TimeDir::forwards ? query.begin() : query.end();
+    double cursor = tdir_ == KinKal::TimeDir::forwards ? query.begin() : query.end();
     auto endpointContact = [&](double time){
       auto inter = root(time);
       double normalSpeed = std::fabs(plane.normal().Dot(piece.velocity(time)));
       return inter.onsurface_ && inter.inrange_ && normalSpeed <= 1.0e-12*std::max(piece.speed(time),1.0);
     };
     if(endpointContact(cursor)) return root(cursor);
-    Intersection result;
+    KinKal::Intersection result;
     // Plane distance is monotonic between consecutive extrema of the supported line and helix pieces.
     auto bracket = [&](double stop){
       double a = cursor, b = stop;
@@ -297,7 +312,7 @@ namespace mu2e {
       return false;
     };
     if(visitPlaneExtrema(piece,plane,query,segment)) return result;
-    double stop = tdir_ == TimeDir::forwards ? query.end() : query.begin();
+    double stop = tdir_ == KinKal::TimeDir::forwards ? query.end() : query.begin();
     if(!bracket(stop) && endpointContact(stop)) return root(stop);
     return result;
   }
@@ -306,9 +321,9 @@ namespace mu2e {
       size_t itg, size_t previous, double accepted, double proposed) const {
     auto const& plane = *targets_[itg].pl_;
     auto const& prev = *targets_[previous].pl_;
-    double sgn = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
+    double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
     if(sgn*(proposed-accepted) <= 0.0) return false;
-    TimeRange interval(std::min(accepted,proposed),std::max(accepted,proposed));
+    KinKal::TimeRange interval(std::min(accepted,proposed),std::max(accepted,proposed));
     if(!interval.restrict(ptraj.range()) || interval.null()) return false;
     size_t first = ptraj.nearestIndex(interval.begin()), last = ptraj.nearestIndex(interval.end());
     double offset = 2.0*intertol_ + std::fabs((plane.center()-prev.center()).Dot(prev.normal()));
@@ -335,14 +350,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool ExtrapolateSweep::seam(KinKal::ParticleTrajectory<KTRAJ> const& ptraj,
-      size_t itg, Intersection const& inter) const {
+      size_t itg, KinKal::Intersection const& inter) const {
     // Candidate searches are speculative; only accept() changes episodes, never a future departure witness.
     for(auto const& episode : episodes_[itg])
       if(!departed(ptraj,itg,episode.itarget_,episode.time_,inter.time_)) return true;
     return false;
   }
 
-  template <class KTRAJ> void ExtrapolateSweep::ownBoundary(KTRAJ const& piece, SweepTarget const& tg, Intersection& inter) const {
+  template <class KTRAJ> void ExtrapolateSweep::ownBoundary(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const {
     double time = inter.time_;
     double begin = piece.range().begin(), end = piece.range().end();
     if(time != begin && time != end) return;
@@ -363,22 +378,26 @@ namespace mu2e {
     if(!inter.onsurface_) throw std::runtime_error("KKExtrap: boundary-root displacement leaves surface tolerance");
   }
 
-  template <class KTRAJ> bool ExtrapolateSweep::firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, TimeRange win, Intersection& inter) const {
+  template <class KTRAJ> bool ExtrapolateSweep::firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, KinKal::TimeRange win, KinKal::Intersection& inter) const {
     auto const& tg = targets_[itg];
-    double sgn = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
-    double ts = tdir_ == TimeDir::forwards ? win.begin() : win.end();
-    double stop = tdir_ == TimeDir::forwards ? win.end() : win.begin();
-    double guard = 4.0*intertol_/std::max(piece.speed(ts),1.0);
+    double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
+    double ts = tdir_ == KinKal::TimeDir::forwards ? win.begin() : win.end();
+    double stop = tdir_ == KinKal::TimeDir::forwards ? win.end() : win.begin();
+    double speed = std::max(piece.speed(ts),1.0);
+    double step = 4.0*intertol_/speed;
+    // a track at incidence |cos| stays within the tolerance for about tolerance/|cos| of path; skip past it before finding this target again
+    double leave = tg.mincos_ > 0.0 ? 2.0*intertol_/(std::max(coslast_[itg],tg.mincos_)*speed) : 0.0;
+    double guard = std::max(step,leave);
     if(count_[itg] > 0) ts = sgn > 0.0 ? std::max(ts,tlast_[itg]+guard) : std::min(ts,tlast_[itg]-guard);
     auto const* plane = dynamic_cast<KinKal::Plane const*>(tg.surf_);
     unsigned nroot(0);
     while(sgn*(stop - ts) > 0.0){
       if(++nroot > maxRootTrials_) throw std::runtime_error("KKExtrap: surface-root search exceeded retry limit");
-      TimeRange query = sgn > 0.0 ? TimeRange(ts,stop) : TimeRange(stop,ts);
-      VEC3 pos = piece.position3(ts);
+      KinKal::TimeRange query = sgn > 0.0 ? KinKal::TimeRange(ts,stop) : KinKal::TimeRange(stop,ts);
+      KinKal::VEC3 pos = piece.position3(ts);
       if((nroot == 1 || !plane) && tg.surf_->onSurface(pos,intertol_) &&
           std::fabs(tg.surf_->normal(pos).Dot(piece.direction(ts))) >= minv_){
-        inter = Intersection();
+        inter = KinKal::Intersection();
         inter.time_ = ts;
         inter.pos_ = pos;
         inter.pdir_ = piece.direction(ts);
@@ -403,8 +422,8 @@ namespace mu2e {
       if(!inter.inrange_) throw std::runtime_error("KKExtrap: surface root has no owning piece");
       bool grazing = std::fabs(inter.norm_.Dot(inter.pdir_)) < tg.mincos_;
       if((inter.inbounds_ || !tg.inbounds_) && !grazing && !seam(ptraj,itg,inter)) return true;
-      // Roots within four intersection tolerances of path length are unresolved by this search.
-      double next = inter.time_ + sgn*guard;
+      // Roots within four intersection tolerances of path length are unresolved by this search; a grazing track first leaves the tolerance.
+      double next = inter.time_ + sgn*(grazing ? std::max(step,2.0*intertol_/(tg.mincos_*speed)) : step);
       if(!std::isfinite(next) || sgn*(next - ts) <= 0.0)
         throw std::runtime_error("KKExtrap: surface-root rejection did not advance");
       ts = next;
@@ -413,14 +432,14 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool ExtrapolateSweep::search(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, double tend) const {
-    double sgn = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
+    double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
     double t0 = std::clamp(searched_,ptraj.range().begin(),ptraj.range().end());
     tend = std::clamp(tend,ptraj.range().begin(),ptraj.range().end());
     double dtwin = maxDtStep_ > 0.0 ? maxDtStep_ : std::fabs(tend - t0);
     while(sgn*(tend - t0) > 0.0){
       double t1 = t0 + sgn*std::min(dtwin,std::fabs(tend - t0));
       if(sgn*(t1 - t0) <= 0.0) throw std::runtime_error("KKExtrap: search window did not advance");
-      TimeRange window(std::min(t0,t1),std::max(t0,t1));
+      KinKal::TimeRange window(std::min(t0,t1),std::max(t0,t1));
       bool found(false);
       Crossing best;
       size_t first = ptraj.nearestIndex(window.begin());
@@ -429,11 +448,11 @@ namespace mu2e {
         auto const& piece = ptraj.piece(ip);
         auto win = piece.range();
         if(!win.restrict(window) || win.null()) continue;
-        VEC3 wpos = piece.position3(tdir_ == TimeDir::forwards ? win.begin() : win.end());
+        KinKal::VEC3 wpos = piece.position3(tdir_ == KinKal::TimeDir::forwards ? win.begin() : win.end());
         double reach = piece.speed(win.mid())*win.range()*(1.0+1.0e-9) + intertol_;
         for(size_t itg = 0; itg < targets_.size(); ++itg){
           if(!usable(itg) || !withinReach(itg,wpos,reach)) continue;
-          Intersection inter;
+          KinKal::Intersection inter;
           if(!firstCrossing(ptraj,piece,itg,win,inter)) continue;
           bool earlier = !found || sgn*inter.time_ < sgn*best.inter_.time_;
           bool tie = found && inter.time_ == best.inter_.time_ && targets_[itg].sid_ < targets_[best.itarget_].sid_;
@@ -457,11 +476,11 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool ExtrapolateSweep::reachable(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const {
-    double sgn = tdir_ == TimeDir::forwards ? 1.0 : -1.0;
-    auto const& ktraj = tdir_ == TimeDir::forwards ? ptraj.back() : ptraj.front();
-    double time = tdir_ == TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
-    VEC3 pos = ktraj.position3(time);
-    VEC3 vel = ktraj.velocity(time)*sgn; // signed by the extrapolation direction
+    double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
+    auto const& ktraj = tdir_ == KinKal::TimeDir::forwards ? ptraj.back() : ptraj.front();
+    double time = tdir_ == KinKal::TimeDir::forwards ? ktraj.range().end() : ktraj.range().begin();
+    KinKal::VEC3 pos = ktraj.position3(time);
+    KinKal::VEC3 vel = ktraj.velocity(time)*sgn; // signed by the extrapolation direction
     double rho = std::sqrt(pos.X()*pos.X() + pos.Y()*pos.Y());
     double vrho = rho > 0.0 ? (pos.X()*vel.X() + pos.Y()*vel.Y())/rho : 0.0;
     for(size_t itg = 0; itg < targets_.size(); ++itg){
@@ -485,9 +504,9 @@ namespace mu2e {
             reach = true;
           } else {
             // near a reflection vz is an unreliable direction estimate: use the linearized trajectory instead
-            KinKal::Plane zplane(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,tg.zval_));
+            KinKal::Plane zplane(KinKal::VEC3(0.0,0.0,1.0),KinKal::VEC3(1.0,0.0,0.0),KinKal::VEC3(0.0,0.0,tg.zval_));
             double dist(0.0);
-            zplane.intersect(ktraj.linearize(time),dist,tdir_ == TimeDir::forwards,intertol_);
+            zplane.intersect(ktraj.linearize(time),dist,tdir_ == KinKal::TimeDir::forwards,intertol_);
             reach = dist*sgn > 0.0;
           }
           break;

@@ -47,11 +47,13 @@ namespace mu2e {
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_;
-      // IPA/ST thicknesses match the nominal KinKalGeom surfaces.
+      // nominal literals like the hard-coded KinKalGeom IPA and ST surfaces (KinKalGeomMaker::makeDS/makeTarget); TODO: take both from the geometry service
       double ipathick_ = 0.511; // ipa thickness (mm)
       double stthick_ = 0.1056; // st foil thickness (mm)
       static constexpr unsigned maxCrossings_ = 1000; // per sweep, against endless reflection loops
       static constexpr double dsShellMinCos_ = 0.1; // thin-shell approximation: skip near-tangent DS shell crossings
+      static constexpr double ipaMinCos_ = 0.1; // as the DS shells; no truth IPA crossing on CE has |cos| < 0.2
+      static constexpr double stFoilMinCos_ = 0.02; // no truth foil crossing on CE has |cos| < 0.02; the thin-foil path is then 50x the thickness
   };
 
   KKExtrap::KKExtrap(KKExtrapConfig const& extrapconfig) :
@@ -159,6 +161,7 @@ namespace mu2e {
       ipatg.mat_ = &*kkmat_h->IPAMaterial();
       ipatg.thick_ = ipathick_;
       ipatg.maxcross_ = 0;
+      ipatg.mincos_ = std::max(minv_,ipaMinCos_);
       zrange(*ipa,ipatg.zreglo_,ipatg.zreghi_);
       tgts.push_back(ipatg);
       auto const& st = *kkg_h->ST();
@@ -176,6 +179,7 @@ namespace mu2e {
         tg.mat_ = &*kkmat_h->STMaterial();
         tg.thick_ = stthick_;
         tg.maxcross_ = 0;
+        tg.mincos_ = std::max(minv_,stFoilMinCos_);
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
         tgts.push_back(tg);
       }
@@ -300,6 +304,10 @@ namespace mu2e {
       addCrossing(ktrk,xs.targets()[xs.crossing().itarget_],xs.crossing().inter_,tdir);
       xs.accept();
     }
+    if(xs.failed()){
+      addFailure(ktrk,tdir,xs.error());
+      return;
+    }
     xs.unlimit();
     xs.start(tstart);
     if(updir && upstream_){
@@ -311,7 +319,12 @@ namespace mu2e {
     }
     unsigned ncross(0);
     while(ncross < maxCrossings_){
-      if(xs.needsExtrapolation(ftraj,tdir) && !ktrk.extrapolate(tdir,xs)){
+      bool extended = !xs.needsExtrapolation(ftraj,tdir) || ktrk.extrapolate(tdir,xs);
+      if(xs.failed()){
+        addFailure(ktrk,tdir,xs.error()); // the search failed, before or during KinKal's walk; the fit stays usable
+        break;
+      }
+      if(!extended){
         addFailure(ktrk,tdir,ktrk.fitStatus().comment_); // KinKal marked the fit unusable while extending it
         break;
       }

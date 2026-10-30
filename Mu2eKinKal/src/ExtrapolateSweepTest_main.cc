@@ -17,6 +17,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace {
   using KinKal::TimeDir;
@@ -611,13 +612,9 @@ namespace {
     ExtrapolateSweep sweep(targets,dir,1.0,1.0,1.0e-4,tol,1.0e-6,0);
     sweep.start(root);
     sweep.limit(forward ? end : begin,false);
-    bool failed = false;
-    try {
-      sweep.needsExtrapolation(traj,dir);
-    } catch(std::runtime_error const& error) {
-      auto expected = narrow ? "no representable piece interior" : "displacement exceeds intersection tolerance";
-      failed = std::string(error.what()).find(expected) != std::string::npos;
-    }
+    require(!sweep.needsExtrapolation(traj,dir),"a failed search must stop the extension");
+    auto expected = narrow ? "no representable piece interior" : "displacement exceeds intersection tolerance";
+    bool failed = sweep.failed() && sweep.error().find(expected) != std::string::npos;
     require(failed && !sweep.hasCrossing(),"invalid boundary interior must fail explicitly without accepting geometry");
   }
 
@@ -667,13 +664,54 @@ namespace {
     KinKal::Plane plane(VEC3(1.0,0.0,0.0),VEC3(0.0,1.0,0.0),VEC3(2.0*helix.bendRadius(),0.0,0.0));
     SweepTarget target;
     target.surf_ = target.pl_ = &plane;
-    bool failed = false;
-    try {
-      crossing(traj,{target},TimeDir::forwards);
-    } catch(std::runtime_error const& error) {
-      failed = std::string(error.what()).find("extrema budget") != std::string::npos;
+    SweepTargetCollection targets{target};
+    ExtrapolateSweep sweep(targets,TimeDir::forwards,1.0e6,1.0e6,1.0e-4,tol,1.0e-6,0);
+    sweep.start(traj.range().begin());
+    sweep.limit(traj.range().end(),false);
+    require(!sweep.needsExtrapolation(traj,TimeDir::forwards),"a failed search must stop the extension");
+    bool failed = sweep.failed() && sweep.error().find("extrema budget") != std::string::npos;
+    require(failed && !sweep.hasCrossing(),"unresolved long plane search must fail explicitly at the extrema budget");
+    require(!sweep.needsExtrapolation(traj,TimeDir::forwards) && sweep.failed(),"a failed search stays failed");
+  }
+
+  // All crossings of a full sweep, each accepted as KKExtrap does.
+  template <class KTRAJ> std::vector<KinKal::Intersection> allCrossings(KinKal::ParticleTrajectory<KTRAJ> const& traj,
+      SweepTargetCollection const& targets, TimeDir dir, double tolerance) {
+    ExtrapolateSweep sweep(targets,dir,1.0e6,1.0e6,1.0e-4,tolerance,1.0e-6,0);
+    sweep.start(dir == TimeDir::forwards ? traj.range().begin() : traj.range().end());
+    sweep.limit(dir == TimeDir::forwards ? traj.range().end() : traj.range().begin(),false);
+    std::vector<KinKal::Intersection> found;
+    while(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing()){
+      found.push_back(sweep.crossing().inter_);
+      sweep.accept();
+      require(found.size() < 100,"runaway repeated crossings");
     }
-    require(failed,"unresolved long plane search must fail explicitly at the extrema budget");
+    require(!sweep.failed(),"sweep failed: " + sweep.error());
+    return found;
+  }
+
+  // A repeatable shell (the IPA) is crossed once per traversal at any incidence above its floor, never below it.
+  void shellIncidence(TimeDir dir) {
+    double const radius = 300.0, tolerance = 0.1;
+    KinKal::Cylinder cyl(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,0.0),radius,1000.0);
+    SweepTarget target;
+    target.effect_ = SweepTarget::ipashell;
+    target.surf_ = &cyl;
+    target.maxcross_ = 0;
+    target.mincos_ = 0.1;
+    for(double incidence : {0.003,0.05,0.12,0.2,0.5}){
+      // a line at distance radius*sqrt(1-c^2) from the axis meets the cylinder at incidence c, entering and leaving
+      double offset = radius*std::sqrt(1.0-incidence*incidence);
+      KinKal::ParticleState state(VEC3(-400.0,offset,0.0),VEC3(100.0,0.0,0.0),0.0,105.658,1);
+      KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,1.0));
+      line.setRange(TimeRange(0.0,800.0/line.speed(0.0)));
+      KinKal::ParticleTrajectory<KinKal::KinematicLine> traj(line);
+      auto found = allCrossings(traj,{target},dir,tolerance);
+      size_t expected = incidence < target.mincos_ ? 0 : 2;
+      require(found.size() == expected,"shell crossed " + std::to_string(found.size()) + " times at incidence " + std::to_string(incidence));
+      for(auto const& inter : found)
+        require(std::fabs(std::fabs(inter.norm_.Dot(inter.pdir_))-incidence) < 1.0e-3,"shell crossing at the wrong incidence");
+    }
   }
 
   void emptySearch() {
@@ -705,6 +743,7 @@ int main() {
           materialPieceEdge(dir,npiece,join,*targetMaterial,false);
         }
       reachBound(dir);
+      shellIncidence(dir);
       invalidBoundaryInterior(dir,true);
       invalidBoundaryInterior(dir,false);
       closeSeam(dir);
