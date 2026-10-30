@@ -7,7 +7,10 @@
 #include "KinKal/Detector/ElementXing.hh"
 #include "KinKal/Geometry/Surface.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
+#include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
+#include "KinKal/General/TimeDir.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include <algorithm>
 #include <cmath>
@@ -18,8 +21,8 @@ namespace mu2e {
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using EXING = KinKal::ElementXing<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
-      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,KinKal::SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,KinKal::SensorLine>;
       using SURFPTR = std::shared_ptr<SURF>;
       // construct from a surface, material, intersection, and transverse thickness.
       // Material ionization eloss mode (mpv/moyalmean/bethemean) is configured per-material in
@@ -36,13 +39,13 @@ namespace mu2e {
         return rv;
       };
       // ElementXing interface
-      void updateReference(PTRAJ const& ptraj, MetaIterConfig const&) override; // the intersection time sets the piece, so the piece-move limit does not apply
-      void updateState(MetaIterConfig const& config,bool first) override;
-      Parameters params() const override;
+      void updateReference(PTRAJ const& ptraj, KinKal::MetaIterConfig const&) override; // the intersection time sets the piece, so the piece-move limit does not apply
+      void updateState(KinKal::MetaIterConfig const& config,bool first) override;
+      KinKal::Parameters params() const override;
       double time() const override { return inter_.time_; }
       double transitTime() const override;
       KTRAJ const& referenceTrajectory() const override { return *reftrajptr_; }
-      std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
+      std::vector<KinKal::MaterialXing>const&  matXings() const override { return mxings_; }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       bool active() const override { return mxings_.size() > 0; }
       // specific accessors
@@ -102,7 +105,7 @@ namespace mu2e {
     }
   }
 
-  template <class KTRAJ,class SURF> Parameters KKShellXing<KTRAJ,SURF>::params() const {
+  template <class KTRAJ,class SURF> KinKal::Parameters KKShellXing<KTRAJ,SURF>::params() const {
     return fparams_;
   }
 
@@ -115,6 +118,16 @@ namespace mu2e {
   template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::print(std::ostream& ost,int detail) const {
     ost <<"Shell Xing time " << this->time();
     ost << std::endl;
+  }
+
+  // True if the particle stops in this crossing's material going forwards in time: the mean energy loss reaches the kinetic energy.
+  template <class KTRAJ> bool rangesOut(KinKal::ElementXing<KTRAJ> const& xing, KinKal::TimeDir tdir) {
+    if(tdir != KinKal::TimeDir::forwards) return false;
+    double dmom, paramomvar, perpmomvar;
+    xing.materialEffects(dmom,paramomvar,perpmomvar);
+    auto const& ref = xing.referenceTrajectory();
+    double energy = ref.energy();
+    return -dmom*ref.momentum()/energy >= energy - ref.mass(); // materialEffects gives dmom = dE E/p
   }
 
 }

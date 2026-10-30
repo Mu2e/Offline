@@ -378,7 +378,8 @@ namespace mu2e {
   void KinematicLineFit::sampleFit(KKTRK& kktrk) const {
     auto const& ftraj = kktrk.fitTraj();
     // need to extend range for now even if sampleinrange_ is false
-    TimeRange extrange(ftraj.range().begin() - sampletbuff_,ftraj.range().end() + sampletbuff_);
+    // a particle that ranges out stops there, so its trajectory is not extended forwards
+    TimeRange extrange(ftraj.range().begin() - sampletbuff_,ftraj.range().end() + (kktrk.rangedOut() ? 0.0 : sampletbuff_));
     kktrk.extendTraj(extrange);
     double tbeg = ftraj.range().begin();
 
@@ -392,7 +393,12 @@ namespace mu2e {
       // loop to find multiple intersections
       while(goodinter && cur_inter < max_inter) {
         cur_inter += 1;
-        TimeRange irange(tstart,std::max(ftraj.range().end(),tstart));
+        double tmax = std::max(ftraj.range().end(),tstart);
+        if(kktrk.rangedOut()){
+          tmax = std::min(tmax,kktrk.rangeOutTime());
+          if(tstart >= tmax) break;
+        }
+        TimeRange irange(tstart,tmax);
         auto surfinter = KinKal::intersect(ftraj,*surf.second,irange,intertol_);
         goodinter = surfinter.onsurface_ && ( (! sampleinbounds_) || surfinter.inbounds_ ) && ( (!sampleinrange_) || irange.inRange(surfinter.time_));
         if(goodinter) {

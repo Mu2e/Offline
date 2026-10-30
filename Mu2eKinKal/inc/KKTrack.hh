@@ -13,7 +13,10 @@
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "KinKal/Geometry/Intersection.hh"
+#include <limits>
+#include <string>
 #include <tuple>
+#include <vector>
 namespace mu2e {
 
   using KinKal::Config;
@@ -80,7 +83,9 @@ namespace mu2e {
           strawhits_(rhs.strawHits()),
           strawxings_(rhs.strawXings()),
           calohits_(rhs.caloHits()),
-          inters_(rhs.intersections()){
+          inters_(rhs.intersections()),
+          extrapfails_(rhs.extrapolationFailures()),
+          rangeouttime_(rhs.rangeOutTime()){
         // hits and crossings were reallocated into the base copy; here,
         // we propagate references to those reallocations to the subclass
         this->remap_pointer_collection(strawhits_, this->hits(), context);
@@ -144,6 +149,10 @@ namespace mu2e {
       void addCRVXing(KKCRVXINGPTR const& crvxing,TimeDir const& tdir);
       // add intersections
       void addIntersection(SurfaceId const& sid, Intersection const& inter) { inters_.emplace_back(sid,inter); }
+      // record an extrapolation that ended early on a problem with this track; the fit itself is unaffected
+      void addExtrapolationFailure(std::string const& reason) { extrapfails_.push_back(reason); }
+      // record the time the particle stops in an extrapolation material; the forwards extrapolation ends there
+      void setRangedOut(double time) { rangeouttime_ = time; }
 
       // accessors
       PDGCode::type fitParticle() const { return tpart_;}
@@ -157,6 +166,9 @@ namespace mu2e {
       KKMATCYLXINGCOL const& materialCylXings() const { return matcylxings_; }
       KKMATRECXINGCOL const& materialPlaneXings() const { return matrecxings_; }
       KKINTERCOL const& intersections() const { return inters_; }
+      std::vector<std::string> const& extrapolationFailures() const { return extrapfails_; }
+      bool rangedOut() const { return rangeouttime_ < std::numeric_limits<double>::infinity(); }
+      double rangeOutTime() const { return rangeouttime_; } // infinity unless the particle ranges out
       KKCALOHITCOL const& caloHits() const { return calohits_; }
       void printFit(std::ostream& ost=std::cout,int detail=0) const;
       // allow reversing the charge (in some fits it can change dynamically)
@@ -178,6 +190,8 @@ namespace mu2e {
       KKMATCYLXINGCOL matcylxings_; // passive cylindrical material crossings used in extrapolation
       KKMATRECXINGCOL matrecxings_; // passive planar material crossings used in extrapolation
       KKINTERCOL inters_; // other recorded intersections
+      std::vector<std::string> extrapfails_; // why an extrapolation direction ended early
+      double rangeouttime_ = std::numeric_limits<double>::infinity(); // when the particle stops in an extrapolation material
       KKSTRAWHITCLUSTERCOL strawhitclusters_;  // straw hit clusters used in this fit
       // utility function to convert to generic types
       void convertTypes( KKSTRAWHITCOL const& strawhits, KKSTRAWXINGCOL const& strawxings,KKCALOHITCOL const& calohits, PARAMHITCOL const& paramhits,
