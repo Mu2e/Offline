@@ -1,0 +1,14 @@
+//
+// Run 1A study geometry
+// geom_run1_a_stoppingTarget_37foils_plus-6-up-6-down.txt, the 37-foil target
+// plus 6 foils at each end, without the inner proton absorber.
+//
+// protonabsorber.ipa.build = false removes the inner proton absorber (IPA) and
+// its supports. Everything else is unchanged, including the outer proton
+// absorber (OPA), its support rings and the stopping-target support slats,
+// which hasProtonAbsorber = false would remove too.
+//
+
+#include "Offline/Mu2eG4/geom/studies/geom_run1_a_stoppingTarget_37foils_plus-6-up-6-down.txt"
+
+bool protonabsorber.ipa.build = false;
