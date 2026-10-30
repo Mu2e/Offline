@@ -1,0 +1,12 @@
+//
+// Run 1A geometry (geom_run1_a.txt) without the inner proton absorber.
+//
+// protonabsorber.ipa.build = false removes the inner proton absorber (IPA) and
+// its supports. Everything else is unchanged, including the outer proton
+// absorber (OPA), its support rings and the stopping-target support slats,
+// which hasProtonAbsorber = false would remove too.
+//
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+bool protonabsorber.ipa.build = false;
