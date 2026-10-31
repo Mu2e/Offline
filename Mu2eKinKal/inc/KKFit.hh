@@ -32,6 +32,8 @@
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
+#include "Offline/Mu2eKinKal/inc/CaloMaterialLayers.hh"
+#include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 // geometry
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 // KinKal includes
@@ -131,10 +133,11 @@ namespace mu2e {
           KKTRK const& kktrk, ComboHitCollection const& chcol, KKSTRAWHITCOL& hits,KKSTRAWXINGCOL& addexings) const;
       void addStraws(Tracker const& tracker, KKTRK const& kktrk, KKSTRAWXINGCOL& addexings) const;
       void addCaloHit(Calorimeter const& calo, KKTRK& kktrk, CCHandle cchandle, KKCALOHITCOL& hits) const;
+      void addCaloMaterial(KKTRK& kktrk) const;
       void sampleFit(KKTRK const& kktrk,KalIntersectionCollection& inters) const; // sample fit at the surfaces specified in the config
       int print_;
       unsigned minNStrawHits_;
-      bool matcorr_, addhits_, addmat_, usecalo_; // flags
+      bool matcorr_, addhits_, addmat_, usecalo_, addcalomat_; // flags
       KKSTRAWHITCLUSTERER shclusterer_; // functor to cluster KKStrawHits
       // CaloHit configuration
       double caloDt_; // calo time offset; should come from proditions TODO!
@@ -175,6 +178,7 @@ namespace mu2e {
     addhits_(fitconfig.addHits()),
     addmat_(fitconfig.addMaterial()),
     usecalo_(fitconfig.useCaloCluster()),
+    addcalomat_(fitconfig.addCaloMaterial()),
     shclusterer_(StrawIdMask(fitconfig.strawHitClusterLevel()),fitconfig.strawHitClusterDeltaStraw(),fitconfig.strawHitClusterDeltaT()),
     caloDt_(fitconfig.caloDt()),
     caloPosRes_(fitconfig.caloPosRes()),
@@ -400,6 +404,78 @@ namespace mu2e {
         << addstrawxings.size() << " Straw Xings" << std::endl;
     }
     kktrk.extendTrack(exconfig,addstrawhits,addstrawxings,addcalohits);
+    if(matcorr_ && addcalomat_ && kktrk.fitStatus().usable())addCaloMaterial(kktrk);
+  }
+
+  // Add the calorimeter front panel material crossed between the tracker and the end of the fit to the fit. The
+  // crossings are found by intersecting the fit trajectory with the front panels, from the straw hit nearest the
+  // calorimeter end of the fit (the CaloHit if there is one, otherwise the end at larger z) to that end of the fit.
+  // The search runs to the end of the fit, not just to the CaloHit: the fit extends past its last measurement, and
+  // KKExtrap only adds crossings beyond the end of the fit, so crossings between the two would otherwise be lost.
+  // Adding material moves the trajectory downstream of it, which can move a crossing near the panel inner edge from
+  // the hole onto the panel, so the search is repeated after each refit for the layers not yet in the fit.
+  // The crystal case inner support rings crossed by tracks entering the case at its inner edge are added the same way.
+  // Front panel material isn't added when the fit is regrown TODO
+  template <class KTRAJ> void KKFit<KTRAJ>::addCaloMaterial(KKTRK& kktrk) const {
+    using KKMATRECXING = typename KKTRK::KKMATRECXING;
+    static const unsigned maxpass(3);
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+    auto layers = caloMaterialLayers(*kkg_h);
+    for(unsigned ipass=0; ipass < maxpass && kktrk.fitStatus().usable(); ++ipass){
+      // the refit replaces the fit trajectory
+      auto const& ptraj = kktrk.fitTraj();
+      double tcalo;
+      if(kktrk.caloHits().size() > 0)
+        tcalo = kktrk.caloHits().front()->time();
+      else
+        tcalo = ptraj.position3(ptraj.range().end()).Z() > ptraj.position3(ptraj.range().begin()).Z() ? ptraj.range().end() : ptraj.range().begin();
+      // search between the last straw hit and the end of the fit beyond the CaloHit
+      double tlast = tcalo < ptraj.range().mid() ? ptraj.range().end() : ptraj.range().begin();
+      for(auto const& strawhit : kktrk.strawHits()){
+        double tstraw = strawhit->time();
+        if(fabs(tstraw-tcalo) < fabs(tlast-tcalo))tlast = tstraw;
+      }
+      double tend = tcalo > tlast ? ptraj.range().end() : ptraj.range().begin();
+      TimeRange srange(std::min(tlast,tend),std::max(tlast,tend));
+      typename KKTRK::KKMATRECXINGCOL matxings;
+      for(auto const& layer : layers){
+        // only add each layer once
+        bool infit(false);
+        for(auto const& matxing : kktrk.materialPlaneXings())
+          if(matxing->surfaceId() == layer.sid_){ infit = true; break; }
+        if(infit)continue;
+        auto inter = KinKal::intersect(ptraj,*layer.surface_,srange,intertol_);
+        if(!inter.good())continue;
+        double thickness = layer.thickness(inter.pos_);
+        if(thickness <= 0.0)continue;
+        matxings.push_back(std::make_shared<KKMATRECXING>(layer.surface_,layer.sid_,*kkmat_h->material(*layer.material_),
+              inter,ptraj.nearestTraj(inter.time_),thickness,intertol_));
+        if(print_ > 1)std::cout << "Adding calo front panel material " << layer.sid_ << " pass " << ipass << " thickness " << thickness << " " << inter << std::endl;
+      }
+      // crystal case inner support rings: entered at most once per disk, through the case front or from the hole
+      typename KKTRK::KKMATCYLXINGCOL cylxings;
+      for(auto const& support : kkg_h->caloInnerSupports()){
+        using Support = KKGeom::CaloInnerSupport;
+        auto ringid = support.surfaceId(Support::alFront).id();
+        auto isring = [&ringid](auto const& matxing){ return matxing->surfaceId().id() == ringid; };
+        if(std::any_of(kktrk.materialPlaneXings().begin(),kktrk.materialPlaneXings().end(),isring) ||
+            std::any_of(kktrk.materialCylXings().begin(),kktrk.materialCylXings().end(),isring))continue;
+        for(auto const& sxing : caloSupportXings(ptraj,support,srange,intertol_)){
+          auto sid = support.surfaceId(sxing.xing_);
+          auto const& dmat = *kkmat_h->material(support.materialName(Support::material(sxing.xing_)));
+          auto reftraj = ptraj.nearestTraj(sxing.inter_.time_);
+          if(sxing.xing_ == Support::alFront || sxing.xing_ == Support::cfFront)
+            matxings.push_back(std::make_shared<KKMATRECXING>(support.front(),sid,dmat,sxing.inter_,reftraj,sxing.thickness(),intertol_));
+          else
+            cylxings.push_back(std::make_shared<typename KKTRK::KKMATCYLXING>(sxing.xing_ == Support::alHole ? support.inner() : support.cfInner(),
+                  sid,dmat,sxing.inter_,reftraj,sxing.thickness(),intertol_));
+          if(print_ > 1)std::cout << "Adding calo inner ring material " << sid << " pass " << ipass << " path " << sxing.path_ << " " << sxing.inter_ << std::endl;
+        }
+      }
+      if(matxings.empty() && cylxings.empty())break;
+      kktrk.addFitMaterialXings(matxings,cylxings);
+    }
   }
 
   template <class KTRAJ> void KKFit<KTRAJ>::addStrawHits(Tracker const& tracker,StrawResponse const& strawresponse, BFieldMap const& kkbf,

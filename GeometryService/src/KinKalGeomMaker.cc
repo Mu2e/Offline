@@ -96,6 +96,126 @@ namespace mu2e {
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Front),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_FrontPtr())));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_0_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_0_BackPtr())));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::EMC_Disk_1_Back),std::static_pointer_cast<Surface>(calo.EMC_Disk_1_BackPtr())));
+
+    // Crystal case inner support (see caloBuildCase in Mu2eG4/src/constructDiskCalorimeter.cc): the case runs from the
+    // crystal caps to the back of the crystals, and holds solid aluminium rings at its front, middle and back, between
+    // the case inner radius and the carbon fiber ring that separates them from the crystals
+    auto const& g4info = calo_det.G4Info();
+    double const capthick = g4info.get<double>("crystalCapZLength");
+    double const caselen = g4info.get<double>("diskCaseZLength");
+    double const alrin = g4info.get<double>("diskInAlRingRIn");
+    double const alzlen = g4info.get<double>("diskInAlRingZLength");
+    double const cfrin = g4info.get<double>("diskInCFRingRIn");
+    double const cfrout = g4info.get<double>("diskInCFRingROut");
+    // KinKal material for the aluminium (G4_Al) rings, named per subsystem like the front panel pipes
+    std::array<std::string,KKGeom::CaloInnerSupport::nmaterials> const ringmats = {"CaloRingAl",g4info.get<std::string>("innerCFRingMaterial")};
+    static const SurfaceIdEnum::enum_type ringsid[2] = {SurfaceIdEnum::EMC_Disk_0_InnerRing, SurfaceIdEnum::EMC_Disk_1_InnerRing};
+    for(int idisk=0; idisk < 2; ++idisk){
+      using Support = KKGeom::CaloInnerSupport;
+      double const zfront = toDetectorZ(calo_det.disk(idisk).diskInfo().frontFaceCenter().z() - capthick);
+      double const zback = zfront + caselen;
+      double const zmid = 0.5*(zfront+zback);
+      auto const center = det->toDetector(calo_det.disk(idisk).diskInfo().origin());
+      Support support(ringsid[idisk],VEC3(center.x(),center.y(),zfront),alrin,cfrin,cfrout,zfront,zback,ringmats);
+      support.addRing(Support::Ring{alrin,cfrin,zfront,zfront+alzlen,Support::aluminium});
+      support.addRing(Support::Ring{alrin,cfrin,zmid-0.5*alzlen,zmid+0.5*alzlen,Support::aluminium});
+      support.addRing(Support::Ring{alrin,cfrin,zback-alzlen,zback,Support::aluminium});
+      support.addRing(Support::Ring{cfrin,cfrout,zfront,zback,Support::carbon});
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alFront),std::static_pointer_cast<Surface>(support.front())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alHole),std::static_pointer_cast<Surface>(support.inner())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::cfRing),std::static_pointer_cast<Surface>(support.cfInner())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::cfFront),std::static_pointer_cast<Surface>(support.front())));
+      kkg_->map_.emplace(std::make_pair(support.surfaceId(Support::alRing),std::static_pointer_cast<Surface>(support.cfInner())));
+      kkg_->caloInnerSupports_.push_back(std::move(support));
+    }
+
+    // Front panel passive material: a carbon fiber / foam / carbon fiber sandwich directly upstream of the
+    // crystal caps (see caloBuildFrontPlate in Mu2eG4/src/constructDiskCalorimeter.cc). Each layer is an
+    // annulus carrying its full thickness; index 0 is the upstream carbon skin, 1 the foam, 2 the downstream skin.
+    // The cooling pipes embedded in the foam (index 3) are described by their centerlines, see makeCaloPipes
+    if(!g4info.get<bool>("hasFrontPanel")) return;
+    double const fprin = g4info.get<double>("FPInnerRadius");
+    double const fprout = g4info.get<double>("FPOuterRadius");
+    double const carbonthick = g4info.get<double>("FPCarbonZLength");
+    double const foamthick = g4info.get<double>("FPFoamZLength");
+    std::string const carbonmat = g4info.get<std::string>("FPCarbonMaterial");
+    std::string const foammat = g4info.get<std::string>("FPFoamMaterial");
+    static const SurfaceIdEnum::enum_type fpsid[2] = {SurfaceIdEnum::EMC_Disk_0_FrontPanel, SurfaceIdEnum::EMC_Disk_1_FrontPanel};
+    for(int idisk=0; idisk < 2; ++idisk){
+      // the front panel ends where the crystal caps begin
+      double const fpback = calo_det.disk(idisk).diskInfo().frontFaceCenter().z() - capthick;
+      double const zlayer[3] = {fpback - 1.5*carbonthick - foamthick, fpback - carbonthick - 0.5*foamthick, fpback - 0.5*carbonthick};
+      double const thick[3] = {carbonthick, foamthick, carbonthick};
+      std::string const* mat[3] = {&carbonmat, &foammat, &carbonmat};
+      for(int ilayer=0; ilayer < 3; ++ilayer){
+        SurfaceId sid(fpsid[idisk],ilayer);
+        auto annulus = std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,toDetectorZ(zlayer[ilayer])),fprin,fprout);
+        kkg_->caloMaterialPlanes_.emplace_back(sid,annulus,*mat[ilayer],thick[ilayer]);
+        kkg_->map_.emplace(std::make_pair(sid,std::static_pointer_cast<Surface>(annulus)));
+      }
+      // the pipe centerlines lie one pipe radius downstream of the upstream face of the foam
+      double const zpipe = fpback - carbonthick - foamthick + g4info.get<double>("pipeRadius");
+      auto const center = det->toDetector(calo_det.disk(idisk).diskInfo().origin());
+      makeCaloPipes(g4info,SurfaceId(fpsid[idisk],3),VEC3(center.x(),center.y(),toDetectorZ(zpipe)));
+    }
+  }
+
+  // Cooling pipes of a calorimeter front panel, reproducing caloBuildFrontPlate in Mu2eG4/src/constructDiskCalorimeter.cc:
+  // for each pipe a large torus arc (placed twice, rotated by pi), a small bending torus and a straight section running out
+  // to the manifold (each placed 4 times, mirrored in x and y), plus the outer manifold torus. G4 rotations by pi about
+  // z, y and x map (x,y) to (-x,-y), (-x,y) and (x,-y) respectively. Pipe interiors are foam, already in the foam layer.
+  void KinKalGeomMaker::makeCaloPipes(CaloG4Info const& g4info, SurfaceId const& sid, VEC3 const& center) {
+    using Pipes = KKGeom::CaloFrontPanelPipes;
+    double const deg = M_PI/180.0;
+    int const npipes = g4info.get<int>("nPipes");
+    double const prout = g4info.get<double>("pipeRadius");
+    double const prin = prout - g4info.get<double>("pipeThickness");
+    double const radSmTor = g4info.get<double>("radSmTor");
+    double const xsmall = g4info.get<double>("xsmall");
+    double const xdistance = g4info.get<double>("xdistance");
+    auto const torRadius = g4info.get<std::vector<double>>("pipeTorRadius");
+    auto const largeTorPhi = g4info.get<std::vector<double>>("largeTorPhi");
+    auto const smallTorPhi = g4info.get<std::vector<double>>("smallTorPhi");
+    auto const yposition = g4info.get<std::vector<double>>("yposition");
+    auto const straightEndPhi = g4info.get<std::vector<double>>("straightEndPhi");
+    double const coolTorRadius = g4info.get<double>("FPCoolPipeTorRadius");
+    double const coolrout = g4info.get<double>("FPCoolPipeRadius");
+    double const coolrin = coolrout - g4info.get<double>("FPCoolPipeThickness");
+    double const fprin = g4info.get<double>("FPInnerRadius");
+    double const fprout = g4info.get<double>("FPOuterRadius");
+    double const cx = center.X(), cy = center.Y();
+
+    auto plane = std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),center,fprin,coolTorRadius+coolrout);
+    // KinKal material for the aluminium (G4_Al) pipe walls, named per subsystem like the CRV strongback
+    Pipes pipes(sid,plane,"CaloPipeAl");
+    for(int ipipe=0; ipipe < npipes; ++ipipe){
+      double const angle = 0.5*largeTorPhi.at(ipipe)*deg;
+      double const sAngle = smallTorPhi.at(ipipe)*deg;
+      double const sx = xsmall + xdistance*ipipe;
+      double const sy = yposition.at(ipipe);
+      double const sephi = straightEndPhi.at(ipipe)*deg;
+      // large torus
+      for(double sign : {1.0,-1.0})
+        pipes.addArc(Pipes::Arc{cx,cy,sign,sign,torRadius.at(ipipe),-angle*0.9975,2*angle*0.9975,prout,prin});
+      // small bending torus
+      for(auto const& [xs,ys] : {std::pair(1.0,1.0),std::pair(-1.0,-1.0),std::pair(-1.0,1.0),std::pair(1.0,-1.0)})
+        pipes.addArc(Pipes::Arc{cx+xs*sx,cy+ys*sy,xs,ys,radSmTor,angle-sAngle+M_PI,sAngle,prout,prin});
+      // straight section, shortened by 2 mm at each end as in G4
+      double const xend = (coolTorRadius - coolrout)*std::sin(sephi);
+      double const yend = (coolTorRadius - coolrout)*std::cos(sephi);
+      double const xstart = sx - radSmTor*std::cos(sephi);
+      double const ystart = sy + radSmTor*std::sin(sephi);
+      double const slen = std::sqrt((xend-xstart)*(xend-xstart) + (yend-ystart)*(yend-ystart));
+      double const ux = (xend-xstart)/slen, uy = (yend-ystart)/slen;
+      for(auto const& [xs,ys] : {std::pair(1.0,1.0),std::pair(-1.0,1.0),std::pair(-1.0,-1.0),std::pair(1.0,-1.0)})
+        pipes.addLine(Pipes::Line{cx+xs*(xstart+2.0*ux),cy+ys*(ystart+2.0*uy),cx+xs*(xend-2.0*ux),cy+ys*(yend-2.0*uy),prout,prin});
+    }
+    // manifold torus around the panel, placed rotated by pi about y
+    double const pipeTotalSep = torRadius.back() - torRadius.front();
+    double const angMax = 0.5*M_PI - std::asin((g4info.get<double>("pipeInitSeparation")+pipeTotalSep)/fprout) - 0.1;
+    pipes.addArc(Pipes::Arc{cx,cy,-1.0,1.0,coolTorRadius,angMax,2*M_PI-2*angMax,coolrout,coolrin});
+    kkg_->map_.emplace(std::make_pair(sid,std::static_pointer_cast<Surface>(plane)));
+    kkg_->caloFrontPanelPipes_.push_back(std::move(pipes));
   }
 
   // sort by transverse distance

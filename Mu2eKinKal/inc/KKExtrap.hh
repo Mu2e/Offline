@@ -16,6 +16,7 @@
 #include "Offline/Mu2eKinKal/inc/ExtrapolateCRVRegion.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateCylinders.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolatePlanes.hh"
+#include "Offline/Mu2eKinKal/inc/CaloMaterialLayers.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -52,6 +53,8 @@ namespace mu2e {
       template <class KTRAJ> bool extrapolateTSDA(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateDSMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolatePassiveMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> void extrapolateCaloMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
+      template <class KTRAJ> bool extrapolateCaloSupport(KKTrack<KTRAJ>& ktrk,KKGeom::CaloInnerSupport const& support,double& tstart) const;
       template <class KTRAJ> void extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const;
       template <class KTRAJ> void extrapolateOPA(KKTrack<KTRAJ>& ktrk, double tstart, TimeDir tdir) const;
       template <class KTRAJ> void toTrackerPerimeter(KKTrack<KTRAJ>& ktrk) const;
@@ -61,7 +64,7 @@ namespace mu2e {
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
-      bool toCaloD0_, toCaloD1_;
+      bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // IPA/ST thicknesses are nominal literals, consistent with the rest of KinKalGeom, whose IPA
       // (single Cylinder) and ST (uniform Annulus foils) surfaces are themselves hard-coded nominal
       // placeholders (see KinKalGeomMaker::makeDS/makeTarget). Sourcing these from the real geometry
@@ -84,7 +87,8 @@ namespace mu2e {
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV()),
     toCaloD0_(extrapconfig.ToCaloD0()),
-    toCaloD1_(extrapconfig.ToCaloD1())
+    toCaloD1_(extrapconfig.ToCaloD1()),
+    toCaloMaterial_(extrapconfig.ToCaloMaterial())
   {}
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
@@ -143,6 +147,8 @@ namespace mu2e {
     // first moves DS shell crossings onto interior pieces where they are dropped (see PR #2059)
     // the calo is downstream of the tracker, opposite to the upstream direction tdir
     TimeDir calotdir = tdir == TimeDir::forwards ? TimeDir::backwards : TimeDir::forwards;
+    // the front panels sit upstream of the disk faces, so their material must be added before the disk extension
+    if(toCaloMaterial_)extrapolateCaloMaterial(ktrk,calotdir);
     if(toCaloD0_)toCaloDisk(ktrk,0,t0,calotdir);
     if(toCaloD1_)toCaloDisk(ktrk,1,t0,calotdir);
   }
@@ -463,6 +469,127 @@ namespace mu2e {
       }
       if(!found) break;
     } while(extrapPlanes.intersections().size()>0);
+  }
+
+  // Extrapolate through the calorimeter front panel layers and their cooling pipes (both disks), adding their material
+  // effects. All are described by planes normal to z, so visit them in z order along the extrapolation direction: extend
+  // the fit to each plane's z, then add a crossing if the track intersects the plane within the extension (ie it doesn't
+  // pass through the hole) and, for the pipe planes, if it crosses a pipe wall there.
+  // The search starts at the last measurement, not at the end of the fit: the fit extends past its last measurement,
+  // possibly into the front panel, and its end can move on refit, so crossings between the two would otherwise be lost.
+  // Crossings can only be added in the last trajectory piece, so one before it is skipped: crossings inside the fit
+  // are added by KKFit AddCaloMaterial, which can refit.
+  // Layers already in the fit are skipped, and if an earlier pass (ie ToCRV) took the fit past the calorimeter no
+  // front panel material is added.
+  // Tracks moving downstream then cross the crystal case inner support rings of a disk after its front panel, see
+  // extrapolateCaloSupport.
+  template <class KTRAJ> void KKExtrap::extrapolateCaloMaterial(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {
+    using KKMATRECXING = KKShellXing<KTRAJ,KinKal::Plane>;
+    GeomHandle<mu2e::KinKalGeom> kkg_h;
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+    auto layers = caloMaterialLayers(*kkg_h);
+    if(layers.empty() && kkg_h->caloInnerSupports().empty()) return;
+    auto const& ftraj = ktrk.fitTraj();
+    auto arange = ktrk.activeRange();
+    // a measurement (ie the CaloHit) can be beyond the end of the fit
+    double tstart = std::clamp(tdir == TimeDir::forwards ? arange.end() : arange.begin(),ftraj.range().begin(),ftraj.range().end());
+    // order the layers along the direction of motion in z at the start of the extrapolation
+    double zdir = ftraj.direction(tstart).Z()*KinKal::timeDirSign(tdir);
+    std::sort(layers.begin(),layers.end(),[zdir](auto const& a,auto const& b){
+        return zdir > 0 ? a.surface_->center().Z() < b.surface_->center().Z() : a.surface_->center().Z() > b.surface_->center().Z(); });
+    std::vector<KKGeom::CaloInnerSupport const*> supports;
+    if(tdir == TimeDir::forwards && zdir > 0.0)
+      for(auto const& support : kkg_h->caloInnerSupports())supports.push_back(&support);
+    std::sort(supports.begin(),supports.end(),[](auto a,auto b){ return a->front()->center().Z() < b->front()->center().Z(); });
+    auto nextsupport = supports.begin();
+    bool usable(true);
+    for(auto const& layer : layers) {
+      while(usable && nextsupport != supports.end() && (*nextsupport)->front()->center().Z() < layer.surface_->center().Z())
+        usable = extrapolateCaloSupport(ktrk,**nextsupport++,tstart);
+      if(!usable) break;
+      bool infit(false);
+      for(auto const& matxing : ktrk.materialPlaneXings())
+        if(matxing->surfaceId() == layer.sid_){ infit = true; break; }
+      if(infit){
+        if(debug_ > 0)std::cout << "Calo front panel crossing " << layer.sid_ << " already in the fit" << std::endl;
+        continue;
+      }
+      ExtrapolateToZ toLayer(maxdt_,maxdtstep_,btol_,intertol_,layer.surface_->center().Z(),debug_);
+      if(!ktrk.extrapolate(tdir,toLayer)){ usable = false; break; } // the fit is no longer usable
+      TimeRange testrange = tdir == TimeDir::forwards ? TimeRange(tstart,ftraj.range().end()) : TimeRange(ftraj.range().begin(),tstart);
+      auto inter = KinKal::intersect(ftraj,*layer.surface_,testrange,intertol_,tdir);
+      if(debug_ > 1)std::cout << "Calo front panel " << layer.sid_ << " " << inter << std::endl;
+      if(!inter.good()) continue;
+      double thickness = layer.thickness(inter.pos_);
+      if(thickness <= 0.0) continue; // between the pipes
+      auto const& reftrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+      // a crossing can only be added at the end of the fit; one before it is skipped
+      if(!reftrajptr->range().inRange(inter.time_)){
+        if(debug_ > 0)std::cout << "Skipping calo front panel crossing " << layer.sid_ << " not at the end of the fit" << std::endl;
+        continue;
+      }
+      auto matxingptr = std::make_shared<KKMATRECXING>(layer.surface_,layer.sid_,*kkmat_h->material(*layer.material_),
+          inter,reftrajptr,thickness,intertol_);
+      if(debug_ > 2){
+        double dmom, paramomvar, perpmomvar;
+        matxingptr->materialEffects(dmom,paramomvar,perpmomvar);
+        std::cout << layer.sid_ << " thickness " << thickness << " Xing dmom " << dmom << " para momsig " << sqrt(paramomvar)
+          << " perp momsig " << sqrt(perpmomvar) << " before append mom = " << reftrajptr->momentum();
+      }
+      ktrk.addMaterialPlaneXing(matxingptr,tdir);
+      if(debug_ > 2){
+        auto const& newtrajptr = tdir == TimeDir::backwards ? ftraj.frontPtr() : ftraj.backPtr();
+        std::cout << " after append mom = " << newtrajptr->momentum() << std::endl;
+      }
+      // the next layer must be crossed after this one
+      tstart = inter.time_;
+    }
+    while(usable && nextsupport != supports.end())
+      usable = extrapolateCaloSupport(ktrk,**nextsupport++,tstart);
+  }
+
+  // Extrapolate forwards through the inner support rings of a calorimeter crystal case, see caloSupportXings: extend the
+  // fit to the case front and, if the track is then in the disk hole, to the back of the case, and add the crossings
+  // found after tstart. As for the front panel, crossings can only be added in the last trajectory piece, and rings
+  // already in the fit are skipped. Returns false if the fit is no longer usable.
+  template <class KTRAJ> bool KKExtrap::extrapolateCaloSupport(KKTrack<KTRAJ>& ktrk,KKGeom::CaloInnerSupport const& support,double& tstart) const {
+    using Support = KKGeom::CaloInnerSupport;
+    using KKMATRECXING = KKShellXing<KTRAJ,KinKal::Plane>;
+    using KKMATCYLXING = KKShellXing<KTRAJ,KinKal::Cylinder>;
+    static const TimeDir tdir(TimeDir::forwards);
+    GeomHandle<mu2e::KKMaterial> kkmat_h;
+    auto ringid = support.surfaceId(Support::alFront).id();
+    auto isring = [&ringid](auto const& matxing){ return matxing->surfaceId().id() == ringid; };
+    if(std::any_of(ktrk.materialPlaneXings().begin(),ktrk.materialPlaneXings().end(),isring) ||
+        std::any_of(ktrk.materialCylXings().begin(),ktrk.materialCylXings().end(),isring)){
+      if(debug_ > 0)std::cout << "Calo inner ring crossing " << support.surfaceId(Support::alFront) << " already in the fit" << std::endl;
+      return true;
+    }
+    auto const& ftraj = ktrk.fitTraj();
+    double zfront = support.front()->center().Z();
+    ExtrapolateToZ toFront(maxdt_,maxdtstep_,btol_,intertol_,zfront,debug_);
+    if(!ktrk.extrapolate(tdir,toFront)) return false;
+    if(support.transverseRadius(ftraj.position3(ftraj.range().end())) < support.rin()){
+      ExtrapolateToZ toBack(maxdt_,maxdtstep_,btol_,intertol_,zfront + 2.0*support.inner()->halfLength(),debug_);
+      if(!ktrk.extrapolate(tdir,toBack)) return false;
+    }
+    for(auto const& sxing : caloSupportXings(ftraj,support,TimeRange(tstart,ftraj.range().end()),intertol_)){
+      auto sid = support.surfaceId(sxing.xing_);
+      auto const& reftrajptr = ftraj.backPtr();
+      if(!reftrajptr->range().inRange(sxing.inter_.time_)){
+        if(debug_ > 0)std::cout << "Skipping calo inner ring crossing " << sid << " not at the end of the fit" << std::endl;
+        continue;
+      }
+      auto const& dmat = *kkmat_h->material(support.materialName(Support::material(sxing.xing_)));
+      if(debug_ > 1)std::cout << "Calo inner ring crossing " << sid << " path " << sxing.path_ << " " << sxing.inter_ << std::endl;
+      if(sxing.xing_ == Support::alFront || sxing.xing_ == Support::cfFront)
+        ktrk.addMaterialPlaneXing(std::make_shared<KKMATRECXING>(support.front(),sid,dmat,sxing.inter_,reftrajptr,sxing.thickness(),intertol_),tdir);
+      else
+        ktrk.addMaterialCylXing(std::make_shared<KKMATCYLXING>(sxing.xing_ == Support::alHole ? support.inner() : support.cfInner(),
+              sid,dmat,sxing.inter_,reftrajptr,sxing.thickness(),intertol_),tdir);
+      tstart = sxing.inter_.time_;
+    }
+    return true;
   }
 
   template <class KTRAJ> void KKExtrap::extrapolateCRV(KKTrack<KTRAJ>& ktrk,TimeDir tdir) const {

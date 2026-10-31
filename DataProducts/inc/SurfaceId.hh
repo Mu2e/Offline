@@ -38,10 +38,12 @@ namespace mu2e {
         CRV_StrongBack=280,                                   // CRV module Al strongback (tracker-side support plate)
         DS_HatchConcrete=300,                                 // detector-area hatch concrete block approximation
         EMC_Disk_0_Outer=310, EMC_Disk_0_Inner, EMC_Disk_1_Inner, EMC_Disk_1_Outer, // calorimeter disk bounding surfaces
-        EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back
+        EMC_Disk_0_Front, EMC_Disk_1_Front, EMC_Disk_0_Back, EMC_Disk_1_Back,
+        EMC_Disk_0_FrontPanel=320, EMC_Disk_1_FrontPanel, // calorimeter front panel material (index 0-2 = layers, 3 = cooling pipes)
+        EMC_Disk_0_InnerRing=322, EMC_Disk_1_InnerRing // calorimeter case inner rings (index 0,1 = Al via case front, hole; 2,3 = CF ring via its inner radius, case front; 4 = Al via CF ring inner radius)
       };
       // Update this counter whenever you add/remove surface IDs from the enum above.
-      static constexpr std::size_t nSurfaceIds = 72;
+      static constexpr std::size_t nSurfaceIds = 76;
       static std::string const& typeName();
       static std::map<enum_type,std::string> const& names();
   };

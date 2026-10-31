@@ -1,6 +1,8 @@
 cet_make_library(
     SOURCE
       src/Calo.cc
+      src/CaloFrontPanelPipes.cc
+      src/CaloInnerSupport.cc
       src/KinKalGeom.cc
       src/KKMaterial.cc
       src/KKStrawMaterial.cc
