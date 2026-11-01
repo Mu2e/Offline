@@ -235,21 +235,6 @@ namespace mu2e {
       HeavyConcrete->AddElement( getElementOrThrow("Sr"), 6.4097E-4);  //Strontium
     }
 
-    mat = uniqueMaterialOrThrow( "ShieldingConcrete");
-    {
-      //
-      // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:
-      // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
-      //
-      G4Material* ShieldingConcrete = new G4Material( mat.name, 2.5*CLHEP::g/CLHEP::cm3, 6);
-      ShieldingConcrete->AddElement( getElementOrThrow("O") ,  0.5200);
-      ShieldingConcrete->AddElement( getElementOrThrow("Si"),  0.3250);
-      ShieldingConcrete->AddElement( getElementOrThrow("Ca"),  0.0600);
-      ShieldingConcrete->AddElement( getElementOrThrow("Na"),  0.0150);
-      ShieldingConcrete->AddElement( getElementOrThrow("Fe"),  0.0400);
-      ShieldingConcrete->AddElement( getElementOrThrow("Al"),  0.0400);
-    }
-
     mat = uniqueMaterialOrThrow( "Polyethylene");
     {
       G4Material* Polyethylene = new G4Material( mat.name, 0.956*CLHEP::g/CLHEP::cm3, 2);

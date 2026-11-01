@@ -1871,7 +1871,7 @@ namespace mu2e {
     G4Material* BPMaterial = findMaterialOrThrow("BP");
     G4Material* SteelMaterial = findMaterialOrThrow("RackSteel");
     G4Material* PolyMaterial = findMaterialOrThrow("Polyethylene");
-    G4Material* ConcreteMaterial = findMaterialOrThrow("ShieldingConcrete");
+    G4Material* ConcreteMaterial = findMaterialOrThrow("CONCRETE_MARS");
 
     // Turns the three-digit orientation strings the geometry file uses
     // into rotations. Shared by every hand-stacked structure.

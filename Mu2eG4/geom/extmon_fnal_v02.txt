@@ -351,7 +351,7 @@ vector<double> extMonFNAL.box.vd.halfSize = {100, 200, 650.};
 
 //----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
-string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
+string         extMonFNAL.room.wall.materialName  = "CONCRETE_MARS";
 
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;
