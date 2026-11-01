@@ -21,7 +21,7 @@ double extMonFNAL.steelWidthN = 1168.4;
 double extMonFNAL.steelWidthS = 2082.8;
 double extMonFNAL.layerHeight = 304.8;
 string extMonFNAL.steelMaterial = "G4_Fe";
-string extMonFNAL.concreteMaterial = "ShieldingConcrete";
+string extMonFNAL.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
