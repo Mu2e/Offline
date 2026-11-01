@@ -331,7 +331,11 @@ namespace mu2e {
     for(auto const& matxing : planexings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
     for(auto const& matxing : cylxings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
     MEASCOL nohits;
-    this->extend(this->config(),nohits,exings);
+    // refit with a single meta-iteration at the final temperature and no updaters, so the hit states are kept.
+    // Replaying the full schedule re-anneals and re-runs the hit updaters, which can change hits and fail good fits
+    auto matconfig = this->config();
+    matconfig.schedule_ = KinKal::Config::Schedule{KinKal::MetaIterConfig(matconfig.schedule().back().temperature())};
+    this->extend(matconfig,nohits,exings);
     for(auto const& matxing : planexings)matrecxings_.emplace_back(matxing);
     for(auto const& matxing : cylxings)matcylxings_.emplace_back(matxing);
   }
