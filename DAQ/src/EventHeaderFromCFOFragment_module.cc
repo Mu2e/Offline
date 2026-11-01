@@ -139,6 +139,10 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
   if(hasInstance && cfoInstance_.empty()) {
     throw cet::exception("EventHeaderFromCFOFragment") << "cfoInstance must not be empty";
   }
+  if(hasInstance && cfoInstance_.find(':') != std::string::npos) {
+    throw cet::exception("EventHeaderFromCFOFragment") << "cfoInstance tag ("
+                                                       << cfoInstance_ << ") must not have a module:instance separator \":\"";
+  }
   produces<mu2e::EventHeader>();
   if(ewm_) {
     TLOG(TLVL_DEBUG + 2) << "Producing EventWindowMarker";
