@@ -10,14 +10,21 @@
 #include "cetlib_except/exception.h"
 
 // Offline
+#include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/Mu2eUtilities/inc/StopWatch.hh"
+
+// CLHEP
+#include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 // ROOT
 #include "TH1.h"
@@ -86,19 +93,23 @@ namespace mu2e {
     enum {kMaxPrimaries = 10};
     struct Tree_t {
       int   nprim;
-      float prim_start_x         [kMaxPrimaries];
-      float prim_start_y         [kMaxPrimaries];
-      float prim_start_z         [kMaxPrimaries];
-      float prim_start_px        [kMaxPrimaries];
-      float prim_start_py        [kMaxPrimaries];
-      float prim_start_pz        [kMaxPrimaries];
-      float prim_start_e         [kMaxPrimaries];
-      float prim_start_m         [kMaxPrimaries];
-      int   prim_start_pdg       [kMaxPrimaries];
-      float prim_calo_edep       [kMaxPrimaries];
-      float prim_calo_edep_vis   [kMaxPrimaries];
-      float prim_trk_front_p     [kMaxPrimaries];
-      float prim_trk_front_energy[kMaxPrimaries];
+      float prim_start_x           [kMaxPrimaries];
+      float prim_start_y           [kMaxPrimaries];
+      float prim_start_z           [kMaxPrimaries];
+      float prim_start_px          [kMaxPrimaries];
+      float prim_start_py          [kMaxPrimaries];
+      float prim_start_pz          [kMaxPrimaries];
+      float prim_start_e           [kMaxPrimaries];
+      float prim_start_m           [kMaxPrimaries];
+      int   prim_start_pdg         [kMaxPrimaries];
+      float prim_calo_edep         [kMaxPrimaries];
+      float prim_calo_edep_vis     [kMaxPrimaries];
+      float prim_trk_front_p       [kMaxPrimaries];
+      float prim_trk_front_energy  [kMaxPrimaries];
+      float prim_trk_front_r_center[kMaxPrimaries];
+      float prim_trk_front_radius  [kMaxPrimaries];
+      float prim_trk_front_time    [kMaxPrimaries];
+      float prim_trk_front_cos     [kMaxPrimaries];
       float event_calo_edep;
       float event_calo_edep_vis;
       float event_trk_edep;
@@ -297,20 +308,24 @@ namespace mu2e {
     // Book the output TTree
     art::ServiceHandle<art::TFileService> tfs;
     tree_ = tfs->make<TTree>("tree", "Energy deposition data");
-    tree_->Branch("nprimaries"              , &data_.nprim);
-    tree_->Branch("primary_start_x"         , data_.prim_start_x         , "primary_start_x[nprimaries]/F");
-    tree_->Branch("primary_start_y"         , data_.prim_start_y         , "primary_start_y[nprimaries]/F");
-    tree_->Branch("primary_start_z"         , data_.prim_start_z         , "primary_start_z[nprimaries]/F");
-    tree_->Branch("primary_start_px"        , data_.prim_start_px        , "primary_start_px[nprimaries]/F");
-    tree_->Branch("primary_start_py"        , data_.prim_start_py        , "primary_start_py[nprimaries]/F");
-    tree_->Branch("primary_start_pz"        , data_.prim_start_pz        , "primary_start_pz[nprimaries]/F");
-    tree_->Branch("primary_start_e"         , data_.prim_start_e         , "primary_start_e[nprimaries]/F");
-    tree_->Branch("primary_start_m"         , data_.prim_start_m         , "primary_start_m[nprimaries]/F");
-    tree_->Branch("primary_start_pdg"       , data_.prim_start_pdg       , "primary_start_pdg[nprimaries]/I");
-    tree_->Branch("primary_calo_edep"       , data_.prim_calo_edep       , "primary_calo_edep[nprimaries]/F");
-    tree_->Branch("primary_calo_edep_vis"   , data_.prim_calo_edep_vis   , "primary_calo_edep_vis[nprimaries]/F");
-    tree_->Branch("primary_trk_front_p"     , data_.prim_trk_front_p     , "primary_trk_front_p[nprimaries]/F");
-    tree_->Branch("primary_trk_front_energy", data_.prim_trk_front_energy, "primary_trk_front_energy[nprimaries]/F");
+    tree_->Branch("nprimaries"                , &data_.nprim);
+    tree_->Branch("primary_start_x"           , data_.prim_start_x           , "primary_start_x[nprimaries]/F");
+    tree_->Branch("primary_start_y"           , data_.prim_start_y           , "primary_start_y[nprimaries]/F");
+    tree_->Branch("primary_start_z"           , data_.prim_start_z           , "primary_start_z[nprimaries]/F");
+    tree_->Branch("primary_start_px"          , data_.prim_start_px          , "primary_start_px[nprimaries]/F");
+    tree_->Branch("primary_start_py"          , data_.prim_start_py          , "primary_start_py[nprimaries]/F");
+    tree_->Branch("primary_start_pz"          , data_.prim_start_pz          , "primary_start_pz[nprimaries]/F");
+    tree_->Branch("primary_start_e"           , data_.prim_start_e           , "primary_start_e[nprimaries]/F");
+    tree_->Branch("primary_start_m"           , data_.prim_start_m           , "primary_start_m[nprimaries]/F");
+    tree_->Branch("primary_start_pdg"         , data_.prim_start_pdg         , "primary_start_pdg[nprimaries]/I");
+    tree_->Branch("primary_calo_edep"         , data_.prim_calo_edep         , "primary_calo_edep[nprimaries]/F");
+    tree_->Branch("primary_calo_edep_vis"     , data_.prim_calo_edep_vis     , "primary_calo_edep_vis[nprimaries]/F");
+    tree_->Branch("primary_trk_front_p"       , data_.prim_trk_front_p       , "primary_trk_front_p[nprimaries]/F");
+    tree_->Branch("primary_trk_front_energy"  , data_.prim_trk_front_energy  , "primary_trk_front_energy[nprimaries]/F");
+    tree_->Branch("primary_trk_front_r_center", data_.prim_trk_front_r_center, "primary_trk_front_r_center[nprimaries]/F");
+    tree_->Branch("primary_trk_front_radius"  , data_.prim_trk_front_radius  , "primary_trk_front_radius[nprimaries]/F");
+    tree_->Branch("primary_trk_front_time"    , data_.prim_trk_front_time    , "primary_trk_front_time[nprimaries]/F");
+    tree_->Branch("primary_trk_front_cos"     , data_.prim_trk_front_cos     , "primary_trk_front_cos[nprimaries]/F");
     tree_->Branch("event_calo_edep"         , &data_.event_calo_edep);
     tree_->Branch("event_calo_edep_vis"     , &data_.event_calo_edep_vis);
     tree_->Branch("event_trk_edep"          , &data_.event_trk_edep);
@@ -506,6 +521,9 @@ namespace mu2e {
                                                                            << " > " << kMaxPrimaries;
 
     // Store information for each primary
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<BFieldManager> bfmgr;
+    GlobalConstantsHandle<ParticleDataList> pdt;
     for(int iprim = 0; iprim < data_.nprim; ++iprim) {
       const auto* sim = &(*primary_->primarySimParticles().at(iprim));
       const auto pos = sim->startPosition();
@@ -522,8 +540,38 @@ namespace mu2e {
       data_.prim_calo_edep    [iprim] = edepBySim(sim, true);
       data_.prim_calo_edep_vis[iprim] = (iprim == 0) ? info_.primsim_edep_vis : edepBySim(sim, true, true);
       const auto front_trk_sp = (iprim == 0) ? info_.front_trk_sp : simTrkFrontStep(sim);
-      data_.prim_trk_front_p     [iprim] = (front_trk_sp) ? front_trk_sp->momentum().mag() : 0.f;
       data_.prim_trk_front_energy[iprim] = energyFromStepPoint(sim, front_trk_sp);
+      if(front_trk_sp) {
+        const auto trk_mom = front_trk_sp->momentum();
+        const auto trk_pos = front_trk_sp->position();
+        const float p = trk_mom.mag();
+        const float cos = (p > 0.) ? trk_mom.z() / p : 0.f;
+        // Transverse helix center from the local Bz and the particle charge:
+        // center = pos + (py, -px) / (c q Bz), radius = pT / |c q Bz|; -1 if q*Bz = 0
+        const double bz = bfmgr->getBField(trk_pos).z()*CLHEP::tesla; // BFieldManager returns Tesla
+        const double q  = pdt->particle(sim->pdgId()).charge();
+        float r_center = -1.f;
+        float radius   = -1.f;
+        if(q*bz != 0.) {
+          const double scale = 1./(CLHEP::c_light*q*bz);
+          const auto det_pos = det->toDetector(trk_pos);
+          const double x_c = det_pos.x() + trk_mom.y()*scale;
+          const double y_c = det_pos.y() - trk_mom.x()*scale;
+          r_center = std::sqrt(x_c*x_c + y_c*y_c);
+          radius   = trk_mom.perp()*std::fabs(scale);
+        }
+        data_.prim_trk_front_p       [iprim] = p;
+        data_.prim_trk_front_r_center[iprim] = r_center;
+        data_.prim_trk_front_radius  [iprim] = radius;
+        data_.prim_trk_front_time    [iprim] = front_trk_sp->time();
+        data_.prim_trk_front_cos     [iprim] = cos;
+      } else {
+        data_.prim_trk_front_p       [iprim] =  0.f;
+        data_.prim_trk_front_r_center[iprim] = -1.f;
+        data_.prim_trk_front_radius  [iprim] = -1.f;
+        data_.prim_trk_front_time    [iprim] = -1.f;
+        data_.prim_trk_front_cos     [iprim] =  0.f;
+      }
     }
     tree_->Fill();
 

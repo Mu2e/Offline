@@ -161,6 +161,9 @@ cet_build_plugin(EdepAna art::module
     LIBRARIES REG
       art_root_io::TFileService_service
 
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::Mu2eUtilities
 )
