@@ -1254,6 +1254,30 @@ namespace mu2e {
 
   void ConstructMaterials::constructMu2eMaterials2(){
 
+    G4NistManager* mn = G4NistManager::Instance();
+
+    // Proton beam dump core material
+    {
+      // The beam dump core is made of steel plates separated by air
+      // gaps, but it is modeled here as a single block of material.
+      // Define a lower density material to account for the effect of
+      // the air gaps.
+
+      const G4String basename = "G4_Fe";
+      const auto* bmat = mn->FindOrBuildMaterial(basename);
+
+      // The total thickness of the steel plates per the drawing SC-38.
+      const double sumOfSteel = 2084. * CLHEP::mm;
+
+      // The distance from the front to the back face of the dump core,
+      // which includes the plates and the air gaps.
+      const double totalLength = 2140. * CLHEP::mm; // drawing SC-38
+
+      // Scale down density of the original solid material
+      const double dens = (sumOfSteel/totalLength) * bmat->GetDensity();
+
+      mn->BuildMaterialWithNewDensity("BEAMDUMP_CORE", basename, dens);
+    }
 
     // An alias for the stopping target material
     CheckedG4String mat = uniqueMaterialOrThrow("StoppingTarget_"+GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial());
