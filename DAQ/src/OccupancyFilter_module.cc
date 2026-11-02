@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalTable.h"
+#include "cetlib_except/exception.h"
 
 // artdaq
 #include <artdaq-core/Data/Fragment.hh>
@@ -68,8 +69,15 @@ namespace mu2e {
       int min = -1;
       int max = -1;
       Cuts() {}
-      Cuts(const CutConfig& cuts) : tag(cuts.tag()), min(cuts.minSize()), max(cuts.maxSize()) {}
-      Cuts(const FragmentCutConfig& cuts) : min(cuts.minSize()), max(cuts.maxSize()) {}
+      Cuts(const CutConfig& cuts) : tag(cuts.tag()), min(cuts.minSize()), max(cuts.maxSize()) { validate(tag); }
+      Cuts(const FragmentCutConfig& cuts) : min(cuts.minSize()), max(cuts.maxSize()) { validate("fragments"); }
+      // A maximum, if set, must not be below the minimum
+      void validate(const std::string& name) const {
+        if(max >= 0 && max < min) {
+          throw cet::exception("CONFIG") << "OccupancyFilter: invalid cut for " << name
+                                         << ": maxSize (" << max << ") < minSize (" << min << ")\n";
+        }
+      }
       bool passes(const size_t n) const {
         return (min < 0 || n >= size_t(min)) && (max < 0 || n <= size_t(max));
       }
