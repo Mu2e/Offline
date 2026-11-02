@@ -3,20 +3,26 @@
 
 // framework
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
 #include "art_root_io/TFileService.h"
 #include "cetlib_except/exception.h"
 
 // Offline
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
 #include "Offline/MCDataProducts/inc/CaloShowerStep.hh"
+#include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -34,10 +40,13 @@
 #include "TFitResult.h"
 
 // c++
+#include <cmath>
 #include <format>
 #include <string>
 #include <vector>
+#include <array>
 #include <iostream>
+#include <optional>
 
 namespace mu2e {
 
@@ -50,6 +59,7 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> caloShowerTag  { Name("CaloShowerStepCollection"), Comment("CaloShowerStep collection") };
       fhicl::Atom<art::InputTag> strawGasStepTag{ Name("StrawGasStepCollection")  , Comment("StrawGasStep collection") };
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
+      fhicl::OptionalAtom<art::InputTag> crvStepTag{ Name("CrvStepCollection")    , Comment("CrvStep collection; if set, CRV occupancy and dose histograms are filled") };
       fhicl::Atom<art::InputTag> genCountTag    { Name("GenCountTag")             , Comment("GenCount tag"), "genCounter" };
       fhicl::Atom<double>        trkStepEMin    { Name("TrkStepEnergyThreshold")  , Comment("StrawGasStep ionizing energy threshold for counting hits (MeV)") };
       fhicl::Atom<double>        trkStepTMin    { Name("TrkStepTimeMin")          , Comment("StrawGasStep minimum time for counting hits (ns)") };
@@ -78,6 +88,43 @@ namespace mu2e {
       TH1* h_trk_front_energy_edep_diff_;
     };
     enum {kMaxHists = 100};
+
+    // Occupancy (step count) and dose (deposited energy) histograms, filled once per event for all steps.
+    // Each observable is a pair of histograms: [kOcc] filled with the step weight, [kEdep] filled with weight * edep.
+    // Tracker: StrawGasStep::ionizingEdep, Calo: CaloShowerStep::energyDepG4 (true deposited energy, not Birks-quenched
+    // visible energy), CRV: CrvStep::visibleEDep (the only energy stored in a CrvStep).
+    // Positions are in the detector frame (origin at the tracker center). Raw-time axes span 10 us (later steps,
+    // e.g. from muon stops, go to overflow); the folded-time histograms fold into the microbunch as digitization does.
+    // calo_disk<d>_ncrystals_r is geometry, filled once per job: hadd-ed files hold one copy per job.
+    enum {kOcc = 0, kEdep = 1};
+    // Crystal-centre radius bins (mm): the crystals are 34.3 mm wide, so bins of this width hold tens of them (disk crystal centres span ~390-650 mm, so no bin is empty)
+    static constexpr int    kNRCrysBins = 8;
+    static constexpr double kRCrysMin   = 385.;
+    static constexpr double kRCrysMax   = 665.;
+    using HistPair_t = std::array<TH1*, 2>;
+    struct OccHist_t {
+      TH1* h_nevents_ = nullptr; // number of (weighted) events analyzed
+      TH1* h_ngen_    = nullptr; // number of generated events, set in endJob
+      // Tracker
+      HistPair_t trk_plane_, trk_panel_, trk_straw_, trk_r_, trk_z_, trk_time_, trk_time_folded_;
+      std::array<TH2*, 2> trk_rz_ = {nullptr, nullptr};
+      // Calo
+      HistPair_t calo_disk_, calo_crystal_, calo_r_, calo_z_, calo_time_, calo_time_folded_;
+      std::array<HistPair_t, 2> calo_disk_r_; // r by disk
+      // phi-averaged by disk: binned in the crystal-centre radius (no sub-crystal structure), with the crystal count per bin
+      std::array<HistPair_t, 2> calo_disk_rcrys_;
+      std::array<TH1*, 2> calo_disk_rcrys_hits_ = {nullptr, nullptr};
+      std::array<TH1*, 2> calo_disk_ncrystals_r_ = {nullptr, nullptr};
+      std::array<std::array<TH2*, 2>, 2> calo_disk_xy_; // [disk][kOcc/kEdep]
+      std::array<TH2*, 2> calo_rz_ = {nullptr, nullptr};
+      // Hit-like counts (steps above the energy threshold), single histograms; _straw_hits only for folded time >= step time min
+      TH1* trk_time_folded_ecut_ = nullptr;
+      TH1* calo_time_folded_ecut_ = nullptr;
+      TH1* trk_straw_hits_ = nullptr;
+      TH1* calo_crystal_hits_ = nullptr; // steps above CaloStepEnergyThreshold (Birks), folded time >= CaloStepTimeMin
+      // CRV (booked only if a CrvStep collection is configured)
+      HistPair_t crv_sector_, crv_bar_, crv_z_, crv_time_;
+    };
 
     // Event info
     struct Info_t {
@@ -132,10 +179,13 @@ namespace mu2e {
     explicit EdepAna(const Parameters& conf);
     virtual void analyze(const art::Event& event) override;
     virtual void endJob() override;
+    virtual void beginRun(const art::Run& run) override;
     virtual void beginSubRun(const art::SubRun& subrun) override;
 
     void bookHistograms(const int index, const char* title);
     void fillHistograms(Hist_t* Hist, const double Weight = 1.);
+    void bookOccupancyHistograms();
+    void fillOccupancyHistograms(const double Weight = 1.);
 
     bool isDescendant(const SimParticle* ancestor, const SimParticle* descendant) const {
       if(!ancestor || !descendant) return false;
@@ -251,6 +301,7 @@ namespace mu2e {
     art::InputTag straw_gas_tag_;
     art::InputTag step_point_tag_;
     art::InputTag gen_count_tag_;
+    std::optional<art::InputTag> crv_step_tag_;
     double trk_step_emin_;
     double trk_step_tmin_;
     double trk_step_tmax_;
@@ -261,11 +312,16 @@ namespace mu2e {
     std::unique_ptr<StopWatch> watch_ = std::make_unique<StopWatch>();
 
     Hist_t* hists_[kMaxHists];
+    std::unique_ptr<OccHist_t> occ_;
+    // Fold a time into [0, mbtime_) like the digitizers (negative times wrap forward)
+    double foldTime(const double t) const { const double f = std::fmod(t, mbtime_); return f < 0. ? f + mbtime_ : f; }
+    double mbtime_ = 0.; // microbunch period (ns), from PhysicsParams, set when booking
     Info_t info_;
     const PrimaryParticle*                 primary_        = nullptr;
     const CaloShowerStepCollection*        shower_col_     = nullptr;
     const StrawGasStepCollection*          straw_step_col_ = nullptr;
     const StepPointMCCollection*           step_point_col_ = nullptr;
+    const CrvStepCollection*               crv_col_        = nullptr;
     double total_events_ = 0.;
     double events_above_50_mev_ = 0.;
     double total_calo_edep_ = 0.;
@@ -284,6 +340,7 @@ namespace mu2e {
     , straw_gas_tag_(conf().strawGasStepTag())
     , step_point_tag_(conf().stepPointTag())
     , gen_count_tag_(conf().genCountTag())
+    , crv_step_tag_(std::nullopt)
     , trk_step_emin_(conf().trkStepEMin())
     , trk_step_tmin_(conf().trkStepTMin())
     , trk_step_tmax_(conf().trkStepTMax())
@@ -292,11 +349,15 @@ namespace mu2e {
     , calo_step_tmax_(conf().caloStepTMax())
     , debug_level_(conf().debugLevel())
   {
+    art::InputTag crv_tag;
+    if(conf().crvStepTag(crv_tag)) crv_step_tag_ = crv_tag;
+
     // register products consumed
     consumes<PrimaryParticle>(primary_tag_);
     consumes<CaloShowerStepCollection>(calo_shower_tag_);
     consumes<StrawGasStepCollection>(straw_gas_tag_);
     consumes<StepPointMCCollection>(step_point_tag_);
+    if(crv_step_tag_) consumes<CrvStepCollection>(*crv_step_tag_);
     consumes<GenEventCount, art::InSubRun>(gen_count_tag_);
 
     for(int i = 0; i < kMaxHists; ++i) hists_[i] = nullptr;
@@ -342,6 +403,12 @@ namespace mu2e {
     tree_->Branch("ngen"                    , &data_.ngen);
 
     if(debug_level_ > 0) watch_->Calibrate();
+  }
+
+  //--------------------------------------------------------------------------------------
+  void EdepAna::beginRun(const art::Run&) {
+    // The occupancy histograms need the geometry (crystal, bar counts), which is only available once a run starts
+    if(!occ_) bookOccupancyHistograms();
   }
 
   //--------------------------------------------------------------------------------------
@@ -425,6 +492,186 @@ namespace mu2e {
   }
 
 
+  //--------------------------------------------------------------------------------------
+  void EdepAna::bookOccupancyHistograms() {
+    occ_ = std::make_unique<OccHist_t>();
+    // Microbunch period, as used by the digitizers to fold step times
+    mbtime_ = GlobalConstantsHandle<PhysicsParams>()->getNominalDRPeriod();
+    art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory dir = tfs->mkdir("occupancy", "Step occupancy and energy deposition (dose) histograms");
+    GeomHandle<Calorimeter> calo;
+
+    const char* kind [2] = {"occ", "edep"};
+    const char* ylab [2] = {"Steps", "Energy deposited (MeV)"};
+    const char* ktitle[2] = {"occupancy", "energy deposition"};
+
+    // Book a pair of 1D histograms (occupancy, edep) named <name>_occ / <name>_edep
+    auto book1 = [&](HistPair_t& hp, const char* name, const char* title, const char* xlab, int nb, double lo, double hi) {
+      for(int k = 0; k < 2; ++k)
+      { hp[k] = dir.make<TH1D>(std::format("{}_{}", name, kind[k]).c_str(),
+                               std::format("{} {};{};{}", title, ktitle[k], xlab, ylab[k]).c_str(), nb, lo, hi);
+        hp[k]->Sumw2(); }
+    };
+    auto book2 = [&](std::array<TH2*, 2>& hp, const char* name, const char* title, const char* xlab, int nx, double xlo, double xhi,
+                     const char* ylabel, int ny, double ylo, double yhi) {
+      for(int k = 0; k < 2; ++k)
+      { hp[k] = dir.make<TH2D>(std::format("{}_{}", name, kind[k]).c_str(),
+                               std::format("{} {} ({});{};{}", title, ktitle[k], ylab[k], xlab, ylabel).c_str(), nx, xlo, xhi, ny, ylo, yhi);
+        hp[k]->Sumw2(); }
+    };
+
+    occ_->h_nevents_ = dir.make<TH1D>("nevents", "Events analyzed (weighted);;N(events)", 1, 0., 1.);
+    occ_->h_ngen_    = dir.make<TH1D>("ngen"   , "Generated events;;N(gen)"             , 1, 0., 1.);
+
+    // Tracker, detector frame: r ~ 350-700 mm, |z| < ~1600 mm
+    book1(occ_->trk_plane_ , "trk_plane" , "Tracker by plane" , "Plane"       , StrawId::_nplanes , 0., StrawId::_nplanes);
+    book1(occ_->trk_panel_ , "trk_panel" , "Tracker by panel" , "Unique panel", StrawId::_nupanels, 0., StrawId::_nupanels);
+    book1(occ_->trk_straw_ , "trk_straw" , "Tracker by straw" , "Unique straw", StrawId::_nustraws, 0., StrawId::_nustraws);
+    book1(occ_->trk_r_     , "trk_r"     , "Tracker by radius", "r (mm)"      , 175, 300., 750.);
+    book1(occ_->trk_z_     , "trk_z"     , "Tracker by z"     , "z (mm)"      , 320, -1600., 1600.);
+    book1(occ_->trk_time_  , "trk_time"  , "Tracker by time"  , "Time (ns)"   , 500, 0., 10000.);
+    book1(occ_->trk_time_folded_, "trk_time_folded", "Tracker by time folded into the microbunch", "Time mod microbunch period (ns)", 100, 0., mbtime_);
+    occ_->trk_time_folded_ecut_ = dir.make<TH1D>("trk_time_folded_ecut", "Tracker steps above the energy threshold by folded time;Time mod microbunch period (ns);Steps", 100, 0., mbtime_);
+    occ_->trk_straw_hits_ = dir.make<TH1D>("trk_straw_hits", "Tracker steps above the energy threshold per straw, folded time above TrkStepTimeMin;Unique straw;Steps", StrawId::_nustraws, 0., StrawId::_nustraws);
+    for(TH1* h : {occ_->trk_time_folded_ecut_, occ_->trk_straw_hits_}) h->Sumw2();
+    book2(occ_->trk_rz_    , "trk_rz"    , "Tracker r vs z"   , "z (mm)", 320, -1600., 1600., "r (mm)", 175, 300., 750.);
+
+    // Calorimeter, detector frame: disk radii ~370-660 mm
+    const int ncrys = calo->nCrystals();
+    book1(occ_->calo_disk_   , "calo_disk"   , "Calo by disk"   , "Disk"        , 2, 0., 2.);
+    book1(occ_->calo_crystal_, "calo_crystal", "Calo by crystal", "Crystal ID"  , ncrys, 0., ncrys);
+    book1(occ_->calo_r_      , "calo_r"      , "Calo by radius" , "r (mm)"      , 100, 300., 700.);
+    book1(occ_->calo_z_      , "calo_z"      , "Calo by z"      , "z (mm)"      , 250, 1500., 3500.);
+    book1(occ_->calo_time_   , "calo_time"   , "Calo by time"   , "Time (ns)"   , 500, 0., 10000.);
+    book1(occ_->calo_time_folded_, "calo_time_folded", "Calo by time folded into the microbunch", "Time mod microbunch period (ns)", 100, 0., mbtime_);
+    occ_->calo_time_folded_ecut_ = dir.make<TH1D>("calo_time_folded_ecut", "Calo steps above the energy threshold by folded time;Time mod microbunch period (ns);Steps", 100, 0., mbtime_);
+    occ_->calo_time_folded_ecut_->Sumw2();
+    occ_->calo_crystal_hits_ = dir.make<TH1D>("calo_crystal_hits", "Calo steps above the energy threshold per crystal, folded time above CaloStepTimeMin;Crystal ID;Steps", ncrys, 0., ncrys);
+    occ_->calo_crystal_hits_->Sumw2();
+    book2(occ_->calo_rz_     , "calo_rz"     , "Calo r vs z"    , "z (mm)", 250, 1500., 3500., "r (mm)", 100, 300., 700.);
+    for(int d = 0; d < 2; ++d) {
+      book1(occ_->calo_disk_r_[d], std::format("calo_disk{}_r", d).c_str(), std::format("Calo disk {} by radius", d).c_str(), "r (mm)", 100, 300., 700.);
+      book2(occ_->calo_disk_xy_[d], std::format("calo_disk{}_xy", d).c_str(), std::format("Calo disk {} x vs y", d).c_str(),
+            "x (mm)", 140, -700., 700., "y (mm)", 140, -700., 700.);
+      // Phi average: binned in the radius of the crystal centre, so a bin's step count divided by its crystal count
+      // (calo_disk<d>_ncrystals_r, filled here once per crystal) is the mean per crystal at that radius
+      const std::string dn = std::format("calo_disk{}_rcrys", d);
+      book1(occ_->calo_disk_rcrys_[d], dn.c_str(), std::format("Calo disk {} by crystal-centre radius", d).c_str(), "Crystal-centre r (mm)", kNRCrysBins, kRCrysMin, kRCrysMax);
+      occ_->calo_disk_rcrys_hits_[d] = dir.make<TH1D>((dn + "_hits").c_str(), std::format("Calo disk {} steps above the energy threshold by crystal-centre radius, folded time above CaloStepTimeMin;Crystal-centre r (mm);Steps", d).c_str(), kNRCrysBins, kRCrysMin, kRCrysMax);
+      occ_->calo_disk_rcrys_hits_[d]->Sumw2();
+      occ_->calo_disk_ncrystals_r_[d] = dir.make<TH1D>(std::format("calo_disk{}_ncrystals_r", d).c_str(), std::format("Calo disk {} crystals by crystal-centre radius;Crystal-centre r (mm);Crystals", d).c_str(), kNRCrysBins, kRCrysMin, kRCrysMax);
+    }
+    // Geometry: every crystal's centre radius in the detector frame
+    {
+      GeomHandle<DetectorSystem> det;
+      for(int cid = 0; cid < ncrys; ++cid) {
+        const auto& cry = calo->crystal(cid);
+        occ_->calo_disk_ncrystals_r_[cry.diskID()]->Fill(det->toDetector(cry.position()).perp());
+      }
+    }
+
+    // CRV, optional; planar modules so only sector, bar, z and time
+    if(crv_step_tag_) {
+      GeomHandle<CosmicRayShield> crs;
+      const int nsectors = crs->getCRSScintillatorShields().size();
+      const int nbars    = crs->getAllCRSScintillatorBars().size();
+      book1(occ_->crv_sector_, "crv_sector", "CRV by sector"   , "Sector (shield number)", nsectors, 0., nsectors);
+      book1(occ_->crv_bar_   , "crv_bar"   , "CRV by bar"      , "Bar index"             , nbars   , 0., nbars);
+      book1(occ_->crv_z_     , "crv_z"     , "CRV by z"        , "z (mm)"                , 300, -15000., 15000.);
+      book1(occ_->crv_time_  , "crv_time"  , "CRV by time"     , "Time (ns)"             , 500, 0., 10000.);
+    }
+  }
+
+  //--------------------------------------------------------------------------------------
+  // One pass over each collection; all steps, no energy or time cuts
+  void EdepAna::fillOccupancyHistograms(const double Weight) {
+    if(debug_level_ > 0) watch_->SetTime(__func__);
+    GeomHandle<DetectorSystem> det;
+    occ_->h_nevents_->Fill(0.5, Weight);
+
+    if(straw_step_col_) {
+      for(const auto& step : *straw_step_col_) {
+        // StrawGasStep positions are already in the detector (tracker) frame: they are compared directly to the
+        // Tracker straw positions in MakeStrawGasSteps, so no conversion is needed
+        const auto& s = step.startPosition();
+        const auto& e = step.endPosition();
+        const CLHEP::Hep3Vector pos(0.5*(s.x() + e.x()), 0.5*(s.y() + e.y()), 0.5*(s.z() + e.z()));
+        const double r = pos.perp();
+        const double edep = step.ionizingEdep();
+        const auto id = step.strawId();
+        if(edep > trk_step_emin_) {
+          const double tf = foldTime(step.time());
+          occ_->trk_time_folded_ecut_->Fill(tf, Weight);
+          if(tf >= trk_step_tmin_) occ_->trk_straw_hits_->Fill(id.uniqueStraw(), Weight);
+        }
+        for(int k = 0; k < 2; ++k) {
+          const double w = (k == kOcc) ? Weight : Weight*edep;
+          occ_->trk_plane_[k]->Fill(id.plane(), w);
+          occ_->trk_panel_[k]->Fill(id.uniquePanel(), w);
+          occ_->trk_straw_[k]->Fill(id.uniqueStraw(), w);
+          occ_->trk_r_    [k]->Fill(r, w);
+          occ_->trk_z_    [k]->Fill(pos.z(), w);
+          occ_->trk_time_ [k]->Fill(step.time(), w);
+          occ_->trk_time_folded_[k]->Fill(foldTime(step.time()), w);
+          occ_->trk_rz_   [k]->Fill(pos.z(), r, w);
+        }
+      }
+    }
+
+    if(shower_col_) {
+      GeomHandle<Calorimeter> calo;
+      for(const auto& css : *shower_col_) {
+        // CaloShowerStep::position() is crystal-local (CaloShowerStepMaker uses mu2eToCrystal); volumeG4ID() is the crystal ID
+        const int cid = css.volumeG4ID();
+        const int disk = calo->crystal(cid).diskID();
+        const auto pos = det->toDetector(calo->crystalToMu2e(cid, css.position()));
+        const double r = pos.perp();
+        const double edep = css.energyDepG4();
+        const double rcrys = det->toDetector(calo->crystal(cid).position()).perp();
+        if(css.energyDepBirks() > calo_step_emin_) {
+          const double tf = foldTime(css.time());
+          occ_->calo_time_folded_ecut_->Fill(tf, Weight);
+          if(tf >= calo_step_tmin_) {
+            occ_->calo_crystal_hits_->Fill(cid, Weight);
+            occ_->calo_disk_rcrys_hits_[disk]->Fill(rcrys, Weight);
+          }
+        }
+        for(int k = 0; k < 2; ++k) {
+          const double w = (k == kOcc) ? Weight : Weight*edep;
+          occ_->calo_disk_   [k]->Fill(disk, w);
+          occ_->calo_crystal_[k]->Fill(cid , w);
+          occ_->calo_r_      [k]->Fill(r, w);
+          occ_->calo_z_      [k]->Fill(pos.z(), w);
+          occ_->calo_time_   [k]->Fill(css.time(), w);
+          occ_->calo_time_folded_[k]->Fill(foldTime(css.time()), w);
+          occ_->calo_rz_     [k]->Fill(pos.z(), r, w);
+          occ_->calo_disk_r_ [disk][k]->Fill(r, w);
+          occ_->calo_disk_rcrys_[disk][k]->Fill(rcrys, w);
+          occ_->calo_disk_xy_[disk][k]->Fill(pos.x(), pos.y(), w);
+        }
+      }
+    }
+
+    if(crv_col_) {
+      GeomHandle<CosmicRayShield> crs;
+      for(const auto& step : *crv_col_) {
+        const double z = det->toDetector(CLHEP::Hep3Vector(0.5*(step.startPos().x() + step.endPos().x()),
+                                                           0.5*(step.startPos().y() + step.endPos().y()),
+                                                           0.5*(step.startPos().z() + step.endPos().z()))).z();
+        const int sector = crs->getBar(step.barIndex()).id().getShieldNumber();
+        const double t = 0.5*(step.startTime() + step.endTime());
+        for(int k = 0; k < 2; ++k) {
+          const double w = (k == kOcc) ? Weight : Weight*step.visibleEDep();
+          occ_->crv_sector_[k]->Fill(sector, w);
+          occ_->crv_bar_   [k]->Fill(step.barIndex().asInt(), w);
+          occ_->crv_z_     [k]->Fill(z, w);
+          occ_->crv_time_  [k]->Fill(t, w);
+        }
+      }
+    }
+    if(debug_level_ > 0) watch_->StopTime(__func__);
+  }
+
   void EdepAna::analyze(const art::Event& event) {
     if(debug_level_ > 0) watch_->SetTime(__func__);
 
@@ -453,6 +700,14 @@ namespace mu2e {
     art::Handle<StepPointMCCollection> spH;
     event.getByLabel(step_point_tag_, spH);
     step_point_col_ = (spH.isValid()) ? spH.product() : nullptr;
+
+    // CrvStep collection (optional)
+    crv_col_ = nullptr;
+    if(crv_step_tag_) {
+      art::Handle<CrvStepCollection> crvH;
+      event.getByLabel(*crv_step_tag_, crvH);
+      crv_col_ = (crvH.isValid()) ? crvH.product() : nullptr;
+    }
 
     if(debug_level_ > 0) watch_->StopTime("data retrieval");
 
@@ -599,12 +854,14 @@ namespace mu2e {
     if(totalCaloEVis >  1.) fillHistograms(hists_[1], info_.weight_);
     if(totalCaloEVis > 10.) fillHistograms(hists_[2], info_.weight_);
     if(totalCaloEVis > 50.) fillHistograms(hists_[3], info_.weight_);
+    fillOccupancyHistograms(info_.weight_);
     if(debug_level_ > 0) watch_->StopTime(__func__);
   }
 
 
   void EdepAna::endJob() {
     if(debug_level_ > 0) std::cout << "[EdepAna::" << __func__ << "]\n" << *watch_ << std::endl;
+    if(occ_ && occ_->h_ngen_) occ_->h_ngen_->SetBinContent(1, ngen_);
 
     //-------------------------------------------------------------
     // Fit the total gen -> calo edep response
