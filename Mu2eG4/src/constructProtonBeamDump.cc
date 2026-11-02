@@ -207,8 +207,10 @@ namespace mu2e {
             );
 
     CLHEP::Hep3Vector topSteelFlatPositionInShield( shieldingRot * (dump->topSteelFlatCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
+    std::vector<double> topSteelFlatHalfSize{dump->topSteelFlatHalfSize()};
+    topSteelFlatHalfSize[2] -= 100*CLHEP::um /*avoid overlaps*/;
     nestBox("ProtonBeamDumpTopSteelFlat",
-            dump->topSteelFlatHalfSize(),
+            topSteelFlatHalfSize,
             materialFinder.get("protonBeamDump.material.steel"),
             &rotationInShield,
             topSteelFlatPositionInShield,
@@ -232,7 +234,7 @@ namespace mu2e {
     G4Box* scallopedSteelInitialBox  = new G4Box("BeamDumpScallopedSteelInitialBox",
                                                  dump->topSteelScallopedHalfSize()[0],
                                                  dump->topSteelScallopedHalfSize()[1],
-                                                 dump->topSteelScallopedHalfSize()[2]
+                                                 dump->topSteelScallopedHalfSize()[2] - 100*CLHEP::um
                                                  );
 
     // The calculation below looks confusing because of the naming
