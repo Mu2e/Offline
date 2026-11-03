@@ -30,6 +30,8 @@ physics : {
       CaloStepEnergyThreshold  : 0.5
       CaloStepTimeMin          : 500.
       CaloStepTimeMax          : 1.e9
+      # Added to step times before folding into the microbunch (ns): nominal proton bunch time, -TimeFromProtonsToDRMarker
+      FoldTimeOffset           : -200.
       DebugLevel               : 0
     }
   }
