@@ -10,6 +10,7 @@
 #include <string>
 namespace mu2e {
   class DetectorSystem;
+  class CaloG4Info;
   class KinKalGeomMaker {
     public:
       explicit KinKalGeomMaker(int debug) : debug_(debug) {}
@@ -19,6 +20,7 @@ namespace mu2e {
       void makeDS();
       void makeTarget();
       void makeCalo();
+      void makeCaloPipes(CaloG4Info const& g4info, SurfaceId const& sid, KinKal::VEC3 const& center);
       void makeCRV();
       void makePassiveMaterials();
       // append one averaged rectangular concrete passive-material plane (see .cc)

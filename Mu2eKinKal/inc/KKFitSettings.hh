@@ -73,6 +73,7 @@ namespace mu2e {
       fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
       fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit") };
+      fhicl::Atom<bool> addCaloMaterial { Name("AddCaloMaterial"), Comment("Add the calorimeter front panel material crossed within the fit range"), false };
       fhicl::Atom<unsigned> minNStrawHits { Name("MinNStrawHits"), Comment("Minimum number of straw hits to attempt a fit") };
       fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
@@ -131,6 +132,7 @@ namespace mu2e {
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
       fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces") };
       fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces") };
+      fhicl::Atom<bool> ToCaloMaterial { Name("ToCaloMaterial"), Comment("Add material effects from the calorimeter front panels when extrapolating to the calorimeter disks"), false };
     };
   }
 }
