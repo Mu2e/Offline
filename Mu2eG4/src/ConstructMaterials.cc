@@ -121,7 +121,6 @@ namespace mu2e {
   //  named constructMu2eMaterials2.
   //  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
-    G4NistManager* mn = G4NistManager::Instance();
 
     CheckedG4String mat = uniqueMaterialOrThrow( "CONCRETE_MARS" );
     {
@@ -137,8 +136,12 @@ namespace mu2e {
       ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
     }
 
-    // 2.1 g/cm3 from weighing ExtMon blocks, consistent with Menards info
-    mn->BuildMaterialWithNewDensity("CONCRETE_EXTMON_HANDSTACKED", "CONCRETE_MARS", 2.1*CLHEP::g/CLHEP::cm3);
+    mat = uniqueMaterialOrThrow( "CONCRETE_EXTMON_HANDSTACKED" );
+    {
+      // 2.1 g/cm3 from weighing ExtMon blocks, consistent with Menards info
+      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.1*CLHEP::g/CLHEP::cm3, 1 );
+      ConcreteHandstacked->AddMaterial( findMaterialOrThrow("CONCRETE_MARS"), 1.);
+    }
 
     // SDF the average density refers to the average density of an 8'' Masonry Concrete Unit (see doc-db 11669 Architectural Drawings pag.9)
     mat = uniqueMaterialOrThrow( "CONCRETE_MASONRY" );
