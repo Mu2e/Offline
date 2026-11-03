@@ -1,6 +1,8 @@
 #
 # Create STMHits from STMPHDigis
 #
+# Calibration Constants come from Doc-58725-V2
+# Both detetcors sample at the same frequency
 
 #include "Offline/fcl/standardServices.fcl"
 
@@ -22,8 +24,8 @@ physics: {
     stmHitsLaBr : { module_type : MakeSTMHits
                     stmPHDigisMapTag  : "makeSTMDigis:phLaBr"
                     samplingFrequency : 300.0  // MHz
-                    mCalibConstant    : 0.358  // KeV/ ADC
-                    cCalibConstant    : 6.097  // KeV / ADC
+                    mCalibConstant    : 0.358  // KeV / ADC
+                    cCalibConstant    : 6.097  // KeV
     }
   }
   filters : {

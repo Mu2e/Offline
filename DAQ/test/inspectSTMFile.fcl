@@ -5,8 +5,6 @@
 #
 # Contact person G. Pezzullo
 
-#include "Offline/fcl/messageService.fcl"
-
 process_name : STMDigiFromFragment
 
 source : {
@@ -20,7 +18,7 @@ physics : {
       makeSTMDigis : {
          module_type : STMDigisFromFragments
          stmTag : "daq:ContainerSTM"
-         verbosityLevel : 1
+         verbosityLevel : 0
          saveSTMFragSummary : true
          saveRawWaveformsWithHeaderHPGe: true
          saveRawWaveformsHPGe: true

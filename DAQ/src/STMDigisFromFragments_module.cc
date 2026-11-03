@@ -1,6 +1,6 @@
 // ====================================================================
 //
-// STMDigisFromFragments: create all types of STMDigis from STMFragments
+// Stmdigisfromfragments: create all types of STMDigis from STMFragments
 //
 // ======================================================================
 
@@ -130,6 +130,7 @@ private:
         // Possible errors in raw frag
         size_t invalidHeaders{0};  // raw frag too short for its header
         size_t invalidAnchors{0};  // raw header start/end anchor check failed
+        size_t invalidVersions{0}; // version header is not legacy or version 0
         // Possible errors in Raw Header Flags read
         size_t badOnly{0};
         size_t missingOnly{0};
@@ -145,13 +146,15 @@ private:
         size_t skippedPHRawFlags{0};
         size_t skippedZSInvalidHeader{0};
         size_t skippedPHInvalidHeader{0};
+        size_t skippedZSInvalidVersion{0};
+        size_t skippedPHInvalidVersion{0};
         size_t skippedZSNoRaw{0};
         size_t skippedPHNoRaw{0};
-
         // Count how many ZS,PH frags were skipped due to errors in raw
         size_t setsSkippedRawFlags{0};
         size_t setsSkippedInvalidHeaders{0};
         size_t setsSkippedInvalidAnchors{0};
+        size_t setsSkippedInvalidVersion{0};
     };
 
     // Used to save ZS information
@@ -186,6 +189,8 @@ private:
         // Version dependent fields - only set for legacy header
         uint16_t rawPrescaleValue{0};
         uint16_t zsPrescaleValue{0};
+        // skip incompatible versions
+        bool skipCurrentSetDueToInvalidVersion{false};
     };
 
     // Used to track extract info after being added to map - used HPGe/ LaBr for job/event
@@ -454,9 +459,8 @@ void STMDigisFromFragments::produce(Event& event)
                     headerState.skipCurrentSetDueToInvalidRawHeader = true;
                     continue;
                 }
-                ++_rawHeaderVersions[stmFrag.headerVersion()]; // Creates a map and count of headerVersion encountered (per job)
+
                 // Confirm Raw Header has Valid Anchors
-                // For now just use as a diagnostic tool
                 if (!stmFrag.hasValidAnchors()) {
                     if (_verbosityLevel >= 6) {
                         const auto* dataPtr = stmFrag.dataBegin();
@@ -474,11 +478,26 @@ void STMDigisFromFragments::produce(Event& event)
                         << msg.str();
                     }
                     ++eventCounts.invalidAnchors; ++jobCounts.invalidAnchors;
-                    //++eventCounts.setsSkippedInvalidAnchors; ++jobCounts.setsSkippedInvalidAnchors;
+                    ++eventCounts.setsSkippedInvalidAnchors; ++jobCounts.setsSkippedInvalidAnchors;
+                    headerState.skipCurrentSetDueToInvalidRawHeader = true;
+                    continue;
+                }
 
-                    // first check if new files artdaq-core pr fixed this
-                    //headerState.skipCurrentSetDueToInvalidHeader = true;
-                    //continue; // debug first
+                // check supported version
+                const auto version = stmFrag.headerVersion();
+                const bool supportedVersion = (version == stm::RawHeader::CURRENT_VERSION ||
+                                                version == stm::RawHeader::VERSION_LEGACY);
+
+                if (!supportedVersion) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unknown STM Header version"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i
+                    << " | Version : " << version;
+                    ++eventCounts.invalidVersions; ++jobCounts.invalidVersions;
+                    ++eventCounts.setsSkippedInvalidVersion;++jobCounts.setsSkippedInvalidVersion;
+                    headerState.skipCurrentSetDueToInvalidVersion = true;
+                    continue;
                 }
 
                 // Check for bad &/or missing flags
@@ -501,6 +520,8 @@ void STMDigisFromFragments::produce(Event& event)
                     headerState.skipCurrentSetDueToRawFlags = true;
                     continue; // skip following frags if raw was malformed
                 }
+
+                ++_rawHeaderVersions[stmFrag.headerVersion()]; // Creates a map and count of headerVersion encountered (per job)
 
                 // Save to rawHeader struct
                 headerState.rawPrescaled = stmFrag.rawPrescaled();
@@ -651,6 +672,10 @@ void STMDigisFromFragments::produce(Event& event)
                     ++eventCounts.skippedZSInvalidHeader; ++jobCounts.skippedZSInvalidHeader;
                     continue;
                 }
+                if (headerState.skipCurrentSetDueToInvalidVersion){
+                    ++eventCounts.skippedZSInvalidVersion; ++jobCounts.skippedZSInvalidVersion;
+                    continue;
+                }
                 if (headerState.skipCurrentSetDueToRawFlags) {
                     ++eventCounts.skippedZSRawFlags; ++jobCounts.skippedZSRawFlags;
                     continue;
@@ -717,7 +742,6 @@ void STMDigisFromFragments::produce(Event& event)
                 bool allADCsZero = true;
                 const bool saveZS = isHPGe ? (_saveZSWaveformsHPGe) : (_saveZSWaveformsLaBr);
                 std::vector<zsRegion> regions;
-                const auto payloadPtr = stmFrag.payloadBegin();
 
 
                 if (_verbosityLevel >= 6) {
@@ -740,7 +764,7 @@ void STMDigisFromFragments::produce(Event& event)
                         std::ostringstream msg;
                         msg << "\nFirst Few Payload Words For ZS Inspection: ";
                         for (size_t w = 0; w < std::min<size_t>(length,10) ; ++w) {
-                            msg << payloadPtr[w] << " ";
+                            msg << adcPtr[w] << " ";
                         }
                         mf::LogDebug("STMDigisFromFragments")
                         << msg.str();
@@ -828,6 +852,10 @@ void STMDigisFromFragments::produce(Event& event)
                 ++eventCounts.ph.seen; ++jobCounts.ph.seen;
                 if (headerState.skipCurrentSetDueToInvalidRawHeader) {
                     ++eventCounts.skippedPHInvalidHeader; ++jobCounts.skippedPHInvalidHeader;
+                    continue;
+                }
+                if (headerState.skipCurrentSetDueToInvalidVersion) {
+                    ++eventCounts.skippedPHInvalidVersion; ++jobCounts.skippedPHInvalidVersion;
                     continue;
                 }
                 if (headerState.skipCurrentSetDueToRawFlags) {
@@ -981,7 +1009,7 @@ void STMDigisFromFragments::produce(Event& event)
         };
         out << "\n========== STM EVENT SUMMARY (Unpacking Module) ==========\n"
             << "Art event: " << event.id() << " | Module event count: " << _totalEvents << '\n'
-            << "--- Products Saved (event total) ---\n"
+            << "\n--- Products Saved (event total) ---\n"
             << "Raw with header |  HPGe : " << hpgeEventProducts.rawWithHeader << " , LaBr : " << labrEventProducts.rawWithHeader << '\n'
             << "RAW waveforms   |  HPGe : " << hpgeEventProducts.rawWaveforms  << " , LaBr : " << labrEventProducts.rawWaveforms << '\n'
             << "ZS waveforms    |  HPGe : " << hpgeEventProducts.zsWaveforms   << " , LaBr : " << labrEventProducts.zsWaveforms << '\n'
@@ -989,7 +1017,7 @@ void STMDigisFromFragments::produce(Event& event)
         out << std::left << std::setw(32) << "Fragment metric"
             << std::right << std::setw(12) << "HPGe" << std::setw(12) << "LaBr"
             << std::setw(12) << "Total" << '\n';
-        out << std::string(68, '-') << '\n';
+        out << std::string(72, '-') << '\n';
         row("Containers", hpgeEventCounts.container, labrEventCounts.container);
         row("Inner fragments", hpgeEventCounts.innerFrags, labrEventCounts.innerFrags);
         row("Good RAW fragments", hpgeEventCounts.raw.good, labrEventCounts.raw.good);
@@ -1012,7 +1040,7 @@ void STMDigisFromFragments::produce(Event& event)
             << std::right << std::setw(12) << "HPGe"
             << std::setw(12) << "LaBr"
             << std::setw(12) << "Total" << '\n'
-            << std::string(72, '-') << '\n';
+            << std::string(76, '-') << '\n';
         };
 
         out << "\n======= STM Detailed Event Summary =======\n"
@@ -1024,6 +1052,7 @@ void STMDigisFromFragments::produce(Event& event)
         header("Raw Diagnostic");
         row("Invalid headers", hpgeEventCounts.invalidHeaders, labrEventCounts.invalidHeaders);
         row("Invalid anchors", hpgeEventCounts.invalidAnchors, labrEventCounts.invalidAnchors);
+        row("Invalid versions", hpgeEventCounts.invalidVersions, labrEventCounts.invalidVersions);
         row("Flagged bad only", hpgeEventCounts.badOnly, labrEventCounts.badOnly);
         row("Flagged missing only", hpgeEventCounts.missingOnly, labrEventCounts.missingOnly);
         row("Flagged bad and missing", hpgeEventCounts.badAndMissing, labrEventCounts.badAndMissing);
@@ -1036,6 +1065,7 @@ void STMDigisFromFragments::produce(Event& event)
         row("Skipped: RAW flags", hpgeEventCounts.skippedZSRawFlags, labrEventCounts.skippedZSRawFlags);
         row("Skipped: invalid RAW header", hpgeEventCounts.skippedZSInvalidHeader, labrEventCounts.skippedZSInvalidHeader);
         row("Skipped: no preceding RAW", hpgeEventCounts.skippedZSNoRaw, labrEventCounts.skippedZSNoRaw);
+        row("Skipped: vers header", hpgeEventCounts.skippedZSInvalidVersion, labrEventCounts.skippedZSInvalidVersion);
         out << "\n";
 
         header("PH Diagnostic");
@@ -1043,9 +1073,11 @@ void STMDigisFromFragments::produce(Event& event)
         row("Skipped: RAW flags", hpgeEventCounts.skippedPHRawFlags, labrEventCounts.skippedPHRawFlags);
         row("Skipped: invalid RAW header", hpgeEventCounts.skippedPHInvalidHeader, labrEventCounts.skippedPHInvalidHeader);
         row("Skipped: no preceding RAW", hpgeEventCounts.skippedPHNoRaw, labrEventCounts.skippedPHNoRaw);
+        row("Skipped: vers header", hpgeEventCounts.skippedPHInvalidVersion, labrEventCounts.skippedPHInvalidVersion);
         row("RAW sets skipped: flags", hpgeEventCounts.setsSkippedRawFlags, labrEventCounts.setsSkippedRawFlags);
         row("RAW sets skipped: invalid header", hpgeEventCounts.setsSkippedInvalidHeaders, labrEventCounts.setsSkippedInvalidHeaders);
         row("RAW sets skipped: invalid anchors", hpgeEventCounts.setsSkippedInvalidAnchors, labrEventCounts.setsSkippedInvalidAnchors);
+        row("RAW sets skipped: vers header", hpgeEventCounts.setsSkippedInvalidVersion, labrEventCounts.setsSkippedInvalidVersion);
         mf::LogInfo("STMDigisFromFragments") << out.str();
     }
 
@@ -1080,13 +1112,13 @@ void STMDigisFromFragments::printJobSummary() const {
             << std::setw(12) << (std::string(type) == "ZS" ? std::to_string(c.noRegions) : "-") << '\n';
     };
     out << "\n======= STM Job Summary =======\n"
-        << "Art events processed: " << _totalEvents << '\n'
-        << "Inner fragments: " << _totalInnerFrags << "\n\n"
+        << "Art events processed : " << _totalEvents << '\n'
+        << "Inner fragments      : " << _totalInnerFrags << "\n\n"
         << std::left << std::setw(12) << "Detector" << std::setw(8) << "Type"
         << std::right << std::setw(12) << "Seen" << std::setw(12) << "Good"
         << std::setw(12) << "Prescaled" << std::setw(12) << "No hits"
         << std::setw(12) << "No regions" << '\n'
-        << std::string(80, '-') << '\n';
+        << std::string(84, '-') << '\n';
     row("HPGe", "RAW", hpgeJobCounts.raw);
     row("HPGe", "ZS", hpgeJobCounts.zs);
     row("HPGe", "PH", hpgeJobCounts.ph);
@@ -1117,7 +1149,7 @@ void STMDigisFromFragments::printDetailedJobSummary() const {
             << std::right << std::setw(12) << "HPGe"
             << std::setw(12) << "LaBr"
             << std::setw(12) << "Total" << '\n'
-            << std::string(72, '-') << '\n';
+            << std::string(76, '-') << '\n';
     };
     out << "\n======= STM Detailed Job Summary =======\n"
         << "Events with both detectors : " << _totalEventsWithBothDetectors << '\n'
@@ -1149,6 +1181,7 @@ void STMDigisFromFragments::printDetailedJobSummary() const {
     header("Raw Diagnostic");
     row("Invalid RAW headers", hpgeJobCounts.invalidHeaders, labrJobCounts.invalidHeaders);
     row("Invalid RAW anchors", hpgeJobCounts.invalidAnchors, labrJobCounts.invalidAnchors);
+    row("Invalid Raw version", hpgeJobCounts.invalidVersions, labrJobCounts.invalidVersions);
     row("RAW flagged bad only", hpgeJobCounts.badOnly, labrJobCounts.badOnly);
     row("RAW flagged missing only", hpgeJobCounts.missingOnly, labrJobCounts.missingOnly);
     row("RAW flagged bad and missing", hpgeJobCounts.badAndMissing, labrJobCounts.badAndMissing);
@@ -1161,6 +1194,7 @@ void STMDigisFromFragments::printDetailedJobSummary() const {
     row("ZS skipped: RAW flags", hpgeJobCounts.skippedZSRawFlags, labrJobCounts.skippedZSRawFlags);
     row("ZS skipped: invalid RAW header", hpgeJobCounts.skippedZSInvalidHeader, labrJobCounts.skippedZSInvalidHeader);
     row("ZS skipped: no preceding RAW", hpgeJobCounts.skippedZSNoRaw, labrJobCounts.skippedZSNoRaw);
+    row("ZS skipped: invalid header vers" , hpgeJobCounts.skippedZSInvalidVersion, labrJobCounts.skippedZSInvalidVersion);
     out << '\n';
 
     header("PH Diagnostic");
@@ -1168,12 +1202,14 @@ void STMDigisFromFragments::printDetailedJobSummary() const {
     row("PH skipped: RAW flags", hpgeJobCounts.skippedPHRawFlags, labrJobCounts.skippedPHRawFlags);
     row("PH skipped: invalid RAW header", hpgeJobCounts.skippedPHInvalidHeader, labrJobCounts.skippedPHInvalidHeader);
     row("PH skipped: no preceding RAW", hpgeJobCounts.skippedPHNoRaw, labrJobCounts.skippedPHNoRaw);
+    row("PH skipped: invalid header vers" , hpgeJobCounts.skippedPHInvalidVersion, labrJobCounts.skippedPHInvalidVersion);
     out << '\n';
 
     header("Raw|ZS|PH");
     row("RAW sets skipped: flags", hpgeJobCounts.setsSkippedRawFlags, labrJobCounts.setsSkippedRawFlags);
     row("RAW sets skipped: short/invalid", hpgeJobCounts.setsSkippedInvalidHeaders, labrJobCounts.setsSkippedInvalidHeaders);
     row("RAW sets skipped: anchors", hpgeJobCounts.setsSkippedInvalidAnchors, labrJobCounts.setsSkippedInvalidAnchors);
+    row("Raw sets skipped: header ver", hpgeJobCounts.setsSkippedInvalidVersion, labrJobCounts.setsSkippedInvalidVersion);
     mf::LogInfo("STMDigisFromFragments") << out.str();
 }
 

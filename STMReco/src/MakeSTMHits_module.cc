@@ -1,6 +1,8 @@
 //
 // Create STMHits from STMPHDigis
+// Input digi file where phDigis are negative
 //
+
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Handle.h"
@@ -51,9 +53,7 @@ namespace mu2e {
     art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisMapToken;
     const float _samplingFrequency{0.0f};
     const double _m{0.0}; // For E = m(ADC) + c
-    const double _c{0.0};
-    STMChannel _channel;
-    //ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    const double _c{0.0}; // Set up for Pass1 calibration
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
@@ -62,9 +62,11 @@ namespace mu2e {
     ,_samplingFrequency(config().samplingFrequency())
     ,_m(config().mCalibConstant())
     ,_c(config().cCalibConstant())
-    ,_channel(STMUtils::getChannel(config().stmPHDigisMapTag()))
-    //,_stmEnergyCalib_h()
     {
+      if (_samplingFrequency == 0.0f) {
+        throw cet::exception("MakeSTMHits")
+          << "Sampling Frequency must be greater than zero : " << _samplingFrequency;
+      }
       produces<STMHitCollectionMap>();
     }
 
@@ -72,15 +74,7 @@ namespace mu2e {
     // create output
     unique_ptr<STMHitCollectionMap> outputSTMHitsMap(new STMHitCollectionMap);
     auto phDigisHandle = event.getValidHandle(_stmPHDigisMapToken);
-
-    //STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get calibration
-    if (_samplingFrequency == 0.0f) {
-      throw cet::exception("MakeSTMHits")
-        << "Sampling Frequency must be greater than zero : " << _samplingFrequency;
-    }
     const float nsPerCt = (1 / _samplingFrequency) * 1e3 ;
-    //const auto& pars = stmEnergyCalib.calib(_channel);
-
     for (const auto& mu2e_evt : *phDigisHandle) {
 
       const auto& stm_evt_header = mu2e_evt.first; // get header information
@@ -92,7 +86,6 @@ namespace mu2e {
         // make a hit
         float time = uncalib_time * nsPerCt;
         float energy = _c + _m * uncalib_energy;
-        //float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
 
         // store hit
         STMHit stm_hit(time,energy);
