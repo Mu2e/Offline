@@ -442,7 +442,7 @@ namespace mu2e {
       for(auto const& layer : layers){
         // only add each layer once
         bool infit(false);
-        for(auto const& matxing : kktrk.materialPlaneXings())
+        for(auto const& matxing : kktrk.caloMaterialPlaneXings())
           if(matxing->surfaceId() == layer.sid_){ infit = true; break; }
         if(infit)continue;
         auto inter = KinKal::intersect(ptraj,*layer.surface_,srange,intertol_);
@@ -459,8 +459,8 @@ namespace mu2e {
         using Support = KKGeom::CaloInnerSupport;
         auto ringid = support.surfaceId(Support::alFront).id();
         auto isring = [&ringid](auto const& matxing){ return matxing->surfaceId().id() == ringid; };
-        if(std::any_of(kktrk.materialPlaneXings().begin(),kktrk.materialPlaneXings().end(),isring) ||
-            std::any_of(kktrk.materialCylXings().begin(),kktrk.materialCylXings().end(),isring))continue;
+        if(std::any_of(kktrk.caloMaterialPlaneXings().begin(),kktrk.caloMaterialPlaneXings().end(),isring) ||
+            std::any_of(kktrk.caloMaterialCylXings().begin(),kktrk.caloMaterialCylXings().end(),isring))continue;
         for(auto const& sxing : caloSupportXings(ptraj,support,srange,intertol_)){
           auto sid = support.surfaceId(sxing.xing_);
           auto const& dmat = *kkmat_h->material(support.materialName(Support::material(sxing.xing_)));
@@ -474,7 +474,7 @@ namespace mu2e {
         }
       }
       if(matxings.empty() && cylxings.empty())break;
-      kktrk.addFitMaterialXings(matxings,cylxings);
+      kktrk.addCaloMaterialXings(matxings,cylxings);
     }
   }
 
@@ -974,8 +974,22 @@ namespace mu2e {
       crvxing->materialEffects(dmom,paramomvar,perpmomvar);
       inters.emplace_back(ktraj.stateEstimate(crvxing->time()),XYZVectorF(ktraj.bnom()),crvxing->surfaceId(),crvxing->intersection(),dmom);
     }
-    // generic passive material Xings are only filled during extrapolation; saving them in the KalSeed is optional
+    // generic passive material Xings are filled during extrapolation, calorimeter material Xings during the fit; saving them in the KalSeed is optional
     if(savematxings_){
+      for(auto const& matxing : kktrk.caloMaterialCylXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
+      for(auto const& matxing : kktrk.caloMaterialPlaneXings()){
+        double stime = matxing->time() - epsilon;
+        auto const& ktraj = ptraj.nearestPiece(stime);
+        double dmom,paramomvar,perpmomvar;
+        matxing->materialEffects(dmom,paramomvar,perpmomvar);
+        inters.emplace_back(ktraj.stateEstimate(matxing->time()),XYZVectorF(ktraj.bnom()),matxing->surfaceId(),matxing->intersection(),dmom);
+      }
       for(auto const& matxing : kktrk.materialCylXings()){
         double stime = matxing->time() - epsilon;
         auto const& ktraj = ptraj.nearestPiece(stime);

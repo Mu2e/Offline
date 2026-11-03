@@ -504,7 +504,7 @@ namespace mu2e {
         usable = extrapolateCaloSupport(ktrk,**nextsupport++,tstart);
       if(!usable) break;
       bool infit(false);
-      for(auto const& matxing : ktrk.materialPlaneXings())
+      for(auto const& matxing : ktrk.caloMaterialPlaneXings())
         if(matxing->surfaceId() == layer.sid_){ infit = true; break; }
       if(infit){
         if(debug_ > 0)std::cout << "Calo front panel crossing " << layer.sid_ << " already in the fit" << std::endl;
@@ -556,8 +556,8 @@ namespace mu2e {
     GeomHandle<mu2e::KKMaterial> kkmat_h;
     auto ringid = support.surfaceId(Support::alFront).id();
     auto isring = [&ringid](auto const& matxing){ return matxing->surfaceId().id() == ringid; };
-    if(std::any_of(ktrk.materialPlaneXings().begin(),ktrk.materialPlaneXings().end(),isring) ||
-        std::any_of(ktrk.materialCylXings().begin(),ktrk.materialCylXings().end(),isring)){
+    if(std::any_of(ktrk.caloMaterialPlaneXings().begin(),ktrk.caloMaterialPlaneXings().end(),isring) ||
+        std::any_of(ktrk.caloMaterialCylXings().begin(),ktrk.caloMaterialCylXings().end(),isring)){
       if(debug_ > 0)std::cout << "Calo inner ring crossing " << support.surfaceId(Support::alFront) << " already in the fit" << std::endl;
       return true;
     }
