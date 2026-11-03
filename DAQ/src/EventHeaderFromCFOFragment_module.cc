@@ -26,6 +26,8 @@
 // Offline
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 
 // C++
 #include <iostream>
@@ -33,7 +35,9 @@
 #include <string>
 #include <array>
 #include <list>
+#include <cmath>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -80,6 +84,8 @@ private:
   unsigned long nEvents_      = 0;
   unsigned long nNoCFOHandle_ = 0;
   unsigned long nNoCFOFrags_  = 0;
+  // Only needed for the proton bunch time, so only created when producing the EWM/PBT
+  std::optional<mu2e::ProditionsHandle<mu2e::EventTiming>> eventTiming_h_;
 
   void warnMissing(const Event& event, const std::string& msg) const;
   std::string cfoSource() const { return cfoInstance_.empty() ? cfoTag_.encode() : "instance " + cfoInstance_; }
@@ -148,6 +154,7 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     TLOG(TLVL_DEBUG + 2) << "Producing EventWindowMarker";
     produces<mu2e::EventWindowMarker>();
     produces<mu2e::ProtonBunchTime>();
+    eventTiming_h_.emplace();
   }
   if(isSim_) TLOG(TLVL_DEBUG + 2) << "Assuming simulation inputs!";
 }
@@ -164,6 +171,8 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   std::unique_ptr<mu2e::EventWindowMarker> ewm((ewm_) ? new mu2e::EventWindowMarker{} : nullptr);
   std::unique_ptr<mu2e::ProtonBunchTime>   pbt((ewm_) ? new mu2e::ProtonBunchTime{}   : nullptr);
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
+  // The default constructor leaves the check bit-fields uninitialized; zero them as the other constructors do
+  evtHdr->rnr_check = evtHdr->ndtc_check = evtHdr->dtc_check = evtHdr->ewt_check = 0;
 
   // Check for the CFO fragment list
   if(!cfoInstance_.empty()) { // select by product instance name only
@@ -201,20 +210,36 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     evtHdr->ewt           = static_cast<long unsigned int>(cfo.GetEventWindowTag().GetEventWindowTag().to_ullong());
     evtHdr->flags         = cfo.GetEventMode().isOnSpillFlagSet();
     evtHdr->eventDuration = cfoRecord.event_duration;
+    evtHdr->rfmTDC_est      = cfoRecord.DR_marker_N_est;
+    evtHdr->rfmTDC_measured = cfoRecord.DR_marker_N_meas;
     TLOG(TLVL_DEBUG + 20) << "mode = " << evtHdr->mode << " (" << cfoRecord.event_mode << ")"
                           << " ewt  = "<< evtHdr->ewt << " flags = " << int(evtHdr->flags)
-                          << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
+                          << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration
+                          << " DR TDC est = " << int(evtHdr->rfmTDC_est) << " meas = " << int(evtHdr->rfmTDC_measured);
     if(diagLevel_ > 1) {
       mf::LogInfo("EventHeaderFromCFOFragment")
         << "Event " << event.id() << ": mode = " << evtHdr->mode << " ewt = " << evtHdr->ewt
-        << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
+        << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration
+        << " DR TDC est = " << int(evtHdr->rfmTDC_est) << " meas = " << int(evtHdr->rfmTDC_measured);
     }
     if(ewm_) {
-      constexpr double tick = 25.; // clock ticks -> ns
+      constexpr double tick    = 25.;   // clock ticks -> ns
+      constexpr double tdcTick = 1.25;  // CFO DR marker TDC (800 MHz) ticks -> ns
       ewm->_spillType   = (cfo.GetEventMode().isOnSpillFlagSet()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
       ewm->_eventLength = tick * evtHdr->eventDuration;
-      pbt->pbtime_ = 0.f; // FIXME
-      pbt->pbterr_ = 1.f;
+      if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) {
+        // The DR marker N measurement is the time from a 40 MHz clock edge to the DR marker arrival
+        // at the CFO (Mu2e-doc-55726). The event window starts a fixed number of clock ticks after that
+        // edge, so the proton bunch time relative to the event window start is a constant plus the
+        // measured TDC time. The constant matches the simulation convention (EventWindowMarkerProducer),
+        // where the bunch arrives 0-25 ns before -timeFromProtonsToDRMarker. Take the TDC bin center.
+        const mu2e::EventTiming& eventTiming = eventTiming_h_->get(event.id());
+        pbt->pbtime_ = -eventTiming.timeFromProtonsToDRMarker() - tick + tdcTick * (evtHdr->rfmTDC_measured + 0.5);
+        pbt->pbterr_ = tdcTick / std::sqrt(12.);
+      } else { // no DR marker off spill
+        pbt->pbtime_ = 0.f;
+        pbt->pbterr_ = 0.f;
+      }
     }
 
   } else {

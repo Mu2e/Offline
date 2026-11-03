@@ -14,6 +14,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 
+#include <artdaq-core-mu2e/Data/EventHeader.hh>
+
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
@@ -26,6 +28,8 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -85,6 +89,7 @@ namespace mu2e {
       produces<EventWindowMarker>();
       produces<ProtonBunchTimeMC>();
       produces<ProtonBunchTime>();
+      produces<EventHeader>();
     }
 
   void EventWindowMarkerProducer::beginJob() {
@@ -101,7 +106,11 @@ namespace mu2e {
     unique_ptr<EventWindowMarker> marker(new EventWindowMarker);
     unique_ptr<ProtonBunchTimeMC> pbtmc(new ProtonBunchTimeMC);
     unique_ptr<ProtonBunchTime> pbt(new ProtonBunchTime);
+    unique_ptr<EventHeader> evh(new EventHeader);
+    // The default constructor leaves the check bit-fields uninitialized; zero them as the other constructors do
+    evh->rnr_check = evh->ndtc_check = evh->dtc_check = evh->ewt_check = 0;
     marker->_spillType = _spillType;
+    evh->flags = (_spillType == EventWindowMarker::SpillType::onspill) ? EventHeader::spillMask : 0;
 
     EventTiming const& eventTiming = _eventTiming_h.get(event.id());
 
@@ -110,6 +119,8 @@ namespace mu2e {
       pbt->pbtime_ = 0;
       pbt->pbterr_ = 0;
       marker->_eventLength = eventTiming.offSpillLength()*_period;
+      evh->eventDuration = eventTiming.offSpillLength();
+      // the DR marker TDC is 0 off spill
     }else{
       // calculate which bin we are in from event number
       int bin = event.id().event() % _onSpillBins;
@@ -122,9 +133,19 @@ namespace mu2e {
       // when phase shift would be > than one clock period by next microbunch
       // the event window is one clock tick shorter
       if (phaseShift < -1*_period - shiftPer)
-        marker->_eventLength = (_onSpillMaxLength-1)*_period;
+        evh->eventDuration = _onSpillMaxLength-1;
       else
-        marker->_eventLength = _onSpillMaxLength*_period;
+        evh->eventDuration = _onSpillMaxLength;
+      marker->_eventLength = evh->eventDuration*_period;
+
+      // DR marker TDC (800 MHz ticks after a 40 MHz clock edge), so that the reco PBT can be
+      // recovered from the header as in data (EventHeaderFromCFOFragment):
+      // pbtime = -timeFromProtonsToDRMarker - period + tdcTick*(TDC + 0.5)
+      constexpr double tdcTick = 1.25; // ns
+      const int maxTDC = static_cast<int>(std::lround(_period/tdcTick)) - 1;
+      const int tdc = std::clamp(static_cast<int>(std::floor((phaseShift + _period)/tdcTick)), 0, maxTDC);
+      evh->rfmTDC_measured = tdc;
+      evh->rfmTDC_est      = tdc; // no prediction error simulated
 
       // we set pbtime to be the time of the proton bunch in terms of the DAQ clock
       // t=0 (which is determined by the event window marker arrival time)
@@ -143,6 +164,7 @@ namespace mu2e {
     event.put(std::move(marker));
     event.put(std::move(pbtmc));
     event.put(std::move(pbt));
+    event.put(std::move(evh));
   }
 }
 

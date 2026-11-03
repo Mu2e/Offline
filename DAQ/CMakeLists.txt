@@ -28,6 +28,8 @@ cet_build_plugin(EventHeaderFromCFOFragment art::module
     LIBRARIES REG
     Offline::DAQ
     Offline::DataProducts
+    Offline::DAQConditions
+    Offline::ProditionsService
 )
 
 
