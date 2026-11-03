@@ -61,8 +61,8 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> stepPointTag   { Name("StepPointMCCollection")   , Comment("StepPointMC collection") };
       fhicl::OptionalAtom<art::InputTag> crvStepTag{ Name("CrvStepCollection")    , Comment("CrvStep collection; if set, CRV occupancy and dose histograms are filled") };
       fhicl::Atom<art::InputTag> genCountTag    { Name("GenCountTag")             , Comment("GenCount tag"), "genCounter" };
-      // The step time windows cut the raw step time in the tree and the end-of-job summary, and the folded time
-      // (see FoldTimeOffset) in the occupancy hit-like histograms, so the two counts differ
+      // The Step time windows cut the raw step time in the tree and the end-of-job summary; the Hit time windows cut
+      // the folded time (event-window frame, see FoldTimeOffset) in the occupancy hit-like histograms
       fhicl::Atom<double>        trkStepEMin    { Name("TrkStepEnergyThreshold")  , Comment("StrawGasStep ionizing energy threshold for counting hits (MeV)") };
       fhicl::Atom<double>        trkStepTMin    { Name("TrkStepTimeMin")          , Comment("StrawGasStep minimum time for counting hits (ns)") };
       fhicl::Atom<double>        trkStepTMax    { Name("TrkStepTimeMax")          , Comment("StrawGasStep maximum time for counting hits (ns)") };
@@ -71,7 +71,11 @@ namespace mu2e {
       fhicl::Atom<double>        caloStepTMax   { Name("CaloStepTimeMax")         , Comment("CaloShowerStep maximum time for counting hits (ns)") };
       fhicl::Atom<double>        foldTimeOffset { Name("FoldTimeOffset")          , Comment("Offset added to step times before folding into the microbunch (ns): the nominal ProtonBunchTimeMC, "
                                                                                               "-TimeFromProtonsToDRMarker, so folded times are in the digitizers' event-window frame. "
-                                                                                              "The per-event phase (within one 25 ns clock period) is not included. 0 folds the raw step time"), -200. };
+                                                                                              "The per-event phase (within one 25 ns clock period) is not included. 0 folds the raw step time") };
+      fhicl::Atom<double>        trkHitTMin     { Name("TrkHitTimeMin")           , Comment("Minimum folded time for the tracker hit-like histograms (ns, event-window frame)") };
+      fhicl::Atom<double>        trkHitTMax     { Name("TrkHitTimeMax")           , Comment("Maximum folded time for the tracker hit-like histograms (ns, event-window frame)") };
+      fhicl::Atom<double>        caloHitTMin    { Name("CaloHitTimeMin")          , Comment("Minimum folded time for the calo hit-like histograms (ns, event-window frame)") };
+      fhicl::Atom<double>        caloHitTMax    { Name("CaloHitTimeMax")          , Comment("Maximum folded time for the calo hit-like histograms (ns, event-window frame)") };
       fhicl::Atom<int>           debugLevel     { Name("DebugLevel")              , Comment("Debug level"), 0 };
     };
 
@@ -123,11 +127,11 @@ namespace mu2e {
       std::array<TH1*, 2> calo_disk_ncrystals_r_ = {nullptr, nullptr};
       std::array<std::array<TH2*, 2>, 2> calo_disk_xy_; // [disk][kOcc/kEdep]
       std::array<TH2*, 2> calo_rz_ = {nullptr, nullptr};
-      // Hit-like counts (steps above the energy threshold), single histograms; _hits only for folded time in [step time min, max]
+      // Hit-like counts (steps above the energy threshold), single histograms; _hits only for folded time in the Hit time window
       TH1* trk_time_folded_ecut_ = nullptr;
       TH1* calo_time_folded_ecut_ = nullptr;
       TH1* trk_straw_hits_ = nullptr;
-      TH1* calo_crystal_hits_ = nullptr; // steps above CaloStepEnergyThreshold (Birks), folded time in [CaloStepTimeMin, CaloStepTimeMax]
+      TH1* calo_crystal_hits_ = nullptr; // steps above CaloStepEnergyThreshold (Birks), folded time in [CaloHitTimeMin, CaloHitTimeMax]
       // CRV (booked only if a CrvStep collection is configured)
       HistPair_t crv_sector_, crv_bar_, crv_z_, crv_time_, crv_time_folded_;
     };
@@ -315,6 +319,10 @@ namespace mu2e {
     double calo_step_tmin_;
     double calo_step_tmax_;
     double fold_time_offset_;
+    double trk_hit_tmin_;
+    double trk_hit_tmax_;
+    double calo_hit_tmin_;
+    double calo_hit_tmax_;
     int debug_level_;
     std::unique_ptr<StopWatch> watch_ = std::make_unique<StopWatch>();
 
@@ -356,6 +364,10 @@ namespace mu2e {
     , calo_step_tmin_(conf().caloStepTMin())
     , calo_step_tmax_(conf().caloStepTMax())
     , fold_time_offset_(conf().foldTimeOffset())
+    , trk_hit_tmin_(conf().trkHitTMin())
+    , trk_hit_tmax_(conf().trkHitTMax())
+    , calo_hit_tmin_(conf().caloHitTMin())
+    , calo_hit_tmax_(conf().caloHitTMax())
     , debug_level_(conf().debugLevel())
   {
     art::InputTag crv_tag;
@@ -541,7 +553,7 @@ namespace mu2e {
     book1(occ_->trk_time_  , "trk_time"  , "Tracker by time"  , "Time (ns)"   , 500, 0., 10000.);
     book1(occ_->trk_time_folded_, "trk_time_folded", "Tracker by time folded into the microbunch", "Time mod microbunch period (ns)", 100, 0., mbtime_);
     occ_->trk_time_folded_ecut_ = dir.make<TH1D>("trk_time_folded_ecut", "Tracker steps above the energy threshold by folded time;Time mod microbunch period (ns);Steps", 100, 0., mbtime_);
-    occ_->trk_straw_hits_ = dir.make<TH1D>("trk_straw_hits", "Tracker steps above the energy threshold per straw, folded time in the TrkStepTime window;Unique straw;Steps", StrawId::_nustraws, 0., StrawId::_nustraws);
+    occ_->trk_straw_hits_ = dir.make<TH1D>("trk_straw_hits", "Tracker steps above the energy threshold per straw, folded time in the TrkHitTime window;Unique straw;Steps", StrawId::_nustraws, 0., StrawId::_nustraws);
     for(TH1* h : {occ_->trk_time_folded_ecut_, occ_->trk_straw_hits_}) h->Sumw2();
     book2(occ_->trk_rz_    , "trk_rz"    , "Tracker r vs z"   , "z (mm)", 320, -1600., 1600., "r (mm)", 175, 300., 750.);
 
@@ -555,7 +567,7 @@ namespace mu2e {
     book1(occ_->calo_time_folded_, "calo_time_folded", "Calo by time folded into the microbunch", "Time mod microbunch period (ns)", 100, 0., mbtime_);
     occ_->calo_time_folded_ecut_ = dir.make<TH1D>("calo_time_folded_ecut", "Calo steps above the energy threshold by folded time;Time mod microbunch period (ns);Steps", 100, 0., mbtime_);
     occ_->calo_time_folded_ecut_->Sumw2();
-    occ_->calo_crystal_hits_ = dir.make<TH1D>("calo_crystal_hits", "Calo steps above the energy threshold per crystal, folded time in the CaloStepTime window;Crystal ID;Steps", ncrys, 0., ncrys);
+    occ_->calo_crystal_hits_ = dir.make<TH1D>("calo_crystal_hits", "Calo steps above the energy threshold per crystal, folded time in the CaloHitTime window;Crystal ID;Steps", ncrys, 0., ncrys);
     occ_->calo_crystal_hits_->Sumw2();
     book2(occ_->calo_rz_     , "calo_rz"     , "Calo r vs z"    , "z (mm)", 250, 1500., 3500., "r (mm)", 100, 300., 700.);
     for(int d = 0; d < 2; ++d) {
@@ -566,7 +578,7 @@ namespace mu2e {
       // (calo_disk<d>_ncrystals_r, filled here once per crystal) is the mean per crystal at that radius
       const std::string dn = std::format("calo_disk{}_rcrys", d);
       book1(occ_->calo_disk_rcrys_[d], dn.c_str(), std::format("Calo disk {} by crystal-centre radius", d).c_str(), "Crystal-centre r (mm)", kNRCrysBins, kRCrysMin, kRCrysMax);
-      occ_->calo_disk_rcrys_hits_[d] = dir.make<TH1D>((dn + "_hits").c_str(), std::format("Calo disk {} steps above the energy threshold by crystal-centre radius, folded time in the CaloStepTime window;Crystal-centre r (mm);Steps", d).c_str(), kNRCrysBins, kRCrysMin, kRCrysMax);
+      occ_->calo_disk_rcrys_hits_[d] = dir.make<TH1D>((dn + "_hits").c_str(), std::format("Calo disk {} steps above the energy threshold by crystal-centre radius, folded time in the CaloHitTime window;Crystal-centre r (mm);Steps", d).c_str(), kNRCrysBins, kRCrysMin, kRCrysMax);
       occ_->calo_disk_rcrys_hits_[d]->Sumw2();
       occ_->calo_disk_ncrystals_r_[d] = dir.make<TH1D>(std::format("calo_disk{}_ncrystals_r", d).c_str(), std::format("Calo disk {} crystals by crystal-centre radius;Crystal-centre r (mm);Crystals", d).c_str(), kNRCrysBins, kRCrysMin, kRCrysMax);
     }
@@ -612,7 +624,7 @@ namespace mu2e {
         if(edep > trk_step_emin_) {
           const double tf = foldTime(step.time());
           occ_->trk_time_folded_ecut_->Fill(tf, Weight);
-          if(tf >= trk_step_tmin_ && tf <= trk_step_tmax_) occ_->trk_straw_hits_->Fill(id.uniqueStraw(), Weight);
+          if(tf >= trk_hit_tmin_ && tf <= trk_hit_tmax_) occ_->trk_straw_hits_->Fill(id.uniqueStraw(), Weight);
         }
         for(int k = 0; k < 2; ++k) {
           const double w = (k == kOcc) ? Weight : Weight*edep;
@@ -641,7 +653,7 @@ namespace mu2e {
         if(css.energyDepBirks() > calo_step_emin_) {
           const double tf = foldTime(css.time());
           occ_->calo_time_folded_ecut_->Fill(tf, Weight);
-          if(tf >= calo_step_tmin_ && tf <= calo_step_tmax_) {
+          if(tf >= calo_hit_tmin_ && tf <= calo_hit_tmax_) {
             occ_->calo_crystal_hits_->Fill(cid, Weight);
             occ_->calo_disk_rcrys_hits_[disk]->Fill(rcrys, Weight);
           }
