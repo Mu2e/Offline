@@ -701,7 +701,7 @@ namespace mu2e {
             );
     nestBox("ExtMonShieldingNorthconcrete",
             emfb->shieldingNHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            materialFinder.get("extMonFNAL.concreteMaterial"),
             &shieldingRotationInMu2e,
             emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
             mainParent.logical, 0,
@@ -717,7 +717,7 @@ namespace mu2e {
             );
     nestBox("ExtMonShieldingSouthconcrete",
             emfb->shieldingSHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            materialFinder.get("extMonFNAL.concreteMaterial"),
             &shieldingRotationInMu2e,
             emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
             mainParent.logical, 0,
@@ -725,7 +725,7 @@ namespace mu2e {
             );
     nestBox("ExtMonShieldingFloorConcrete",
             emfb->shieldingBHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            materialFinder.get("extMonFNAL.concreteMaterial"),
             &shieldingRotationInMu2e,
             emfb->shieldingBCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,

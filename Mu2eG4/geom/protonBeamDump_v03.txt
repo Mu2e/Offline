@@ -54,7 +54,7 @@ double protonBeamDump.topSteelScalloped.distanceToCollimator = 115;
 
 //----------------------------------------------------------------
 string protonBeamDump.material.core  = "G4_Fe";
-string protonBeamDump.material.shielding = "ShieldingConcrete";
+string protonBeamDump.material.shielding = "CONCRETE_MARS";
 string protonBeamDump.material.air = "G4_AIR";
 
 bool   protonBeamDump.dirt.visible = true;

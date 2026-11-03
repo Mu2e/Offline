@@ -122,7 +122,6 @@ namespace mu2e {
   //  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
 
-
     CheckedG4String mat = uniqueMaterialOrThrow( "CONCRETE_MARS" );
     {
       G4Material* ConcreteMars = new G4Material(mat.name, 2.35*CLHEP::g/CLHEP::cm3, 9 );
@@ -135,6 +134,13 @@ namespace mu2e {
       ConcreteMars->AddElement( getElementOrThrow("K") , 0.010); //Potassium
       ConcreteMars->AddElement( getElementOrThrow("Ca"), 0.200); //Calcium
       ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
+    }
+
+    mat = uniqueMaterialOrThrow( "CONCRETE_EXTMON_HANDSTACKED" );
+    {
+      // 2.1 g/cm3 from weighing ExtMon blocks, consistent with Menards info
+      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.1*CLHEP::g/CLHEP::cm3, 1 );
+      ConcreteHandstacked->AddMaterial( findMaterialOrThrow("CONCRETE_MARS"), 1.);
     }
 
     // SDF the average density refers to the average density of an 8'' Masonry Concrete Unit (see doc-db 11669 Architectural Drawings pag.9)
@@ -230,21 +236,6 @@ namespace mu2e {
       HeavyConcrete->AddElement( getElementOrThrow("Mn"), 0.00321757); //Manganese
       HeavyConcrete->AddElement( getElementOrThrow("Fe"), 0.47423935); //Iron
       HeavyConcrete->AddElement( getElementOrThrow("Sr"), 6.4097E-4);  //Strontium
-    }
-
-    mat = uniqueMaterialOrThrow( "ShieldingConcrete");
-    {
-      //
-      // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:
-      // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
-      //
-      G4Material* ShieldingConcrete = new G4Material( mat.name, 2.5*CLHEP::g/CLHEP::cm3, 6);
-      ShieldingConcrete->AddElement( getElementOrThrow("O") ,  0.5200);
-      ShieldingConcrete->AddElement( getElementOrThrow("Si"),  0.3250);
-      ShieldingConcrete->AddElement( getElementOrThrow("Ca"),  0.0600);
-      ShieldingConcrete->AddElement( getElementOrThrow("Na"),  0.0150);
-      ShieldingConcrete->AddElement( getElementOrThrow("Fe"),  0.0400);
-      ShieldingConcrete->AddElement( getElementOrThrow("Al"),  0.0400);
     }
 
     mat = uniqueMaterialOrThrow( "Polyethylene");
