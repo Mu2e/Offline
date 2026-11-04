@@ -1,0 +1,82 @@
+// Cosmic stop stand: the extracted v06 geometry plus one vertical CRV module
+// upstream of the tracker, used as a stopping target for cosmic muons.
+// The CRV reads the stopping muon; the tracker and calorimeter read the decay
+// electron.
+//
+// Original layout by Leo Liu (UCL), placed against extracted v04. Here it is
+// moved with the tracker to the v06 positions; the module-to-tracker spacing
+// is unchanged.
+//
+// Sector R3: one CRV-R3 type module (1045 mm counters, lookup table
+// CRVConditions/v6_0/LookupTable_1045_1):
+//   4 layers x 16 counters, 51.3 x 19.8 mm, 1045 mm long, Al absorbers between
+//   layers, strongback upstream, Al sheet downstream. SiPMs at the +x end only,
+//   reflector at the -x end (as R3).
+//   Counters run along x, stack in y; layers stack in +z
+//   (layer 0 upstream, layer 3 facing the tracker). Active area 1045 x 822 mm.
+//
+// Placement: centred on the detector axis (x = -3904, y = 0). The downstream
+// face (Al sheet) is 100 mm upstream of the TrackerMother upstream face.
+//   TrackerMother upstream face = 22939 - 1635.5           = 21303.5
+//   module downstream face      = 21303.5 - 100            = 21203.5
+//   layer pitch                 = 19.8 + 9.525             = 29.325
+//   layer 3 centre to sheet face = 19.8/2 + 3.175          = 13.075
+//   firstCounter z              = 21203.5 - 13.075 - 3*29.325 = 21102.45
+//   strongback upstream face    = 21102.45 - 19.8/2 - 12.7    = 21079.85
+//   counter 15 - counter 0 in y = 7*(51.3+0.2) + 8*51.3   = 770.9
+//   firstCounter y              = -770.9/2                 = -385.45
+//
+// garageFakeDS3Vacuum (the air polycone that holds the tracker and calorimeter)
+// starts at z = 22339 without an extension; v06 extends it upstream by 1236 mm
+// to z = 21103, which would contain the module. Here it is extended by 1045 mm
+// instead, so it starts at z = 21294: downstream of the module (21203.5) and
+// upstream of the tracker (21303.5). Air replaces air, so physics is unchanged.
+//
+// The CRV is the extracted_v04 CRV plus sector R3. The name R3 is reused, as
+// the extracted CRV already reuses T1 and T2, because CRV sector names must be
+// listed in SurfaceId (DataProducts/inc/SurfaceId.hh). crs.name selects the channel
+// map Offline/CRVConditions/data/extracted_v04_cosmicStop.txt.
+// For simulation and reconstruction also include
+//   Offline/CRVResponse/fcl/epilog_extracted_cosmicStop.fcl
+//   Offline/CRVReco/fcl/epilog_extracted_cosmicStop.fcl
+
+#include "Offline/Mu2eG4/geom/geom_common_extracted_v06.txt"
+
+double garage.ds3UpstreamExtension = 1045.0;
+
+// ---- CRV: extracted_v04 sectors plus R3 -------------------------------------
+string crs.name = "extracted_v04_cosmicStop";
+int    crs.nSectors = 12;
+vector<string> crs.sectorNames = {"EX", //0
+                                  "T1", //1
+                                  "T2", //2
+                                  "M1", //3
+                                  "M2", //4
+                                  "M3", //5
+                                  "M4", //6
+                                  "M5", //7
+                                  "M6", //8
+                                  "M7", //9
+                                  "M8", //10
+                                  "R3"  //11 cosmic stop module (CRV-R3 type)
+                                 };
+
+double          crs.scintillatorBarLengthR3 = 1045;
+int             crs.nModulesR3              = 1;
+int             crs.nCountersPerModuleR3    = 16;
+vector<double>  crs.firstCounterR3          = {-3904.00, -385.45, 21102.45};
+vector<double>  crs.layerDirectionR3        = {0, 0, 1};
+vector<double>  crs.offsetDirectionR3       = {0, 0, 0};   // no layer stagger
+vector<double>  crs.gapDirectionR3          = {0, 1, 0};
+bool            crs.sipmsAtSide0R3          = false;       // -x end: reflector
+bool            crs.sipmsAtSide1R3          = true;        // +x end: SiPMs
+int             crs.precedingSectorForR3    = -1;          // no preceding sector
+int             crs.sectorTypeR3            = 5;           // own type, not combined with other sectors
+int             crs.FEBBoxesAtSide0R3       = 0;
+int             crs.FEBBoxesAtSide1R3       = 0;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
