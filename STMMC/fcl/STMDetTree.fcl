@@ -1,0 +1,71 @@
+# Energy-deposition trees for BOTH STM crystals, with the provenance the analyses need.
+#
+# Writes two trees per job:
+#   ttree            one row per COUNT - a time-clustered deposit in one crystal. Carries
+#                    ionizing AND non-ionizing energy, the attributed particle's species and
+#                    VD116 kinematics, and the deposit position.
+#   ttree_genealogy  one row per (count, ancestor) - the chain back to VD116, for the
+#                    back-trace plots. Toggle with WriteGenealogy.
+#
+# Run it on the same stage-2 art files HPGeTree/LaBrTree read:
+#   mu2e -c Offline/STMMC/fcl/STMDetTree.fcl -S <catalog of dts.*.art>
+#
+# Inputs must contain compressSTMDet products (StepPointMCs in STMDet) - NOT *ToVD* files,
+# which stop at the virtual detector and have no crystal energy deposits.
+#
+# A count is (run, subRun, event, detector, groupId, cluster); see the module header for
+# what each field means and why the deposits are clustered in time rather than summed per
+# incident particle.
+#
+# Original author: Yongyi Wu
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMDetTree
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    STMDetTree : {
+      module_type : STMDetTree
+      # Same two products HPGeTree reads, so the comparison is apples to apples.
+      StepPointMCsTag  : "compressSTMDet:STMDet"
+      SimParticlemvTag : "compressSTMDet"
+
+      # Which crystal a step is in: inside the LaBr region is LaBr, everything else is
+      # HPGe. Only the FIXED crystal is described - the HPGe x offset is itself a scanned
+      # variable, so a bound placed on the HPGe would have to move campaign by campaign.
+      # These are loose region bounds in the empty space between the crystals, not tight
+      # cuts on either one.
+      LaBrRegionXMin : -4000.0
+      LaBrRegionZMin : 40900.0
+
+      # Gap above which a new count starts, per detector. HPGe's recovery time is ~50 us;
+      # LaBr's scintillation timescale is ~50 ns, so LaBr resolves arrivals HPGe merges.
+      HPGeCoincidenceWindow : 50000.0
+      LaBrCoincidenceWindow : 50.0
+
+      # true reproduces HPGeTree's grouping and disables time clustering - for comparing
+      # against the old modules, not for analysis.
+      GroupByTopParentInDetector : false
+
+      WriteGenealogy : true
+
+      # 0 keeps every count; raise it only if the file size demands it, since cutting here
+      # cannot be undone downstream.
+      MinEdep : 0.0
+    }
+  }
+  treePath : [STMDetTree]
+  end_paths : [treePath]
+}
+
+services.TFileService.fileName : "stmdet_tree.root"
+
+# Keep the full summary - the per-detector count/energy tables are the point.
+services.message.destinations.log.categories.default.limit : -1
