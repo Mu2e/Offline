@@ -12,31 +12,31 @@ namespace mu2e {
    //Struct To Hold Covarience Info:
    struct TrackCov{
     std::vector<double> Covariance;
-    double sigA0;
-    double sigA0A1;
-    double sigA1A0;
-    double sigA1;
-    double sigB0;
-    double sigB0B1;
-    double sigB1B0;
-    double sigB1;
-    TrackCov();
+    double sigA0 = 0;
+    double sigA0A1 = 0;
+    double sigA1A0 = 0;
+    double sigA1 = 0;
+    double sigB0 = 0;
+    double sigB0B1 = 0;
+    double sigB1B0 = 0;
+    double sigB1 = 0;
+    TrackCov() = default;
     TrackCov(double siga0, double siga0a1,double siga1a0, double siga1, double sigb0,double sigb0b1, double sigb1b0, double sigb1) : sigA0(siga0), sigA0A1(siga0a1), sigA1A0(siga1a0), sigA1(siga1), sigB0(sigb0), sigB0B1(sigb0b1), sigB1B0(sigb1b0), sigB1(sigb1) {};
    };
 
    //Struct To Hold Track Parameters
    struct TrackParams{
-          double A0;
-          double A1;
-          double B0;
-          double B1;
-          double T0;
-          double deltaA0;
-          double deltaA1;
-          double deltaB0;
-          double deltaB1;
-          double deltaT0;
-          TrackParams();
+          double A0 = 0;
+          double A1 = 0;
+          double B0 = 0;
+          double B1 = 0;
+          double T0 = 0;
+          double deltaA0 = 0;
+          double deltaA1 = 0;
+          double deltaB0 = 0;
+          double deltaB1 = 0;
+          double deltaT0 = 0;
+          TrackParams() = default;
           TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
           TrackCov Covarience; //FIXME backwards compatibility
     std::vector<double> cov;
@@ -51,7 +51,7 @@ namespace mu2e {
           XYZVectorF _XDoublePrime;
           XYZVectorF _YDoublePrime;
           XYZVectorF _ZPrime;
-          TrackAxes();
+          TrackAxes() = default;
           TrackAxes(XYZVectorF const& X, XYZVectorF const& Y, XYZVectorF const& Z) : _XDoublePrime(X),_YDoublePrime(Y),_ZPrime(Z){};
    };
 
@@ -59,21 +59,21 @@ namespace mu2e {
    struct TrackEquation{
            XYZVectorF Pos;
         XYZVectorF Dir;
-        TrackEquation();
+        TrackEquation() = default;
         TrackEquation(XYZVectorF const& P, XYZVectorF const& D) : Pos(P), Dir(D){};
    };
 
    //Struct to store Diagnostics associated with seed fit:
    struct TrackSeedDiag{
-           double FinalChiX;
-           double FinalChiY;
-           double FinalChiTot;
+           double FinalChiX = 0;
+           double FinalChiY = 0;
+           double FinalChiTot = 0;
 
-           double InitialChiX;
-           double InitialChiY;
-           double InitialChiTot;
+           double InitialChiX = 0;
+           double InitialChiY = 0;
+           double InitialChiTot = 0;
 
-          TrackSeedDiag();
+          TrackSeedDiag() = default;
 
    };
 
@@ -81,7 +81,7 @@ namespace mu2e {
 
     // Constructors
     public:
-      CosmicTrack();
+      CosmicTrack() = default;
       CosmicTrack(TrackParams params) : FitParams(params) {};
 
       //---------------Accessors:--------------//
@@ -192,14 +192,14 @@ namespace mu2e {
       double mom() const { return mom_; }
 
     private:
-      int niters;
+      int niters = 0;
       //KinematicLine parameters:
-      double d0_;
-      double z0_;
-      double t0_;
-      double cost_;
-      double  phi0_;
-      double mom_;
+      double d0_ = 0;
+      double z0_ = 0;
+      double t0_ = 0;
+      double cost_ = 0;
+      double  phi0_ = 0;
+      double mom_ = 0;
 
   };
 }
