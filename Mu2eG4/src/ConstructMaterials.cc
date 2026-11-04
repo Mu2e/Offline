@@ -1840,6 +1840,12 @@ namespace mu2e {
       poly->AddMaterial(met, 1.);
     }
 
+    // POROUS GRAPHITE WITH INCREASED DENSITY (As measured for Coll11)
+    mat = uniqueMaterialOrThrow("GRAPHITE_POROUS_CUSTOM");
+    {
+      G4Material* CPorous = new G4Material(mat.name, 1.79*CLHEP::g/CLHEP::cm3, 1);
+      CPorous->AddMaterial(findMaterialOrThrow("G4_GRAPHITE_POROUS"),1);
+    }
     // Add new materials before this line
 
   }
