@@ -1,6 +1,6 @@
 // ====================================================================
 //
-// STMDigisFromFragments: create all types of STMDigis from STMFragments
+// Stmdigisfromfragments: create all types of STMDigis from STMFragments
 //
 // ======================================================================
 
@@ -69,188 +69,162 @@ public:
 
     explicit STMDigisFromFragments (const art::EDProducer::Table<Config>& config);
     virtual void produce(Event &) override;
+    void printJobSummary() const;
+    void printDetailedJobSummary() const;
     void endJob() override;
 
 private:
-    // art input tags
+    // Art input tags
+    // --------------
     art::InputTag _stmFragmentsTag;
 
     // Fhicl parameters
+    // ----------------
     int _verbosityLevel{0};
     bool _saveSTMFragSummary{false};
-    // HPGe fhicl parameters
+    // HPGe
     bool _saveRawWaveformsWithHeaderHPGe{false};
     bool _saveRawWaveformsHPGe{false};
     bool _saveZSWaveformsHPGe{false};
-    // LaBr fhicl parameters
+    // LaBr
     bool _saveRawWaveformsWithHeaderLaBr{false};
     bool _saveRawWaveformsLaBr{false};
     bool _saveZSWaveformsLaBr{false};
 
-    // General Fragment variables
-    size_t _totalEvents{0};
-    size_t _totalNonContainers{0};
-    size_t _totalUnknownContainers{0};
-    size_t _totalFragments{0};
-    size_t _totalContainers{0};
-    size_t _totalInnerFrags{0};
-    size_t _totalUnreadInnerFrags{0};
-    size_t _totalRawFragsSeen{0};
-    size_t _totalZSFragsSeen{0};
-    size_t _totalPHFragsSeen{0};
-    size_t _totalGoodRawFrags{0};
-    size_t _totalGoodZSFrags{0};
-    size_t _totalGoodPHFrags{0};
-    size_t _totalZeroRawFrags{0};
-    size_t _totalZeroZSFrags{0};
-    size_t _totalZeroPHFrags{0};
-    size_t _totalEmptyRawFrags{0};
-    size_t _totalEmptyZSFrags{0};
-    size_t _totalEmptyPHFrags{0};
+    // General container frag / frag variables
+    // ---------------------------------------
+    size_t _totalEvents{0};                      // num of art evts
+    size_t _totalContainers{0};                  // num of containers processed
+    size_t _totalUnknownContainers{0};           // num of containers that are not hpge or labr
+    size_t _totalNonContainers{0};               // num of non containers
+    size_t _totalInnerFrags{0};                  // num of inner frags seen
+    size_t _totalUnknownInnerFrags{0};           // num of unreadable inner frags
+    size_t _totalEventsWithBothDetectors{0};     // num of art evts with both detectors
+    size_t _totalEventsWithOnlyHPGe{0};          // num of art evts only with HPGe
+    size_t _totalEventsWithOnlyLaBr{0};          // num of art evts only with LaBr
+    size_t _totalEventsWithNeitherDetector{0};   // num of art evts with neither expected container but still interprted as
 
-    // zs errors
-    size_t _totalZSLengthMismatch{0};
-    size_t _totalZSLengthMismatchHPGe{0};
-    size_t _totalZSLengthMismatchLaBr{0};
-    size_t _totalZSRegionMismatch{0};
-    size_t _totalZSRegionMismatchHPGe{0};
-    size_t _totalZSRegionMismatchLaBr{0};
+    // Counts for one fragment type for one detector
+    struct fragCounts {
+        size_t seen{0};        // frag seen and identified
+        size_t prescaled{0};   // frag was prescaled (Raw & ZS ONLY)
+        size_t empty{0};       // frag read an unexpected empty frag
+        size_t zero{0};        // frag read an unexpected zero fill frag
+        size_t good{0};        // frag had expected data
+        size_t noRegions{0};   // frag reported no ZS regions
+        size_t noHits{0};      // frag reported no PH Hits
+        size_t unread{0};      // frag was unreadable (malformed)
+    };
 
-    // Header-related variables
-    size_t _totalRawFragsPrescaled{0};
-    size_t _totalZSFragsPrescaled{0};
-    size_t _totalRawFragsFlaggedBadOnly{0};
-    size_t _totalRawFragsFlaggedMissingOnly{0};
-    size_t _totalRawFragsFlaggedBadAndMissing{0};
-    size_t _totalRawFragsWithInvalidHeaders{0};
-    size_t _totalRawFragsWithInvalidAnchors{0};
-    size_t _totalPHCountMismatch{0};
+    // General counts that can be used for HPGe/LaBr & job/event
+    struct detectorCounts {
+        // set up frag
+        fragCounts raw;
+        fragCounts zs;
+        fragCounts ph;
 
-    // Detector Summary variables
-    size_t _totalEventsWithBothDetectors{0};
-    size_t _totalEventsWithOnlyHPGe{0};
-    size_t _totalEventsWithOnlyLaBr{0};
-    size_t _totalEventsWithNeitherDetector{0}; // Should sum to total art events
+        // container & inner frag counts
+        size_t container{0};
+        size_t innerFrags{0};
 
-    // HPGe job-level variables
-    size_t _totalContainersHPGe{0};
-    size_t _totalInnerFragsHPGe{0};
-    size_t _totalRawFragsSeenHPGe{0};
-    size_t _totalZSFragsSeenHPGe{0};
-    size_t _totalPHFragsSeenHPGe{0};
-    size_t _totalGoodRawFragsHPGe{0};//Good means fragment has data
-    size_t _totalGoodZSFragsHPGe{0};
-    size_t _totalGoodPHFragsHPGe{0};
-    size_t _totalZeroRawFragsHPGe{0};// Zero means fragment has data but all values are zero
-    size_t _totalZeroZSFragsHPGe{0};
-    size_t _totalZeroPHFragsHPGe{0};
-    size_t _totalEmptyRawFragsHPGe{0};// Empty means fragment has no data
-    size_t _totalEmptyZSFragsHPGe{0};
-    size_t _totalEmptyPHFragsHPGe{0};
-    size_t _totalRawFragsFlaggedBadOnlyHPGe{0};
-    size_t _totalRawFragsFlaggedMissingOnlyHPGe{0};
-    size_t _totalRawFragsFlaggedBadAndMissingHPGe{0};
-    size_t _totalRawFragsWithInvalidHeadersHPGe{0};
-    size_t _totalRawFragsWithInvalidAnchorsHPGe{0};
-    size_t _totalZSFragsSkippedDueToRawFlagHPGe{0};// We want to skip ZS if raw is flagged bad/missing
-    size_t _totalPHFragsSkippedDueToRawFlagHPGe{0};// We want to skip PH if raw is flagged bad/missing
-    size_t _totalRawFragsPrescaledHPGe{0};// track how many raw fragments were prescaled
-    size_t _totalZSFragsPrescaledHPGe{0};// track how many zs fragments were prescaled
-    size_t _totalPHCountMismatchHPGe{0};
-
-    // LaBr job-level variables
-    size_t _totalContainersLaBr{0};
-    size_t _totalInnerFragsLaBr{0};
-    size_t _totalRawFragsSeenLaBr{0};
-    size_t _totalZSFragsSeenLaBr{0};
-    size_t _totalPHFragsSeenLaBr{0};
-    size_t _totalGoodRawFragsLaBr{0};//Good means fragment has data
-    size_t _totalGoodZSFragsLaBr{0};
-    size_t _totalGoodPHFragsLaBr{0};
-    size_t _totalZeroRawFragsLaBr{0};// Zero means fragment has data but all values are zero
-    size_t _totalZeroZSFragsLaBr{0};
-    size_t _totalZeroPHFragsLaBr{0};
-    size_t _totalEmptyRawFragsLaBr{0};// Empty means fragment has no data
-    size_t _totalEmptyZSFragsLaBr{0};
-    size_t _totalEmptyPHFragsLaBr{0};
-    size_t _totalRawFragsFlaggedBadOnlyLaBr{0};
-    size_t _totalRawFragsFlaggedMissingOnlyLaBr{0};
-    size_t _totalRawFragsFlaggedBadAndMissingLaBr{0};
-    size_t _totalRawFragsWithInvalidHeadersLaBr{0};
-    size_t _totalRawFragsWithInvalidAnchorsLaBr{0};
-    size_t _totalZSFragsSkippedDueToRawFlagLaBr{0};// We want to skip ZS if raw is flagged bad/missing
-    size_t _totalPHFragsSkippedDueToRawFlagLaBr{0};// We want to skip PH if raw is flagged bad/missing
-    size_t _totalRawFragsPrescaledLaBr{0};// track how many raw fragments were prescaled
-    size_t _totalZSFragsPrescaledLaBr{0};// track how many ZS fragments were prescaled
-    size_t _totalPHCountMismatchLaBr{0};
-    size_t _totalNoHitsPHFrags{0};
-    size_t _totalNoHitsPHFragsHPGe{0};
-    size_t _totalNoHitsPHFragsLaBr{0};
+        // Possible errors in raw frag
+        size_t invalidHeaders{0};  // raw frag too short for its header
+        size_t invalidAnchors{0};  // raw header start/end anchor check failed
+        size_t invalidVersions{0}; // version header is not legacy or version 0
+        // Possible errors in Raw Header Flags read
+        size_t badOnly{0};
+        size_t missingOnly{0};
+        size_t badAndMissing{0};
+        // Possible errors related to zs
+        size_t zsLengthMismatch{0};
+        size_t zsRegionMismatch{0};
+        size_t zsHeaderMismatch{0};
+        // Possible errors related to ph
+        size_t phCountMismatch{0};
+        // Count how many ZS and PH frags were skipped due to InvalidHeader/Raw Flag
+        size_t skippedZSRawFlags{0};
+        size_t skippedPHRawFlags{0};
+        size_t skippedZSInvalidHeader{0};
+        size_t skippedPHInvalidHeader{0};
+        size_t skippedZSInvalidVersion{0};
+        size_t skippedPHInvalidVersion{0};
+        size_t skippedZSNoRaw{0};
+        size_t skippedPHNoRaw{0};
+        // Count how many ZS,PH frags were skipped due to errors in raw
+        size_t setsSkippedRawFlags{0};
+        size_t setsSkippedInvalidHeaders{0};
+        size_t setsSkippedInvalidAnchors{0};
+        size_t setsSkippedInvalidVersion{0};
+    };
 
     // Used to save ZS information
-    struct ZSRegion{
+    struct zsRegion{
         uint32_t offset;
         std::vector<int16_t> adcs;
     };
 
-    // Used to track the expected raw header information, event based
-    struct RawHeaderState {
+    // Used to track the raw header per set of (raw -> zs -> ph)
+    struct rawHeaderState {
+        //
+        bool rawPrescaled{false};
+        bool zsPrescaled{false};
+        // Extract expected ZS and PH information
         uint16_t expectedZSLength{0};
         uint16_t expectedZSRegions{0};
         uint16_t expectedPHCount{0};
-
-        bool containsZSInfo{false};
-        bool containsPHInfo{false};
-
-        bool rawPrescaled{false};
-        bool zsPrescaled{false};
-
-        uint16_t rawPrescaleValue{0};
-        uint16_t zsPrescaleValue{0};
-
+        // Used to determine whether raw header was read
+        bool readZSInfo{false};
+        bool readPHInfo{false};
+        // Flag if raw header had an issue
         bool skipCurrentSetDueToRawFlags{false};
-        bool skipCurrentSetDueToInvalidHeader{false};
-        // save the following now for mapping
+        bool skipCurrentSetDueToInvalidRawHeader{false};
+        // Save for event header -> maybe only EWT?
         uint64_t eventWindowTag{0};
         uint8_t eventMode{0};
         uint64_t adcClock{0};
         uint64_t dtcClock{0};
+        // Keep track of version type
+        uint16_t headerVersion{0};
+        bool isLegacyHeader{false};
+        // Version dependent fields - only set for legacy header
+        uint16_t rawPrescaleValue{0};
+        uint16_t zsPrescaleValue{0};
+        // skip incompatible versions
+        bool skipCurrentSetDueToInvalidVersion{false};
     };
 
-    struct FragmentCounters {
-        size_t seen{0};
-        size_t prescaled{0};
-        size_t unread{0};
-        size_t empty{0};
-        size_t zero{0};
-        size_t good{0};
-        size_t noHits{0};
+    // Used to track extract info after being added to map - used HPGe/ LaBr for job/event
+    struct extractedInfo {
+        size_t rawWithHeader{0};
+        size_t rawWaveforms{0};
+        size_t zsWaveforms{0};
+        size_t phDigis{0};
     };
 
-    struct DetectorSpecificEventMetrics {
-        FragmentCounters raw;
-        FragmentCounters zs;
-        FragmentCounters ph;
+    //
+    template <typename MapType>
+    static size_t countDigis(const MapType& digiMap) {
+        size_t total{0};
+        for (const auto& entry : digiMap) {
+            total += entry.second.size();
+        }
+        return total;
+    }
+    static mu2e::STMEventHeader makeEventHeader(const rawHeaderState& state) {
+        return mu2e::STMEventHeader(state.eventWindowTag,
+                                    state.eventMode,
+                                    state.adcClock,
+                                    state.dtcClock);
+    }
 
-        size_t rawFragsFlaggedBadOnly{0};
-        size_t rawFragsFlaggedMissingOnly{0};
-        size_t rawFragsFlaggedBadAndMissing{0};
-        size_t rawFragsWithInvalidHeaders{0};
-        size_t rawFragsWithInvalidAnchors{0};
-        size_t zsFragsSkippedDueToRawFlag{0};
-        size_t phFragsSkippedDueToRawFlag{0};
-        size_t setsSkippedDueToRawFlag{0};
-        size_t setsSkippedDueToInvalidHeaders{0};
-        size_t zsFragsSkippedDueToInvalidRawHeader{0};
-        size_t phFragsSkippedDueToInvalidRawHeader{0};
-        size_t zsFragsSkippedDueToNoPrecedingRawHeader{0};
-        size_t phFragsSkippedDueToNoPrecedingRawHeader{0};
-        size_t phCountMismatch{0};
+    // Set up the job counters that will be used
+    detectorCounts hpgeJobCounts;
+    detectorCounts labrJobCounts;
+    extractedInfo hpgeJobProducts;
+    extractedInfo labrJobProducts;
 
-        size_t zsLengthMismatch{0};
-        size_t zsRegionMismatch{0};
-
-    };
+    // Keeps track of raw header versions
+    std::map<uint16_t, size_t> _rawHeaderVersions;
 
 }; // STMDigisFromFragments
 
@@ -269,13 +243,9 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
     ,_saveZSWaveformsLaBr(config().saveZSWaveformsLaBr())
     // PH digis are always produced
 {
-    // Products depending on configuration switches
-    if (_saveSTMFragSummary){
-        produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryHPGe");
-        produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryLaBr");
-    }
+    // create products
+    //----------------
 
-    //change products to be maps of event headers
     // HPGe
     if (_saveRawWaveformsWithHeaderHPGe){produces<mu2e::STMWaveformDigiCollectionMap>("rawWithHeaderHPGe"); }
     if (_saveRawWaveformsHPGe){produces<mu2e::STMWaveformDigiCollectionMap>("rawHPGe"); }
@@ -286,1032 +256,831 @@ STMDigisFromFragments::STMDigisFromFragments(const art::EDProducer::Table<Config
     if (_saveRawWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollectionMap>("rawLaBr"); }
     if (_saveZSWaveformsLaBr){ produces<mu2e::STMWaveformDigiCollectionMap>("zsLaBr"); }
     produces<mu2e::STMPHDigiCollectionMap>("phLaBr");
+
+    if (_saveSTMFragSummary){
+        produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryHPGe");
+        produces<mu2e::STMFragmentSummaryCollection>("stmFragSummaryLaBr");
+    }
 }
 
 // Start of Event processing
 // =========================
 void STMDigisFromFragments::produce(Event& event)
 {
-    // Extra frag counters for this event
-    size_t containerFragsThisEvent{0};
-    size_t innerFragsThisEvent{0};
-    size_t containerFragsHPGeThisEvent{0};
-    size_t containerFragsLaBrThisEvent{0};
-    size_t innerFragsHPGeThisEvent{0};
-    size_t innerFragsLaBrThisEvent{0};
-    // Quality of frags
-    size_t unknownFragsThisEvent{0};
-    size_t badHPGeFragsThisEvent{0};
-    size_t missingHPGeFragsThisEvent{0};
-    size_t badLaBrFragsThisEvent{0};
-    size_t missingLaBrFragsThisEvent{0};
+    ++_totalEvents;
 
-    // Unknown Container
+    // Event frag counters
+    // -------------------
+    size_t unknownFragsThisEvent{0};
     size_t unknownContainersThisEvent{0};
     size_t nonContainersThisEvent{0};
 
-    ++_totalEvents; // Increments total event counter
+    // Set up
+    rawHeaderState rawHeaderHPGe;
+    rawHeaderState rawHeaderLaBr;
 
-    RawHeaderState rawHeaderHPGe;
-    RawHeaderState rawHeaderLaBr;
-    DetectorSpecificEventMetrics LaBrEventMetrics;
-    DetectorSpecificEventMetrics HPGeEventMetrics;
+    // create null ptrs
+    //-----------------
+    // HPGe
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  rawWaveformDigisWithHeaderHPGe;
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  rawWaveformDigisHPGe;
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  zsWaveformDigisHPGe;
+    std::unique_ptr<mu2e::STMPHDigiCollectionMap>        phDigisHPGe;
+    std::unique_ptr<mu2e::STMFragmentSummaryCollection>  stmFragSummaryHPGe;
 
-    // Set product ID
+    // LaBr
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  rawWaveformDigisWithHeaderLaBr;
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  rawWaveformDigisLaBr;
+    std::unique_ptr<mu2e::STMWaveformDigiCollectionMap>  zsWaveformDigisLaBr;
+    std::unique_ptr<mu2e::STMPHDigiCollectionMap>        phDigisLaBr;
+    std::unique_ptr<mu2e::STMFragmentSummaryCollection>  stmFragSummaryLaBr;
+
+    // Assign ptrs to map (based on config)
+    //------------------------------------
+    // HPGe
+    if (_saveRawWaveformsWithHeaderHPGe) {rawWaveformDigisWithHeaderHPGe = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    if (_saveRawWaveformsHPGe) {rawWaveformDigisHPGe = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    if (_saveZSWaveformsHPGe)  {zsWaveformDigisHPGe = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    phDigisHPGe = std::make_unique<mu2e::STMPHDigiCollectionMap>();
+
+    // LaBr
+    if (_saveRawWaveformsWithHeaderLaBr) {rawWaveformDigisWithHeaderLaBr = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    if (_saveRawWaveformsLaBr) {rawWaveformDigisLaBr = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    if (_saveZSWaveformsLaBr)  {zsWaveformDigisLaBr = std::make_unique<mu2e::STMWaveformDigiCollectionMap>();}
+    phDigisLaBr = std::make_unique<mu2e::STMPHDigiCollectionMap>();
 
     // Frag Summaries
-    std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryHPGe(new mu2e::STMFragmentSummaryCollection);
-    std::unique_ptr<mu2e::STMFragmentSummaryCollection> stmFragSummaryLaBr(new mu2e::STMFragmentSummaryCollection);
+    if (_saveSTMFragSummary) {
+        stmFragSummaryHPGe = std::make_unique<mu2e::STMFragmentSummaryCollection>();
+        stmFragSummaryLaBr = std::make_unique<mu2e::STMFragmentSummaryCollection>();
+    }
 
-    // map start - keep explicit for now
-    // HPGe
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisWithHeaderHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> zsWaveformDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>> phDigisHPGe(new std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>);
-    // LaBr
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisWithHeaderLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> rawWaveformDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>> zsWaveformDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMWaveformDigiCollection>);
-    std::unique_ptr<std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>> phDigisLaBr(new std::map<mu2e::STMEventHeader, mu2e::STMPHDigiCollection>);
-
-    // booleans for tracking what detectors are present in the event
+    // track what detectors are present per event
+    // ------------------------------------------
     bool eventHasHPGe{false};
     bool eventHasLaBr{false};
 
+    // Initialize event counter
+    // ------------------------
+    detectorCounts hpgeEventCounts;
+    detectorCounts labrEventCounts;
+
     // Get STM Fragments from the event, via handle
+    // ----------------------------------------------
     art::Handle<artdaq::Fragments> STMFragmentsHandle;
     event.getByLabel(_stmFragmentsTag, STMFragmentsHandle);
     const auto& STMFragments = STMFragmentsHandle.product();
-    uint16_t outerFragID{0};
 
     // Loop over outer fragments
+    // -------------------------
     for (const auto& frag : *STMFragments) {
-        ++_totalFragments;
-        outerFragID = frag.fragmentID();
-        if (_verbosityLevel > 0) {
+        const auto outerFragID = frag.fragmentID();
+        if (_verbosityLevel >= 5) {
             mf::LogDebug("STMDigisFromFragments")
-            << "Processing outer fragment with ID : " << outerFragID << "\n";
+            << "Processing outer fragment with ID : "
+            << " | Event : " << _totalEvents
+            << " | Outer Frag ID : " << outerFragID;
         }
 
-        // Check if this is a container fragment
-        if (frag.type() == artdaq::Fragment::ContainerFragmentType) {
-
-            mu2e::STMFragment container_frag(frag);
-            artdaq::ContainerFragment cont_frag(frag);
-            size_t blocks = cont_frag.block_count();
-
-            if (container_frag.isHPGeContainer()) {
-                if (_verbosityLevel > 2) {
-                    mf::LogDebug("STMDigisFromFragments")
-                    << "Processing HPGe container fragment with ID : " << outerFragID << "\n";
-                }
-                ++_totalContainersHPGe; eventHasHPGe = true; _totalInnerFragsHPGe += blocks;
-                innerFragsHPGeThisEvent += blocks;
-                ++containerFragsHPGeThisEvent;
-            } else if (container_frag.isLaBrContainer()) {
-                if (_verbosityLevel > 2) {
-                    mf::LogDebug("STMDigisFromFragments")
-                    << "Processing LaBr container fragment with ID : " << outerFragID << "\n";
-                }
-                ++_totalContainersLaBr; eventHasLaBr = true; _totalInnerFragsLaBr += blocks;
-                innerFragsLaBrThisEvent += blocks;
-                ++containerFragsLaBrThisEvent;
-            } else {
-                mf::LogWarning("STMDigisFromFragments")
-                << "Encountered an unknown STM Container Fragment \n"
-                << "Frag ID : "  << outerFragID << "\n"
-                << "Event   : " << _totalEvents << "\n";
-
-                ++_totalUnknownContainers;
-                ++unknownContainersThisEvent;
-                continue; // Skips the rest of this container frag if it is unknown
-            }
-            ++containerFragsThisEvent;
-            ++_totalContainers;
-            _totalInnerFrags += blocks;
-            innerFragsThisEvent += blocks;
-
-            // loop over container blocks
-            for (size_t i = 0 ; i < cont_frag.block_count(); ++i) {
-                auto inner_frag = cont_frag.at(i);
-                mu2e::STMFragment stm_frag(*inner_frag);
-                mu2e::STMWaveformDigi stm_waveform;
-
-                if (stm_frag.isRaw()){
-                    ++_totalRawFragsSeen;
-                    // Determine which detector this raw fragment is in
-                    bool const isHPGe = stm_frag.isHPGe();
-                    bool const isLaBr = stm_frag.isLaBr();
-
-                    if (!isHPGe && !isLaBr) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Encountered raw fragment that is neither HPGe nor LaBr\n";
-
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-
-                    isHPGe ? ++_totalRawFragsSeenHPGe : ++_totalRawFragsSeenLaBr;
-
-                    auto& headerState = isHPGe ? rawHeaderHPGe : rawHeaderLaBr;
-                    auto& eventMetrics  = isHPGe ? HPGeEventMetrics : LaBrEventMetrics;
-
-                    // reset current raw header state
-                    headerState = RawHeaderState{};
-                    ++eventMetrics.raw.seen;
-                    // reset eventHeader related variables
-                    headerState.eventWindowTag = 0;
-                    headerState.eventMode = 0;
-                    headerState.adcClock = 0;
-                    headerState.dtcClock = 0;
-
-                    // check header+adcs is not less than expected header length (22)
-                    if(stm_frag.dataWords() < stm::RawHeader::WORDS){
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Raw fragment has fewer data words than expected header length\n";
-
-                        ++_totalRawFragsWithInvalidHeaders;
-                        ++_totalUnreadInnerFrags;
-                        ++eventMetrics.rawFragsWithInvalidHeaders;
-                        isHPGe ? ++_totalRawFragsWithInvalidHeadersHPGe : ++_totalRawFragsWithInvalidHeadersLaBr;
-                        ++eventMetrics.setsSkippedDueToInvalidHeaders;
-                        headerState.skipCurrentSetDueToInvalidHeader = true;
-                        continue;
-                    }
-
-                    // Confirm Raw Header has Valid Anchors
-                    // For now just use as a diagnostic tool
-                    if (!stm_frag.hasValidAnchors()) {
-                        if (_verbosityLevel > 1) {
-                            std::ostringstream msg;
-                            auto const* temp_dataPtr = stm_frag.dataBegin();
-                            msg << std::hex // switch to hexadecimal
-                            << "\nStart of raw header : 0x" << static_cast<uint16_t>(temp_dataPtr[stm::RawHeader::ANCHOR_START])
-                            << "\nEnd of raw header   : 0x" << static_cast<uint16_t>(temp_dataPtr[stm::RawHeader::ANCHOR_END])
-                            << std::dec << "\n"; // switch to decimal
-
-                            mf::LogDebug("STMDigisFromFragments")
-                            << msg.str();
-                        }
-
-                        ++eventMetrics.rawFragsWithInvalidAnchors;
-                        ++_totalRawFragsWithInvalidAnchors;
-                        isHPGe ? ++_totalRawFragsWithInvalidAnchorsHPGe : ++_totalRawFragsWithInvalidAnchorsLaBr;
-                    }
-
-                    // Check if bad or missing or both
-                    if (stm_frag.badData() && stm_frag.missing()) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Raw Fragment flagged as bad and missing\n";
-
-                        ++eventMetrics.rawFragsFlaggedBadAndMissing;
-                        ++_totalRawFragsFlaggedBadAndMissing;
-                        isHPGe ? ++_totalRawFragsFlaggedBadAndMissingHPGe : ++_totalRawFragsFlaggedBadAndMissingLaBr;
-                    } else if (stm_frag.badData()) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Raw Fragment flagged as bad\n";
-
-                        ++eventMetrics.rawFragsFlaggedBadOnly;
-                        ++_totalRawFragsFlaggedBadOnly;
-                        isHPGe ? ++_totalRawFragsFlaggedBadOnlyHPGe : ++_totalRawFragsFlaggedBadOnlyLaBr;
-                    } else if (stm_frag.missing()) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Raw Fragment flagged as missing\n";
-
-                        ++eventMetrics.rawFragsFlaggedMissingOnly;
-                        ++_totalRawFragsFlaggedMissingOnly;
-                        isHPGe ? ++_totalRawFragsFlaggedMissingOnlyHPGe : ++_totalRawFragsFlaggedMissingOnlyLaBr;
-                    }
-
-                    bool const badOrMissing = stm_frag.badData() || stm_frag.missing();
-                    if (badOrMissing) {
-                        headerState.skipCurrentSetDueToRawFlags = true;
-                        ++eventMetrics.setsSkippedDueToRawFlag;
-                        continue;
-                    }
-
-                    // Check if raw fragment is prescaled to determine whether to skip checks
-                    // If the fragment is prescaled we do not save the waveform
-                    // If the fragment is prescaled we also do not want to check its payload
-                    // We do want relevant infrormation for the zs and ph
-                    headerState.rawPrescaled = stm_frag.rawPrescaled();
-                    headerState.rawPrescaleValue = stm_frag.rawPrescaleValue();
-
-                    // Extract rest of the raw header information
-                    // Even if raw is prescaled we still want to save zs info just in case
-                    // before checking whats in the payload
-                    headerState.containsZSInfo = true;
-                    headerState.containsPHInfo = true;
-                    headerState.zsPrescaled = stm_frag.zsPrescaled();
-                    headerState.zsPrescaleValue = stm_frag.zsPrescaleValue();
-                    headerState.expectedZSLength = stm_frag.zsLength();
-                    headerState.expectedZSRegions = stm_frag.zsRegions();
-                    headerState.expectedPHCount = stm_frag.phCount();
-
-                    // extract EWT, mode/spillFlags, adcClock, dtcClock
-                    headerState.eventWindowTag = stm_frag.eventWindowTag();
-                    headerState.eventMode = stm_frag.spillFlag();
-                    headerState.adcClock = stm_frag.adcClock();
-                    headerState.dtcClock = stm_frag.dtcClock();
-
-                    // create stmEventHeader
-                    mu2e::STMEventHeader stm_event_header(
-                        headerState.eventWindowTag,
-                        headerState.eventMode,
-                        headerState.adcClock,
-                        headerState.dtcClock);
-
-                    if (headerState.rawPrescaled) {
-                        if(_verbosityLevel > 2) {
-                            mf::LogDebug("STMDigisFromFragments")
-                            << "Raw Fragment is prescaled";
-                        }
-
-                        ++eventMetrics.raw.prescaled;
-                        ++_totalRawFragsPrescaled;
-                        isHPGe ? ++_totalRawFragsPrescaledHPGe : ++_totalRawFragsPrescaledLaBr;
-
-                        continue;
-                    }
-
-                    auto payloadPtr = stm_frag.payloadBegin();
-                    auto payloadWords = stm_frag.payloadWords();
-
-                    // 22 Header Words + adcs < = dataWords
-                    // This check comes after ensuring raw is not prescaled
-                    if (stm::RawHeader::WORDS + payloadWords > stm_frag.dataWords()) {
-                        // this is an invalid-header case
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Raw Fragment is reading more than what fragment stores";
-
-                        ++_totalRawFragsWithInvalidHeaders;
-                        isHPGe ? ++_totalRawFragsWithInvalidHeadersHPGe : ++_totalRawFragsWithInvalidHeadersLaBr;
-                        ++eventMetrics.rawFragsWithInvalidHeaders;
-                        ++eventMetrics.setsSkippedDueToInvalidHeaders;
-                        ++_totalUnreadInnerFrags;
-                        headerState.skipCurrentSetDueToInvalidHeader = true;
-                        continue;
-                    }
-
-                    // Ideally by here we know the raw frag is good and its payload can be checked
-                    // Check if raw frag is empty
-                    bool allZeros = true;
-                    if (payloadWords == 0) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound an empty raw fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--Raw Frag\n";
-
-                        //increment
-                        ++eventMetrics.raw.empty;
-                        ++_totalEmptyRawFrags;
-                        isHPGe ? ++_totalEmptyRawFragsHPGe : ++_totalEmptyRawFragsLaBr;
-                        continue;
-                    }
-                    // Check if any payload words exist
-                    for (size_t k = 0; k < payloadWords; ++k){
-                        if (payloadPtr[k] != 0) {
-                            allZeros = false;
-                            break;
-                        }
-                    }
-                    if (allZeros) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound an all-zero raw fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--Raw Frag\n";
-                        //counter increment for all-zero raw fragments
-                        ++eventMetrics.raw.zero;
-                        ++_totalZeroRawFrags;
-                        isHPGe? ++_totalZeroRawFragsHPGe: ++_totalZeroRawFragsLaBr;
-                        continue;
-                    }
-                    // At this point the raw fragment has payload words and is non zero filled
-                    // We continue processing this raw fragment
-                    if (_verbosityLevel > 2) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "\nFound a good raw fragment at Event : " << _totalEvents << "\n"
-                        << "Fragment Index : " << i << "\n"
-                        << "--Raw Frag\n";
-                    }
-
-                    // Print first few payload words for inspection
-                    if (_verbosityLevel > 3) {
-                        std::ostringstream msg;
-                        msg << "First few payload words(adcs) for inspection : " ;
-                        for (size_t w = 0; w < std::min(payloadWords, static_cast<size_t>(10)); ++w){
-                            msg << payloadPtr[w] << " ";
-                        }
-                        mf::LogDebug("STMDigisFromFragments")
-                        << msg.str();
-                    }
-                    // Raw Header inspection
-                    if (_verbosityLevel > 4) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "\nRaw Header for inspection \n"
-                        << "Raw Length       : " << stm_frag.rawLength() << "\n"
-                        << "ZS  Length       : " << stm_frag.zsLength() << "\n"
-                        << "ZS  Regions      : " << stm_frag.zsRegions() << "\n"
-                        << "Event            : " << _totalEvents << "\n"
-                        << "Inner Frag Index : " << i << "\n";
-                    }
-                    // From here good raw frags end up and get saved
-                    ++eventMetrics.raw.good;
-                    ++_totalGoodRawFrags;
-                    isHPGe ? ++_totalGoodRawFragsHPGe : ++_totalGoodRawFragsLaBr;
-
-
-                    // Save waveforms based on fcl configurations
-                    // Save Raw Waveform With Header Info - HPGe
-                    if (_saveRawWaveformsWithHeaderHPGe && isHPGe){
-                        auto dataPtr = stm_frag.dataBegin();
-                        auto dataWords = stm_frag.dataWords();
-                        // set stm_waveform
-                        stm_waveform.set_data(dataWords,dataPtr);
-                        // use map
-                        (*rawWaveformDigisWithHeaderHPGe)[stm_event_header].push_back(stm_waveform);
-                    }
-                    // Save Raw Waveform Map - HPGe
-                    if (_saveRawWaveformsHPGe && isHPGe){
-                        // set stm_waveform
-                        stm_waveform.set_data(payloadWords, payloadPtr);
-
-                        // Give map a key and value, key is stmHeader,
-                        // *rawwaveformDigisHPGe is the map
-                        // stm_event_header is the collection stored under this header
-                        // .push_back(stm_waveform) adds waveform to the collection
-                        (*rawWaveformDigisHPGe)[stm_event_header].push_back(stm_waveform);
-                    }
-                    // Save Raw Waveform With Header Info - LaBr
-                    if (_saveRawWaveformsWithHeaderLaBr && isLaBr){
-                        auto dataPtr = stm_frag.dataBegin();
-                        auto dataWords = stm_frag.dataWords();
-                        // set stm_waveform
-                        stm_waveform.set_data(dataWords,dataPtr);
-                        // set map here
-                        (*rawWaveformDigisWithHeaderLaBr)[stm_event_header].push_back(stm_waveform);
-                    }
-                    // Save Raw Waveform Map - LaBr
-                    if (_saveRawWaveformsLaBr && isLaBr){
-                        // set stm_waveform
-                        stm_waveform.set_data(payloadWords, payloadPtr);
-                        // set map here
-                        (*rawWaveformDigisLaBr)[stm_event_header].push_back(stm_waveform);
-                    }
-
-                    if (_verbosityLevel > 2) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "Raw with frag index" << i
-                        << ", detector = " << (isHPGe? "HPGe": "LaBr") << std::boolalpha
-                        << ", prescaled = " << headerState.rawPrescaled
-                        << "\n";
-                    }
-                }// End of Raw fragment check
-                else if (stm_frag.isZS()){
-                    ++_totalZSFragsSeen;
-                    // Determine which detector this ZS fragment belongs to
-                    bool const isHPGe = stm_frag.isHPGe();
-                    bool const isLaBr = stm_frag.isLaBr();
-
-                    // Double check that the fragment belongs to one of the expected detectors
-                    if (!isHPGe && !isLaBr) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Encountered a ZS fragment that is neither HPGe nor LaBr";
-
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-
-                    auto& headerState = isHPGe ? rawHeaderHPGe : rawHeaderLaBr;
-                    auto& eventMetrics  = isHPGe ? HPGeEventMetrics : LaBrEventMetrics;
-
-                    isHPGe ? ++_totalZSFragsSeenHPGe : ++_totalZSFragsSeenLaBr;
-                    ++eventMetrics.zs.seen;
-
-                    // Check
-                    if (_verbosityLevel > 2) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "ZS frag index = " << i
-                        << ", detector = " << (isHPGe ? "HPGe" : "LaBr") << std::boolalpha
-                        << "\n";
-                    }
-
-                    // Decide Here to skip based on previous raw fragment information
-                    if (headerState.skipCurrentSetDueToInvalidHeader) {
-                        ++eventMetrics.zsFragsSkippedDueToInvalidRawHeader;
-                        continue;
-                    }
-
-                    if (headerState.skipCurrentSetDueToRawFlags) {
-                        isHPGe ? ++_totalZSFragsSkippedDueToRawFlagHPGe : ++_totalZSFragsSkippedDueToRawFlagLaBr;
-                        ++eventMetrics.zsFragsSkippedDueToRawFlag;
-                        continue;
-                    }
-
-                    // Check that there was a raw header before this ZS fragment
-                    if (!headerState.containsZSInfo) {
-                        ++eventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader;
-                        continue;
-                    }
-
-                    // Extract zs variables from Raw Header
-                    bool zsInfoWasExtracted = headerState.containsZSInfo;
-                    bool zsPrescaled = headerState.zsPrescaled;
-                    bool rawPrescaled = headerState.rawPrescaled;
-                    uint16_t zsRegions = headerState.expectedZSRegions;
-                    uint16_t zsLength = headerState.expectedZSLength;
-                    uint16_t rawPrescaleValue = headerState.rawPrescaleValue;
-                    uint16_t zsPrescaleValue = headerState.zsPrescaleValue;
-
-                    // Extract for eventHeader (EWT, mode/spillFlag, adcClock, dtcClock)
-                    uint64_t zsEWT = headerState.eventWindowTag;
-                    uint8_t zsMode = headerState.eventMode;
-                    uint64_t zsAdcClock = headerState.adcClock;
-                    uint64_t zsdtcClock = headerState.dtcClock;
-
-                    // create stmEventHeader
-                    mu2e::STMEventHeader stm_event_header(
-                        zsEWT,
-                        zsMode,
-                        zsAdcClock,
-                        zsdtcClock);
-
-                    // Decide Here to skip based on zs prescale information
-                    if (zsPrescaled) {
-                        if(_verbosityLevel > 2) {
-                            mf::LogDebug("STMDigisFromFragments")
-                            << "ZS Fragment is prescaled\n";
-                        }
-
-                        isHPGe ? ++_totalZSFragsPrescaledHPGe : ++_totalZSFragsPrescaledLaBr;
-                        ++_totalZSFragsPrescaled;
-                        ++eventMetrics.zs.prescaled;
-                        continue;
-                    }
-
-                    auto payloadPtr = stm_frag.payloadBegin();
-                    auto payloadWords = stm_frag.payloadWords();
-
-                    // Check if Empty
-                    if (payloadWords == 0) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound an empty zs fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--ZS Frag\n";
-
-                        ++_totalEmptyZSFrags;
-                        isHPGe ? ++_totalEmptyZSFragsHPGe : ++_totalEmptyZSFragsLaBr;
-                        ++eventMetrics.zs.empty;
-                        continue;
-                    }
-
-                    // At this point the zs fragmant is non-empty
-                    // May contain valid data
-
-                    // Print first 20 payload adcs for inspection
-                    if (_verbosityLevel > 3) {
-                        std::ostringstream msg;
-                        msg << "\nFirst few payload words for inspection : ";
-                        for (size_t w = 0; w < std::min(payloadWords, static_cast<size_t>(10)); ++w) {
-                            msg << payloadPtr[w] << " ";
-                        }
-                        mf::LogDebug("STMDigisFromFragments")
-                        << msg.str();
-                    }
-
-                    // Definitions for payload references
-                    auto const* dataPtr = stm_frag.dataBegin();
-                    auto const dataWords = stm_frag.dataWords();
-                    auto dataEndPtr = dataPtr + dataWords;
-                    size_t regionCounter {0};
-                    size_t zsTotalLengthCalculated {0};
-                    uint16_t lastZSIndexRecorded {0};
-                    uint16_t lastZSLengthRecorded {0};
-                    bool malformedZS {false};
-                    std::vector<ZSRegion> regions;
-
-                    // Check if data is zero filled using parsing for ZS
-                    bool sawADC{false};
-                    bool allADCSZero{true};
-                    // May need to be adjusted, we would only read the first pulse
-
-                    if (_verbosityLevel > 5) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "\nData Words for inspection : " << "\n"
-                        << "Data Words % 4 : " << dataWords % 4 << "\n"
-                        << "--ZS Frag\n";
-                    }
-
-                    while (dataPtr + 2 <= dataEndPtr){
-                      if (zsInfoWasExtracted && regionCounter >= zsRegions) {
-                        break;
-                      }
-                        uint16_t currentZSIndex = static_cast<uint16_t>(dataPtr[0]);
-                        uint16_t currentZSLength = static_cast<uint16_t>(dataPtr[1]);
-                        auto adc = dataPtr + 2;
-
-                        if (currentZSLength > static_cast<size_t>(dataEndPtr - adc)) {
-                            malformedZS = true;
-                            break;
-                        }
-
-                        // Check if any is zero filled payload for this region
-                        for (size_t sample = 0; sample < currentZSLength; ++sample){
-                            sawADC = true;
-                            if (adc[sample] !=0) {
-                                allADCSZero = false;
-                            }
-                        }
-                        // Record the region
-                        bool const saveZS = isHPGe ? _saveZSWaveformsHPGe : _saveZSWaveformsLaBr;
-                        if (saveZS){
-                            regions.push_back({currentZSIndex, std::vector<int16_t>(adc, adc + currentZSLength)});
-                        }
-
-                        uint32_t trigTimeOffset = currentZSIndex;
-
-                        // Print Check per segment
-                        if (_verbosityLevel > 5) {
-                            mf::LogDebug("STMDigisFromFragments")
-                            << "\nZS Segment Check :" << "\n"
-                            << " , ZS Index  = " << currentZSIndex
-                            << " , ZS Length = " << currentZSLength
-                            << " , ZS Offset = " << trigTimeOffset << "\n";
-                        }
-                        // Update Variables
-                        lastZSIndexRecorded = currentZSIndex;
-                        lastZSLengthRecorded = currentZSLength;
-                        zsTotalLengthCalculated += lastZSLengthRecorded;
-                        ++regionCounter;
-                        dataPtr = adc + currentZSLength;
-                    } // End of While loop
-
-                    if (_verbosityLevel > 4){
-                        //Summary
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "ZS Summary : "
-                        << " , last ZS Index = " << lastZSIndexRecorded
-                        << " , last ZS Length = " << lastZSLengthRecorded
-                        << " , ZS Total Length = " << zsTotalLengthCalculated
-                        << " , Region Counter = " << regionCounter << "\n"
-                        << ", Frag Index = " << i << "\n";
-                    }
-
-                    // In case ZS has some weird behavior
-                    if (malformedZS) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nMalformed ZS detected at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n";
-
-                        ++eventMetrics.zs.unread;
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-
-                    // Add exceptions
-                    if (zsInfoWasExtracted) {
-                        if (zsLength != zsTotalLengthCalculated) {
-                            mf::LogWarning("STMDigisFromFragments")
-                            << "\n=== ZS LENGTH MISMATCH ===\n"
-                            << "ZS Length Count from Raw Header : " << zsLength << "\n"
-                            << "ZS Length Calculated : " << zsTotalLengthCalculated << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
-
-                            ++_totalZSLengthMismatch;
-                            isHPGe? ++_totalZSLengthMismatchHPGe: ++_totalZSLengthMismatchLaBr;
-                            ++eventMetrics.zsLengthMismatch;
-                            continue;
-                        }
-                        if ( zsRegions != regionCounter) {
-                            mf::LogWarning("STMDigisFromFragments")
-                            << "\n=== ZS REGION COUNT MISMATCH ===\n"
-                            << "ZS Region Count from Raw Header : " << zsRegions << "\n"
-                            << "ZS Region Count Calculated : " << regionCounter << "\n"
-                            // General Information about where error was found
-                            << "Found at Event : " << _totalEvents << "\n"
-                            << "Found at Frag Index : " << i << "\n"
-                            << "Raw Prescaled : " << (rawPrescaled ? "Yes" : "No") << "\n"
-                            << "Raw Prescale Value : " << rawPrescaleValue << "\n"
-                            << "ZS Prescaled : " << (zsPrescaled ? "Yes" : "No") << "\n"
-                            << "ZS Prescale Value : " << zsPrescaleValue << "\n"
-                            << "Found at HPGe Container Frag : " << (isHPGe ? "Yes" : "No") << "\n"
-                            << "Found at LaBr Container Frag : " << (isLaBr ? "Yes" : "No") << "\n";
-
-                            ++_totalZSRegionMismatch;
-                            isHPGe? ++_totalZSRegionMismatchHPGe: ++_totalZSRegionMismatchLaBr;
-                            ++eventMetrics.zsRegionMismatch;
-                            continue;
-                        }
-                    }
-
-                    if (sawADC && allADCSZero) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound a zero-filled zs fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--ZS Frag\n";
-
-                        ++eventMetrics.zs.zero;
-                        ++_totalZeroZSFrags;
-                        isHPGe ? ++_totalZeroZSFragsHPGe : ++_totalZeroZSFragsLaBr;
-                        continue;
-                    }
-
-                    // At this point we know the fragment was good
-                    if (_verbosityLevel > 2) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        <<"\nFound a good ZS fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--ZS Frag\n";
-                    }
-                    for (auto& region : regions) {
-                        // set waveform digi with offset and adcs
-                        mu2e::STMWaveformDigi zsDigi(region.offset, region.adcs);
-
-                        // Emplacing
-                        if (isHPGe && _saveZSWaveformsHPGe) {
-                          // set map for HPGe
-                            (*zsWaveformDigisHPGe)[stm_event_header].push_back(zsDigi);
-                        } else if (isLaBr && _saveZSWaveformsLaBr) {
-                            // set map for LaBr
-                           (*zsWaveformDigisLaBr)[stm_event_header].push_back(zsDigi);
-                        }
-                    }
-
-                    // Increment remaining counters
-                    ++_totalGoodZSFrags;
-                    isHPGe ? ++_totalGoodZSFragsHPGe : ++_totalGoodZSFragsLaBr;
-                    ++eventMetrics.zs.good;
-
-                }// End of ZS fragmment check
-                else if (stm_frag.isPH()){
-                    ++_totalPHFragsSeen;
-                    // Determine which detector this PH fragment belongs to
-                    bool const isHPGe = stm_frag.isHPGe();
-                    bool const isLaBr = stm_frag.isLaBr();
-
-                    if (!isHPGe && !isLaBr) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "Encountered PH fragment that is neither HPGe nor LaBr";
-
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-                    auto& headerState = isHPGe ? rawHeaderHPGe : rawHeaderLaBr;
-                    auto& eventMetrics  = isHPGe ? HPGeEventMetrics : LaBrEventMetrics;
-
-                    isHPGe ? ++_totalPHFragsSeenHPGe : ++_totalPHFragsSeenLaBr;
-                    ++eventMetrics.ph.seen;
-
-                    // Skip if header was malformed
-                    if (headerState.skipCurrentSetDueToInvalidHeader) {
-                        ++eventMetrics.phFragsSkippedDueToInvalidRawHeader;
-                        continue;
-                    }
-
-                    // Skip if Raw Fragment was Bad or Missing
-                    if (headerState.skipCurrentSetDueToRawFlags) {
-                        ++eventMetrics.phFragsSkippedDueToRawFlag;
-                        isHPGe ? ++_totalPHFragsSkippedDueToRawFlagHPGe : ++_totalPHFragsSkippedDueToRawFlagLaBr;
-                        continue;
-                    }
-
-                    // Check if a raw header was extracted before this PH fragment
-                    if (!headerState.containsPHInfo) {
-                        ++eventMetrics.phFragsSkippedDueToNoPrecedingRawHeader;
-                        continue;
-                    }
-
-                    // Extract ph varibales from Raw Header
-                    uint16_t phCount = headerState.expectedPHCount;
-
-                    // Extract for eventHeader (EWT, mode/spillFlag, adcClock, dtcClock)
-                    uint64_t phEWT = headerState.eventWindowTag;
-                    uint8_t phMode = headerState.eventMode;
-                    uint64_t phAdcClock = headerState.adcClock;
-                    uint64_t phdtcClock = headerState.dtcClock;
-
-                    // Construct stmEventHeader for PH fragment
-                    mu2e::STMEventHeader stm_event_header(
-                        phEWT,
-                        phMode,
-                        phAdcClock,
-                        phdtcClock);
-
-                    // Check if PH fragment is empty
-                    auto payloadPtr = stm_frag.payloadBegin();
-                    auto payloadWords = stm_frag.payloadWords();
-                    bool allPHAreZeros= true;
-
-                    if (phCount == 0) {
-                        // no hits reported by raw header
-                        if (_verbosityLevel > 2) {
-                            mf::LogDebug("STMDigisFromFragments")
-                            << "\nNo hits reported for this fragment at Event : " << _totalEvents << "\n"
-                            << "Frag Index : " << i << "\n"
-                            << "--PH Frag\n";
-                        }
-                        ++eventMetrics.ph.noHits;
-                        ++_totalNoHitsPHFrags;
-                        isHPGe ? ++_totalNoHitsPHFragsHPGe : ++_totalNoHitsPHFragsLaBr;
-                        continue;
-                    }
-
-                    if (payloadWords == 0) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound an empty PH fragment at Event : " <<  _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "--PH Frag\n";
-                        // increment
-                        // fragment has no payload
-                        ++eventMetrics.ph.empty;
-                        ++_totalEmptyPHFrags;
-                        isHPGe ? ++_totalEmptyPHFragsHPGe : ++_totalEmptyPHFragsLaBr;
-                        continue;
-                    }
-
-                    // Check if we under count ph Pairs in fragment comapred to raw header count
-                    size_t expectedWords = 2 * static_cast<size_t>(phCount);
-                    if (payloadWords < expectedWords) {
-                        // Note payloadWords can include data padding
-                        // Ideally it would not be less than ph pair count
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nPH Payload is shorter than Raw Header Expects\n"
-                        << "Expected Words : " << expectedWords << "\n"
-                        << "Payload Words  : " << payloadWords << "\n";
-
-                        // report
-                        ++_totalPHCountMismatch;
-                        isHPGe ? ++_totalPHCountMismatchHPGe : ++_totalPHCountMismatchLaBr;
-                        ++eventMetrics.phCountMismatch;
-                        ++eventMetrics.ph.unread;
-                        ++_totalUnreadInnerFrags;
-                        continue;
-                    }
-
-                    // phCount becomes our upper bound
-                    size_t nPairsToRead = phCount;
-
-                    // Check if zero filled
-                    // At this stage we expect PHCount to be a valid estimate in frag
-                    // But if all ph's second entry return 0 then this is zero filled
-                    // Since its a (time,PH) pair we will check every second entry for the PH value
-                    for (size_t k = 0; k < nPairsToRead; ++k) {
-                        if (payloadPtr[k*2+1] !=0) {
-                            allPHAreZeros = false;
-                            break;
-                        }
-                    }
-
-                    if (allPHAreZeros) {
-                        mf::LogWarning("STMDigisFromFragments")
-                        << "\nFound a zero-filled PH Fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "---PH Frag\n";
-
-                        // counter
-                        ++eventMetrics.ph.zero;
-                        ++_totalZeroPHFrags;
-                        isHPGe ? ++_totalZeroPHFragsHPGe : ++_totalZeroPHFragsLaBr;
-                        continue;
-                    }
-
-                    if (_verbosityLevel > 4) {
-                        std::ostringstream msg;
-                        msg << "\nFirst few payload words: ";
-
-                        for (size_t k = 0; k < std::min<size_t>(payloadWords,10); ++k) {
-                            msg << payloadPtr[k] << " ";
-                        }
-
-                        mf::LogDebug("STMDigisFromFragments")
-                        << msg.str();
-                    }
-
-                    for (size_t i_phPair = 0; i_phPair < nPairsToRead ; ++i_phPair){
-                        size_t i_PH = 2 * i_phPair;
-                        uint32_t time = static_cast<uint16_t>(payloadPtr[i_PH]);
-                        int16_t const pulseHeight = payloadPtr[i_PH + 1];
-                        mu2e::STMPHDigi PH_digi(time,pulseHeight);
-
-                        // Emplace Back (Always On)
-                        if (isHPGe) {
-                          (*phDigisHPGe)[stm_event_header].emplace_back(PH_digi);
-                        }
-                        if (isLaBr) {
-                          (*phDigisLaBr)[stm_event_header].emplace_back(PH_digi);
-                        }
-                    }
-
-                    // At this point we have a good PH fragment
-                    if (_verbosityLevel > 2) {
-                        mf::LogDebug("STMDigisFromFragments")
-                        << "\nFound a good PH Fragment at Event : " << _totalEvents << "\n"
-                        << "Frag Index : " << i << "\n"
-                        << "---PH Frag\n";
-                    }
-
-                    // Last counter increment
-                    ++_totalGoodPHFrags;
-                    isHPGe ? ++_totalGoodPHFragsHPGe : ++_totalGoodPHFragsLaBr;
-                    ++eventMetrics.ph.good;
-
-                }// End of PH fragment check
-                else {
-                    // fallback for unreadable fragment
-                    ++_totalUnreadInnerFrags; //Job Summary Counter
-                    ++unknownFragsThisEvent;
-
-                    mf::LogWarning("STMDigisFromFragments")
-                    << "Encountered an unreadable inner fragment " << "\n"
-                    << "Frag Index  : " << i << "\n"
-                    << "Frag ID     : " << inner_frag->fragmentID() << "\n"
-                    << "Event       : " << _totalEvents << "\n";
-
-                }// End of else non-raw/zs/pg frag
-            }
-        } else {
-            // fallback for non-container fragment
+        // Check if this is a valid container fragment
+        // -------------------------------------------
+        if (frag.type() != artdaq::Fragment::ContainerFragmentType) {
             mf::LogWarning("STMDigisFromFragments")
-            << "\nEncountered a non-container fragment " << "\n"
-            << "Fragment ID : " << frag.fragmentID() << "\n"
-            << "Event       : " << _totalEvents << "\n";
-
+            << "Non-container STM Fragment "
+            << " | Event : " << _totalEvents
+            << " | Outer Frag ID : " << outerFragID;
             ++_totalNonContainers;
             ++nonContainersThisEvent;
             continue;
         }
-    } // End of frags loop
+
+        const mu2e::STMFragment containerFrag(frag);
+        artdaq::ContainerFragment container(frag);
+        const auto blocks = container.block_count();
+
+        // Check whether this is an expected container Frag
+        // ------------------------------------------------
+        if (containerFrag.isHPGeContainer()) {
+            if (_verbosityLevel >= 6) {
+                    mf::LogDebug("STMDigisFromFragments")
+                    << "Processing HPGe Container Frag"
+                    << " | Event : " << _totalEvents
+                    << " | Container Frag ID : " << outerFragID;
+                }
+                ++hpgeJobCounts.container;
+                ++hpgeEventCounts.container;
+                hpgeJobCounts.innerFrags += blocks;
+                hpgeEventCounts.innerFrags += blocks;
+                eventHasHPGe = true;
+        } else if (containerFrag.isLaBrContainer()) {
+            if (_verbosityLevel >= 6) {
+                    mf::LogDebug("STMDigisFromFragments")
+                    << "Processing LaBr Container Frag"
+                    << " | Event : " << _totalEvents
+                    << " | Container Frag ID : " << outerFragID;
+                }
+                ++labrJobCounts.container;
+                ++labrEventCounts.container;
+                labrJobCounts.innerFrags += blocks;
+                labrEventCounts.innerFrags += blocks;
+                eventHasLaBr = true;
+        } else {
+            // Unknown Container Frag
+            mf::LogWarning("STMDigisFromFragments")
+                << "Unknown STM Container Frag"
+                << " | Frag ID : " << outerFragID
+                << " | Event : " << _totalEvents
+                << " | Container Frag ID : " << outerFragID;
+
+                ++_totalUnknownContainers;
+                ++unknownContainersThisEvent;
+                continue; // Skips the rest of this container frag if it is unknown
+        }
+
+        ++_totalContainers;
+        _totalInnerFrags += blocks;
+
+        // loop over container blocks
+        // --------------------------
+        for (size_t i = 0 ; i < container.block_count() ; ++i) {
+            auto innerFrag = container.at(i);
+            const mu2e::STMFragment stmFrag(*innerFrag);
+            const bool isHPGe = stmFrag.isHPGe();
+            const bool isLaBr = stmFrag.isLaBr();
+
+            // Check for unknown inner frag
+            if (!stmFrag.isRaw() && !stmFrag.isZS() && !stmFrag.isPH()){
+                mf::LogWarning("STMDigisFromFragments")
+                << "Unknown STM Inner Fragment"
+                << " | Event : " << _totalEvents
+                << " | Frag Index : " << i
+                << " | Frag ID : " << innerFrag->fragmentID();
+
+                ++_totalUnknownInnerFrags; //Job Summary Counter
+                ++unknownFragsThisEvent;
+                continue;
+            }
+
+            // Check if the inner frag falls under hpge or labr
+            if (!isHPGe && !isLaBr) {
+                mf::LogWarning("STMDigisFromFragments")
+                << "STM Inner Fragment Is Neither HPGe nor LaBr"
+                << " | Event : " << _totalEvents
+                << " | Frag Index : " << i;
+
+                ++_totalUnknownInnerFrags; ++unknownFragsThisEvent;
+                continue;
+            }
+
+            // Create the relevant structs reference
+            auto& eventCounts   = isHPGe ? hpgeEventCounts : labrEventCounts;
+            auto& jobCounts     = isHPGe ? hpgeJobCounts   : labrJobCounts;
+            auto& headerState   = isHPGe ? rawHeaderHPGe   : rawHeaderLaBr;
+
+            // Note : Expected Inner Frag Processes (Raw -> ZS -> PH)
+            if (stmFrag.isRaw()){
+                // --------------
+                // Check Raw Frag
+                // --------------
+                ++eventCounts.raw.seen; ++jobCounts.raw.seen;
+                headerState = rawHeaderState{}; // resets raw header state upon entering raw
+
+                // Check if header + adcs is not less than expected header length (version dependent)
+                if(stmFrag.dataWords() < stmFrag.headerWords()) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Raw Frag Has Fewer Data Words Than Expected"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i
+                    << " | Version : " << stmFrag.headerVersion();
+
+                    ++eventCounts.invalidHeaders; ++jobCounts.invalidHeaders;
+                    ++eventCounts.setsSkippedInvalidHeaders; ++jobCounts.setsSkippedInvalidHeaders;
+                    ++eventCounts.raw.unread; ++jobCounts.raw.unread;
+                    headerState.skipCurrentSetDueToInvalidRawHeader = true;
+                    continue;
+                }
+
+                // Confirm Raw Header has Valid Anchors
+                if (!stmFrag.hasValidAnchors()) {
+                    if (_verbosityLevel >= 6) {
+                        const auto* dataPtr = stmFrag.dataBegin();
+                        const size_t anchorEndIndex = stmFrag.isLegacyHeader() ? static_cast<size_t>(stm::RawHeaderLegacy::ANCHOR_END)
+                                                                               : static_cast<size_t>(stm::RawHeader::ANCHOR_END);
+                        std::ostringstream msg;
+                        msg << std::hex // switch to hexadecimal
+                        << "RAW ANCHORS : start = 0x" << static_cast<uint16_t>(dataPtr[stm::RawHeader::ANCHOR_START])
+                        << " , end = 0x" << static_cast<uint16_t>(dataPtr[anchorEndIndex]) << std::dec // swithces back to decimal
+                        << " | Version History     : " << stmFrag.headerVersion()
+                        << " | LegacyHeader        : " << std::boolalpha << stmFrag.isLegacyHeader();
+                        msg << "\n";
+
+                        mf::LogDebug("STMDigisFromFragments")
+                        << msg.str();
+                    }
+                    ++eventCounts.invalidAnchors; ++jobCounts.invalidAnchors;
+                    ++eventCounts.setsSkippedInvalidAnchors; ++jobCounts.setsSkippedInvalidAnchors;
+                    headerState.skipCurrentSetDueToInvalidRawHeader = true;
+                    continue;
+                }
+
+                // check supported version
+                const auto version = stmFrag.headerVersion();
+                const bool supportedVersion = (version == stm::RawHeader::CURRENT_VERSION ||
+                                                version == stm::RawHeader::VERSION_LEGACY);
+
+                if (!supportedVersion) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unknown STM Header version"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i
+                    << " | Version : " << version;
+                    ++eventCounts.invalidVersions; ++jobCounts.invalidVersions;
+                    ++eventCounts.setsSkippedInvalidVersion;++jobCounts.setsSkippedInvalidVersion;
+                    headerState.skipCurrentSetDueToInvalidVersion = true;
+                    continue;
+                }
+
+                // Check for bad &/or missing flags
+                const bool bad = stmFrag.badData();
+                const bool missing = stmFrag.missing();
+                if (bad && missing) {
+                    ++eventCounts.badAndMissing; ++jobCounts.badAndMissing;
+                } else if (bad) {
+                    ++eventCounts.badOnly; ++jobCounts.badOnly;
+                } else if (missing) {
+                    ++eventCounts.missingOnly; ++jobCounts.missingOnly;
+                }
+
+                if (bad || missing) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "RAW flagged " << (bad && missing ? "bad and missing" : bad ? "bad" : "missing")
+                    << " | Event: " << _totalEvents
+                    << " | Index: " << i;
+                    ++eventCounts.setsSkippedRawFlags; ++jobCounts.setsSkippedRawFlags;
+                    headerState.skipCurrentSetDueToRawFlags = true;
+                    continue; // skip following frags if raw was malformed
+                }
+
+                ++_rawHeaderVersions[stmFrag.headerVersion()]; // Creates a map and count of headerVersion encountered (per job)
+
+                // Save to rawHeader struct
+                headerState.rawPrescaled = stmFrag.rawPrescaled();
+                headerState.zsPrescaled = stmFrag.zsPrescaled();
+                headerState.expectedZSLength = stmFrag.zsLength();
+                headerState.expectedZSRegions = stmFrag.zsRegions();
+                headerState.expectedPHCount = stmFrag.phCount();
+                headerState.readZSInfo = true;
+                headerState.readPHInfo = true;
+                headerState.eventWindowTag = stmFrag.eventWindowTag();
+                headerState.eventMode = stmFrag.spillFlag();
+                headerState.adcClock = stmFrag.adcClock();
+                headerState.dtcClock = stmFrag.dtcClock();
+                headerState.headerVersion = stmFrag.headerVersion();
+                headerState.isLegacyHeader = stmFrag.isLegacyHeader();
+
+                // save only if reading legacy header
+                if (headerState.isLegacyHeader) {
+                    headerState.rawPrescaleValue = stmFrag.rawPrescaleValue();
+                    headerState.zsPrescaleValue  = stmFrag.zsPrescaleValue();
+                }
+
+                if (_verbosityLevel >= 6) {
+                    std::ostringstream msg;
+                    msg << "RAW header | Event: " << _totalEvents << " | Index: " << i
+                        << " | Detector: " << (isHPGe ? "HPGe" : "LaBr")
+                        << " | Version: " << headerState.headerVersion
+                        << " | Legacy: " << std::boolalpha << headerState.isLegacyHeader
+                        << " | RAW prescaled: " << headerState.rawPrescaled
+                        << " | ZS prescaled: " << headerState.zsPrescaled
+                        << " | ZS regions: " << headerState.expectedZSRegions
+                        << " | PH count: " << headerState.expectedPHCount;
+                    if (headerState.isLegacyHeader) {
+                        msg << " | RAW prescale value: " << headerState.rawPrescaleValue
+                            << " | ZS prescale value: " << headerState.zsPrescaleValue;
+                    }
+                    mf::LogDebug("STMDigisFromFragments") << msg.str();
+                }
+
+                if (headerState.rawPrescaled) {
+                    if(_verbosityLevel >= 5) {
+                        mf::LogDebug("STMDigisFromFragments")
+                        << "Raw Fragment is prescaled"
+                        << " | Event : " << _totalEvents
+                        << " | Frag Index : " << i;
+                    }
+                        ++eventCounts.raw.prescaled; ++jobCounts.raw.prescaled;
+                        continue; // Only count and report, prescaled data is still useful for zs and ph
+                    }
+
+                const auto payloadWords = stmFrag.payloadWords();
+                // Should be header Words + adcs < = dataWords (version dependent)
+                if (stmFrag.headerWords() + payloadWords > stmFrag.dataWords()) {
+                    // this is an invalid-header case
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Raw Fragment Exceeds Fragment Data"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+
+                    ++eventCounts.invalidHeaders; ++jobCounts.invalidHeaders;
+                    ++eventCounts.setsSkippedInvalidHeaders; ++jobCounts.setsSkippedInvalidHeaders;
+                    ++eventCounts.raw.unread; ++jobCounts.raw.unread;
+                    headerState.readZSInfo = false;
+                    headerState.readPHInfo = false;
+                    headerState.skipCurrentSetDueToInvalidRawHeader = true;
+                    continue;
+                }
+
+                // Ideally at this point we know the frag's payload can be inspected
+                // payloadWords -> uses rawLength()
+                if (payloadWords == 0) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unexpected Empty Raw Frag"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                    ++eventCounts.raw.empty; ++jobCounts.raw.empty;
+                    continue;
+                }
+
+                // Check if any payload words exist
+                const auto* payloadPtr = stmFrag.payloadBegin();
+                const bool allZeros = std::all_of(payloadPtr, payloadPtr + payloadWords, [](int16_t adc) {return adc == 0;});
+
+                if (allZeros) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unexpected Zero-Filled Raw Frag"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                    ++eventCounts.raw.zero; ++jobCounts.raw.zero;
+                    continue;
+                }
+
+                // Print first few payload words for inspection
+                if (_verbosityLevel >= 6) {
+                    std::ostringstream msg;
+                    msg << "First Few Payload Words(adcs) For Inspection : " ;
+                    for (size_t w = 0 ; w < std::min(payloadWords, static_cast<size_t>(10)) ; ++w) {
+                        msg << payloadPtr[w] << " ";
+                    }
+                    mf::LogDebug("STMDigisFromFragments")
+                    << msg.str();
+                }
+
+                // At this point we know raw fragment has data
+                if (_verbosityLevel >= 5) {
+                    mf::LogDebug("STMDigisFromFragments")
+                    << "Good Raw Fragment"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                }
+                // Good raw frags end up here and get saved
+                ++eventCounts.raw.good; ++jobCounts.raw.good;
+                const auto key = makeEventHeader(headerState);
+
+                if (isHPGe) {
+                    if (_saveRawWaveformsWithHeaderHPGe) {
+                        mu2e::STMWaveformDigi waveformDigi;
+                        waveformDigi.set_data(stmFrag.dataWords(), stmFrag.dataBegin());
+                        (*rawWaveformDigisWithHeaderHPGe)[key].push_back(waveformDigi);
+                    }
+                    if (_saveRawWaveformsHPGe) {
+                        mu2e::STMWaveformDigi waveformDigi;
+                        waveformDigi.set_data(payloadWords, payloadPtr);
+                        (*rawWaveformDigisHPGe)[key].push_back(waveformDigi);
+                    }
+                } else {
+                    if (_saveRawWaveformsWithHeaderLaBr) {
+                        mu2e::STMWaveformDigi waveformDigi;
+                        waveformDigi.set_data(stmFrag.dataWords(), stmFrag.dataBegin());
+                        (*rawWaveformDigisWithHeaderLaBr)[key].push_back(waveformDigi);
+                    }
+                    if (_saveRawWaveformsLaBr) {
+                        mu2e::STMWaveformDigi waveformDigi;
+                        waveformDigi.set_data(payloadWords, payloadPtr);
+                        (*rawWaveformDigisLaBr)[key].push_back(waveformDigi);
+                    }
+                }
+
+            } // end of raw
+            else if (stmFrag.isZS()) {
+                // -------------
+                // Check ZS Frag
+                // -------------
+                ++eventCounts.zs.seen; ++jobCounts.zs.seen;
+
+                // Skip corresponding zs frag?
+                if (headerState.skipCurrentSetDueToInvalidRawHeader) {
+                    ++eventCounts.skippedZSInvalidHeader; ++jobCounts.skippedZSInvalidHeader;
+                    continue;
+                }
+                if (headerState.skipCurrentSetDueToInvalidVersion){
+                    ++eventCounts.skippedZSInvalidVersion; ++jobCounts.skippedZSInvalidVersion;
+                    continue;
+                }
+                if (headerState.skipCurrentSetDueToRawFlags) {
+                    ++eventCounts.skippedZSRawFlags; ++jobCounts.skippedZSRawFlags;
+                    continue;
+                }
+                if (!headerState.readZSInfo) {
+                    ++eventCounts.skippedZSNoRaw; ++jobCounts.skippedZSNoRaw;
+                    continue;
+                }
+                if (headerState.zsPrescaled) {
+                    if(_verbosityLevel >= 5) {
+                            mf::LogDebug("STMDigisFromFragments")
+                            << "ZS Frag is Prescaled"
+                            << " | Event : " << _totalEvents
+                            << " | Frag Index : " << i;
+                    }
+                    ++eventCounts.zs.prescaled; ++jobCounts.zs.prescaled;
+                    continue;
+                }
+
+                const auto zsRegions = headerState.expectedZSRegions;
+                const auto zsLength = headerState.expectedZSLength;
+                if (zsRegions == 0 && zsLength == 0) {
+                    if(_verbosityLevel >=5) {
+                        mf::LogDebug("STMDigisFromFragments")
+                        << "ZS Regions & Length Were Zero"
+                        << " | ZS Regions : " << zsRegions
+                        << " | ZS Length  : " << zsLength
+                        << " | Event : " << _totalEvents
+                        << " | Frag Index : " << i;
+                    }
+                    ++eventCounts.zs.noRegions; ++jobCounts.zs.noRegions;
+                    continue;
+                }
+
+                if ((zsRegions == 0 && zsLength > 0) || (zsRegions > 0 && zsLength == 0)) {
+                    if(_verbosityLevel >= 5) {
+                        mf::LogDebug("STMDigisFromFragments")
+                        << "ZS Header Mismatch"
+                        << " | ZS Regions : " << zsRegions
+                        << " | ZS Length : " << zsLength
+                        << " | Event : " << _totalEvents << " | Frag Index : " << i;
+                    }
+                    ++eventCounts.zsHeaderMismatch; ++jobCounts.zsHeaderMismatch;
+                    continue;
+                }
+
+                if (stmFrag.dataWords() <= stm::ZSHeader::WORDS) {
+                    // We expect the frag to have at least two words at this point, index and length for zs header
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unexpected Empty ZS Frag"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                    ++eventCounts.zs.empty; ++ jobCounts.zs.empty;
+                    continue;
+                }
+
+                // Definitions
+                const auto* dataPtr = stmFrag.dataBegin();
+                const auto* endPtr = dataPtr + stmFrag.dataWords();
+                size_t regionCounter = 0;
+                size_t totalLength = 0;
+                bool malformed = false;
+                bool sawADC = false;
+                bool allADCsZero = true;
+                const bool saveZS = isHPGe ? (_saveZSWaveformsHPGe) : (_saveZSWaveformsLaBr);
+                std::vector<zsRegion> regions;
+
+
+                if (_verbosityLevel >= 6) {
+                    mf::LogDebug("STMDigisFromFragments")
+                    << "ZS Data Words for inspection : " << stmFrag.dataWords()
+                    << "ZS Data Words % 4 : " << stmFrag.dataWords() % 4;
+                }
+
+                while (static_cast<size_t>(endPtr - dataPtr) >= stm::ZSHeader::WORDS &&
+                       regionCounter < zsRegions) {
+                    const uint16_t index = static_cast<uint16_t>(dataPtr[0]);
+                    const uint16_t length = static_cast<uint16_t>(dataPtr[1]);
+                    const auto* adcPtr = dataPtr + stm::ZSHeader::WORDS;
+                    if (static_cast<size_t>(endPtr - adcPtr) < length) {
+                        malformed = true;
+                        break;
+                    }
+                    // print first couple adcs for inspection
+                    if (_verbosityLevel >=6) {
+                        std::ostringstream msg;
+                        msg << "\nFirst Few Payload Words For ZS Inspection: ";
+                        for (size_t w = 0; w < std::min<size_t>(length,10) ; ++w) {
+                            msg << adcPtr[w] << " ";
+                        }
+                        mf::LogDebug("STMDigisFromFragments")
+                        << msg.str();
+                    }
+
+                    for (size_t j = 0; j < length; ++j) {
+                        sawADC = true;
+                        if (adcPtr[j] != 0) {allADCsZero = false;}
+                    }
+                    if (saveZS) {
+                        regions.push_back({index, std::vector<int16_t>(adcPtr, adcPtr + length)});
+                    }
+                    if (_verbosityLevel >= 6) {
+                        mf::LogDebug("STMDigisFromFragments")
+                        << "ZS region"
+                        << " | Event: " << _totalEvents
+                        << " | Index: " << i
+                        << " | Offset: " << index
+                        << " | Length: " << length;
+                    }
+                    totalLength += length;
+                    ++regionCounter;
+                    dataPtr = adcPtr + length;
+                }
+
+                if (malformed) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Malformed ZS Frag"
+                    << " | Event: " << _totalEvents
+                    << " | Index: " << i;
+                    ++eventCounts.zs.unread; ++jobCounts.zs.unread;
+                    continue;
+                }
+                if (totalLength != zsLength) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "ZS length mismatch"
+                    << " | Event: " << _totalEvents
+                    << " | Index: " << i
+                    << " | Expected: " << zsLength
+                    << " | Parsed: " << totalLength;
+                    ++eventCounts.zsLengthMismatch; ++jobCounts.zsLengthMismatch;
+                    continue;
+                }
+                if (regionCounter != zsRegions) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "ZS region mismatch:"
+                    << " | Event: " << _totalEvents
+                    << " | Index: " << i
+                    << " | Expected: " << zsRegions
+                    << " | Parsed: " << regionCounter;
+                    ++eventCounts.zsRegionMismatch; ++jobCounts.zsRegionMismatch;
+                    continue;
+                }
+                if (sawADC && allADCsZero) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unexpected Zero-filled ZS fragment"
+                    << " | Event: " << _totalEvents
+                    << " | Index: " << i;
+                    ++eventCounts.zs.zero; ++jobCounts.zs.zero;
+                    continue;
+                }
+
+                if (saveZS) {
+                    const auto key = makeEventHeader(headerState);
+                    auto& target = isHPGe ? *zsWaveformDigisHPGe : *zsWaveformDigisLaBr;
+                    for (auto& region : regions) {
+                        mu2e::STMWaveformDigi zsDigi(region.offset, region.adcs);
+                        target[key].push_back(zsDigi);
+                    }
+                }
+
+                // At this point we know the fragment was good
+                if (_verbosityLevel >= 5) {
+                    mf::LogDebug("STMDigisFromFragments")
+                    << "Good ZS fragment at Event"
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                }
+                ++eventCounts.zs.good; ++jobCounts.zs.good;
+            } // end of zs
+            else if (stmFrag.isPH()){
+                // ---------
+                // Check PH Frag
+                // ---------
+                ++eventCounts.ph.seen; ++jobCounts.ph.seen;
+                if (headerState.skipCurrentSetDueToInvalidRawHeader) {
+                    ++eventCounts.skippedPHInvalidHeader; ++jobCounts.skippedPHInvalidHeader;
+                    continue;
+                }
+                if (headerState.skipCurrentSetDueToInvalidVersion) {
+                    ++eventCounts.skippedPHInvalidVersion; ++jobCounts.skippedPHInvalidVersion;
+                    continue;
+                }
+                if (headerState.skipCurrentSetDueToRawFlags) {
+                    ++eventCounts.skippedPHRawFlags; ++jobCounts.skippedPHRawFlags;
+                    continue;
+                }
+                if (!headerState.readPHInfo) {
+                    ++eventCounts.skippedPHNoRaw; ++jobCounts.skippedPHNoRaw;
+                    continue;
+                }
+
+                const auto phCount = headerState.expectedPHCount;
+                if (phCount == 0) {
+                    ++eventCounts.ph.noHits; ++jobCounts.ph.noHits;
+                    continue;
+                }
+                const auto payloadWords = stmFrag.payloadWords();
+                if (payloadWords == 0) {
+                    mf::LogWarning("STMDigisFromFragments")
+                    << "Unexpected Empty PH Frag "
+                    << " | Event : " << _totalEvents
+                    << " | Frag Index : " << i;
+                    ++eventCounts.ph.empty; ++jobCounts.ph.empty;
+                    ++eventCounts.ph.unread; ++jobCounts.ph.unread;
+                    continue;
+                }
+                // Check if we under count ph Pairs in fragment compared to expected
+                const size_t expectedWords = 2 * static_cast<size_t>(phCount);
+                if (payloadWords < expectedWords) {
+                    mf::LogWarning("STMDigisFromFragments")
+                        << "PH Count Mismatch"
+                        << " | Event : " << _totalEvents
+                        << " | Index : " << i
+                        << " | Expected Words : " << expectedWords
+                        << " | Payload Words  : " << payloadWords;
+                    ++eventCounts.phCountMismatch; ++jobCounts.phCountMismatch;
+                    continue;
+                }
+                const auto* payloadPtr = stmFrag.payloadBegin();
+                bool allPHZero = true;
+                // Check if second entry has unexpected zero - note (time,ph)
+                for (size_t k = 0; k < phCount; ++k) {
+                    if (payloadPtr[k * 2 + 1] != 0) {
+                        allPHZero = false;
+                        break;
+                    }
+                }
+
+                if (allPHZero) {
+                    mf::LogWarning("STMDigisFromFragments")
+                        << "Unexpected Zero-Filled PH Fragment"
+                        << " | Event : " << _totalEvents
+                        << " | Frag Index : " << i;
+                    ++eventCounts.ph.zero; ++jobCounts.ph.zero;
+                    continue;
+                }
+
+                const auto key = makeEventHeader(headerState);
+                auto& target = isHPGe ? *phDigisHPGe : *phDigisLaBr;
+                for (size_t l = 0 ; l < phCount ; ++l) {
+                    const auto phIndex = 2 * l;
+                    const uint32_t time = static_cast<uint16_t>(payloadPtr[phIndex]);
+                    const int16_t ph = payloadPtr[phIndex + 1];
+                    if (_verbosityLevel >= 6) {
+                        std::ostringstream msg;
+                        msg << "Time : " << time << " | PH : " << ph;
+                        mf::LogDebug("STMDigisFromFragments") << msg.str();
+                    }
+
+                    mu2e::STMPHDigi phDigi(time,ph);
+                    target[key].push_back(phDigi); // vs emplace_back(phDigi) ?
+                }
+
+
+                // At this point we have a good PH fragment
+                if (_verbosityLevel >= 5) {
+                    mf::LogDebug("STMDigisFromFragments")
+                        << "Good PH Fragment at Event "
+                        << " | Event : " << _totalEvents
+                        << " | Frag Index : " << i;
+                }
+                // Good counter increment
+                ++eventCounts.ph.good; ++jobCounts.ph.good;
+
+                } // end of ph
+            }
+    } // end of frags loop
 
     // Update event type counters based on the detectors in event
-    if (eventHasHPGe && eventHasLaBr) {
-        ++_totalEventsWithBothDetectors;
-    } else if (eventHasHPGe) {
-        ++_totalEventsWithOnlyHPGe;
-    } else if (eventHasLaBr) {
-        ++_totalEventsWithOnlyLaBr;
-    } else {
-        ++_totalEventsWithNeitherDetector;
-    }
-
-    // HPGe Remaining Fragment Counts
-    badHPGeFragsThisEvent = HPGeEventMetrics.rawFragsFlaggedBadOnly
-    + HPGeEventMetrics.rawFragsFlaggedBadAndMissing;
-
-    missingHPGeFragsThisEvent = HPGeEventMetrics.rawFragsFlaggedMissingOnly
-    + HPGeEventMetrics.rawFragsFlaggedBadAndMissing;
-
-    // LaBr Remaining Fragment Counts
-    badLaBrFragsThisEvent = LaBrEventMetrics.rawFragsFlaggedBadOnly
-    + LaBrEventMetrics.rawFragsFlaggedBadAndMissing;
-
-    missingLaBrFragsThisEvent = LaBrEventMetrics.rawFragsFlaggedMissingOnly
-    + LaBrEventMetrics.rawFragsFlaggedBadAndMissing;
+    if (eventHasHPGe && eventHasLaBr) {++_totalEventsWithBothDetectors;}
+    else if (eventHasHPGe)            {++_totalEventsWithOnlyHPGe;}
+    else if (eventHasLaBr)            {++_totalEventsWithOnlyLaBr;}
+    else                              {++_totalEventsWithNeitherDetector;}
 
     // Save STMFrag Summary here
     if (_saveSTMFragSummary) {
-        if (_verbosityLevel > 2) {
+        if (_verbosityLevel >= 5) {
             mf::LogDebug("STMDigisFromFragments")
-            << "\nSaving STMFragSummary\n";
+            << "Saving STMFragSummary";
         }
-        stmFragSummaryHPGe->emplace_back(
-            containerFragsHPGeThisEvent,innerFragsHPGeThisEvent,
-            badHPGeFragsThisEvent, missingHPGeFragsThisEvent,
-            HPGeEventMetrics.zsFragsSkippedDueToRawFlag, HPGeEventMetrics.phFragsSkippedDueToRawFlag,
-            HPGeEventMetrics.raw.prescaled, HPGeEventMetrics.zs.prescaled,
-            HPGeEventMetrics.raw.good, HPGeEventMetrics.zs.good, HPGeEventMetrics.ph.good,
-            HPGeEventMetrics.raw.zero, HPGeEventMetrics.zs.zero, HPGeEventMetrics.ph.zero,
-            HPGeEventMetrics.raw.empty, HPGeEventMetrics.zs.empty, HPGeEventMetrics.ph.empty
-        );
-
-        stmFragSummaryLaBr->emplace_back(
-            containerFragsLaBrThisEvent,innerFragsLaBrThisEvent,
-            badLaBrFragsThisEvent, missingLaBrFragsThisEvent,
-            LaBrEventMetrics.zsFragsSkippedDueToRawFlag, LaBrEventMetrics.phFragsSkippedDueToRawFlag,
-            LaBrEventMetrics.raw.prescaled, LaBrEventMetrics.zs.prescaled,
-            LaBrEventMetrics.raw.good, LaBrEventMetrics.zs.good, LaBrEventMetrics.ph.good,
-            LaBrEventMetrics.raw.zero, LaBrEventMetrics.zs.zero, LaBrEventMetrics.ph.zero,
-            LaBrEventMetrics.raw.empty, LaBrEventMetrics.zs.empty, LaBrEventMetrics.ph.empty
-        );
+        auto appendSummary = [](mu2e::STMFragmentSummaryCollection& output, const detectorCounts& c) {
+            output.emplace_back(
+                c.container, c.innerFrags,
+                c.badOnly + c.badAndMissing, c.missingOnly + c.badAndMissing,
+                c.skippedZSRawFlags, c.skippedPHRawFlags,
+                c.raw.prescaled, c.zs.prescaled,
+                c.raw.good, c.zs.good, c.ph.good,
+                c.raw.zero, c.zs.zero, c.ph.zero,
+                c.raw.empty, c.zs.empty, c.ph.empty);
+        };
+        appendSummary(*stmFragSummaryHPGe, hpgeEventCounts);
+        appendSummary(*stmFragSummaryLaBr, labrEventCounts);
     }
 
-    // Get Number of Raw, ZS Waveforms saved and PH Digis saved for this event
-    auto totalDigis = [](const auto& digiMap) {
-        size_t total = 0;
-        for (const auto& entry : digiMap) {
-            total += entry.second.size();
-        }
-        return total;
-    };
+    // Extract info on how many waveforms and digi collections were extracted
+    // ----------------------------------------------------------------------
+    // Event Based
+    extractedInfo hpgeEventProducts;
+    extractedInfo labrEventProducts;
+    // hpge
+    if (rawWaveformDigisWithHeaderHPGe) {hpgeEventProducts.rawWithHeader = countDigis(*rawWaveformDigisWithHeaderHPGe);}
+    if (rawWaveformDigisHPGe) {hpgeEventProducts.rawWaveforms = countDigis(*rawWaveformDigisHPGe);}
+    if (zsWaveformDigisHPGe) {hpgeEventProducts.zsWaveforms = countDigis(*zsWaveformDigisHPGe);}
+    hpgeEventProducts.phDigis = countDigis(*phDigisHPGe);
+    // labr
+    if (rawWaveformDigisWithHeaderLaBr) {labrEventProducts.rawWithHeader = countDigis(*rawWaveformDigisWithHeaderLaBr);}
+    if (rawWaveformDigisLaBr) {labrEventProducts.rawWaveforms = countDigis(*rawWaveformDigisLaBr);}
+    if (zsWaveformDigisLaBr) {labrEventProducts.zsWaveforms = countDigis(*zsWaveformDigisLaBr);}
+    labrEventProducts.phDigis = countDigis(*phDigisLaBr);
 
-    // Final Move
-    if (_verbosityLevel > 1) {
-        // Event Summary -> tells us what happened per event
-        mf::LogInfo("STMDigisFromFragments")
-        << "\n========== STM EVENT SUMMARY - (Unpacking Module) ==========\n"
-        << "\n--- Module Configuration For Job ---\n"
-        << "Raw Waveforms with Header HPGe   : " << (_saveRawWaveformsWithHeaderHPGe ? "Yes" : "No") << "\n"
-        << "Raw Waveforms HPGe               : " << (_saveRawWaveformsHPGe ? "Yes" : "No") << "\n"
-        << "ZS Waveforms HPGe                : " << (_saveZSWaveformsHPGe ? "Yes" : "No") << "\n"
-        << "PH Digis HPGe                    : Yes\n"
-        << "Raw Waveforms with Header LaBr   : " << (_saveRawWaveformsWithHeaderLaBr ? "Yes" : "No") << "\n"
-        << "Raw Waveforms LaBr               : " << (_saveRawWaveformsLaBr ? "Yes" : "No") << "\n"
-        << "ZS Waveforms LaBr                : " << (_saveZSWaveformsLaBr ? "Yes" : "No") << "\n"
-        << "PH Digis LaBr                    : Yes\n"
 
-        << "\n--- Products Saved Per Event ---\n"
-        << "Extracted Raw Waveforms With Header (HPGe)    : " << totalDigis(*rawWaveformDigisWithHeaderHPGe) << "\n"
-        << "Extracted Raw Waveforms (HPGe)                : " << totalDigis(*rawWaveformDigisHPGe) << "\n"
-        << "Extracted ZS  Waveforms (HPGe)                : " << totalDigis(*zsWaveformDigisHPGe) << "\n"
-        << "Extracted PH  Digis     (HPGe)                : " << totalDigis(*phDigisHPGe) << "\n"
-        << "\n"
-        << "Extracted Raw Waveforms With Header (LaBr)    : " << totalDigis(*rawWaveformDigisWithHeaderLaBr) << "\n"
-        << "Extracted Raw Waveforms (LaBr)                : " << totalDigis(*rawWaveformDigisLaBr) << "\n"
-        << "Extracted ZS  Waveforms (LaBr)                : " << totalDigis(*zsWaveformDigisLaBr) << "\n"
-        << "Extracted PH  Digis     (LaBr)                : " << totalDigis(*phDigisLaBr) << "\n"
+    // Job Based - Accumulate over all events
+    // hpge
+    if (rawWaveformDigisWithHeaderHPGe) {hpgeJobProducts.rawWithHeader += countDigis(*rawWaveformDigisWithHeaderHPGe);}
+    if (rawWaveformDigisHPGe) {hpgeJobProducts.rawWaveforms += countDigis(*rawWaveformDigisHPGe);}
+    if (zsWaveformDigisHPGe) {hpgeJobProducts.zsWaveforms += countDigis(*zsWaveformDigisHPGe);}
+    hpgeJobProducts.phDigis += countDigis(*phDigisHPGe);
+    // labr
+    if (rawWaveformDigisWithHeaderLaBr) {labrJobProducts.rawWithHeader += countDigis(*rawWaveformDigisWithHeaderLaBr);}
+    if (rawWaveformDigisLaBr) {labrJobProducts.rawWaveforms += countDigis(*rawWaveformDigisLaBr);}
+    if (zsWaveformDigisLaBr) {labrJobProducts.zsWaveforms += countDigis(*zsWaveformDigisLaBr);}
+    labrJobProducts.phDigis += countDigis(*phDigisLaBr);
 
-        << "\n--- HPGe Summary Per Event---\n"
-        << "Good  Raw Frags (HPGe)                        : " << HPGeEventMetrics.raw.good << "\n"
-        << "Good  ZS  Frags (HPGe)                        : " << HPGeEventMetrics.zs.good << "\n"
-        << "Good  PH  Frags (HPGe)                        : " << HPGeEventMetrics.ph.good << "\n"
-        << "\n"
-        << "Empty Raw Frags (HPGe)                        : " << HPGeEventMetrics.raw.empty << "\n"
-        << "Empty ZS  Frags (HPGe)                        : " << HPGeEventMetrics.zs.empty << "\n"
-        << "Empty PH  Frags (HPGe)                        : " << HPGeEventMetrics.ph.empty << "\n"
-        << "\n"
-        << "Zero  Raw Frags (HPGe)                        : " << HPGeEventMetrics.raw.zero << "\n"
-        << "Zero  ZS  Frags (HPGe)                        : " << HPGeEventMetrics.zs.zero << "\n"
-        << "Zero  PH  Frags (HPGe)                        : " << HPGeEventMetrics.ph.zero << "\n"
-        << "\n"
-        << "No Hits - PH Frags (HPGe)                     : " << HPGeEventMetrics.ph.noHits << "\n"
-        << "\n"
-        << "Bad Raw Frags (HPGe)                          : " << HPGeEventMetrics.rawFragsFlaggedBadOnly << "\n"
-        << "Missing Raw Frags (HPGe)                      : " << HPGeEventMetrics.rawFragsFlaggedMissingOnly << "\n"
-        << "Bad and Missing Raw Frags (HPGe)              : " << HPGeEventMetrics.rawFragsFlaggedBadAndMissing << "\n"
-        << "\n"
-
-        << "\n--- LaBr Summary Per Event ---\n"
-        << "Good  Raw Frags (LaBr)                        : " << LaBrEventMetrics.raw.good << "\n"
-        << "Good  ZS  Frags (LaBr)                        : " << LaBrEventMetrics.zs.good << "\n"
-        << "Good  PH  Frags (LaBr)                        : " << LaBrEventMetrics.ph.good << "\n"
-        << "\n"
-        << "Empty Raw Frags (LaBr)                        : " << LaBrEventMetrics.raw.empty << "\n"
-        << "Empty ZS  Frags (LaBr)                        : " << LaBrEventMetrics.zs.empty << "\n"
-        << "Empty PH  Frags (LaBr)                        : " << LaBrEventMetrics.ph.empty << "\n"
-        << "\n"
-        << "Zero  Raw Frags (LaBr)                        : " << LaBrEventMetrics.raw.zero << "\n"
-        << "Zero  ZS  Frags (LaBr)                        : " << LaBrEventMetrics.zs.zero << "\n"
-        << "Zero  PH  Frags (LaBr)                        : " << LaBrEventMetrics.ph.zero << "\n"
-        << "\n"
-        << "No Hits - PH Frags (LaBr)                     : " << LaBrEventMetrics.ph.noHits << "\n"
-        << "\n"
-        << "Bad Raw Frags (LaBr)                          : " << LaBrEventMetrics.rawFragsFlaggedBadOnly << "\n"
-        << "Missing Raw Frags (LaBr)                      : " << LaBrEventMetrics.rawFragsFlaggedMissingOnly << "\n"
-        << "Bad and Missing Raw Frags (LaBr)              : " << LaBrEventMetrics.rawFragsFlaggedBadAndMissing << "\n"
-        // Extra Filters
-        << "\n=== Extra Filters Per Event ===\n"
-        << "Container Frags                                           : " << containerFragsThisEvent << "\n"
-        << "Inner Frags This Event                                    : " << innerFragsThisEvent << "\n"
-        << "Unknown Frags                                             : " << unknownFragsThisEvent << "\n"
-        << "Unknown Container Frags                                   : " << unknownContainersThisEvent << "\n"
-        << "Non Container Frags                                       : " << nonContainersThisEvent << "\n"
-        << "\n"
-        << "Raw Frags With Invalid Headers (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidHeaders << "\n"
-        << "Raw Frags With Invalid Anchors (HPGe)                     : " << HPGeEventMetrics.rawFragsWithInvalidAnchors << "\n"
-        << "ZS Frags With Length Mismatch (HPGe)                      : " << HPGeEventMetrics.zsLengthMismatch << "\n"
-        << "Zs Frags WIth Region Mismatch (HPGe)                      : " << HPGeEventMetrics.zsRegionMismatch << "\n"
-        << "ZS Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.zsFragsSkippedDueToRawFlag << "\n"
-        << "ZS Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n"
-        << "ZS Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n"
-        << "PH Frags Skipped Due To Raw Flags (HPGe)                  : " << HPGeEventMetrics.phFragsSkippedDueToRawFlag << "\n"
-        << "PH Frags Skipped Due To Invalid Raw Header (HPGe)         : " << HPGeEventMetrics.phFragsSkippedDueToInvalidRawHeader << "\n"
-        << "PH Frags Skipped Due To No Preceding Raw Header (HPGe)    : " << HPGeEventMetrics.phFragsSkippedDueToNoPrecedingRawHeader << "\n"
-        << "Raw/ZS/PH Sets Skipped Due To Raw Flags (HPGe)            : " << HPGeEventMetrics.setsSkippedDueToRawFlag << "\n"
-        << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (HPGe)  : " << HPGeEventMetrics.setsSkippedDueToInvalidHeaders << "\n"
-        << "\n"
-        << "Raw Frags With Invalid Headers (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidHeaders << "\n"
-        << "Raw Frags With Invalid Anchors (LaBr)                     : " << LaBrEventMetrics.rawFragsWithInvalidAnchors << "\n"
-        << "ZS Frags With Length Mismatch (LaBr)                      : " << LaBrEventMetrics.zsLengthMismatch << "\n"
-        << "ZS Frags With Region Mismatch (LaBr)                      : " << LaBrEventMetrics.zsRegionMismatch << "\n"
-        << "ZS Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.zsFragsSkippedDueToRawFlag << "\n"
-        << "ZS Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.zsFragsSkippedDueToInvalidRawHeader << "\n"
-        << "ZS Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.zsFragsSkippedDueToNoPrecedingRawHeader << "\n"
-        << "PH Frags Skipped Due To Raw Flags (LaBr)                  : " << LaBrEventMetrics.phFragsSkippedDueToRawFlag << "\n"
-        << "PH Frags Skipped Due To Invalid Raw Header (LaBr)         : " << LaBrEventMetrics.phFragsSkippedDueToInvalidRawHeader << "\n"
-        << "PH Frags Skipped Due To No Preceding Raw Header (LaBr)    : " << LaBrEventMetrics.phFragsSkippedDueToNoPrecedingRawHeader << "\n"
-        << "Raw/ZS/PH Sets Skipped Due To Raw Flags (LaBr)            : " << LaBrEventMetrics.setsSkippedDueToRawFlag << "\n"
-        << "Raw/ZS/PH Sets Skipped Due To Invalid Raw Headers (LaBr)  : " << LaBrEventMetrics.setsSkippedDueToInvalidHeaders << "\n"
-        << "=================================\n";
-
+    // Compact Event Summary
+    if (_verbosityLevel >= 3) {
+        std::ostringstream out;
+        auto row = [&](const std::string& name, size_t hpge, size_t labr) {
+            out << std::left << std::setw(32) << name
+                << std::right << std::setw(12) << hpge << std::setw(12) << labr
+                << std::setw(12) << hpge + labr << '\n';
+        };
+        out << "\n========== STM EVENT SUMMARY (Unpacking Module) ==========\n"
+            << "Art event: " << event.id() << " | Module event count: " << _totalEvents << '\n'
+            << "\n--- Products Saved (event total) ---\n"
+            << "Raw with header |  HPGe : " << hpgeEventProducts.rawWithHeader << " , LaBr : " << labrEventProducts.rawWithHeader << '\n'
+            << "RAW waveforms   |  HPGe : " << hpgeEventProducts.rawWaveforms  << " , LaBr : " << labrEventProducts.rawWaveforms << '\n'
+            << "ZS waveforms    |  HPGe : " << hpgeEventProducts.zsWaveforms   << " , LaBr : " << labrEventProducts.zsWaveforms << '\n'
+            << "PH digis        |  HPGe : " << hpgeEventProducts.phDigis       << " , LaBr : " << labrEventProducts.phDigis << "\n\n";
+        out << std::left << std::setw(32) << "Fragment metric"
+            << std::right << std::setw(12) << "HPGe" << std::setw(12) << "LaBr"
+            << std::setw(12) << "Total" << '\n';
+        out << std::string(72, '-') << '\n';
+        row("Containers", hpgeEventCounts.container, labrEventCounts.container);
+        row("Inner fragments", hpgeEventCounts.innerFrags, labrEventCounts.innerFrags);
+        row("Good RAW fragments", hpgeEventCounts.raw.good, labrEventCounts.raw.good);
+        row("Good ZS fragments", hpgeEventCounts.zs.good, labrEventCounts.zs.good);
+        row("Good PH fragments", hpgeEventCounts.ph.good, labrEventCounts.ph.good);
+        row("No ZS regions", hpgeEventCounts.zs.noRegions, labrEventCounts.zs.noRegions);
+        row("No PH hits", hpgeEventCounts.ph.noHits, labrEventCounts.ph.noHits);
+        mf::LogInfo("STMDigisFromFragments") << out.str();
     }
+
+    if (_verbosityLevel >= 4) {
+        std::ostringstream out;
+        auto row = [&](const std::string& name, size_t hpge, size_t labr) {
+            out << std::left << std::setw(36) << name
+                << std::right << std::setw(12) << hpge << std::setw(12) << labr
+                << std::setw(12) << hpge + labr << '\n';
+        };
+        auto header = [&](const std::string& name) {
+        out << std::left << std::setw(36) << name
+            << std::right << std::setw(12) << "HPGe"
+            << std::setw(12) << "LaBr"
+            << std::setw(12) << "Total" << '\n'
+            << std::string(76, '-') << '\n';
+        };
+
+        out << "\n======= STM Detailed Event Summary =======\n"
+            << "Unknown inner fragments  : " << unknownFragsThisEvent << '\n'
+            << "Unknown containers       : " << unknownContainersThisEvent << '\n'
+            << "Non-container fragments  : " << nonContainersThisEvent << "\n\n";
+        out << "\n";
+
+        header("Raw Diagnostic");
+        row("Invalid headers", hpgeEventCounts.invalidHeaders, labrEventCounts.invalidHeaders);
+        row("Invalid anchors", hpgeEventCounts.invalidAnchors, labrEventCounts.invalidAnchors);
+        row("Invalid versions", hpgeEventCounts.invalidVersions, labrEventCounts.invalidVersions);
+        row("Flagged bad only", hpgeEventCounts.badOnly, labrEventCounts.badOnly);
+        row("Flagged missing only", hpgeEventCounts.missingOnly, labrEventCounts.missingOnly);
+        row("Flagged bad and missing", hpgeEventCounts.badAndMissing, labrEventCounts.badAndMissing);
+        out << "\n";
+
+        header("ZS Diagnostic");
+        row("Header mismatches", hpgeEventCounts.zsHeaderMismatch, labrEventCounts.zsHeaderMismatch);
+        row("Length mismatches", hpgeEventCounts.zsLengthMismatch, labrEventCounts.zsLengthMismatch);
+        row("Region mismatches", hpgeEventCounts.zsRegionMismatch, labrEventCounts.zsRegionMismatch);
+        row("Skipped: RAW flags", hpgeEventCounts.skippedZSRawFlags, labrEventCounts.skippedZSRawFlags);
+        row("Skipped: invalid RAW header", hpgeEventCounts.skippedZSInvalidHeader, labrEventCounts.skippedZSInvalidHeader);
+        row("Skipped: no preceding RAW", hpgeEventCounts.skippedZSNoRaw, labrEventCounts.skippedZSNoRaw);
+        row("Skipped: vers header", hpgeEventCounts.skippedZSInvalidVersion, labrEventCounts.skippedZSInvalidVersion);
+        out << "\n";
+
+        header("PH Diagnostic");
+        row("Count mismatches", hpgeEventCounts.phCountMismatch, labrEventCounts.phCountMismatch);
+        row("Skipped: RAW flags", hpgeEventCounts.skippedPHRawFlags, labrEventCounts.skippedPHRawFlags);
+        row("Skipped: invalid RAW header", hpgeEventCounts.skippedPHInvalidHeader, labrEventCounts.skippedPHInvalidHeader);
+        row("Skipped: no preceding RAW", hpgeEventCounts.skippedPHNoRaw, labrEventCounts.skippedPHNoRaw);
+        row("Skipped: vers header", hpgeEventCounts.skippedPHInvalidVersion, labrEventCounts.skippedPHInvalidVersion);
+        row("RAW sets skipped: flags", hpgeEventCounts.setsSkippedRawFlags, labrEventCounts.setsSkippedRawFlags);
+        row("RAW sets skipped: invalid header", hpgeEventCounts.setsSkippedInvalidHeaders, labrEventCounts.setsSkippedInvalidHeaders);
+        row("RAW sets skipped: invalid anchors", hpgeEventCounts.setsSkippedInvalidAnchors, labrEventCounts.setsSkippedInvalidAnchors);
+        row("RAW sets skipped: vers header", hpgeEventCounts.setsSkippedInvalidVersion, labrEventCounts.setsSkippedInvalidVersion);
+        mf::LogInfo("STMDigisFromFragments") << out.str();
+    }
+
     // Frag Summary
     if (_saveSTMFragSummary) {
         event.put(std::move(stmFragSummaryHPGe), "stmFragSummaryHPGe");
@@ -1330,13 +1099,125 @@ void STMDigisFromFragments::produce(Event& event)
     //default to always save PH Digis
     event.put(std::move(phDigisLaBr), "phLaBr");
 
+
 }// End of produce()
 
+void STMDigisFromFragments::printJobSummary() const {
+    std::ostringstream out;
+    auto row = [&](const char* det, const char* type, const fragCounts& c) {
+        out << std::left << std::setw(12) << det << std::setw(8) << type
+            << std::right << std::setw(12) << c.seen << std::setw(12) << c.good
+            << std::setw(12) << (std::string(type) == "PH" ? "-" : std::to_string(c.prescaled))
+            << std::setw(12) << (std::string(type) == "PH" ? std::to_string(c.noHits) : "-")
+            << std::setw(12) << (std::string(type) == "ZS" ? std::to_string(c.noRegions) : "-") << '\n';
+    };
+    out << "\n======= STM Job Summary =======\n"
+        << "Art events processed : " << _totalEvents << '\n'
+        << "Inner fragments      : " << _totalInnerFrags << "\n\n"
+        << std::left << std::setw(12) << "Detector" << std::setw(8) << "Type"
+        << std::right << std::setw(12) << "Seen" << std::setw(12) << "Good"
+        << std::setw(12) << "Prescaled" << std::setw(12) << "No hits"
+        << std::setw(12) << "No regions" << '\n'
+        << std::string(84, '-') << '\n';
+    row("HPGe", "RAW", hpgeJobCounts.raw);
+    row("HPGe", "ZS", hpgeJobCounts.zs);
+    row("HPGe", "PH", hpgeJobCounts.ph);
+    row("LaBr", "RAW", labrJobCounts.raw);
+    row("LaBr", "ZS", labrJobCounts.zs);
+    row("LaBr", "PH", labrJobCounts.ph);
+    out << "\nProducts Saved (job total):\n"
+        << "HPGe | rawWithHeader : " << hpgeJobProducts.rawWithHeader
+        << " , raw : " << hpgeJobProducts.rawWaveforms
+        << " , ZS : " << hpgeJobProducts.zsWaveforms
+        << " , PH : " << hpgeJobProducts.phDigis << '\n'
+        << "LaBr | rawWithHeader : " << labrJobProducts.rawWithHeader
+        << " , raw : " << labrJobProducts.rawWaveforms
+        << " , ZS : " << labrJobProducts.zsWaveforms
+        << " , PH : " << labrJobProducts.phDigis << '\n';
+    mf::LogInfo("STMDigisFromFragments") << out.str();
+}
+
+void STMDigisFromFragments::printDetailedJobSummary() const {
+    std::ostringstream out;
+    auto row = [&](const std::string& name, size_t hpge, size_t labr) {
+        out << std::left << std::setw(36) << name
+            << std::right << std::setw(12) << hpge << std::setw(12) << labr
+            << std::setw(12) << hpge + labr << '\n';
+    };
+    auto header = [&](const std::string& name) {
+        out << std::left << std::setw(36) << name
+            << std::right << std::setw(12) << "HPGe"
+            << std::setw(12) << "LaBr"
+            << std::setw(12) << "Total" << '\n'
+            << std::string(76, '-') << '\n';
+    };
+    out << "\n======= STM Detailed Job Summary =======\n"
+        << "Events with both detectors : " << _totalEventsWithBothDetectors << '\n'
+        << "Only HPGe                  : " << _totalEventsWithOnlyHPGe << '\n'
+        << "Only LaBr                  : " << _totalEventsWithOnlyLaBr << '\n'
+        << "Neither                    : " << _totalEventsWithNeitherDetector << '\n'
+        << "Recognized STM containers  : " << _totalContainers << '\n'
+        << "Unknown containers         : " << _totalUnknownContainers << '\n'
+        << "Non-container fragments    : " << _totalNonContainers << '\n'
+        << "Unknown inner fragments    : " << _totalUnknownInnerFrags << "\n\n";
+
+    header("Frag Type");
+    row("Containers", hpgeJobCounts.container, labrJobCounts.container);
+    row("Inner fragments", hpgeJobCounts.innerFrags, labrJobCounts.innerFrags);
+    out << "\n";
+
+    header("Payload Classification");
+    row("RAW empty", hpgeJobCounts.raw.empty, labrJobCounts.raw.empty);
+    row("ZS empty", hpgeJobCounts.zs.empty, labrJobCounts.zs.empty);
+    row("PH empty", hpgeJobCounts.ph.empty, labrJobCounts.ph.empty);
+    row("RAW zero-filled", hpgeJobCounts.raw.zero, labrJobCounts.raw.zero);
+    row("ZS zero-filled", hpgeJobCounts.zs.zero, labrJobCounts.zs.zero);
+    row("PH zero-filled", hpgeJobCounts.ph.zero, labrJobCounts.ph.zero);
+    row("RAW unreadable", hpgeJobCounts.raw.unread, labrJobCounts.raw.unread);
+    row("ZS unreadable", hpgeJobCounts.zs.unread, labrJobCounts.zs.unread);
+    row("PH unreadable", hpgeJobCounts.ph.unread, labrJobCounts.ph.unread);
+    out << '\n';
+
+    header("Raw Diagnostic");
+    row("Invalid RAW headers", hpgeJobCounts.invalidHeaders, labrJobCounts.invalidHeaders);
+    row("Invalid RAW anchors", hpgeJobCounts.invalidAnchors, labrJobCounts.invalidAnchors);
+    row("Invalid Raw version", hpgeJobCounts.invalidVersions, labrJobCounts.invalidVersions);
+    row("RAW flagged bad only", hpgeJobCounts.badOnly, labrJobCounts.badOnly);
+    row("RAW flagged missing only", hpgeJobCounts.missingOnly, labrJobCounts.missingOnly);
+    row("RAW flagged bad and missing", hpgeJobCounts.badAndMissing, labrJobCounts.badAndMissing);
+    out << '\n';
+
+    header("ZS Diagnostic");
+    row("ZS header mismatch", hpgeJobCounts.zsHeaderMismatch, labrJobCounts.zsHeaderMismatch);
+    row("ZS length mismatch", hpgeJobCounts.zsLengthMismatch, labrJobCounts.zsLengthMismatch);
+    row("ZS region mismatch", hpgeJobCounts.zsRegionMismatch, labrJobCounts.zsRegionMismatch);
+    row("ZS skipped: RAW flags", hpgeJobCounts.skippedZSRawFlags, labrJobCounts.skippedZSRawFlags);
+    row("ZS skipped: invalid RAW header", hpgeJobCounts.skippedZSInvalidHeader, labrJobCounts.skippedZSInvalidHeader);
+    row("ZS skipped: no preceding RAW", hpgeJobCounts.skippedZSNoRaw, labrJobCounts.skippedZSNoRaw);
+    row("ZS skipped: invalid header vers" , hpgeJobCounts.skippedZSInvalidVersion, labrJobCounts.skippedZSInvalidVersion);
+    out << '\n';
+
+    header("PH Diagnostic");
+    row("PH count mismatch", hpgeJobCounts.phCountMismatch, labrJobCounts.phCountMismatch);
+    row("PH skipped: RAW flags", hpgeJobCounts.skippedPHRawFlags, labrJobCounts.skippedPHRawFlags);
+    row("PH skipped: invalid RAW header", hpgeJobCounts.skippedPHInvalidHeader, labrJobCounts.skippedPHInvalidHeader);
+    row("PH skipped: no preceding RAW", hpgeJobCounts.skippedPHNoRaw, labrJobCounts.skippedPHNoRaw);
+    row("PH skipped: invalid header vers" , hpgeJobCounts.skippedPHInvalidVersion, labrJobCounts.skippedPHInvalidVersion);
+    out << '\n';
+
+    header("Raw|ZS|PH");
+    row("RAW sets skipped: flags", hpgeJobCounts.setsSkippedRawFlags, labrJobCounts.setsSkippedRawFlags);
+    row("RAW sets skipped: short/invalid", hpgeJobCounts.setsSkippedInvalidHeaders, labrJobCounts.setsSkippedInvalidHeaders);
+    row("RAW sets skipped: anchors", hpgeJobCounts.setsSkippedInvalidAnchors, labrJobCounts.setsSkippedInvalidAnchors);
+    row("Raw sets skipped: header ver", hpgeJobCounts.setsSkippedInvalidVersion, labrJobCounts.setsSkippedInvalidVersion);
+    mf::LogInfo("STMDigisFromFragments") << out.str();
+}
+
 void STMDigisFromFragments::endJob() {
-    if (_verbosityLevel > 0 ){
+    if (_verbosityLevel >= 1) {
         // Print job Summary
-        mf::LogInfo("STMDigisFromFragments")
-        << "\n========== STM JOB SUMMARY - (Unpacking Module) ==========\n"
+        std::ostringstream out;
+        out << "\n========== STM JOB SUMMARY - (Unpacking Module) ==========\n"
         << "\n--- Module Configuration For Job ---\n"
         << "Raw Waveforms with Header HPGe   : " << (_saveRawWaveformsWithHeaderHPGe ? "Yes" : "No") << "\n"
         << "Raw Waveforms HPGe               : " << (_saveRawWaveformsHPGe ? "Yes" : "No") << "\n"
@@ -1345,135 +1226,26 @@ void STMDigisFromFragments::endJob() {
         << "Raw Waveforms with Header LaBr   : " << (_saveRawWaveformsWithHeaderLaBr ? "Yes" : "No") << "\n"
         << "Raw Waveforms LaBr               : " << (_saveRawWaveformsLaBr ? "Yes" : "No") << "\n"
         << "ZS Waveforms LaBr                : " << (_saveZSWaveformsLaBr ? "Yes" : "No") << "\n"
-        << "PH Digis LaBr                    : Yes\n"
+        << "PH Digis LaBr                    : Yes" << "\n"
+        << "Frag Summaries                   : " << (_saveSTMFragSummary ?"Yes" : "No" ) << "\n\n"
+        << "--- RAW Header Versions Seen ---\n";
 
-        // Container and Inner Fragment Summary
-        << "\n--- Container and Inner Fragment Job Summary ---\n"
-        << "Total Art Events Processed                      : " << _totalEvents << "\n"
-        << "Total Art Events w/ HPGe & LaBr                 : " << _totalEventsWithBothDetectors << "\n"
-        << "Total Art Events w/ HPGe Only                   : " << _totalEventsWithOnlyHPGe << "\n"
-        << "Total Art Events w/ LaBr Only                   : " << _totalEventsWithOnlyLaBr << "\n"
-        << "Total Art Events w/ Neither HPGe nor LaBr       : " << _totalEventsWithNeitherDetector << "\n"
+        if (_rawHeaderVersions.empty()) {
+            out << "No readable format observed\n";
+        } else {
+            for (const auto& entry : _rawHeaderVersions) {
+                out << "Version " << entry.first;
+                if (entry.first == stm::RawHeader::VERSION_LEGACY) {
+                    out << " (legacy)";
+                }
+                out << ": " << entry.second << " Raw fragments\n";
+            }
+        }
 
-        << "Total HPGe Containers                           : " << _totalContainersHPGe << "\n"
-        << "Total LaBr Containers                           : " << _totalContainersLaBr << "\n"
-        << "Total Container Processed                       : " << _totalContainers << "\n"
-
-        << "Total Inner Fragments Processed                 : " << _totalInnerFrags << "\n"
-        << "Total Unreadable Inner Fragments                : " << _totalUnreadInnerFrags << "\n"
-
-        << "Total Unknown Container Fragments               : " << _totalUnknownContainers << "\n"
-        << "Total Non Container Fragments                   : " << _totalNonContainers << "\n"
-
-        // Data Type Summary - pre-filtering
-        << "\n--- Data Types Read ---\n"
-        << "Total Raw Frags Seen                            : " << _totalRawFragsSeen << "\n"
-        << "Total ZS  Frags Seen                            : " << _totalZSFragsSeen << "\n"
-        << "Total PH  Frags Seen                            : " << _totalPHFragsSeen << "\n"
-        << "Total Raw Prescaled Frags                       : " << _totalRawFragsPrescaled << "\n"
-        << "Total ZS Prescaled Frags                        : " << _totalZSFragsPrescaled << "\n"
-        << "Total Raw Frags Flagged Bad Only                : " << _totalRawFragsFlaggedBadOnly << "\n"
-        << "Total Raw Frags Flagged Missing Only            : " << _totalRawFragsFlaggedMissingOnly << "\n"
-        << "Total Raw Frags Flagged Bad And Missing         : " << _totalRawFragsFlaggedBadAndMissing << "\n"
-        << "\n"
-        << "Total RAW Frags seen (HPGe)                     : " << _totalRawFragsSeenHPGe << "\n"
-        << "Total ZS  Frags seen (HPGe)                     : " << _totalZSFragsSeenHPGe << "\n"
-        << "Total PH  Frags seen (HPGe)                     : " << _totalPHFragsSeenHPGe << "\n"
-        << "\n"
-        << "Total RAW Frags seen (LaBr)                     : " << _totalRawFragsSeenLaBr << "\n"
-        << "Total ZS  Frags seen (LaBr)                     : " << _totalZSFragsSeenLaBr << "\n"
-        << "Total PH  Frags seen (LaBr)                     : " << _totalPHFragsSeenLaBr << "\n"
-
-        // Data Type Summary - post-filtering (General)
-        << "\n--- Data Types Read Classified ---\n"
-        << "Total Good  Raw Frags                           : " << _totalGoodRawFrags << "\n"
-        << "Total Good  ZS  Frags                           : " << _totalGoodZSFrags << "\n"
-        << "Total Good  PH  Frags                           : " << _totalGoodPHFrags << "\n"
-        << "\n"
-        << "Total Zero  Raw Frags                           : " << _totalZeroRawFrags << "\n"
-        << "Total Zero  ZS  Frags                           : " << _totalZeroZSFrags << "\n"
-        << "Total Zero  PH  Frags                           : " << _totalZeroPHFrags << "\n"
-        << "\n"
-        << "Total Empty Raw Frags                           : " << _totalEmptyRawFrags << "\n"
-        << "Total Empty ZS  Frags                           : " << _totalEmptyZSFrags << "\n"
-        << "Total Empty PH  Frags                           : " << _totalEmptyPHFrags << "\n"
-        << "\n"
-        << "Total Non Hits PH Frags                         : " << _totalNoHitsPHFrags << "\n"
-
-        // Data Type Summary - post-filtering (HPGe)
-        << "\n--- Data Types Read For HPGe ---\n"
-        << "Total Good  Raw Frags (HPGe)                    : " << _totalGoodRawFragsHPGe << "\n"
-        << "Total Good  ZS  Frags (HPGe)                    : " << _totalGoodZSFragsHPGe << "\n"
-        << "Total Good  PH  Frags (HPGe)                    : " << _totalGoodPHFragsHPGe << "\n"
-        << "\n"
-        << "Total Zero  Raw Frags (HPGe)                    : " << _totalZeroRawFragsHPGe << "\n"
-        << "Total Zero  ZS  Frags (HPGe)                    : " << _totalZeroZSFragsHPGe << "\n"
-        << "Total Zero  PH  Frags (HPGe)                    : " << _totalZeroPHFragsHPGe << "\n"
-        << "\n"
-        << "Total Empty Raw Frags (HPGe)                    : " << _totalEmptyRawFragsHPGe << "\n"
-        << "Total Empty ZS  Frags (HPGe)                    : " << _totalEmptyZSFragsHPGe << "\n"
-        << "Total Empty PH  Frags (HPGe)                    : " << _totalEmptyPHFragsHPGe << "\n"
-        << "\n"
-        << "Total Non Hits PH Frgas (HPGe)                  : " << _totalNoHitsPHFragsHPGe << "\n"
-        << "\n"
-        << "Total Raw Prescaled Frags (HPGe)                : " << _totalRawFragsPrescaledHPGe << "\n"
-        // Raw Prescaled Frags should be classified as their own data for now
-        << "Total ZS Prescaled Frags (HPGe)                 : " << _totalZSFragsPrescaledHPGe << "\n"
-        << "Total Raw Frags Flagged Bad Only (HPGe)         : " << _totalRawFragsFlaggedBadOnlyHPGe << "\n"
-        << "Total Raw Frags Flagged Missing Only (HPGe)     : " << _totalRawFragsFlaggedMissingOnlyHPGe << "\n"
-        << "Total Raw Frags Flagged Bad & Missing (HPGe)    : " << _totalRawFragsFlaggedBadAndMissingHPGe << "\n"
-
-        // Data Type Summary - post-filtering (LaBr)
-        << "\n--- Data Types Read For LaBr ---\n"
-        << "Total Good  Raw Frags (LaBr)                    : " << _totalGoodRawFragsLaBr << "\n"
-        << "Total Good  ZS  Frags (LaBr)                    : " << _totalGoodZSFragsLaBr << "\n"
-        << "Total Good  PH  Frags (LaBr)                    : " << _totalGoodPHFragsLaBr << "\n"
-        << "\n"
-        << "Total Zero  Raw Frags (LaBr)                    : " << _totalZeroRawFragsLaBr << "\n"
-        << "Total Zero  ZS  Frags (LaBr)                    : " << _totalZeroZSFragsLaBr << "\n"
-        << "Total Zero  PH  Frags (LaBr)                    : " << _totalZeroPHFragsLaBr << "\n"
-        << "\n"
-        << "Total Empty Raw Frags (LaBr)                    : " << _totalEmptyRawFragsLaBr << "\n"
-        << "Total Empty ZS  Frags (LaBr)                    : " << _totalEmptyZSFragsLaBr << "\n"
-        << "Total Empty PH  Frags (LaBr)                    : " << _totalEmptyPHFragsLaBr << "\n"
-        << "\n"
-        << "Total Non Hits PH Frgas (LaBr)                  : " << _totalNoHitsPHFragsLaBr << "\n"
-        << "\n"
-        << "Total Raw Prescaled Frags (LaBr)                : " << _totalRawFragsPrescaledLaBr << "\n"
-        << "Total ZS Prescaled Frags (LaBr)                 : " << _totalZSFragsPrescaledLaBr << "\n"
-        << "Total Raw Frags Flagged Bad Only (LaBr)         : " << _totalRawFragsFlaggedBadOnlyLaBr << "\n"
-        << "Total Raw Frags Flagged Missing Only (LaBr)     : " << _totalRawFragsFlaggedMissingOnlyLaBr << "\n"
-        << "Total Raw Frags Flagged Bad & Missing (LaBr)    : " << _totalRawFragsFlaggedBadAndMissingLaBr << "\n"
-
-        << "\n=== Extra Filters ===\n"
-        << "Invalid Raw Headers                             : " << _totalRawFragsWithInvalidHeaders << "\n"
-        << "Invalid Raw Headers (HPGe)                      : " << _totalRawFragsWithInvalidHeadersHPGe << "\n"
-        << "Invalid Raw Headers (LaBr)                      : " << _totalRawFragsWithInvalidHeadersLaBr << "\n"
-        << "Invalid Raw Anchors                             : " << _totalRawFragsWithInvalidAnchors << "\n"
-        << "Invalid Raw Anchors (HPGe)                      : " << _totalRawFragsWithInvalidAnchorsHPGe << "\n"
-        << "Invalid Raw Anchors (LaBr)                      : " << _totalRawFragsWithInvalidAnchorsLaBr << "\n"
-
-        << "ZS Skipped Due To Raw Flags (HPGe)              : " << _totalZSFragsSkippedDueToRawFlagHPGe << "\n"
-        << "ZS Skipped Due To Raw Flags (LaBr)              : " << _totalZSFragsSkippedDueToRawFlagLaBr << "\n"
-
-        << "PH Skipped Due To Raw Flags (HPGe)              : " << _totalPHFragsSkippedDueToRawFlagHPGe << "\n"
-        << "PH Skipped Due To Raw Flags (LaBr)              : " << _totalPHFragsSkippedDueToRawFlagLaBr << "\n"
-
-        << "ZS Length Mismatches Encountered                : " << _totalZSLengthMismatch << "\n"
-        << "ZS Length Mismatches Encountered (HPGe)         : " << _totalZSLengthMismatchHPGe << "\n"
-        << "ZS Length Mismtaches Enocuntered (LaBr)         : " << _totalZSLengthMismatchLaBr << "\n"
-
-        << "ZS Region Mismatches Encountered                : " << _totalZSRegionMismatch << "\n"
-        << "ZS Region Mismatches Encountered (HPGe)         : " << _totalZSRegionMismatchHPGe << "\n"
-        << "ZS Region Mismatches Encountered (LaBr)         : " << _totalZSRegionMismatchLaBr << "\n"
-
-        << "PH Count Mismatches Encountered                 : " << _totalPHCountMismatch << "\n"
-        << "PH Count Mismatches Encountered (HPGe)          : " << _totalPHCountMismatchHPGe << "\n"
-        << "PH Count Mismatches Encountered (LaBr)          : " << _totalPHCountMismatchLaBr << "\n"
-
-        << "\n===========================================================\n";
-
+        mf::LogInfo("STMDigisFromFragments") << out.str();
+        printJobSummary();
     }
+    if (_verbosityLevel >= 2) {printDetailedJobSummary();}
 }
 
 DEFINE_ART_MODULE(STMDigisFromFragments)
