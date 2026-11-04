@@ -5,10 +5,10 @@ double building.dsArea.elevator.shield.offsetFromFloorSurface.y = 1143.10;
 double building.dsArea.elevator.shield.offsetFromMu2eOrigin.z   = -3581.40;
 double building.dsArea.elevator.shield.yHalfThickness           = 1143.10;
 vector<double> building.dsArea.elevator.shield.xPositions = {
-29895.85, // 0
-32639.05, // 1
-32639.05, // 2
-29895.85 // 3
+30047.40, // 0
+32791.45, // 1
+32791.45, // 2
+30047.40 // 3
 };
 vector<double> building.dsArea.elevator.shield.yPositions = {
 -8661.40, // 0
