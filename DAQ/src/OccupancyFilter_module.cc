@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalTable.h"
+#include "cetlib_except/exception.h"
 
 // artdaq
 #include <artdaq-core/Data/Fragment.hh>
@@ -22,6 +23,7 @@
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 
 // C++
+#include <ostream>
 #include <string>
 #include <typeinfo>
 
@@ -38,13 +40,15 @@ namespace mu2e {
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<std::string>  tag    {Name("tag")    , Comment("Collection tag")};
-      fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum collection size")};
+      fhicl::Atom<int>          minSize{Name("minSize"), Comment("Minimum collection size (<= 0 = no minimum)"), -1};
+      fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum collection size (<  0 = no maximum)"), -1};
     };
 
     struct FragmentCutConfig { // no tag needed here
       using Name    = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum collection size")};
+      fhicl::Atom<int>          minSize{Name("minSize"), Comment("Minimum number of fragments (<= 0 = no minimum)"), -1};
+      fhicl::Atom<int>          maxSize{Name("maxSize"), Comment("Maximum number of fragments (<  0 = no maximum)"), -1};
     };
 
     // Main configuration
@@ -59,6 +63,29 @@ namespace mu2e {
       fhicl::OptionalTable<FragmentCutConfig>  fragments {Name("fragments") , Comment("Fragments selection")};
     };
 
+    // Selection on a collection size: a negative bound is not applied
+    struct Cuts {
+      std::string tag = ""; // not used for fragments
+      int min = -1;
+      int max = -1;
+      Cuts() {}
+      Cuts(const CutConfig& cuts) : tag(cuts.tag()), min(cuts.minSize()), max(cuts.maxSize()) { validate(tag); }
+      Cuts(const FragmentCutConfig& cuts) : min(cuts.minSize()), max(cuts.maxSize()) { validate("fragments"); }
+      // A maximum, if set, must not be below the minimum
+      void validate(const std::string& name) const {
+        if(max >= 0 && max < min) {
+          throw cet::exception("CONFIG") << "OccupancyFilter: invalid cut for " << name
+                                         << ": maxSize (" << max << ") < minSize (" << min << ")\n";
+        }
+      }
+      bool passes(const size_t n) const {
+        return (min < 0 || n >= size_t(min)) && (max < 0 || n <= size_t(max));
+      }
+      friend std::ostream& operator<<(std::ostream& os, const Cuts& c) {
+        return os << " (tag = '" << c.tag << "', min = " << c.min << ", max = " << c.max << ")";
+      }
+    };
+
     using Parameters = art::EDFilter::Table<Config>;
 
     explicit OccupancyFilter(const Parameters& config);
@@ -69,8 +96,8 @@ namespace mu2e {
     bool endRun  (art::Run&   run  ) override;
 
     // Check if a collection passes the selection
-    template <typename T> bool check_collection(const art::Event& event, const std::string& tag, const size_t max_size);
-    bool check_fragments(const art::Event& event, const size_t max_size);
+    template <typename T> bool check_collection(const art::Event& event, const Cuts& cuts);
+    bool check_fragments(const art::Event& event, const Cuts& cuts);
 
     // Inputs
     bool                     _filterComboHits;
@@ -80,17 +107,13 @@ namespace mu2e {
     bool                     _filterCaloDigis;
     bool                     _filterFragments;
 
-    int                      _maxComboHits = -1;
-    std::string              _tagComboHits;
-    int                      _maxStrawHits = -1;
-    std::string              _tagStrawHits;
-    int                      _maxStrawDigis = -1;
-    std::string              _tagStrawDigis;
-    int                      _maxCaloHits = -1;
-    std::string              _tagCaloHits;
-    int                      _maxCaloDigis = -1;
-    std::string              _tagCaloDigis;
-    int                      _maxFragments = -1;
+    // Selections
+    Cuts                     _comboHitCuts;
+    Cuts                     _strawHitCuts;
+    Cuts                     _strawDigiCuts;
+    Cuts                     _caloHitCuts;
+    Cuts                     _caloDigiCuts;
+    Cuts                     _fragmentCuts;
 
     // Data
     int                      _nevt, _npass;
@@ -110,64 +133,49 @@ namespace mu2e {
     , _npass(0)
   {
     // Check each collection option if it's set, getting its info if available
-    if(_filterComboHits) {
-      _maxComboHits = conf().comboHits()->maxSize();
-      _tagComboHits = conf().comboHits()->tag    ();
-    }
-    if(_filterStrawHits) {
-      _maxStrawHits = conf().strawHits()->maxSize();
-      _tagStrawHits = conf().strawHits()->tag    ();
-    }
-    if(_filterStrawDigis) {
-      _maxStrawDigis = conf().strawDigis()->maxSize();
-      _tagStrawDigis = conf().strawDigis()->tag    ();
-    }
-    if(_filterCaloHits) {
-      _maxCaloHits = conf().caloHits()->maxSize();
-      _tagCaloHits = conf().caloHits()->tag    ();
-    }
-    if(_filterCaloDigis) {
-      _maxCaloDigis = conf().caloDigis()->maxSize();
-      _tagCaloDigis = conf().caloDigis()->tag    ();
-    }
-    if(_filterFragments) {
-      _maxFragments = conf().fragments()->maxSize();
-    }
+    if(_filterComboHits ) _comboHitCuts  = Cuts(*(conf().comboHits ()));
+    if(_filterStrawHits ) _strawHitCuts  = Cuts(*(conf().strawHits ()));
+    if(_filterStrawDigis) _strawDigiCuts = Cuts(*(conf().strawDigis()));
+    if(_filterCaloHits  ) _caloHitCuts   = Cuts(*(conf().caloHits  ()));
+    if(_filterCaloDigis ) _caloDigiCuts  = Cuts(*(conf().caloDigis ()));
+    if(_filterFragments ) _fragmentCuts  = Cuts(*(conf().fragments ()));
 
     TLOG(TLVL_DEBUG + 1) << ":"
-                         << " filter combo hits = "   << _filterComboHits  << " max = " << _maxComboHits
-                         << " filter straw hits = "   << _filterStrawHits  << " max = " << _maxStrawHits
-                         << " filter straw digis = "  << _filterStrawDigis << " max = " << _maxStrawDigis
-                         << " filter calo hits =   "  << _filterCaloHits   << " max = " << _maxCaloHits
-                         << " filter calo digis = "   << _filterCaloDigis  << " max = " << _maxCaloDigis
-                         << " filter fragments = "    << _filterFragments  << " max = " << _maxFragments;
+                         << " filter combo hits = "   << _filterComboHits  <<  _comboHitCuts
+                         << " filter straw hits = "   << _filterStrawHits  <<  _strawHitCuts
+                         << " filter straw digis = "  << _filterStrawDigis <<  _strawDigiCuts
+                         << " filter calo hits =   "  << _filterCaloHits   <<  _caloHitCuts
+                         << " filter calo digis = "   << _filterCaloDigis  <<  _caloDigiCuts
+                         << " filter fragments = "    << _filterFragments  <<  _fragmentCuts ;
   }
 
   //-----------------------------------------------------------------------------
   // Check if a collection passes the selection
   template <typename T>
-  bool OccupancyFilter::check_collection(const art::Event& event, const std::string& tag, const size_t max_size) {
+  bool OccupancyFilter::check_collection(const art::Event& event, const Cuts& cuts) {
+    const std::string& tag = cuts.tag;
     // Attempt to get the collection
     art::Handle<T> handle;
     if(!event.getByLabel(tag, handle)) {
       TLOG(TLVL_WARNING) << ": Unable to find handle for " << typeid(T).name() << " with tag " << tag;
-      return true; // don't filter if it's missing, as it's not high occupancy
+      return cuts.min <= 0; // a missing collection can't satisfy a minimum, but passes a max-only cut
     }
 
     // Check the collection
     const T* collection = handle.product();
     const size_t nobj = collection->size();
-    const bool passed = nobj <= max_size;
+    const bool passed = cuts.passes(nobj);
     TLOG(TLVL_DEBUG + 3) << ":  handle " << typeid(T).name() << " with tag " << tag
                          << " has size " << nobj << " and result " << passed;
     if(!passed) TLOG(TLVL_DEBUG + 4) << ":  handle " << typeid(T).name() << " with tag " << tag
-                                     << " has size " << nobj << " and fails the check (max = " << max_size << ")";
+                                     << " has size " << nobj << " and fails the check (min = " << cuts.min << ", max = " << cuts.max << ")";
     return passed;
   }
 
   //-----------------------------------------------------------------------------
   // Check if the fragment collection passes the selection
-  bool OccupancyFilter::check_fragments(const art::Event& event, const size_t max_size) {
+  bool OccupancyFilter::check_fragments(const art::Event& event, const Cuts& cuts) {
+    const int max_size = cuts.max;
 
     // Get all fragment handles
     std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
@@ -188,7 +196,7 @@ namespace mu2e {
           }
 
           nfragments += contf.block_count();
-          if(nfragments > max_size) {
+          if(max_size >= 0 && nfragments > size_t(max_size)) {
             TLOG(TLVL_DEBUG + 10) << ": Reached maximum fragments at " << nfragments;
             return false; // stop processing if we ever fail
           }
@@ -196,16 +204,17 @@ namespace mu2e {
       } else { // directly a list of fragments
         if (handle->front().type() == mu2e::FragmentType::DTCEVT) {
           nfragments += handle->size();
-          if(nfragments > max_size) {
+          if(max_size >= 0 && nfragments > size_t(max_size)) {
             TLOG(TLVL_DEBUG + 10) << ": Reached maximum fragments at " << nfragments;
             return false; // stop processing if we ever fail
           }
         }
       }
     }
-    TLOG(TLVL_DEBUG + 11) << ": Passed event, N(fragments) = " << nfragments;
+    const bool passed = cuts.passes(nfragments);
+    TLOG(TLVL_DEBUG + 11) << ": N(fragments) = " << nfragments << " result = " << passed;
 
-    return true; // can only reach here if we don't fail the checks
+    return passed;
   }
 
   //-----------------------------------------------------------------------------
@@ -218,12 +227,12 @@ namespace mu2e {
     bool passed = true;
 
     // Filter on each requested collection
-    if(_filterComboHits ) passed &= check_collection<mu2e::ComboHitCollection >(event, _tagComboHits , _maxComboHits );
-    if(_filterStrawHits ) passed &= check_collection<mu2e::StrawHitCollection >(event, _tagStrawHits , _maxStrawHits );
-    if(_filterStrawDigis) passed &= check_collection<mu2e::StrawDigiCollection>(event, _tagStrawDigis, _maxStrawDigis);
-    if(_filterCaloHits  ) passed &= check_collection<mu2e::CaloHitCollection  >(event, _tagCaloHits  , _maxCaloHits  );
-    if(_filterCaloDigis ) passed &= check_collection<mu2e::CaloDigiCollection >(event, _tagCaloDigis , _maxCaloDigis );
-    if(_filterFragments ) passed &= check_fragments(event, _maxFragments);
+    if(_filterComboHits ) passed &= check_collection<mu2e::ComboHitCollection >(event, _comboHitCuts);
+    if(_filterStrawHits ) passed &= check_collection<mu2e::StrawHitCollection >(event, _strawHitCuts);
+    if(_filterStrawDigis) passed &= check_collection<mu2e::StrawDigiCollection>(event, _strawDigiCuts);
+    if(_filterCaloHits  ) passed &= check_collection<mu2e::CaloHitCollection  >(event, _caloHitCuts);
+    if(_filterCaloDigis ) passed &= check_collection<mu2e::CaloDigiCollection >(event, _caloDigiCuts);
+    if(_filterFragments ) passed &= check_fragments(event, _fragmentCuts);
     TLOG(TLVL_DEBUG + 5) << ": Event has status " << passed;
 
     // Count accepted events

@@ -61,7 +61,7 @@ namespace mu2e {
       produces<GenParticleCollection>();
       produces<SpectrumConfig, art::InSubRun>();
       px = conf().px() ? *conf().px() : 0;
-      px = conf().py() ? *conf().py() : 0;
+      py = conf().py() ? *conf().py() : 0;
       if ((px*px + py*py) > (E*E))
         throw cet::exception("RANGE") << "magnitude of px and py is greater than E, exiting.";
       pz = std::sqrt(E*E - px*px - py*py);

@@ -5,6 +5,7 @@
 //
 // Author: Haichuan Cao
 // Sept 2023
+// Update: Yongyi Wu Sept-Oct 2026, updated (hand-stacked) cradle
 
 #include <string>
 
@@ -38,11 +39,59 @@ namespace mu2e {
       _FLeadShim_H(FLeadShim_H), _FLeadShim_T(FLeadShim_T),
       _FAluminumShim_T(FAluminumShim_T), _FAluminumExtra_L(FAluminumExtra_L), _FAluminumExtra_H(FAluminumExtra_H),
       _originInMu2e(originInMu2e),
-      _rotation(rotation)
+      _rotation(rotation),
+      _depth(0.), _side_T(0.), _side_H(0.),
+      _plate_base_T(0.), _bottom_T(0.), _top_T(0.),
+      _material("")
+    {
+    }
+
+    // Updated (hand-stacked) SSC support cradle.
+    //
+    // The updated support is not the earlier table/legs/base/walls plus lead
+    // and aluminium shims. It is a five-plate steel cradle around the
+    // collimator: two sides, a base under it, a top over it, and a bottom
+    // plate resting on the baseplate. So it takes its own parameters rather
+    // than reusing ones that describe a different structure.
+    //
+    // Only the thicknesses and the side-plate height are given. Every width
+    // and offset is derived from the SSC block and its clearance, and
+    // STM_SSC::boreToBase fixes where the whole cradle sits: see
+    // constructSTM.cc.
+    SSCSupport(bool build,
+                 double depth, double side_T, double side_H,
+                 double base_T, double bottom_T, double top_T,
+                 std::string const & material,
+                 CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(),
+                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
+                 ) :
+      _build(build),
+      _table_L(0.), _table_H(0.), _table_T(0.),
+      _leg_L(0.), _leg_H(0.), _leg_T(0.),
+      _base_L(0.), _base_H(0.), _base_T(0.),
+      _wall_L(0.), _wall_H(0.), _wall_T(0.),
+      _hole_H(0.), _hole_T(0.),
+      _FLeadStand_L(0.), _FLeadStand_H(0.), _FLeadStand_T(0.),
+      _FLeadShim_H(0.), _FLeadShim_T(0.),
+      _FAluminumShim_T(0.), _FAluminumExtra_L(0.), _FAluminumExtra_H(0.),
+      _originInMu2e(originInMu2e),
+      _rotation(rotation),
+      _depth(depth), _side_T(side_T), _side_H(side_H),
+      _plate_base_T(base_T), _bottom_T(bottom_T), _top_T(top_T),
+      _material(material)
     {
     }
 
     bool   build()       const {return _build;}
+
+    // ---- updated (hand-stacked) cradle -----------------------------------
+    double depth()       const {return _depth;}
+    double side_T()      const {return _side_T;}
+    double side_H()      const {return _side_H;}
+    double plate_base_T() const {return _plate_base_T;}
+    double bottom_T()    const {return _bottom_T;}
+    double top_T()       const {return _top_T;}
+    std::string const & material() const {return _material;}
 
     double table_L()   const {return _table_L;}
     double table_H()   const {return _table_H;}
@@ -68,6 +117,11 @@ namespace mu2e {
     double FAluminumExtra_L() const {return _FAluminumExtra_L;}
     double FAluminumExtra_H() const {return _FAluminumExtra_H;}
 
+    // Not used anywhere, nor is rotation() below. constructSTM places both
+    // the earlier support and the updated cradle from its own
+    // STMShieldingRef, which sits BackShielding BPThick + ShieldingPipeGap
+    // upstream of the reference STMMaker builds this origin from, so this
+    // value does not match where the support is actually placed.
     CLHEP::Hep3Vector const &  originInMu2e()     const { return _originInMu2e; }
     CLHEP::HepRotation const & rotation()         const { return _rotation; }
     // Genreflex can't do persistency of vector<SSCSupport> without a default constructor
@@ -105,6 +159,17 @@ namespace mu2e {
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation; // wrt to parent volume
+
+    // updated (hand-stacked) cradle only; zero for the earlier description.
+    // _plate_base_T is the cradle's base PLATE thickness, distinct from the
+    // earlier support's _base_T.
+    double _depth;
+    double _side_T;
+    double _side_H;
+    double _plate_base_T;
+    double _bottom_T;
+    double _top_T;
+    std::string _material;
   };
 
 }

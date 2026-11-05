@@ -7,6 +7,7 @@
 #include "Offline/KinKalGeom/inc/Tracker.hh"
 #include "Offline/Mu2eKinKal/inc/KKTrack.hh"
 #include "Offline/Mu2eKinKal/inc/ExtrapolateSweep.hh"
+#include "Offline/Mu2eKinKal/inc/CaloMaterialLayers.hh"
 #include "Offline/Mu2eKinKal/inc/KKShellXing.hh"
 #include "Offline/KinKalGeom/inc/KKMaterial.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
@@ -18,6 +19,7 @@
 #include <limits>
 #include <cmath>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <new>
 #include <sstream>
@@ -38,15 +40,20 @@ namespace mu2e {
       // the surfaces requested in one time direction; updir is the direction that leaves the tracker upstream
       SweepTargetCollection targets(bool updir) const;
     private:
+      // where a track entered a calorimeter crystal case inner support: the material still to cross at the carbon fiber ring inner radius
+      struct SupportEntry { double path_ = 0.0; KKGeom::CaloInnerSupport::Crossing xing_ = KKGeom::CaloInnerSupport::cfRing; double time_ = 0.0; };
+      using SupportEntries = std::map<KKGeom::CaloInnerSupport const*,SupportEntry>;
       template <class KTRAJ> void sweep(KKTrack<KTRAJ>& ktrk, SweepTargetCollection const& tgts, TimeDir tdir, double t0, bool updir) const;
       template <class KTRAJ> void addFailure(KKTrack<KTRAJ>& ktrk, TimeDir tdir, std::string const& reason) const;
       template <class KTRAJ> bool rangeOut(KKTrack<KTRAJ>& ktrk, SweepTarget const& tg, KinKal::Intersection const& inter) const;
       template <class KTRAJ> bool addCrossing(KKTrack<KTRAJ>& ktrk, SweepTarget const& tg, KinKal::Intersection const& inter, TimeDir tdir) const;
+      template <class KTRAJ> bool supportCrossing(KKTrack<KTRAJ>& ktrk, ExtrapolateSweep& xs, size_t itg, KinKal::Intersection const& inter,
+          TimeDir tdir, SupportEntries& entries) const;
       template <class KTRAJ> bool reflect(ExtrapolateSweep& xs, KinKal::ParticleTrajectory<KTRAJ> const& ftraj, TimeDir tdir) const;
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
-      bool toCaloD0_, toCaloD1_;
+      bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // nominal literals like the hard-coded KinKalGeom IPA and ST surfaces (KinKalGeomMaker::makeDS/makeTarget); TODO: take both from the geometry service
       double ipathick_ = 0.511; // ipa thickness (mm)
       double stthick_ = 0.1056; // st foil thickness (mm)
@@ -69,7 +76,8 @@ namespace mu2e {
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV()),
     toCaloD0_(extrapconfig.ToCaloD0()),
-    toCaloD1_(extrapconfig.ToCaloD1())
+    toCaloD1_(extrapconfig.ToCaloD1()),
+    toCaloMaterial_(extrapconfig.ToCaloMaterial())
   {}
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
@@ -255,6 +263,46 @@ namespace mu2e {
         }
       }
     }
+    // calorimeter material, downstream only: front panel layers and cooling pipes, and the crystal case inner supports
+    if(!updir && toCaloMaterial_){
+      for(auto const& layer : caloMaterialLayers(*kkg_h)){
+        SweepTarget tg;
+        tg.effect_ = SweepTarget::calopanel;
+        tg.reach_ = SweepTarget::plane;
+        tg.sid_ = layer.sid_;
+        tg.surf_ = layer.surface_.get();
+        tg.pl_ = layer.surface_.get();
+        tg.plane_ = layer.surface_;
+        tg.mat_ = &*kkmat_h->material(*layer.material_);
+        tg.thick_ = layer.thickness_;
+        tg.pipes_ = layer.pipes_;
+        tg.rmax_ = bore;
+        tgts.push_back(tg);
+      }
+      // the case front finds where the case is entered; the hole and carbon fiber ring parts are switched on by supportCrossing
+      for(auto const& support : kkg_h->caloInnerSupports()){
+        double zback = support.front()->center().Z() + 2.0*support.inner()->halfLength();
+        for(auto part : {SweepTarget::casefront, SweepTarget::casehole, SweepTarget::cfring}){
+          SweepTarget tg;
+          tg.effect_ = SweepTarget::calosupport;
+          tg.support_ = &support;
+          tg.part_ = part;
+          tg.sid_ = support.surfaceId(KKGeom::CaloInnerSupport::alFront);
+          tg.rmax_ = bore;
+          if(part == SweepTarget::casefront){
+            tg.reach_ = SweepTarget::plane;
+            tg.surf_ = support.frontPlane().get();
+            tg.pl_ = support.frontPlane().get();
+          } else {
+            tg.reach_ = SweepTarget::zplane;
+            tg.zval_ = zback;
+            tg.surf_ = part == SweepTarget::casehole ? support.inner().get() : support.cfInner().get();
+            tg.active_ = false;
+          }
+          tgts.push_back(tg);
+        }
+      }
+    }
     // calorimeter disks, downstream only: faces and edges, extending to the back face while the track is in the bore
     if(!updir && kkg_h->calo()){
       auto const& calo = *kkg_h->calo();
@@ -297,6 +345,22 @@ namespace mu2e {
     // material can only be added on the end piece: the sweep starts there, never before t0
     double tend = tdir == TimeDir::forwards ? ftraj.back().range().begin() : ftraj.front().range().end();
     double tstart = tdir == TimeDir::forwards ? std::max(t0,tend) : std::min(t0,tend);
+    // calorimeter material starts at the last measurement (the fit can extend past it into the front panel) and is not
+    // added again where the fit has it (KKFit AddCaloMaterial); the inner support is only entered forwards in time
+    double tmeas = !updir && toCaloMaterial_ ? std::clamp(tdir == TimeDir::forwards ? ktrk.activeRange().end() : ktrk.activeRange().begin(),
+        ftraj.range().begin(),ftraj.range().end()) : tstart;
+    for(size_t itg = 0; itg < tgts.size(); ++itg){
+      auto const& tg = tgts[itg];
+      if(tg.effect_ != SweepTarget::calopanel && tg.effect_ != SweepTarget::calosupport) continue;
+      xs.notBefore(itg,tmeas);
+      bool skip = tg.effect_ == SweepTarget::calosupport && tdir == TimeDir::backwards;
+      for(auto const& matxing : ktrk.caloMaterialPlaneXings())
+        skip |= tg.effect_ == SweepTarget::calopanel ? matxing->surfaceId() == tg.sid_ : matxing->surfaceId().id() == tg.sid_.id();
+      if(tg.effect_ == SweepTarget::calosupport)
+        for(auto const& matxing : ktrk.caloMaterialCylXings()) skip |= matxing->surfaceId().id() == tg.sid_.id();
+      if(skip) xs.setActive(itg,false);
+    }
+    SupportEntries entries;
     // record-only surfaces the fitted trajectory already crosses between t0 and the sweep start
     xs.start(t0);
     xs.limit(tstart,true);
@@ -329,8 +393,11 @@ namespace mu2e {
         break;
       }
       if(xs.hasCrossing()){
-        auto const& tg = xs.targets()[xs.crossing().itarget_];
-        if(!addCrossing(ktrk,tg,xs.crossing().inter_,tdir)) break;
+        size_t itg = xs.crossing().itarget_;
+        auto const& tg = xs.targets()[itg];
+        bool added = tg.effect_ == SweepTarget::calosupport ? supportCrossing(ktrk,xs,itg,xs.crossing().inter_,tdir,entries)
+          : addCrossing(ktrk,tg,xs.crossing().inter_,tdir);
+        if(!added) break;
         xs.accept();
         ++ncross;
         if(tg.terminal_ || !ktrk.fitStatus().usable()) break;
@@ -372,6 +439,8 @@ namespace mu2e {
       ktrk.addIntersection(tg.sid_,inter);
       return true;
     }
+    double thick = tg.pipes_ ? tg.pipes_->wallDepth(inter.pos_) : tg.thick_;
+    if(tg.effect_ == SweepTarget::calopanel && thick <= 0.0) return true; // the pipe plane between the pipes
     // KinKal records why a fit became unusable (e.g. a failed domain walk); the direction just ends
     if(!ktrk.fitStatus().usable()) return false;
     auto const& ftraj = ktrk.fitTraj();
@@ -399,8 +468,9 @@ namespace mu2e {
         ktrk.addSTXing(shell,tdir);
         return true;
       }
-      case SweepTarget::planeshell: {
-        auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Plane>>(tg.plane_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
+      case SweepTarget::planeshell:
+      case SweepTarget::calopanel: {
+        auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Plane>>(tg.plane_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
         if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addMaterialPlaneXing(shell,tdir);
         return true;
@@ -413,8 +483,71 @@ namespace mu2e {
       }
       case SweepTarget::record:
         return true;
+      case SweepTarget::calosupport:
+        break; // supportCrossing places the support material
     }
-    throw cet::exception("RECO") << "mu2e::KKExtrap: unknown sweep effect";
+    throw cet::exception("RECO") << "mu2e::KKExtrap: unexpected sweep effect for " << tg.sid_;
+  }
+
+  // A track moving downstream onto a crystal case front enters the case there, or, from the disk hole, through the case
+  // inner cylinder (see caloSupportXings). The first material is added at the entry and the other where the track then
+  // reaches the carbon fiber ring inner radius, each as a thin shell with the straight-line path through it from the entry.
+  template <class KTRAJ> bool KKExtrap::supportCrossing(KKTrack<KTRAJ>& ktrk, ExtrapolateSweep& xs, size_t itg,
+      KinKal::Intersection const& inter, TimeDir tdir, SupportEntries& entries) const {
+    using Support = KKGeom::CaloInnerSupport;
+    auto const& tgts = xs.targets();
+    auto const& tg = tgts[itg];
+    auto const& support = *tg.support_;
+    auto part = [&](SweepTarget::SupportPart sp){
+      for(size_t jtg = 0; jtg < tgts.size(); ++jtg)
+        if(tgts[jtg].support_ == tg.support_ && tgts[jtg].part_ == sp) return jtg;
+      throw cet::exception("RECO") << "mu2e::KKExtrap: missing calorimeter support target for " << tg.sid_;
+    };
+    if(debug_ > 0) std::cout << "KKExtrap: calo support " << tg.sid_ << " part " << tg.part_ << " " << inter << std::endl;
+    auto shell = [&](Support::Crossing xing, double path){
+      GeomHandle<mu2e::KKMaterial> kkmat_h;
+      SweepTarget mt;
+      mt.sid_ = support.surfaceId(xing);
+      mt.mat_ = &*kkmat_h->material(support.materialName(Support::material(xing)));
+      mt.thick_ = path*std::fabs(inter.norm_.Dot(inter.pdir_));
+      if(xing == Support::alFront || xing == Support::cfFront){
+        mt.effect_ = SweepTarget::planeshell;
+        mt.plane_ = support.front();
+      } else {
+        mt.effect_ = SweepTarget::cylshell;
+        mt.cyl_ = xing == Support::alHole ? support.inner() : support.cfInner();
+      }
+      return addCrossing(ktrk,mt,inter,tdir);
+    };
+    auto enter = [&](Support::Crossing first, Support::Crossing second){
+      auto paths = support.pathLengths(inter.pos_,inter.pdir_);
+      if(paths[Support::material(first)] > 0.0 && !shell(first,paths[Support::material(first)])) return false;
+      if(paths[Support::material(second)] > 0.0){
+        entries[tg.support_] = SupportEntry{paths[Support::material(second)],second,inter.time_};
+        xs.setActive(part(SweepTarget::cfring),true);
+      }
+      return true;
+    };
+    switch(tg.part_){
+      case SweepTarget::casefront: {
+        double rho = support.transverseRadius(inter.pos_);
+        if(inter.pdir_.Z() <= 0.0 || rho >= support.rcrystal()) return true; // moving upstream, or onto the crystals, where it showers
+        if(rho < support.rin()){
+          xs.setActive(part(SweepTarget::casehole),true); // in the disk hole: the case is entered through its inner cylinder
+          return true;
+        }
+        bool oncf = rho >= support.rcf();
+        return enter(oncf ? Support::cfFront : Support::alFront, oncf ? Support::alRing : Support::cfRing);
+      }
+      case SweepTarget::casehole:
+        return enter(Support::alHole,Support::cfRing);
+      case SweepTarget::cfring: {
+        auto const& entry = entries.at(tg.support_);
+        if(inter.time_ == entry.time_) return true;
+        return shell(entry.xing_,entry.path_);
+      }
+    }
+    return true;
   }
 }
 #endif

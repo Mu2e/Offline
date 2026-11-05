@@ -546,6 +546,12 @@ CalPatRec : { @table::CalPatRec
             caloClusterSigma        : 30.0
             minNHelixComboHits      : 10
             minNHelixStrawHits      : 12
+            maxHelixCandidates      : 1    # save the first viable candidate
+            acceptHelixStrawHits    : 0    # (maxHelixCandidates > 1) save a candidate with this many straw hits at once; 0: never
+            minAliasGap             : 0.   # (mm) 2pi phi-z alias test across the largest z gap; 0: off
+            targetRefitSigma        : 0.   # (mm) target-constrained refit of the best candidate; 0: off
+            targetRefitPhiWindow    : 0.5  # (rad) target refit dphi/dz scan window
+            targetRefitDphiDzBins   : 100  # target refit dphi/dz scan bins per helicity
             minHelixPerpMomentum    : 20.0
             maxHelixPerpMomentum    : 140.0
             minHelixMomentum        : 30.0

@@ -54,7 +54,8 @@ namespace mu2e {
     _hCCEoverP = tfs.make<TH1D>("CCEoverP", "Calo E Over Track P", 100, 0.0, 1.5);
     _hCCDt = tfs.make<TH1D>("CCDt", "Calo time residual", 100, -5.0, 5.0);
     _hCCDOCA = tfs.make<TH1D>("CCDOCA", "Calo DOCA to Track", 100, -100.0, 100.0);
-    _hCCcdepth = tfs.make<TH1D>("CCcdepth", "Calo POCA Depth", 100, -100.0, 500.0);
+    _hCCcdepth0 = tfs.make<TH1D>("CCcdepth0", "Calo POCA Depth Disk 0", 100, -100.0, 500.0);
+    _hCCcdepth1 = tfs.make<TH1D>("CCcdepth1", "Calo POCA Depth Disk 1", 100, -100.0, 500.0);
     _hCCtz = tfs.make<TH1D>("CCtz", "Calo POCA Track Z", 100, 1000.0, 5000.0);
     _hHDrift = tfs.make<TH1D>("HDrift", "Hit Drift Radius;drift radius (mm)", 100, 0.0, 3.0);
     _hHDOCA = tfs.make<TH1D>("HDOCA", "Hit Wire DOCA;DOCA (mm)", 100, -5.0, 5.0);
@@ -108,7 +109,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(15.0);
+    _hVer->Fill(16.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -267,7 +268,10 @@ namespace mu2e {
         _hCCEoverP->Fill(ks.caloCluster()->energyDep() / p);
         _hCCDt->Fill(chs._udt);
         _hCCDOCA->Fill(chs._udoca);
-        _hCCcdepth->Fill(chs._cdepth);
+        if(chs.caloCluster()->diskID() == 0)
+          _hCCcdepth0->Fill(chs._cdepth);
+        else
+          _hCCcdepth1->Fill(chs._cdepth);
         _hCCtz->Fill(chs._cpos.Z());
       }
       // Assocated TrkStrawHit info

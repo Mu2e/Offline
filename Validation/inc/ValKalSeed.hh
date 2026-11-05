@@ -58,7 +58,8 @@ class ValKalSeed {
   TH1D* _hCCEoverP;
   TH1D* _hCCDt;
   TH1D* _hCCDOCA;
-  TH1D* _hCCcdepth;
+  TH1D* _hCCcdepth0;
+  TH1D* _hCCcdepth1;
   TH1D* _hCCtz;
   TH1D* _hHDrift;
   TH1D* _hHDOCA;

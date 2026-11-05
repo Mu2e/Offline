@@ -30,6 +30,14 @@ physics : {
       CaloStepEnergyThreshold  : 0.5
       CaloStepTimeMin          : 500.
       CaloStepTimeMax          : 1.e9
+      # Added to step times before folding into the microbunch (ns): nominal proton bunch time, -TimeFromProtonsToDRMarker
+      FoldTimeOffset           : -200.
+      # Hit-like occupancy windows on the folded (event-window frame) time: the digitization windows,
+      # TrackerConditions digitizationStart/End (450, 1705) and CaloReco HitMakerDigitizationStart/End (450, 1795), minus 200 ns
+      TrkHitTimeMin            : 250.
+      TrkHitTimeMax            : 1505.
+      CaloHitTimeMin           : 250.
+      CaloHitTimeMax           : 1595.
       DebugLevel               : 0
     }
   }

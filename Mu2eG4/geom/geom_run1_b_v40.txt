@@ -1,5 +1,7 @@
-// Run1B v40: 1.75 cm thick mobile target, 1.75 cm thick Al TS5 endcap plate with 135 mm hole added, otherwise a normal Run 1A config
-#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+// Run1B v40: 1.75 cm thick mobile target, 1.75 cm thick Al TS5 endcap plate with 135 mm hole added,
+// otherwise the current Run 1A config (geom_run1_a_stickman.txt: Stickman production target,
+// protonAbsorber_cylindrical_v05)
+#include "Offline/Mu2eG4/geom/geom_run1_a_stickman.txt"
 
 // Use the pion degrader as a Run 1B target
 bool   degrader.build               = true;

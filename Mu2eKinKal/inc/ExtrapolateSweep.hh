@@ -25,9 +25,14 @@
 #include <vector>
 
 namespace mu2e {
+  namespace KKGeom {
+    class CaloFrontPanelPipes;
+    class CaloInnerSupport;
+  }
   // one surface the sweep can cross
   struct SweepTarget {
-    enum Effect { record=0, cylshell, ipashell, stfoil, planeshell, crvsector }; // what a crossing adds to the track
+    enum Effect { record=0, cylshell, ipashell, stfoil, planeshell, crvsector, calopanel, calosupport }; // what a crossing adds to the track
+    enum SupportPart { casefront=0, casehole, cfring }; // calorimeter crystal case inner support: where the case is entered or the carbon fiber ring is reached
     enum Reach { radial=0, plane, zplane, zrange, inside }; // when a driving target can still be reached
     static constexpr double inf = std::numeric_limits<double>::max();
     Effect effect_ = record;
@@ -41,6 +46,9 @@ namespace mu2e {
     std::shared_ptr<KinKal::Rectangle> rect_;
     MatEnv::DetMaterial const* mat_ = nullptr;
     double thick_ = 0.0; // material thickness (mm)
+    KKGeom::CaloFrontPanelPipes const* pipes_ = nullptr; // calopanel: the thickness depends on where the pipe plane is crossed
+    KKGeom::CaloInnerSupport const* support_ = nullptr; // calosupport: the support and the part this target finds
+    SupportPart part_ = casefront;
     unsigned maxcross_ = 1; // crossings kept per sweep, 0 for no limit
     int group_ = -1; // targets in a group keep only the first crossing of any of them
     bool drives_ = true; // keep extending while this target is reachable
@@ -60,7 +68,8 @@ namespace mu2e {
       ExtrapolateSweep(SweepTargetCollection const& targets, KinKal::TimeDir tdir, double maxdt, double maxdtstep, double dptol,
           double intertol, double minv, int debug) : targets_(targets), tdir_(tdir), maxDt_(maxdt), maxDtStep_(maxdtstep),
       dptol_(dptol), intertol_(intertol), minv_(minv), debug_(debug), active_(targets.size()), count_(targets.size(),0),
-      tlast_(targets.size(),0.0), coslast_(targets.size(),1.0), episodes_(targets.size()), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
+      tlast_(targets.size(),0.0), coslast_(targets.size(),1.0), notbefore_(targets.size(),std::numeric_limits<double>::quiet_NaN()),
+      episodes_(targets.size()), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
         for(size_t itg = 0; itg < targets_.size(); ++itg){
           active_[itg] = targets_[itg].active_;
           planes_[itg] = dynamic_cast<KinKal::Plane const*>(targets_[itg].surf_);
@@ -82,6 +91,7 @@ namespace mu2e {
       void unlimit() { limited_ = recordonly_ = false; }
       void watchReflection(double vbsign) { vbsign_ = vbsign; reflected_ = false; }
       void setActive(size_t itg, bool active) { active_[itg] = active; }
+      void notBefore(size_t itg, double time) { notbefore_[itg] = time; } // crossings of this target earlier in the sweep direction are skipped
       bool hasCrossing() const { return found_; }
       bool reflected() const { return reflected_; }
       Crossing const& crossing() const { return crossing_; }
@@ -108,6 +118,7 @@ namespace mu2e {
       std::vector<unsigned> count_; // crossings processed per target
       std::vector<double> tlast_; // time of the last processed crossing per target
       std::vector<double> coslast_; // |cos| between the surface normal and the direction at that crossing
+      std::vector<double> notbefore_; // per target, NaN for no limit
       std::vector<int> doneGroups_; // groups whose first crossing is processed
       struct SeamEpisode { size_t itarget_; double time_; };
       std::vector<std::vector<SeamEpisode>> episodes_; // accepted seam episodes per eligible target, including self
@@ -389,6 +400,7 @@ namespace mu2e {
     double leave = tg.mincos_ > 0.0 ? 2.0*intertol_/(std::max(coslast_[itg],tg.mincos_)*speed) : 0.0;
     double guard = std::max(step,leave);
     if(count_[itg] > 0) ts = sgn > 0.0 ? std::max(ts,tlast_[itg]+guard) : std::min(ts,tlast_[itg]-guard);
+    if(std::isfinite(notbefore_[itg])) ts = sgn > 0.0 ? std::max(ts,notbefore_[itg]) : std::min(ts,notbefore_[itg]);
     auto const* plane = dynamic_cast<KinKal::Plane const*>(tg.surf_);
     unsigned nroot(0);
     while(sgn*(stop - ts) > 0.0){

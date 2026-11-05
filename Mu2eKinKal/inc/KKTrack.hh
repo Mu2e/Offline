@@ -98,6 +98,8 @@ namespace mu2e {
         this->clone_pointer_collection(crvxings_, rhs.CRVXings(), context);
         this->clone_pointer_collection(matcylxings_, rhs.materialCylXings(), context);
         this->clone_pointer_collection(matrecxings_, rhs.materialPlaneXings(), context);
+        this->clone_pointer_collection(calomatcylxings_, rhs.caloMaterialCylXings(), context);
+        this->clone_pointer_collection(calomatrecxings_, rhs.caloMaterialPlaneXings(), context);
         this->clone_pointer_collection(strawhitclusters_, rhs.strawHitClusters(), context);
       }
 
@@ -141,6 +143,8 @@ namespace mu2e {
       void addMaterialCylXing(KKMATCYLXINGPTR const& matxing,TimeDir const& tdir);
       // add passive rectangular material Xing
       void addMaterialPlaneXing(KKMATRECXINGPTR const& matxing,TimeDir const& tdir);
+      // add calorimeter planar and cylindrical material Xings inside the fit range, refitting the track
+      void addCaloMaterialXings(KKMATRECXINGCOL const& planexings, KKMATCYLXINGCOL const& cylxings);
       // add IPA Xing
       void addIPAXing(KKIPAXINGPTR const& ipaxing,TimeDir const& tdir);
       // add ST Xing
@@ -165,6 +169,8 @@ namespace mu2e {
       KKCRVXINGCOL const& CRVXings() const { return crvxings_; }
       KKMATCYLXINGCOL const& materialCylXings() const { return matcylxings_; }
       KKMATRECXINGCOL const& materialPlaneXings() const { return matrecxings_; }
+      KKMATCYLXINGCOL const& caloMaterialCylXings() const { return calomatcylxings_; }
+      KKMATRECXINGCOL const& caloMaterialPlaneXings() const { return calomatrecxings_; }
       KKINTERCOL const& intersections() const { return inters_; }
       std::vector<std::string> const& extrapolationFailures() const { return extrapfails_; }
       bool rangedOut() const { return rangeouttime_ < std::numeric_limits<double>::infinity(); }
@@ -189,6 +195,8 @@ namespace mu2e {
       KKCRVXINGCOL crvxings_; // crv crossings using in extrapolation
       KKMATCYLXINGCOL matcylxings_; // passive cylindrical material crossings used in extrapolation
       KKMATRECXINGCOL matrecxings_; // passive planar material crossings used in extrapolation
+      KKMATCYLXINGCOL calomatcylxings_; // calorimeter cylindrical material crossings used in the fit
+      KKMATRECXINGCOL calomatrecxings_; // calorimeter planar material crossings used in the fit
       KKINTERCOL inters_; // other recorded intersections
       std::vector<std::string> extrapfails_; // why an extrapolation direction ended early
       double rangeouttime_ = std::numeric_limits<double>::infinity(); // when the particle stops in an extrapolation material
@@ -336,6 +344,20 @@ namespace mu2e {
       << " active " << matxingptr->active() << std::endl;
     // store the xing
     matcylxings_.push_back(matxingptr);
+  }
+
+  template <class KTRAJ> void KKTrack<KTRAJ>::addCaloMaterialXings(KKMATRECXINGCOL const& planexings, KKMATCYLXINGCOL const& cylxings) {
+    EXINGCOL exings;
+    for(auto const& matxing : planexings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
+    for(auto const& matxing : cylxings)exings.emplace_back(std::static_pointer_cast<EXING>(matxing));
+    MEASCOL nohits;
+    // refit with a single meta-iteration at the final temperature and no updaters, so the hit states are kept.
+    // Replaying the full schedule re-anneals and re-runs the hit updaters, which can change hits and fail good fits
+    auto matconfig = this->config();
+    matconfig.schedule_ = KinKal::Config::Schedule{KinKal::MetaIterConfig(matconfig.schedule().back().temperature())};
+    this->extend(matconfig,nohits,exings);
+    for(auto const& matxing : planexings)calomatrecxings_.emplace_back(matxing);
+    for(auto const& matxing : cylxings)calomatcylxings_.emplace_back(matxing);
   }
 
   template <class KTRAJ> void KKTrack<KTRAJ>::addMaterialPlaneXing(KKMATRECXINGPTR const& matxingptr,TimeDir const& tdir) {

@@ -21,7 +21,7 @@ double extMonFNAL.steelWidthN = 1168.4;
 double extMonFNAL.steelWidthS = 2082.8;
 double extMonFNAL.layerHeight = 304.8;
 string extMonFNAL.steelMaterial = "G4_Fe";
-string extMonFNAL.concreteMaterial = "ShieldingConcrete";
+string extMonFNAL.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
@@ -351,7 +351,7 @@ vector<double> extMonFNAL.box.vd.halfSize = {100, 200, 650.};
 
 //----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
-string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
+string         extMonFNAL.room.wall.materialName  = "CONCRETE_MARS";
 
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;

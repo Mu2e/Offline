@@ -63,7 +63,8 @@ void mu2e::CrvDigiPrinter::Print(const mu2e::CrvDigi& obj, int ind,
   if (ind >= 0) os << std::setw(4) << ind;
 
   os << " " << std::setw(5) << obj.GetScintillatorBarIndex() << " "
-     << std::setw(5) << obj.GetSiPMNumber() << " " << std::setw(5)
+     << std::setw(5) << static_cast<int>(obj.GetSiPMNumber()) << " "
+     << std::setw(5)
      << obj.GetStartTDC() << " ";
   for (auto i : obj.GetADCs()) {
     os << " " << std::setw(5) << i;

@@ -1,9 +1,8 @@
-// Top level geometry file for commissioning running with tracker and calorimeter positions adjusted
-// for combined run 125470.
+// Extracted geometry v05: the KPP setup of geom_common_extracted_v04.txt with the tracker and calorimeter
+// at their positions in combined run 123680 (formerly geom_common_commissioning_v01.txt).
 // Tracker position from laser tracker (Dylan Palo) and tracker-crv matching (docdb-57589)
 // Calorimeter position hand tuned to correct mean trkcalohit.cdepth
-// compared to v01, disk 0 shifted to nominal distance from disk 1
-#include "Offline/Mu2eG4/geom/geom_common_extracted.txt"
+#include "Offline/Mu2eG4/geom/geom_common_extracted_v04.txt"
 
 // Extend fake DS3 volume to contain detector train
 double garage.ds3UpstreamExtension = 1236.0;
@@ -14,10 +13,10 @@ double tracker.z0                   = 22935.0;
 double mu2e.detectorSystemZ0 = 22935.;
 
 // disk 0 shifted upstream 701 mm, disk separation increased by 456 mm
-double calorimeter.caloMotherZ0                 = 25597.0;
+double calorimeter.caloMotherZ0                 = 25141.0;
 double calorimeter.caloMotherZ1                 = 26975.0;
-double calorimeter.calorimeterZFront            = 25598.0;
-vector<double> calorimeter.diskZMotherShift   = {0.0,700.0};
+double calorimeter.calorimeterZFront            = 25142.0;
+vector<double> calorimeter.diskZMotherShift   = {0.0,1156.0};
 
 // MBS: remain 10 mm behind the calorimeter mother
 double mbs.MBSCZ              = 29028.0;

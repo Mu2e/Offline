@@ -17,6 +17,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -714,6 +715,38 @@ namespace {
     }
   }
 
+  // A target with a notBefore time is crossed only beyond it in the sweep direction; other targets are unaffected.
+  void notBefore(TimeDir dir) {
+    KinKal::Cylinder cyl(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,0.0),300.0,1000.0);
+    SweepTarget target;
+    target.effect_ = SweepTarget::ipashell;
+    target.surf_ = &cyl;
+    target.maxcross_ = 0;
+    KinKal::ParticleState state(VEC3(-400.0,150.0,0.0),VEC3(100.0,0.0,0.0),0.0,105.658,1);
+    KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,1.0));
+    line.setRange(TimeRange(0.0,800.0/line.speed(0.0)));
+    KinKal::ParticleTrajectory<KinKal::KinematicLine> traj(line);
+    SweepTargetCollection targets{target,target};
+    double mid = traj.range().mid(); // the line is at x = 0, inside the cylinder
+    ExtrapolateSweep sweep(targets,dir,1.0e6,1.0e6,1.0e-4,tol,1.0e-6,0);
+    sweep.notBefore(0,mid);
+    sweep.start(dir == TimeDir::forwards ? traj.range().begin() : traj.range().end());
+    sweep.limit(dir == TimeDir::forwards ? traj.range().end() : traj.range().begin(),false);
+    std::vector<std::pair<size_t,double>> found;
+    while(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing()){
+      found.emplace_back(sweep.crossing().itarget_,sweep.crossing().inter_.time_);
+      sweep.accept();
+      require(found.size() < 10,"runaway notBefore crossings");
+    }
+    double sgn = dir == TimeDir::forwards ? 1.0 : -1.0;
+    unsigned limited(0), unlimited(0);
+    for(auto const& [itg,time] : found){
+      if(itg == 0){ ++limited; require(sgn*(time-mid) > 0.0,"crossing before the notBefore time"); }
+      else ++unlimited;
+    }
+    require(limited == 1 && unlimited == 2,"notBefore crossings " + std::to_string(limited) + " and " + std::to_string(unlimited));
+  }
+
   void emptySearch() {
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(0.0,0.0,100.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,0.1));
@@ -744,6 +777,7 @@ int main() {
         }
       reachBound(dir);
       shellIncidence(dir);
+      notBefore(dir);
       invalidBoundaryInterior(dir,true);
       invalidBoundaryInterior(dir,false);
       closeSeam(dir);

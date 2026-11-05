@@ -64,7 +64,8 @@ void mu2e::CrvRecoPulsePrinter::Print(const mu2e::CrvRecoPulse& obj, int ind,
   if (ind >= 0) os << std::setw(4) << ind;
 
   os << " " << std::setw(5) << obj.GetScintillatorBarIndex() << " "
-     << std::setw(5) << obj.GetSiPMNumber() << " " << std::setw(5)
+     << std::setw(5) << static_cast<int>(obj.GetSiPMNumber()) << " "
+     << std::setw(5)
      << obj.GetPEs() << " " << std::setw(5) << obj.GetPEsPulseHeight() << " "
      << std::setw(10) << std::setprecision(1) << obj.GetPulseTime() << " "
      << std::setw(10) << std::setprecision(3) << obj.GetPulseFitChi2() << " "

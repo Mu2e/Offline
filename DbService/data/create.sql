@@ -22,6 +22,9 @@ GRANT USAGE ON SCHEMA crv TO PUBLIC;
 CREATE SCHEMA cal;
 GRANT USAGE ON SCHEMA cal TO PUBLIC;
 
+CREATE SCHEMA daq;
+GRANT USAGE ON SCHEMA daq TO PUBLIC;
+
 -- rows are calibration tables
 CREATE TABLE val.tables 
   (tid SERIAL, 
@@ -346,6 +349,32 @@ CREATE TABLE trk.delayrstraw
    CONSTRAINT trk_delayrstraw_pk PRIMARY KEY (cid,straw) );
 GRANT SELECT ON trk.delayrstraw TO PUBLIC;
 GRANT INSERT ON trk.delayrstraw TO trk_role;
+
+-- tracker panel name decoding
+
+CREATE TABLE trk.panelmap
+  (cid INTEGER,
+   mnid INTEGER, dtc INTEGER, link INTEGER, plane INTEGER,
+   ppid INTEGER, panel INTEGER, zface INTEGER,
+   CONSTRAINT trk_panelmap_pk PRIMARY KEY (cid,plane,panel) );
+GRANT SELECT ON trk.panelmap TO PUBLIC;
+GRANT INSERT ON trk.panelmap TO trk_role;
+
+
+--
+-- daq schema tables
+--
+
+-- table of subdet timing offsets
+
+CREATE TABLE daq.timing
+  (cid INTEGER,
+   crvtrackertimeoffset NUMERIC,
+   calotrackertimeoffset NUMERIC,
+   timefromprotonstodrmarker NUMERIC,
+   CONSTRAINT daq_timing_pk PRIMARY KEY (cid) );
+GRANT SELECT ON daq.timing TO PUBLIC;
+GRANT INSERT ON daq.timing TO daq_role;
 
 --
 -- sim schema tables
