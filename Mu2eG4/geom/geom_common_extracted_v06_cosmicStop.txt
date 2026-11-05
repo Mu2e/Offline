@@ -13,7 +13,10 @@
 //   layers, strongback upstream, Al sheet downstream. SiPMs at the +x end only,
 //   reflector at the -x end (as R3).
 //   Counters run along x, stack in y; layers stack in +z
-//   (layer 0 upstream, layer 3 facing the tracker). Active area 1045 x 822 mm.
+//   (layer 0 upstream, layer 3 facing the tracker). Each layer is 1045 x 822 mm.
+//   As in R3, each layer is staggered by crs.layerOffset = 42 mm from the one
+//   before, opposite to the counter stacking direction (here -y), so the four
+//   layers together span 1045 x 948 mm.
 //
 // Placement: centred on the detector axis (x = -3904, y = 0). The downstream
 // face (Al sheet) is 100 mm upstream of the TrackerMother upstream face.
@@ -24,7 +27,9 @@
 //   firstCounter z              = 21203.5 - 13.075 - 3*29.325 = 21102.45
 //   strongback upstream face    = 21102.45 - 19.8/2 - 12.7    = 21079.85
 //   counter 15 - counter 0 in y = 7*(51.3+0.2) + 8*51.3   = 770.9
-//   firstCounter y              = -770.9/2                 = -385.45
+//   layer 3 shift in y          = -3*42                    = -126
+//   firstCounter y              = -770.9/2 + 126/2         = -322.45
+//   (centres the staggered stack on y = 0; it spans y = -474.1 to +474.1)
 //
 // garageFakeDS3Vacuum (the air polycone that holds the tracker and calorimeter)
 // starts at z = 22339 without an extension; v06 extends it upstream by 1236 mm
@@ -64,9 +69,9 @@ vector<string> crs.sectorNames = {"EX", //0
 double          crs.scintillatorBarLengthR3 = 1045;
 int             crs.nModulesR3              = 1;
 int             crs.nCountersPerModuleR3    = 16;
-vector<double>  crs.firstCounterR3          = {-3904.00, -385.45, 21102.45};
+vector<double>  crs.firstCounterR3          = {-3904.00, -322.45, 21102.45};
 vector<double>  crs.layerDirectionR3        = {0, 0, 1};
-vector<double>  crs.offsetDirectionR3       = {0, 0, 0};   // no layer stagger
+vector<double>  crs.offsetDirectionR3       = {0, -1, 0};  // layer stagger, as R3: opposite to gapDirection
 vector<double>  crs.gapDirectionR3          = {0, 1, 0};
 bool            crs.sipmsAtSide0R3          = false;       // -x end: reflector
 bool            crs.sipmsAtSide1R3          = true;        // +x end: SiPMs
