@@ -20,8 +20,20 @@
 // To: Carol J Johnstone; Horst W Friedsam; Andy Stefanik; Larry M. Bartoszek; Vitaly Pronskikh
 // Cc: Peter H Kasper; Rick Coleman
 // Subject: Local dump coordinates
+//
+//  2026-11-05: switch from specifying
+//
+//       vector<double> protonBeamDump.coreCenterInMu2e = {661.9, 527.4, -19428.2};
+//
+// to specifying the center point on the *face* of the beam dump.
+// This point, unlike the core center, is observable in the as-built Mu2e configuration.
+// The coordinates corresponding to the email above, with a 2032 mm long dump core, are
+//
+//     vector<double> protonBeamDump.coreFaceCenterInMu2e = {902.872, 527.4, -18441.2};
+//
+//
 
-vector<double> protonBeamDump.coreCenterInMu2e = {661.9, 527.4, -19428.2};
+vector<double> protonBeamDump.coreFaceCenterInMu2e = {902.872, 527.4, -18441.2};
 double         protonBeamDump.coreRotY = 13.72; // degrees
 
 // Sizes below are given in mm in this order:
