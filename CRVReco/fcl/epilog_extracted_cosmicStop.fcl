@@ -1,0 +1,30 @@
+# CRV reconstruction for the cosmic stop stand geometry
+# (Offline/Mu2eG4/geom/geom_common_extracted_v06_cosmicStop.txt):
+# the extracted CRV plus sector R3.
+# Coincidence settings copied from sector R3 of the nominal CRV in Offline/CRVReco/fcl/prolog_v12.fcl.
+#include "Offline/CRVReco/fcl/epilog_extracted.fcl"
+
+physics.producers.CrvCoincidenceClusterFinder.sectorConfig :
+      [
+        @sequence::physics.producers.CrvCoincidenceClusterFinder.sectorConfig,
+        {
+          CRVSector : "R3"
+          PEthreshold : 8
+          maxTimeDifferenceAdjacentPulses : 10
+          maxTimeDifference : 10
+          minSlope :-6
+          maxSlope : 6
+          maxSlopeDifference : 3
+          coincidenceLayers : 3
+          minClusterPEs : 0
+          initialClusterMaxDistance : 250
+          finalClusterMaxDistance : 0
+        }
+      ]
+
+# The conditions database has no CRV tables for this geometry (2560 channels),
+# so take the CRV photon yields, status and calibration from the fcl defaults
+# (Offline/CRVConditions/fcl/prolog.fcl) instead.
+services.ProditionsService.crvPhotonYield.useDb : false
+services.ProditionsService.crvStatus.useDb      : false
+services.ProditionsService.crvCalib.useDb       : false

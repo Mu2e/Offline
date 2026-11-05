@@ -1,0 +1,19 @@
+# CRV response for the cosmic stop stand geometry
+# (Offline/Mu2eG4/geom/geom_common_extracted_v06_cosmicStop.txt):
+# the extracted CRV plus sector R3, one CRV-R3 type module (1045 mm counters,
+# SiPMs at one end, reflector at the other).
+# Settings copied from sector R3 of the nominal CRV in Offline/CRVResponse/fcl/prolog_v12.fcl.
+#include "Offline/CRVResponse/fcl/epilog_extracted.fcl"
+
+physics.producers.CrvPhotons.CRVSectors           : [ @sequence::physics.producers.CrvPhotons.CRVSectors, "R3" ]
+physics.producers.CrvPhotons.reflectors           : [ @sequence::physics.producers.CrvPhotons.reflectors, -1 ]
+physics.producers.CrvPhotons.scintillationYields  : [ @sequence::physics.producers.CrvPhotons.scintillationYields, 30482 ]
+physics.producers.CrvPhotons.lookupTableFileNames : [ @sequence::physics.producers.CrvPhotons.lookupTableFileNames,
+                                                      "CRVConditions/v6_0/LookupTable_1045_1" ]
+
+# The conditions database has no CRV tables for this geometry (2560 channels),
+# so take the CRV photon yields, status and calibration from the fcl defaults
+# (Offline/CRVConditions/fcl/prolog.fcl) instead.
+services.ProditionsService.crvPhotonYield.useDb : false
+services.ProditionsService.crvStatus.useDb      : false
+services.ProditionsService.crvCalib.useDb       : false
