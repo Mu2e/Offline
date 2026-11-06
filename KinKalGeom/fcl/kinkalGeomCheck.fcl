@@ -1,0 +1,20 @@
+# Consistency check of the KinKalGeom passive material (module KinKalGeomCheck) for the default geometry. The job fails
+# on overlapping elements or coplanar same-material planes. kinkalGeomCheckG4.fcl adds the comparison with G4.
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : KinKalGeomCheck
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    KinKalGeomCheck : { module_type : KinKalGeomCheck }
+  }
+  checkPath : [ KinKalGeomCheck ]
+  end_paths : [ checkPath ]
+}
