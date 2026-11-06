@@ -65,7 +65,8 @@ vector<double> protonBeamDump.topSteelScalloped.wallClearance = {711, 718};
 double protonBeamDump.topSteelScalloped.distanceToCollimator = 115;
 
 //----------------------------------------------------------------
-string protonBeamDump.material.core  = "G4_Fe";
+string protonBeamDump.material.core  = "BEAMDUMP_CORE";
+string protonBeamDump.material.steel  = "G4_Fe";
 string protonBeamDump.material.shielding = "CONCRETE_MARS";
 string protonBeamDump.material.air = "G4_AIR";
 
