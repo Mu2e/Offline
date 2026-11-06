@@ -40,7 +40,7 @@ int mu2e::ValTrkCrvMatchMC::fill(const mu2e::TrkCrvMatchMCCollection& coll, art:
     for (size_t j = 0; j < m.cands_.size(); ++j)
       (m.cands_[j].hasFlag(TrkCrvCandidate::geomCand) ? _hGeomCandRel : _hTimeCandRel)->Fill(relBin(mc.cands_[j]));
     for (auto const& xm : mc.xings_) {
-      if (xm.generation_ != 0 || !ok(xm.sector_)) continue;
+      if (xm.rel_ != MCRelationship::same || !ok(xm.sector_)) continue;
       if (xm.geom_) {
         _hTrueXing->Fill(xm.sector_);
         if (xm.recoXing_ >= 0) _hTrueXingFound->Fill(xm.sector_);
@@ -61,7 +61,7 @@ int mu2e::ValTrkCrvMatchMC::fill(const mu2e::TrkCrvMatchMCCollection& coll, art:
       if (t < 0 || static_cast<size_t>(t) >= mc.xings_.size()) continue;
       _hRecoXingTrue->Fill(rx.sector_);
       auto const& xm = mc.xings_[t];
-      if (!xm.geom_ || xm.generation_ != 0) continue;
+      if (!xm.geom_ || xm.rel_ != MCRelationship::same) continue;
       _hXingDist->Fill(rx.sector_, std::sqrt((rx.pos_ - xm.pos_).Mag2()));
       _hXingDt->Fill(rx.sector_, rx.time_ - xm.time_);
     }
