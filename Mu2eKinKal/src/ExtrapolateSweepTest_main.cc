@@ -105,7 +105,7 @@ namespace {
     }
   }
 
-  void stableTieAndSeams() {
+  void stableTie() {
     KinKal::ParticleState state(VEC3(0.0,0.0,-1.0),VEC3(0.0,0.0,100.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,0.1));
     KinKal::ParticleTrajectory<KinKal::KinematicLine> traj(line);
@@ -127,7 +127,10 @@ namespace {
       require(targets[sweep.crossing().itarget_].sid_ == a.sid_,"tie depends on target order");
       sweep.accept();
       sweep.needsExtrapolation(traj,TimeDir::forwards);
-      require(!sweep.hasCrossing(),"coplanar seam material counted twice");
+      require(sweep.hasCrossing() && targets[sweep.crossing().itarget_].sid_ == b.sid_,"coplanar plane not crossed");
+      sweep.accept();
+      sweep.needsExtrapolation(traj,TimeDir::forwards);
+      require(!sweep.hasCrossing(),"coplanar plane crossed twice");
     }
     b.surf_ = &nearby;
     b.pl_ = &nearby;
@@ -139,7 +142,7 @@ namespace {
     require(sweep.hasCrossing(),"first plane absent");
     sweep.accept();
     sweep.needsExtrapolation(traj,TimeDir::forwards);
-    require(sweep.hasCrossing(),"distinct nearby plane incorrectly seam-suppressed");
+    require(sweep.hasCrossing(),"distinct nearby plane not crossed");
     require(targets[sweep.crossing().itarget_].sid_ == b.sid_,"nearby plane identity differs");
   }
 
@@ -194,7 +197,7 @@ namespace {
     require(traj.nearestTraj(inter.time_) == traj.frontPtr(),"solver lower boundary has wrong piece");
   }
 
-  void closeSeam(TimeDir dir) {
+  void closeCoplanar(TimeDir dir) {
     double sign = dir == TimeDir::forwards ? 1.0 : -1.0;
     KinKal::ParticleState state(VEC3(0.0,0.0,-1.0),VEC3(0.0,0.0,100.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,0.02));
@@ -212,13 +215,13 @@ namespace {
     sweep.start(dir == TimeDir::forwards ? 0.0 : 0.02);
     sweep.limit(dir == TimeDir::forwards ? 0.02 : 0.0,false);
     sweep.needsExtrapolation(traj,dir);
-    require(sweep.hasCrossing(),"close seam lacks first plane");
+    require(sweep.hasCrossing(),"close coplanar fixture lacks first plane");
     sweep.accept();
     sweep.needsExtrapolation(traj,dir);
-    require(!sweep.hasCrossing(),"close coplanar seam not suppressed");
+    require(sweep.hasCrossing() && sweep.crossing().itarget_ == 1,"close coplanar plane not crossed");
   }
 
-  SweepTarget seamTarget(KinKal::Plane const& plane, mu2e::SurfaceId::enum_type id, SweepTarget::Effect pool,
+  SweepTarget planeTarget(KinKal::Plane const& plane, mu2e::SurfaceId::enum_type id, SweepTarget::Effect pool,
       MatEnv::DetMaterial const& material) {
     SweepTarget target;
     target.sid_ = mu2e::SurfaceId(id);
@@ -229,9 +232,9 @@ namespace {
     return target;
   }
 
-  void tangentEpisode(TimeDir dir, bool split, bool windows, SweepTarget::Effect pool,
+  void tangentRecross(TimeDir dir, bool split, bool windows, SweepTarget::Effect pool,
       MatEnv::DetMaterial const& material, MatEnv::DetMaterial const& differentMaterial, unsigned control) {
-    constexpr double seamTol = 0.1;
+    constexpr double planeTol = 0.1;
     double sign = dir == TimeDir::forwards ? 1.0 : -1.0;
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(100.0,0.0,10.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(-1.0,1.0));
@@ -250,9 +253,9 @@ namespace {
     KinKal::Rectangle separate(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,sign*0.2),10.0,10.0);
     KinKal::Rectangle nonoverlap(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(sign*2.2,0.0,sign*0.05),1.8,10.0);
     KinKal::Plane intervening(VEC3(1.0,0.0,0.0),VEC3(0.0,1.0,0.0),VEC3(sign*0.8,0.0,0.0));
-    auto a = seamTarget(first,mu2e::SurfaceIdEnum::DS_Front,pool,material);
-    auto b = seamTarget(second,mu2e::SurfaceIdEnum::DS_Back,pool,material);
-    auto c = seamTarget(intervening,mu2e::SurfaceIdEnum::TT_Front,pool,material);
+    auto a = planeTarget(first,mu2e::SurfaceIdEnum::DS_Front,pool,material);
+    auto b = planeTarget(second,mu2e::SurfaceIdEnum::DS_Back,pool,material);
+    auto c = planeTarget(intervening,mu2e::SurfaceIdEnum::TT_Front,pool,material);
     if(control == 1) b.mat_ = &differentMaterial;
     if(control == 2) b.thick_ *= 2.0;
     if(control == 3) b.surf_ = b.pl_ = &tilted;
@@ -262,39 +265,27 @@ namespace {
     if(control == 7) a.maxcross_ = 0;
     SweepTargetCollection targets{a,b,c};
     double step = windows ? 0.15/vx : hi-lo;
-    ExtrapolateSweep sweep(targets,dir,1.0,step,1.0e-4,seamTol,1.0e-6,0);
+    ExtrapolateSweep sweep(targets,dir,1.0,step,1.0e-4,planeTol,1.0e-6,0);
     sweep.start(0.0);
     sweep.limit(end,false);
-    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"tangent episode lacks first crossing");
+    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"tangent fixture lacks first crossing");
     require(sweep.crossing().itarget_ == 0,"tangent first target differs");
     double accepted = sweep.crossing().inter_.time_;
-    require(std::fabs(first.distance(sweep.crossing().inter_.pos_)) < seamTol,"tangent first point off plane");
+    require(std::fabs(first.distance(sweep.crossing().inter_.pos_)) < planeTol,"tangent first point off plane");
     sweep.accept();
     sweep.start(accepted);
-    if(control == 0 || control == 7){
-      sweep.limit(sign*0.15/vx,false);
-      require(!sweep.needsExtrapolation(traj,dir) && !sweep.hasCrossing(),"tangent seam escaped a short window");
-      sweep.start(sign*0.15/vx);
-      sweep.limit(end,false);
-      require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"intervening plane absent");
-      require(sweep.crossing().itarget_ == 2,"tangent seam escaped before different-plane accept");
-      accepted = sweep.crossing().inter_.time_;
+    bool neighbor = false;
+    for(unsigned trial = 0; trial < 3; ++trial){
+      require(!sweep.needsExtrapolation(traj,dir),"tangent search requests extrapolation");
+      if(!sweep.hasCrossing()) break;
+      require(sweep.crossing().itarget_ != 0,"plane crossed again inside its tolerance slab");
+      if(sweep.crossing().itarget_ == 1) neighbor = true;
       sweep.accept();
-      sweep.start(accepted);
-      require(!sweep.needsExtrapolation(traj,dir) && !sweep.hasCrossing(),"episode lost across start/piece/window/different-plane accept");
-    } else {
-      bool neighbor = false;
-      for(unsigned trial = 0; trial < 3; ++trial){
-        require(!sweep.needsExtrapolation(traj,dir),"control requests extrapolation");
-        if(!sweep.hasCrossing()) break;
-        if(sweep.crossing().itarget_ == 1) neighbor = true;
-        sweep.accept();
-      }
-      require(neighbor,"ineligible seam neighbor incorrectly suppressed");
     }
+    require(neighbor,"neighbor plane not crossed");
   }
 
-  void helixEpisodes(TimeDir dir, bool split, bool windows, bool self, MatEnv::DetMaterial const& material) {
+  void helixRecross(TimeDir dir, bool split, bool windows, bool self, MatEnv::DetMaterial const& material) {
     double sign = dir == TimeDir::forwards ? 1.0 : -1.0;
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(100.0,0.0,20.0),0.0,105.658,1);
     KinKal::LoopHelix helix(state,VEC3(0.0,0.0,1.0),TimeRange(-1.0,1.0));
@@ -310,8 +301,8 @@ namespace {
     }
     KinKal::Rectangle first(VEC3(1.0,0.0,0.0),VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,0.0),2000.0,2000.0);
     KinKal::Rectangle second(VEC3(-1.0,0.0,0.0),VEC3(0.0,1.0,0.0),VEC3(0.0,0.0,10.0),2000.0,2000.0);
-    auto a = seamTarget(first,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
-    auto b = seamTarget(second,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
+    auto a = planeTarget(first,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
+    auto b = planeTarget(second,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
     a.maxcross_ = self ? 0 : 1;
     SweepTargetCollection targets = self ? SweepTargetCollection{a} : SweepTargetCollection{a,b};
     ExtrapolateSweep sweep(targets,dir,100.0,windows ? 0.13*period : hi-lo,1.0e-4,0.1,1.0e-6,0);
@@ -320,19 +311,19 @@ namespace {
     for(unsigned icross = 0; icross < (self ? 3u : 2u); ++icross){
       require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"depart-return helix crossing absent");
       auto const inter = sweep.crossing().inter_;
-      require(sweep.crossing().itarget_ == (self ? 0u : icross),"neighbor quota consumed by suppressed seam");
-      require(std::fabs(inter.time_-sign*0.5*period*icross)*helix.speed(0.0) < 1.0,"helix recross time differs");
-      if(icross > 0){
+      require(sweep.crossing().itarget_ == (self ? 0u : icross),"helix crossing target differs");
+      require(std::fabs(inter.time_-(self ? sign*0.5*period*icross : 0.0))*helix.speed(0.0) < 1.0,"helix recross time differs");
+      if(self && icross > 0){
         auto pos = traj.position3(sign*(0.5*icross-0.25)*period);
         require(std::fabs(first.distance(pos)) > 0.1 && std::fabs(second.distance(pos)) > 0.1,"helix lacks out-of-both departure");
       }
       sweep.accept();
       sweep.start(inter.time_);
     }
-    require(!sweep.needsExtrapolation(traj,dir) && !sweep.hasCrossing(),"helix episode/quota retained an extra crossing");
+    require(!sweep.needsExtrapolation(traj,dir) && !sweep.hasCrossing(),"helix sweep found an extra crossing");
   }
 
-  template <class HELIX> void shallowEpisode(TimeDir dir, bool split, bool windows, bool reverse, MatEnv::DetMaterial const& material) {
+  template <class HELIX> void shallowRecross(TimeDir dir, bool split, bool windows, bool reverse, MatEnv::DetMaterial const& material) {
     double sign = dir == TimeDir::forwards ? 1.0 : -1.0;
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(100.0,0.0,20.0),0.0,105.658,1);
     HELIX helix(state,VEC3(0.0,0.0,1.0),TimeRange(-100.0,100.0));
@@ -350,21 +341,22 @@ namespace {
       traj.append(tail);
     }
     KinKal::Rectangle plane(VEC3(1.0,0.0,0.0),VEC3(0.0,1.0,0.0),helix.position3(begin),2000.0,2000.0);
-    auto a = seamTarget(plane,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
-    auto b = seamTarget(plane,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
-    SweepTargetCollection targets = reverse ? SweepTargetCollection{b,a} : SweepTargetCollection{a,b};
-    ExtrapolateSweep sweep(targets,dir,100.0,windows ? 0.3*halfwidth : 100.0,1.0e-4,0.1,1.0e-6,0);
+    auto a = planeTarget(plane,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
+    auto b = planeTarget(plane,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
+    SweepTargetCollection single{a};
+    single.front().maxcross_ = 0;
+    ExtrapolateSweep sweep(single,dir,100.0,windows ? 0.3*halfwidth : 100.0,1.0e-4,0.1,1.0e-6,0);
     sweep.start(begin);
     sweep.limit(end,false);
-    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && targets[sweep.crossing().itarget_].sid_ == a.sid_,"shallow episode lacks first crossing");
+    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"shallow fixture lacks first crossing");
     sweep.accept();
     require(std::fabs(plane.distance(helix.position3(maximum))) > 0.1 &&
         std::fabs(plane.distance(helix.position3(maximum))) < 0.2,"shallow fixture does not resolve only one tolerance");
-    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && targets[sweep.crossing().itarget_].sid_ == b.sid_,"shallow resolved depart-return was suppressed");
+    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing(),"shallow resolved depart-return was suppressed");
     require(sign*(sweep.crossing().inter_.time_-maximum) > 0.0,"shallow return accepted before resolved departure");
     require(std::fabs(plane.distance(sweep.crossing().inter_.pos_)) < 0.1,"shallow return outside plane tolerance");
-    // An outgoing query must find the later root without requiring a preceding accepted seam.
-    targets.front().maxcross_ = targets.back().maxcross_ = 1;
+    // An outgoing query must find the later root without a preceding accepted crossing.
+    SweepTargetCollection targets = reverse ? SweepTargetCollection{b,a} : SweepTargetCollection{a,b};
     ExtrapolateSweep outgoing(targets,dir,100.0,windows ? 0.3*halfwidth : 100.0,1.0e-4,0.1,1.0e-6,0);
     double queryStart = maximum-sign*0.5*halfwidth;
     require(std::fabs(plane.distance(helix.position3(queryStart))) > 0.1,"outgoing query starts inside tolerance slab");
@@ -430,7 +422,7 @@ namespace {
     require(std::fabs(inter.time_-sign*0.125*period)*helix.speed(inter.time_) < tol,"long query lost early bracketed crossing");
   }
 
-  void speculativeEpisode(TimeDir dir, MatEnv::DetMaterial const& material) {
+  void speculativeRecross(TimeDir dir, MatEnv::DetMaterial const& material) {
     double sign = dir == TimeDir::forwards ? 1.0 : -1.0;
     auto makeLine = [](VEC3 const& pos, VEC3 const& momentum, double time){
       KinKal::ParticleState state(pos,momentum,time,105.658,1);
@@ -450,33 +442,33 @@ namespace {
     else { traj.append(last); traj.append(middle); traj.append(first); }
     KinKal::Rectangle plane(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,0.0),10.0,10.0);
     KinKal::Plane other(VEC3(1.0,0.0,0.0),VEC3(0.0,1.0,0.0),VEC3(sign*0.8,0.0,0.0));
-    auto a = seamTarget(plane,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
-    auto b = seamTarget(plane,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
-    auto c = seamTarget(other,mu2e::SurfaceIdEnum::TT_Front,SweepTarget::planeshell,material);
-    SweepTargetCollection targets{a,b,c};
+    auto a = planeTarget(plane,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
+    auto c = planeTarget(other,mu2e::SurfaceIdEnum::TT_Front,SweepTarget::planeshell,material);
+    a.maxcross_ = 0;
+    SweepTargetCollection targets{a,c};
     ExtrapolateSweep sweep(targets,dir,1.0,1.0,1.0e-4,0.1,1.0e-6,0);
     sweep.start(0.0);
     sweep.limit(end,false);
     require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 0,
-        "speculative fixture lacks initial seam crossing");
+        "speculative fixture lacks initial plane crossing");
     double initial = sweep.crossing().inter_.time_;
     sweep.accept();
-    sweep.setActive(2,false);
-    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 1 &&
+    sweep.setActive(1,false);
+    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 0 &&
         sign*(sweep.crossing().inter_.time_-t2) > 0.0,"speculative fixture lacks future return candidate");
-    sweep.setActive(2,true);
+    sweep.setActive(1,true);
     sweep.start(initial);
-    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 2,
+    require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 1,
         "earlier different plane did not win over future return");
     double accepted = sweep.crossing().inter_.time_;
     sweep.accept();
     auto changed = first;
     changed.setRange(TimeRange(std::min(0.0,end),std::max(0.0,end)));
     KinKal::ParticleTrajectory<KinKal::KinematicLine> updated(changed);
-    require(std::fabs(plane.distance(updated.position3(end))) < 0.1,"updated trajectory left the seam slab");
+    require(std::fabs(plane.distance(updated.position3(end))) < 0.1,"updated trajectory left the plane tolerance slab");
     sweep.start(accepted);
     require(!sweep.needsExtrapolation(updated,dir) && !sweep.hasCrossing(),
-        "speculative future witness released an episode before trajectory mutation");
+        "speculative future witness released the plane before trajectory mutation");
   }
 
   KinKal::LoopHelix materialPiece(double join, TimeRange const& range, VEC3 const& momentum) {
@@ -780,29 +772,29 @@ int main() {
       notBefore(dir);
       invalidBoundaryInterior(dir,true);
       invalidBoundaryInterior(dir,false);
-      closeSeam(dir);
+      closeCoplanar(dir);
       planarLimits(dir);
       planeContacts<KinKal::LoopHelix>(dir);
       planeContacts<KinKal::CentralHelix>(dir);
       longPlaneQuery<KinKal::LoopHelix>(dir);
       longPlaneQuery<KinKal::CentralHelix>(dir);
-      speculativeEpisode(dir,*targetMaterial);
+      speculativeRecross(dir,*targetMaterial);
       for(bool split : {false,true}){
         for(bool windows : {false,true}){
           for(bool reverse : {false,true}){
-            shallowEpisode<KinKal::LoopHelix>(dir,split,windows,reverse,*targetMaterial);
-            shallowEpisode<KinKal::CentralHelix>(dir,split,windows,reverse,*targetMaterial);
+            shallowRecross<KinKal::LoopHelix>(dir,split,windows,reverse,*targetMaterial);
+            shallowRecross<KinKal::CentralHelix>(dir,split,windows,reverse,*targetMaterial);
           }
           for(auto pool : {SweepTarget::planeshell,SweepTarget::crvsector,SweepTarget::stfoil}){
-            tangentEpisode(dir,split,windows,pool,*targetMaterial,*differentMaterial,0);
-            tangentEpisode(dir,split,windows,pool,*targetMaterial,*differentMaterial,7);
+            tangentRecross(dir,split,windows,pool,*targetMaterial,*differentMaterial,0);
+            tangentRecross(dir,split,windows,pool,*targetMaterial,*differentMaterial,7);
           }
-          helixEpisodes(dir,split,windows,false,*targetMaterial);
-          helixEpisodes(dir,split,windows,true,*targetMaterial);
+          helixRecross(dir,split,windows,false,*targetMaterial);
+          helixRecross(dir,split,windows,true,*targetMaterial);
         }
       }
       for(unsigned control = 1; control <= 6; ++control)
-        for(bool windows : {false,true}) tangentEpisode(dir,true,windows,SweepTarget::planeshell,*targetMaterial,*differentMaterial,control);
+        for(bool windows : {false,true}) tangentRecross(dir,true,windows,SweepTarget::planeshell,*targetMaterial,*differentMaterial,control);
       for(bool split : {false,true}){
         boundaries(dir,split);
         for(bool bounds : {false,true}) lineRoots(dir,split,bounds);
@@ -812,7 +804,7 @@ int main() {
     solverLowerBoundary();
     tiltedZ<KinKal::CentralHelix>();
     tiltedZ<KinKal::LoopHelix>();
-    stableTieAndSeams();
+    stableTie();
     retryBudget();
     emptySearch();
     std::cout << "ExtrapolateSweepTest: all checks passed" << std::endl;

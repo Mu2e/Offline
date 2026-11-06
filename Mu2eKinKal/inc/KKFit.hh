@@ -866,23 +866,11 @@ namespace mu2e {
     // save the fit segments as requested
     if(kktrk.fitStatus().usable()){
       static const double minrange(1.0e-2); // minimum time range to save a segment.
-      // a particle that ranges out stops at that time, so no segment extends past it
-      double tstop = kktrk.rangeOutTime();
-      auto stopped = [tstop](KTRAJ const& traj){
-        KTRAJ clipped(traj);
-        clipped.setRange(TimeRange(traj.range().begin(),std::min(traj.range().end(),tstop)));
-        return clipped;
-      };
       if (savetraj_ == full){
         kseed._segments.reserve(fittraj.pieces().size());
         for (auto const& traj : fittraj.pieces() ){
           // skip 'zero-range' segments.  By convention, sample the state at the mid-time
-          if(traj->range().end() <= tstop){
-            if(traj->range().range() > minrange) kseed._segments.emplace_back(*traj,traj->range().mid());
-          } else if(std::min(traj->range().end(),tstop) - traj->range().begin() > minrange){
-            auto clipped = stopped(*traj);
-            kseed._segments.emplace_back(clipped,clipped.range().mid());
-          }
+          if(traj->range().range() > minrange) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
         // a fit that ran without BField correction has no domains at all; the trailing push_back
         // below would then dereference rbegin() of an empty set, which is undefined behaviour
@@ -935,12 +923,7 @@ namespace mu2e {
         kseed._segments.reserve(fittraj.pieces().size());// this will be oversized
         for (auto const& traj : fittraj.pieces() ){
           // skip segments outside the detector range
-          if(traj->range().end() <= tstop){
-            if(traj->range().range() > 0.0 && traj->range().overlaps(detrange) ) kseed._segments.emplace_back(*traj,traj->range().mid());
-          } else if(traj->range().begin() < tstop){
-            auto clipped = stopped(*traj);
-            if(clipped.range().overlaps(detrange)) kseed._segments.emplace_back(clipped,clipped.range().mid());
-          }
+          if(traj->range().range() > 0.0 && traj->range().overlaps(detrange) ) kseed._segments.emplace_back(*traj,traj->range().mid());
         }
         kseed._segments.shrink_to_fit();
         if(savedomains_){
@@ -1058,7 +1041,7 @@ namespace mu2e {
     }
     for(auto range : ranges) {
       double tbeg = range.begin();
-      double tend = std::min(range.end(),kktrk.rangeOutTime()); // a particle that ranges out stops there
+      double tend = range.end();
       for(auto const& surf : tosample){
         // search for intersections with each surface within the specified time range, going forwards in time
         bool goodinter(true);

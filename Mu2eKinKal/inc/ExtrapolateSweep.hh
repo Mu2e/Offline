@@ -1,4 +1,16 @@
 // Targets and predicate for the KKExtrap sweep: all requested surfaces are searched together from the last processed crossing.
+//
+// How a sweep runs (one per time direction, driven by KKExtrap::sweep):
+// - Targets: one SweepTarget per surface; effect_ says what a crossing adds (a recorded intersection or a material xing).
+// - Cursor: searched_ is the time up to which the trajectory has been searched; it only moves in the sweep direction.
+// - Search: from the cursor to the trajectory end, in MaxDtStep windows, every piece and every usable target is intersected and the earliest crossing is cached.
+// - Predicate: KinKal::Track::extrapolate calls needsExtrapolation as it extends the end piece; a cached crossing returns false, so KinKal stops there.
+// - Accept: KKExtrap adds the crossing's effect on the end piece, then accept() moves the cursor to the crossing, so no crossing is found twice and all are processed in time order.
+// - Stop: nothing driving is reachable (reachable), MaxDt passes without a crossing, a terminal target is crossed, a watched reflection occurs, or the search fails (error()).
+// - Limit: limit(t,recordonly) caps the search at t (optionally to record targets only); KKExtrap uses it for the fitted trajectory before the end piece, where no material can be added, and unlimit() removes the cap.
+// - Re-crossing guard: a plane, CRV sector or foil is crossed again only after the trajectory has left the slab of half-width intertol around it (departed).
+// - Planes: the signed plane distance of a helix or line is monotonic between the extrema of its normal velocity, which are known in closed form (visitPlaneExtrema), so plane roots are bracketed and bisected (planeCrossing); cylinders use KinKal::intersect.
+// Adding a material target: see KKExtrap::targets and KKExtrap::addCrossing.
 #ifndef Mu2eKinKal_ExtrapolateSweep_hh
 #define Mu2eKinKal_ExtrapolateSweep_hh
 #include "KinKal/General/TimeDir.hh"
@@ -69,7 +81,7 @@ namespace mu2e {
           double intertol, double minv, int debug) : targets_(targets), tdir_(tdir), maxDt_(maxdt), maxDtStep_(maxdtstep),
       dptol_(dptol), intertol_(intertol), minv_(minv), debug_(debug), active_(targets.size()), count_(targets.size(),0),
       tlast_(targets.size(),0.0), coslast_(targets.size(),1.0), notbefore_(targets.size(),std::numeric_limits<double>::quiet_NaN()),
-      episodes_(targets.size()), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
+      guarded_(targets.size(),false), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
         for(size_t itg = 0; itg < targets_.size(); ++itg){
           active_[itg] = targets_[itg].active_;
           planes_[itg] = dynamic_cast<KinKal::Plane const*>(targets_[itg].surf_);
@@ -86,11 +98,11 @@ namespace mu2e {
       bool failed() const { return !error_.empty(); }
       std::string const& error() const { return error_; } // why the search failed; KinKal's walk never sees the exception
       // sweep control
-      void start(double tcursor) { searched_ = tcursor; found_ = reflected_ = false; }
-      void limit(double tlimit, bool recordonly) { limited_ = true; tlimit_ = tlimit; recordonly_ = recordonly; }
-      void unlimit() { limited_ = recordonly_ = false; }
-      void watchReflection(double vbsign) { vbsign_ = vbsign; reflected_ = false; }
-      void setActive(size_t itg, bool active) { active_[itg] = active; }
+      void start(double tcursor) { searched_ = tcursor; found_ = reflected_ = false; } // place the cursor: the search starts here
+      void limit(double tlimit, bool recordonly) { limited_ = true; tlimit_ = tlimit; recordonly_ = recordonly; } // search no further than tlimit, and only record targets if recordonly; the trajectory is not extended
+      void unlimit() { limited_ = recordonly_ = false; } // search to the trajectory end and let KinKal extend it
+      void watchReflection(double vbsign) { vbsign_ = vbsign; reflected_ = false; } // stop when the velocity along B changes sign from vbsign; 0 to not watch
+      void setActive(size_t itg, bool active) { active_[itg] = active; } // switch a target on or off for the rest of the sweep
       void notBefore(size_t itg, double time) { notbefore_[itg] = time; } // crossings of this target earlier in the sweep direction are skipped
       bool hasCrossing() const { return found_; }
       bool reflected() const { return reflected_; }
@@ -99,17 +111,16 @@ namespace mu2e {
       // mark the cached crossing processed and move the search start to it
       void accept();
     private:
-      template <class KTRAJ> bool extend(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const;
-      bool usable(size_t itg) const;
-      bool withinReach(size_t itg, KinKal::VEC3 const& pos, double reach) const;
-      template <class KTRAJ> bool search(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, double tend) const;
-      template <class KTRAJ> bool firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, KinKal::TimeRange win, KinKal::Intersection& inter) const;
-      template <class KTRAJ, class VISIT> bool visitPlaneExtrema(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& range, VISIT&& visit) const;
-      template <class KTRAJ> KinKal::Intersection planeCrossing(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& query) const;
-      template <class KTRAJ> void ownBoundary(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const;
-      template <class KTRAJ> bool seam(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, KinKal::Intersection const& inter) const;
-      template <class KTRAJ> bool departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, size_t previous, double accepted, double proposed) const;
-      template <class KTRAJ> bool reachable(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const;
+      template <class KTRAJ> bool extend(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const; // the predicate body: search, then decide whether KinKal keeps extending
+      bool usable(size_t itg) const; // active, not over its crossing count or group, and allowed by the limit
+      bool withinReach(size_t itg, KinKal::VEC3 const& pos, double reach) const; // cheap distance cut before intersecting a target in a window
+      template <class KTRAJ> bool search(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, double tend) const; // cache the earliest crossing between the cursor and tend
+      template <class KTRAJ> bool firstCrossing(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KTRAJ const& piece, size_t itg, KinKal::TimeRange win, KinKal::Intersection& inter) const; // first acceptable crossing of one target on one piece in a window
+      template <class KTRAJ, class VISIT> bool visitPlaneExtrema(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& range, VISIT&& visit) const; // times where the plane distance is extremal, in sweep order
+      template <class KTRAJ> KinKal::Intersection planeCrossing(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& query) const; // first plane root in query, bracketed between extrema
+      template <class KTRAJ> void ownBoundary(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const; // move a root on a piece edge just inside that piece
+      template <class KTRAJ> bool departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, double accepted, double proposed) const; // the trajectory left the plane's tolerance slab between two crossing times
+      template <class KTRAJ> bool reachable(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const; // a driving target can still be crossed from the trajectory end
       SweepTargetCollection const& targets_;
       KinKal::TimeDir tdir_;
       double maxDt_, maxDtStep_, dptol_, intertol_, minv_;
@@ -120,12 +131,11 @@ namespace mu2e {
       std::vector<double> coslast_; // |cos| between the surface normal and the direction at that crossing
       std::vector<double> notbefore_; // per target, NaN for no limit
       std::vector<int> doneGroups_; // groups whose first crossing is processed
-      struct SeamEpisode { size_t itarget_; double time_; };
-      std::vector<std::vector<SeamEpisode>> episodes_; // accepted seam episodes per eligible target, including self
+      std::vector<bool> guarded_; // plane targets crossed again only after the track leaves their tolerance slab
       std::vector<KinKal::Plane const*> planes_; // per target, the surface as a plane or cylinder when it is one
       std::vector<KinKal::Cylinder const*> cylinders_;
-      bool limited_ = false, recordonly_ = false;
-      double tlimit_ = 0.0;
+      bool limited_ = false, recordonly_ = false; // see limit()
+      double tlimit_ = 0.0; // the search stops here while limited_
       double vbsign_ = 0.0; // sign of the B-parallel velocity to watch for a reflection; 0 to not watch
       mutable double searched_ = 0.0; // the trajectory is searched up to this time
       mutable bool found_ = false, reflected_ = false;
@@ -166,20 +176,8 @@ namespace mu2e {
     tlast_[itg] = time;
     coslast_[itg] = std::fabs(crossing_.inter_.norm_.Dot(crossing_.inter_.pdir_));
     if(tg.group_ >= 0) doneGroups_.push_back(tg.group_);
-    if((tg.effect_ == SweepTarget::planeshell || tg.effect_ == SweepTarget::crvsector || tg.effect_ == SweepTarget::stfoil) && tg.pl_){
-      for(size_t other = 0; other < targets_.size(); ++other){
-        auto const& neighbor = targets_[other];
-        if(neighbor.effect_ != tg.effect_ || !neighbor.pl_ || neighbor.mat_ != tg.mat_ || neighbor.thick_ != tg.thick_) continue;
-        if(std::fabs(neighbor.pl_->normal().Dot(tg.pl_->normal())) < 1.0 - 1.0e-12) continue;
-        if(std::fabs((neighbor.pl_->center()-tg.pl_->center()).Dot(tg.pl_->normal())) > intertol_) continue;
-        if(!tg.surf_->inBounds(crossing_.inter_.pos_,intertol_) || !neighbor.surf_->inBounds(crossing_.inter_.pos_,intertol_)) continue;
-        auto& episodes = episodes_[other];
-        auto previous = std::find_if(episodes.begin(),episodes.end(),[itg](SeamEpisode const& episode){ return episode.itarget_ == itg; });
-        // A later acceptance of the same source supersedes its earlier episode without erasing other planes.
-        if(previous == episodes.end()) episodes.push_back({itg,time});
-        else previous->time_ = time;
-      }
-    }
+    guarded_[itg] = (tg.effect_ == SweepTarget::planeshell || tg.effect_ == SweepTarget::crvsector || tg.effect_ == SweepTarget::stfoil) &&
+      tg.pl_ && tg.surf_->inBounds(crossing_.inter_.pos_,intertol_);
     searched_ = time;
     found_ = false;
   }
@@ -329,15 +327,15 @@ namespace mu2e {
   }
 
   template <class KTRAJ> bool ExtrapolateSweep::departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj,
-      size_t itg, size_t previous, double accepted, double proposed) const {
+      size_t itg, double accepted, double proposed) const {
+    // Candidate searches are speculative: only the current trajectory between the accepted and proposed crossings is a witness.
     auto const& plane = *targets_[itg].pl_;
-    auto const& prev = *targets_[previous].pl_;
     double sgn = tdir_ == KinKal::TimeDir::forwards ? 1.0 : -1.0;
     if(sgn*(proposed-accepted) <= 0.0) return false;
     KinKal::TimeRange interval(std::min(accepted,proposed),std::max(accepted,proposed));
     if(!interval.restrict(ptraj.range()) || interval.null()) return false;
     size_t first = ptraj.nearestIndex(interval.begin()), last = ptraj.nearestIndex(interval.end());
-    double offset = 2.0*intertol_ + std::fabs((plane.center()-prev.center()).Dot(prev.normal()));
+    double offset = 2.0*intertol_;
     for(size_t ip = first; ip <= last; ++ip){
       auto const& piece = ptraj.piece(ip);
       auto clipped = piece.range();
@@ -346,25 +344,17 @@ namespace mu2e {
         if(!std::isfinite(time) || time < clipped.begin() || time > clipped.end() ||
             sgn*(time-accepted) <= 0.0 || sgn*(proposed-time) <= 0.0) return false;
         auto pos = ptraj.position3(time);
-        return std::fabs(plane.distance(pos)) > intertol_ && std::fabs(prev.distance(pos)) > intertol_;
+        return std::fabs(plane.distance(pos)) > intertol_;
       };
       if(witness(clipped.begin()) || witness(clipped.end())) return true;
-      if(visitPlaneExtrema(piece,prev,clipped,witness)) return true;
+      if(visitPlaneExtrema(piece,plane,clipped,witness)) return true;
       // Offset-plane roots also provide directly verified departure witnesses.
       for(double side : {-1.0,1.0}){
-        KinKal::Plane outside(prev.normal(),prev.uDirection(),prev.center()+side*offset*prev.normal());
+        KinKal::Plane outside(plane.normal(),plane.uDirection(),plane.center()+side*offset*plane.normal());
         auto root = KinKal::intersect(piece,outside,clipped,0.125*intertol_,tdir_);
         if(root.onsurface_ && witness(root.time_)) return true;
       }
     }
-    return false;
-  }
-
-  template <class KTRAJ> bool ExtrapolateSweep::seam(KinKal::ParticleTrajectory<KTRAJ> const& ptraj,
-      size_t itg, KinKal::Intersection const& inter) const {
-    // Candidate searches are speculative; only accept() changes episodes, never a future departure witness.
-    for(auto const& episode : episodes_[itg])
-      if(!departed(ptraj,itg,episode.itarget_,episode.time_,inter.time_)) return true;
     return false;
   }
 
@@ -433,7 +423,7 @@ namespace mu2e {
       if(sgn*(inter.time_ - ts) < 0.0 || sgn*(stop - inter.time_) < 0.0) return false;
       if(!inter.inrange_) throw std::runtime_error("KKExtrap: surface root has no owning piece");
       bool grazing = std::fabs(inter.norm_.Dot(inter.pdir_)) < tg.mincos_;
-      if((inter.inbounds_ || !tg.inbounds_) && !grazing && !seam(ptraj,itg,inter)) return true;
+      if((inter.inbounds_ || !tg.inbounds_) && !grazing && (!guarded_[itg] || departed(ptraj,itg,tlast_[itg],inter.time_))) return true;
       // Roots within four intersection tolerances of path length are unresolved by this search; a grazing track first leaves the tolerance.
       double next = inter.time_ + sgn*(grazing ? std::max(step,2.0*intertol_/(tg.mincos_*speed)) : step);
       if(!std::isfinite(next) || sgn*(next - ts) <= 0.0)

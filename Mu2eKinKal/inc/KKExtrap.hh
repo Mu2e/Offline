@@ -38,6 +38,9 @@ namespace mu2e {
       // extrapolate the fit in both time directions through every requested surface
       template <class KTRAJ> void extrapolate(KKTrack<KTRAJ>& ktrk) const;
       // the surfaces requested in one time direction; updir is the direction that leaves the tracker upstream
+      // To add passive material: give it a SurfaceId and a KinKalGeom surface, add a SweepTarget here (effect_, surf_ and the typed surface, mat_, thick_, reach_, mincos_),
+      // and, for a new Effect, a case in addCrossing that builds its KinKal material xing; a surface that is neither a Plane nor a Cylinder is searched with KinKal::intersect
+      // and is never cut by withinReach; add a case to ExtrapolateSweepTest and, if optional, a KKExtrapConfig switch.
       SweepTargetCollection targets(bool updir) const;
     private:
       // where a track entered a calorimeter crystal case inner support: the material still to cross at the carbon fiber ring inner radius
@@ -121,7 +124,7 @@ namespace mu2e {
   // The particle stops in this material: the forwards direction ends before it, keeping the crossings already added.
   template <class KTRAJ> bool KKExtrap::rangeOut(KKTrack<KTRAJ>& ktrk, SweepTarget const& tg, KinKal::Intersection const& inter) const {
     if(debug_ > 0) std::cout << "KKExtrap: ranged out in " << tg.sid_ << " at " << inter.time_ << std::endl;
-    ktrk.setRangedOut(inter.time_);
+    ktrk.setRangedOut();
     return false;
   }
 
@@ -372,6 +375,7 @@ namespace mu2e {
       addFailure(ktrk,tdir,xs.error());
       return;
     }
+    // then extend the end piece from the sweep start, one crossing at a time
     xs.unlimit();
     xs.start(tstart);
     if(updir && upstream_){
