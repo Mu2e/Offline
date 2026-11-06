@@ -206,9 +206,14 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     const mu2e::CFOEventFragment   cfoFrag(frag);
     const CFOLib::CFO_Event        cfo       = cfoFrag.getData();
     const CFOLib::CFO_EventRecord& cfoRecord = cfo.GetEventRecord();
+    // The on-spill flag is bit 0 of the mode4 byte (bits 32-39 of the 48-bit event mode word).
+    // CFO_Event::GetEventMode() (artdaq-core-mu2e v9_09_00) converts the mode word with
+    // DTC_EventMode(event_mode), which only fills mode0, so its isOnSpillFlagSet() is always false.
+    // Read the flag from the record instead.
+    const bool onSpill    = (cfoRecord.event_mode >> 32) & 0x1;
     evtHdr->mode          = cfoRecord.event_mode; //cfo.GetEventMode();
     evtHdr->ewt           = static_cast<long unsigned int>(cfo.GetEventWindowTag().GetEventWindowTag().to_ullong());
-    evtHdr->flags         = cfo.GetEventMode().isOnSpillFlagSet();
+    evtHdr->flags         = onSpill ? mu2e::EventHeader::spillMask : 0;
     evtHdr->eventDuration = cfoRecord.event_duration;
     evtHdr->rfmTDC_est      = cfoRecord.DR_marker_N_est;
     evtHdr->rfmTDC_measured = cfoRecord.DR_marker_N_meas;
@@ -225,7 +230,7 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     if(ewm_) {
       constexpr double tick    = 25.;   // clock ticks -> ns
       constexpr double tdcTick = 1.25;  // CFO DR marker TDC (800 MHz) ticks -> ns
-      ewm->_spillType   = (cfo.GetEventMode().isOnSpillFlagSet()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
+      ewm->_spillType   = (onSpill) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
       ewm->_eventLength = tick * evtHdr->eventDuration;
       if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) {
         // The DR marker N measurement is the time from a 40 MHz clock edge to the DR marker arrival
