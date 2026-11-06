@@ -1,6 +1,15 @@
 //
 //  Associate reconstructed tracks (KalSeeds) with CRV coincidence clusters, one TrkCrvMatch per KalSeed, using
-//  TrkCrvMatchTool. Storage windows are loose on purpose: selections belong to the analysis.
+//  TrkCrvMatchTool:
+//  - time: every cluster with t_track(reference) - t_cluster inside DtRefWindow is a time candidate; the reference
+//    is by default the track's entry into the tracker (earliest of TT_Front, TT_Back, TT_Outer);
+//  - space: from the track's CRV crossing nearest to the cluster's sector plane, a straight-line projection onto that
+//    plane gives du, dv and dtXing, and a space+time chi2 with the full (u, v) covariance; clusters inside MaxDu,
+//    MaxDv and DtXingWindow are geometric candidates;
+//  - every candidate is kept: a track can have several, and a cluster can be a candidate of several tracks. They are
+//    ranked by chi2, then by time, with bestGeom and bestTime per track and bestInSector per sector; across the
+//    collection nShare, bestForCluster and a greedy one-to-one 'exclusive' assignment resolve shared clusters.
+//  Storage windows are loose on purpose: selections belong to the analysis.
 //
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"

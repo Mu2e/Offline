@@ -2,6 +2,7 @@ cet_make_library(
     SOURCE
       src/CrvHelper.cc
       src/MakeCrvRecoPulses.cc
+      src/TrkCrvGeom.cc
       src/TrkCrvMatchTool.cc
     LIBRARIES PUBLIC
 

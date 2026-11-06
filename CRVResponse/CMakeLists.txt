@@ -147,6 +147,7 @@ cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module
 cet_build_plugin(TrkCrvMatchMCMaker art::module
     REG_SOURCE src/TrkCrvMatchMCMaker_module.cc
     LIBRARIES REG
+      Offline::CRVReco
       Offline::CosmicRayShieldGeom
       Offline::DataProducts
       Offline::GeometryService

@@ -1,9 +1,9 @@
 //
-//  MC truth for TrkCrvMatch by SimParticle identity. For each track: its particle (KalSeedMC primary contributor), the
-//  true CRV sector crossings of that particle and its ancestors (MCTrajectory chords through the sector mid-plane
-//  rectangles, gap-inclusive, plus CrvStep deposits), the truth of each reco crossing, and the relation of each
-//  candidate cluster's deposits to the track's particle. The geometry service must hold the SIMULATION geometry.
-//  Particles are identified by (simStage, key), so steps and trajectories from different compressed SimParticle
+//  MC truth for TrkCrvMatch. For each track: its KalSeedMC and particle (primary contributor), the true CRV sector
+//  crossings of that particle and its ancestors (MCTrajectory segments through the sector mid-plane rectangles,
+//  gap-inclusive, plus CrvStep deposits), the truth of each reco crossing, and the MCRelationship of each candidate
+//  cluster's deposits to the track's particle. The geometry service must hold the SIMULATION geometry.
+//  Steps and trajectories are matched to particles by (simStage, key), so different compressed SimParticle
 //  collections of one stage compare correctly.
 //
 #include "art/Framework/Core/EDProducer.h"
@@ -12,15 +12,16 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "canvas/Utilities/InputTag.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+#include "Offline/CRVReco/inc/TrkCrvGeom.hh"
 #include "Offline/CRVReco/inc/TrkCrvPlaneError.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "Offline/MCDataProducts/inc/CrvCoincidenceClusterMCAssns.hh"
 #include "Offline/MCDataProducts/inc/CrvStep.hh"
 #include "Offline/MCDataProducts/inc/KalSeedMC.hh"
@@ -29,7 +30,9 @@
 #include "Offline/MCDataProducts/inc/TrkCrvMatchMC.hh"
 #include "Offline/RecoDataProducts/inc/TrkCrvMatch.hh"
 #include "KinKal/General/Vectors.hh"
+#include "KinKal/Geometry/LineSegment.hh"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <iomanip>
@@ -52,6 +55,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> simParticleTag{Name("SimParticleCollection"), Comment("SimParticles the KalSeedMC keys refer to"), art::InputTag("compressRecoMCs")};
         fhicl::Atom<art::InputTag> mcTrajectoryTag{Name("MCTrajectoryCollection"), Comment("MC trajectories for the gap-inclusive crossings"), art::InputTag("compressRecoMCs")};
         fhicl::Atom<art::InputTag> crvStepTag{Name("CrvStepCollection"), Comment("CRV steps for the deposits; the digi-stage collection holds every digitised step"), art::InputTag("compressDigiMCs")};
+        fhicl::Atom<bool> requireCrvSteps{Name("RequireCrvSteps"), Comment("throw if the CRV steps are missing; false fills no deposits (hasDeposits_ false), e.g. on reco output, which drops them"), true};
         fhicl::Atom<art::InputTag> clusterMCAssnsTag{Name("CrvCoincidenceClusterMCAssns"), Comment("cluster to cluster-MC associations, over the clusters the matcher used"), art::InputTag("CrvCoincidenceClusterMCAssns")};
         fhicl::Atom<double> edgeSigCut{Name("EdgeSigCut"), Comment("summary: a fake counts as near-edge when its edgeSig is below this"), 3.0};
         fhicl::Atom<unsigned> maxGenerations{Name("MaxGenerations"), Comment("ancestors of the track's particle searched for CRV crossings"), 3};
@@ -67,7 +71,7 @@ namespace mu2e {
     private:
       using PKey = std::pair<unsigned, unsigned long>;   // (simStage, key): particle identity across collections
       static PKey pkey(art::Ptr<SimParticle> const& p) { return {p->simStage(), p.key()}; }
-      struct SectorGeom { bool valid = false; std::shared_ptr<KinKal::Rectangle> rect; SurfaceId sid; };
+      static constexpr int nRel = 9;                     // summary bins: no MC, then MCRelationship none ... usibling
       struct Counts {           // per shield
         unsigned recoX = 0, recoTrueDep = 0, recoTrueGap = 0, recoTrueAnc = 0, recoFake = 0, recoFakeEdge = 0;
         unsigned recoFakeNbr = 0, trueMissedNbr = 0;
@@ -76,20 +80,18 @@ namespace mu2e {
         double chi2nd = 0, chi2ndProj = 0;                        // sums of chi2/ndof of those geometric candidates
         unsigned trueX = 0, trueFound = 0, trueMissed = 0, trueNoGeom = 0;
       };
-      // relation of particle q to the track's particle: walk q's ancestry
-      uint8_t relation(art::Ptr<SimParticle> q, std::set<PKey> const& self, std::set<PKey> const& anc, PKey const& trkRoot) const;
-      PKey root(art::Ptr<SimParticle> p) const;
-
       art::InputTag matchTag_, ksmcTag_, spTag_, trajTag_, stepTag_, ccmcTag_;
+      bool requireSteps_;
       double edgeSigCut_;
       unsigned maxGen_;
       bool printSummary_;
       int diag_;
-      std::vector<SectorGeom> sectors_;  // indexed by shield
+      std::vector<TrkCrvSector> sectors_;  // indexed by shield
       std::vector<int> planeGroup_;      // per shield: sectors sharing one plane get one id, -1 = no rectangle
       std::vector<std::string> shieldNames_;
       std::map<int,Counts> counts_;
-      std::array<unsigned,6> bestGeomRel_{}, bestTimeRel_{};
+      std::array<unsigned,nRel> bestGeomRel_{}, bestTimeRel_{};
+      std::vector<float> dtRefSame_;     // dtRef of time candidates whose cluster is the track's own particle (DtRefCenter)
       unsigned nTracks_ = 0, nTracksMC_ = 0, nTracksCrossing_ = 0;
   };
 
@@ -97,33 +99,22 @@ namespace mu2e {
     art::EDProducer(conf),
     matchTag_(conf().matchTag()), ksmcTag_(conf().kalSeedMCAssnsTag()), spTag_(conf().simParticleTag()),
     trajTag_(conf().mcTrajectoryTag()), stepTag_(conf().crvStepTag()), ccmcTag_(conf().clusterMCAssnsTag()),
-    edgeSigCut_(conf().edgeSigCut()), maxGen_(conf().maxGenerations()), printSummary_(conf().printSummary()), diag_(conf().diag())
+    requireSteps_(conf().requireCrvSteps()), edgeSigCut_(conf().edgeSigCut()), maxGen_(conf().maxGenerations()), printSummary_(conf().printSummary()), diag_(conf().diag())
   {
     consumes<TrkCrvMatchCollection>(matchTag_);
     consumes<KalSeedMCAssns>(ksmcTag_);
     consumes<SimParticleCollection>(spTag_);
     consumes<MCTrajectoryCollection>(trajTag_);
-    consumes<CrvStepCollection>(stepTag_);
+    if(requireSteps_) consumes<CrvStepCollection>(stepTag_);
+    else mayConsume<CrvStepCollection>(stepTag_);
     consumes<CrvCoincidenceClusterMCAssns>(ccmcTag_);
     produces<TrkCrvMatchMCCollection>();
   }
 
   void TrkCrvMatchMCMaker::beginRun(art::Run&) {
-    GeomHandle<CosmicRayShield> crs;
-    GeomHandle<KinKalGeom> kkg;
-    auto const& shields = crs->getCRSScintillatorShields();
-    sectors_.assign(shields.size(), SectorGeom());
+    sectors_ = trkCrvSectors();
     shieldNames_.clear();
-    std::map<std::string,int> nameToShield;
-    for(size_t i = 0; i < shields.size(); ++i) { nameToShield[shields[i].getName()] = static_cast<int>(i); shieldNames_.push_back(shields[i].getName()); }
-    for(auto const& sec : kkg->CRV()->sectors()) {
-      auto it = nameToShield.find(sec.sname_);
-      if(it == nameToShield.end()) continue;
-      auto& g = sectors_[it->second];
-      g.valid = true;
-      g.rect = sec.sector_;
-      try { g.sid = SurfaceId(sec.sname_); } catch(std::exception const&) {}
-    }
+    for(auto const& sg : sectors_) shieldNames_.push_back(sg.name);
     // coplanar sectors: parallel normals and centres within 5 mm of one plane
     planeGroup_.assign(sectors_.size(), -1);
     int ng = 0;
@@ -140,31 +131,16 @@ namespace mu2e {
     }
   }
 
-  TrkCrvMatchMCMaker::PKey TrkCrvMatchMCMaker::root(art::Ptr<SimParticle> p) const {
-    for(int i = 0; i < 1000 && p->parent().isNonnull(); ++i) p = p->parent();
-    return pkey(p);
-  }
-
-  uint8_t TrkCrvMatchMCMaker::relation(art::Ptr<SimParticle> q, std::set<PKey> const& self, std::set<PKey> const& anc, PKey const& trkRoot) const {
-    if(q.isNull()) return TrkCrvTruth::Background;
-    bool family = false;
-    for(int i = 0; i < 1000 && q.isNonnull(); ++i) {
-      auto k = pkey(q);
-      if(self.count(k)) return TrkCrvTruth::SameParticle; // the track's particle (any stage) or a descendant of it
-      if(anc.count(k)) family = true;                    // an ancestor or another descendant of an ancestor
-      if(q->parent().isNull()) return family ? TrkCrvTruth::SameFamily : (k == trkRoot ? TrkCrvTruth::SamePrimary : TrkCrvTruth::Unrelated);
-      q = q->parent();
-    }
-    return family ? TrkCrvTruth::SameFamily : TrkCrvTruth::Unrelated;
-  }
-
   void TrkCrvMatchMCMaker::produce(art::Event& event) {
     auto const& mH = event.getValidHandle<TrkCrvMatchCollection>(matchTag_);
     auto const& ksmcH = event.getValidHandle<KalSeedMCAssns>(ksmcTag_);
-    auto spH = event.getHandle<SimParticleCollection>(spTag_);
-    auto trajH = event.getHandle<MCTrajectoryCollection>(trajTag_);
+    auto spH = event.getHandle<SimParticleCollection>(spTag_);   // a plain Handle, as SimPartStub::simParticle takes
+    if(!spH.isValid()) throw cet::exception("TrkCrvMatchMCMaker") << "no SimParticleCollection " << spTag_;
+    auto const& trajH = event.getValidHandle<MCTrajectoryCollection>(trajTag_);
+    auto const& ccmcH = event.getValidHandle<CrvCoincidenceClusterMCAssns>(ccmcTag_);
     auto stepH = event.getHandle<CrvStepCollection>(stepTag_);
-    auto ccmcH = event.getHandle<CrvCoincidenceClusterMCAssns>(ccmcTag_);
+    if(!stepH.isValid() && requireSteps_)
+      throw cet::exception("TrkCrvMatchMCMaker") << "no CrvStepCollection " << stepTag_ << " (reco output drops it; set RequireCrvSteps : false to run without deposits)";
     GeomHandle<CosmicRayShield> crs;
     GeomHandle<DetectorSystem> det;
     auto toDet = [&](CLHEP::Hep3Vector const& v) { auto d = det->toDetector(v); return KinKal::VEC3(d.x(), d.y(), d.z()); };
@@ -176,14 +152,15 @@ namespace mu2e {
     std::map<size_t, art::Ptr<CrvCoincidenceClusterMC>> ccmc;
     std::map<size_t, int> clusterShield;
     art::ProductID clusterPid;
-    if(ccmcH.isValid()) for(auto const& a : *ccmcH) {
+    for(auto const& a : *ccmcH) {
       ccmc[a.first.key()] = a.second;
       clusterPid = a.first.id();
-      std::map<int,double> pes;
-      for(auto const& rp : a.first->GetCrvRecoPulses()) pes[crs->getBar(rp->GetScintillatorBarIndex()).id().getShieldNumber()] += rp->GetPEs();
-      double best = -1;
-      for(auto const& [s, pe] : pes) if(pe > best) { best = pe; clusterShield[a.first.key()] = s; }
+      clusterShield[a.first.key()] = trkCrvDominantShield(*a.first, *crs);
     }
+    // a deposit's particle in the track's SimParticle collection (same key), so MCRelationship compares like Ptrs
+    auto inTrackCollection = [&](art::Ptr<SimParticle> const& q) {
+      return (q.isNonnull() && spH->has(cet::map_vector_key(q.key()))) ? art::Ptr<SimParticle>(spH, q.key()) : art::Ptr<SimParticle>();
+    };
 
     auto out = std::make_unique<TrkCrvMatchMCCollection>();
     for(size_t imatch = 0; imatch < mH->size(); ++imatch) {
@@ -194,60 +171,63 @@ namespace mu2e {
       mc.recoXingNeighbor_.assign(m.xings_.size(), -1);
       mc.cands_.assign(m.cands_.size(), TrkCrvCandidateMC());
       ++nTracks_;
+      mc.hasDeposits_ = stepH.isValid();
       auto im = ksmc.find({m.track_.id(), m.track_.key()});
-      bool ok = im != ksmc.end() && spH.isValid();
-      if(ok && !im->second->simParticles().empty()) mc.trackSim_ = im->second->simParticle().simParticle(spH);
-      if(mc.trackSim_.isNull() || !mc.trackSim_.isAvailable()) { out->push_back(std::move(mc)); continue; }
+      art::Ptr<SimParticle> trackSim;
+      if(im != ksmc.end()) {
+        mc.kalSeedMC_ = im->second;
+        if(!im->second->simParticles().empty()) trackSim = im->second->simParticle().simParticle(spH);
+      }
+      if(trackSim.isNull() || !trackSim.isAvailable()) { out->push_back(std::move(mc)); continue; }
       ++nTracksMC_;
-      PKey trk = pkey(mc.trackSim_);
-      PKey trkRoot = root(mc.trackSim_);
+      PKey trk = pkey(trackSim);
 
       // lineage: generation 0 = the track's particle (and its earlier-stage selves), then ancestors
       std::vector<std::pair<art::Ptr<SimParticle>,uint8_t>> lineage;
-      std::set<PKey> anc, self;
-      art::Ptr<SimParticle> p = mc.trackSim_;
+      art::Ptr<SimParticle> p = trackSim;
       uint8_t gen = 0;
       for(int i = 0; i < 1000 && p.isNonnull() && gen <= maxGen_; ++i) {
         lineage.push_back({p, gen});
-        if(gen > 0) anc.insert(pkey(p)); else self.insert(pkey(p));
-        bool self = p->selfParent();
+        bool selfParent = p->selfParent();
         p = p->parent();
-        if(!self) ++gen;
+        if(!selfParent) ++gen;
       }
 
-      // true crossings: trajectory chords through the sector rectangles, then deposits
+      // true crossings: trajectory segments through the sector rectangles, then deposits
       std::map<std::pair<size_t,int>, TrkCrvXingMC> xmap;    // (lineage index, shield)
       for(size_t il = 0; il < lineage.size(); ++il) {
         auto const& [sp, g] = lineage[il];
-        if(trajH.isValid()) {
+        {
           auto it = trajH->find(sp);
           if(it != trajH->end()) {
             auto const& pts = it->second.points();
             double mass = sp->startMomentum().m();
             for(size_t j = 1; j < pts.size(); ++j) {
               KinKal::VEC3 a = toDet(pts[j-1].pos()), b = toDet(pts[j].pos());
+              if((b - a).Mag2() <= 0) continue;
+              KinKal::LineSegment seg(a, b);   // the trajectory between two saved points
               for(size_t s = 0; s < sectors_.size(); ++s) {
                 auto const& sg = sectors_[s];
                 if(!sg.valid) continue;
-                double da = (a - sg.rect->center()).Dot(sg.rect->normal()), db = (b - sg.rect->center()).Dot(sg.rect->normal());
-                if(da * db > 0 || da == db) continue;
-                double f = da / (da - db);
-                KinKal::VEC3 x = a + f * (b - a);
-                if(!sg.rect->inBounds(x, 0.0)) continue;
+                double dist = 0;
+                auto flag = sg.rect->intersect(seg, dist, true, 0.0);
+                if(!flag.onsurface_ || !flag.inbounds_ || dist < 0 || dist > seg.length()) continue;
+                double f = dist / seg.length();
+                KinKal::VEC3 x = seg.position(dist);
                 auto key = std::make_pair(il, static_cast<int>(s));
                 double t = pts[j-1].t() + f * (pts[j].t() - pts[j-1].t());
                 auto& xm = xmap[key];
                 if(xm.geom_ && xm.time_ <= t) continue;    // keep the earliest crossing of a sector
                 xm.geom_ = true;
                 xm.pos_ = XYZVectorF(x.X(), x.Y(), x.Z());
-                auto d = (b - a).Unit();
+                auto const& d = seg.direction();
                 xm.dir_ = XYZVectorF(d.X(), d.Y(), d.Z());
                 xm.time_ = t;
                 double ke = pts[j-1].kineticEnergy() + f * (pts[j].kineticEnergy() - pts[j-1].kineticEnergy());
                 xm.mom_ = std::sqrt(std::max(ke * (ke + 2.0 * mass), 0.0));
-                auto loc = x - sg.rect->center();
-                xm.dEdgeU_ = sg.rect->uHalfLength() - std::fabs(loc.Dot(sg.rect->uDirection()));
-                xm.dEdgeV_ = sg.rect->vHalfLength() - std::fabs(loc.Dot(sg.rect->vDirection()));
+                auto loc = x - sg.center;
+                xm.dEdgeU_ = sg.uHalf - std::fabs(loc.Dot(sg.u));
+                xm.dEdgeV_ = sg.vHalf - std::fabs(loc.Dot(sg.v));
               }
             }
           }
@@ -282,7 +262,7 @@ namespace mu2e {
       }
 
       // the cluster with the most energy from each crossing's particle in that sector
-      if(ccmcH.isValid()) {
+      {
         for(size_t ix = 0; ix < mc.xings_.size(); ++ix) {
           auto& xm = mc.xings_[ix];
           PKey k = pkey(xm.sim_);
@@ -295,7 +275,7 @@ namespace mu2e {
             if(e > best) { best = e; xm.trueCluster_ = static_cast<int16_t>(ckey); }
           }
           for(size_t ic = 0; ic < m.cands_.size() && xm.trueCluster_ >= 0; ++ic)
-            if(static_cast<int>(m.cands_[ic].cluster_.key()) == xm.trueCluster_) { xm.trueCand_ = static_cast<int16_t>(ic); break; }
+            if(m.cands_[ic].cluster_.id() == clusterPid && static_cast<int>(m.cands_[ic].cluster_.key()) == xm.trueCluster_) { xm.trueCand_ = static_cast<int16_t>(ic); break; }
         }
       }
 
@@ -319,24 +299,38 @@ namespace mu2e {
         }
       }
 
-      // candidate clusters: relation of their deposits to the track's particle
-      if(ccmcH.isValid() && !m.cands_.empty() && m.cands_.front().cluster_.id() != clusterPid && !ccmc.empty())
+      // candidate clusters: the closest MCRelationship of their deposit particles to the track's particle. A particle
+      // simulated in several stages has a copy per stage (self-parent chain), and a deposit can point at any of them,
+      // so each deposit is compared with every copy of the track's particle and the closest relation is kept
+      std::vector<art::Ptr<SimParticle>> trackSelves;
+      for(auto const& [sp, g] : lineage) if(g == 0) trackSelves.push_back(sp);
+      if(!m.cands_.empty() && m.cands_.front().cluster_.id() != clusterPid && !ccmc.empty())
         mf::LogWarning("TrkCrvMatchMCMaker") << "cluster MC associations are over a different cluster collection than the matcher used";
       for(size_t ic = 0; ic < m.cands_.size(); ++ic) {
         auto& cm = mc.cands_[ic];
         auto it = ccmc.find(m.cands_[ic].cluster_.key());
-        if(it == ccmc.end() || m.cands_[ic].cluster_.id() != clusterPid) continue;
-        if(!it->second->HasMCInfo()) { cm.rel_ = TrkCrvTruth::Background; continue; }
-        uint8_t rel = TrkCrvTruth::Background;
+        if(it == ccmc.end() || m.cands_[ic].cluster_.id() != clusterPid || !it->second->HasMCInfo()) continue;
+        cm.hasMC_ = true;
         for(auto const& pi : it->second->GetPulses()) {
           if(pi._energyDeposited <= 0) continue;
-          uint8_t r = relation(pi._simParticle, self, anc, trkRoot);
+          auto q = inTrackCollection(pi._simParticle);
+          MCRelationship r;
+          for(auto const& self : trackSelves) { MCRelationship rs(q, self); if(r < rs) r = rs; }
+          if(diag_ > 1) {
+            mf::LogInfo dl("TrkCrvMatchMCMaker");
+            dl << "event " << event.id() << " track " << m.track_.key() << " cand " << ic << " deposit sim "
+               << (pi._simParticle.isNonnull() ? std::to_string(pi._simParticle.id().value()) + ":" + std::to_string(pi._simParticle.key()) : std::string("null"))
+               << " in track collection " << q.isNonnull();
+            if(q.isNonnull()) dl << " stage " << q->simStage() << " selfParent " << q->selfParent();
+            dl << " rel " << int(r.relationship()) << "/" << int(r.removal()) << " | track copies";
+            for(auto const& self : trackSelves) dl << " " << self.id().value() << ":" << self.key() << "(stage " << self->simStage() << ")";
+          }
           cm.edepTotal_ += pi._energyDeposited;
-          if(r == TrkCrvTruth::SameParticle) cm.edepSame_ += pi._energyDeposited;
-          if(r == TrkCrvTruth::SameFamily) cm.edepFamily_ += pi._energyDeposited;
-          rel = std::min(rel, r);
+          if(r == MCRelationship::same) cm.edepSame_ += pi._energyDeposited;
+          if(r != MCRelationship::none) cm.edepRelated_ += pi._energyDeposited;
+          if(cm.rel_ < r) cm.rel_ = r;
         }
-        cm.rel_ = rel;
+        if(cm.rel_ == MCRelationship::same && m.cands_[ic].hasFlag(TrkCrvCandidate::timeCand)) dtRefSame_.push_back(m.cands_[ic].dtRef_);
       }
 
       // bookkeeping for the end-of-job summary
@@ -383,12 +377,13 @@ namespace mu2e {
         if(excl) ++c.trueCluExcl;
       }
       if(crosses) ++nTracksCrossing_;
-      if(m.bestGeom_ >= 0) ++bestGeomRel_[mc.cands_[m.bestGeom_].rel_];
-      if(m.bestTime_ >= 0) ++bestTimeRel_[mc.cands_[m.bestTime_].rel_];
+      auto relBin = [](TrkCrvCandidateMC const& cm) { return cm.hasMC_ ? cm.rel_.relationship() + 2 : 0; };
+      if(m.bestGeom_ >= 0) ++bestGeomRel_[relBin(mc.cands_[m.bestGeom_])];
+      if(m.bestTime_ >= 0) ++bestTimeRel_[relBin(mc.cands_[m.bestTime_])];
 
       if(diag_ > 0) {
         mf::LogInfo log("TrkCrvMatchMCMaker");
-        log << "event " << event.id() << " track " << m.track_.key() << " sim " << mc.trackSim_->pdgId() << " stage/key "
+        log << "event " << event.id() << " track " << m.track_.key() << " sim " << trackSim->pdgId() << " stage/key "
             << trk.first << "/" << trk.second << " reco xings " << m.xings_.size() << " true xings " << mc.xings_.size();
         for(size_t ir = 0; ir < m.xings_.size(); ++ir)
           log << "\n  reco " << m.xings_[ir].sid_ << " inb " << m.xings_[ir].inBounds_ << " edgeU " << m.xings_[ir].dEdgeU_
@@ -414,14 +409,14 @@ namespace mu2e {
           double s = (rect.center() - px).Dot(w) / dw;
           KinKal::VEC3 r = KinKal::VEC3(xm.pos_.X(), xm.pos_.Y(), xm.pos_.Z()) - (px + s * d);
           auto const& cov = ki.pstate_.stateCovariance();
+          auto ce = trkCrvPlaneCovariance(cov, mom, rect.uDirection(), rect.vDirection(), w, s);
+          auto c0 = trkCrvPlaneCovariance(cov, mom, rect.uDirection(), rect.vDirection(), w, 0.0);
           log << "\n  pull shield " << xm.sector_ << " same " << c.hasFlag(TrkCrvCandidate::sameSector)
               << " single " << c.hasFlag(TrkCrvCandidate::singleEnded) << " s " << s << " dw " << dw
-              << " du " << c.du_ << " dv " << c.dv_ << " sigU " << c.sigU_ << " sigV " << c.sigV_
+              << " du " << c.du_ << " dv " << c.dv_ << " sigU " << c.sigU() << " sigV " << c.sigV()
               << " tdu " << r.Dot(rect.uDirection()) << " tdv " << r.Dot(rect.vDirection())
-              << " teu " << trkCrvPlaneError(cov, mom, rect.uDirection(), w, s)
-              << " tev " << trkCrvPlaneError(cov, mom, rect.vDirection(), w, s)
-              << " teu0 " << trkCrvPlaneError(cov, mom, rect.uDirection(), w, 0.0)
-              << " tev0 " << trkCrvPlaneError(cov, mom, rect.vDirection(), w, 0.0);
+              << " teu " << std::sqrt(ce(0,0)) << " tev " << std::sqrt(ce(1,1)) << " rhouv " << (ce(0,0) > 0 && ce(1,1) > 0 ? ce(0,1)/std::sqrt(ce(0,0)*ce(1,1)) : 0.0)
+              << " teu0 " << std::sqrt(c0(0,0)) << " tev0 " << std::sqrt(c0(1,1));
         }
       }
       out->push_back(std::move(mc));
@@ -431,7 +426,7 @@ namespace mu2e {
 
   void TrkCrvMatchMCMaker::endJob() {
     if(!printSummary_) return;
-    static const char* relName[6] = {"SameParticle","SameFamily","SamePrimary","Unrelated","Background","NoMC"};
+    static const char* relName[nRel] = {"noMC","none","same","daughter","mother","sibling","udaughter","umother","usibling"};
     mf::LogInfo log("TrkCrvMatchMCMaker");
     log << "TrkCrvMatchMC summary (" << moduleDescription().moduleLabel() << "): tracks " << nTracks_ << ", with MC " << nTracksMC_
         << ", whose particle crosses a CRV sector " << nTracksCrossing_ << "\n"
@@ -450,9 +445,14 @@ namespace mu2e {
           << " best " << c.trueCluBest << " chi2nd " << c.chi2nd << " proj " << c.trueCluProj << " chi2ndProj " << c.chi2ndProj;
     }
     log << "\nbest geometric candidate:";
-    for(int i = 0; i < 6; ++i) log << " " << relName[i] << " " << bestGeomRel_[i];
+    for(int i = 0; i < nRel; ++i) log << " " << relName[i] << " " << bestGeomRel_[i];
     log << "\nbest time candidate:     ";
-    for(int i = 0; i < 6; ++i) log << " " << relName[i] << " " << bestTimeRel_[i];
+    for(int i = 0; i < nRel; ++i) log << " " << relName[i] << " " << bestTimeRel_[i];
+    if(!dtRefSame_.empty()) {
+      std::sort(dtRefSame_.begin(), dtRefSame_.end());
+      auto q = [&](double f) { return dtRefSame_[std::min(dtRefSame_.size() - 1, static_cast<size_t>(f * dtRefSame_.size()))]; };
+      log << "\nown-particle time candidates: " << dtRefSame_.size() << ", dtRef median " << q(0.5) << " ns, 16-84% " << q(0.16) << " " << q(0.84) << " ns";
+    }
   }
 }
 

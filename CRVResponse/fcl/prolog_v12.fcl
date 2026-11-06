@@ -200,6 +200,7 @@ BEGIN_PROLOG
       MCTrajectoryCollection : "compressRecoMCs"
       CrvStepCollection : "compressDigiMCs"
       CrvCoincidenceClusterMCAssns : "CrvCoincidenceClusterMCAssns"
+      RequireCrvSteps : true   # false on reco output, which drops the digi-stage CrvSteps: no deposits then
     }
 
 

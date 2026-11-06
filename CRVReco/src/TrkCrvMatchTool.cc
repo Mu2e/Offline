@@ -3,8 +3,8 @@
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
-#include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "cetlib_except/exception.h"
+#include "CLHEP/Units/PhysicalConstants.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <algorithm>
 #include <climits>
@@ -13,12 +13,12 @@
 namespace mu2e {
 
   TrkCrvMatchTool::TrkCrvMatchTool(Config const& conf) :
-    dtRefCenter_(conf.dtRefCenter()), maxDv_(conf.maxDv()), maxDu_(conf.maxDu()),
+    earliestRef_(conf.earliestReference()), dtRefCenter_(conf.dtRefCenter()), maxDv_(conf.maxDv()), maxDu_(conf.maxDu()),
     doGeometric_(conf.doGeometric()), requireSameSector_(conf.requireSameSector()),
     sigmaV_(conf.sigmaV()), sigmaU_(conf.sigmaU()), sigmaT_(conf.sigmaT()),
     sigmaTSingle_(conf.sigmaTSingleEnded()), trkErrScale_(conf.trackErrorScale()), posErrQuad_(conf.trackPosErrQuad()),
     minTimeErr_(conf.minTrackTimeErr()), timeOffset_(conf.timeOffset()), keepAll_(conf.keepAll()),
-    layerProbe_(conf.layerProbe()), probeBarWindow_(conf.probeBarWindow()), fiberSpeed_(conf.fiberSignalSpeed()),
+    layerProbe_(conf.layerProbe()), probeAllPulses_(conf.probeAllPulses()), probeBarWindow_(conf.probeBarWindow()), fiberSpeed_(conf.fiberSignalSpeed()),
     pulseDelay_(conf.pulseDelay())
   {
     auto w = conf.dtRefWindow(); auto x = conf.dtXingWindow(); auto p = conf.probeDtWindow();
@@ -29,6 +29,13 @@ namespace mu2e {
     for(auto const& s : conf.refSurfaces()) refSurfaces_.emplace_back(s);
   }
 
+  TrkCrvPlaneCov TrkCrvMatchTool::errorModel(TrkCrvCov2 const& cov) const {
+    TrkCrvPlaneCov out;
+    for(int i = 0; i < 2; ++i)
+      for(int j = i; j < 2; ++j) out(i, j) = trkErrScale_ * trkErrScale_ * cov(i, j) + (i == j ? posErrQuad_ * posErrQuad_ : 0.0);
+    return out;
+  }
+
   double TrkCrvMatchTool::resolution(std::vector<double> const& tab, int sectorType) const {
     size_t i = sectorType > 0 ? static_cast<size_t>(sectorType - 1) : 0;
     return tab[std::min(i, tab.size() - 1)];
@@ -37,28 +44,12 @@ namespace mu2e {
   void TrkCrvMatchTool::beginRun() {
     GeomHandle<CosmicRayShield> crs;
     GeomHandle<DetectorSystem> det;
-    GeomHandle<KinKalGeom> kkg;
     crs_ = crs.get();
     det_ = det.get();
-    auto const& shields = crs_->getCRSScintillatorShields();
+    sectors_ = trkCrvSectors();
     sidToShield_.clear();
-    sectors_.assign(shields.size(), SectorGeom());
-    std::map<std::string,int> nameToShield;
-    for(size_t i = 0; i < shields.size(); ++i) nameToShield[shields[i].getName()] = static_cast<int>(i);
-    for(auto const& sec : kkg->CRV()->sectors()) {
-      auto it = nameToShield.find(sec.sname_);
-      if(it == nameToShield.end()) continue;
-      SectorGeom& g = sectors_[it->second];
-      g.valid = true;
-      g.center = sec.sector_->center();
-      g.u = sec.sector_->uDirection();
-      g.v = sec.sector_->vDirection();
-      g.w = sec.sector_->normal();
-      g.uHalf = sec.sector_->uHalfLength();
-      g.vHalf = sec.sector_->vHalfLength();
-      try { sidToShield_[SurfaceId(sec.sname_)] = it->second; }
-      catch(std::exception const&) { mf::LogWarning("TrkCrvMatchTool") << "no SurfaceId for CRV sector " << sec.sname_; }
-    }
+    for(size_t i = 0; i < sectors_.size(); ++i)
+      if(sectors_[i].valid && sectors_[i].sid != SurfaceId()) sidToShield_[sectors_[i].sid] = static_cast<int>(i);
   }
 
   void TrkCrvMatchTool::setEvent(std::vector<art::Ptr<CrvCoincidenceCluster>> const& clusters, CrvRecoPulseCollection const* pulses) {
@@ -74,14 +65,9 @@ namespace mu2e {
       ci.time = cc.GetAvgHitTime() + timeOffset_;
       ci.sectorType = cc.GetCrvSectorType();
       ci.singleEnded = !cc.HitPosAndTimeCalculated();
-      std::map<int,double> pes;
-      for(auto const& rp : cc.GetCrvRecoPulses()) {
-        pes[crs_->getBar(rp->GetScintillatorBarIndex()).id().getShieldNumber()] += rp->GetPEs();
+      ci.shield = trkCrvDominantShield(cc, *crs_, &ci.multiSector);
+      for(auto const& rp : cc.GetCrvRecoPulses())
         clusteredPulses_.emplace(rp->GetScintillatorBarIndex().asInt(), rp->GetSiPMNumber(), rp->GetPulseTime());
-      }
-      double best = -1;
-      for(auto const& [s, pe] : pes) if(pe > best) { best = pe; ci.shield = s; }
-      ci.multiSector = pes.size() > 1;
     }
     pulses_ = layerProbe_ ? pulses : nullptr;
     pulsesByBar_.clear();
@@ -177,34 +163,39 @@ namespace mu2e {
     m.track_ = seed;
     double t0 = ks.t0Val();
     double t0err = std::sqrt(std::max(ks.t0Var(), 0.0));
-    // reference times: the intersection on each surface nearest in time to t0
-    auto nearest = [&](SurfaceId const& sid) -> int {
-      int best = -1; double bdt = 1e30;
+    // reference time: the earliest intersection on any reference surface (tracker entry), or the first surface in
+    // list order present, nearest in time to t0; KalSeed t0 if none
+    int kref = -1;
+    if(earliestRef_) {
       for(size_t k = 0; k < ks.intersections().size(); ++k) {
         auto const& ki = ks.intersections()[k];
-        if(ki.surfaceId() != sid) continue;
-        double d = std::fabs(ki.time() - t0);
-        if(d < bdt) { bdt = d; best = static_cast<int>(k); }
+        if(std::find(refSurfaces_.begin(), refSurfaces_.end(), ki.surfaceId()) == refSurfaces_.end()) continue;
+        if(kref < 0 || ki.time() < ks.intersections()[kref].time()) kref = static_cast<int>(k);
       }
-      return best;
-    };
-    int kf = nearest(SurfaceId(SurfaceIdDetail::TT_Front));
-    int km = nearest(SurfaceId(SurfaceIdDetail::TT_Mid));
-    if(kf >= 0) { m.hasFront_ = true; m.tFront_ = ks.intersections()[kf].time(); }
-    if(km >= 0) { m.hasMid_ = true; m.tMid_ = ks.intersections()[km].time(); }
+    } else {
+      for(auto const& rs : refSurfaces_) {
+        double bdt = 1e30;
+        for(size_t k = 0; k < ks.intersections().size(); ++k) {
+          auto const& ki = ks.intersections()[k];
+          if(ki.surfaceId() != rs || std::fabs(ki.time() - t0) >= bdt) continue;
+          bdt = std::fabs(ki.time() - t0);
+          kref = static_cast<int>(k);
+        }
+        if(kref >= 0) break;
+      }
+    }
     m.tRef_ = t0;
-    bool hasRefPos = false;
+    bool hasRefPos = kref >= 0;
     KinKal::VEC3 refPos;
-    for(auto const& rs : refSurfaces_) {
-      int k = nearest(rs);
-      if(k < 0) continue;
-      m.refSurface_ = rs;
-      m.tRef_ = ks.intersections()[k].time();
-      refPos = ks.intersections()[k].position3();
-      hasRefPos = true;
-      break;
+    if(hasRefPos) {
+      auto const& ki = ks.intersections()[kref];
+      m.refSurface_ = ki.surfaceId();
+      m.tRef_ = ki.time();
+      refPos = ki.position3();
     }
     m.timeOffset_ = timeOffset_;
+    if(layerProbe_ && doGeometric_)
+      m.probe_ = !pulses_ ? TrkCrvMatch::probeNoPulses : (probeAllPulses_ ? TrkCrvMatch::probeAllPulses : TrkCrvMatch::probeClusteredPulses);
 
     // CRV crossings
     double sigT = std::max(t0err, minTimeErr_);
@@ -224,17 +215,14 @@ namespace mu2e {
         x.dir_ = XYZVectorF(d.X(), d.Y(), d.Z());
         x.time_ = ki.time();
         x.inBounds_ = ki.inBounds();
-        auto const& cov = ki.pstate_.stateCovariance();
-        auto mom = ki.momentum3();
-        x.sigU_ = trkPosErr(trkCrvPlaneError(cov, mom, g.u, g.w, 0.0));
-        x.sigV_ = trkPosErr(trkCrvPlaneError(cov, mom, g.v, g.w, 0.0));
+        x.cov_ = errorModel(trkCrvPlaneCovariance(ki.pstate_.stateCovariance(), ki.momentum3(), g.u, g.v, g.w, 0.0));
         x.sigT_ = sigT;
         x.mom_ = ki.mom();
         x.momErr_ = ki.momerr();
         KinKal::VEC3 loc = p - g.center;
         x.dEdgeU_ = g.uHalf - std::fabs(loc.Dot(g.u));
         x.dEdgeV_ = g.vHalf - std::fabs(loc.Dot(g.v));
-        x.edgeSig_ = (x.sigU_ > 0 && x.sigV_ > 0) ? std::min(x.dEdgeU_ / x.sigU_, x.dEdgeV_ / x.sigV_) : 0.f;
+        x.edgeSig_ = (x.sigU() > 0 && x.sigV() > 0) ? std::min(x.dEdgeU_ / x.sigU(), x.dEdgeV_ / x.sigV()) : 0.f;
         if(layerProbe_) probe(x, std::sqrt(ki.velocity().Mag2()));
         m.xings_.push_back(x);
       }
@@ -247,7 +235,7 @@ namespace mu2e {
       c.cluster_ = clusters_[ic];
       c.sector_ = static_cast<int16_t>(ci.shield);
       c.dtRef_ = m.tRef_ - ci.time;
-      c.dtRefToF_ = hasRefPos ? c.dtRef_ - std::sqrt((refPos - ci.pos).Mag2()) / cLight_ : c.dtRef_;
+      c.dtRefToF_ = hasRefPos ? c.dtRef_ - std::sqrt((refPos - ci.pos).Mag2()) / CLHEP::c_light : c.dtRef_;
       if(ci.singleEnded) c.setFlag(TrkCrvCandidate::singleEnded);
       if(ci.multiSector) c.setFlag(TrkCrvCandidate::multiSector);
       bool timeOK = keepAll_ || (c.dtRef_ >= dtRefLo_ && c.dtRef_ <= dtRefHi_);
@@ -281,17 +269,19 @@ namespace mu2e {
         c.du_ = r.Dot(g.u);
         c.dv_ = r.Dot(g.v);
         c.dtXing_ = ci.time - tp;
-        // track errors on the cluster's plane: the reference crossing's covariance carried over the straight step
-        auto const& cov = ki.pstate_.stateCovariance();
-        double tsu = trkPosErr(trkCrvPlaneError(cov, ki.momentum3(), g.u, g.w, ds));
-        double tsv = trkPosErr(trkCrvPlaneError(cov, ki.momentum3(), g.v, g.w, ds));
-        c.sigU_ = static_cast<float>(tsu);
-        c.sigV_ = static_cast<float>(tsv);
+        // track covariance on the cluster's plane: the reference crossing's covariance carried over the straight step
+        c.cov_ = errorModel(trkCrvPlaneCovariance(ki.pstate_.stateCovariance(), ki.momentum3(), g.u, g.v, g.w, ds));
         double sv = resolution(sigmaV_, ci.sectorType), su = resolution(sigmaU_, ci.sectorType);
         double st = ci.singleEnded ? sigmaTSingle_ : resolution(sigmaT_, ci.sectorType);
-        c.chi2_ = c.dv_*c.dv_/(sv*sv + tsv*tsv) + c.dtXing_*c.dtXing_/(st*st + x.sigT_*x.sigT_);
-        c.ndof_ = 2;
-        if(!ci.singleEnded) { c.chi2_ += c.du_*c.du_/(su*su + tsu*tsu); c.ndof_ = 3; }
+        c.chi2_ = c.dtXing_*c.dtXing_/(st*st + x.sigT_*x.sigT_);
+        if(ci.singleEnded) {   // no along-bar measurement: across-bar term only
+          c.chi2_ += c.dv_*c.dv_/(sv*sv + c.cov_(1,1));
+          c.ndof_ = 2;
+        } else {               // full (u, v) covariance plus the CRV resolution on the diagonal
+          double a = c.cov_(0,0) + su*su, b = c.cov_(0,1), d = c.cov_(1,1) + sv*sv, det = a*d - b*b;
+          c.chi2_ += det > 0 ? (d*c.du_*c.du_ - 2*b*c.du_*c.dv_ + a*c.dv_*c.dv_)/det : 0.0;
+          c.ndof_ = 3;
+        }
         bool geomOK = keepAll_ || (std::fabs(c.dv_) < maxDv_ && (ci.singleEnded || std::fabs(c.du_) < maxDu_)
                                    && c.dtXing_ >= dtXingLo_ && c.dtXing_ <= dtXingHi_);
         if(geomOK) {
@@ -302,7 +292,7 @@ namespace mu2e {
           if(std::fabs(loc.Dot(g.u)) > g.uHalf || std::fabs(loc.Dot(g.v)) > g.vHalf) c.setFlag(TrkCrvCandidate::outOfBounds);
         }
       }
-      if(!c.hasFlag(TrkCrvCandidate::geomCand)) { c.chi2_ = -1; c.ndof_ = 0; c.du_ = c.dv_ = c.dtXing_ = c.sigU_ = c.sigV_ = 0; }
+      if(!c.hasFlag(TrkCrvCandidate::geomCand)) { c.chi2_ = -1; c.ndof_ = 0; c.du_ = c.dv_ = c.dtXing_ = 0; c.cov_ = TrkCrvPlaneCov(); }
       if(c.hasFlag(TrkCrvCandidate::geomCand) || timeOK) {
         for(auto const& u : usedInFit) if(sameCluster(u, c.cluster_)) { c.setFlag(TrkCrvCandidate::usedInFit); break; }
         m.cands_.push_back(c);
@@ -359,12 +349,12 @@ namespace mu2e {
     }
     std::stable_sort(geomPairs.begin(), geomPairs.end(), [](auto const& a, auto const& b) { return a.first < b.first; });
     std::map<size_t,bool> usedCluster;
-    std::map<std::pair<size_t,int>,bool> usedXing;   // (track, cluster sector)
+    std::map<std::pair<size_t,int>,bool> usedTrackSector;   // (track, cluster sector): one cluster per track per sector
     for(auto const& [chi2, r] : geomPairs) {
       auto& c = out[r.trk].cands_[r.cand];
-      auto xk = std::make_pair(r.trk, static_cast<int>(c.sector_));
-      if(usedCluster[c.cluster_.key()] || usedXing[xk]) continue;
-      usedCluster[c.cluster_.key()] = usedXing[xk] = true;
+      auto ts = std::make_pair(r.trk, static_cast<int>(c.sector_));
+      if(usedCluster[c.cluster_.key()] || usedTrackSector[ts]) continue;
+      usedCluster[c.cluster_.key()] = usedTrackSector[ts] = true;
       c.setFlag(TrkCrvCandidate::exclusive);
     }
   }
