@@ -45,6 +45,13 @@
 
 namespace mu2e {
 
+  // relation of an ancestor to the track's particle, from its generation in the stage-aware lineage (MCRelationship
+  // from the Ptrs would count each simulation-stage copy as a generation)
+  inline MCRelationship ancestorRelation(unsigned gen) {
+    if(gen == 0) return MCRelationship(MCRelationship::same, 0);
+    return MCRelationship(gen == 1 ? MCRelationship::mother : MCRelationship::umother, static_cast<int8_t>(gen));
+  }
+
   class TrkCrvMatchMCMaker : public art::EDProducer {
     public:
       struct Config {
@@ -255,7 +262,7 @@ namespace mu2e {
       }
       for(auto& [key, xm] : xmap) {
         xm.sector_ = static_cast<int16_t>(key.second);
-        xm.generation_ = lineage[key.first].second;
+        xm.rel_ = ancestorRelation(lineage[key.first].second);
         xm.sim_ = lineage[key.first].first;
         if(key.second >= 0 && static_cast<size_t>(key.second) < sectors_.size()) xm.sid_ = sectors_[key.second].sid;
         mc.xings_.push_back(xm);
@@ -285,7 +292,7 @@ namespace mu2e {
         for(size_t ix = 0; ix < mc.xings_.size(); ++ix) {
           auto const& xm = mc.xings_[ix];
           if(xm.sector_ != m.xings_[ir].sector_ || !(xm.geom_ || xm.edep_ > 0)) continue;
-          if(best < 0 || xm.generation_ < mc.xings_[best].generation_) best = static_cast<int>(ix);
+          if(best < 0 || xm.rel_.removal() < mc.xings_[best].rel_.removal()) best = static_cast<int>(ix);
         }
         mc.recoXingTruth_[ir] = static_cast<int16_t>(best);
         if(best >= 0 && mc.xings_[best].recoXing_ < 0) mc.xings_[best].recoXing_ = static_cast<int16_t>(ir);
@@ -293,7 +300,7 @@ namespace mu2e {
           int rs = m.xings_[ir].sector_;
           for(size_t ix = 0; ix < mc.xings_.size(); ++ix) {
             auto const& xm = mc.xings_[ix];
-            if(xm.generation_ != 0 || !(xm.geom_ || xm.edep_ > 0) || xm.sector_ == rs) continue;
+            if(xm.rel_ != MCRelationship::same || !(xm.geom_ || xm.edep_ > 0) || xm.sector_ == rs) continue;
             if(rs >= 0 && xm.sector_ >= 0 && planeGroup_[rs] >= 0 && planeGroup_[rs] == planeGroup_[xm.sector_]) { mc.recoXingNeighbor_[ir] = static_cast<int16_t>(ix); break; }
           }
         }
@@ -340,12 +347,12 @@ namespace mu2e {
         ++c.recoX;
         int t = mc.recoXingTruth_[ir];
         if(t < 0) { ++c.recoFake; if(m.xings_[ir].edgeSig_ < edgeSigCut_) ++c.recoFakeEdge; if(mc.recoXingNeighbor_[ir] >= 0) ++c.recoFakeNbr; }
-        else if(mc.xings_[t].generation_ > 0) ++c.recoTrueAnc;
+        else if(mc.xings_[t].rel_ != MCRelationship::same) ++c.recoTrueAnc;
         else if(mc.xings_[t].edep_ > 0) ++c.recoTrueDep;
         else ++c.recoTrueGap;
       }
       for(auto const& xm : mc.xings_) {
-        if(xm.generation_ != 0) continue;
+        if(xm.rel_ != MCRelationship::same) continue;
         auto& c = counts_[xm.sector_];
         if(!xm.geom_) { if(xm.edep_ > 0) ++c.trueNoGeom; continue; }
         crosses = true;
@@ -358,7 +365,7 @@ namespace mu2e {
         }
       }
       for(auto const& xm : mc.xings_) {   // is the particle's own cluster in each sector associated geometrically?
-        if(xm.generation_ != 0 || xm.trueCluster_ < 0) continue;
+        if(xm.rel_ != MCRelationship::same || xm.trueCluster_ < 0) continue;
         auto& c = counts_[xm.sector_];
         ++c.trueClu;
         bool geom = false, excl = false;
@@ -389,12 +396,12 @@ namespace mu2e {
           log << "\n  reco " << m.xings_[ir].sid_ << " inb " << m.xings_[ir].inBounds_ << " edgeU " << m.xings_[ir].dEdgeU_
               << " edgeV " << m.xings_[ir].dEdgeV_ << " edgeSig " << m.xings_[ir].edgeSig_ << " truth " << mc.recoXingTruth_[ir] << " nbr " << mc.recoXingNeighbor_[ir];
         for(auto const& xm : mc.xings_)
-          log << "\n  true shield " << xm.sector_ << " gen " << int(xm.generation_) << " geom " << xm.geom_ << " edep " << xm.edep_
+          log << "\n  true shield " << xm.sector_ << " gen " << int(xm.rel_.removal()) << " geom " << xm.geom_ << " edep " << xm.edep_
               << " layers " << int(xm.nLayers_) << " edgeU " << xm.dEdgeU_ << " edgeV " << xm.dEdgeV_
               << " recoXing " << xm.recoXing_ << " cluster " << xm.trueCluster_;
         // pulls of own-cluster geometric candidates: matcher residuals, and the raw-error track against the true crossing
         for(auto const& xm : mc.xings_) {
-          if(xm.generation_ != 0 || !xm.geom_ || xm.trueCand_ < 0) continue;
+          if(xm.rel_ != MCRelationship::same || !xm.geom_ || xm.trueCand_ < 0) continue;
           auto const& c = m.cands_[xm.trueCand_];
           if(!c.hasFlag(TrkCrvCandidate::geomCand) || c.xing_ < 0) continue;
           if(xm.sector_ < 0 || static_cast<size_t>(xm.sector_) >= sectors_.size() || !sectors_[xm.sector_].valid) continue;

@@ -17,12 +17,13 @@
 
 namespace mu2e {
 
-  // one true crossing of a CRV sector by the track's particle (generation 0) or one of its ancestors (sim_); the
+  // one true crossing of a CRV sector by the track's particle or one of its ancestors (sim_); the
   // position, direction, time and momentum are those of sim_'s MC trajectory at the sector mid-plane
   struct TrkCrvXingMC {
     SurfaceId sid_;              // sector surface, as the reco crossings
     int16_t   sector_ = -1;      // CRSScintillatorShield index
-    uint8_t   generation_ = 0;   // 0 = the track's particle, 1 = its parent, ...
+    MCRelationship rel_;         // sim_ relative to the track's particle: same, mother (its parent) or umother (further
+                                 // up); removal() counts the generations, not counting simulation-stage copies
     art::Ptr<SimParticle> sim_;  // the crossing particle
     bool      geom_ = false;     // sim_'s trajectory crosses the sector mid-plane rectangle (gap-inclusive)
     XYZVectorF pos_;             // sim_'s trajectory at the mid-plane, detector frame [mm] (geom_ only)
