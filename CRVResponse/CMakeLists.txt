@@ -144,6 +144,19 @@ cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(TrkCrvMatchMCMaker art::module
+    REG_SOURCE src/TrkCrvMatchMCMaker_module.cc
+    LIBRARIES REG
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::KinKalGeom
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      KinKal::General
+      KinKal::Geometry
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_extracted.fcl	  ${CURRENT_BINARY_DIR} fcl/epilog_extracted.fcl	 )
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/epilog_extracted_v02.fcl   ${CURRENT_BINARY_DIR} fcl/epilog_extracted_v02.fcl )

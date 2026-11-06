@@ -389,6 +389,14 @@ BEGIN_PROLOG
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
     }
 
+    # track-CRV association, one instance per KalSeed collection (set KalSeedCollection); see TrkCrvMatchTool.hh for the settings
+    TrkCrvMatcher :
+    {
+      module_type                      : TrkCrvMatcher
+      CrvCoincidenceClusterCollection  : "SelectReco:CrvCoincidenceClusterFinder"
+      CrvRecoPulseCollection           : "CrvRecoPulses"
+    }
+
 
 CrvRecoPackage :
 {

@@ -192,6 +192,16 @@ BEGIN_PROLOG
       crvCoincidenceMCTags : [ "CrvCoincidenceClusterMatchMC" ]
     }
 
+    # MC truth for one TrkCrvMatcher instance (set TrkCrvMatchCollection); needs the simulation geometry
+    TrkCrvMatchMC : {
+      module_type : TrkCrvMatchMCMaker
+      KalSeedMCAssns : "SelectReco"
+      SimParticleCollection : "compressRecoMCs"
+      MCTrajectoryCollection : "compressRecoMCs"
+      CrvStepCollection : "compressDigiMCs"
+      CrvCoincidenceClusterMCAssns : "CrvCoincidenceClusterMCAssns"
+    }
+
 
 CrvDAQPackage :
 {
