@@ -1,4 +1,6 @@
 # Produce fragments from digis, and validate the results from digi -> fragment -> digi are identical
+# The CFO fragment is made from the simulated event timing and decoded into an EventHeader,
+# EventWindowMarker and ProtonBunchTime (CFOFragmentToHeader), as done for data in the trigger
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -15,6 +17,17 @@ services.GeometryService.bFieldFile     : "Offline/Mu2eG4/geom/bfgeom_reco_v01.t
 physics : {
 
   producers : {
+    CFOFragmentFromSim : {
+      module_type : CFOFragmentFromSim
+      diagLevel : 1
+    }
+    CFOFragmentToHeader : {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag : "CFOFragmentFromSim:CFO"
+      createEWM : true
+      diagLevel : 1
+    }
+
     CaloDigisToFragments : {
       module_type : CaloDigisToFragments
       diagLevel : 0
@@ -70,7 +83,7 @@ physics : {
     }
   }
 
-  TrigPath      : [ CaloDigisToFragments, StrawDigisToFragments, CaloFragmentsToDigis, StrawFragmentsToDigis ]
+  TrigPath      : [ CFOFragmentFromSim, CaloDigisToFragments, StrawDigisToFragments, CFOFragmentToHeader, CaloFragmentsToDigis, StrawFragmentsToDigis ]
   CaloEndPath       : [ CompareCaloDigis ]
   TrkEndPath        : [ CompareStrawDigis ]
   OutputPath        : [ out ]
@@ -85,6 +98,8 @@ outputs : {
     SelectEvents : [  ]
     outputCommands : [
       "drop *_*_*_*",
+      "keep *_CFOFragmentFromSim_*_*",
+      "keep *_CFOFragmentToHeader_*_*",
       "keep *_CaloDigisToFragments_*_*",
       "keep *_StrawDigisToFragments_*_*",
       "keep mu2e::ProtonBunchTime_*_*_*",
