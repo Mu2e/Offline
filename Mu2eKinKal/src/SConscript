@@ -101,6 +101,17 @@ helper.make_plugins([mainlib,
   'pthread'
   ])
 
+helper.make_bin("ExtrapolateSweepTest", [
+  'mu2e_DataProducts',
+  'KinKal_Fit',
+  'KinKal_Detector',
+  'KinKal_Trajectory',
+  'KinKal_Geometry',
+  'KinKal_MatEnv',
+  'KinKal_General',
+  rootlibs
+], [])
+
 # This tells emacs to view this file in python mode.
 # Local Variables:
 # mode:python

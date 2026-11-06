@@ -20,6 +20,8 @@ namespace mu2e {
     MatCorr, BFCorr, FitOK, //15
     KSF=16, KFF, TPRHelix, CPRHelix, Straight, KKLoopHelix,KKCentralHelix,KKLine, APRHelix, MPRHelix, AmbFitDir, //26
     Regrown=27,
+    ExtrapFailed=28, // an extrapolation direction ended early on a problem with this track
+    RangedOut=29, // forwards extrapolation ended where the mean energy loss in a material reaches the kinetic energy
     MCSeed=31, //31
     };
 
