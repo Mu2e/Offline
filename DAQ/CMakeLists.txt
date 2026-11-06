@@ -29,6 +29,7 @@ cet_build_plugin(EventHeaderFromCFOFragment art::module
     Offline::DAQ
     Offline::DataProducts
     Offline::DAQConditions
+    Offline::GlobalConstantsService
     Offline::ProditionsService
 )
 

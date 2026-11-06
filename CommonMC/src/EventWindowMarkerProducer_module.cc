@@ -19,6 +19,7 @@
 #include "Offline/MCDataProducts/inc/ProtonBunchTimeMC.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/DataProducts/inc/CFOEventTiming.hh"
 
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
@@ -28,8 +29,6 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 
-#include <algorithm>
-#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -138,12 +137,9 @@ namespace mu2e {
         evh->eventDuration = _onSpillMaxLength;
       marker->_eventLength = evh->eventDuration*_period;
 
-      // DR marker TDC (800 MHz ticks after a 40 MHz clock edge), so that the reco PBT can be
-      // recovered from the header as in data (EventHeaderFromCFOFragment):
-      // pbtime = -timeFromProtonsToDRMarker - period + tdcTick*(TDC + 0.5)
-      constexpr double tdcTick = 1.25; // ns
-      const int maxTDC = static_cast<int>(std::lround(_period/tdcTick)) - 1;
-      const int tdc = std::clamp(static_cast<int>(std::floor((phaseShift + _period)/tdcTick)), 0, maxTDC);
+      // DR marker TDC, so that the reco PBT can be recovered from the header as in data
+      // (EventHeaderFromCFOFragment, CFOEventTiming::pbtimeFromTDC)
+      const int tdc = CFOEventTiming::tdcFromPhase(phaseShift, _period);
       evh->rfmTDC_measured = tdc;
       evh->rfmTDC_est      = tdc; // no prediction error simulated
 
@@ -156,8 +152,8 @@ namespace mu2e {
           pbt->pbtime_ += _randgauss.fire(0,_recoFromMCTruthErr);
         pbt->pbterr_ = _recoFromMCTruthErr;
       }else{
-        pbt->pbtime_ = -1*eventTiming.timeFromProtonsToDRMarker() - _period/2.;
-        pbt->pbterr_ = _period/sqrt(12);
+        pbt->pbtime_ = CFOEventTiming::nominalPBTime(eventTiming.timeFromProtonsToDRMarker(), _period);
+        pbt->pbterr_ = CFOEventTiming::nominalPBTimeError(_period);
       }
     }
 

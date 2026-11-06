@@ -24,7 +24,10 @@
 #include <artdaq-core/Data/Fragment.hh>
 
 // Offline
+#include "Offline/DataProducts/inc/CFOEventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/DAQConditions/inc/EventTiming.hh"
@@ -88,8 +91,9 @@ private:
   // placeholder values), so the nominal proton bunch time is used
   unsigned long nOnSpill_     = 0;
   unsigned long nBadTDC_      = 0;
-  // Only needed for the proton bunch time, so only created when producing the EWM/PBT
+  // Only needed for the EWM/PBT, so only set when producing them
   std::optional<mu2e::ProditionsHandle<mu2e::EventTiming>> eventTiming_h_;
+  double clockTick_ = 0.; // 40 MHz clock tick in ns
 
   void warnMissing(const Event& event, const std::string& msg) const;
   std::string cfoSource() const { return cfoInstance_.empty() ? cfoTag_.encode() : "instance " + cfoInstance_; }
@@ -164,6 +168,7 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     produces<mu2e::EventWindowMarker>();
     produces<mu2e::ProtonBunchTime>();
     eventTiming_h_.emplace();
+    clockTick_ = mu2e::GlobalConstantsHandle<mu2e::PhysicsParams>()->getNominalDAQClockTick();
   }
   if(isSim_) TLOG(TLVL_DEBUG + 2) << "Assuming simulation inputs!";
 }
@@ -223,9 +228,9 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     evtHdr->mode          = cfoRecord.event_mode; //cfo.GetEventMode();
     evtHdr->ewt           = static_cast<long unsigned int>(cfo.GetEventWindowTag().GetEventWindowTag().to_ullong());
     evtHdr->flags         = onSpill ? mu2e::EventHeader::spillMask : 0;
-    // The CFO records the event window length in 40 MHz ticks minus one (CFO firmware
-    // EventWindowDataGenerator), e.g. 3999 for a 4000-tick (100 us) off-spill window
-    evtHdr->eventDuration = cfoRecord.event_duration + 1;
+    // The CFO records the event window length in clock ticks minus one, e.g. 3999 for a 4000-tick
+    // (100 us) off-spill window
+    evtHdr->eventDuration = mu2e::CFOEventTiming::windowTicks(cfoRecord.event_duration);
     evtHdr->rfmTDC_est      = cfoRecord.DR_marker_N_est;
     evtHdr->rfmTDC_measured = cfoRecord.DR_marker_N_meas;
     TLOG(TLVL_DEBUG + 20) << "mode = " << evtHdr->mode << " (" << cfoRecord.event_mode << ")"
@@ -239,15 +244,12 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
         << " DR TDC est = " << int(evtHdr->rfmTDC_est) << " meas = " << int(evtHdr->rfmTDC_measured);
     }
     if(ewm_) {
-      constexpr double tick    = 25.;   // clock ticks -> ns
-      constexpr double tdcTick = 1.25;  // CFO DR marker TDC (800 MHz) ticks -> ns
       ewm->_spillType   = (onSpill) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
-      ewm->_eventLength = tick * evtHdr->eventDuration;
+      ewm->_eventLength = clockTick_ * evtHdr->eventDuration;
       if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) ++nOnSpill_;
       // A valid TDC is 0 to 19 (one clock tick). The current CFO firmware writes placeholder TDC values
       // (e.g. 0xAA measured, 0xDD estimated), so the TDC is only used when it is in range.
-      constexpr int maxTDC = static_cast<int>(tick / tdcTick) - 1;
-      const bool validTDC = evtHdr->rfmTDC_measured <= maxTDC;
+      const bool validTDC = mu2e::CFOEventTiming::validTDC(evtHdr->rfmTDC_measured, clockTick_);
       if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill && validTDC) {
         // The DR marker N measurement is the time from a 40 MHz clock edge to the DR marker arrival
         // at the CFO (Mu2e-doc-55726). The event window starts a fixed number of clock ticks after that
@@ -255,18 +257,18 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
         // measured TDC time. The constant matches the simulation convention (EventWindowMarkerProducer),
         // where the bunch arrives 0-25 ns before -timeFromProtonsToDRMarker. Take the TDC bin center.
         const mu2e::EventTiming& eventTiming = eventTiming_h_->get(event.id());
-        pbt->pbtime_ = -eventTiming.timeFromProtonsToDRMarker() - tick + tdcTick * (evtHdr->rfmTDC_measured + 0.5);
-        pbt->pbterr_ = tdcTick / std::sqrt(12.);
+        pbt->pbtime_ = mu2e::CFOEventTiming::pbtimeFromTDC(evtHdr->rfmTDC_measured, eventTiming.timeFromProtonsToDRMarker(), clockTick_);
+        pbt->pbterr_ = mu2e::CFOEventTiming::pbtimeFromTDCError();
       } else if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) {
         // No valid TDC: use the nominal proton bunch time, the center of the 25 ns window it can be
         // in, as in simulation without a TDC (EventWindowMarkerProducer)
         const mu2e::EventTiming& eventTiming = eventTiming_h_->get(event.id());
-        pbt->pbtime_ = -eventTiming.timeFromProtonsToDRMarker() - tick / 2.;
-        pbt->pbterr_ = tick / std::sqrt(12.);
+        pbt->pbtime_ = mu2e::CFOEventTiming::nominalPBTime(eventTiming.timeFromProtonsToDRMarker(), clockTick_);
+        pbt->pbterr_ = mu2e::CFOEventTiming::nominalPBTimeError(clockTick_);
         if(nBadTDC_++ == 0) {
           mf::LogWarning("EventHeaderFromCFOFragment")
             << "Event " << event.id() << ": DR marker TDC measurement " << int(evtHdr->rfmTDC_measured)
-            << " is outside the valid range 0-" << maxTDC << " (CFO record format version "
+            << " is outside the valid range 0-" << mu2e::CFOEventTiming::maxTDC(clockTick_) << " (CFO record format version "
             << int(cfoRecord.record_format_version) << "), using the nominal proton bunch time."
             << " Further events are counted and reported at the end of the job";
         }
