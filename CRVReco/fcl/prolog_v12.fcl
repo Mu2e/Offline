@@ -389,6 +389,45 @@ BEGIN_PROLOG
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
     }
 
+    # track-CRV association, one instance per KalSeed collection (set KalSeedCollection); see TrkCrvMatchTool.hh.
+    # Resolutions and the track error model are from an MC truth study of 1.07M KKLine tracks (50 MDC2025bb cosmic
+    # files, extracted v06 geometry); the windows are loose storage windows, not selections.
+    TrkCrvMatcher :
+    {
+      module_type                      : TrkCrvMatcher
+      CrvCoincidenceClusterCollection  : "SelectReco:CrvCoincidenceClusterFinder"
+      CrvRecoPulseCollection           : "CrvRecoPulses"
+      ProbeAllPulses                   : true          # CrvRecoPulses holds every reco pulse (SelectReco only the clustered ones)
+      ReferenceSurfaces                : [ "TT_Front", "TT_Back", "TT_Outer" ]
+      EarliestReference                : true          # reference time = tracker entry
+      DtRefWindow                      : [ -350, 350 ] # ns
+      # DtRefCenter centres the best-time ranking only (the window is not shifted). It depends on the fit type and the
+      # geometry: this default is the median dtRef of each track's own cluster for KKLine on extracted-geometry MC
+      # (MDC2025bb cosmics); set it per instance for other fits (Production JobConfig/reco/prolog.fcl).
+      DtRefCenter                      : 13            # ns
+      DtXingWindow                     : [ -100, 100 ] # ns
+      MaxDv                            : 500           # mm
+      MaxDu                            : 3000          # mm
+      DoGeometric                      : true
+      # CRV resolution per cluster sector type (type 1 first). Sector type numbering depends on the geometry: these are
+      # the extracted geometry's types 1-4 (EX, T1, T2, muon taggers; crv_counters_extracted_v04.txt); other geometries
+      # need their own lists. SigmaV: robust spread of (cluster - true crossing) across the bars; SigmaU: along the bars,
+      # two-ended clusters (T1 and the taggers are single-ended).
+      SigmaV                           : [ 7, 13, 7, 17 ]  # mm
+      SigmaU                           : [ 300 ]           # mm
+      SigmaT                           : [ 5 ]             # ns  provisional (MC dtXing robust width 2.0-2.4 ns, two-ended)
+      SigmaTSingleEnded                : 15                # ns  provisional (MC dtXing robust width about 4 ns)
+      # track position error model: k^2 C + a^2 I, from pulls of the track against the true CRV crossing
+      TrackErrorScale                  : 1.5
+      TrackPosErrQuad                  : 24                # mm
+      MinTrackTimeErr                  : 1                 # ns
+      LayerProbe                       : true
+      ProbeBarWindow                   : 1                 # bars on each side of the predicted bar
+      ProbeDtWindow                    : [ -50, 50 ]       # ns
+      FiberSignalSpeed                 : @local::CrvCoincidenceClusterFinder.fiberSignalSpeed
+      ProbePulseDelay                  : @local::CrvCoincidenceClusterFinder.timeOffset
+    }
+
 
 CrvRecoPackage :
 {
