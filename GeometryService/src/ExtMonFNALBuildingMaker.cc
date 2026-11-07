@@ -77,10 +77,10 @@ namespace mu2e {
     emfb->magnetRoomLength_ = magnetRoomLength;
 
     // hand stacked shielding sizes and locations in magnet room
-    const double steelLength = c.getDouble("extMonFNAL.steelLength");
-    const double steelwidthN = c.getDouble("extMonFNAL.steelWidthN");
-    const double steelwidthS = c.getDouble("extMonFNAL.steelWidthS");
-    const double layerHeight = c.getDouble("extMonFNAL.layerHeight");
+    const double steelLength = c.getDouble("extMonFNAL.shielding.steelLength");
+    const double steelwidthN = c.getDouble("extMonFNAL.shielding.steelWidthN");
+    const double steelwidthS = c.getDouble("extMonFNAL.shielding.steelWidthS");
+    const double layerHeight = c.getDouble("extMonFNAL.shielding.steelLayerHeight");
     emfb->shieldingNCenterInMu2e_[0] = xfront + (dxdL*steelLength + dzdL*steelwidthN)/2.0;
     emfb->shieldingNCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
     emfb->shieldingNCenterInMu2e_[2] = zfront + (dzdL*steelLength - dxdL*steelwidthN)/2.0;

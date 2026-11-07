@@ -16,12 +16,12 @@ bool           hasExtMonFNAL = true;
 // The steel blocks and the rest of the magnet room floor are also covered with a layer of concrete blocks
 // both the steel and concrete layers are a foot thick
 
-double extMonFNAL.steelLength = 914.4;
-double extMonFNAL.steelWidthN = 1168.4;
-double extMonFNAL.steelWidthS = 2082.8;
-double extMonFNAL.layerHeight = 304.8;
-string extMonFNAL.steelMaterial = "G4_Fe";
-string extMonFNAL.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
+double extMonFNAL.shielding.steelLength = 914.4;
+double extMonFNAL.shielding.steelWidthN = 1168.4;
+double extMonFNAL.shielding.steelWidthS = 2082.8;
+double extMonFNAL.shielding.steelLayerHeight = 304.8;
+string extMonFNAL.shielding.steelMaterial = "G4_Fe";
+string extMonFNAL.shielding.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
