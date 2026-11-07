@@ -52,6 +52,30 @@ namespace mu2e {
     return MCRelationship(gen == 1 ? MCRelationship::mother : MCRelationship::umother, static_cast<int8_t>(gen));
   }
 
+  // MCRelationship of particle i to particle j (the convention of MCRelationship(i, j)) from their origin chains: one
+  // entry per generation, the particle itself first, each entry the earliest simulation-stage copy of that
+  // generation's particle. MCRelationship(i, j) walks the Ptrs, in which a particle simulated in several stages
+  // appears as a different copy depending on the path, so an ancestor's or a sibling's relation can be lost.
+  using SimChain = std::vector<art::Ptr<SimParticle>>;
+  inline MCRelationship stageAwareRelation(SimChain const& ci, SimChain const& cj) {
+    if(ci.empty() || cj.empty()) return MCRelationship();
+    if(ci[0] == cj[0]) return MCRelationship(MCRelationship::same, 0);
+    auto at = [](SimChain const& c, art::Ptr<SimParticle> const& p) {
+      auto it = std::find(c.begin(), c.end(), p);
+      return it == c.end() ? -1 : static_cast<int>(std::distance(c.begin(), it));
+    };
+    int n = at(cj, ci[0]);   // i is an ancestor of j
+    if(n > 0) return MCRelationship(n == 1 ? MCRelationship::mother : MCRelationship::umother, static_cast<int8_t>(n));
+    n = at(ci, cj[0]);       // i is a descendant of j
+    if(n > 0) return MCRelationship(n == 1 ? MCRelationship::daughter : MCRelationship::udaughter, static_cast<int8_t>(n));
+    if(ci.size() > 1 && cj.size() > 1 && ci[1] == cj[1]) return MCRelationship(MCRelationship::sibling, 1);
+    for(size_t ii = 1; ii < ci.size(); ++ii) {   // nearest common ancestor
+      int jj = at(cj, ci[ii]);
+      if(jj > 0) return MCRelationship(MCRelationship::usibling, static_cast<int8_t>(ii + jj));
+    }
+    return MCRelationship();
+  }
+
   class TrkCrvMatchMCMaker : public art::EDProducer {
     public:
       struct Config {
@@ -167,6 +191,23 @@ namespace mu2e {
     // a deposit's particle in the track's SimParticle collection (same key), so MCRelationship compares like Ptrs
     auto inTrackCollection = [&](art::Ptr<SimParticle> const& q) {
       return (q.isNonnull() && spH->has(cet::map_vector_key(q.key()))) ? art::Ptr<SimParticle>(spH, q.key()) : art::Ptr<SimParticle>();
+    };
+    // origin chain of a particle (see stageAwareRelation), cached per event
+    std::map<size_t, SimChain> chainCache;
+    auto originChain = [&](art::Ptr<SimParticle> const& q) -> SimChain const& {
+      auto [it, isNew] = chainCache.try_emplace(q.isNonnull() ? q.key() : size_t(-1));
+      if(!isNew || q.isNull()) return it->second;
+      art::Ptr<SimParticle> p = inTrackCollection(q);
+      for(int i = 0; i < 1000 && p.isNonnull(); ++i) {
+        for(int k = 0; k < 100 && p->selfParent(); ++k) {
+          auto pp = inTrackCollection(p->parent());
+          if(pp.isNull()) break;
+          p = pp;
+        }
+        it->second.push_back(p);
+        p = inTrackCollection(p->parent());
+      }
+      return it->second;
     };
 
     auto out = std::make_unique<TrkCrvMatchMCCollection>();
@@ -306,11 +347,9 @@ namespace mu2e {
         }
       }
 
-      // candidate clusters: the closest MCRelationship of their deposit particles to the track's particle. A particle
-      // simulated in several stages has a copy per stage (self-parent chain), and a deposit can point at any of them,
-      // so each deposit is compared with every copy of the track's particle and the closest relation is kept
-      std::vector<art::Ptr<SimParticle>> trackSelves;
-      for(auto const& [sp, g] : lineage) if(g == 0) trackSelves.push_back(sp);
+      // candidate clusters: the closest MCRelationship of their deposit particles to the track's particle, with
+      // simulation-stage copies treated as one particle at every generation (stageAwareRelation)
+      SimChain const trackChain = originChain(trackSim);
       if(!m.cands_.empty() && m.cands_.front().cluster_.id() != clusterPid && !ccmc.empty())
         mf::LogWarning("TrkCrvMatchMCMaker") << "cluster MC associations are over a different cluster collection than the matcher used";
       for(size_t ic = 0; ic < m.cands_.size(); ++ic) {
@@ -321,16 +360,15 @@ namespace mu2e {
         for(auto const& pi : it->second->GetPulses()) {
           if(pi._energyDeposited <= 0) continue;
           auto q = inTrackCollection(pi._simParticle);
-          MCRelationship r;
-          for(auto const& self : trackSelves) { MCRelationship rs(q, self); if(r < rs) r = rs; }
+          MCRelationship r = q.isNonnull() ? stageAwareRelation(originChain(q), trackChain) : MCRelationship();
           if(diag_ > 1) {
             mf::LogInfo dl("TrkCrvMatchMCMaker");
             dl << "event " << event.id() << " track " << m.track_.key() << " cand " << ic << " deposit sim "
                << (pi._simParticle.isNonnull() ? std::to_string(pi._simParticle.id().value()) + ":" + std::to_string(pi._simParticle.key()) : std::string("null"))
                << " in track collection " << q.isNonnull();
             if(q.isNonnull()) dl << " stage " << q->simStage() << " selfParent " << q->selfParent();
-            dl << " rel " << int(r.relationship()) << "/" << int(r.removal()) << " | track copies";
-            for(auto const& self : trackSelves) dl << " " << self.id().value() << ":" << self.key() << "(stage " << self->simStage() << ")";
+            dl << " rel " << int(r.relationship()) << "/" << int(r.removal()) << " | track origin chain";
+            for(auto const& g : trackChain) dl << " " << g.key() << "(stage " << g->simStage() << ")";
           }
           cm.edepTotal_ += pi._energyDeposited;
           if(r == MCRelationship::same) cm.edepSame_ += pi._energyDeposited;
