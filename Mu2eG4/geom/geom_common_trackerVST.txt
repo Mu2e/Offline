@@ -534,6 +534,7 @@ string protonabsorber.ipa.endRingMaterial = "G4_AIR";
 string protonabsorber.outerPAMaterialName = "G4_AIR";
 string protonabsorber.oPASupportMaterialName = "G4_AIR";
 string protonBeamDump.material.core = "G4_AIR";
+string protonBeamDump.material.steel = "G4_AIR";
 string protonBeamDump.material.shielding = "G4_AIR";
 string protonBeamDump.material.air = "G4_AIR";
 string PSEnclosure.shell.materialName = "G4_AIR";
