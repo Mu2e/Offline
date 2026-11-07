@@ -34,6 +34,8 @@ namespace mu2e {
     bool operator !=(relation rval) const { return _rel != rval; }
     // trivial constructor
     MCRelationship(relation rval=none) : _rel(rval), _rem(-1) {}
+    // from a relation and its removal, when the caller has walked the genealogy itself
+    MCRelationship(relation rval, int8_t rem) : _rel(rval), _rem(rem) {}
     // construct from SimParticles
     MCRelationship(SPPtr const& sppi,SPPtr const& sppj);
     // construct from StrawDigiMCs
