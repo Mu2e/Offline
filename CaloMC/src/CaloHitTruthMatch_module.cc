@@ -117,9 +117,10 @@ namespace mu2e {
 
 
 
-  // Association rules:
-  //   MCtime must be inside [recoTime-deltaTimeMinus, recoTime+deltaTimePlus] to be associated to a RecoHit,
-  //   _unless_ MCtime is already inside the window of the next hit, in which case it goes to that one.
+  // Association rules, per crystal:
+  //   A hit's window is [recoTime-deltaTimeMinus, recoTime+deltaTimePlus). deltaTimePlus is the pulse length,
+  //   cut two samples before the next hit in the crystal. The window never opens before the end of the
+  //   previous hit's window, so the windows do not overlap and each MC shower is matched to at most one hit.
   //--------------------------------------------------------------------
   void CaloHitTruthMatch::makeTruthMatch(art::Event& event, CaloHitMCCollection& caloHitMCs,
                                          CaloHitMCTruthAssn& caloHitTruthMatch, CaloShowerMCTruthAssn& caloShowerTruthMatch,
@@ -159,7 +160,6 @@ namespace mu2e {
           const CaloHit& hit          = caloHits[ihit];
           const auto&    sortedHits   = caloHitMap.at(hit.crystalID());
           const auto     hitIt        = std::find(sortedHits.begin(),sortedHits.end(),&hit);
-          const auto     hitNextIt    = std::next(hitIt);
           const auto     hitPtr       = art::Ptr<CaloHit>(caloHitHandle,ihit);
 
           static const std::vector<const CaloShowerSim*> noSims;
@@ -173,22 +173,36 @@ namespace mu2e {
                         <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
           }
 
-          // Maximum time difference for an MC hit to be associated, given the reco hit amplitude and the next reco hit time
-          std::size_t nbin(wfBinMax_);
-          while (nbin < wf_.size()) {if (wf_[nbin]*hit.energyDep() < minAmplitude_) break; ++nbin;}
-          double deltaTimePlus(nbin*CaloConst::_digitizationPeriod);
+          // Maximum time after a hit for an MC hit to be associated, given the hit amplitude and the next hit time
+          const auto windowLength = [&](const CaloHit* h){
+             std::size_t n(wfBinMax_);
+             while (n < wf_.size()) {if (wf_[n]*h->energyDep() < minAmplitude_) break; ++n;}
+             return n;
+          };
+          const auto windowPlus = [&](std::vector<const CaloHit*>::const_iterator hIt){
+             double dtPlus(windowLength(*hIt)*CaloConst::_digitizationPeriod);
+             const auto hNextIt = std::next(hIt);
+             if (hNextIt != sortedHits.end() && (*hNextIt)->time() - (*hIt)->time() - 2*CaloConst::_digitizationPeriod < dtPlus)
+                dtPlus = (*hNextIt)->time() - (*hIt)->time() - 2*CaloConst::_digitizationPeriod;
+             return dtPlus;
+          };
 
-          if (hitNextIt != sortedHits.end() && (*hitNextIt)->time() - hit.time() - 2*CaloConst::_digitizationPeriod < deltaTimePlus)
-             deltaTimePlus = (*hitNextIt)->time() - hit.time() - 2*CaloConst::_digitizationPeriod;
+          const double deltaTimePlus = windowPlus(hitIt);
+          double windowStart = hit.time() - deltaTimeMinus_;
+          if (hitIt != sortedHits.begin()) {
+             const auto hitPrevIt = std::prev(hitIt);
+             windowStart = std::max(windowStart, (*hitPrevIt)->time() + windowPlus(hitPrevIt));
+          }
 
           if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch] inspect hit id/time/energy/length "<<hit.crystalID()
-                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<nbin*CaloConst::_digitizationPeriod<<" "<<deltaTimePlus<<std::endl;
+                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<windowLength(&hit)*CaloConst::_digitizationPeriod
+                                       <<" "<<deltaTimePlus<<" start "<<windowStart<<std::endl;
 
-          // forward to the reco hit time, then loop while the shower time is within the reco window
+          // forward to the window start, then loop while the shower time is within the reco window
           bool hitIsMatched(false);
           std::vector<CaloEDepMC> edeps;
           auto showerIt = sortedSims.begin();
-          while (showerIt != sortedSims.end() && (*showerIt)->time() < hit.time() - deltaTimeMinus_) ++showerIt;
+          while (showerIt != sortedSims.end() && (*showerIt)->time() < windowStart) ++showerIt;
           while (showerIt != sortedSims.end() && (*showerIt)->time() < hit.time() + deltaTimePlus) {
               hitIsMatched = true;
               const CaloShowerSim* showerSim = *showerIt;
