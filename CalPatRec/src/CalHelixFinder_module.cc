@@ -396,7 +396,9 @@ namespace mu2e {
     double   beta          = _tpart.beta(mom);
 
     double hel_t0;
-    double pitchAngle = M_PI/2. - std::atan(tandip);
+    // path length per unit z is 1/|sin(lambda)|, lambda = dip angle. The magnitude is used so the
+    // time of flight keeps the existing convention (calorimeter downstream of z0, t0 before the cluster)
+    const double sinDip = std::abs(std::sin(std::atan(tandip)));
 
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
 
@@ -420,7 +422,7 @@ namespace mu2e {
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
       tpos   = _hfinder._calorimeter->mu2eToTracker(gpos);
 
-      hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
+      hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sinDip/(beta*CLHEP::c_light);
 
     }
     else {
@@ -437,7 +439,7 @@ namespace mu2e {
         for(size_t i = 0; i<nHits; i++) {
 
           const ComboHit& comboHit = HelSeed.hits()[i];
-          double tCorrected = comboHit.correctedTime() - (comboHit.pos().z()-z0)/std::sin(pitchAngle)/(beta*CLHEP::c_light);
+          double tCorrected = comboHit.correctedTime() - (comboHit.pos().z()-z0)/sinDip/(beta*CLHEP::c_light);
           tSum += tCorrected;
 
         }
