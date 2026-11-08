@@ -49,6 +49,8 @@ namespace mu2e {
       bitnames[std::string("MCSeed")]             = bit_to_mask(MCSeed);
       bitnames[std::string("AmbiguousFitDir")]    = bit_to_mask(AmbFitDir);
       bitnames[std::string("Regrown")]            = bit_to_mask(Regrown);
+      bitnames[std::string("ExtrapolationFailed")] = bit_to_mask(ExtrapFailed);
+      bitnames[std::string("RangedOut")]          = bit_to_mask(RangedOut);
     }
     return bitnames;
   }

@@ -102,6 +102,20 @@ cet_build_plugin(KKTruthSeed art::module
       Offline::TrkReco
 )
 
+cet_make_exec(NAME ExtrapolateSweepTest
+    SOURCE src/ExtrapolateSweepTest_main.cc
+    LIBRARIES
+      KinKal::Fit
+      KinKal::Detector
+      KinKal::Trajectory
+      KinKal::Geometry
+      KinKal::MatEnv
+      KinKal::General
+      Offline::DataProducts
+      ROOT::MathCore
+      ROOT::GenVector
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgSeed.dat   ${CURRENT_BINARY_DIR} data/TrainBkgSeed.dat   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgTrigger.dat   ${CURRENT_BINARY_DIR} data/TrainBkgTrigger.dat   COPYONLY)
