@@ -131,17 +131,39 @@ namespace mu2e {
     void DeltaSeed::ReplaceFirstHit(HitData_t* Hd) {
 
       assert(fSFace[0] == Hd->fZFace);
+//-----------------------------------------------------------------------------
+// swap the contributions of the old first hit for those of the new one in every
+// running sum, the same way Init and AddHit fill them, so that hits added in other
+// faces are kept and the XY sums no longer describe the replaced hit
+//-----------------------------------------------------------------------------
+      const HitData_t* old = fHitData[fSFace[0]];
+      const ComboHit*  och = old->fHit;
+      const ComboHit*  nch = Hd->fHit;
 
       fHitData[fSFace[0]] = Hd;
 
+      fChi2Par           += Hd->fChi2Min - fChi21;
       fChi21              = Hd->fChi2Min;
-      fNStrawHits         = Hd->fHit->nStrawHits();
-      fMinHitTime         = Hd->fCorrTime;
-      fMaxHitTime         = fMinHitTime;
+      fNStrawHits        += nch->nStrawHits() - och->nStrawHits();
 
-      fSumEDep            = Hd->fHit->energyDep()*Hd->fHit->nStrawHits();
-      fSumT               = Hd->fCorrTime*Hd->fHit->nStrawHits();
-      fSumT2              = Hd->fCorrTime*Hd->fCorrTime;
+      fSnx2              += Hd->fNx2 - old->fNx2;
+      fSnxy              += Hd->fNxy - old->fNxy;
+      fSny2              += Hd->fNy2 - old->fNy2;
+      fSnxr              += Hd->fNxr - old->fNxr;
+      fSnyr              += Hd->fNyr - old->fNyr;
+
+      fSumEDep           += nch->energyDep()*nch->nStrawHits() - och->energyDep()*och->nStrawHits();
+      fSumT              += Hd->fCorrTime - old->fCorrTime;
+      fSumT2             += Hd->fCorrTime*Hd->fCorrTime - old->fCorrTime*old->fCorrTime;
+
+      fMinHitTime         = Hd->fCorrTime;
+      fMaxHitTime         = Hd->fCorrTime;
+      for (int face=0; face<kNFaces; face++) {
+        const HitData_t* hd = fHitData[face];
+        if (hd == nullptr)                                            continue;
+        if (hd->fCorrTime < fMinHitTime) fMinHitTime = hd->fCorrTime;
+        if (hd->fCorrTime > fMaxHitTime) fMaxHitTime = hd->fCorrTime;
+      }
     }
 //-----------------------------------------------------------------------------
 // calculate Com and chi2's
