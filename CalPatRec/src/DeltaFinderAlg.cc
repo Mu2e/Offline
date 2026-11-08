@@ -605,14 +605,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // too lazy to extrapolate the time to the same Z...  ** FIXME
 //-----------------------------------------------------------------------------
-        float t1 = dc1->T0(dc1->LastStation());
-        float t2 = dc2->T0(dc2->FirstStation());
+//-----------------------------------------------------------------------------
+// order the pair along Z. Candidates are created while walking the stations
+// downward (linkDeltaSeeds), so dc2 usually lies upstream of dc1; compare the
+// facing ends of the two candidates whichever order they are in
+//-----------------------------------------------------------------------------
+        const bool dc1Upstream = dc1->FirstStation() <= dc2->FirstStation();
+        DeltaCandidate* up = dc1Upstream ? dc1 : dc2;
+        DeltaCandidate* dn = dc1Upstream ? dc2 : dc1;
+        float t1 = up->T0(up->LastStation());
+        float t2 = dn->T0(dn->FirstStation());
 //-----------------------------------------------------------------------------
 // time check could be done more intelligently - compare time at the same Z
 //-----------------------------------------------------------------------------
         if (fabs(t1-t2) > _maxDtDc)                                    continue;
 
-        int dds = dc2->FirstStation()-dc1->LastStation();
+        int dds = dn->FirstStation()-up->LastStation();
         if (dds < 0) {
           if (_printErrors) {
             printf("ERROR in DeltaFinderAlg::%s:",__func__);
