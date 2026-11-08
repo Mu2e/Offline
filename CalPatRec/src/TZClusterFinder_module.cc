@@ -835,10 +835,16 @@ namespace mu2e {
       }
       if (_recoverCaloClusters == 1) {
         if (addedToTC == 0) {
-          _f.clear_chunkInfo();
+          // start from a fully reset chunk: clear_chunkInfo() only clears hIndices and the fitter, and
+          // every other field would otherwise keep the values of the last chunk built or copied
+          _f._chunkInfo = chunkInfo{};
           _f._chunkInfo.nHits = 0;
           _f._chunkInfo.nStrawHits = 0;
           _f._chunkInfo.caloIndex = i;
+          _f._chunkInfo.nrgSelection = 1; // only energysel (CE-like) hits are recovered below
+          _f._chunkInfo.nCombines = 0;
+          _f._chunkInfo.goodCluster = true;
+          float sumTime(0.f), sumZpos(0.f);
           for (size_t k=0; k<_data._chColl->size(); k++) {
             const StrawHitFlag flag = _data._chColl->at(k).flag();
             if (!flag.hasAnyProperty(StrawHitFlag::radsel) && _radSelect == 1) {continue;}
@@ -848,9 +854,17 @@ namespace mu2e {
             if (std::abs(hit->correctedTime() - ccTime) < _caloDtMax) {
               _f._chunkInfo.hIndices.push_back(k);
               _f._chunkInfo.fitter.addPoint(hit->pos().z(), hit->correctedTime(), (hit->timeVar() > 0.) ? 1/(hit->timeVar()) : 0.);
+              if (_f._chunkInfo.nHits == 0 || hit->pos().z() < _f._chunkInfo.zMin) _f._chunkInfo.zMin = hit->pos().z();
+              if (_f._chunkInfo.nHits == 0 || hit->pos().z() > _f._chunkInfo.zMax) _f._chunkInfo.zMax = hit->pos().z();
+              sumTime += hit->correctedTime();
+              sumZpos += hit->pos().z();
               _f._chunkInfo.nHits++;
               _f._chunkInfo.nStrawHits = _f._chunkInfo.nStrawHits + hit->nStrawHits();
             }
+          }
+          if (_f._chunkInfo.nHits > 0) {
+            _f._chunkInfo.avgTime = sumTime/_f._chunkInfo.nHits;
+            _f._chunkInfo.avgZpos = sumZpos/_f._chunkInfo.nHits;
           }
           if (_f._chunkInfo.nStrawHits >= _clusterThresh) {
             _f.chunks.push_back(_f._chunkInfo);
