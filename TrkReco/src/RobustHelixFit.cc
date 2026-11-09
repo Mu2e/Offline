@@ -1117,13 +1117,13 @@ void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData, bool forc
     hitP1 = &HelixData._chHitsToProcess[f1];
     if (!use(*hitP1) )                          continue;
     XYWVec& wposP1 = HelixData._chHitsWPos[f1];
-    facezP1 = wposP1.face();
+    facezP1 = hitP1->strawId().uniqueFace(); // global face; XYWVec::face() is the face within a station
     float   ri2    = wposP1.Mag2();
 
     for (int f2=f1+1; f2<nHits-1; ++f2){
       hitP2 = &HelixData._chHitsToProcess[f2];
       XYWVec& wposP2  = HelixData._chHitsWPos[f2];
-      facezP2 = wposP2.face();
+      facezP2 = hitP2->strawId().uniqueFace();
       if (!use(*hitP2) || (facezP1 == facezP2)) continue;
 
       float   dist2ij = (wposP1 - wposP2).Mag2();
@@ -1134,7 +1134,7 @@ void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData, bool forc
       for (int f3=f2+1; f3<nHits; ++f3){
         hitP3 = &HelixData._chHitsToProcess[f3];
         XYWVec& wposP3 = HelixData._chHitsWPos[f3];
-        facezP3 = wposP3.face();
+        facezP3 = hitP3->strawId().uniqueFace();
         if (!use(*hitP3) || (facezP2 == facezP3) ) continue;
 
         float dist2ik = (wposP1-wposP3).Mag2();
