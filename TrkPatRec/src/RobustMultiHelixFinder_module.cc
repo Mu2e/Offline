@@ -429,8 +429,8 @@ chi2dXY = bestHelix.fita_zt_;
           float x13x13y13y13 = x3*x3+y3*y3;
           if (x13x13y13y13<minDXY2Circle_) continue;
 
-          float x4           = chk.pos().x()-x2;
-          float y4           = chk.pos().y()-y2;
+          float x4           = x3-x2; // hit3 - hit2 (x2, x3 are relative to hit1)
+          float y4           = y3-y2;
           float x23x23y23y23 = x4*x4+y4*y4;
           if (x23x23y23y23<minDXY2Circle_) continue;
           float rad2x3y3 = chk.pos().x()*chk.pos().x()+chk.pos().y()*chk.pos().y();
