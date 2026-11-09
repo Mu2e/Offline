@@ -42,6 +42,7 @@
 #include "TH1F.h"
 #include "TFile.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -239,16 +240,17 @@ namespace mu2e {
   // from the 2D distributions
   //--------------------------------------------------------------------------------
   void   CaloLikelihood::buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize){
-    double    binsize = Input->GetXaxis()->GetBinWidth(1);
-    double    binlow  = Input->GetXaxis()->GetBinLowEdge(1);
-
+    // slice i covers [MinX + i*StepSize, MinX + (i+1)*StepSize) in X. ROOT bins are numbered from 1
+    // and ProjectionY includes both end bins. A slice past the axis projects the overflow column only
+    // (lastbin < firstbin would make ProjectionY use the full range).
+    const TAxis* xaxis = Input->GetXaxis();
     for (int i=0; i<kNCorHist; ++i){
       double  start      = (MinX + i*StepSize);
-      int     binstart   = (start - binlow)/binsize;
-      int     binend     = binstart + (StepSize/binsize);
+      int     binstart   = xaxis->FindFixBin(start);
+      int     binend     = std::max(binstart, xaxis->FindFixBin(start + StepSize) - 1);
       FinalHist[i]       = (TH1F*)Input->ProjectionY(Form("%s_%i", Label.Data(), i), binstart, binend);
       double  area       = FinalHist[i]->Integral();
-      FinalHist[i]->Scale(1/area);
+      if (area > 0) FinalHist[i]->Scale(1/area);
     }
 
   }
@@ -447,18 +449,10 @@ namespace mu2e {
 
   double CaloLikelihood::calculateProb(double&Variable, TH1* Template){
 
-    double     thisprob      = 1;
-    //not sure how to loop over variable value   i should be event number
-    double     binSize       = Template->GetBinWidth(1);
-    int        binIndex      = (Variable - Template->GetBinLowEdge(1))/binSize;
-    //what is the probability for this variable
-    int        templateNBins = Template->GetNbinsX();
-    if (binIndex > templateNBins) {
-      thisprob = 1e-17;
-      //      std::cout << "whoops out of range" << std::endl;
-    } else{
-      thisprob = Template->GetBinContent(binIndex);
-    }
+    // ROOT bins are numbered 1..N; a value outside the axis (underflow or overflow) has no probability
+    int        bin      = Template->GetXaxis()->FindFixBin(Variable);
+    double     thisprob = 1e-17;
+    if (bin >= 1 && bin <= Template->GetNbinsX()) thisprob = Template->GetBinContent(bin);
 
     if (thisprob < 1e-10) thisprob = 1e-17;
 
