@@ -110,18 +110,23 @@ namespace mu2e {
       };
       std::sort(hits.begin(),hits.end(),functorTime);
 
+      // Flag hits already assigned to a cluster. A value stored in "hits" cannot serve as the flag:
+      // every value in [0, caloHits.size()) is a real caloHits index.
+      std::vector<bool> isUsed(hits.size(),false);
+      auto used    = [&](auto it) -> bool {return isUsed[it - hits.begin()];};
+      auto setUsed = [&](auto it) {isUsed[it - hits.begin()] = true;};
+
       auto iterSeed = hits.begin();
       while (iterSeed != hits.end())
       {
           //find the first hit above the energy threshold, and the last hit within the required time window
-          const CaloHit& hitSeed = caloHits[*iterSeed];
-          if (*iterSeed==hits.size() || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
-          double timeStart = hitSeed.time();
+          if (used(iterSeed) || caloHits[*iterSeed].energyDep() < EminSeed_) {++iterSeed; continue;}
+          double timeStart = caloHits[*iterSeed].time();
 
           //find the range around the seed time to search for other hits to form clusters
           auto iterStart(iterSeed), iterStop(iterSeed);
-          while (iterStop  != hits.end()   && (*iterStop==hits.size()  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
-          while (iterStart != hits.begin() && (*iterStart==hits.size() || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
+          while (iterStop  != hits.end()   && (used(iterStop)  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
+          while (iterStart != hits.begin() && (used(iterStart) || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
           ++iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
@@ -132,7 +137,7 @@ namespace mu2e {
           std::vector<size_t> clusterList{*iterSeed};
           auto seedId = caloHits[*iterSeed].crystalID();
           crystalToVisit.push(seedId);
-          *iterSeed=hits.size();
+          setUsed(iterSeed);
 
           // loop until all seeds are processed
           while (!crystalToVisit.empty())
@@ -152,12 +157,12 @@ namespace mu2e {
                   //loop over the caloHits, check if one is in the neighbor list and add it to the cluster
                   for (auto it=iterStart; it != iterStop; ++it)
                   {
-                      if (*it==hits.size()) continue;
+                      if (used(it)) continue;
                       if (caloHits[*it].crystalID() != static_cast<int>(iId)) continue;
 
                       if (caloHits[*it].energyDep() > ExpandCut_) crystalToVisit.push(iId);
                       clusterList.push_back(*it);
-                      *it = hits.size();
+                      setUsed(it);
                   }
                }
                crystalToVisit.pop();
