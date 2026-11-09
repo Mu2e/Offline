@@ -239,18 +239,34 @@ TrkPatRec : { @table::TrkPatRec
    RobustHelixFinderDmu : {
       @table::TrkPatRec.RobustHelixFinder
       TimeClusterCollection  : "TimeClusterFinderDmu"
+      T0Calculator : {
+         @table::TrkPatRec.TimeCalculator
+         StrawHitBeta : 0.7
+      }
    }
    RobustHelixFinderUmu : {
       @table::TrkPatRec.RobustHelixFinder
       TimeClusterCollection  : "TimeClusterFinderUmu"
+      T0Calculator : {
+         @table::TrkPatRec.TimeCalculator
+         StrawHitBeta : 0.7
+      }
    }
    RobustHelixFinderDpi : {
       @table::TrkPatRec.RobustHelixFinder
       TimeClusterCollection  : "TimeClusterFinderDpi"
+      T0Calculator : {
+         @table::TrkPatRec.TimeCalculator
+         StrawHitBeta : 0.63
+      }
    }
    RobustHelixFinderUpi : {
       @table::TrkPatRec.RobustHelixFinder
       TimeClusterCollection  : "TimeClusterFinderUpi"
+      T0Calculator : {
+         @table::TrkPatRec.TimeCalculator
+         StrawHitBeta : 0.63
+      }
    }
 #  MPR
    MultiHelixFinderDe : {
