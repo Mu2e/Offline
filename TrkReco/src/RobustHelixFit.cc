@@ -997,7 +997,7 @@ void RobustHelixFit::fitFZ(RobustHelixFinderData& HelixData) {
             continue;
           }
           else if (lambda*dzdphisign <= _fitFZMinL){
-            break;
+            continue; // skip this pair only; later partners of hitP1 can still have a good lambda
           }
           hist[bin] += wg;
           counter += 1;
