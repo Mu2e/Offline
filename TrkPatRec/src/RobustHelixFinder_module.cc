@@ -101,8 +101,9 @@ namespace {
     float& _hhrho;  // hit transverse radius
     //HelixHitMVA() : _pars(9,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
     // _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[7]),_hhrho(_pars[8]){}
+    // _pars holds the 7 MVA inputs; _hrho and _hhrho are not MVA inputs and live in _pars2
     HelixHitMVA() : _pars(7,0.0),_pars2(2,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
-    _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[0]),_hhrho(_pars2[1]) {}
+    _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars2[0]),_hhrho(_pars2[1]) {}
   };
 
 }
