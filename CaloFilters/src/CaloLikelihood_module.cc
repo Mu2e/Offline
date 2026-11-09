@@ -373,8 +373,9 @@ namespace mu2e {
       double  bkgRDistProb            = calculateProb(rDist, _bkgHist1D   [clSection][3]);
       double  logRDistRatio           = log(signalRDistProb/bkgRDistProb);
 
-      double  signalEnergy2DProb      = calculate2DProb(rDist, rDist, _signalCorrHist1D[clSection][0], _minClEnergy, _clEStep);
-      double  bkgEnergy2DProb         = calculate2DProb(rDist, rDist, _bkgCorrHist1D   [clSection][0], _minClEnergy, _clEStep);
+      // energy vs radial distance: the slices are radial bins (see buildTemplateHist), the variable is the cluster energy
+      double  signalEnergy2DProb      = calculate2DProb(rDist, clEnergy, _signalCorrHist1D[clSection][0], _minRDist, _rDistStep);
+      double  bkgEnergy2DProb         = calculate2DProb(rDist, clEnergy, _bkgCorrHist1D   [clSection][0], _minRDist, _rDistStep);
       double  logEnergy2DRatio        = log(signalEnergy2DProb/bkgEnergy2DProb);
 
       double  signalE12DProb          = calculate2DProb(rDist, e1Ratio, _signalCorrHist1D[clSection][1], _minRDist, _rDistStep);
@@ -401,7 +402,7 @@ namespace mu2e {
       double  bkgClSize2DProb         = calculate2DProb(rDist, clusterSize , _bkgCorrHist1D  [clSection][6], _minRDist, _rDistStep);
       double  logClSize2DRatio        = log(signalClSize2DProb/bkgClSize2DProb);
 
-      double  lhValue  =  logRDistRatio + logEnergy2DRatio + logE12DRatio + logRDistRatio + logClSize2DRatio;
+      double  lhValue  =  logRDistRatio + logEnergy2DRatio + logE12DRatio + logClSize2DRatio;
       if (nCrystalHits>=2) lhValue += logE22DRatio  + logE2E12DRatio;
       if (nCrystalHits>=3) lhValue += logE32DRatio;
       if (nCrystalHits>=4) lhValue += logE42DRatio;
