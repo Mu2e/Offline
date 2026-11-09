@@ -20,13 +20,25 @@
 // To: Carol J Johnstone; Horst W Friedsam; Andy Stefanik; Larry M. Bartoszek; Vitaly Pronskikh
 // Cc: Peter H Kasper; Rick Coleman
 // Subject: Local dump coordinates
+//
+//  2026-11-05: switch from specifying
+//
+//       vector<double> protonBeamDump.coreCenterInMu2e = {661.9, 527.4, -19428.2};
+//
+// to specifying the center point on the *face* of the beam dump.
+// This point, unlike the core center, is observable in the as-built Mu2e configuration.
+// The coordinates corresponding to the email above, with a 2032 mm long dump core, are
+//
+//     vector<double> protonBeamDump.coreFaceCenterInMu2e = {902.872, 527.4, -18441.2};
+//
+//
 
-vector<double> protonBeamDump.coreCenterInMu2e = {661.9, 527.4, -19428.2};
+vector<double> protonBeamDump.coreFaceCenterInMu2e = {902.872, 527.4, -18441.2};
 double         protonBeamDump.coreRotY = 13.72; // degrees
 
 // Sizes below are given in mm in this order:
 //  {horizontal transverse to beam, vertical, horizontal along beam}
-vector<double> protonBeamDump.coreHalfSize  = { 750.9, 750.1, 1016.};
+vector<double> protonBeamDump.coreHalfSize  = { 750.9, 750.1, 1070.};
 // Beam entrance.  Updated to as-built 2025-07-09.
 vector<double> protonBeamDump.mouthHalfSize = {838., 838., 500.};
 // Neutron cave
@@ -53,7 +65,8 @@ vector<double> protonBeamDump.topSteelScalloped.wallClearance = {711, 718};
 double protonBeamDump.topSteelScalloped.distanceToCollimator = 115;
 
 //----------------------------------------------------------------
-string protonBeamDump.material.core  = "G4_Fe";
+string protonBeamDump.material.core  = "BEAMDUMP_CORE";
+string protonBeamDump.material.steel  = "G4_Fe";
 string protonBeamDump.material.shielding = "CONCRETE_MARS";
 string protonBeamDump.material.air = "G4_AIR";
 

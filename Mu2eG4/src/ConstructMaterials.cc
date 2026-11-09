@@ -1254,6 +1254,30 @@ namespace mu2e {
       tgt->AddMaterial(met, 1.);
     }
 
+    // Proton beam dump core material
+    mat = uniqueMaterialOrThrow( "BEAMDUMP_CORE");
+    {
+      // The beam dump core is made of steel plates separated by air
+      // gaps, but it is modeled here as a single block of material.
+      // Define a lower density material to account for the effect of
+      // the air gaps.
+
+      G4Material* bmat = findMaterialOrThrow("G4_Fe");
+
+      // The total thickness of the steel plates per the drawing SC-38.
+      const double sumOfSteel = 2084. * CLHEP::mm;
+
+      // The distance from the front to the back face of the dump core,
+      // which includes the plates and the air gaps.
+      const double totalLength = 2140. * CLHEP::mm; // drawing SC-38
+
+      // Scale down density of the original solid material
+      const double density = (sumOfSteel/totalLength) * bmat->GetDensity();
+
+      G4Material* coreMaterial = new G4Material(mat.name, density, 1);
+      coreMaterial->AddMaterial(bmat, 1.);
+    }
+
     mat = uniqueMaterialOrThrow( "CarbonFiber_resin");
     {
       G4double density;
