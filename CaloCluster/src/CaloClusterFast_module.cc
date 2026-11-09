@@ -17,6 +17,7 @@
 #include <vector>
 #include <queue>
 #include <cmath>
+#include <iterator>
 
 
 namespace mu2e {
@@ -126,8 +127,8 @@ namespace mu2e {
           //find the range around the seed time to search for other hits to form clusters
           auto iterStart(iterSeed), iterStop(iterSeed);
           while (iterStop  != hits.end()   && (used(iterStop)  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
-          while (iterStart != hits.begin() && (used(iterStart) || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
-          ++iterStart;
+          // test the hit before iterStart, so that hits.begin() is tested too
+          while (iterStart != hits.begin() && (used(std::prev(iterStart)) || timeStart - caloHits[*std::prev(iterStart)].time() < deltaTime_)) --iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
           std::queue<unsigned> crystalToVisit;
