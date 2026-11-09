@@ -24,8 +24,13 @@
 #include <artdaq-core/Data/Fragment.hh>
 
 // Offline
+#include "Offline/DataProducts/inc/CFOEventTiming.hh"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
+#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/RecoDataProducts/inc/ProtonBunchTime.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/DAQConditions/inc/EventTiming.hh"
 
 // C++
 #include <iostream>
@@ -33,7 +38,9 @@
 #include <string>
 #include <array>
 #include <list>
+#include <cmath>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -80,6 +87,13 @@ private:
   unsigned long nEvents_      = 0;
   unsigned long nNoCFOHandle_ = 0;
   unsigned long nNoCFOFrags_  = 0;
+  // On-spill events whose DR marker TDC is outside the valid range (current CFO firmware writes
+  // placeholder values), so the nominal proton bunch time is used
+  unsigned long nOnSpill_     = 0;
+  unsigned long nBadTDC_      = 0;
+  // Only needed for the EWM/PBT, so only set when producing them
+  std::optional<mu2e::ProditionsHandle<mu2e::EventTiming>> eventTiming_h_;
+  double clockTick_ = 0.; // 40 MHz clock tick in ns
 
   void warnMissing(const Event& event, const std::string& msg) const;
   std::string cfoSource() const { return cfoInstance_.empty() ? cfoTag_.encode() : "instance " + cfoInstance_; }
@@ -103,6 +117,11 @@ void art::EventHeaderFromCFOFragment::endJob() {
     else       mf::LogWarning("EventHeaderFromCFOFragment") << msg.str();
   } else if(diagLevel_ > 0) {
     mf::LogInfo("EventHeaderFromCFOFragment") << "Found CFO data in all " << nEvents_ << " events";
+  }
+  if(nBadTDC_ > 0) {
+    mf::LogWarning("EventHeaderFromCFOFragment")
+      << "DR marker TDC out of range in " << nBadTDC_ << " of " << nOnSpill_
+      << " on-spill events: used the nominal proton bunch time instead of the TDC";
   }
 }
 
@@ -148,6 +167,8 @@ art::EventHeaderFromCFOFragment::EventHeaderFromCFOFragment(
     TLOG(TLVL_DEBUG + 2) << "Producing EventWindowMarker";
     produces<mu2e::EventWindowMarker>();
     produces<mu2e::ProtonBunchTime>();
+    eventTiming_h_.emplace();
+    clockTick_ = mu2e::GlobalConstantsHandle<mu2e::PhysicsParams>()->getNominalDAQClockTick();
   }
   if(isSim_) TLOG(TLVL_DEBUG + 2) << "Assuming simulation inputs!";
 }
@@ -164,6 +185,8 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
   std::unique_ptr<mu2e::EventWindowMarker> ewm((ewm_) ? new mu2e::EventWindowMarker{} : nullptr);
   std::unique_ptr<mu2e::ProtonBunchTime>   pbt((ewm_) ? new mu2e::ProtonBunchTime{}   : nullptr);
   art::Handle<artdaq::Fragments>           cfoFragmentHandle;
+  // The default constructor leaves the check bit-fields uninitialized; zero them as the other constructors do
+  evtHdr->rnr_check = evtHdr->ndtc_check = evtHdr->dtc_check = evtHdr->ewt_check = 0;
 
   // Check for the CFO fragment list
   if(!cfoInstance_.empty()) { // select by product instance name only
@@ -197,24 +220,62 @@ void art::EventHeaderFromCFOFragment::produce(Event& event) {
     const mu2e::CFOEventFragment   cfoFrag(frag);
     const CFOLib::CFO_Event        cfo       = cfoFrag.getData();
     const CFOLib::CFO_EventRecord& cfoRecord = cfo.GetEventRecord();
+    // The on-spill flag is bit 0 of the mode4 byte (bits 32-39 of the 48-bit event mode word).
+    // CFO_Event::GetEventMode() (artdaq-core-mu2e v9_09_00) converts the mode word with
+    // DTC_EventMode(event_mode), which only fills mode0, so its isOnSpillFlagSet() is always false.
+    // Read the flag from the record instead.
+    const bool onSpill    = (cfoRecord.event_mode >> 32) & 0x1;
     evtHdr->mode          = cfoRecord.event_mode; //cfo.GetEventMode();
     evtHdr->ewt           = static_cast<long unsigned int>(cfo.GetEventWindowTag().GetEventWindowTag().to_ullong());
-    evtHdr->flags         = cfo.GetEventMode().isOnSpillFlagSet();
-    evtHdr->eventDuration = cfoRecord.event_duration;
+    evtHdr->flags         = onSpill ? mu2e::EventHeader::spillMask : 0;
+    // The CFO records the event window length in clock ticks minus one, e.g. 3999 for a 4000-tick
+    // (100 us) off-spill window
+    evtHdr->eventDuration = mu2e::CFOEventTiming::windowTicks(cfoRecord.event_duration);
+    evtHdr->rfmTDC_est      = cfoRecord.DR_marker_N_est;
+    evtHdr->rfmTDC_measured = cfoRecord.DR_marker_N_meas;
     TLOG(TLVL_DEBUG + 20) << "mode = " << evtHdr->mode << " (" << cfoRecord.event_mode << ")"
                           << " ewt  = "<< evtHdr->ewt << " flags = " << int(evtHdr->flags)
-                          << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
+                          << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration
+                          << " DR TDC est = " << int(evtHdr->rfmTDC_est) << " meas = " << int(evtHdr->rfmTDC_measured);
     if(diagLevel_ > 1) {
       mf::LogInfo("EventHeaderFromCFOFragment")
         << "Event " << event.id() << ": mode = " << evtHdr->mode << " ewt = " << evtHdr->ewt
-        << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration;
+        << " onspill = " << evtHdr->isOnSpill() << " duration = " << evtHdr->eventDuration
+        << " DR TDC est = " << int(evtHdr->rfmTDC_est) << " meas = " << int(evtHdr->rfmTDC_measured);
     }
     if(ewm_) {
-      constexpr double tick = 25.; // clock ticks -> ns
-      ewm->_spillType   = (cfo.GetEventMode().isOnSpillFlagSet()) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
-      ewm->_eventLength = tick * evtHdr->eventDuration;
-      pbt->pbtime_ = 0.f; // FIXME
-      pbt->pbterr_ = 1.f;
+      ewm->_spillType   = (onSpill) ? mu2e::EventWindowMarker::SpillType::onspill : mu2e::EventWindowMarker::SpillType::offspill;
+      ewm->_eventLength = clockTick_ * evtHdr->eventDuration;
+      if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) ++nOnSpill_;
+      // A valid TDC is 0 to 19 (one clock tick). The current CFO firmware writes placeholder TDC values
+      // (e.g. 0xAA measured, 0xDD estimated), so the TDC is only used when it is in range.
+      const bool validTDC = mu2e::CFOEventTiming::validTDC(evtHdr->rfmTDC_measured, clockTick_);
+      if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill && validTDC) {
+        // The DR marker N measurement is the time from a 40 MHz clock edge to the DR marker arrival
+        // at the CFO (Mu2e-doc-55726). The event window starts a fixed number of clock ticks after that
+        // edge, so the proton bunch time relative to the event window start is a constant plus the
+        // measured TDC time. The constant matches the simulation convention (EventWindowMarkerProducer),
+        // where the bunch arrives 0-25 ns before -timeFromProtonsToDRMarker. Take the TDC bin center.
+        const mu2e::EventTiming& eventTiming = eventTiming_h_->get(event.id());
+        pbt->pbtime_ = mu2e::CFOEventTiming::pbtimeFromTDC(evtHdr->rfmTDC_measured, eventTiming.timeFromProtonsToDRMarker(), clockTick_);
+        pbt->pbterr_ = mu2e::CFOEventTiming::pbtimeFromTDCError();
+      } else if(ewm->_spillType == mu2e::EventWindowMarker::SpillType::onspill) {
+        // No valid TDC: use the nominal proton bunch time, the center of the 25 ns window it can be
+        // in, as in simulation without a TDC (EventWindowMarkerProducer)
+        const mu2e::EventTiming& eventTiming = eventTiming_h_->get(event.id());
+        pbt->pbtime_ = mu2e::CFOEventTiming::nominalPBTime(eventTiming.timeFromProtonsToDRMarker(), clockTick_);
+        pbt->pbterr_ = mu2e::CFOEventTiming::nominalPBTimeError(clockTick_);
+        if(nBadTDC_++ == 0) {
+          mf::LogWarning("EventHeaderFromCFOFragment")
+            << "Event " << event.id() << ": DR marker TDC measurement " << int(evtHdr->rfmTDC_measured)
+            << " is outside the valid range 0-" << mu2e::CFOEventTiming::maxTDC(clockTick_) << " (CFO record format version "
+            << int(cfoRecord.record_format_version) << "), using the nominal proton bunch time."
+            << " Further events are counted and reported at the end of the job";
+        }
+      } else { // no DR marker off spill
+        pbt->pbtime_ = 0.f;
+        pbt->pbterr_ = 0.f;
+      }
     }
 
   } else {
