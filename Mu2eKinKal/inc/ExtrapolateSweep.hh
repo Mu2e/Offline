@@ -40,6 +40,7 @@ namespace mu2e {
   namespace KKGeom {
     class CaloFrontPanelPipes;
     class CaloInnerSupport;
+    struct KKCRVSector;
   }
   // one surface the sweep can cross
   struct SweepTarget {
@@ -60,6 +61,7 @@ namespace mu2e {
     double thick_ = 0.0; // material thickness (mm)
     KKGeom::CaloFrontPanelPipes const* pipes_ = nullptr; // calopanel: the thickness depends on where the pipe plane is crossed
     KKGeom::CaloInnerSupport const* support_ = nullptr; // calosupport: the support and the part this target finds
+    KKGeom::KKCRVSector const* crvsector_ = nullptr; // crvsector: the material is the fraction of the sector's layers the track crosses
     SupportPart part_ = casefront;
     unsigned maxcross_ = 1; // crossings kept per sweep, 0 for no limit
     int group_ = -1; // targets in a group keep only the first crossing of any of them

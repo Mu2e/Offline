@@ -261,6 +261,7 @@ namespace mu2e {
           tg.rect_ = sector.sector_;
           tg.mat_ = &*kkmat_h->CRVMaterial();
           tg.thick_ = 2*sector.whw_;
+          tg.crvsector_ = &sector;
           plane(tg,*sector.sector_);
           tgts.push_back(tg);
         }
@@ -444,7 +445,9 @@ namespace mu2e {
       return true;
     }
     double thick = tg.pipes_ ? tg.pipes_->wallDepth(inter.pos_) : tg.thick_;
+    if(tg.crvsector_) thick *= tg.crvsector_->layerFraction(inter.pos_,inter.pdir_); // near a seam, the staggered layers are shared with the next sector
     if(tg.effect_ == SweepTarget::calopanel && thick <= 0.0) return true; // the pipe plane between the pipes
+    if(tg.effect_ == SweepTarget::crvsector && thick <= 0.0){ ktrk.addIntersection(tg.sid_,inter); return true; } // inside the envelope but between layers
     // KinKal records why a fit became unusable (e.g. a failed domain walk); the direction just ends
     if(!ktrk.fitStatus().usable()) return false;
     auto const& ftraj = ktrk.fitTraj();
@@ -480,7 +483,7 @@ namespace mu2e {
         return true;
       }
       case SweepTarget::crvsector: {
-        auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Rectangle>>(tg.rect_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
+        auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Rectangle>>(tg.rect_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
         if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addCRVXing(shell,tdir);
         return true;
