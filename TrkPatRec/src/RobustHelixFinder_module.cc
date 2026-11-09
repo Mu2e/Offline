@@ -75,9 +75,17 @@ namespace {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-  // comparison functor for sorting byuniquePanel ID
+  // comparison functor for sorting by unique face, then unique panel ID.
+  // fillFaceOrderedHits stores each face's hits as one index range, so the hits of a face must be
+  // contiguous. The face is the low bit of the panel number, so sorting by panel alone interleaves
+  // the two faces of a plane.
   struct panelcomp {
-    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) {
+      auto f1 = p1.strawId().uniqueFace();
+      auto f2 = p2.strawId().uniqueFace();
+      if (f1 != f2) return f1 < f2;
+      return p1.strawId().uniquePanel() < p2.strawId().uniquePanel();
+    }
   };
   struct HelixHitMVA
   {
