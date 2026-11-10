@@ -117,6 +117,8 @@ class MakeCrvPhotons
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
     void                      SetPhotonYieldDeviation(double deviation, int SiPM) {_photonYieldDeviation[SiPM]=deviation;}
+    // draw the number of arriving photons per step point and photon type (randBinomial only for large n*p); nullptr draws one number per photon
+    void                      SetBinomialArrivals(CLHEP::RandBinomial *randBinomial) {_randBinomial=randBinomial;}
 
   private:
 
@@ -135,11 +137,14 @@ class MakeCrvPhotons
     CLHEP::RandFlat           &_randFlat;
     CLHEP::RandGaussQ         &_randGaussQ;
     CLHEP::RandPoissonQ       &_randPoissonQ;
+    CLHEP::RandBinomial       *_randBinomial=nullptr;
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     bool   IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi);
     double GetRandomTime(const LookupBin *theBin);
     int    GetRandomFiberEmissions(const LookupBin *theBin);
+    void   AddArrivingPhoton(const LookupBin *theBin, double t, int SiPM, int reflector);
+    long   GetNumberOfArrivals(int n, double p);
     double GetAverageNumberOfCerenkovPhotons(double beta, double charge, std::map<double,double> &photons);
     int    GetNumberOfPhotonsFromAverage(double average, int nSteps);
 

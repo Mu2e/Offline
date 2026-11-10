@@ -1,6 +1,8 @@
 #include "Offline/CRVResponse/inc/MakeCrvPhotons.hh"
 
 #include <sstream>
+#include <algorithm>
+#include <cmath>
 
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
@@ -118,12 +120,13 @@ unsigned int LookupBinDefinitions::getNFiberCerenkovBins()
 
 unsigned int LookupBinDefinitions::findBin(const std::vector<double> &v, const double &x, bool &notFound)
 {
-  for(size_t i=1; i<v.size(); i++)
+  //bin edges are ascending; x on an inner edge belongs to the lower bin
+  if(v.size()<2 || !(v.front()<=x && x<=v.back()))
   {
-    if(v[i-1]<=x && v[i]>=x) return(i-1);
+    notFound=true;
+    return(-1);
   }
-  notFound=true;
-  return(-1);
+  return(std::lower_bound(v.begin()+1,v.end(),x)-v.begin()-1);
 }
 int LookupBinDefinitions::findScintillatorScintillationBin(double x, double y, double z)
 {
@@ -390,33 +393,37 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
 
       //loop over all photons created at this point
       int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
-      for(int i=0; i<nPhotons; i++)
+      if(_randBinomial)
       {
-        //get the right bin
-        const LookupBin *theBin=cerenkovBin;
-        if(i<nPhotonsScintillation) theBin=scintillationBin;
-        if(theBin==NULL) continue;  //this can't actually happen
-
-        //photon arrival probability at SiPM
-        double probability = theBin->arrivalProbability;
-        probability*=_photonYieldDeviation[SiPM];   //channel-specific deviation from nominal, e.g. due to scintillator variations or SiPM misalignments
-        if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM --> calculate arrival time
+        //number of photons arriving at the SiPM per photon type: the same distribution as one draw per photon
+        const LookupBin *theBins[2] = {scintillationBin, cerenkovBin};
+        int nCreated[2] = {nPhotonsScintillation, nPhotonsCerenkov};
+        for(int type=0; type<2; type++)
         {
-          //start time of photons
-          double arrivalTime = t;
+          if(theBins[type]==NULL || nCreated[type]<=0) continue;
+          double probability = theBins[type]->arrivalProbability;
+          probability*=_photonYieldDeviation[SiPM];
+          long nArrived = 0;
+          if(probability>=1.0) nArrived = nCreated[type];
+          else if(probability>0.0) nArrived = GetNumberOfArrivals(nCreated[type],probability);
+          for(long i=0; i<nArrived; i++) AddArrivingPhoton(theBins[type], t, SiPM, reflector);
+        }
+      }
+      else
+      {
+        for(int i=0; i<nPhotons; i++)
+        {
+          //get the right bin
+          const LookupBin *theBin=cerenkovBin;
+          if(i<nPhotonsScintillation) theBin=scintillationBin;
+          if(theBin==NULL) continue;  //this can't actually happen
 
-          //add fiber decay times depending on the number of emissions
-          int nEmissions = GetRandomFiberEmissions(theBin);
-          for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
-
-          //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin);
-
-          if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
-          else _arrivalTimes[SiPM+1].push_back(arrivalTime);
-
-        }// if a photon was created
-      }//loop over all photons at this point
+          //photon arrival probability at SiPM
+          double probability = theBin->arrivalProbability;
+          probability*=_photonYieldDeviation[SiPM];   //channel-specific deviation from nominal, e.g. due to scintillator variations or SiPM misalignments
+          if(_randFlat.fire()<=probability) AddArrivingPhoton(theBin, t, SiPM, reflector);  //a photon arrives at the SiPM --> calculate arrival time
+        }//loop over all photons at this point
+      }
     }//loop over all steps along the track
   }//loop over all SiPMs
 
@@ -510,6 +517,41 @@ int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin)
   }
 
   return emissions;
+}
+
+long MakeCrvPhotons::GetNumberOfArrivals(int n, double p)
+{
+  //binomial(n,p) by inversion with one uniform, exact at any n*p; CLHEP::RandBinomial (too low for small n*p) only where P(0) underflows
+  double logq = std::log1p(-p);
+  if(n*logq < -700.0) return static_cast<long>(_randBinomial->fire(n,p));
+  double pk  = std::exp(n*logq);
+  double cdf = pk;
+  double r   = p/(1.0-p);
+  double u   = _randFlat.fire();
+  long   k   = 0;
+  while(u>cdf && k<n && pk>0.0)
+  {
+    pk  *= r*(n-k)/(k+1.0);
+    cdf += pk;
+    ++k;
+  }
+  return k;
+}
+
+void MakeCrvPhotons::AddArrivingPhoton(const LookupBin *theBin, double t, int SiPM, int reflector)
+{
+  //start time of photons
+  double arrivalTime = t;
+
+  //add fiber decay times depending on the number of emissions
+  int nEmissions = GetRandomFiberEmissions(theBin);
+  for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
+
+  //add additional time delay due to the photons bouncing around
+  arrivalTime+=GetRandomTime(theBin);
+
+  if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
+  else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 }
 
 int MakeCrvPhotons::GetNumberOfPhotonsFromAverage(double average, int nSteps)  //from G4Scintillation

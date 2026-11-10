@@ -75,6 +75,7 @@ namespace mu2e
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")}; //134
       fhicl::Atom<bool> simulateNZS{Name("simulateNZS")}; //false
+      fhicl::Atom<bool> binomialArrivals{ Name("binomialArrivals"), Comment("draw the number of photons arriving at a SiPM per step point and photon type, instead of one random number per created photon"), true};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
     };
@@ -141,6 +142,7 @@ namespace mu2e
     double      _digitizationStartMargin;  //100ns (used to account for photon travel time and electronics response time)
     int         _numberSamplesNZS;  //134
     bool        _simulateNZS;       //false
+    bool        _binomialArrivals;
     art::InputTag _eventWindowMarkerTag;
     art::InputTag _protonBunchTimeMCTag;
     double      _microBunchPeriod;
@@ -149,6 +151,7 @@ namespace mu2e
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
+    CLHEP::RandBinomial   _randBinomial;
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(const Parameters& conf) :
@@ -168,12 +171,14 @@ namespace mu2e
     _digitizationStartMargin(conf().digitizationStartMargin()),
     _numberSamplesNZS(conf().numberSamplesNZS()),
     _simulateNZS(conf().simulateNZS()),
+    _binomialArrivals(conf().binomialArrivals()),
     _eventWindowMarkerTag(conf().eventWindowMarkerTag()),
     _protonBunchTimeMCTag(conf().protonBunchTimeMCTag()),
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat(_engine),
     _randGaussQ(_engine),
-    _randPoissonQ(_engine)
+    _randPoissonQ(_engine),
+    _randBinomial(_engine)
   {
     //if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
     if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
@@ -224,6 +229,7 @@ namespace mu2e
         photonMaker->LoadLookupTable(filespec,_debug);
       }
       photonMaker->SetScintillationYield(_scintillationYields[i]);
+      if(_binomialArrivals) photonMaker->SetBinomialArrivals(&_randBinomial);
       if(_debug>0) std::cout<<"CRV sector "<<i<<" ("<<_CRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<" with scintillation yield of "<<_scintillationYields[i]<<" photons/MeV"<<std::endl;
     }
 
