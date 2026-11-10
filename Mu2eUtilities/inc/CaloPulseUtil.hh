@@ -41,7 +41,7 @@ namespace mu2e {
 
           void buildCache();
 
-          const std::vector<double>& digitizedPulse  (double hitTime)        const;
+          const std::vector<double>& digitizedPulse  (double hitTime)        const; // reference stays valid until the next buildCache
           double                     evaluate        (double timeDifference) const;
           double                     fromPeakToT0    (double timePeak)       const;
           void                       diag            (bool fullDiag=false)   const;
@@ -54,7 +54,7 @@ namespace mu2e {
           int                         nBinShape_;
           std::vector<double>         pulseVec_;
           double                      deltaT_;
-          mutable std::vector<double> digitizedPulse_;
+          std::vector<std::vector<double>> digitizedPulses_; // digitized pulse by shift bin
     };
 
 }
