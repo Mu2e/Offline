@@ -2,6 +2,7 @@
 #define ValTrkCrvMatchMC_HH_
 
 #include "Offline/MCDataProducts/inc/TrkCrvMatchMC.hh"
+#include "Offline/Validation/inc/ValTrkCrvSectorAxis.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art_root_io/TFileDirectory.h"
 #include "TH1D.h"
@@ -11,7 +12,7 @@
 namespace mu2e {
 
 // track-CRV association truth: relation of the best candidates, own-cluster association and crossing truth per
-// CRV shield, reco crossings against the true crossings
+// CRV sector, reco crossings against the true crossings
 class ValTrkCrvMatchMC {
  public:
   ValTrkCrvMatchMC(std::string name) : _name(name) {}
@@ -21,7 +22,7 @@ class ValTrkCrvMatchMC {
 
  private:
   std::string _name;
-  int _ns = 0;
+  ValTrkCrvSectorAxis _axis;
 
   TH1D* _hVer;
   TH1D* _hBestGeomRel;

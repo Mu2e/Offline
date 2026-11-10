@@ -1,26 +1,11 @@
 #include "Offline/Validation/inc/ValTrkCrvMatch.hh"
-#include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include <cmath>
-#include <map>
 
 int mu2e::ValTrkCrvMatch::declare(const art::TFileDirectory& tfs) {
-  GeomHandle<CosmicRayShield> crs;
-  GeomHandle<KinKalGeom> kkg;
-  auto const& shields = crs->getCRSScintillatorShields();
-  int ns = static_cast<int>(shields.size());
-  _v.assign(ns, KinKal::VEC3());
-  _w.assign(ns, KinKal::VEC3());
-  std::map<std::string, int> nameToShield;
-  for (int i = 0; i < ns; ++i) nameToShield[shields[i].getName()] = i;
-  for (auto const& sec : kkg->CRV()->sectors()) {
-    auto it = nameToShield.find(sec.sname_);
-    if (it == nameToShield.end()) continue;
-    _v[it->second] = sec.sector_->vDirection();
-    _w[it->second] = sec.sector_->normal();
-  }
-
+  int ns = _axis.n();
+  double lo = _axis.lo(), hi = _axis.hi();
   _hVer = tfs.make<TH1D>("Ver", "Version Number", 101, -0.5, 100.0);
   _hNTrk = tfs.make<TH1D>("NTrk", "N tracks", 21, -0.5, 20.5);
   _hNCand = tfs.make<TH1D>("NCand", "N candidates per track", 51, -0.5, 50.5);
@@ -32,16 +17,28 @@ int mu2e::ValTrkCrvMatch::declare(const art::TFileDirectory& tfs) {
   _hChi2 = tfs.make<TH1D>("chi2ndof", "#chi^{2}/ndof, best in sector", 100, 0., 20.);
   _hNShare = tfs.make<TH1D>("NShare", "tracks sharing the cluster", 11, -0.5, 10.5);
   _hFlags = tfs.make<TH1D>("Flags", "candidate flag bits", 16, -0.5, 15.5);
-  _hXingShield = tfs.make<TH1D>("XingShield", "CRV crossings per shield", ns, -0.5, ns - 0.5);
-  _hXingGeomShield = tfs.make<TH1D>("XingGeomShield", "crossings with a geometric candidate in their shield", ns, -0.5, ns - 0.5);
-  _hDtXing = tfs.make<TH2D>("dtXing", "t_{cluster} - t_{trk} at the plane, best in sector;shield;ns", ns, -0.5, ns - 0.5, 100, -100., 100.);
-  _hDu = tfs.make<TH2D>("du", "cluster - track along the bars, best in sector;shield;mm", ns, -0.5, ns - 0.5, 100, -3000., 3000.);
-  _hDv = tfs.make<TH2D>("dv", "cluster - track across the bars, best in sector;shield;mm", ns, -0.5, ns - 0.5, 100, -500., 500.);
-  _hPredMatched = tfs.make<TH2D>("PredMatched", "best geometric candidate;reference crossing shield;cluster shield", ns, -0.5, ns - 0.5, ns, -0.5, ns - 0.5);
-  _pDvSlope.clear();
-  for (int i = 0; i < ns; ++i) {
-    std::string n = shields[i].getName();
-    _pDvSlope.push_back(tfs.make<TProfile>(("dvVsSlope_" + n).c_str(), ("dv vs across-bar slope, " + n + ";slope;dv [mm]").c_str(), 40, -2., 2.));
+  _hXingShield = tfs.make<TH1D>("XingShield", "CRV crossings per sector", ns, lo, hi);
+  _hXingGeomShield = tfs.make<TH1D>("XingGeomShield", "crossings with a geometric candidate in their sector", ns, lo, hi);
+  _hDtXing = tfs.make<TH2D>("dtXing", "t_{cluster} - t_{trk} at the plane, best in sector;cluster sector;ns", ns, lo, hi, 100, -100., 100.);
+  _hDu = tfs.make<TH2D>("du", "cluster - track along the bars, best in sector;cluster sector;mm", ns, lo, hi, 100, -3000., 3000.);
+  _hDv = tfs.make<TH2D>("dv", "cluster - track across the bars, best in sector;cluster sector;mm", ns, lo, hi, 100, -500., 500.);
+  _hPredMatched = tfs.make<TH2D>("PredMatched", "best geometric candidate;reference crossing sector;cluster sector", ns, lo, hi, ns, lo, hi);
+  _hSlopeNoGeom = tfs.make<TH1D>("SlopeNoGeom", "best in sector, not in dvVsSlope: sector not in this job's geometry;cluster sector", ns, lo, hi);
+  for (TH1* h : {static_cast<TH1*>(_hXingShield), static_cast<TH1*>(_hXingGeomShield), static_cast<TH1*>(_hDtXing),
+                 static_cast<TH1*>(_hDu), static_cast<TH1*>(_hDv), static_cast<TH1*>(_hPredMatched), static_cast<TH1*>(_hSlopeNoGeom)})
+    _axis.label(h->GetXaxis());
+  _axis.label(_hPredMatched->GetYaxis());
+
+  // dv vs slope needs the sector directions, from this job's geometry: one profile per sector it has
+  GeomHandle<KinKalGeom> kkg;
+  for (auto const& sec : kkg->CRV()->sectors()) {
+    int b = _axis.bin(sec.sname_);
+    if (b == _axis.unknown() || _plane.count(b)) continue;
+    auto& pl = _plane[b];
+    pl.c = sec.sector_->center();
+    pl.v = sec.sector_->vDirection();
+    pl.w = sec.sector_->normal();
+    pl.p = tfs.make<TProfile>(("dvVsSlope_" + sec.sname_).c_str(), ("dv vs across-bar slope, " + sec.sname_ + ";slope;dv [mm]").c_str(), 40, -2., 2.);
   }
   _hProbePred = tfs.make<TH1D>("ProbePred", "layer probe: predicted bar per layer", 6, -0.5, 5.5);
   _hProbeHit = tfs.make<TH1D>("ProbeHit", "layer probe: pulse found per layer", 6, -0.5, 5.5);
@@ -58,10 +55,14 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
   // histogram contents change, and will not match previous versions
   _hVer->Fill(1.0);
 
-  int ns = static_cast<int>(_v.size());
-  auto okShield = [&](int s) { return s >= 0 && s < ns; };
+  // a cluster's sector: the SurfaceId of a crossing with the same shield index in the product's geometry
+  auto clusterBin = [&](int16_t shield) {
+    auto it = _shieldBin.find(shield);
+    return it == _shieldBin.end() ? _axis.unknown() : it->second;
+  };
   _hNTrk->Fill(coll.size());
   for (auto const& m : coll) {
+    for (auto const& x : m.xings_) _shieldBin[x.sector_] = _axis.bin(x.sid_);
     _hNCand->Fill(m.cands_.size());
     _hNXing->Fill(m.xings_.size());
     int ngeom = 0;
@@ -72,17 +73,25 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
         if (c.flags_ & (1u << b)) _hFlags->Fill(b);
       if (!c.hasFlag(TrkCrvCandidate::geomCand)) continue;
       ++ngeom;
-      if (!c.hasFlag(TrkCrvCandidate::bestInSector) || !okShield(c.sector_)) continue;
+      if (!c.hasFlag(TrkCrvCandidate::bestInSector)) continue;
+      int b = clusterBin(c.sector_);
       if (c.ndof_ > 0) _hChi2->Fill(c.chi2_ / c.ndof_);
-      _hDtXing->Fill(c.sector_, c.dtXing_);
-      if (!c.hasFlag(TrkCrvCandidate::singleEnded)) _hDu->Fill(c.sector_, c.du_);
-      _hDv->Fill(c.sector_, c.dv_);
-      if (c.xing_ >= 0 && static_cast<size_t>(c.xing_) < m.xings_.size()) {
-        auto const& d = m.xings_[c.xing_].dir_;
-        KinKal::VEC3 dir(d.X(), d.Y(), d.Z());
-        double dw = dir.Dot(_w[c.sector_]);
-        if (std::fabs(dw) > 1e-3) _pDvSlope[c.sector_]->Fill(dir.Dot(_v[c.sector_]) / dw, c.dv_);
+      _hDtXing->Fill(b, c.dtXing_);
+      if (!c.hasFlag(TrkCrvCandidate::singleEnded)) _hDu->Fill(b, c.du_);
+      _hDv->Fill(b, c.dv_);
+      if (c.xing_ < 0 || static_cast<size_t>(c.xing_) >= m.xings_.size()) continue;
+      // the job's directions apply only if its plane of the reference crossing's sector holds that crossing
+      auto const& x = m.xings_[c.xing_];
+      auto ix = _plane.find(_axis.bin(x.sid_));
+      auto ic = _plane.find(b);
+      KinKal::VEC3 pos(x.pos_.X(), x.pos_.Y(), x.pos_.Z());
+      if (ix == _plane.end() || ic == _plane.end() || std::fabs((pos - ix->second.c).Dot(ix->second.w)) > _planeTol) {
+        _hSlopeNoGeom->Fill(b);
+        continue;
       }
+      KinKal::VEC3 dir(x.dir_.X(), x.dir_.Y(), x.dir_.Z());
+      double dw = dir.Dot(ic->second.w);
+      if (std::fabs(dw) > 1e-3) ic->second.p->Fill(dir.Dot(ic->second.v) / dw, c.dv_);
     }
     _hNGeom->Fill(ngeom);
     int best = m.bestGeom_ >= 0 ? m.bestGeom_ : m.bestTime_;
@@ -92,11 +101,12 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
     }
     if (m.bestGeom_ >= 0) {
       auto const& c = m.cands_[m.bestGeom_];
-      if (c.xing_ >= 0 && static_cast<size_t>(c.xing_) < m.xings_.size()) _hPredMatched->Fill(m.xings_[c.xing_].sector_, c.sector_);
+      if (c.xing_ >= 0 && static_cast<size_t>(c.xing_) < m.xings_.size())
+        _hPredMatched->Fill(_axis.bin(m.xings_[c.xing_].sid_), clusterBin(c.sector_));
     }
     for (auto const& x : m.xings_) {
-      _hXingShield->Fill(x.sector_);
-      if (x.best_ >= 0) _hXingGeomShield->Fill(x.sector_);
+      _hXingShield->Fill(_axis.bin(x.sid_));
+      if (x.best_ >= 0) _hXingGeomShield->Fill(_axis.bin(x.sid_));
       for (size_t L = 0; L < x.layers_.size(); ++L) {
         auto const& p = x.layers_[L];
         if (p.bar_ < 0) continue;
