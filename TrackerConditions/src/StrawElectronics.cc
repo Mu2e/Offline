@@ -67,30 +67,45 @@ namespace mu2e {
       response[i] *= 1 / gain_160;
   }
 
+  void StrawElectronics::fillDistanceInterval(double distance, ResponseGeometry& rgeom) const {
+    rgeom.distIndex = 0;
+    for (size_t i=1;i<_wPoints.size()-1;i++){
+      if (distance < _wPoints[i]._distance)
+        break;
+      rgeom.distIndex = i;
+    }
+    rgeom.distFrac = 1 - (distance - _wPoints[rgeom.distIndex]._distance)/(_wPoints[rgeom.distIndex+1]._distance - _wPoints[rgeom.distIndex]._distance);
+  }
+
+  StrawElectronics::ResponseGeometry StrawElectronics::responseGeometry(Straw const& straw, double distance) const {
+    ResponseGeometry rgeom;
+    double straw_length = 2*straw.halfLength();
+    rgeom.reflectionTime = _reflectionTimeShift + (2*straw_length-2*distance)/_reflectionVelocity;
+    rgeom.reflectionScale = _reflectionFrac * exp(-(2*straw_length-2*distance)/_reflectionALength);
+    fillDistanceInterval(distance,rgeom);
+    return rgeom;
+  }
+
   double StrawElectronics::linearResponse(Straw const& straw, Path ipath, double time, double charge, double distance, bool forsaturation) const {
+    return linearResponse(straw,ipath,time,charge,responseGeometry(straw,distance),forsaturation);
+  }
+
+  double StrawElectronics::linearResponse(Straw const& straw, Path ipath, double time, double charge, ResponseGeometry const& rgeom, bool forsaturation) const {
     int index = time*_sampleRate + _responseBins/2.;
     if ( index >= _responseBins)
       index = _responseBins-1;
     if (index < 0)
       index = 0;
 
-    double straw_length = 2*straw.halfLength();
-    double reflection_time = _reflectionTimeShift + (2*straw_length-2*distance)/_reflectionVelocity;
-    int index_refl = (time - reflection_time)*_sampleRate + _responseBins/2.;
+    int index_refl = (time - rgeom.reflectionTime)*_sampleRate + _responseBins/2.;
     if (index_refl >= _responseBins)
       index_refl = _responseBins-1;
     if (index_refl < 0)
       index_refl = 0;
 
-    double reflection_scale = _reflectionFrac * exp(-(2*straw_length-2*distance)/_reflectionALength);
-
-    int  distIndex = 0;
-    for (size_t i=1;i<_wPoints.size()-1;i++){
-      if (distance < _wPoints[i]._distance)
-        break;
-      distIndex = i;
-    }
-    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    double reflection_scale = rgeom.reflectionScale;
+    int distIndex = rgeom.distIndex;
+    double distFrac = rgeom.distFrac;
     double p0, p1;
     if (ipath == thresh){
       if (forsaturation){
@@ -124,13 +139,14 @@ namespace mu2e {
   }
 
   double StrawElectronics::maxResponseTime(StrawId sid, Path ipath,double distance) const {
-    int  distIndex = 0;
-    for (size_t i=1;i<_wPoints.size()-1;i++){
-      if (distance < _wPoints[i]._distance)
-        break;
-      distIndex = i;
-    }
-    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    ResponseGeometry rgeom;
+    fillDistanceInterval(distance,rgeom);
+    return maxResponseTime(sid,ipath,rgeom);
+  }
+
+  double StrawElectronics::maxResponseTime(StrawId sid, Path ipath, ResponseGeometry const& rgeom) const {
+    int distIndex = rgeom.distIndex;
+    double distFrac = rgeom.distFrac;
     double p0 = _wPoints[distIndex]._tmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._tmax[ipath][sid.getStraw()];
 
@@ -138,13 +154,14 @@ namespace mu2e {
   }
 
   double StrawElectronics::maxLinearResponse(StrawId sid, Path ipath,double distance,double charge) const {
-    int  distIndex = 0;
-    for (size_t i=1;i<_wPoints.size()-1;i++){
-      if (distance < _wPoints[i]._distance)
-        break;
-      distIndex = i;
-    }
-    double distFrac = 1 - (distance - _wPoints[distIndex]._distance)/(_wPoints[distIndex+1]._distance - _wPoints[distIndex]._distance);
+    ResponseGeometry rgeom;
+    fillDistanceInterval(distance,rgeom);
+    return maxLinearResponse(sid,ipath,rgeom,charge);
+  }
+
+  double StrawElectronics::maxLinearResponse(StrawId sid, Path ipath, ResponseGeometry const& rgeom, double charge) const {
+    int distIndex = rgeom.distIndex;
+    double distFrac = rgeom.distFrac;
     double p0 = _wPoints[distIndex]._linmax[ipath][sid.getStraw()];
     double p1 = _wPoints[distIndex + 1]._linmax[ipath][sid.getStraw()];
 

@@ -18,6 +18,8 @@
 #include "Offline/DataProducts/inc/StrawEnd.hh"
 #include "Offline/TrackerMC/inc/StrawPosition.hh"
 #include "Offline/MCDataProducts/inc/StrawGasStep.hh"
+#include "Offline/TrackerConditions/inc/StrawElectronics.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 // toolkit includes
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -57,6 +59,14 @@ namespace mu2e {
         float   propTime() const { return _proptime; }
         art::Ptr<StrawGasStep> const& strawGasStep() const { return _sgsptr; }
         float cluTime() const { return _ctime; }
+        // distance-dependent electronics response terms of this cluster on the given straw, computed once per straw
+        StrawElectronics::ResponseGeometry const& responseGeometry(StrawElectronics const& strawele, Straw const& straw) const {
+          if(_rgeomStraw != straw.id()){
+            _rgeom = strawele.responseGeometry(straw,_wdist);
+            _rgeomStraw = straw.id();
+          }
+          return _rgeom;
+        }
         // Print contents of the object.
         void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
       private:
@@ -71,6 +81,8 @@ namespace mu2e {
         float _proptime;  // propagation time to the wire end
         art::Ptr<StrawGasStep> _sgsptr;
         float _ctime;
+        mutable StrawId _rgeomStraw; // straw the cached response geometry belongs to (invalid until computed)
+        mutable StrawElectronics::ResponseGeometry _rgeom;
     };
   } // namespace TrackerMC
 } // namespace mu2e
