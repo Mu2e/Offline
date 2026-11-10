@@ -57,9 +57,9 @@ namespace mu2e {
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
-      // nominal literals like the hard-coded KinKalGeom IPA and ST surfaces (KinKalGeomMaker::makeDS/makeTarget); TODO: take both from the geometry service
+      // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
+      // The ST foil thicknesses come from the geometry service (KKGeom::StoppingTarget::foilThickness)
       double ipathick_ = 0.511; // ipa thickness (mm)
-      double stthick_ = 0.1056; // st foil thickness (mm)
       static constexpr unsigned maxCrossings_ = 1000; // per sweep, against endless reflection loops
       static constexpr double dsShellMinCos_ = 0.1; // thin-shell approximation: skip near-tangent DS shell crossings
       static constexpr double ipaMinCos_ = 0.1; // as the DS shells; no truth IPA crossing on CE has |cos| < 0.2
@@ -188,7 +188,7 @@ namespace mu2e {
         tg.pl_ = foil.get(); // a grazing foil is crossed again only after the track leaves its tolerance
         tg.ann_ = foil;
         tg.mat_ = &*kkmat_h->STMaterial();
-        tg.thick_ = stthick_;
+        tg.thick_ = st.foilThickness(ifoil);
         tg.maxcross_ = 0;
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
