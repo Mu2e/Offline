@@ -67,15 +67,20 @@ namespace mu2e {
 
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
 
-    dump->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
     const double coreRotY = dump->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
     dump->_coreRotationInMu2e.rotateY(coreRotY);
+
+    c.getVectorDouble("protonBeamDump.coreHalfSize", dump->_coreHalfSize, 3);
+
+    const auto coreFaceCenterInMu2e = c.getHep3Vector("protonBeamDump.coreFaceCenterInMu2e");
+
+    dump->_coreCenterInMu2e = coreFaceCenterInMu2e
+      + dump->_coreRotationInMu2e*Hep3Vector(0,0,-dump->_coreHalfSize[2]);;
     //
     // Dump core position and rotation have been initialized, from
     // this point on mu2eToBeamDump_position() and other coordinate
     // conversion methods can be used.
 
-    c.getVectorDouble("protonBeamDump.coreHalfSize", dump->_coreHalfSize, 3);
     c.getVectorDouble("protonBeamDump.neutronCaveHalfSize", dump->_neutronCaveHalfSize, 3);
     c.getVectorDouble("protonBeamDump.mouthHalfSize", dump->_mouthHalfSize, 3);
 
@@ -268,6 +273,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     if(verbose) {
+      std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core face center in mu2e = "<<coreFaceCenterInMu2e<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;
 
       std::cout<<"core halfsize:  "

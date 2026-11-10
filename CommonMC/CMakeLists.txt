@@ -26,6 +26,7 @@ cet_build_plugin(EventWindowMarkerProducer art::module
       Offline::ProditionsService
       Offline::RecoDataProducts
       Offline::SeedService
+      artdaq-core-mu2e::Data
 )
 
 cet_build_plugin(FindMCPrimary art::module
