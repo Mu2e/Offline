@@ -63,6 +63,11 @@ namespace mu2e {
     _doSingleOutput(config().doSingleOutput()),
     _maxEDepAvg(config().maxEDepAvg()),
     _hfinder(config().hfinder()){
+      // the direction sets the sign of the time of flight used for the HelixSeed t0
+      if (_fdir.dzdt() == 0.) {
+        throw cet::exception("CONFIG") << "CalHelixFinder: fitdirection must be \"downstream\" or \"upstream\", got \""
+                                       << config().fitdirection() << "\"" << std::endl;
+      }
       consumes<ComboHitCollection>(_shLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
 
@@ -396,9 +401,10 @@ namespace mu2e {
     double   beta          = _tpart.beta(mom);
 
     double hel_t0;
-    // path length per unit z is 1/|sin(lambda)|, lambda = dip angle. The magnitude is used so the
-    // time of flight keeps the existing convention (calorimeter downstream of z0, t0 before the cluster)
-    const double sinDip = std::abs(std::sin(std::atan(tandip)));
+    // path length per unit z is 1/|sin(lambda)|, lambda = dip angle. tandip is positive here whatever
+    // the direction, so the sign comes from the configured fit direction: a downstream track reaches
+    // the calorimeter after z0 (t0 before the cluster), an upstream one passes it before z0 (t0 after)
+    const double sinDip = _fdir.dzdt()*std::abs(std::sin(std::atan(tandip)));
 
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
 
