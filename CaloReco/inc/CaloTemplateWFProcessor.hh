@@ -44,8 +44,8 @@ namespace mu2e {
             fhicl::Atom<double>      psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") };
             fhicl::Atom<double>      chiThreshold      { Name("chiThreshold"),     Comment("Min chi2 for refit strategy") };
             fhicl::Atom<bool>        refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
-            fhicl::Atom<int>         fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
-            fhicl::Atom<int>         fitStrategy       { Name("fitStrategy"),      Comment("Minuit fit strategy") };
+            fhicl::Atom<int>         fitPrintLevel     { Name("fitPrintLevel"),    Comment("fit print level (unused)") };
+            fhicl::Atom<int>         fitStrategy       { Name("fitStrategy"),      Comment("fit strategy (unused)") };
             fhicl::Atom<int>         diagLevel         { Name("diagLevel"),        Comment("Diagnosis level") };
         };
 

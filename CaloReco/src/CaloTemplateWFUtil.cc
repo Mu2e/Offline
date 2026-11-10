@@ -1,12 +1,12 @@
 #include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 
-#include "TMinuit.h"
 #include "TF1.h"
 #include "TH2.h"
 #include "TCanvas.h"
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 #include <sstream>
 
@@ -17,12 +17,16 @@
 // the signal (see doc-db 36707 for a full explanation)
 
 
-//An anonymous namespace to use Minuit
+//An anonymous namespace for the fit function and its minimisation
 namespace
 {
     unsigned              npTot_(0),npFcn_(0),npBkg_(0),x0_(0),x1_(0);
     std::vector<double>   xvec_{},yvec_{};
     mu2e::CaloPulseUtil* pulseCachePtr_=(nullptr);
+
+    constexpr double parMin(0.0), parMax(1e6);
+    constexpr int    maxIterations(30);
+    constexpr double initialDamping(100.0);
 
     double logn(double x, double *par) {return par[0]*pulseCachePtr_->evaluate(x-par[1]); }
 
@@ -34,17 +38,149 @@ namespace
     }
     double fitfunctionPlot(double* x, double *par) {return fitfunction(x[0],par);}
 
-    void myfcn(int& npar, double* , double &f, double *par, int)
+    bool isTime(unsigned j) {return j >= npBkg_ && (j-npBkg_)%npFcn_ == 1;}
+
+    // fit objective over [x0_,x1_): sum of (y-f)^2/baseline, with f built from the first npar parameters
+    double objective(const std::vector<double>& par, unsigned npar)
     {
-        f=0;
+        double f(0);
         for (unsigned i=x0_;i<x1_;++i)
         {
-            double x = xvec_[i];
-            double y = yvec_[i];
-            double val = fitfunction(x, par);
-            // modified fit function
-            if (fabs(par[0]) > 1e-5) f += (y-val)*(y-val)/par[0];
+            double val(par[0]);
+            for (unsigned j=npBkg_; j+1<npar; j+=npFcn_) val += par[j]*pulseCachePtr_->evaluate(xvec_[i]-par[j+1]);
+            if (std::abs(par[0]) > 1e-5) f += (yvec_[i]-val)*(yvec_[i]-val)/par[0];
         }
+        return f;
+    }
+
+    // analytic gradient and Hessian of the objective (baseline above 1e-5); fixed parameters get identity rows
+    void derivatives(const std::vector<double>& par, unsigned npar, const std::vector<bool>& free,
+                     std::vector<double>& grad, std::vector<double>& hess)
+    {
+        grad.assign(npar,0.0);
+        hess.assign(npar*npar,0.0);
+        std::vector<double> jac(npar,0.0), slope(npar,0.0), rj(npar,0.0), cross(npar,0.0);
+        double b(par[0]), sumSq(0);
+        jac[0] = 1.0;
+        for (unsigned i=x0_;i<x1_;++i)
+        {
+            double val(par[0]);
+            for (unsigned j=npBkg_; j+1<npar; j+=npFcn_)
+            {
+                double p = pulseCachePtr_->evaluate(xvec_[i]-par[j+1],slope[j]);
+                val     += par[j]*p;
+                jac[j]   = p;
+                jac[j+1] = -par[j]*slope[j];
+            }
+            double r = yvec_[i]-val;
+            sumSq += r*r;
+            for (unsigned a=0;a<npar;++a)
+            {
+                rj[a] += r*jac[a];
+                for (unsigned c=0;c<=a;++c) hess[a*npar+c] += jac[a]*jac[c];
+            }
+            for (unsigned j=npBkg_; j+1<npar; j+=npFcn_) cross[j] += r*slope[j];
+        }
+
+        for (unsigned a=0;a<npar;++a)
+        {
+            grad[a] = -2.0*rj[a]/b - (a==0 ? sumSq/(b*b) : 0.0);
+            for (unsigned c=0;c<=a;++c)
+            {
+                double h = 2.0*hess[a*npar+c]/b;
+                if (c==0) h += 2.0*rj[a]/(b*b);
+                if (a==0) h += 2.0*rj[c]/(b*b);
+                if (a==0 && c==0) h += 2.0*sumSq/(b*b*b);
+                if (isTime(a) && c+1==a) h += 2.0*cross[c]/b;
+                hess[a*npar+c] = hess[c*npar+a] = h;
+            }
+        }
+
+        for (unsigned a=0;a<npar;++a)
+        {
+            if (free[a]) continue;
+            grad[a] = 0.0;
+            for (unsigned c=0;c<npar;++c) hess[a*npar+c] = hess[c*npar+a] = 0.0;
+            hess[a*npar+a] = 1.0;
+        }
+    }
+
+    // solves m x = x (x holds the right-hand side) by Gaussian elimination with partial pivoting; false if singular
+    bool solve(std::vector<double> m, std::vector<double>& x, unsigned n)
+    {
+        for (unsigned k=0;k<n;++k)
+        {
+            unsigned piv(k);
+            for (unsigned i=k+1;i<n;++i) if (std::abs(m[i*n+k]) > std::abs(m[piv*n+k])) piv = i;
+            if (!(std::abs(m[piv*n+k]) > 1e-300)) return false;
+            if (piv != k)
+            {
+                for (unsigned c=0;c<n;++c) std::swap(m[k*n+c],m[piv*n+c]);
+                std::swap(x[k],x[piv]);
+            }
+            for (unsigned i=k+1;i<n;++i)
+            {
+                double f = m[i*n+k]/m[k*n+k];
+                for (unsigned c=k;c<n;++c) m[i*n+c] -= f*m[k*n+c];
+                x[i] -= f*x[k];
+            }
+        }
+        for (unsigned k=n;k-->0;)
+        {
+            for (unsigned c=k+1;c<n;++c) x[k] -= m[k*n+c]*x[c];
+            x[k] /= m[k*n+k];
+        }
+        return true;
+    }
+
+    // Levenberg-Marquardt minimisation within [parMin,parMax]; each step stays in a trust region (baseline and
+    // amplitudes by half their value, times by 5 ns) so the iterates do not collapse to a baseline-only solution
+    bool minimize(std::vector<double>& par, unsigned npar, const std::vector<bool>& free,
+                  std::vector<double>& err, double& fmin)
+    {
+        std::vector<double> grad, hess, step(npar,0.0), trial(par);
+        double lambda(initialDamping);
+        fmin = objective(par,npar);
+
+        for (int it=0; it<maxIterations; ++it)
+        {
+            derivatives(par,npar,free,grad,hess);
+            std::vector<double> damped(hess);
+            for (unsigned j=0;j<npar;++j) damped[j*npar+j] += lambda*(std::abs(hess[j*npar+j])+1e-9);
+            for (unsigned j=0;j<npar;++j) step[j] = -grad[j];
+            if (!solve(damped,step,npar)) {lambda *= 10.0; continue;}
+
+            for (unsigned j=0;j<npar;++j)
+            {
+                if (!free[j]) {trial[j] = par[j]; continue;}
+                double cap = isTime(j) ? 5.0 : 0.5*std::abs(par[j]) + (j==0 ? 1.0 : 10.0);
+                trial[j] = std::clamp(par[j]+std::clamp(step[j],-cap,cap), parMin, parMax);
+            }
+
+            double ftrial = objective(trial,npar);
+            if (std::abs(trial[0]) > 1e-5 && ftrial <= fmin)
+            {
+                bool converged = (fmin-ftrial) <= 1e-12*fmin;
+                par     = trial;
+                fmin    = ftrial;
+                lambda *= 0.3;
+                if (converged) break;
+            }
+            else lambda *= 10.0;
+        }
+
+        err.assign(npar,0.0);
+        if (!(std::abs(par[0]) > 1e-5)) return false;
+        derivatives(par,npar,free,grad,hess);
+        for (unsigned j=0;j<npar;++j)
+        {
+            if (!free[j]) continue;
+            std::vector<double> col(npar,0.0);
+            col[j] = 1.0;
+            if (!solve(hess,col,npar)) return false;
+            err[j] = std::sqrt(std::abs(2.0*col[j]));
+        }
+        return true;
     }
 }
 
@@ -92,31 +228,14 @@ namespace mu2e {
        if (param_.empty() || param_.size()>49 || xvec_.empty()) return;
        if (nParTot_ < nParBkg_  || (nParTot_-nParBkg_)%nParFcn_ !=0) return;
 
-       int ierr(0),nvpar(999), nparx(999), istat(999);
-       double arglist[2]={0,0}, edm(999), errdef(999);
-
-       TMinuit minuit(nParTot_);
-       minuit.SetFCN(myfcn);
-
-       arglist[0] = printLevel_;
-       minuit.mnexcm("SET PRI", arglist ,1,ierr);
-       arglist[0] = 1;
-       minuit.mnexcm("SET NOW", arglist, 1, ierr);
-       arglist[0] = fitStrategy_;
-       minuit.mnexcm("SET STR", arglist ,1,ierr);
-
-       for (unsigned ip=0;ip<nParTot_;++ip)
-       {
-             std::string sss = "par " + std::to_string(ip);
-            minuit.mnparm(ip, sss.c_str(),  param_[ip],  0.001,  0,  1e6, ierr);
-       }
+       std::vector<double> par(param_), err;
+       for (auto& val : par) val = std::clamp(val, parMin, parMax);
+       std::vector<bool> free(nParTot_,true);
+       double fmin(0);
 
        // Perform first fit with initial model
        //
-       arglist[0] = 2000;
-       arglist[1] = 0.1;
-       minuit.mnexcm("MIGRAD", arglist ,2,ierr);
-       //if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);
+       bool ok = minimize(par, nParTot_, free, err, fmin);
 
 
        // Remove small or "duplicate" components and redo the fit with simplified model if there is more than one peak
@@ -125,20 +244,17 @@ namespace mu2e {
        if (nParTot_ > nParFcn_+nParBkg_)
        {
            bool refit(false);
-           std::vector<double> tempPar(nParTot_,0),tempErr(nParTot_,1);
-           for (unsigned i=0;i<nParTot_;++i) minuit.GetParameter(i,tempPar[i],tempErr[i]);
+           std::vector<double> tempPar(par),tempErr(err);
 
            for (unsigned ip=nParBkg_; ip<nParTot_; ip += nParFcn_)
            {
                if (selectComponent(tempPar,tempErr,ip)) continue;
-               minuit.mnparm(ip,   "fixed par", 0, 0.01, -1e6, 1e6, ierr);
-               minuit.mnparm(ip+1, "fixed par", 0, 0.01, -1e6, 1e6, ierr);
-               minuit.FixParameter(ip);
-               minuit.FixParameter(ip+1);
+               par[ip]    = par[ip+1]  = 0.0;
+               free[ip]   = free[ip+1] = false;
                refit = true;
            }
 
-           if (refit) minuit.mnexcm("MIGRAD", arglist ,2, ierr);
+           if (refit) ok = minimize(par, nParTot_, free, err, fmin);
        }
 
 
@@ -150,30 +266,18 @@ namespace mu2e {
        unsigned i(0);
        while (i<nParTot_)
        {
-           double val(0),err(0);
-           minuit.GetParameter(i,val,err);
-
            //if the amplitude is too small, jump to the next peak
-           if (val<1 && i >=nParBkg_ && (i-nParBkg_)%nParFcn_==0) {i+=nParFcn_;continue;}
+           if (par[i]<1 && i >=nParBkg_ && (i-nParBkg_)%nParFcn_==0) {i+=nParFcn_;continue;}
 
-           param_.push_back(val);
-           paramErr_.push_back(err);
+           param_.push_back(par[i]);
+           paramErr_.push_back(err[i]);
            ++i;
        }
 
-       minuit.mnstat(chi2_,edm,errdef,nvpar,nparx,istat);
-
-       //recalculate the chi2 removing the baseline to better reject the noise ?
-       //chi2_=0;
-       //for (unsigned i=x0_;i<x1_;++i)
-       //{
-       //    double val = fitfunction(xvec_[i], &param_[0]);
-       //    if (yvec_[i]>1e-5) chi2_ += (yvec_[i]-val)*(yvec_[i]-val)/(yvec_[i]-param_[0]);
-       //}
-
+       chi2_    = fmin;
        nParTot_ = param_.size();
        npTot_   = nParTot_;
-       status_  = istat;
+       status_  = ok ? 3 : 0;
    }
 
 
@@ -192,31 +296,17 @@ namespace mu2e {
        //x0_ = ilow;
        x1_ = imax;
 
-       int ierr(0),nvpar(999), nparx(999), istat(999);
-       double arglist[2]={0,0}, edm(999), errdef(999),chi(9999),val(0),err(0);
+       // fit the baseline and the first peak only
+       unsigned npar(nParBkg_+nParFcn_);
+       std::vector<double> par(param_.begin(),param_.begin()+npar), err;
+       for (auto& val : par) val = std::clamp(val, parMin, parMax);
+       std::vector<bool> free(npar,true);
+       double fmin(0);
+       bool ok = minimize(par, npar, free, err, fmin);
 
-       TMinuit minuit(nParBkg_+nParFcn_);
-       minuit.SetFCN(myfcn);
-
-       arglist[0] = printLevel_;
-       minuit.mnexcm("SET PRI", arglist ,1,ierr);
-       arglist[0] = 1;
-       minuit.mnexcm("SET NOW", arglist, 1, ierr);
-       arglist[0] = fitStrategy_;
-       minuit.mnexcm("SET STR", arglist ,1,ierr);
-
-       for (unsigned ip=0;ip<nParBkg_+nParFcn_;++ip) minuit.mnparm(ip, "par",  param_[ip],  0.001, 0,  1e6, ierr);
-
-       arglist[0] = 2000;
-       arglist[1] = 0.1;
-       minuit.mnexcm("MIGRAD", arglist ,2,ierr);
-
-       minuit.GetParameter(nParBkg_+1,val,err);
-       minuit.mnstat(chi,edm,errdef,nvpar,nparx,istat);
-
-       param_[nParBkg_+1]    = val;
-       paramErr_[nParBkg_+1] = err;
-       status_               = istat;
+       param_[nParBkg_+1]    = par[nParBkg_+1];
+       paramErr_[nParBkg_+1] = err[nParBkg_+1];
+       status_               = ok ? 3 : 0;
 
        x0_     = 0;
        x1_     = xvec_.size();

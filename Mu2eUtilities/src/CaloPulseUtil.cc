@@ -92,6 +92,20 @@ namespace mu2e {
    }
 
    //----------------------------------------------------------------------------
+   // same value as evaluate(tDifference); slope is its derivative with respect to tDifference (0 outside the pulse)
+   double CaloPulseUtil::evaluate(double tDifference, double& slope) const
+   {
+       slope = 0.0;
+       double t = tDifference+deltaT_;
+       int ibin = nSteps_ + int(t*nSteps_/digiStep_/nSteps_);
+
+       if (ibin < 0 || ibin >= int(pulseVec_.size()-1)) return 0.0;
+       double t0bin = (ibin-nSteps_)*digiStep_; //t0 is located at nSteps_
+       slope = (pulseVec_[ibin+1]-pulseVec_[ibin])/digiStep_;
+       return (pulseVec_[ibin+1]-pulseVec_[ibin])/digiStep_*(t-t0bin)+pulseVec_[ibin];
+   }
+
+   //----------------------------------------------------------------------------
    double CaloPulseUtil::fromPeakToT0(double timePeak) const
    {
        return timePeak-deltaT_-0.5*digiStep_*nSteps_;

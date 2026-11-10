@@ -43,6 +43,7 @@ namespace mu2e {
 
           const std::vector<double>& digitizedPulse  (double hitTime)        const;
           double                     evaluate        (double timeDifference) const;
+          double                     evaluate        (double timeDifference, double& slope) const;
           double                     fromPeakToT0    (double timePeak)       const;
           void                       diag            (bool fullDiag=false)   const;
 
