@@ -147,6 +147,21 @@ namespace mu2e {
       for (auto& [id, v] : caloHitMap)        std::sort(v.begin(),v.end(),byTime);
       for (auto& [id, v] : caloShowerSimsMap) std::sort(v.begin(),v.end(),byTime);
 
+      // Maximum time after each hit for an MC hit to be associated: the pulse length given the hit amplitude,
+      // cut two samples before the next hit in the same crystal
+      std::unordered_map<const CaloHit*, double> windowPlus;
+      windowPlus.reserve(caloHits.size());
+      for (const auto& [id, v] : caloHitMap) {
+          for (std::size_t i=0; i<v.size(); ++i) {
+              std::size_t nbin(wfBinMax_);
+              while (nbin < wf_.size()) {if (wf_[nbin]*v[i]->energyDep() < minAmplitude_) break; ++nbin;}
+              double dtPlus(static_cast<double>(nbin)*CaloConst::_digitizationPeriod);
+              if (i+1 < v.size() && v[i+1]->time() - v[i]->time() - 2*CaloConst::_digitizationPeriod < dtPlus)
+                 dtPlus = v[i+1]->time() - v[i]->time() - 2*CaloConst::_digitizationPeriod;
+              windowPlus[v[i]] = dtPlus;
+          }
+      }
+
       // O(1) shower-pointer -> index lookup for the detailed-MC association (was an O(n) scan per match)
       std::unordered_map<const CaloShowerSim*,std::size_t> showerIndex;
       if (fillDetailedMC_) {
@@ -173,30 +188,16 @@ namespace mu2e {
                         <<" / "<<shower->time()<<" / "<<shower->energyDep()<<std::endl;
           }
 
-          // Maximum time after a hit for an MC hit to be associated, given the hit amplitude and the next hit time
-          const auto windowLength = [&](const CaloHit* h){
-             std::size_t n(wfBinMax_);
-             while (n < wf_.size()) {if (wf_[n]*h->energyDep() < minAmplitude_) break; ++n;}
-             return n;
-          };
-          const auto windowPlus = [&](std::vector<const CaloHit*>::const_iterator hIt){
-             double dtPlus(windowLength(*hIt)*CaloConst::_digitizationPeriod);
-             const auto hNextIt = std::next(hIt);
-             if (hNextIt != sortedHits.end() && (*hNextIt)->time() - (*hIt)->time() - 2*CaloConst::_digitizationPeriod < dtPlus)
-                dtPlus = (*hNextIt)->time() - (*hIt)->time() - 2*CaloConst::_digitizationPeriod;
-             return dtPlus;
-          };
-
-          const double deltaTimePlus = windowPlus(hitIt);
+          // the window opens no earlier than the end of the previous hit's window
+          const double deltaTimePlus = windowPlus.at(&hit);
           double windowStart = hit.time() - deltaTimeMinus_;
           if (hitIt != sortedHits.begin()) {
-             const auto hitPrevIt = std::prev(hitIt);
-             windowStart = std::max(windowStart, (*hitPrevIt)->time() + windowPlus(hitPrevIt));
+             const CaloHit* prevHit = *std::prev(hitIt);
+             windowStart = std::max(windowStart, prevHit->time() + windowPlus.at(prevHit));
           }
 
-          if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch] inspect hit id/time/energy/length "<<hit.crystalID()
-                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<windowLength(&hit)*CaloConst::_digitizationPeriod
-                                       <<" "<<deltaTimePlus<<" start "<<windowStart<<std::endl;
+          if (diagLevel_ > 2) std::cout<<"[CaloHitTruthMatch] inspect hit id/time/energy/window "<<hit.crystalID()
+                                       <<" / "<<hit.time()<<" / "<<hit.energyDep()<<" "<<deltaTimePlus<<" start "<<windowStart<<std::endl;
 
           // forward to the window start, then loop while the shower time is within the reco window
           bool hitIsMatched(false);
