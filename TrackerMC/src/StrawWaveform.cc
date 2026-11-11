@@ -43,7 +43,7 @@ namespace mu2e {
             //// check if this clust could cross threshold
             //if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
             // check the actual response
-            double maxtime = wfx._iclust->time()+strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry(strawele,_straw));
+            double maxtime = wfx._iclust->time()+strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry());
             double maxresp = sampleWaveform(strawele,StrawElectronics::thresh,maxtime);
             if(maxresp > threshold){
               // interpolate to find the precise crossing
@@ -64,7 +64,7 @@ namespace mu2e {
     void StrawWaveform::returnCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const {
       while(wfx._iclust != _cseq.clustList().end() && wfx._vstart > threshold) {
         // move forward in time at least as twice the time to the maxium for this clust
-        double time = wfx._iclust->time()+strawele.clusterLookbackTime() + 2*strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry(strawele,_straw));
+        double time = wfx._iclust->time()+strawele.clusterLookbackTime() + 2*strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry());
         while(wfx._iclust != _cseq.clustList().end() &&
             wfx._iclust->time()-strawele.clusterLookbackTime() < time){
           ++(wfx._iclust);
@@ -95,7 +95,7 @@ namespace mu2e {
     bool StrawWaveform::fineCrossing(StrawElectronics const& strawele, double threshold,double maxresp, WFX& wfx) const {
       static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
       double pretime = wfx._iclust->time()-strawele.clusterLookbackTime();
-      double posttime = pretime + strawele.clusterLookbackTime() + strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry(strawele,_straw));
+      double posttime = pretime + strawele.clusterLookbackTime() + strawele.maxResponseTime(_straw.id(),StrawElectronics::thresh,wfx._iclust->responseGeometry());
       double presample = wfx._vstart;
       double postsample = maxresp;
       static const unsigned maxstep(10); // 10 steps max
@@ -141,7 +141,7 @@ namespace mu2e {
 
     double StrawWaveform::maxLinearResponse(StrawElectronics const& strawele,StrawClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
-      double linresp = strawele.maxLinearResponse(_straw.id(),StrawElectronics::thresh,iclust->responseGeometry(strawele,_straw),iclust->charge());
+      double linresp = strawele.maxLinearResponse(_straw.id(),StrawElectronics::thresh,iclust->responseGeometry(),iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
       return linresp;
     }
@@ -153,7 +153,7 @@ namespace mu2e {
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time()-strawele.clusterLookbackTime() < time){
         // compute the linear straw electronics response to this charge.  This is pre-saturation
-        linresp += strawele.linearResponse(_straw,ipath,time-iclust->time(),iclust->charge(),iclust->responseGeometry(strawele,_straw));
+        linresp += strawele.linearResponse(_straw,ipath,time-iclust->time(),iclust->charge(),iclust->responseGeometry());
         // move to next clust
         ++iclust;
       }
@@ -207,7 +207,7 @@ namespace mu2e {
           double response = 0;
           auto jclust = iclust;
           while(jclust != _cseq.clustList().end() && jclust->time()-strawele.clusterLookbackTime() < time){
-            response += strawele.linearResponse(_straw,StrawElectronics::thresh,time-jclust->time(),jclust->charge(),jclust->responseGeometry(strawele,_straw),true);
+            response += strawele.linearResponse(_straw,StrawElectronics::thresh,time-jclust->time(),jclust->charge(),jclust->responseGeometry(),true);
             ++jclust;
           }
           // now saturate it

@@ -45,7 +45,7 @@ namespace mu2e {
           _sigma(sigma), _t0(t0) {};
       };
 
-      // distance-dependent terms of the response of one cluster on one straw
+      // distance-dependent terms of the response of one cluster on one straw; maxResponseTime and maxLinearResponse use only distIndex and distFrac
       struct ResponseGeometry {
         int distIndex = 0;
         double distFrac = 0.0;
