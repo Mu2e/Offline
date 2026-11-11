@@ -75,7 +75,7 @@ namespace mu2e
                                Comment("time window before digitization starts to account for photon travel time and electronics response.")};
       fhicl::Atom<int> numberSamplesNZS{Name("numberSamplesNZS")}; //134
       fhicl::Atom<bool> simulateNZS{Name("simulateNZS")}; //false
-      fhicl::Atom<bool> binomialArrivals{ Name("binomialArrivals"), Comment("draw the number of photons arriving at a SiPM per step point and photon type, instead of one random number per created photon"), true};
+      fhicl::Atom<bool> binomialArrivals{ Name("binomialArrivals"), Comment("draw the number of photons arriving at a SiPM per step point and photon type, instead of one random number per created photon"), false};
       fhicl::Atom<art::InputTag> eventWindowMarkerTag{ Name("eventWindowMarkerTag"), Comment("EventWindowMarker producer"),"EWMProducer" };
       fhicl::Atom<art::InputTag> protonBunchTimeMCTag{ Name("protonBunchTimeMCTag"), Comment("ProtonBunchTimeMC producer"),"EWMProducer" };
     };

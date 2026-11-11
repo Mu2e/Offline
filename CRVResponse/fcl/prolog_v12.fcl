@@ -91,6 +91,7 @@ BEGIN_PROLOG
       digitizationStartMargin               : 100.0 //ns  start recording earlier to account for photon travel times and electronics response times
       numberSamplesNZS                      : @local::NumberSamplesNZS
       simulateNZS                           : @local::SimulateNZS
+      binomialArrivals                      : true  //number of arriving photons drawn per step point and photon type
     }
     CrvSiPMCharges:
     {
