@@ -192,9 +192,9 @@ namespace mu2e {
 
       // CaloShowerROs of each readout, in collection order
       std::vector<std::vector<const CaloShowerRO*>> showerROsOfRO(nWaveforms);
-      for (const auto& CaloShowerRO : CaloShowerROs) {
-          unsigned SiPMID = CaloShowerRO.SiPMID();
-          if (SiPMID < unsigned(nWaveforms)) showerROsOfRO[SiPMID].push_back(&CaloShowerRO);
+      for (const auto& showerRO : CaloShowerROs) {
+          unsigned SiPMID = showerRO.SiPMID();
+          if (SiPMID < unsigned(nWaveforms)) showerROsOfRO[SiPMID].push_back(&showerRO);
       }
 
       for (int iRO=0;iRO<nWaveforms;++iRO) {
