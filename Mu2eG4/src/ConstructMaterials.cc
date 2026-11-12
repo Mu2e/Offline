@@ -138,8 +138,8 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "CONCRETE_EXTMON_HANDSTACKED" );
     {
-      // 2.1 g/cm3 from weighing ExtMon blocks, consistent with Menards info
-      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.1*CLHEP::g/CLHEP::cm3, 1 );
+      // 2.06 g/cm3 from weighing ExtMon blocks, see docdb-58926
+      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.06*CLHEP::g/CLHEP::cm3, 1 );
       ConcreteHandstacked->AddMaterial( findMaterialOrThrow("CONCRETE_MARS"), 1.);
     }
 
