@@ -81,6 +81,8 @@ namespace mu2e {
       double resolution(std::vector<double> const& tab, int sectorType) const;
       TrkCrvPlaneCov errorModel(ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>> const& cov) const;   // k^2 C + a^2 I
       void probe(TrkCrvXing& x, double speed) const;
+      // a straight-line fit's crossing of a sector's extended plane, if out of bounds; false if in bounds or parallel
+      bool projectXing(KalSeed const& ks, int shield, double sigT, TrkCrvXing& x) const;
       static bool sameCluster(art::Ptr<CrvCoincidenceCluster> const& a, art::Ptr<CrvCoincidenceCluster> const& b);
 
       std::vector<SurfaceId> refSurfaces_;

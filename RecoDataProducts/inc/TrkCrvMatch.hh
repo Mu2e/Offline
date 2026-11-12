@@ -39,10 +39,11 @@ namespace mu2e {
     float   uTdiv_ = NAN;        // position along the bar from the two-end time difference [mm], NaN if one-ended
   };
 
-  // one CRV sector crossing of the track's extrapolation (a CRV KalIntersection)
+  // one CRV sector crossing of the track's extrapolation (a CRV KalIntersection); for a straight-line fit with no CRV
+  // KalIntersection, the line's out-of-bounds crossing of the extended plane of a sector holding a candidate
   struct TrkCrvXing {
     SurfaceId sid_;              // CRV sector surface (CRV_EX ... CRV_M8)
-    int16_t   inter_ = -1;       // index into KalSeed::intersections()
+    int16_t   inter_ = -1;       // index into KalSeed::intersections(): the crossing, or the intersection a projection starts from
     int16_t   sector_ = -1;      // CRSScintillatorShield index
     XYZVectorF pos_;             // crossing position on the sector mid-plane, detector frame [mm]
     XYZVectorF dir_;             // unit direction of the track at the crossing
