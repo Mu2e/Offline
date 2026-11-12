@@ -104,7 +104,9 @@ namespace mu2e {
       double e=0,p=0;
       if(mass > std::numeric_limits<double>::epsilon() ) {
         e = ke + mass;
-        p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
+        printf("getEndMomentum: ke, mass: %10.4f %10.4f \n",ke,mass);
+        // improve numerical stability : e^2-m^2 = (e+m)(e-m) = (e+m)*ke
+        p = sqrtOrThrow<double>((e+mass)*ke,std::numeric_limits<double>::epsilon());
       } else {
         e = ke;
         p = ke;
