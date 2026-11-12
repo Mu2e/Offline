@@ -689,45 +689,44 @@ namespace mu2e {
 
 
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
-    const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);
 
     nestBox("ExtMonShieldingNorthsteel",
-            emfb->shieldingNHalfSize(),
+            emfb->shieldingNSteelHalfSize(),
             materialFinder.get("extMonFNAL.shielding.steelMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingNSteelCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Red()
             );
     nestBox("ExtMonShieldingNorthconcrete",
-            emfb->shieldingNHalfSize(),
+            emfb->shieldingNConcreteHalfSize(),
             materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            emfb->shieldingNConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );
     nestBox("ExtMonShieldingSouthsteel",
-            emfb->shieldingSHalfSize(),
+            emfb->shieldingSSteelHalfSize(),
             materialFinder.get("extMonFNAL.shielding.steelMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingSSteelCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Red()
             );
     nestBox("ExtMonShieldingSouthconcrete",
-            emfb->shieldingSHalfSize(),
+            emfb->shieldingSConcreteHalfSize(),
             materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            emfb->shieldingSConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );
     nestBox("ExtMonShieldingFloorConcrete",
-            emfb->shieldingBHalfSize(),
+            emfb->shieldingFloorConcreteHalfSize(),
             materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingBCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingFloorConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );

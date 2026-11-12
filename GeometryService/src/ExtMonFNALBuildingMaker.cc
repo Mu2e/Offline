@@ -80,7 +80,11 @@ namespace mu2e {
     const double steelLength = c.getDouble("extMonFNAL.shielding.steelLength");
     const double steelwidthN = c.getDouble("extMonFNAL.shielding.steelWidthN");
     const double steelwidthS = c.getDouble("extMonFNAL.shielding.steelWidthS");
-    const double layerHeight = c.getDouble("extMonFNAL.shielding.steelLayerHeight");
+    const double steelLayerHeight = c.getDouble("extMonFNAL.shielding.steelLayerHeight");
+    const double concreteLength = c.getDouble("extMonFNAL.shielding.concreteLength");
+    const double concretewidthN = c.getDouble("extMonFNAL.shielding.concreteWidthN");
+    const double concretewidthS = c.getDouble("extMonFNAL.shielding.concreteWidthS");
+    const double concreteLayerHeight = c.getDouble("extMonFNAL.shielding.concreteLayerHeight");
 
     // The ideal half sizes and centers below describe blocks that touch the room walls
     // and each other.  Box local X is across the room, Y is up, Z is along the room.
@@ -89,40 +93,64 @@ namespace mu2e {
     const double safety_gap=0.1; // 100 microns
 
     // North steel, in the corner of the front and north walls
-    const double shieldingNHalfSizeX = steelwidthN/2.0;
-    const double shieldingNHalfSizeY = layerHeight/2.0;
-    const double shieldingNHalfSizeZ = steelLength/2.0;
-    emfb->shieldingNHalfSize_.resize(3);
-    emfb->shieldingNHalfSize_[0] = shieldingNHalfSizeX - safety_gap;
-    emfb->shieldingNHalfSize_[1] = shieldingNHalfSizeY;
-    emfb->shieldingNHalfSize_[2] = shieldingNHalfSizeZ - safety_gap;
-    emfb->shieldingNCenterInMu2e_[0] = xfront + dxdL*shieldingNHalfSizeZ + dzdL*shieldingNHalfSizeX;
-    emfb->shieldingNCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingNHalfSizeY;
-    emfb->shieldingNCenterInMu2e_[2] = zfront + dzdL*shieldingNHalfSizeZ - dxdL*shieldingNHalfSizeX;
+    const double shieldingNSteelHalfSizeX = steelwidthN/2.0;
+    const double shieldingNSteelHalfSizeY = steelLayerHeight/2.0;
+    const double shieldingNSteelHalfSizeZ = steelLength/2.0;
+    emfb->shieldingNSteelHalfSize_.resize(3);
+    emfb->shieldingNSteelHalfSize_[0] = shieldingNSteelHalfSizeX - safety_gap;
+    emfb->shieldingNSteelHalfSize_[1] = shieldingNSteelHalfSizeY;
+    emfb->shieldingNSteelHalfSize_[2] = shieldingNSteelHalfSizeZ - safety_gap;
+    emfb->shieldingNSteelCenterInMu2e_[0] = xfront + dxdL*shieldingNSteelHalfSizeZ + dzdL*shieldingNSteelHalfSizeX;
+    emfb->shieldingNSteelCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingNSteelHalfSizeY;
+    emfb->shieldingNSteelCenterInMu2e_[2] = zfront + dzdL*shieldingNSteelHalfSizeZ - dxdL*shieldingNSteelHalfSizeX;
 
     // South steel, in the corner of the front and south walls
-    const double shieldingSHalfSizeX = steelwidthS/2.0;
-    const double shieldingSHalfSizeY = layerHeight/2.0;
-    const double shieldingSHalfSizeZ = steelLength/2.0;
-    emfb->shieldingSHalfSize_.resize(3);
-    emfb->shieldingSHalfSize_[0] = shieldingSHalfSizeX - safety_gap;
-    emfb->shieldingSHalfSize_[1] = shieldingSHalfSizeY;
-    emfb->shieldingSHalfSize_[2] = shieldingSHalfSizeZ - safety_gap;
-    emfb->shieldingSCenterInMu2e_[0] = xScorner + dxdL*shieldingSHalfSizeZ - dzdL*shieldingSHalfSizeX;
-    emfb->shieldingSCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingSHalfSizeY;
-    emfb->shieldingSCenterInMu2e_[2] = zScorner + dzdL*shieldingSHalfSizeZ + dxdL*shieldingSHalfSizeX;
+    const double shieldingSSteelHalfSizeX = steelwidthS/2.0;
+    const double shieldingSSteelHalfSizeY = steelLayerHeight/2.0;
+    const double shieldingSSteelHalfSizeZ = steelLength/2.0;
+    emfb->shieldingSSteelHalfSize_.resize(3);
+    emfb->shieldingSSteelHalfSize_[0] = shieldingSSteelHalfSizeX - safety_gap;
+    emfb->shieldingSSteelHalfSize_[1] = shieldingSSteelHalfSizeY;
+    emfb->shieldingSSteelHalfSize_[2] = shieldingSSteelHalfSizeZ - safety_gap;
+    emfb->shieldingSSteelCenterInMu2e_[0] = xScorner + dxdL*shieldingSSteelHalfSizeZ - dzdL*shieldingSSteelHalfSizeX;
+    emfb->shieldingSSteelCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingSSteelHalfSizeY;
+    emfb->shieldingSSteelCenterInMu2e_[2] = zScorner + dzdL*shieldingSSteelHalfSizeZ + dxdL*shieldingSSteelHalfSizeX;
 
-    // Floor concrete, across the whole room from the end of the steel to the magnet room end
-    const double shieldingBHalfSizeX = roomWidth/2.0;
-    const double shieldingBHalfSizeY = layerHeight/2.0;
-    const double shieldingBHalfSizeZ = (magnetRoomLength-steelLength)/2.0;
-    emfb->shieldingBHalfSize_.resize(3);
-    emfb->shieldingBHalfSize_[0] = shieldingBHalfSizeX - safety_gap;
-    emfb->shieldingBHalfSize_[1] = shieldingBHalfSizeY;
-    emfb->shieldingBHalfSize_[2] = shieldingBHalfSizeZ - safety_gap;
-    emfb->shieldingBCenterInMu2e_[0] = xfront + dxdL*(steelLength + shieldingBHalfSizeZ) + dzdL*shieldingBHalfSizeX;
-    emfb->shieldingBCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingBHalfSizeY;
-    emfb->shieldingBCenterInMu2e_[2] = zfront + dzdL*(steelLength + shieldingBHalfSizeZ) - dxdL*shieldingBHalfSizeX;
+    // North concrete, on top of the North steel, in the corner of the front and north walls
+    const double shieldingNConcreteHalfSizeX = concretewidthN/2.0;
+    const double shieldingNConcreteHalfSizeY = concreteLayerHeight/2.0;
+    const double shieldingNConcreteHalfSizeZ = concreteLength/2.0;
+    emfb->shieldingNConcreteHalfSize_.resize(3);
+    emfb->shieldingNConcreteHalfSize_[0] = shieldingNConcreteHalfSizeX - safety_gap;
+    emfb->shieldingNConcreteHalfSize_[1] = shieldingNConcreteHalfSizeY;
+    emfb->shieldingNConcreteHalfSize_[2] = shieldingNConcreteHalfSizeZ - safety_gap;
+    emfb->shieldingNConcreteCenterInMu2e_[0] = xfront + dxdL*shieldingNConcreteHalfSizeZ + dzdL*shieldingNConcreteHalfSizeX;
+    emfb->shieldingNConcreteCenterInMu2e_[1] = emfb->roomInsideYmin_ + 2*shieldingNSteelHalfSizeY + shieldingNConcreteHalfSizeY;
+    emfb->shieldingNConcreteCenterInMu2e_[2] = zfront + dzdL*shieldingNConcreteHalfSizeZ - dxdL*shieldingNConcreteHalfSizeX;
+
+    // South concrete, on top of the South steel, in the corner of the front and south walls
+    const double shieldingSConcreteHalfSizeX = concretewidthS/2.0;
+    const double shieldingSConcreteHalfSizeY = concreteLayerHeight/2.0;
+    const double shieldingSConcreteHalfSizeZ = concreteLength/2.0;
+    emfb->shieldingSConcreteHalfSize_.resize(3);
+    emfb->shieldingSConcreteHalfSize_[0] = shieldingSConcreteHalfSizeX - safety_gap;
+    emfb->shieldingSConcreteHalfSize_[1] = shieldingSConcreteHalfSizeY;
+    emfb->shieldingSConcreteHalfSize_[2] = shieldingSConcreteHalfSizeZ - safety_gap;
+    emfb->shieldingSConcreteCenterInMu2e_[0] = xScorner + dxdL*shieldingSConcreteHalfSizeZ - dzdL*shieldingSConcreteHalfSizeX;
+    emfb->shieldingSConcreteCenterInMu2e_[1] = emfb->roomInsideYmin_ + 2*shieldingSSteelHalfSizeY + shieldingSConcreteHalfSizeY;
+    emfb->shieldingSConcreteCenterInMu2e_[2] = zScorner + dzdL*shieldingSConcreteHalfSizeZ + dxdL*shieldingSConcreteHalfSizeX;
+
+    // Floor concrete, on the floor across the whole room, from the end of the steel to the magnet room end
+    const double shieldingFloorConcreteHalfSizeX = roomWidth/2.0;
+    const double shieldingFloorConcreteHalfSizeY = concreteLayerHeight/2.0;
+    const double shieldingFloorConcreteHalfSizeZ = (magnetRoomLength-steelLength)/2.0;
+    emfb->shieldingFloorConcreteHalfSize_.resize(3);
+    emfb->shieldingFloorConcreteHalfSize_[0] = shieldingFloorConcreteHalfSizeX - safety_gap;
+    emfb->shieldingFloorConcreteHalfSize_[1] = shieldingFloorConcreteHalfSizeY;
+    emfb->shieldingFloorConcreteHalfSize_[2] = shieldingFloorConcreteHalfSizeZ - safety_gap;
+    emfb->shieldingFloorConcreteCenterInMu2e_[0] = xfront + dxdL*(steelLength + shieldingFloorConcreteHalfSizeZ) + dzdL*shieldingFloorConcreteHalfSizeX;
+    emfb->shieldingFloorConcreteCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingFloorConcreteHalfSizeY;
+    emfb->shieldingFloorConcreteCenterInMu2e_[2] = zfront + dzdL*(steelLength + shieldingFloorConcreteHalfSizeZ) - dxdL*shieldingFloorConcreteHalfSizeX;
 
     CLHEP::HepRotation nonrotation(CLHEP::HepRotation::IDENTITY);
     emfb->shieldingRotationInMu2e_ = nonrotation.rotateY(asin(dxdL) * CLHEP::radian);

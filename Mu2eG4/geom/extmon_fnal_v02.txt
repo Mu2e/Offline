@@ -21,6 +21,10 @@ double extMonFNAL.shielding.steelWidthN = 1168.4;
 double extMonFNAL.shielding.steelWidthS = 2082.8;
 double extMonFNAL.shielding.steelLayerHeight = 304.8;
 string extMonFNAL.shielding.steelMaterial = "G4_Fe";
+double extMonFNAL.shielding.concreteLength = 914.4;
+double extMonFNAL.shielding.concreteWidthN = 1168.4;
+double extMonFNAL.shielding.concreteWidthS = 2082.8;
+double extMonFNAL.shielding.concreteLayerHeight = 304.8;
 string extMonFNAL.shielding.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
 
 //----------------------------------------------------------------
