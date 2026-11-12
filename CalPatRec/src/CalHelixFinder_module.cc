@@ -63,6 +63,11 @@ namespace mu2e {
     _doSingleOutput(config().doSingleOutput()),
     _maxEDepAvg(config().maxEDepAvg()),
     _hfinder(config().hfinder()){
+      // the direction sets the sign of the time of flight used for the HelixSeed t0
+      if (_fdir.dzdt() == 0.) {
+        throw cet::exception("CONFIG") << "CalHelixFinder: fitdirection must be \"downstream\" or \"upstream\", got \""
+                                       << config().fitdirection() << "\"" << std::endl;
+      }
       consumes<ComboHitCollection>(_shLabel);
       consumes<TimeClusterCollection>(_timeclLabel);
 
@@ -396,7 +401,10 @@ namespace mu2e {
     double   beta          = _tpart.beta(mom);
 
     double hel_t0;
-    double pitchAngle = M_PI/2. - std::atan(tandip);
+    // path length per unit z is 1/|sin(lambda)|, lambda = dip angle. tandip is positive here whatever
+    // the direction, so the sign comes from the configured fit direction: a downstream track reaches
+    // the calorimeter after z0 (t0 before the cluster), an upstream one passes it before z0 (t0 after)
+    const double sinDip = _fdir.dzdt()*std::abs(std::sin(std::atan(tandip)));
 
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
 
@@ -420,7 +428,7 @@ namespace mu2e {
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
       tpos   = _hfinder._calorimeter->mu2eToTracker(gpos);
 
-      hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
+      hel_t0 = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sinDip/(beta*CLHEP::c_light);
 
     }
     else {
@@ -437,7 +445,7 @@ namespace mu2e {
         for(size_t i = 0; i<nHits; i++) {
 
           const ComboHit& comboHit = HelSeed.hits()[i];
-          double tCorrected = comboHit.correctedTime() - (comboHit.pos().z()-z0)/std::sin(pitchAngle)/(beta*CLHEP::c_light);
+          double tCorrected = comboHit.correctedTime() - (comboHit.pos().z()-z0)/sinDip/(beta*CLHEP::c_light);
           tSum += tCorrected;
 
         }
