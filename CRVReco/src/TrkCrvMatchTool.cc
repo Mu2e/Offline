@@ -41,11 +41,36 @@ namespace mu2e {
     return tab[std::min(i, tab.size() - 1)];
   }
 
+  void TrkCrvMatchTool::checkResolutions() const {
+    std::map<int, std::vector<std::string>> types;   // sector type -> sector names
+    for(auto const& s : crs_->getCRSScintillatorShields()) types[s.getSectorType()].push_back(s.getName());
+    if(types.empty()) return;
+    int minType = types.begin()->first, maxType = types.rbegin()->first;
+    std::pair<char const*, std::vector<double> const*> const tabs[] = {{"SigmaV", &sigmaV_}, {"SigmaU", &sigmaU_}, {"SigmaT", &sigmaT_}};
+    for(auto const& [name, tab] : tabs) {
+      if(tab->size() == 1 || (minType >= 1 && tab->size() == static_cast<size_t>(maxType))) continue;
+      cet::exception ex("CONFIG");
+      ex << "TrkCrvMatchTool: " << name << " has " << tab->size() << " entries [";
+      for(size_t i = 0; i < tab->size(); ++i) ex << (i ? ", " : "") << (*tab)[i];
+      ex << "], but the loaded CRV geometry has sector types";
+      for(auto const& [type, names] : types) {
+        ex << " " << type << " (";
+        for(size_t i = 0; i < names.size(); ++i) ex << (i ? " " : "") << names[i];
+        ex << ")";
+      }
+      ex << ". With DoGeometric true, each of SigmaV, SigmaU and SigmaT needs one entry per sector type 1-" << maxType
+         << ", type 1 first, or a single entry for all types. The TrkCrvMatcher defaults in CRVReco/fcl/prolog_v12.fcl"
+         << " describe the extracted geometry only.\n";
+      throw ex;
+    }
+  }
+
   void TrkCrvMatchTool::beginRun() {
     GeomHandle<CosmicRayShield> crs;
     GeomHandle<DetectorSystem> det;
     crs_ = crs.get();
     det_ = det.get();
+    if(doGeometric_) checkResolutions();   // the Sigma* lists enter only the geometric chi2
     sectors_ = trkCrvSectors();
     sidToShield_.clear();
     for(size_t i = 0; i < sectors_.size(); ++i)
