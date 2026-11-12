@@ -23,7 +23,7 @@ namespace mu2eCrv
     bool   _inactive;
     bool   _discharged;
     double _t;          //time of last discharge (if _discharged is true), or 0 (if _discharged is false)
-    long   _counter;    //see explanation below. old counter values count as dischared
+    long   _counter;    //see explanation below. old counter values count as fully recharged
     Pixel() : _inactive(false), _discharged(false), _t(0), _counter(0) {}
   };
 

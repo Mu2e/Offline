@@ -424,7 +424,7 @@ void MakeCrvPhotons::ProcessPhotons(const LookupBin *theBin, int nPhotons, doubl
   if(probability>=1.0) nPhotonsArrived=nPhotons;
   else if(probability>0.0)
   {
-    //CLHEP::RandBinomial returns 0 for n*p<~0.01 and returns values that are too low up to n*p~0.03.
+    //CLHEP::RandBinomial returns values that are too low (or even zero) for small value of n*p.
     //So it should be used only for large n*p, where it returns the correct results and is faster than the inversion.
     if(nPhotons*probability>15.0) nPhotonsArrived=static_cast<int>(_randBinomial.fire(nPhotons,probability));
     else //inverse transform sampling. takes more time for large n*p

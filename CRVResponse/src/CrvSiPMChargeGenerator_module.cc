@@ -203,7 +203,7 @@ namespace mu2e
     {
       size_t channel = p->GetScintillatorBarIndex().asUint()*CRVId::nChanPerBar + p->GetSiPMNumber();
       if(photonsOfChannel.at(channel)==crvPhotonsCollection->end()) photonsOfChannel[channel]=p;  //there haven't been photons for this channel yet (as it should be)
-      else mf::LogError("CrvSiPMChargeGenerator") << "Found more than one entry in the CrvPhotonsCollection for channel " << channel << ".";
+      else throw cet::exception("CrvSiPMChargeGenerator") << "Found more than one entry in the CrvPhotonsCollection for channel " << channel << ".";
     }
 
     std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;

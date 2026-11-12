@@ -5,6 +5,8 @@ Based on Paul Rubinov's C# code
 
 #include "Offline/CRVResponse/inc/MakeCrvSiPMCharges.hh"
 
+#include "cetlib_except/exception.h"
+
 #include <cmath>
 #include <iostream>
 #include <algorithm>
@@ -153,7 +155,8 @@ void MakeCrvSiPMCharges::FillQueue(const std::vector<std::pair<double,size_t> > 
   for(size_t i=0; i<photons.size(); i++)
   {
     std::pair<int,int> pixelId = FindFiberPhotonsPixelId();  //only pixels at fiber
-    if(pixelId.first<0 || pixelId.second<0 || pixelId.first>=_nPixelsX || pixelId.second>=_nPixelsY) throw std::logic_error("Used pixel outside of SiPM.");
+    if(pixelId.first<0 || pixelId.second<0 || pixelId.first>=_nPixelsX || pixelId.second>=_nPixelsY)
+      throw cet::exception("MakeCrvSiPMCharges") << "Used pixel outside of SiPM.";
     _scheduledCharges.emplace_back(pixelId, photons[i].first, photons[i].second, false);
   }
 

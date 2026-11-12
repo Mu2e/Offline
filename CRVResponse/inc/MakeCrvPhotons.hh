@@ -113,7 +113,6 @@ class MakeCrvPhotons
                                       double visibleEnergyDeposited,
                                       double trueStepLength,
                                       int reflector=0);
-    void                      ProcessPhotons(const LookupBin *theBin, int nPhotons, double photonStartTime, int SiPM, int reflector);
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
@@ -138,6 +137,7 @@ class MakeCrvPhotons
     CLHEP::RandPoissonQ       &_randPoissonQ;
     CLHEP::RandBinomial       &_randBinomial;
 
+    void   ProcessPhotons(const LookupBin *theBin, int nPhotons, double photonStartTime, int SiPM, int reflector);
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     bool   IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi);
     double GetRandomTime(const LookupBin *theBin);
