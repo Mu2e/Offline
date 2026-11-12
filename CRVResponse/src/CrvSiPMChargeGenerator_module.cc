@@ -30,6 +30,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include "CLHEP/Random/Randomize.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <string>
 #include <bitset>
@@ -194,6 +195,17 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+
+    //put all photon collections into a vector with indices corresponding to the channel number
+    //so that the photon collections can be found easily later in the code
+    std::vector<CrvPhotonsCollection::const_iterator> photonsOfChannel(counters.size()*CRVId::nChanPerBar, crvPhotonsCollection->end());
+    for(CrvPhotonsCollection::const_iterator p=crvPhotonsCollection->begin(); p!=crvPhotonsCollection->end(); ++p)
+    {
+      size_t channel = p->GetScintillatorBarIndex().asUint()*CRVId::nChanPerBar + p->GetSiPMNumber();
+      if(photonsOfChannel.at(channel)==crvPhotonsCollection->end()) photonsOfChannel[channel]=p;  //there haven't been photons for this channel yet (as it should be)
+      else mf::LogError("CrvSiPMChargeGenerator") << "Found more than one entry in the CrvPhotonsCollection for channel " << channel << ".";
+    }
+
     std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
@@ -206,29 +218,25 @@ namespace mu2e
                                                                //0 ... negative side
                                                                //1 ... positive side
 
+        size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
         if(_useSipmStatusDB)
         {
-          size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
           std::bitset<16> status(sipmStatus.status(channel));
           if(status.test(CRVStatus::Flags::notConnected) || status.test(CRVStatus::Flags::noData)) continue; //SiPM not connected (bit 0) or no data (bit 2)
         }
 
         //time wrapping happened in the photon generator
         std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
-        CrvPhotonsCollection::const_iterator crvPhotons;   //after this loop, it will point to the correct index in the photon collection, if barIndex and SiPM is found
-                                                           //otherwise it will be crvPhotonsCollection->end()
-        for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
+        CrvPhotonsCollection::const_iterator crvPhotons=photonsOfChannel.at(channel);  //will be crvPhotonsCollection->end(), if there were no photons at this channel
+        if(crvPhotons!=crvPhotonsCollection->end())
         {
-          if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==(int)SiPM)
+          const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
+          photonTimesNew.reserve(photonTimes.size());
+          for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
           {
-            const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
-            for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
-            {
-              //No check whether photons are within startTime and endTime
-              double time = photonTimes[iphoton]._time;
-              photonTimesNew.emplace_back(time,iphoton);
-            }
-            break;
+            //No check whether photons are within startTime and endTime
+            double time = photonTimes[iphoton]._time;
+            photonTimesNew.emplace_back(time,iphoton);
           }
         }
 

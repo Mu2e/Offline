@@ -118,12 +118,12 @@ unsigned int LookupBinDefinitions::getNFiberCerenkovBins()
 
 unsigned int LookupBinDefinitions::findBin(const std::vector<double> &v, const double &x, bool &notFound)
 {
-  for(size_t i=1; i<v.size(); i++)
+  if(v.size()<2 || !(v.front()<=x && x<=v.back()))
   {
-    if(v[i-1]<=x && v[i]>=x) return(i-1);
+    notFound=true;
+    return(-1);
   }
-  notFound=true;
-  return(-1);
+  return(std::lower_bound(v.begin()+1,v.end(),x)-v.begin()-1);
 }
 int LookupBinDefinitions::findScintillatorScintillationBin(double x, double y, double z)
 {
@@ -347,10 +347,14 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
     int nPhotonsCerenkovInScintillatorPerStep = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInScintillator,nSteps);
     int nPhotonsCerenkovInFiberPerStep        = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInFiber,nSteps);
 
+    //first find all bin numbers, so that repeated bin numbers can be merged
+    std::vector<int> binNumbers0, binNumbers1, binNumbers2;
+    binNumbers0.reserve(nSteps);
+    binNumbers1.reserve(nSteps);
+    binNumbers2.reserve(nSteps);
     for(int step=0; step<nSteps; step++)
     {
       double stepFraction = (step+0.5)/nSteps;
-      double t = timeStart + (timeEnd-timeStart)*stepFraction;
       CLHEP::Hep3Vector p = stepStart[SiPM] + distanceVector*stepFraction;  //local start position of photons
 
       bool isInScintillator = IsInsideScintillator(p);
@@ -359,67 +363,103 @@ void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they
                      //0...+pi due to symmetry
       bool isInFiber = IsInsideFiber(p,distanceVector, r,phi);
 
-      const LookupBin *scintillationBin=NULL;
-      const LookupBin *cerenkovBin=NULL;
-      int nPhotonsScintillation=0;
-      int nPhotonsCerenkov=0;
+      int binNumber0=-1;
+      int binNumber1=-1;
+      int binNumber2=-1;
       if(isInScintillator)
       {
-        int binNumberS=_LBD.findScintillatorScintillationBin(fabs(p.x()),p.y(),p.z());  //use only positive x values due to symmetry in x
-        if(binNumberS>=0)
-        {
-          scintillationBin = &_bins[0][binNumberS];   //lookup table number for scintillation in scintillator is 0
-          nPhotonsScintillation = nPhotonsScintillationPerStep;
-        }
-        int binNumberC=_LBD.findScintillatorCerenkovBin(fabs(p.x()),p.y(),p.z(),beta);  //use only positive x values due to symmetry in x
-        if(binNumberC>=0)
-        {
-          cerenkovBin = &_bins[1][binNumberC];   //lookup table number for cerenkov in scintillator is 1
-          nPhotonsCerenkov = nPhotonsCerenkovInScintillatorPerStep;
-        }
+        binNumber0=_LBD.findScintillatorScintillationBin(fabs(p.x()),p.y(),p.z());  //use only positive x values due to symmetry in x
+        binNumber1=_LBD.findScintillatorCerenkovBin(fabs(p.x()),p.y(),p.z(),beta);  //use only positive x values due to symmetry in x
       }
       else if(isInFiber)
       {
-        int binNumber=_LBD.findFiberCerenkovBin(beta,theta,phi,r,p.z());
-        if(binNumber>=0)
-        {
-          cerenkovBin = &_bins[2][binNumber];   //lookup table number for cerenkov in fiber is 2
-          nPhotonsCerenkov = nPhotonsCerenkovInFiberPerStep;
-        }
+        binNumber2=_LBD.findFiberCerenkovBin(beta,theta,phi,r,p.z());
+      }
+      binNumbers0.push_back(binNumber0);
+      binNumbers1.push_back(binNumber1);
+      binNumbers2.push_back(binNumber2);
+    }
+
+    for(int step=0; step<nSteps; step++)
+    {
+      int binNumber0=binNumbers0.at(step);
+      int binNumber1=binNumbers1.at(step);
+      int binNumber2=binNumbers2.at(step);
+
+      //find out how many subsequent steps use the same bin numbers
+      int repeatedBins=1; //merge steps if they use the same bin.
+      for(int i=step+1; i<nSteps; ++i)
+      {
+        if(binNumbers0.at(i)==binNumber0 && binNumbers1.at(i)==binNumber1 && binNumbers2.at(i)==binNumber2) ++repeatedBins;
+        else break;
       }
 
-      //loop over all photons created at this point
-      int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
-      for(int i=0; i<nPhotons; i++)
-      {
-        //get the right bin
-        const LookupBin *theBin=cerenkovBin;
-        if(i<nPhotonsScintillation) theBin=scintillationBin;
-        if(theBin==NULL) continue;  //this can't actually happen
+      double stepFraction = (step+0.5*(repeatedBins-1)+0.5)/nSteps;  //center of the sequence of multiple steps
+      double photonStartTime = timeStart + (timeEnd-timeStart)*stepFraction;
+      step+=repeatedBins-1;  //skip forward
 
-        //photon arrival probability at SiPM
-        double probability = theBin->arrivalProbability;
-        probability*=_photonYieldDeviation[SiPM];   //channel-specific deviation from nominal, e.g. due to scintillator variations or SiPM misalignments
-        if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM --> calculate arrival time
-        {
-          //start time of photons
-          double arrivalTime = t;
-
-          //add fiber decay times depending on the number of emissions
-          int nEmissions = GetRandomFiberEmissions(theBin);
-          for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
-
-          //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin);
-
-          if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
-          else _arrivalTimes[SiPM+1].push_back(arrivalTime);
-
-        }// if a photon was created
-      }//loop over all photons at this point
+      //lookup table numbers
+      //- for scintillation in scintillator is 0
+      //- for cerenkov in scintillator is 1
+      //- for cerenkov in fiber is 2
+      if(binNumber0>=0) ProcessPhotons(&_bins[0][binNumber0], nPhotonsScintillationPerStep*repeatedBins, photonStartTime, SiPM, reflector);
+      if(binNumber1>=0) ProcessPhotons(&_bins[1][binNumber1], nPhotonsCerenkovInScintillatorPerStep*repeatedBins, photonStartTime, SiPM, reflector);
+      if(binNumber2>=0) ProcessPhotons(&_bins[2][binNumber2], nPhotonsCerenkovInFiberPerStep*repeatedBins, photonStartTime, SiPM, reflector);
     }//loop over all steps along the track
   }//loop over all SiPMs
 
+}
+
+void MakeCrvPhotons::ProcessPhotons(const LookupBin *theBin, int nPhotons, double photonStartTime, int SiPM, int reflector)
+{
+  if(theBin==NULL || nPhotons<=0) return;
+
+  //photon arrival probability at SiPM
+  double probability = theBin->arrivalProbability;
+  probability*=_photonYieldDeviation[SiPM];   //channel-specific deviation from nominal, e.g. due to scintillator variations or SiPM misalignments
+
+  //number of photons arriving at the SiPM - calculated from a binomial distribution
+  int nPhotonsArrived=0;
+  //special CLHEP::RandBinomial cases: probability equal to 0 or 1 results in -1. (also when nPhotons equal to 0, but this case is checked above.)
+  if(probability>=1.0) nPhotonsArrived=nPhotons;
+  else if(probability>0.0)
+  {
+    //CLHEP::RandBinomial returns 0 for n*p<~0.01 and returns values that are too low up to n*p~0.03.
+    //So it should be used only for large n*p, where it returns the correct results and is faster than the inversion.
+    if(nPhotons*probability>15.0) nPhotonsArrived=static_cast<int>(_randBinomial.fire(nPhotons,probability));
+    else //inverse transform sampling. takes more time for large n*p
+    {
+      double logq = std::log1p(-probability);
+      double pk   = std::exp(nPhotons*logq);   //P(0)=q^n  //the n*p>15.0 cut prevents this from ever being zero (which could happen for very negative arguments)
+      double cdf  = pk;                                    //if pk was 0, the while loop wouldn't be entered
+      double r    = probability/(1.0-probability);         //(to prevent it from getting stuck, because pk would remain at 0 in the loop).
+      double u    = _randFlat.fire();
+      while(u>cdf && nPhotonsArrived<nPhotons && pk>0.0)
+      {
+        pk  *= r*(nPhotons-nPhotonsArrived)/(nPhotonsArrived+1.0);   //P(k+1)=P(k)*(n-k)/(k+1)*p/q
+        cdf += pk;
+        ++nPhotonsArrived;
+      }
+    }
+  }
+
+  //calculate arrival time for each photon
+  for(long iPhoton=0; iPhoton<nPhotonsArrived; ++iPhoton)
+  {
+    //start time of photons
+    double arrivalTime = photonStartTime;
+
+    //add fiber decay times depending on the number of emissions
+    int nEmissions = GetRandomFiberEmissions(theBin);
+    for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
+
+    //add additional time delay due to the photons bouncing around
+    arrivalTime+=GetRandomTime(theBin);
+
+    if(reflector!=-1 && reflector!=-2) _arrivalTimes[SiPM].push_back(arrivalTime);
+    else _arrivalTimes[SiPM+1].push_back(arrivalTime);
+
+  }//photons arriving at the SiPM
 }
 
 bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)

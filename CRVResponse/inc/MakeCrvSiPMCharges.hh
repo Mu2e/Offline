@@ -7,8 +7,7 @@ Based on Paul Rubinov's C# code
 #define MakeCrvSiPMCharges_hh
 
 #include <memory>
-#include <set>
-#include <map>
+#include <algorithm>
 #include <vector>
 #include <utility>
 #include "CLHEP/Random/Randomize.h"
@@ -21,9 +20,11 @@ namespace mu2eCrv
 
   struct Pixel
   {
+    bool   _inactive;
     bool   _discharged;
     double _t;          //time of last discharge (if _discharged is true), or 0 (if _discharged is false)
-    Pixel() : _discharged(false), _t(0) {}
+    long   _counter;    //see explanation below. old counter values count as dischared
+    Pixel() : _inactive(false), _discharged(false), _t(0), _counter(0) {}
   };
 
   struct SiPMresponse
@@ -45,10 +46,6 @@ namespace mu2eCrv
     bool                _darkNoise;   //this charge is dark noise and was not created by an "outside photon"
     ScheduledCharge(const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise) :
                   _pixelId(pixelId), _time(time), _photonIndex(photonIndex), _darkNoise(darkNoise) {}
-    bool operator<(const ScheduledCharge &r) const
-    {
-      return _time < r._time;
-    };
     private:
     ScheduledCharge();
   };
@@ -76,15 +73,16 @@ namespace mu2eCrv
 
     private:
     ProbabilitiesStruct                _probabilities;
-    std::vector<std::pair<int,int> >   _inactivePixels;
 
-    std::map<std::pair<int,int>,Pixel> _pixels;
-    std::multiset<ScheduledCharge>     _scheduledCharges;
+    long                               _counter{0}; //the value of this counter gets increased for every call to Simulate() and pixel discharges get this number attached.
+                                                    //when encountering a pixel with an old counter value, it indicates that it is from a previous Simulate()
+                                                    //and can be considered fully charged. this removes the need to reset all pixels after every event.
+    std::vector<Pixel>                 _pixels;     //the pixel index corresponds to x*_nPixelsY+y
+    std::vector<ScheduledCharge>       _scheduledCharges;
+    size_t                             _currentChargeIndex{0};
 
-    std::vector<std::pair<int,int> > FindCrossTalkPixelIds(const std::pair<int,int> &pixelId);
     std::pair<int,int>               FindThermalNoisePixelId();
     std::pair<int,int>               FindFiberPhotonsPixelId();
-    bool                             IsInactivePixelId(const std::pair<int,int> &pixelId);
 
     double GetAvalancheProbability(double v);
     double GenerateAvalanche(Pixel &pixel, const std::pair<int,int> &pixelId, double time, size_t photonIndex, bool darkNoise);
@@ -94,6 +92,7 @@ namespace mu2eCrv
     CLHEP::RandFlat     &_randFlat;
     CLHEP::RandPoissonQ &_randPoissonQ;
     double               _avalancheProbFullyChargedPixel;
+    double               _crossTalkProbabilitySinglePixel;
 
     TFile *_photonMapFile;
     TH2F  *_photonMap;

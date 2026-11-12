@@ -94,10 +94,10 @@ class MakeCrvPhotons
   public:
     static const int _nSiPMs=4;
 
-    MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ) :
-                                                      _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ)
+    MakeCrvPhotons(CLHEP::RandFlat &randFlat, CLHEP::RandGaussQ &randGaussQ, CLHEP::RandPoissonQ &randPoissonQ, CLHEP::RandBinomial &randBinomial) :
+                                          _randFlat(randFlat), _randGaussQ(randGaussQ), _randPoissonQ(randPoissonQ), _randBinomial(randBinomial)
     {
-      _scintillationYield=39400;
+      _scintillationYield=0;
       for(int i=0; i<_nSiPMs; ++i) _photonYieldDeviation[i]=1.0;
     }
 
@@ -113,6 +113,7 @@ class MakeCrvPhotons
                                       double visibleEnergyDeposited,
                                       double trueStepLength,
                                       int reflector=0);
+    void                      ProcessPhotons(const LookupBin *theBin, int nPhotons, double photonStartTime, int SiPM, int reflector);
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
@@ -135,6 +136,7 @@ class MakeCrvPhotons
     CLHEP::RandFlat           &_randFlat;
     CLHEP::RandGaussQ         &_randGaussQ;
     CLHEP::RandPoissonQ       &_randPoissonQ;
+    CLHEP::RandBinomial       &_randBinomial;
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     bool   IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi);
