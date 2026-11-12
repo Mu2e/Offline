@@ -535,4 +535,85 @@ EventGenerator : { @table::EventGenerator
     }
 }
 
+#------------------------------------------------------------------------------
+# Kinetic energy spectra of charged particles from muon capture on Al, in absolute units (per
+# capture per MeV), for spectrumShape : muCapCharged (Mu2eUtilities/inc/MuCapChargedSpectrum.hh).
+# Use with spectrumVariable : kineticEnergy.
+#   TWIST* : TWIST unfolded spectra, PRC 101, 035502 (2020), appendix. Below the TWIST thresholds
+#            (80 MeV/c p, 130 MeV/c d) the MECO/GMC onset, matched at threshold.
+#            Integrals: p 0.042, d 0.016 per capture (TWIST extrapolated: 0.045(3), 0.018(2)).
+#   Krane* : TWIST plus a hard component with slope 7.5 MeV turning on at 40 MeV, bringing the p+d
+#            yield above 40 MeV to Krane et al., PRC 20, 1873 (1979): 1.38e-3. Each species is
+#            scaled by the same factor above 40 MeV (6.49), so the TWIST p/d split is kept. TWIST
+#            alone gives 2.1e-4. The 4 MeV turn-on width is the sharpest that keeps the spectra
+#            falling; it puts 1.36e-3 below 40 MeV, where TWIST has 1.5e-3 in 25-40 MeV.
+# Endpoints: AME2020 masses, mu 1s binding 0.46 MeV, E_nu -> 0.
+#------------------------------------------------------------------------------
+MuCapChargedSpectra : {
+  TWISTproton : {
+    spectrumShape : muCapCharged
+    pdgId         : 2212
+    endpoint      : 83.67 # MeV
+    nbins         : 1000
+    tail          : { A : 6.0e-3  gamma : 0.150 } # 1/MeV
+    spline        : { knots : [ 80, 80, 80, 80, 155, 230 ]  weights : [ 0.74, 0.51 ] } # MeV/c
+    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.32218 }
+  }
+  TWISTdeuteron : {
+    spectrumShape : muCapCharged
+    pdgId         : 1000010020
+    endpoint      : 77.35 # MeV
+    nbins         : 1000
+    tail          : { A : 2.7e-3  gamma : 0.130 } # 1/MeV
+    spline        : { knots : [ 130, 130, 130, 130, 165, 200 ]  weights : [ -0.036, 0.21 ] } # MeV/c
+    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.32218 }
+  }
+}
+MuCapChargedSpectra : { @table::MuCapChargedSpectra
+  KraneProton   : { @table::MuCapChargedSpectra.TWISTproton
+    hard : { yield : 0.5434e-3  slope : 7.5  Ton : 40.  width : 4. } # yield between Ton and the endpoint
+  }
+  KraneDeuteron : { @table::MuCapChargedSpectra.TWISTdeuteron
+    hard : { yield : 0.6239e-3  slope : 7.5  Ton : 40.  width : 4. }
+  }
+}
+#------------------------------------------------------------------------------
+# Tritons and alphas: AlCap, PRC 105, 035501 (2022). An exponential normalized to the AlCap yield in
+# its measured range, continued to the endpoint, with an onset below the range (no spline: the four
+# equal knots are the momentum at the low edge of the range).
+#   AlCapTriton  : 2.58e-3 in 5-17 MeV, slope 6.6 MeV; GMC onset shape (Tc 1.4 MeV) below 5 MeV.
+#                  Integral 4.42e-3 per capture.
+#   AlCapAlpha   : 0.44e-3 in 15-20 MeV, slope 3.7 MeV; onset with Tc 2.8 MeV (twice the p/d value,
+#                  Coulomb barrier ~ Z) below 15 MeV. Integral 7.90e-3 per capture, at the lower bound
+#                  set by the exclusive 27Al(mu,nu alpha)23Ne activation yield, 7.6(1.1)e-3 (Wyttenbach).
+#   AlCapAlpha20 : as AlCapAlpha with a steeper onset below 15 MeV, integral 20e-3 (Lifshitz-Singer
+#                  inclusive alpha yield).
+# 3He is not included: AlCap sees no evidence for it.
+#------------------------------------------------------------------------------
+MuCapChargedSpectra : { @table::MuCapChargedSpectra
+  AlCapTriton : {
+    spectrumShape : muCapCharged
+    pdgId         : 1000010030
+    endpoint      : 71.81 # MeV
+    nbins         : 1000
+    tail          : { A : 9.95426e-4  gamma : 0.151515 } # 1/MeV
+    spline        : { knots : [ 167.683, 167.683, 167.683, 167.683 ]  weights : [ ] } # MeV/c, T = 5 MeV
+    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.151515 }
+  }
+  AlCapAlpha : {
+    spectrumShape : muCapCharged
+    pdgId         : 1000020040
+    endpoint      : 76.73 # MeV
+    nbins         : 1000
+    tail          : { A : 9.24744e-3  gamma : 0.270270 } # 1/MeV
+    spline        : { knots : [ 334.735, 334.735, 334.735, 334.735 ]  weights : [ ] } # MeV/c, T = 15 MeV
+    onset         : { Tc : 2.8  alpha : 1.3279  beta : 0.270270 }
+  }
+}
+MuCapChargedSpectra : { @table::MuCapChargedSpectra
+  AlCapAlpha20 : { @table::MuCapChargedSpectra.AlCapAlpha
+    onset : { Tc : 2.8  alpha : 1.3279  beta : 0.39427 }
+  }
+}
+
 END_PROLOG
