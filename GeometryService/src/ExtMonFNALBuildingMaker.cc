@@ -85,6 +85,7 @@ namespace mu2e {
     const double concretewidthN = c.getDouble("extMonFNAL.shielding.concreteWidthN");
     const double concretewidthS = c.getDouble("extMonFNAL.shielding.concreteWidthS");
     const double concreteLayerHeight = c.getDouble("extMonFNAL.shielding.concreteLayerHeight");
+    const double floorConcreteBackGap = c.getDouble("extMonFNAL.shielding.floorConcreteBackGap");
 
     // The ideal half sizes and centers below describe blocks that touch the room walls
     // and each other.  Box local X is across the room, Y is up, Z is along the room.
@@ -140,10 +141,11 @@ namespace mu2e {
     emfb->shieldingSConcreteCenterInMu2e_[1] = emfb->roomInsideYmin_ + 2*shieldingSSteelHalfSizeY + shieldingSConcreteHalfSizeY;
     emfb->shieldingSConcreteCenterInMu2e_[2] = zScorner + dzdL*shieldingSConcreteHalfSizeZ + dxdL*shieldingSConcreteHalfSizeX;
 
-    // Floor concrete, on the floor across the whole room, from the end of the steel to the magnet room end
+    // Floor concrete, on the floor across the whole room, from the end of the steel
+    // to floorConcreteBackGap before the magnet room end
     const double shieldingFloorConcreteHalfSizeX = roomWidth/2.0;
     const double shieldingFloorConcreteHalfSizeY = concreteLayerHeight/2.0;
-    const double shieldingFloorConcreteHalfSizeZ = (magnetRoomLength-steelLength)/2.0;
+    const double shieldingFloorConcreteHalfSizeZ = (magnetRoomLength-steelLength-floorConcreteBackGap)/2.0;
     emfb->shieldingFloorConcreteHalfSize_.resize(3);
     emfb->shieldingFloorConcreteHalfSize_[0] = shieldingFloorConcreteHalfSizeX - safety_gap;
     emfb->shieldingFloorConcreteHalfSize_[1] = shieldingFloorConcreteHalfSizeY;
