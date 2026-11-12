@@ -87,7 +87,6 @@ namespace mu2e {
     // The stored half sizes are reduced by gaps to avoid volume overlaps, while the
     // stored centers stay at their ideal positions.
     const double safety_gap=0.1; // 100 microns
-    const double big_gap = 2.;
 
     // North steel, in the corner of the front and north walls
     const double shieldingNHalfSizeX = steelwidthN/2.0;
@@ -120,7 +119,7 @@ namespace mu2e {
     emfb->shieldingBHalfSize_.resize(3);
     emfb->shieldingBHalfSize_[0] = shieldingBHalfSizeX - safety_gap;
     emfb->shieldingBHalfSize_[1] = shieldingBHalfSizeY;
-    emfb->shieldingBHalfSize_[2] = shieldingBHalfSizeZ - big_gap;
+    emfb->shieldingBHalfSize_[2] = shieldingBHalfSizeZ - safety_gap;
     emfb->shieldingBCenterInMu2e_[0] = xfront + dxdL*(steelLength + shieldingBHalfSizeZ) + dzdL*shieldingBHalfSizeX;
     emfb->shieldingBCenterInMu2e_[1] = emfb->roomInsideYmin_ + shieldingBHalfSizeY;
     emfb->shieldingBCenterInMu2e_[2] = zfront + dzdL*(steelLength + shieldingBHalfSizeZ) - dxdL*shieldingBHalfSizeX;
