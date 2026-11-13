@@ -389,6 +389,7 @@ Mu2eKinKal : {
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToTS5 : false # record tracks that reach the TS through the TSDA hole (cosmic-like)
     ToCRV : false
     ToCaloD0 : true
     ToCaloD1 : true
