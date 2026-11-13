@@ -121,10 +121,12 @@ namespace mu2e {
     ktrk.addExtrapolationFailure(failure);
   }
 
-  // The particle stops in this material: the forwards direction ends before it, keeping the crossings already added.
+  // The particle stops in this material: the forwards direction and the trajectory end at the crossing, keeping the crossings already added.
   template <class KTRAJ> bool KKExtrap::rangeOut(KKTrack<KTRAJ>& ktrk, SweepTarget const& tg, KinKal::Intersection const& inter) const {
     if(debug_ > 0) std::cout << "KKExtrap: ranged out in " << tg.sid_ << " at " << inter.time_ << std::endl;
     ktrk.setRangedOut();
+    // the extension can run domains past the crossing; KinKal removes them, and refuses the cut if an active hit or material lies beyond it
+    if(!ktrk.truncate(TimeDir::forwards,inter.time_) && debug_ > 0) std::cout << "KKExtrap: trajectory not truncated at " << inter.time_ << std::endl;
     return false;
   }
 
