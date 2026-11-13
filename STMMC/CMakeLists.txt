@@ -65,6 +65,21 @@ cet_build_plugin(ShiftVirtualDetectorStepPointMCs art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(STMDetProvenance art::module
+    REG_SOURCE src/STMDetProvenance_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::MCDataProducts
+)
+
+cet_build_plugin(STMDetTree art::module
+    REG_SOURCE src/STMDetTree_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(STMResamplingProducer art::module
     REG_SOURCE src/STMResamplingProducer_module.cc
     LIBRARIES REG

@@ -1,0 +1,61 @@
+# Provenance diagnostic for the STMDet-vs-VD entry-count discrepancy.
+#
+# Reads the crystal-path art output from VDResamplerToCrystals.fcl and writes one row per
+# STMDet StepPointMC describing where the depositing particle came from: its creation
+# process, its birth volume, whether it is a primary / truncated / has a parent, what
+# HPGeTree's topParent() would decide for it, and what the FULL genealogy root is.
+#
+# Run it on the same art file HPGeTree ran on:
+#   mu2e -c Offline/STMMC/fcl/STMDetProvenance.fcl -s dts.owner.STMVDResamplerToCrystals.*.art
+#
+# Then read the endJob summary - it prints what each number means. The branches support the
+# per-event comparison the totals cannot: group rows by (run, subRun, event) and compare the
+# distinct rootId count against that event's VD90 crossings, rather than comparing job
+# totals, which the two paths' different event filters make incomparable.
+#
+# The art file must retain SimParticles with their genealogy. VDResamplerToCrystals.fcl's
+# crystalOutput keeps mu2e::SimParticlemv_compressSTMDet_* and PhysicalVolumeInfomvs, which
+# is what this needs; the compression there is noCompression with keepNGenerations:-1, so
+# every parent link should resolve. A nonzero TRUNCATED count in the summary means that is
+# not actually happening and is the first thing to fix.
+#
+# Author: Yongyi Wu, Oct 2026
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMDetProvenance
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    provenance : {
+      module_type : STMDetProvenance
+      # Same two products HPGeTree reads, so the comparison is apples to apples.
+      StepPointMCsTag  : "compressSTMDet:STMDet"
+      SimParticlemvTag : "compressSTMDet"
+      # Optional: resolves volume indices to names in the endJob summary only. Omit it and
+      # the summary lists raw indices; nothing else changes.
+      #
+      # This is a SubRun-level product written by Mu2eG4, so the label is the g4run module,
+      # NOT compressSTMDet - the compression passes the collection through under the
+      # producing module's label. VDResamplerToCrystals.fcl keeps it via
+      # "keep mu2e::PhysicalVolumeInfomvs_*_*_*".
+      PhysicalVolumesTag : "g4run"
+      # The split HPGeTree applies to separate HPGe (x<) from LaBr (x>). Recorded per row
+      # rather than applied, so both crystals' steps are present and the cut is auditable.
+      xBeamCentre : -3904.0
+    }
+  }
+  provenancePath : [provenance]
+  end_paths : [provenancePath]
+}
+
+services.TFileService.fileName : "stmdet_provenance.root"
+
+# Keep the full summary - the volume tables at the end are the point of the job.
+services.message.destinations.log.categories.default.limit : -1
