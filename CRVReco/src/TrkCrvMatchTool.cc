@@ -165,7 +165,7 @@ namespace mu2e {
     for(size_t k = 0; k < ks.intersections().size(); ++k) {
       auto const& ki = ks.intersections()[k];
       double dn = ki.momentum3().Unit().Dot(g.w);
-      if(std::fabs(dn) < 1e-3) continue;
+      if(std::fabs(dn) < trkCrvMinCosToNormal) continue;
       double s = (g.center - ki.position3()).Dot(g.w) / dn;
       if(kbest < 0 || std::fabs(s) < std::fabs(sbest)) { kbest = static_cast<int>(k); sbest = s; }
     }
@@ -306,7 +306,7 @@ namespace mu2e {
           auto const& xk = m.xings_[k];
           KinKal::VEC3 pk(xk.pos_.X(), xk.pos_.Y(), xk.pos_.Z()), dk(xk.dir_.X(), xk.dir_.Y(), xk.dir_.Z());
           double dn = dk.Dot(g.w);
-          if(std::fabs(dn) < 1e-3) continue;
+          if(std::fabs(dn) < trkCrvMinCosToNormal) continue;
           double ds = std::fabs((ci.pos - pk).Dot(g.w) / dn);
           if(ds < bds) { bds = ds; bestx = static_cast<int>(k); }
         }

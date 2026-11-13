@@ -50,9 +50,9 @@ namespace mu2e {
     float     time_ = 0;         // crossing time [ns]
     TrkCrvPlaneCov cov_;         // track position covariance in the sector plane (u, v), error model applied [mm^2]
     float     sigT_ = 0;         // track time error [ns]
-    float     mom_ = 0;          // track momentum magnitude at the crossing [MeV/c]
+    float     mom_ = 0;          // track momentum magnitude at the crossing, or at the starting intersection of a projection [MeV/c]
     float     momErr_ = 0;       // its error [MeV/c]
-    bool      inBounds_ = false; // crossing inside the sector rectangle
+    bool      inBounds_ = false; // crossing inside the sector rectangle; false only for a projection, whose candidates run to larger chi2
     float     dEdgeU_ = 0;       // distance inside the sector edge along the bars [mm], negative outside
     float     dEdgeV_ = 0;       // distance inside the sector edge across the bars [mm], negative outside
     float     edgeSig_ = 0;      // min(dEdgeU_/sigU(), dEdgeV_/sigV()): edge distance in units of the track error
@@ -75,7 +75,7 @@ namespace mu2e {
     float    dtXing_ = 0;        // cluster avgHitTime - t_track at the cluster plane [ns]
     float    du_ = 0;            // cluster - track along the bars, at the cluster plane [mm]
     float    dv_ = 0;            // cluster - track across the bars, at the cluster plane [mm]
-    TrkCrvPlaneCov cov_;         // track covariance of (du, dv), carried from the reference crossing over the step, error model applied [mm^2]
+    TrkCrvPlaneCov cov_;         // track covariance of (du, dv), carried over the step from the reference crossing (from its starting intersection for a projection), error model applied [mm^2]
     float    chi2_ = -1;         // space + time chi2 (geometric candidates only), with the full (u, v) covariance
     uint8_t  ndof_ = 0;          // chi2 degrees of freedom: 2 for single-ended clusters (no along-bar term), else 3
     uint8_t  nShare_ = 0;        // tracks of this collection holding this cluster as a candidate
