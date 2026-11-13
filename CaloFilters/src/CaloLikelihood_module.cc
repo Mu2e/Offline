@@ -42,12 +42,34 @@
 #include "TH1F.h"
 #include "TFile.h"
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
 
 
 namespace mu2e {
+
+  namespace {
+    // open a template file, or throw
+    TFile* openTemplates(const std::string& path) {
+      TFile* file = TFile::Open(path.c_str());
+      if (file == nullptr || file->IsZombie()) {
+        throw cet::exception("CALOLIKELIHOOD") << "cannot open template file " << path << "\n";
+      }
+      return file;
+    }
+
+    // get a template histogram of the expected type, or throw
+    template <class T> T* getTemplate(TFile* file, const char* name) {
+      T* hist = dynamic_cast<T*>(file->Get(name));
+      if (hist == nullptr) {
+        throw cet::exception("CALOLIKELIHOOD") << "template " << name << " missing, or not a "
+                                               << T::Class_Name() << ", in " << file->GetName() << "\n";
+      }
+      return hist;
+    }
+  }
 
 
   class CaloLikelihood : public art::EDFilter {
@@ -127,77 +149,77 @@ namespace mu2e {
     _signalTemplates = configFile(_signalTemplateFile);
     _bkgTemplates    = configFile(_bkgTemplateFile);
 
-    TFile* signalFile = TFile::Open(_signalTemplates.c_str());
-    TFile* bkgFile    = TFile::Open(_bkgTemplates.c_str());
+    TFile* signalFile = openTemplates(_signalTemplates);
+    TFile* bkgFile    = openTemplates(_bkgTemplates);
 
     //get the templates histograms
     //signal on calo-disk 0
-    _signalHist1D[0][0]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_E2");
-    _signalHist1D[0][1]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e1eRatio2");
-    _signalHist1D[0][2]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_nCr2");
-    _signalHist1D[0][3]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_rDist2");
-    _signalHist1D[0][4]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2eRatio2");
-    _signalHist1D[0][5]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2e1Ratio2");
+    _signalHist1D[0][0]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_E2");
+    _signalHist1D[0][1]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_e1eRatio2");
+    _signalHist1D[0][2]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_nCr2");
+    _signalHist1D[0][3]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_rDist2");
+    _signalHist1D[0][4]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_e2eRatio2");
+    _signalHist1D[0][5]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk0_e2e1Ratio2");
     //signal on calo-disk 1
-    _signalHist1D[1][0]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_E2");
-    _signalHist1D[1][1]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e1eRatio2");
-    _signalHist1D[1][2]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_nCr2");
-    _signalHist1D[1][3]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_rDist2");
-    _signalHist1D[1][4]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2eRatio2");
-    _signalHist1D[1][5]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2e1Ratio2");
+    _signalHist1D[1][0]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_E2");
+    _signalHist1D[1][1]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_e1eRatio2");
+    _signalHist1D[1][2]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_nCr2");
+    _signalHist1D[1][3]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_rDist2");
+    _signalHist1D[1][4]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_e2eRatio2");
+    _signalHist1D[1][5]   = getTemplate<TH1F>(signalFile, "ceAna/cluster_electron/clDisk1_e2e1Ratio2");
 
     //background on calo-disk 0
-    _bkgHist1D   [0][0]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_E0");
-    _bkgHist1D   [0][1]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e1eRatio0");
-    _bkgHist1D   [0][2]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_nCr0");
-    _bkgHist1D   [0][3]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_rDist0");
-    _bkgHist1D   [0][4]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2eRatio0");
-    _bkgHist1D   [0][5]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2e1Ratio0");
+    _bkgHist1D   [0][0]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_E0");
+    _bkgHist1D   [0][1]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_e1eRatio0");
+    _bkgHist1D   [0][2]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_nCr0");
+    _bkgHist1D   [0][3]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_rDist0");
+    _bkgHist1D   [0][4]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_e2eRatio0");
+    _bkgHist1D   [0][5]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk0_e2e1Ratio0");
     //background on calo-disk 1
-    _bkgHist1D   [1][0]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_E0");
-    _bkgHist1D   [1][1]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e1eRatio0");
-    _bkgHist1D   [1][2]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_nCr0");
-    _bkgHist1D   [1][3]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_rDist0");
-    _bkgHist1D   [1][4]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2eRatio0");
-    _bkgHist1D   [1][5]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2e1Ratio0");
+    _bkgHist1D   [1][0]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_E0");
+    _bkgHist1D   [1][1]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_e1eRatio0");
+    _bkgHist1D   [1][2]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_nCr0");
+    _bkgHist1D   [1][3]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_rDist0");
+    _bkgHist1D   [1][4]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_e2eRatio0");
+    _bkgHist1D   [1][5]   = getTemplate<TH1F>(bkgFile, "ceAna/cluster_all/clDisk1_e2e1Ratio0");
 
 
     //get the 2D histograms
     // signal
     //disk 0
-    _signalHist2D[0][0]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_eRDist2");
-    _signalHist2D[0][1]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e1RDist2");
-    _signalHist2D[0][2]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2RDist2");
-    _signalHist2D[0][3]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2e1RDist2");
-    _signalHist2D[0][4]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e3RDist2");
-    _signalHist2D[0][5]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e4RDist2");
-    _signalHist2D[0][6]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_nCrRDist2");
+    _signalHist2D[0][0]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_eRDist2");
+    _signalHist2D[0][1]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_e1RDist2");
+    _signalHist2D[0][2]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_e2RDist2");
+    _signalHist2D[0][3]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_e2e1RDist2");
+    _signalHist2D[0][4]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_e3RDist2");
+    _signalHist2D[0][5]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_e4RDist2");
+    _signalHist2D[0][6]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk0_nCrRDist2");
     //disk 1
-    _signalHist2D[1][0]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_eRDist2");
-    _signalHist2D[1][1]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e1RDist2");
-    _signalHist2D[1][2]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2RDist2");
-    _signalHist2D[1][3]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2e1RDist2");
-    _signalHist2D[1][4]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e3RDist2");
-    _signalHist2D[1][5]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e4RDist2");
-    _signalHist2D[1][6]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_nCrRDist2");
+    _signalHist2D[1][0]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_eRDist2");
+    _signalHist2D[1][1]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_e1RDist2");
+    _signalHist2D[1][2]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_e2RDist2");
+    _signalHist2D[1][3]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_e2e1RDist2");
+    _signalHist2D[1][4]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_e3RDist2");
+    _signalHist2D[1][5]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_e4RDist2");
+    _signalHist2D[1][6]   = getTemplate<TH2F>(signalFile, "ceAna/cluster_electron/clDisk1_nCrRDist2");
 
     //background
     //disk 0
-    _bkgHist2D   [0][0]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_eRDist0");
-    _bkgHist2D   [0][1]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e1RDist0");
-    _bkgHist2D   [0][2]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2RDist0");
-    _bkgHist2D   [0][3]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2e1RDist0");
-    _bkgHist2D   [0][4]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e3RDist0");
-    _bkgHist2D   [0][5]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e4RDist0");
-    _bkgHist2D   [0][6]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_nCrRDist0");
+    _bkgHist2D   [0][0]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_eRDist0");
+    _bkgHist2D   [0][1]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_e1RDist0");
+    _bkgHist2D   [0][2]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_e2RDist0");
+    _bkgHist2D   [0][3]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_e2e1RDist0");
+    _bkgHist2D   [0][4]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_e3RDist0");
+    _bkgHist2D   [0][5]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_e4RDist0");
+    _bkgHist2D   [0][6]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk0_nCrRDist0");
     //disk 1
-    _bkgHist2D   [1][0]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_eRDist0");
-    _bkgHist2D   [1][1]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e1RDist0");
-    _bkgHist2D   [1][2]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2RDist0");
-    _bkgHist2D   [1][3]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2e1RDist0");
-    _bkgHist2D   [1][4]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e3RDist0");
-    _bkgHist2D   [1][5]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e4RDist0");
-    _bkgHist2D   [1][6]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_nCrRDist0");
+    _bkgHist2D   [1][0]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_eRDist0");
+    _bkgHist2D   [1][1]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_e1RDist0");
+    _bkgHist2D   [1][2]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_e2RDist0");
+    _bkgHist2D   [1][3]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_e2e1RDist0");
+    _bkgHist2D   [1][4]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_e3RDist0");
+    _bkgHist2D   [1][5]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_e4RDist0");
+    _bkgHist2D   [1][6]   = getTemplate<TH2F>(bkgFile, "ceAna/cluster_all/clDisk1_nCrRDist0");
 
     //make correlation templates
     //make correlation templates
@@ -239,16 +261,17 @@ namespace mu2e {
   // from the 2D distributions
   //--------------------------------------------------------------------------------
   void   CaloLikelihood::buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize){
-    double    binsize = Input->GetXaxis()->GetBinWidth(1);
-    double    binlow  = Input->GetXaxis()->GetBinLowEdge(1);
-
+    // slice i covers [MinX + i*StepSize, MinX + (i+1)*StepSize) in X. ROOT bins are numbered from 1
+    // and ProjectionY includes both end bins. A slice past the axis projects the overflow column only
+    // (lastbin < firstbin would make ProjectionY use the full range).
+    const TAxis* xaxis = Input->GetXaxis();
     for (int i=0; i<kNCorHist; ++i){
       double  start      = (MinX + i*StepSize);
-      int     binstart   = (start - binlow)/binsize;
-      int     binend     = binstart + (StepSize/binsize);
+      int     binstart   = xaxis->FindFixBin(start);
+      int     binend     = std::max(binstart, xaxis->FindFixBin(start + StepSize) - 1);
       FinalHist[i]       = (TH1F*)Input->ProjectionY(Form("%s_%i", Label.Data(), i), binstart, binend);
       double  area       = FinalHist[i]->Integral();
-      FinalHist[i]->Scale(1/area);
+      if (area > 0) FinalHist[i]->Scale(1/area);
     }
 
   }
@@ -373,8 +396,9 @@ namespace mu2e {
       double  bkgRDistProb            = calculateProb(rDist, _bkgHist1D   [clSection][3]);
       double  logRDistRatio           = log(signalRDistProb/bkgRDistProb);
 
-      double  signalEnergy2DProb      = calculate2DProb(rDist, rDist, _signalCorrHist1D[clSection][0], _minClEnergy, _clEStep);
-      double  bkgEnergy2DProb         = calculate2DProb(rDist, rDist, _bkgCorrHist1D   [clSection][0], _minClEnergy, _clEStep);
+      // energy vs radial distance: the slices are radial bins (see buildTemplateHist), the variable is the cluster energy
+      double  signalEnergy2DProb      = calculate2DProb(rDist, clEnergy, _signalCorrHist1D[clSection][0], _minRDist, _rDistStep);
+      double  bkgEnergy2DProb         = calculate2DProb(rDist, clEnergy, _bkgCorrHist1D   [clSection][0], _minRDist, _rDistStep);
       double  logEnergy2DRatio        = log(signalEnergy2DProb/bkgEnergy2DProb);
 
       double  signalE12DProb          = calculate2DProb(rDist, e1Ratio, _signalCorrHist1D[clSection][1], _minRDist, _rDistStep);
@@ -401,7 +425,7 @@ namespace mu2e {
       double  bkgClSize2DProb         = calculate2DProb(rDist, clusterSize , _bkgCorrHist1D  [clSection][6], _minRDist, _rDistStep);
       double  logClSize2DRatio        = log(signalClSize2DProb/bkgClSize2DProb);
 
-      double  lhValue  =  logRDistRatio + logEnergy2DRatio + logE12DRatio + logRDistRatio + logClSize2DRatio;
+      double  lhValue  =  logRDistRatio + logEnergy2DRatio + logE12DRatio + logClSize2DRatio;
       if (nCrystalHits>=2) lhValue += logE22DRatio  + logE2E12DRatio;
       if (nCrystalHits>=3) lhValue += logE32DRatio;
       if (nCrystalHits>=4) lhValue += logE42DRatio;
@@ -446,18 +470,10 @@ namespace mu2e {
 
   double CaloLikelihood::calculateProb(double&Variable, TH1* Template){
 
-    double     thisprob      = 1;
-    //not sure how to loop over variable value   i should be event number
-    double     binSize       = Template->GetBinWidth(1);
-    int        binIndex      = (Variable - Template->GetBinLowEdge(1))/binSize;
-    //what is the probability for this variable
-    int        templateNBins = Template->GetNbinsX();
-    if (binIndex > templateNBins) {
-      thisprob = 1e-17;
-      //      std::cout << "whoops out of range" << std::endl;
-    } else{
-      thisprob = Template->GetBinContent(binIndex);
-    }
+    // ROOT bins are numbered 1..N; a value outside the axis (underflow or overflow) has no probability
+    int        bin      = Template->GetXaxis()->FindFixBin(Variable);
+    double     thisprob = 1e-17;
+    if (bin >= 1 && bin <= Template->GetNbinsX()) thisprob = Template->GetBinContent(bin);
 
     if (thisprob < 1e-10) thisprob = 1e-17;
 
