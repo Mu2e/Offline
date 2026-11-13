@@ -739,6 +739,67 @@ namespace {
     require(limited == 1 && unlimited == 2,"notBefore crossings " + std::to_string(limited) + " and " + std::to_string(unlimited));
   }
 
+  // The TS5 face (KKExtrap ToTS5): a record-only disk filling the TSDA hole just downstream of the TSDA. An upstream track
+  // through the hole records it just before the terminal TSDA plane; one hitting the TSDA body or passing outside it does not.
+  // Geometry literals follow KinKalGeomMaker::makeDS.
+  template <class KTRAJ> void ts5Face(TimeDir dir) {
+    double const ztsda = -5967.0, rin = 235.0, rout = 525.0, offset = 1.0;
+    KinKal::Annulus tsda(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,ztsda),rin,rout);
+    KinKal::Disk face(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,ztsda+offset),rin);
+    SweepTarget ts5;
+    ts5.sid_ = mu2e::SurfaceId(mu2e::SurfaceIdEnum::TS5_Face);
+    ts5.surf_ = &face;
+    ts5.drives_ = false;
+    SweepTarget tsdatg;
+    tsdatg.reach_ = SweepTarget::zplane;
+    tsdatg.sid_ = mu2e::SurfaceId(mu2e::SurfaceIdEnum::TSDA);
+    tsdatg.surf_ = &tsda;
+    tsdatg.zval_ = ztsda;
+    tsdatg.terminal_ = true;
+    tsdatg.inbounds_ = false;
+    bool forward = dir == TimeDir::forwards;
+    for(double radius : {0.0,100.0,150.0,400.0,700.0}){
+      // the particle moves upstream (-z) along the sweep direction, from z = -5800 to z = -6100
+      double zstart = forward ? -5800.0 : -6100.0;
+      KinKal::ParticleState state(VEC3(radius,0.0,zstart),VEC3(0.0,10.0,forward ? -100.0 : 100.0),0.0,105.658,-1);
+      KTRAJ traj0(state,VEC3(0.0,0.0,1.0),TimeRange(0.0,1.0));
+      traj0.setRange(TimeRange(0.0,300.0/std::fabs(traj0.velocity(0.0).Z())));
+      KinKal::ParticleTrajectory<KTRAJ> traj(traj0);
+      double rmin = 1.0e100, rmax = 0.0;
+      for(unsigned i = 0; i <= 200; ++i){
+        double rho = traj.position3(traj.range().begin()+traj.range().range()*i/200.0).Rho();
+        rmin = std::min(rmin,rho); rmax = std::max(rmax,rho);
+      }
+      bool inhole = rmax < rin;
+      require(inhole || rmin > rin,"TS5 fixture straddles the TSDA hole edge");
+      SweepTargetCollection targets{ts5,tsdatg};
+      ExtrapolateSweep sweep(targets,dir,1.0e6,1.0e6,1.0e-4,tol,1.0e-6,0);
+      sweep.start(forward ? traj.range().begin() : traj.range().end());
+      sweep.limit(forward ? traj.range().end() : traj.range().begin(),false);
+      std::vector<std::pair<mu2e::SurfaceId,KinKal::Intersection>> found;
+      while(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing()){
+        auto const& tg = targets[sweep.crossing().itarget_];
+        found.emplace_back(tg.sid_,sweep.crossing().inter_);
+        sweep.accept();
+        if(tg.terminal_) break;
+        require(found.size() < 10,"runaway TS5 crossings");
+      }
+      require(!sweep.failed(),"TS5 sweep failed: " + sweep.error());
+      require(found.size() == (inhole ? 2u : 1u),"TS5 sweep found " + std::to_string(found.size()) + " crossings at radius " + std::to_string(radius));
+      require(found.back().first == tsdatg.sid_,"TS5 sweep did not end at the TSDA");
+      require(std::fabs(found.back().second.pos_.Z()-ztsda) < 10.0*tol,"TSDA crossing off its plane");
+      if(inhole){
+        auto const& inter = found.front().second;
+        require(found.front().first == ts5.sid_,"TS5 face not crossed first");
+        require(inter.inbounds_ && inter.pos_.Rho() < rin,"TS5 crossing outside the TSDA hole");
+        require(std::fabs(inter.pos_.Z()-(ztsda+offset)) < 10.0*tol,"TS5 crossing off its plane");
+        double sgn = forward ? 1.0 : -1.0;
+        require(sgn*inter.pdir_.Z() < 0.0,"TS5 crossing not moving upstream along the sweep");
+        require(sgn*(found.back().second.time_-inter.time_) > 0.0,"TS5 face not crossed before the TSDA");
+      }
+    }
+  }
+
   void emptySearch() {
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(0.0,0.0,100.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,0.1));
@@ -770,6 +831,8 @@ int main() {
       reachBound(dir);
       shellIncidence(dir);
       notBefore(dir);
+      ts5Face<KinKal::KinematicLine>(dir);
+      ts5Face<KinKal::LoopHelix>(dir);
       invalidBoundaryInterior(dir,true);
       invalidBoundaryInterior(dir,false);
       closeCoplanar(dir);
