@@ -199,8 +199,10 @@ namespace mu2e {
         tgts.push_back(tg);
       }
       if(toTS5_){
-        // record-only: the TS5 face out to the DS inner radius, just downstream of the TSDA, crossed just before the TSDA ends the sweep.
-        // A crossing inside its bounds means the track reaches the TS end of the DS, which is highly cosmic-like.
+        // record-only: a disk out to the DS inner radius 1 mm downstream of the TSDA plane, crossed just before the TSDA plane
+        // ends the sweep. A crossing means the extrapolated helix reaches the TSDA plane inside the DS bore. For a downstream
+        // fit it comes from the backwards-in-time extrapolation, which for a conversion electron continues upstream past the
+        // stopping target, so it is not by itself a cosmic tag.
         SweepTarget ts5;
         ts5.sid_ = SurfaceId("TS5_Face");
         ts5.surf_ = ds.ts5FacePtr().get();

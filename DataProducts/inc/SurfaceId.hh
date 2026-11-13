@@ -21,7 +21,7 @@ namespace mu2e {
         DS_CryoInner, DS_CryoOuter, DS_ShieldInner, DS_ShieldOuter, DS_Coil,
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
-        TS5_Face=97, // the TS5 face out to the DS inner radius, just downstream of the TSDA
+        TS5_Face=97, // disk out to the DS inner radius 1 mm downstream of the KinKal TSDA plane (the TSDA mid-plane)
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200, // CRV test plane (deprecated)
         CRV_EX=201, CRV_T1, CRV_T2, // keep values 201-203 for extracted geometry compatibility

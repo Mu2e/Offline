@@ -72,7 +72,7 @@ namespace mu2e {
         DiskPtr ipa_back_;
         FruPtr opa_; // outer proton absorber
         AnnPtr tsda_; // TS downstream absorber
-        DiskPtr ts5face_; // TS5 face out to the DS inner radius, just downstream of the TSDA. Tracks crossing it reach the TS end of the DS
+        DiskPtr ts5face_; // TS5 face: disk out to the DS inner radius, 1 mm downstream of the KinKal TSDA plane (inside the absorber)
         MaterialCylinderCollection materialCylinders_; // passive cylindrical material shells
     };
   }

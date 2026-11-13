@@ -129,7 +129,7 @@ namespace mu2e {
       fhicl::Atom<bool> ToTrackerPerimeter { Name("ToTrackerPerimeter"), Comment("Extrapolate tracks to the tracker perimeter (z-ends and outer wall)") };
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
-      fhicl::Atom<bool> ToTS5 { Name("ToTS5"), Comment("Record upstream intersections with the TS5 face (out to the DS inner radius, just downstream of the TSDA); tracks reaching the TS are cosmic-like. Requires Upstream"), false };
+      fhicl::Atom<bool> ToTS5 { Name("ToTS5"), Comment("Record where the upstream extrapolation reaches the TSDA plane inside the DS bore (TS5_Face: disk out to the DS inner radius, 1 mm downstream of the TSDA plane). For downstream fits this comes from the backwards extrapolation, so it is not by itself a cosmic tag. Requires Upstream"), false };
       fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
       fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces") };
       fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces") };

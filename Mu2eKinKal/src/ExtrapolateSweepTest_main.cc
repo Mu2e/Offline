@@ -739,7 +739,7 @@ namespace {
     require(limited == 1 && unlimited == 2,"notBefore crossings " + std::to_string(limited) + " and " + std::to_string(unlimited));
   }
 
-  // The TS5 face (KKExtrap ToTS5): a record-only disk out to the DS inner radius just downstream of the TSDA. An upstream track
+  // The TS5 face (KKExtrap ToTS5): a record-only disk out to the DS inner radius 1 mm downstream of the TSDA plane. An upstream track
   // inside that radius records it just before the terminal TSDA plane, whether it then passes the TSDA hole, body or outside;
   // one beyond the DS inner radius records only the TSDA. Geometry literals follow KinKalGeomMaker::makeDS.
   template <class KTRAJ> void ts5Face(TimeDir dir) {
