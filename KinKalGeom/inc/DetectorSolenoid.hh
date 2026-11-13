@@ -72,7 +72,7 @@ namespace mu2e {
         DiskPtr ipa_back_;
         FruPtr opa_; // outer proton absorber
         AnnPtr tsda_; // TS downstream absorber
-        DiskPtr ts5face_; // TS5 aperture: the TSDA hole, just downstream of the TSDA. Tracks crossing it enter the TS
+        DiskPtr ts5face_; // TS5 face out to the DS inner radius, just downstream of the TSDA. Tracks crossing it reach the TS end of the DS
         MaterialCylinderCollection materialCylinders_; // passive cylindrical material shells
     };
   }

@@ -199,8 +199,8 @@ namespace mu2e {
         tgts.push_back(tg);
       }
       if(toTS5_){
-        // record-only: the TSDA hole just downstream of the TSDA, crossed just before the TSDA ends the sweep.
-        // A crossing inside its bounds means the track leaves the DS into the TS, which is highly cosmic-like.
+        // record-only: the TS5 face out to the DS inner radius, just downstream of the TSDA, crossed just before the TSDA ends the sweep.
+        // A crossing inside its bounds means the track reaches the TS end of the DS, which is highly cosmic-like.
         SweepTarget ts5;
         ts5.sid_ = SurfaceId("TS5_Face");
         ts5.surf_ = ds.ts5FacePtr().get();

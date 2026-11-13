@@ -373,10 +373,10 @@ namespace mu2e {
     auto ipaback= std::make_shared<KinKal::Disk>(ipa->backDisk());
     auto opa= std::make_shared<Frustrum>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-3766),454.0,728.4,2125.0); // inner surface
     auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-5967),235.0,525.0); // back surface
-    // TS5 face: a disk filling the TSDA hole, offset just downstream of the TSDA back surface so an upstream-going track
-    // crosses it before the TSDA. A track crossing it leaves the DS into the TS, which is rare for anything but cosmics
+    // TS5 face: a disk out to the DS inner radius covering the whole TS5 face, offset just downstream of the TSDA back surface
+    // so an upstream-going track crosses it before the TSDA. A track crossing it reaches the TS end of the DS, which is rare for anything but cosmics
     static constexpr double ts5FaceOffset = 1.0; // mm
-    auto ts5face= std::make_shared<KinKal::Disk>(tsda->normal(),tsda->uDirection(),tsda->center()+VEC3(0.0,0.0,ts5FaceOffset),tsda->innerRadius());
+    auto ts5face= std::make_shared<KinKal::Disk>(tsda->normal(),tsda->uDirection(),tsda->center()+VEC3(0.0,0.0,ts5FaceOffset),inner->radius());
 
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Back),std::static_pointer_cast<Surface>(back)));
