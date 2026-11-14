@@ -21,6 +21,7 @@ namespace mu2e {
         DS_CryoInner, DS_CryoOuter, DS_ShieldInner, DS_ShieldOuter, DS_Coil,
         IPA=90, IPA_Front, IPA_Back,
         OPA=95, TSDA, // Absorbers in the DS
+        TS5_Face=97, // disk out to the DS inner radius 1 mm downstream of the KinKal TSDA plane (the TSDA mid-plane)
         ST_Front=100,ST_Back, ST_Inner, ST_Outer, ST_Foils, ST_Wires, // stopping target bounding surfaces and components
         TCRV=200, // CRV test plane (deprecated)
         CRV_EX=201, CRV_T1, CRV_T2, // keep values 201-203 for extracted geometry compatibility
@@ -43,7 +44,7 @@ namespace mu2e {
         EMC_Disk_0_InnerRing=322, EMC_Disk_1_InnerRing // calorimeter case inner rings (index 0,1 = Al via case front, hole; 2,3 = CF ring via its inner radius, case front; 4 = Al via CF ring inner radius)
       };
       // Update this counter whenever you add/remove surface IDs from the enum above.
-      static constexpr std::size_t nSurfaceIds = 76;
+      static constexpr std::size_t nSurfaceIds = 77;
       static std::string const& typeName();
       static std::map<enum_type,std::string> const& names();
   };

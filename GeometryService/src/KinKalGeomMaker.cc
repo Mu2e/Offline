@@ -372,7 +372,12 @@ namespace mu2e {
     auto ipafront= std::make_shared<KinKal::Disk>(ipa->frontDisk());
     auto ipaback= std::make_shared<KinKal::Disk>(ipa->backDisk());
     auto opa= std::make_shared<Frustrum>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-3766),454.0,728.4,2125.0); // inner surface
-    auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-5967),235.0,525.0); // back surface
+    auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-5967),235.0,525.0); // mid-plane: TSdA_v02 spans z = -5991.8 to -5941.0
+    // TS5 face: a disk out to the DS inner radius, 1 mm downstream of the KinKal TSDA plane (so inside the absorber), so an
+    // upstream-going extrapolation crosses it just before the TSDA plane. A crossing means the extrapolated helix reaches the
+    // TSDA plane inside the DS bore; it is not by itself a cosmic tag (see KKExtrap ToTS5)
+    static constexpr double ts5FaceOffset = 1.0; // mm
+    auto ts5face= std::make_shared<KinKal::Disk>(tsda->normal(),tsda->uDirection(),tsda->center()+VEC3(0.0,0.0,ts5FaceOffset),inner->radius());
 
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Back),std::static_pointer_cast<Surface>(back)));
@@ -383,8 +388,9 @@ namespace mu2e {
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::IPA_Back),std::static_pointer_cast<Surface>(ipaback)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::OPA),std::static_pointer_cast<Surface>(opa)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TSDA),std::static_pointer_cast<Surface>(tsda)));
+    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TS5_Face),std::static_pointer_cast<Surface>(ts5face)));
 
-    kkg_->ds_ = std::make_unique<KKGeom::DetectorSolenoid>(inner, outer, front, back, ipa, ipafront, ipaback, opa, tsda, materialCylinders);
+    kkg_->ds_ = std::make_unique<KKGeom::DetectorSolenoid>(inner, outer, front, back, ipa, ipafront, ipaback, opa, tsda, ts5face, materialCylinders);
   }
 
   void KinKalGeomMaker::makeTarget() {

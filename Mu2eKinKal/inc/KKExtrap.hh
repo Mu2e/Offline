@@ -55,7 +55,7 @@ namespace mu2e {
       template <class KTRAJ> bool reflect(ExtrapolateSweep& xs, KinKal::ParticleTrajectory<KTRAJ> const& ftraj, TimeDir tdir) const;
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
-      bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
+      bool backToTracker_, extrapolateOPA_, toTS5_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
       // The ST foil thicknesses come from the geometry service (KKGeom::StoppingTarget::foilThickness)
@@ -75,13 +75,17 @@ namespace mu2e {
     minv_(extrapconfig.MinV()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
+    toTS5_(extrapconfig.ToTS5()),
     toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
     upstream_(extrapconfig.Upstream()),
     toCRV_(extrapconfig.ToCRV()),
     toCaloD0_(extrapconfig.ToCaloD0()),
     toCaloD1_(extrapconfig.ToCaloD1()),
     toCaloMaterial_(extrapconfig.ToCaloMaterial())
-  {}
+  {
+    if(toTS5_ && !upstream_)
+      throw cet::exception("RECO") << "mu2e::KKExtrap: ToTS5 requires Upstream extrapolation" << std::endl;
+  }
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
     if(config.bfcorr_ && config.mindtstep_ > maxdtstep_)
@@ -160,7 +164,7 @@ namespace mu2e {
       auto back = face("TT_Back",trk.backPtr().get());
       tgts.push_back(back);
     }
-    // upstream: IPA, ST foils, TSDA (ends the sweep), OPA, and optionally the tracker entrance after a reflection
+    // upstream: IPA, ST foils, optionally the TS5 face, TSDA (ends the sweep), OPA, and optionally the tracker entrance after a reflection
     if(updir && upstream_){
       auto const& ipa = ds.innerProtonAbsorberPtr();
       SweepTarget ipatg;
@@ -193,6 +197,17 @@ namespace mu2e {
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
         tgts.push_back(tg);
+      }
+      if(toTS5_){
+        // record-only: a disk out to the DS inner radius 1 mm downstream of the TSDA plane, crossed just before the TSDA plane
+        // ends the sweep. A crossing means the extrapolated helix reaches the TSDA plane inside the DS bore. For a downstream
+        // fit it comes from the backwards-in-time extrapolation, which for a conversion electron continues upstream past the
+        // stopping target, so it is not by itself a cosmic tag.
+        SweepTarget ts5;
+        ts5.sid_ = SurfaceId("TS5_Face");
+        ts5.surf_ = ds.ts5FacePtr().get();
+        ts5.drives_ = false; // the TSDA plane drives the extension
+        tgts.push_back(ts5);
       }
       SweepTarget tsda;
       tsda.reach_ = SweepTarget::zplane;

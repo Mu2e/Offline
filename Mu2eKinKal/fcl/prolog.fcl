@@ -389,6 +389,7 @@ Mu2eKinKal : {
     Upstream : true
     BackToTracker : false
     ToOPA : true
+    ToTS5 : true # record where the upstream extrapolation reaches the TSDA plane inside the DS bore (TS5_Face); not by itself a cosmic tag
     ToCRV : false
     ToCaloD0 : true
     ToCaloD1 : true
