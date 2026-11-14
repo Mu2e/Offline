@@ -41,6 +41,7 @@ namespace mu2e {
     double meanEventsPerProton_;
     const int debugLevel_;
     const unsigned maxEventsToSkip_;
+    bool skipDrawn_ = false; // per instance: only the first call draws a random skip
     art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
 
@@ -216,10 +217,9 @@ namespace mu2e {
 
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
-    static bool first(true);
     size_t result(0);
-    if(first) {
-      first = false;
+    if(!skipDrawn_) {
+      skipDrawn_ = true;
       std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
       result = uniform(urbg_);
     }
