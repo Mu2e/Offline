@@ -13,7 +13,7 @@ double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm
 double PSEnclosure.shell.outerDiameterWest = 2217.7; // mm
 double PSEnclosure.shell.thickness = 9.53; // mm  (3/8 inch)
 double PSEnclosure.endPlate.thickness = 6.35; // mm (1/4 inch)
-double PSEnclosure.v2.extraZOffset = -101.4; // mm
+double PSEnclosure.v2.extraZOffset = -51.9; // mm
 
 double PSEnclosure.endPlate.inset  = 500.0; // mm to East of shell end
 double PSEnclosure.endPlate.radius = 550.0; // mm total approximation
