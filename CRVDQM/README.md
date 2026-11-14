@@ -11,6 +11,7 @@ CRVDQM/
   inc/CRVDQMRun1.hh       frozen CRV layout: numbering, configurations (constants only)
   inc/CRVDQMLayout.hh     geometry/conditions -> what a CRV client needs
   inc/CRVDigiDQM.hh       digis: occupancy, ADC, TDC, timing
+  inc/CRVDigiDQMConfig.hh FHiCL of CRVDigiDQM: hists + the configured dtPairs
   inc/CRVStatusDQM.hh     ROC status packets and DAQ errors
   inc/CRVRecoDQM.hh       reco pulses and coincidence clusters, PE/MPV maps
   inc/CRVCFTime.hh        constant-fraction timing of a digi waveform
@@ -63,9 +64,9 @@ axes. The online modules take the configuration from FHiCL
 
 | Client | Fills | Needs from the module |
 |---|---|---|
-| `CRVDigiDQM` | occupancy per channel/FEB, peak ADC, TDC, intra-FEB `dtFpgaPairs`, partner-FEB `dtPartner_*`, coincidence multiplicity | `Fill(digis, status)`; `SetConfiguration`, `SetFebTopology` |
+| `CRVDigiDQM` | occupancy per channel/FEB, peak ADC, TDC, intra-FEB `dtFpgaPairs`, partner-FEB `dtPartner_*`, coincidence multiplicity, configured `dtPair_*` | `Fill(digis, status)`; `SetConfiguration`, `SetFebTopology`; `dtPairs` at construction |
 | `CRVStatusDQM` | ROC headers, latency (and the invalid-latency counts), firmware error bits, port flags, per-link views, DAQ error codes | `Fill(status[, daqErrors])` |
-| `CRVRecoDQM` | clusters, reco pulses, `crvPEsVsChannel`, and at end of job the MPV maps | `Fill(clusters[, pulses])`; `SetConfiguration` |
+| `CRVRecoDQM` | clusters, reco pulses, `crvPEsVsChannel`, sector-pair `crvCoincidenceDt_*`, and at end of job the MPV maps | `Fill(clusters[, pulses])`; `SetConfiguration` |
 
 `CRVDQMLayout.hh` turns geometry and conditions into those injections, and is
 shared by the offline and online modules:
@@ -94,6 +95,28 @@ A slipped FEB is one displaced column. `layersPerGroup`, `groupsPerEvent`,
 `sectorsPerEvent` and `febNoGroup` make the selection auditable; a large
 multi-sector event is a cosmic air shower, which is physics, not a fault.
 
+**Configured FPGA pairs.** `dtPairs` in the digi table names a short list
+of (ROC, FEB, FPGA) pairs A, B; each books one TH1F `dtPair_ROC<r>FEB<f>FPGA<p>_ROC<r>FEB<f>FPGA<p>`
+of t_B − t_A over every digi pair on the two FPGAs in an event (±250 ns,
+0.5 ns bins). No selection is applied to the digis: the time is the
+constant-fraction time with no amplitude cut, or, when the waveform has no
+crossing, the time of its largest sample (counted as `dtPairPeakTime`). A
+and B are on one FEB (A = B pairs one FPGA's different channels, as
+`dtFpgaPairs` does) or on different ROCs. Two FEBs of one ROC are refused:
+their relative delay is a calibration constant the online digi times cannot
+apply. These are the one part of the set chosen in FHiCL; the names carry the
+addresses, so jobs with the same list merge, and the reference catalogues
+are written with no pairs.
+
+**Sector-pair timing.** `crvCoincidenceDt_<configuration>_<A>_<B>`, one per
+unordered pair of the configuration's sectors (A before B in its list:
+55 for `extracted`, 1 for `run1a`), holds t_B − t_A of the average hit times
+of two clusters of one event in those sectors (±100 ns, 0.5 ns bins). A
+cluster's sector comes from its pulses' channels through the injected sector
+map. Cluster times are built from calibrated pulse times, so a pair spanning
+two ROCs is the ROC-to-ROC comparison with the calibration applied; the peak
+also holds the flight time between the sectors.
+
 **DAQ errors.** `daqErrorCode` has one bin per `CrvDAQerror` code with room
 for codes added upstream (32 bins), labelled from
 `CrvDAQerrorCodeDetail::names()`, so a new code appears without a binning
@@ -121,7 +144,8 @@ two comment lines, then the dump that a module writes when its
 introduced the per-configuration readout axes; `v1` is the pre-variant set
 with every configuration's family booked. Version 3 (`CRVDigiDQM`,
 `CRVRecoDQM`; `CRVStatusDQM` stays at 2) sizes the offline-channel axis of
-`crvDigisPerChannel` and `crvPEsVsChannel` by configuration.
+`crvDigisPerChannel` and `crvPEsVsChannel` by configuration. Version 4
+(`CRVRecoDQM` only) adds the `crvCoincidenceDt_*` sector pairs.
 
 ## Testing
 

@@ -10,6 +10,11 @@
 // and picks the per-sector family. Every job of a configuration writes the
 // same set, stamped `variant=<configuration>`, and files merge within it.
 //
+// The one exception is the configured dtPair_* family: FHiCL lists the
+// (ROC, FEB, FPGA) pairs to compare, and only those are booked. Each is named
+// after its two addresses, so jobs with the same list merge; the reference
+// catalogues are written with an empty list.
+//
 // Original Author: R. Mina
 
 #include "Offline/CRVDQM/inc/CRVDQMRun1.hh"
@@ -78,6 +83,24 @@ public:
   static constexpr DQMAxis kGroupsPerEvent2{200, -0.5, 999.5};
   static constexpr DQMAxis kSectorsPerEvent = DQMAxis::Counts(0, 23);
 
+  // Configured digi-time pairs: one TH1F of t_B - t_A per pair, over every
+  // pair of digis on the two FPGAs in an event, with no selection on the
+  // digis. A and B are on one FEB (two FPGAs, or one FPGA's different
+  // channels) or on different ROCs; two FEBs of one ROC are refused, since
+  // their relative delay is a calibration constant the online histograms
+  // cannot apply. Times are uncalibrated, so cross-ROC pairs sit at their
+  // cable/clock offset (up to ~115 ns at KPP): hence the wide axis.
+  struct FpgaAddress {
+    int roc{0};   //1-based
+    int feb{0};   //ROC port, 1-based
+    int fpga{0};  //0-based
+  };
+  struct DtPair {
+    FpgaAddress a;
+    FpgaAddress b;
+  };
+  static constexpr DQMAxis kDtPair = DQMAxis::Symmetric(250., 0.5);
+
   // Live series: digis summed over the last kEwtWindow events, and the mean
   // over blocks of kAvgBlockSize events.
   static constexpr std::size_t kEwtWindow = 1000;
@@ -95,8 +118,11 @@ public:
   // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed and
   // offline-channel axes and chooses the per-sector family; it is fixed at construction,
   // before Book(), and stamped into the output as the binning variant.
+  // `dtPairs` chooses the dtPair_* histograms; an address outside the
+  // configuration's readout, two FEBs of one ROC, or a repeated pair throws.
   explicit CRVDigiDQM(const DQMHistSet::Config& hists = {},
-                      int configuration = CRVDQMRun1::kRun1a);
+                      int configuration = CRVDQMRun1::kRun1a,
+                      std::vector<DtPair> dtPairs = {});
 
   int configuration() const { return bookedConfiguration_; }
   int nROC() const { return CRVDQMRun1::nROC(bookedConfiguration_); }
@@ -141,6 +167,10 @@ public:
   TH1F* groupsPerEvent() const { return h_groupsPerEvent_; }
   TH1F* sectorsPerEvent() const { return h_sectorsPerEvent_; }
   TH1F* febNoGroup() const { return h_febNoGroup_; }  //FEB had hits, no group formed
+  //configured pairs, in FHiCL order: t_B - t_A over all digi pairs
+  const std::vector<DtPair>& dtPairConfig() const { return dtPairConfig_; }
+  TH1F* dtPair(std::size_t i) const;
+  static std::string dtPairName(const DtPair& p);
 
   std::size_t nDigis() const { return nDigis_; }
   std::size_t nGroups() const { return nGroups_; }
@@ -175,6 +205,11 @@ private:
   int dtClassFor(int febA, int febB) const;
   void fillEwtSeries(uint64_t ewt, int nDigis);
   void fillSectorOccupancy();
+  void validateDtPairs() const;
+  void fillDtPairs();
+  // Every digi has one: constant fraction with no amplitude cut, else (flat
+  // waveform, maximum in the first sample) the time of its largest sample.
+  double unfilteredTime(const CrvDigi& digi);
 
   DQMH1<TH1F> h1_digisPerEvt_;
   DQMH1<TH1F> h1_digisPerEvt2_;
@@ -199,6 +234,14 @@ private:
   // [sector] of the booked configuration, short and full view
   std::vector<DQMH1<TH1F>> h_sectorOccupancy_;
   std::vector<DQMH1<TH1F>> h_sectorOccupancy2_;
+  std::vector<DQMH1<TH1F>> h_dtPair_;  //[configured pair]
+
+  // Configured pairs. Each distinct FPGA they name is a slot; a slot holds the
+  // event's digis on that FPGA.
+  const std::vector<DtPair> dtPairConfig_;
+  std::vector<int> fpgaSlot_;                        //[globalFeb*kNFPGAPerFEB+fpga], -1 if unused
+  std::vector<std::pair<int, int>> dtPairSlots_;     //[configured pair] -> (slot A, slot B)
+  std::vector<std::vector<FpgaHit>> slotHits_;       //[slot], refilled every event
 
   DQMSeries* g_digisVsEwt_{nullptr};
   DQMSeries* g_digisAvgVsEwt_{nullptr};

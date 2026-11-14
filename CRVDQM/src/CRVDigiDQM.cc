@@ -29,8 +29,10 @@ const char* CRVDigiDQM::dtClassName(int c)
   }
 }
 
-CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration) :
+CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration,
+                       std::vector<DtPair> dtPairs) :
     DQMClient("CRVDigiDQM", kBinningVersion, hists, configurationName(configuration)),
+    dtPairConfig_(std::move(dtPairs)),
     bookedConfiguration_(configuration)
 {
   if (configuration < 0 || configuration >= kNConfigurations) {
@@ -38,6 +40,84 @@ CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration) :
         << "configuration " << configuration << " is not a CRVDQMRun1::Configuration\n";
   }
   nDigisOffline_.assign(CRVDQMRun1::nOfflineChannels(configuration), 0);
+
+  validateDtPairs();
+  fpgaSlot_.assign(nFebs() * kNFPGAPerFEB, -1);
+  auto slotFor = [this](const FpgaAddress& f) {
+    int& slot = fpgaSlot_[globalFebId(f.roc, f.feb) * kNFPGAPerFEB + f.fpga];
+    if (slot < 0) {
+      slot = static_cast<int>(slotHits_.size());
+      slotHits_.emplace_back();
+    }
+    return slot;
+  };
+  for (const DtPair& p : dtPairConfig_) {
+    const int slotA = slotFor(p.a);
+    const int slotB = slotFor(p.b);
+    dtPairSlots_.emplace_back(slotA, slotB);
+  }
+}
+
+std::string CRVDigiDQM::dtPairName(const DtPair& p)
+{
+  return Form("dtPair_ROC%dFEB%dFPGA%d_ROC%dFEB%dFPGA%d", p.a.roc, p.a.feb, p.a.fpga, p.b.roc,
+              p.b.feb, p.b.fpga);
+}
+
+TH1F* CRVDigiDQM::dtPair(std::size_t i) const
+{
+  return i < h_dtPair_.size() ? static_cast<TH1F*>(h_dtPair_[i]) : nullptr;
+}
+
+void CRVDigiDQM::validateDtPairs() const
+{
+  std::set<std::pair<int, int>> seen;  //unordered pair of FPGA indices
+  for (const DtPair& p : dtPairConfig_) {
+    for (const FpgaAddress* f : {&p.a, &p.b}) {
+      const bool inCRVId = onlineIdInRange(f->roc, f->feb, 0) && f->fpga >= 0 &&
+                           f->fpga < kNFPGAPerFEB;
+      if (!inCRVId || f->roc > nROC() ||
+          !febInConfiguration(bookedConfiguration_, globalFebId(f->roc, f->feb))) {
+        throw cet::exception("CRVDigiDQM")
+            << "dtPairs: ROC " << f->roc << " FEB " << f->feb << " FPGA " << f->fpga
+            << " is not in the " << configurationName(bookedConfiguration_)
+            << " readout (" << nROC() << " ROCs, global FEB ID < " << nFebs()
+            << ", FPGA 0-" << kNFPGAPerFEB - 1 << ").\n";
+      }
+    }
+    if (p.a.roc == p.b.roc && p.a.feb != p.b.feb) {
+      throw cet::exception("CRVDigiDQM")
+          << "dtPairs: " << dtPairName(p)
+          << " compares two FEBs of one ROC, whose relative delay is a calibration "
+             "constant the uncalibrated digi times do not include. Use one FEB, or FEBs "
+             "on different ROCs.\n";
+    }
+    const int ia = globalFebId(p.a.roc, p.a.feb) * kNFPGAPerFEB + p.a.fpga;
+    const int ib = globalFebId(p.b.roc, p.b.feb) * kNFPGAPerFEB + p.b.fpga;
+    if (!seen.insert({std::min(ia, ib), std::max(ia, ib)}).second) {
+      throw cet::exception("CRVDigiDQM")
+          << "dtPairs: " << dtPairName(p) << " is listed twice (A and B in either order).\n";
+    }
+  }
+}
+
+double CRVDigiDQM::unfilteredTime(const CrvDigi& digi)
+{
+  const double start = digi.GetStartTDC() * CRVDigitizationPeriod;
+  const auto& adcs = digi.GetADCs();
+  const CFResult cf = cfTime(adcs, kCFFraction, 0);
+  if (cf.valid) {
+    return start + cf.time_ns;
+  }
+  diag().Count("dtPairPeakTime",
+               "a digi on a dtPair FPGA had no constant-fraction crossing (flat waveform, "
+               "maximum in its first sample, or under 3 samples); it is timed at its "
+               "largest sample.");
+  if (adcs.empty()) {
+    return start;
+  }
+  const auto peak = std::max_element(adcs.begin(), adcs.end()) - adcs.begin();
+  return start + peak * CRVDigitizationPeriod;
 }
 
 TH2F* CRVDigiDQM::dtPartner(int dtClass) const
@@ -132,6 +212,16 @@ void CRVDigiDQM::book()
         kDigisPerChannelAndEvent2));
   }
 
+  // Configured pairs, last so the fixed set's catalogue is unchanged.
+  for (const DtPair& p : dtPairConfig_) {
+    h_dtPair_.push_back(h.book1<TH1F>(
+        dtPairName(p),
+        Form("#Deltat, ROC %d FEB %d FPGA %d minus ROC %d FEB %d FPGA %d, all digis;"
+             "t_{B} - t_{A} [ns];Digi pairs",
+             p.b.roc, p.b.feb, p.b.fpga, p.a.roc, p.a.feb, p.a.fpga),
+        kDtPair));
+  }
+
   g_digisVsEwt_ = &series().book(
       "g_digisVsEwt",
       Form("Hits in last %zu events;Event window tag;Hits", kEwtWindow));
@@ -184,6 +274,9 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
   const int nDigis = static_cast<int>(crvDigis.size());
   std::map<int, std::map<uint8_t, std::vector<FpgaHit>>> hitTimes;  //by global FEB ID
   std::vector<PartnerHit> partnerHits;
+  for (auto& hits : slotHits_) {
+    hits.clear();
+  }
 
   for (const auto& digi : crvDigis) {
     const int roc = static_cast<int>(digi.GetROC());
@@ -202,6 +295,11 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
       h_crvDigiRatesROC_[roc - 1].Fill(rocChannel(feb, febChannel));
       h_crvDigiRates_.Fill(febChannel, globalFeb);
       activeGlobalFebs_.insert(globalFeb);
+      //configured pairs take every digi on their FPGAs, unselected
+      const int slot = fpgaSlot_[globalFeb * kNFPGAPerFEB + febChannel / kNChanPerFPGA];
+      if (slot >= 0) {
+        slotHits_[slot].push_back({unfilteredTime(digi), static_cast<uint8_t>(febChannel)});
+      }
     } else if (!validId) {
       diag().Count("onlineIdOutOfRange",
                    "a digi's ROC/FEB/channel is outside CRVId (ROC 1-18, FEB 1-24, "
@@ -275,6 +373,7 @@ void CRVDigiDQM::Fill(const CrvDigiCollection& crvDigis, const CrvStatusCollecti
 
   fillFpgaTiming(hitTimes);
   fillPartnerTiming(partnerHits);
+  fillDtPairs();
 
   if (haveEwt) {
     fillEwtSeries(ewt, nDigis);
@@ -307,6 +406,32 @@ void CRVDigiDQM::fillFpgaTiming(
             }
           }
         }
+      }
+    }
+  }
+}
+
+// Every digi pair of a configured pair's two FPGAs. One FPGA with itself pairs
+// its different channels, as dtFpgaPairs does.
+void CRVDigiDQM::fillDtPairs()
+{
+  for (std::size_t i = 0; i < dtPairSlots_.size(); ++i) {
+    const auto [slotA, slotB] = dtPairSlots_[i];
+    const auto& hitsA = slotHits_[slotA];
+    const auto& hitsB = slotHits_[slotB];
+    if (slotA == slotB) {
+      for (std::size_t ia = 0; ia < hitsA.size(); ++ia) {
+        for (std::size_t ib = ia + 1; ib < hitsA.size(); ++ib) {
+          if (hitsA[ia].channel != hitsA[ib].channel) {
+            h_dtPair_[i].Fill(hitsA[ib].time_ns - hitsA[ia].time_ns);
+          }
+        }
+      }
+      continue;
+    }
+    for (const auto& hA : hitsA) {
+      for (const auto& hB : hitsB) {
+        h_dtPair_[i].Fill(hB.time_ns - hA.time_ns);
       }
     }
   }

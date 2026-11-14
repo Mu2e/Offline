@@ -11,6 +11,13 @@
 # Override a table below the include, e.g. per-subrun copies offline:
 #   physics.analyzers.crvDigiDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
 #
+# The digi tables (CRVDigiDQMFhicl) also take `dtPairs`, the (ROC, FEB, FPGA)
+# pairs to book a dtPair_* histogram for; none by default. One FEB, or FEBs on
+# different ROCs; Offline/CRVDQM/inc/CRVDigiDQMConfig.hh has the syntax:
+#   physics.analyzers.crvDigiDQM.dqm.dtPairs : [
+#     { rocA : 1  febA : 3  fpgaA : 0  fpgaB : 1 },
+#     { rocA : 1  febA : 3  fpgaA : 0  rocB : 2  febB : 5  fpgaB : 0 } ]
+#
 # Online, rules pick what HistoSender ships. `publish` selects a histogram,
 # `group` collects its copies under one folder (omit it to ship each copy under
 # its own name, which is what the GUI subscribes to), `liveName` names the
@@ -67,7 +74,9 @@ CRVDQM : {
         { match : "sectorsPerEvent"  modes : [ "job" ]  publish : true  group : "timing_feb" },
 
         # Intra-FEB FPGA timing: one TH2, one column per FEB and FPGA pair.
-        { match : "dtFpgaPairs"  modes : [ "job" ]  publish : true  group : "timing_fpga" }
+        { match : "dtFpgaPairs"  modes : [ "job" ]  publish : true  group : "timing_fpga" },
+        # Configured FPGA pairs (dqm.dtPairs), all digis: TH1Fs, cheap to ship.
+        { match : "dtPair_*"     modes : [ "job" ]  publish : true  group : "timing_pairs" }
 
         # Anything else is booked job-only and not shipped (crvDigiRates*,
         # crvDigisPerChannel: large and not on the display).
