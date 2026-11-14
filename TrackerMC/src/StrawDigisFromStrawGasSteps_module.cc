@@ -669,7 +669,7 @@ namespace mu2e {
             // compute the time the signal arrives at the wire end
             double gtime = ctime + wireq._time + weq._time;
             // create the clust
-            StrawCluster clust(StrawCluster::primary,sid,end,(float)gtime,weq._charge,weq._wdist,wireq._pos,(float)wireq._time,(float)weq._time,sgsptr,(float)ctime);
+            StrawCluster clust(StrawCluster::primary,sid,end,(float)gtime,weq._charge,weq._wdist,wireq._pos,(float)wireq._time,(float)weq._time,sgsptr,(float)ctime,strawele,straw);
             // add the clusts to the appropriate sequence.
             shsp.clustSequence(end).insert(clust);
             // if required, add a 'ghost' copy of this clust
