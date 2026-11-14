@@ -75,9 +75,17 @@ namespace {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-  // comparison functor for sorting byuniquePanel ID
+  // comparison functor for sorting by unique face, then unique panel ID.
+  // fillFaceOrderedHits stores each face's hits as one index range, so the hits of a face must be
+  // contiguous. The face is the low bit of the panel number, so sorting by panel alone interleaves
+  // the two faces of a plane.
   struct panelcomp {
-    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) {
+      auto f1 = p1.strawId().uniqueFace();
+      auto f2 = p2.strawId().uniqueFace();
+      if (f1 != f2) return f1 < f2;
+      return p1.strawId().uniquePanel() < p2.strawId().uniquePanel();
+    }
   };
   struct HelixHitMVA
   {
@@ -93,8 +101,9 @@ namespace {
     float& _hhrho;  // hit transverse radius
     //HelixHitMVA() : _pars(9,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
     // _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[7]),_hhrho(_pars[8]){}
+    // _pars holds the 7 MVA inputs; _hrho and _hhrho are not MVA inputs and live in _pars2
     HelixHitMVA() : _pars(7,0.0),_pars2(2,0.0),_dtrans(_pars[0]),_dwire(_pars[1]),_chisq(_pars[2]),_dt(_pars[3]),
-    _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars[0]),_hhrho(_pars2[1]) {}
+    _drho(_pars[4]),_dphi(_pars[5]),_rwdot(_pars[6]),_hrho(_pars2[0]),_hhrho(_pars2[1]) {}
   };
 
 }
