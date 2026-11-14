@@ -21,6 +21,7 @@
 #include "Offline/GeneralUtilities/inc/Angles.hh"
 #include "art/Utilities/make_tool.h"
 #include "canvas/Persistency/Common/Ptr.h"
+#include "cetlib_except/exception.h"
 
 //MU2E:
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
@@ -225,11 +226,22 @@ namespace mu2e {
       if (_UseLineFinder) {
         auto const& lfH = event.getValidHandle<CosmicTrackSeedCollection>(_lfToken);
         const CosmicTrackSeedCollection& lfcol(*lfH);
-        if (lfcol.size() == 0) {
+        // use the line LineFinder found in this time cluster; skip a cluster without one
+        const CosmicTrackSeed* lfseed = nullptr;
+        for (auto const& lf : lfcol) {
+          if (lf.timeCluster().id() != tcH.id())
+            throw cet::exception("RECO") << "CosmicTrackFinder: LineFinder seeds " << _lfToken
+              << " were not made from TimeClusterCollection " << _tcToken << std::endl;
+          if (lf.timeCluster().key() == index) {
+            lfseed = &lf;
+            break;
+          }
+        }
+        if (lfseed == nullptr) {
           continue;
         }
 
-        tseed = lfcol[0];
+        tseed = *lfseed;
         double _interror = 40;
         double _direrror = 2.5;
         double _t0error = 1;
