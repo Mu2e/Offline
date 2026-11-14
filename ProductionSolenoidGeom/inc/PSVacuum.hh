@@ -6,6 +6,7 @@
 // Original author Andrei Gaponenko
 //
 
+#include "Offline/GeomPrimitives/inc/Cone.hh"
 #include "Offline/GeomPrimitives/inc/Tube.hh"
 #include "Offline/Mu2eInterfaces/inc/Detector.hh"
 
@@ -24,6 +25,11 @@ namespace mu2e {
     // Properties of the vacuum inside the PS
     double vacuumPressure()          const { return _vacuumPressure;     }
     std::string vacuumG4Material() const { return _vacuumG4Material;   }
+
+    // Conical hard connect between the PS bore tube and the TSu ring plate.
+    // tsInterconnect() is only meaningful when hasTSInterconnect() is true.
+    bool hasTSInterconnect()         const { return hasTSInterconnect_; }
+    const Cone& tsInterconnect()     const { return tsInterconnect_; }
 
   private:
 
@@ -45,6 +51,9 @@ namespace mu2e {
     // Properties of the vacuum inside the PS.
     double _vacuumPressure;
     std::string _vacuumG4Material;
+
+    bool hasTSInterconnect_ = false;
+    Cone tsInterconnect_;
 
   };
 
