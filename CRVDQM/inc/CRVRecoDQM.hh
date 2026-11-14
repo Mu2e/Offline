@@ -13,7 +13,8 @@
 // built from calibrated pulse times, so a pair that spans two ROCs compares
 // the ROCs with the calibration applied: a shifted peak is a ROC (or FEB)
 // whose offset moved. The peak also holds the muon's flight time between the
-// sectors, constant for a fixed geometry.
+// sectors, constant for a fixed geometry. A cluster with pulses in more than
+// one sector (the finder groups sectors by type) is left out and counted.
 //
 // Original Author: R. Mina
 
@@ -150,7 +151,9 @@ private:
   TH1D* position(int coordinate) const;
   void fillClusters(const CrvCoincidenceClusterCollection& clusters);
   void fillRecoPulses(const CrvRecoPulseCollection& recoPulses);
-  // The cluster's sector, from its first pulse with a mapped channel; -1 if none.
+  static constexpr int kNoSector = -1;        //no pulse on a mapped channel
+  static constexpr int kSeveralSectors = -2;  //mapped pulses in more than one sector
+  // The one sector of the cluster's mapped pulses, or kNoSector / kSeveralSectors.
   int clusterSector(const CrvCoincidenceCluster& cluster) const;
   int sectorPairIndex(int sectorA, int sectorB) const;  //sectorA < sectorB
 

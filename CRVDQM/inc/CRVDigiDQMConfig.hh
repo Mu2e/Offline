@@ -14,7 +14,8 @@
 //   }
 //
 // rocB / febB default to rocA / febA. FEB is the ROC port, 1-based; FPGA is
-// 0-3. CRVDigiDQM refuses two FEBs of one ROC (see CRVDigiDQM.hh).
+// 0-3. Any two FPGAs of the readout; CRVDigiDQM refuses an address outside it
+// and a repeated pair (see CRVDigiDQM.hh).
 //
 // Original Author: R. Mina
 

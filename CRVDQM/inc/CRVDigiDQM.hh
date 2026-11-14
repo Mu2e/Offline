@@ -11,9 +11,10 @@
 // same set, stamped `variant=<configuration>`, and files merge within it.
 //
 // The one exception is the configured dtPair_* family: FHiCL lists the
-// (ROC, FEB, FPGA) pairs to compare, and only those are booked. Each is named
-// after its two addresses, so jobs with the same list merge; the reference
-// catalogues are written with an empty list.
+// (ROC, FEB, FPGA) pairs to compare, and only those are booked. A non-empty
+// list is appended to the stamped variant (`extracted+dtPairs:<pairs>`, sorted),
+// so only jobs with the same list merge; the reference catalogues are written
+// with an empty list.
 //
 // Original Author: R. Mina
 
@@ -85,11 +86,11 @@ public:
 
   // Configured digi-time pairs: one TH1F of t_B - t_A per pair, over every
   // pair of digis on the two FPGAs in an event, with no selection on the
-  // digis. A and B are on one FEB (two FPGAs, or one FPGA's different
-  // channels) or on different ROCs; two FEBs of one ROC are refused, since
-  // their relative delay is a calibration constant the online histograms
-  // cannot apply. Times are uncalibrated, so cross-ROC pairs sit at their
-  // cable/clock offset (up to ~115 ns at KPP): hence the wide axis.
+  // digis. A and B are any two FPGAs of the readout; A = B pairs one FPGA's
+  // different channels, later digi in the collection minus earlier (as
+  // dtFpgaPairs). Times are uncalibrated, so a pair on two FEBs sits at their
+  // relative delay; KPP CRVTime offsets reach 113 ns
+  // (calib_extracted_20260630.txt): hence the wide axis.
   struct FpgaAddress {
     int roc{0};   //1-based
     int feb{0};   //ROC port, 1-based
@@ -118,8 +119,8 @@ public:
   // `configuration` (CRVDQMRun1::Configuration) sizes the readout-indexed and
   // offline-channel axes and chooses the per-sector family; it is fixed at construction,
   // before Book(), and stamped into the output as the binning variant.
-  // `dtPairs` chooses the dtPair_* histograms; an address outside the
-  // configuration's readout, two FEBs of one ROC, or a repeated pair throws.
+  // `dtPairs` chooses the dtPair_* histograms and joins the variant; an
+  // address outside the configuration's readout, or a repeated pair, throws.
   explicit CRVDigiDQM(const DQMHistSet::Config& hists = {},
                       int configuration = CRVDQMRun1::kRun1a,
                       std::vector<DtPair> dtPairs = {});

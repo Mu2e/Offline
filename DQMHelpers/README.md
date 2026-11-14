@@ -33,7 +33,9 @@ below.
 2. **The histogram set is code.** A client books everything in `book()`, up
    front, for the whole detector of its variant. Booking later, or booking one
    name twice, throws. FHiCL chooses extra *copies* of a histogram and what is
-   published.
+   published. A client may let FHiCL add a named family (`CRVDigiDQM`'s
+   `dtPairs`); it then appends that choice to its variant, so files with
+   different choices carry different stamps and are never merged.
 3. **Changing either is a version bump.** Edit the constant, bump the client's
    `kBinningVersion`, and regenerate the catalogue file (see
    [Changing binning](#changing-binning)).

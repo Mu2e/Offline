@@ -1,9 +1,9 @@
 # CRV DQM client tables: one per client, offline and online.
 #
-# Each table is the whole configuration of a CRV client (DQMClientFhicl): its
-# `hists` block. There is no binning here and no CRV configuration switch; the
-# clients book both the Run 1A/1B and the KPP (extracted) families and fill
-# the one the geometry names, so the same tables serve both detectors.
+# Each table is the whole configuration of a CRV client (DQMClientFhicl; the
+# digi tables are CRVDigiDQMFhicl): its `hists` block. There is no binning here
+# and no CRV configuration switch; the module's `configuration` parameter picks
+# the detector, so the same tables serve both detectors.
 #
 #   #include "Offline/CRVDQM/fcl/prolog.fcl"
 #   crvDigiDQM : { module_type : ...  dqm : @local::CRVDQM.Digi }
@@ -12,8 +12,8 @@
 #   physics.analyzers.crvDigiDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
 #
 # The digi tables (CRVDigiDQMFhicl) also take `dtPairs`, the (ROC, FEB, FPGA)
-# pairs to book a dtPair_* histogram for; none by default. One FEB, or FEBs on
-# different ROCs; Offline/CRVDQM/inc/CRVDigiDQMConfig.hh has the syntax:
+# pairs to book a dtPair_* histogram for; none by default. Any two FPGAs of the
+# readout; Offline/CRVDQM/inc/CRVDigiDQMConfig.hh has the syntax:
 #   physics.analyzers.crvDigiDQM.dqm.dtPairs : [
 #     { rocA : 1  febA : 3  fpgaA : 0  fpgaB : 1 },
 #     { rocA : 1  febA : 3  fpgaA : 0  rocB : 2  febB : 5  fpgaB : 0 } ]

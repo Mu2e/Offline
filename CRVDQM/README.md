@@ -101,19 +101,25 @@ of t_B − t_A over every digi pair on the two FPGAs in an event (±250 ns,
 0.5 ns bins). No selection is applied to the digis: the time is the
 constant-fraction time with no amplitude cut, or, when the waveform has no
 crossing, the time of its largest sample (counted as `dtPairPeakTime`). A
-and B are on one FEB (A = B pairs one FPGA's different channels, as
-`dtFpgaPairs` does) or on different ROCs. Two FEBs of one ROC are refused:
-their relative delay is a calibration constant the online digi times cannot
-apply. These are the one part of the set chosen in FHiCL; the names carry the
-addresses, so jobs with the same list merge, and the reference catalogues
-are written with no pairs.
+and B are any two FPGAs of the readout. A = B pairs one FPGA's different
+channels, as `dtFpgaPairs` does, and then t_B − t_A is the later digi in the
+collection minus the earlier. The times are uncalibrated, so a pair on two
+FEBs sits at their relative delay. These are the one part of the set chosen
+in FHiCL: a non-empty list is appended, sorted, to the stamped variant
+(`variant=extracted+dtPairs:ROC1FEB3FPGA0_ROC1FEB3FPGA1,...`), so files with
+different lists never merge. The reference catalogues are written with no
+pairs.
 
 **Sector-pair timing.** `crvCoincidenceDt_<configuration>_<A>_<B>`, one per
 unordered pair of the configuration's sectors (A before B in its list:
 55 for `extracted`, 1 for `run1a`), holds t_B − t_A of the average hit times
 of two clusters of one event in those sectors (±100 ns, 0.5 ns bins). A
 cluster's sector comes from its pulses' channels through the injected sector
-map. Cluster times are built from calibrated pulse times, so a pair spanning
+map. The coincidence finder groups sectors by type (M1-M8 share one, as do
+Run 1A T1 and T2), so a cluster can have pulses in two sectors; its time mixes
+them, and it is left out and counted in the `clusterSpansSectors` diagnostic.
+In KPP run 124155 that is 407 of 37,307 clusters, all on the muon taggers
+(17% of their 2445 clusters); the per-tagger peaks move by under 3 ns. Cluster times are built from calibrated pulse times, so a pair spanning
 two ROCs is the ROC-to-ROC comparison with the calibration applied; the peak
 also holds the flight time between the sectors.
 

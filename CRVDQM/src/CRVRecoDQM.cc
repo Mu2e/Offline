@@ -181,6 +181,7 @@ TH1F* CRVRecoDQM::sectorDt(int sectorA, int sectorB) const
 
 int CRVRecoDQM::clusterSector(const CrvCoincidenceCluster& cluster) const
 {
+  int sector = kNoSector;
   for (const auto& pulsePtr : cluster.GetCrvRecoPulses()) {
     if (!pulsePtr) {
       continue;
@@ -188,12 +189,17 @@ int CRVRecoDQM::clusterSector(const CrvCoincidenceCluster& cluster) const
     const int channel = pulsePtr->GetScintillatorBarIndex().asInt() *
                             static_cast<int>(CRVId::nChanPerBar) +
                         pulsePtr->GetSiPMNumber();
-    if (channel >= 0 && static_cast<std::size_t>(channel) < channelToSector_.size() &&
-        channelToSector_[channel] >= 0) {
-      return channelToSector_[channel];
+    if (channel < 0 || static_cast<std::size_t>(channel) >= channelToSector_.size() ||
+        channelToSector_[channel] < 0) {
+      continue;
+    }
+    if (sector == kNoSector) {
+      sector = channelToSector_[channel];
+    } else if (channelToSector_[channel] != sector) {
+      return kSeveralSectors;
     }
   }
-  return -1;
+  return sector;
 }
 
 TH1F* CRVRecoDQM::PEsMPVROC(int roc) const
@@ -282,6 +288,11 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
       const int sector = clusterSector(cluster);
       if (sector >= 0) {
         sectorTimes.emplace_back(sector, cluster.GetAvgHitTime());
+      } else if (sector == kSeveralSectors) {
+        diag().Count("clusterSpansSectors",
+                     "a coincidence cluster has pulses in more than one sector of the sector "
+                     "map (the finder groups sectors by type, e.g. M1-M8); its time mixes "
+                     "them, so it is left out of crvCoincidenceDt.");
       } else {
         diag().Count("clusterWithoutSector",
                      "a coincidence cluster has no pulse on a channel of the sector map "

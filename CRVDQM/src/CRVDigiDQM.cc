@@ -18,6 +18,28 @@ namespace mu2e {
 
 using namespace CRVDQMRun1;
 
+namespace {
+// The binning variant: the configuration, plus the sorted dtPairs list when one is set.
+std::string digiVariant(int configuration, const std::vector<CRVDigiDQM::DtPair>& dtPairs)
+{
+  std::string variant = configurationName(configuration);
+  if (dtPairs.empty()) {
+    return variant;
+  }
+  const std::string prefix = "dtPair_";
+  std::vector<std::string> names;
+  for (const auto& p : dtPairs) {
+    names.push_back(CRVDigiDQM::dtPairName(p).substr(prefix.size()));
+  }
+  std::sort(names.begin(), names.end());
+  variant += "+dtPairs:";
+  for (std::size_t i = 0; i < names.size(); ++i) {
+    variant += (i ? "," : "") + names[i];
+  }
+  return variant;
+}
+} // namespace
+
 const char* CRVDigiDQM::dtClassName(int c)
 {
   switch (c) {
@@ -31,7 +53,7 @@ const char* CRVDigiDQM::dtClassName(int c)
 
 CRVDigiDQM::CRVDigiDQM(const DQMHistSet::Config& hists, int configuration,
                        std::vector<DtPair> dtPairs) :
-    DQMClient("CRVDigiDQM", kBinningVersion, hists, configurationName(configuration)),
+    DQMClient("CRVDigiDQM", kBinningVersion, hists, digiVariant(configuration, dtPairs)),
     dtPairConfig_(std::move(dtPairs)),
     bookedConfiguration_(configuration)
 {
@@ -84,13 +106,6 @@ void CRVDigiDQM::validateDtPairs() const
             << " readout (" << nROC() << " ROCs, global FEB ID < " << nFebs()
             << ", FPGA 0-" << kNFPGAPerFEB - 1 << ").\n";
       }
-    }
-    if (p.a.roc == p.b.roc && p.a.feb != p.b.feb) {
-      throw cet::exception("CRVDigiDQM")
-          << "dtPairs: " << dtPairName(p)
-          << " compares two FEBs of one ROC, whose relative delay is a calibration "
-             "constant the uncalibrated digi times do not include. Use one FEB, or FEBs "
-             "on different ROCs.\n";
     }
     const int ia = globalFebId(p.a.roc, p.a.feb) * kNFPGAPerFEB + p.a.fpga;
     const int ib = globalFebId(p.b.roc, p.b.feb) * kNFPGAPerFEB + p.b.fpga;
