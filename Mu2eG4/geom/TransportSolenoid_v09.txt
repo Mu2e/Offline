@@ -34,15 +34,20 @@ vector<double> ts.braces.profileAxial  = { -454.0, -454.0,  -96.95,  96.95, 454.
 vector<double> ts.braces.profileRadial = {    0.0, 106.829, 222.84, 222.84, 106.829,   0.0, 121.24,  121.24  };
 
 // Azimuth of each brace around the TS3 axis, in degrees from +y (up) toward
-// +z (east). One brace is placed per entry.
-// PLACEHOLDER LAYOUT, NOT AS-BUILT: 8 groups of 3 braces, 10 deg apart within
-// a group, group centers 45 deg apart. Replace with the angles from
-// engineering report ED0037272 (drawing A-Frame-Brace-Assy-04.pdf).
+// +z (east). One brace is placed per entry, in the order Brace-01 to Brace-24.
+// Layout from drawing A-Frame-Brace-Assy-04 (J. Brandt, 01-Jul-2024), as
+// printed in Mu2e-doc-50662 Figure 7 and Mu2e-doc-54322 slide 14. Braces 1-12
+// are on the east side from bottom to top, 13-24 the mirror image on the west.
+// The values follow the drawing's dimensions: the top brace of each side at
+// 45 deg; 10 deg steps within each group of 3; 9 and 6 deg to the ports at
+// +-74 deg, 6 deg to the ports at +-106 deg; 8.5 deg steps around the
+// features at 106, 143 and 180 deg. They agree with the brace positions
+// measured on the drawing to within 0.5 deg.
 vector<double> ts.braces.phi = {
-    12.5,   22.5,   32.5,     57.5,   67.5,   77.5,
-   102.5,  112.5,  122.5,    147.5,  157.5,  167.5,
-   -12.5,  -22.5,  -32.5,    -57.5,  -67.5,  -77.5,
-  -102.5, -112.5, -122.5,   -147.5, -157.5, -167.5
+   171.5,  161.5,  151.5,    134.5,  124.5,  114.5,
+   100.0,   90.0,   80.0,     65.0,   55.0,   45.0,
+  -171.5, -161.5, -151.5,   -134.5, -124.5, -114.5,
+  -100.0,  -90.0,  -80.0,    -65.0,  -55.0,  -45.0
 };
 
 // This tells emacs to view this file in c++ mode.
