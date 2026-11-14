@@ -13,15 +13,20 @@ bool           hasExtMonFNAL = true;
 //----------------------------------------------------------------
 // The hand stacked shielding in the magnet room consists of a layer of steel blocks
 // placed along the east wall with a gap for the entrance collimator
-// The steel blocks and the rest of the magnet room floor are also covered with a layer of concrete blocks
-// both the steel and concrete layers are a foot thick
+// The steel blocks and the most of the magnet room floor are also covered with a layer of concrete blocks.
+// The numbers below are the as-built measurements from docdb-58926.
 
-double extMonFNAL.steelLength = 914.4;
-double extMonFNAL.steelWidthN = 1168.4;
-double extMonFNAL.steelWidthS = 2082.8;
-double extMonFNAL.layerHeight = 304.8;
-string extMonFNAL.steelMaterial = "G4_Fe";
-string extMonFNAL.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
+double extMonFNAL.shielding.steelLength = 1219.2;
+double extMonFNAL.shielding.steelWidthN = 1168.4;
+double extMonFNAL.shielding.steelWidthS = 2082.8;
+double extMonFNAL.shielding.steelLayerHeight = 304.8;
+string extMonFNAL.shielding.steelMaterial = "G4_Fe";
+double extMonFNAL.shielding.concreteLength = 1193.8;
+double extMonFNAL.shielding.concreteWidthN = 1168.4;
+double extMonFNAL.shielding.concreteWidthS = 1981.2;
+double extMonFNAL.shielding.concreteLayerHeight = 279.4;
+double extMonFNAL.shielding.floorConcreteBackGap = 139.70;
+string extMonFNAL.shielding.concreteMaterial = "CONCRETE_EXTMON_HANDSTACKED";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
