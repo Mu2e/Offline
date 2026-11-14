@@ -411,8 +411,9 @@ BEGIN_PROLOG
       DoGeometric                      : true
       # CRV resolution per cluster sector type (type 1 first). Sector type numbering depends on the geometry: these are
       # the extracted geometry's types 1-4 (EX, T1, T2, muon taggers; crv_counters_extracted_v04.txt); other geometries
-      # need their own lists. SigmaV: robust spread of (cluster - true crossing) across the bars; SigmaU: along the bars,
-      # two-ended clusters (T1 and the taggers are single-ended).
+      # need their own lists. With DoGeometric true, a list needs one entry per sector type of the loaded geometry or a
+      # single entry for all types; the module throws at beginRun otherwise. SigmaV: robust spread of (cluster - true
+      # crossing) across the bars; SigmaU: along the bars, two-ended clusters (T1 and the taggers are single-ended).
       SigmaV                           : [ 7, 13, 7, 17 ]  # mm
       SigmaU                           : [ 300 ]           # mm
       SigmaT                           : [ 5 ]             # ns  provisional (MC dtXing robust width 2.0-2.4 ns, two-ended)
