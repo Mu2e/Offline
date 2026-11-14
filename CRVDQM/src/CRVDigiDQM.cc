@@ -212,7 +212,7 @@ void CRVDigiDQM::book()
         kDigisPerChannelAndEvent2));
   }
 
-  // Configured pairs, last so the fixed set's catalogue is unchanged.
+  // Configured pairs, booked last so the fixed set's catalogue does not depend on them.
   for (const DtPair& p : dtPairConfig_) {
     h_dtPair_.push_back(h.book1<TH1F>(
         dtPairName(p),
