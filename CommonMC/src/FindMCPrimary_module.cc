@@ -31,12 +31,14 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"), Comment("SimParticle collection")};
         fhicl::OptionalAtom<std::string> primaryProcess{ Name("PrimaryProcess"), Comment("Process code that produced the primary physics particle") };
         fhicl::OptionalSequence<std::string> primaryGenIds{ Name("PrimaryGenIds"), Comment("Generator codes that produced the primary physics particle") };
+        fhicl::Atom<bool> allowMissing{ Name("allowMissing"), Comment("If true, write an empty PrimaryParticle when no primary is found instead of throwing. For long-lived generated particles whose decay products can leave no trace in the compressed SimParticles."), false};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
       void produce(art::Event& evt) override;
     private:
       int _debug;
+      bool _allowMissing;
       art::InputTag _spc;
       ProcessCode _pcode;
       std::vector<GenId> _gcodes;
@@ -45,6 +47,7 @@ namespace mu2e {
   FindMCPrimary::FindMCPrimary(const Parameters& config )  :
     art::EDProducer{config},
     _debug(config().debug()),
+    _allowMissing(config().allowMissing()),
     _spc(config().simPC())
     {
       std::string pcode;
@@ -95,8 +98,12 @@ namespace mu2e {
         }
       }
     }
-    // if no primary was found, throw
-    if(sims.size() == 0)throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
+    // if no primary was found, write an empty PrimaryParticle if allowed, otherwise throw
+    if(sims.size() == 0){
+      if(!_allowMissing)throw cet::exception("Simulation") << " No Primary particle found " << std::endl;
+      event.put(std::make_unique<PrimaryParticle>());
+      return;
+    }
     // check these all have the same creation code
     if(sims.size() > 1){
       auto isim = sims.begin()++;
