@@ -11,7 +11,7 @@ double PSEnclosure.shell.outerDiameterEast = 1526.6; // mm
 double PSEnclosure.shell.outerDiameterWest = 2217.7; // mm
 double PSEnclosure.shell.thickness = 9.53; // mm
 double PSEnclosure.endPlate.thickness = 6.35; // mm
-double PSEnclosure.v2.extraZOffset = -101.4; // mm
+double PSEnclosure.v2.extraZOffset = -51.9; // mm
 
 string PSEnclosure.shell.materialName  = "StainlessSteel316L";
 

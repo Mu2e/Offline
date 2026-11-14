@@ -34,8 +34,20 @@ double PS.VacVessel.WallThickness  = 20.;
 // e-mail 2012-03-27 from Tom Page, and PS-solenoid-magnet-assembly-2012-02-15.PDF in docdb-2066
 double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
-double PS.VacVessel.InnerExtension = 101.4;
+double PS.VacVessel.InnerExtension = 51.9;
 string PS.VacVessel.materialName   = "StainlessSteel";
+
+// Conical hard connect between the PS bore tube and the TSu upstream ring plate.
+// Mu2e-doc-8545: ED0004551 section 5 (Figures 5 and 6) and F10070866 (Segment-PS-to-TSu):
+// 0.375" (9.525 mm) 316L, inner diameter 1518.0 mm at the PS end and 1694.4 mm at the TSu end.
+// Simplified: the cone starts at the TS end of PSVacVesselInner with the same inner radius
+// and ends on the upstream face of the first TS ring (TSleftSideRing0). Its length is the
+// distance between those two planes. The thickness is measured normal to the cone wall.
+bool   PS.TSInterconnect.build        = true;
+double PS.TSInterconnect.rIn2         = 847.2;   // inner radius at the TSu end (1694.4/2)
+double PS.TSInterconnect.thickness    = 9.525;
+string PS.TSInterconnect.materialName = "StainlessSteel316";
+
 string PS.vacuumMaterialName       = "PSVacuum";
 bool   PS.Vacuum.Sensitive         = false;
 
