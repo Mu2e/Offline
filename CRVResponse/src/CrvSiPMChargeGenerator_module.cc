@@ -195,6 +195,16 @@ namespace mu2e
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
     std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter;
+
+    //first photon collection of each channel (bar index * channels per bar + SiPM number)
+    std::vector<CrvPhotonsCollection::const_iterator> photonsOfChannel(counters.size()*CRVId::nChanPerBar, crvPhotonsCollection->end());
+    for(CrvPhotonsCollection::const_iterator p=crvPhotonsCollection->begin(); p!=crvPhotonsCollection->end(); ++p)
+    {
+      int SiPM = p->GetSiPMNumber();
+      if(SiPM<0 || SiPM>=static_cast<int>(CRVId::nChanPerBar)) continue;
+      size_t channel = p->GetScintillatorBarIndex().asUint()*CRVId::nChanPerBar + SiPM;
+      if(channel<photonsOfChannel.size() && photonsOfChannel[channel]==crvPhotonsCollection->end()) photonsOfChannel[channel]=p;
+    }
     for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
@@ -215,20 +225,17 @@ namespace mu2e
 
         //time wrapping happened in the photon generator
         std::vector<std::pair<double,size_t> > photonTimesNew;   //pair of photon time and index in the original photon vector
-        CrvPhotonsCollection::const_iterator crvPhotons;   //after this loop, it will point to the correct index in the photon collection, if barIndex and SiPM is found
-                                                           //otherwise it will be crvPhotonsCollection->end()
-        for(crvPhotons=crvPhotonsCollection->begin(); crvPhotons!=crvPhotonsCollection->end(); crvPhotons++)
+        //points to the photon collection of this barIndex and SiPM, or to crvPhotonsCollection->end() if there is none
+        size_t channel = barIndex.asUint()*CRVId::nChanPerBar + SiPM;
+        CrvPhotonsCollection::const_iterator crvPhotons = channel<photonsOfChannel.size() ? photonsOfChannel[channel] : crvPhotonsCollection->end();
+        if(crvPhotons!=crvPhotonsCollection->end())
         {
-          if(crvPhotons->GetScintillatorBarIndex()==barIndex && crvPhotons->GetSiPMNumber()==(int)SiPM)
+          const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
+          for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
           {
-            const std::vector<CrvPhotons::SinglePhoton> &photonTimes = crvPhotons->GetPhotons();
-            for(size_t iphoton=0; iphoton<photonTimes.size(); iphoton++)
-            {
-              //No check whether photons are within startTime and endTime
-              double time = photonTimes[iphoton]._time;
-              photonTimesNew.emplace_back(time,iphoton);
-            }
-            break;
+            //No check whether photons are within startTime and endTime
+            double time = photonTimes[iphoton]._time;
+            photonTimesNew.emplace_back(time,iphoton);
           }
         }
 
