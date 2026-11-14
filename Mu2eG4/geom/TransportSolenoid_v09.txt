@@ -1,0 +1,51 @@
+// Add the 24 restraint braces on the TSu-TSd mechanical interconnect.
+// Everything else is identical to v08.
+#include "Offline/Mu2eG4/geom/TransportSolenoid_v08.txt"
+
+//-----------------------------------------------------------------------------
+// TSu-TSd mechanical interconnect restraint braces ("Brace-12" design)
+//
+// Installed 2025 to hold the antiproton window housing rim at its corrected
+// diameter. Sources: Mu2e-doc-54322 (repair summary) and Mu2e-doc-50662
+// (heating and welding procedure, Figure 6 for the profile, Figure 7 for the
+// layout). Each brace is an A-frame of 4" x 4" 304 stainless bars: two side
+// bars welded to the TSu and TSd ring plates and a center bar above the
+// housing rim. It is modeled as one extruded profile, 4" thick in the
+// tangential direction. The block nut, threaded rod, nuts and washers
+// (about 7 kg per brace) are not modeled: they sit on the housing rim, which
+// this geometry models as a solid disk out to pbar.support.outROut = 1050 mm,
+// while the as-built rim radius is about 1000 mm.
+//-----------------------------------------------------------------------------
+bool   ts.braces.build         = true;
+string ts.braces.material      = "StainlessSteel";
+// Radius of the brace feet: interconnect shell OD (ts.tsudinterconnect.rOut
+// = 955.875 mm) plus 0.125 mm clearance.
+double ts.braces.rBase         = 956.0;   // mm
+double ts.braces.halfThickness = 50.8;    // mm, half of a 4" bar
+
+// Profile in the plane that contains the TS3 axis, clockwise.
+// profileAxial:  mm along the TS3 axis from the TS3 center (+ is toward TSu).
+// profileRadial: mm radially outward from rBase.
+// The feet at +-454 mm sit against the ring plates (inner faces at +-454.1 mm).
+// Side bars rise at 18 deg; the center bar is 101.6 mm tall, its underside
+// 121.24 mm above the feet, 161.71 mm long at the bottom and 193.90 mm at
+// the top (ends cut at 99 deg). Gives 78 kg per brace with StainlessSteel.
+vector<double> ts.braces.profileAxial  = { -454.0, -454.0,  -96.95,  96.95, 454.0,   454.0,  80.855, -80.855 };
+vector<double> ts.braces.profileRadial = {    0.0, 106.829, 222.84, 222.84, 106.829,   0.0, 121.24,  121.24  };
+
+// Azimuth of each brace around the TS3 axis, in degrees from +y (up) toward
+// +z (east). One brace is placed per entry.
+// PLACEHOLDER LAYOUT, NOT AS-BUILT: 8 groups of 3 braces, 10 deg apart within
+// a group, group centers 45 deg apart. Replace with the angles from
+// engineering report ED0037272 (drawing A-Frame-Brace-Assy-04.pdf).
+vector<double> ts.braces.phi = {
+    12.5,   22.5,   32.5,     57.5,   67.5,   77.5,
+   102.5,  112.5,  122.5,    147.5,  157.5,  167.5,
+   -12.5,  -22.5,  -32.5,    -57.5,  -67.5,  -77.5,
+  -102.5, -112.5, -122.5,   -147.5, -157.5, -167.5
+};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
