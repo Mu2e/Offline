@@ -12,15 +12,21 @@ int mu2e::ValTrkCrvMatchMC::declare(const art::TFileDirectory& tfs) {
   _hTrueClu = tfs.make<TH1D>("TrueClu", "own cluster of the track's particle per sector", ns, lo, hi);
   _hTrueCluGeom = tfs.make<TH1D>("TrueCluGeom", "own cluster is a geometric candidate", ns, lo, hi);
   _hTrueCluBest = tfs.make<TH1D>("TrueCluBest", "own cluster is the best in its sector", ns, lo, hi);
-  _hRecoXing = tfs.make<TH1D>("RecoXing", "reco crossings per sector", ns, lo, hi);
-  _hRecoXingTrue = tfs.make<TH1D>("RecoXingTrue", "reco crossings with a true crossing of the same sector", ns, lo, hi);
+  _hRecoXing = tfs.make<TH1D>("RecoXing", "reco crossings per sector (extrapolated, in bounds)", ns, lo, hi);
+  _hRecoXingTrue = tfs.make<TH1D>("RecoXingTrue", "in-bounds reco crossings with a true crossing of the same sector", ns, lo, hi);
+  _hRecoXingProj = tfs.make<TH1D>("RecoXingProj", "projected crossings per sector (line tracks with no crossing)", ns, lo, hi);
+  _hRecoXingProjTrue = tfs.make<TH1D>("RecoXingProjTrue", "projected crossings with a true crossing of the same sector", ns, lo, hi);
   _hTrueXing = tfs.make<TH1D>("TrueXing", "true crossings of the track's particle per sector", ns, lo, hi);
-  _hTrueXingFound = tfs.make<TH1D>("TrueXingFound", "true crossings with a reco crossing", ns, lo, hi);
-  _hXingDist = tfs.make<TH2D>("XingDist", "|reco - true crossing|;sector;mm", ns, lo, hi, 100, 0., 500.);
+  _hTrueXingFound = tfs.make<TH1D>("TrueXingFound", "true crossings with an in-bounds reco crossing", ns, lo, hi);
+  _hTrueXingProj = tfs.make<TH1D>("TrueXingProj", "true crossings matched only by a projected crossing", ns, lo, hi);
+  _hXingDist = tfs.make<TH2D>("XingDist", "|reco - true crossing|, in-bounds reco;sector;mm", ns, lo, hi, 100, 0., 500.);
+  _hXingDistProj = tfs.make<TH2D>("XingDistProj", "|reco - true crossing|, projected reco;sector;mm", ns, lo, hi, 100, 0., 500.);
   _hXingDt = tfs.make<TH2D>("XingDt", "reco - true crossing time;sector;ns", ns, lo, hi, 100, -20., 20.);
   for (TH1* h : {static_cast<TH1*>(_hTrueClu), static_cast<TH1*>(_hTrueCluGeom), static_cast<TH1*>(_hTrueCluBest),
-                 static_cast<TH1*>(_hRecoXing), static_cast<TH1*>(_hRecoXingTrue), static_cast<TH1*>(_hTrueXing),
-                 static_cast<TH1*>(_hTrueXingFound), static_cast<TH1*>(_hXingDist), static_cast<TH1*>(_hXingDt)})
+                 static_cast<TH1*>(_hRecoXing), static_cast<TH1*>(_hRecoXingTrue), static_cast<TH1*>(_hRecoXingProj),
+                 static_cast<TH1*>(_hRecoXingProjTrue), static_cast<TH1*>(_hTrueXing), static_cast<TH1*>(_hTrueXingFound),
+                 static_cast<TH1*>(_hTrueXingProj), static_cast<TH1*>(_hXingDist), static_cast<TH1*>(_hXingDistProj),
+                 static_cast<TH1*>(_hXingDt)})
     _axis.label(h->GetXaxis());
   return 0;
 }
@@ -28,7 +34,7 @@ int mu2e::ValTrkCrvMatchMC::declare(const art::TFileDirectory& tfs) {
 int mu2e::ValTrkCrvMatchMC::fill(const mu2e::TrkCrvMatchMCCollection& coll, art::Event const& event) {
   // increment this by 1 any time the definitions of the histograms or the
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(1.0);
+  _hVer->Fill(2.0);
 
   for (auto const& mc : coll) {
     if (mc.match_.isNull() || !mc.match_.isAvailable()) continue;
@@ -44,7 +50,8 @@ int mu2e::ValTrkCrvMatchMC::fill(const mu2e::TrkCrvMatchMCCollection& coll, art:
       int b = _axis.bin(xm.sid_);
       if (xm.geom_) {
         _hTrueXing->Fill(b);
-        if (xm.recoXing_ >= 0) _hTrueXingFound->Fill(b);
+        bool reco = xm.recoXing_ >= 0 && static_cast<size_t>(xm.recoXing_) < m.xings_.size();
+        if (reco) (m.xings_[xm.recoXing_].inBounds_ ? _hTrueXingFound : _hTrueXingProj)->Fill(b);
       }
       if (xm.trueCluster_ < 0) continue;
       _hTrueClu->Fill(b);
@@ -57,14 +64,15 @@ int mu2e::ValTrkCrvMatchMC::fill(const mu2e::TrkCrvMatchMCCollection& coll, art:
     for (size_t ir = 0; ir < m.xings_.size() && ir < mc.recoXingTruth_.size(); ++ir) {
       auto const& rx = m.xings_[ir];
       int b = _axis.bin(rx.sid_);
-      _hRecoXing->Fill(b);
+      bool proj = !rx.inBounds_;
+      (proj ? _hRecoXingProj : _hRecoXing)->Fill(b);
       int t = mc.recoXingTruth_[ir];
       if (t < 0 || static_cast<size_t>(t) >= mc.xings_.size()) continue;
-      _hRecoXingTrue->Fill(b);
+      (proj ? _hRecoXingProjTrue : _hRecoXingTrue)->Fill(b);
       auto const& xm = mc.xings_[t];
       if (!xm.geom_ || xm.rel_ != MCRelationship::same) continue;
-      _hXingDist->Fill(b, std::sqrt((rx.pos_ - xm.pos_).Mag2()));
-      _hXingDt->Fill(b, rx.time_ - xm.time_);
+      (proj ? _hXingDistProj : _hXingDist)->Fill(b, std::sqrt((rx.pos_ - xm.pos_).Mag2()));
+      if (!proj) _hXingDt->Fill(b, rx.time_ - xm.time_);
     }
   }
   return 0;
