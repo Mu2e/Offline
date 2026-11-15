@@ -40,10 +40,11 @@ string PS.VacVessel.materialName   = "StainlessSteel";
 // Conical hard connect between the PS bore tube and the TSu upstream ring plate.
 // Mu2e-doc-8545: ED0004551 section 5 (Figures 5 and 6) and F10070866 (Segment-PS-to-TSu):
 // 0.375" (9.525 mm) 316L, inner diameter 1518.0 mm at the PS end and 1694.4 mm at the TSu end.
-// Simplified: the cone starts at the TS end of PSVacVesselInner with the same inner radius
-// and ends on the upstream face of the first TS ring (TSleftSideRing0). Its length is the
-// distance between those two planes. The thickness is measured normal to the cone wall.
+// Simplified: the cone starts at the TS end of PSVacVesselInner and ends on the upstream
+// face of the first TS ring (TSleftSideRing0). Its length is the distance between those
+// two planes. The thickness is measured normal to the cone wall.
 bool   PS.TSInterconnect.build        = true;
+double PS.TSInterconnect.rIn1         = 759.0;   // inner radius at the PS end (1518.0/2)
 double PS.TSInterconnect.rIn2         = 847.2;   // inner radius at the TSu end (1694.4/2)
 double PS.TSInterconnect.thickness    = 9.525;
 string PS.TSInterconnect.materialName = "StainlessSteel316";

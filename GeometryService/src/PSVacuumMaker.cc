@@ -53,8 +53,8 @@ namespace mu2e {
 
     // Conical hard connect between the PS bore tube and the TSu ring plate
     // (Mu2e-doc-8545). It starts at the TS end of the PS vacuum vessel inner
-    // tube, with that tube's inner radius, and ends on the upstream face of the
-    // first TS ring, which must be the ring around TS1 on the PS axis.
+    // tube and ends on the upstream face of the first TS ring, which must be
+    // the ring around TS1 on the PS axis.
     if (c.getBool("PS.TSInterconnect.build", false)) {
       const Tube& inner = *ps.getVacVesselInnerParamsPtr();
       const double zPS = inner.originInMu2e().z() + inner.halfLength();
@@ -73,11 +73,18 @@ namespace mu2e {
           << " is not downstream of the PS inner vessel end at z = " << zPS << "\n";
       }
 
-      const double rIn1 = inner.innerRadius();
+      const double rIn1 = c.getDouble("PS.TSInterconnect.rIn1");
       const double rIn2 = c.getDouble("PS.TSInterconnect.rIn2");
       // Radial thickness that gives the requested wall thickness normal to the cone surface
       const double cosHalfAngle = length/std::hypot(length, rIn2 - rIn1);
       const double radialThickness = c.getDouble("PS.TSInterconnect.thickness")/cosHalfAngle;
+      // The cone start must face the end of the PS inner tube, at least in part
+      if (rIn1 >= inner.outerRadius() || rIn1 + radialThickness <= inner.innerRadius()) {
+        throw cet::exception("GEOM")
+          << "PSVacuumMaker: the PS-TS cone start, r = " << rIn1 << " to " << rIn1 + radialThickness
+          << ", does not face the end of PSVacVesselInner, r = " << inner.innerRadius()
+          << " to " << inner.outerRadius() << "\n";
+      }
       // The cone end must face the ring plate, at least in part
       if (rIn2 >= ts.rOutRingSide() || rIn2 + radialThickness <= ts.rInRingSide()) {
         throw cet::exception("GEOM")
