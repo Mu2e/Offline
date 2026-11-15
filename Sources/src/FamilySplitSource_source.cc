@@ -14,11 +14,27 @@
 // `regions` (cylinders along z, Mu2e coordinates); its family is itself and all its descendants. Geant4
 // secondary splitting made `factor` alternatives of it, each of weight 1/factor.
 //
-// Every output event carries an EventWeight (label `weightLabel`):
+// Every output event carries an EventWeight (label `weightLabel`), times the base weight (1, or the
+// forced-decay weight below):
 //   family event:   1 / factor of the region its forced particle was born in;
-//   stripped event: 1 - (sum over the file's forced families of 1/factor) / (events in the file).
+//   stripped event: 1 - (sum over the file's forced families of 1/factor) / (events kept from the file).
 // With these weights every quantity keeps its expectation, also when it is correlated with the splitting,
 // and the dataset keeps the livetime of its input (CosmicLivetime is copied unchanged).
+//
+// Muon decays in flight (optional, muonDecayWindow = T > 0, proper time in ns). They are rare, so they
+// can come from a second stage-2 stream in which Mu2eG4 physics.muonMaxPreAssignedDecayProperTime = T makes
+// every muon decay within T (a stage-2 muon starts at proper time 0). Only stage-2 primary muons that
+// decay in flight count (end momentum > 0; for a decay at rest the SimParticle records the time the muon
+// stopped, not the decay time, and its electron is below 53 MeV anyway):
+//   main stream   (forcedDecayStream: false): events whose primary muon decays in flight before T are
+//                                              dropped;
+//   forced stream (forcedDecayStream: true):  only events whose primary muon decays in flight are kept, and
+//                                              every weight is multiplied by 1 - exp(-T / muonLifetime).
+// The two streams then add up to the unbiased sample, each normalized to its own livetime. This is exact
+// for one primary muon per event whatever happens to it (decay in flight or at rest, capture, leaving the
+// world); events with several primary muons are approximate and are counted in the summary.
+//
+// SubRuns are all written, also those left without events, so no livetime is lost.
 //
 // Products are re-created with their stage-2 names, so the job's process_name must be the stage-2 one
 // (`inputProcessName`): art derives a ProductID from the product name, so the art::Ptr in the copied
@@ -27,14 +43,17 @@
 // all other products are copied. The input TriggerResults is not copied (art makes its own). Any other
 // branch in the input stops the job.
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "TBranch.h"
@@ -147,6 +166,16 @@ namespace mu2e {
       fhicl::Atom<std::string> weightLabel{fhicl::Name("weightLabel"), "FamilySplit"};
       fhicl::Atom<std::string> inputProcessName{fhicl::Name("inputProcessName"),
           fhicl::Comment("process name of the stage-2 products; must equal this job's process_name"), "CosmicS2"};
+      fhicl::Atom<double> muonDecayWindow{fhicl::Name("muonDecayWindow"),
+          fhicl::Comment("[ns] proper time; 0: muon decays not treated. Otherwise see forcedDecayStream"), 0.};
+      fhicl::Atom<bool> forcedDecayStream{fhicl::Name("forcedDecayStream"),
+          fhicl::Comment("false: drop events whose stage-2 primary muon decays in flight before muonDecayWindow.\n"
+                         "true: the input was made with muonMaxPreAssignedDecayProperTime = muonDecayWindow; keep only\n"
+                         "events whose primary muon decays in flight, weight times 1 - exp(-muonDecayWindow / muonLifetime)"),
+          false};
+      fhicl::Atom<double> muonLifetime{fhicl::Name("muonLifetime"), fhicl::Comment("[ns], as in Geant4"), 2196.98};
+      fhicl::Atom<int> primaryStage{fhicl::Name("primaryStage"),
+          fhicl::Comment("simStage of the stage-2 primaries (S2Inputs.simStageOverride)"), 1};
       fhicl::Atom<int> verbosity{fhicl::Name("verbosity"), 0};
     };
     using Parameters = fhicl::TableFragment<Config>;   // art::Source adds fileNames, maxEvents, maxSubRuns
@@ -168,6 +197,9 @@ namespace mu2e {
     std::vector<Cyl> regions_;
     unsigned stride_;
     std::string weightLabel_, process_;
+    double window_, lifetime_, baseWeight_;
+    bool forcedStream_;
+    int primaryStage_;
     int verbosity_;
     art::ProductID simsPID_;
 
@@ -193,15 +225,19 @@ namespace mu2e {
     Branch<StageNormalization> srNorm_{"s2Counter", ""};             // optional
     std::string triggerResultsName_;
     struct SubRunProducts {
+      art::Timestamp begin;
       CosmicLivetime livetime;
       std::optional<GenEventCount> count;
       std::optional<StageNormalization> norm;
+      bool written = false;
     };
     std::map<art::SubRunID, SubRunProducts> subRunProducts_;
 
     // state
     Long64_t nEntries_ = 0, entry_ = -1;
+    std::vector<char> keep_;                                  // per input entry, after the muon-decay rule
     std::vector<std::pair<size_t, double>> forced_;          // key, factor of the current input event
+    std::unordered_set<size_t> roots_;                        // the forced keys of the current input event
     std::unordered_map<size_t, long> family_;                 // particle key -> forced key or -1
     size_t j_ = 1;                                            // next output index of the current input event
     double stripWeight_ = 1.;
@@ -211,8 +247,12 @@ namespace mu2e {
 
     // totals
     unsigned long nIn_ = 0, nOut_ = 0, nFamilies_ = 0;
+    unsigned long nDecayDropped_ = 0, nMultiMuon_ = 0, nLateForced_ = 0, nEmptySubRuns_ = 0;
     std::map<size_t, unsigned long> multiplicity_;
 
+    bool keepByDecay(SimParticleCollection const& sims);
+    void writeSubRun(art::SubRunID const& id, art::Timestamp const& ts,
+                     art::RunPrincipal*& outR, art::SubRunPrincipal*& outSR);
     double regionFactor(SimParticle const& p) const;
     void findForced(SimParticleCollection const& sims, std::vector<std::pair<size_t, double>>& out) const;
     long familyOf(art::Ptr<SimParticle> const& ptr, SimParticleCollection const& sims);
@@ -226,7 +266,17 @@ namespace mu2e {
     , stride_(conf().stride())
     , weightLabel_(conf().weightLabel())
     , process_(conf().inputProcessName())
+    , window_(conf().muonDecayWindow())
+    , lifetime_(conf().muonLifetime())
+    , baseWeight_(1.)
+    , forcedStream_(conf().forcedDecayStream())
+    , primaryStage_(conf().primaryStage())
     , verbosity_(conf().verbosity()) {
+    if (window_ < 0. || !(lifetime_ > 0.) || (forcedStream_ && window_ == 0.)) {
+      throw cet::exception("CONFIG") << "FamilySplitSource: need muonDecayWindow >= 0, muonLifetime > 0, and "
+                                     << "muonDecayWindow > 0 with forcedDecayStream\n";
+    }
+    if (forcedStream_) { baseWeight_ = -std::expm1(-window_ / lifetime_); }
     for (auto const& r : conf().regions()) {
       if (!(r.factor() >= 1.)) {
         throw cet::exception("CONFIG") << "FamilySplitSource: region factor must be >= 1\n";
@@ -269,6 +319,68 @@ namespace mu2e {
               << " family events " << nFamilies_ << " | families per input event";
     for (auto const& [k, n] : multiplicity_) { std::cout << " " << k << ":" << n; }
     std::cout << std::endl;
+    if (window_ > 0.) {
+      std::cout << "FamilySplitSource: " << (forcedStream_ ? "forced-decay" : "main") << " stream, muon decay window "
+                << window_ << " ns: " << nDecayDropped_ << " input events dropped, base weight " << baseWeight_
+                << ", events with several primary muons (approximate) " << nMultiMuon_;
+      if (forcedStream_) { std::cout << ", primary muon decays later than the window " << nLateForced_; }
+      std::cout << std::endl;
+    }
+    std::cout << "FamilySplitSource: subruns written without events " << nEmptySubRuns_ << std::endl;
+  }
+
+  bool FamilySplitSourceDetail::keepByDecay(SimParticleCollection const& sims) {
+    if (window_ <= 0.) { return true; }
+    unsigned nMu = 0;
+    double first = std::numeric_limits<double>::max();     // earliest decay of a primary muon, proper time
+    for (auto const& kv : sims) {
+      SimParticle const& p = kv.second;
+      if (std::abs(p.pdgId()) != 13 || static_cast<int>(p.simStage()) != primaryStage_ ||
+          p.creationCode().name() != "mu2ePrimary") { continue; }
+      ++nMu;
+      const std::string stop = p.stoppingCode().name();
+      if ((stop == "Decay" || stop == "DecayWithSpin") && p.endMomentum().vect().mag() > 0.) {
+        first = std::min(first, static_cast<double>(p.endProperTime() - p.startProperTime()));
+      }
+    }
+    if (nMu > 1) { ++nMultiMuon_; }
+    bool keep;
+    if (!forcedStream_) {
+      keep = !(first < window_);
+    } else {
+      keep = first <= window_ * (1. + 1.e-6);
+      if (!keep && first < std::numeric_limits<double>::max()) { ++nLateForced_; }
+    }
+    if (!keep) { ++nDecayDropped_; }
+    return keep;
+  }
+
+  void FamilySplitSourceDetail::writeSubRun(art::SubRunID const& id, art::Timestamp const& ts,
+                                            art::RunPrincipal*& outR, art::SubRunPrincipal*& outSR) {
+    auto it = subRunProducts_.find(id);
+    if (it == subRunProducts_.end()) {
+      throw cet::exception("FamilySplitSource") << "no SubRuns entry for " << id << "\n";
+    }
+    if (it->second.written) {
+      throw cet::exception("FamilySplitSource") << "events of " << id
+                                                << " come back after another subrun; not handled\n";
+    }
+    if (id.run() != lastRun_) {
+      outR = sh_.makeRunPrincipal(id.run(), ts);
+      lastRun_ = id.run();
+    }
+    outSR = sh_.makeSubRunPrincipal(id.run(), id.subRun(), ts);
+    // copied unchanged: the livetime is that of the input, so the EventWeights normalize to it. The
+    // StageNormalization still counts input events (nPassed), not the events written here.
+    art::put_product_in_principal(std::make_unique<CosmicLivetime>(it->second.livetime), *outSR, "CosmicResampler", "mixed");
+    if (it->second.count) {
+      art::put_product_in_principal(std::make_unique<GenEventCount>(*it->second.count), *outSR, "genCounter");
+    }
+    if (it->second.norm) {
+      art::put_product_in_principal(std::make_unique<StageNormalization>(*it->second.norm), *outSR, "s2Counter");
+    }
+    it->second.written = true;
+    lastSubRun_ = id;
   }
 
   double FamilySplitSourceDetail::regionFactor(SimParticle const& p) const {
@@ -315,9 +427,7 @@ namespace mu2e {
         throw cet::exception("FamilySplitSource") << "SimParticle key " << k << " not in the collection\n";
       }
       if (std::abs(p->pdgId()) == 13) { result = -1; break; }
-      bool isForced = false;
-      for (auto const& f : forced_) { if (f.first == k) { isForced = true; break; } }
-      if (isForced) { result = static_cast<long>(k); break; }
+      if (roots_.count(k) != 0) { result = static_cast<long>(k); break; }
       if (!p->hasParent() || p->parent().id() != simsPID_) { result = -1; break; }
       k = p->parent().key();
     }
@@ -377,27 +487,39 @@ namespace mu2e {
     const bool hasNorm = srNorm_.tryAttach(subRuns);
     for (Long64_t i = 0; i < subRuns->GetEntries(); ++i) {
       subRuns->GetBranch("SubRunAuxiliary")->GetEntry(i);
-      SubRunProducts sp{srLive_.read(i), std::nullopt, std::nullopt};
+      SubRunProducts sp{srAux->beginTime(), srLive_.read(i), std::nullopt, std::nullopt};
       if (hasCount) { sp.count = srCount_.readIfPresent(i); }
       if (hasNorm) { sp.norm = srNorm_.readIfPresent(i); }
       subRunProducts_.emplace(srAux->id(), sp);
     }
     subRuns->ResetBranchAddresses();
+    if (subRunProducts_.count(lastSubRun_) != 0) {
+      throw cet::exception("FamilySplitSource") << filename << ": " << lastSubRun_
+                                                << " continues from the previous file; not handled\n";
+    }
 
-    // first pass over the SimParticles only: the weight of the stripped events of this file
+    // first pass over the SimParticles only: the muon-decay rule, and the weight of the stripped events of
+    // this file (over the events kept)
     nEntries_ = events_->GetEntries();
+    keep_.assign(nEntries_, 0);
     double sumInv = 0.;
+    Long64_t nKept = 0;
     std::vector<std::pair<size_t, double>> f;
     for (Long64_t i = 0; i < nEntries_; ++i) {
-      findForced(sims_.read(i), f);
+      SimParticleCollection const& sims = sims_.read(i);
+      if (!keepByDecay(sims)) { continue; }
+      keep_[i] = 1;
+      ++nKept;
+      findForced(sims, f);
       for (auto const& x : f) { sumInv += 1. / x.second; }
     }
-    stripWeight_ = nEntries_ > 0 ? 1. - sumInv / static_cast<double>(nEntries_) : 1.;
+    stripWeight_ = nKept > 0 ? 1. - sumInv / static_cast<double>(nKept) : 1.;
     entry_ = -1;
     j_ = 1;
     forced_.clear();
-    std::cout << "FamilySplitSource: " << filename << ": " << nEntries_ << " events, sum of family weights "
-              << sumInv << ", stripped-event weight " << stripWeight_ << std::endl;
+    std::cout << "FamilySplitSource: " << filename << ": " << nEntries_ << " events, " << nKept
+              << " kept, sum of family weights " << sumInv << ", stripped-event weight " << stripWeight_
+              << ", base weight " << baseWeight_ << std::endl;
     fb = new art::FileBlock(art::FileFormatVersion(1, "FamilySplitSource"), filename);
   }
 
@@ -411,7 +533,18 @@ namespace mu2e {
                                          art::RunPrincipal*& outR, art::SubRunPrincipal*& outSR,
                                          art::EventPrincipal*& outE) {
     if (j_ > forced_.size()) {
-      if (++entry_ >= nEntries_) { return false; }
+      do { ++entry_; } while (entry_ < nEntries_ && !keep_[entry_]);
+      if (entry_ >= nEntries_) {
+        // subruns left without events are written alone, so that their livetime is kept
+        for (auto const& [id, sp] : subRunProducts_) {
+          if (!sp.written) {
+            writeSubRun(id, sp.begin, outR, outSR);
+            ++nEmptySubRuns_;
+            return true;
+          }
+        }
+        return false;
+      }
       if (events_->GetBranch("EventAuxiliary")->GetEntry(entry_) <= 0 || eventAux_ == nullptr) {
         throw cet::exception("FamilySplitSource") << "cannot read EventAuxiliary entry " << entry_ << "\n";
       }
@@ -424,6 +557,8 @@ namespace mu2e {
         throw cet::exception("FamilySplitSource") << forced_.size() << " families in one event, stride "
                                                   << stride_ << " too small\n";
       }
+      roots_.clear();
+      for (auto const& x : forced_) { roots_.insert(x.first); }
       family_.clear();
       j_ = 0;
       ++nIn_;
@@ -431,27 +566,7 @@ namespace mu2e {
     }
     art::EventAuxiliary const& aux = *eventAux_;
     const art::Timestamp ts = aux.time();
-    if (aux.run() != lastRun_) {
-      outR = sh_.makeRunPrincipal(aux.run(), ts);
-      lastRun_ = aux.run();
-    }
-    if (aux.subRunID() != lastSubRun_) {
-      outSR = sh_.makeSubRunPrincipal(aux.run(), aux.subRun(), ts);
-      auto it = subRunProducts_.find(aux.subRunID());
-      if (it == subRunProducts_.end()) {
-        throw cet::exception("FamilySplitSource") << "no SubRuns entry for " << aux.subRunID() << "\n";
-      }
-      // copied unchanged: the livetime is that of the input, so the EventWeights normalize to it. The
-      // StageNormalization still counts input events (nPassed), not the events written here.
-      art::put_product_in_principal(std::make_unique<CosmicLivetime>(it->second.livetime), *outSR, "CosmicResampler", "mixed");
-      if (it->second.count) {
-        art::put_product_in_principal(std::make_unique<GenEventCount>(*it->second.count), *outSR, "genCounter");
-      }
-      if (it->second.norm) {
-        art::put_product_in_principal(std::make_unique<StageNormalization>(*it->second.norm), *outSR, "s2Counter");
-      }
-      lastSubRun_ = aux.subRunID();
-    }
+    if (aux.subRunID() != lastSubRun_) { writeSubRun(aux.subRunID(), ts, outR, outSR); }
     const unsigned long ev = static_cast<unsigned long>(aux.event()) * stride_ + j_;
     if (ev > 0xffffffffUL) {
       throw cet::exception("FamilySplitSource") << "event number " << aux.event() << " * stride overflows\n";
@@ -503,7 +618,7 @@ namespace mu2e {
                                   "CosmicResampler");
     art::put_product_in_principal(std::make_unique<PrimaryParticle>(*primary_.wrapper->product()), *outE,
                                   "FindMCPrimary");
-    const double w = j_ == 0 ? stripWeight_ : 1. / forced_[j_ - 1].second;
+    const double w = baseWeight_ * (j_ == 0 ? stripWeight_ : 1. / forced_[j_ - 1].second);
     art::put_product_in_principal(std::make_unique<EventWeight>(w), *outE, weightLabel_);
 
     if (verbosity_ > 1) {
