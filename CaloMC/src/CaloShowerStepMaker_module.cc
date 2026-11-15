@@ -257,6 +257,10 @@ namespace mu2e {
 
                  if (!cal.isInsideAnyCrystal(sim->startPosition()))                    break;
                  if (!cal.isInsideSameDisk(sim->startPosition(),sim->endPosition()))   break;
+                 // A particle injected in this stage (e.g. a decay product placed by the generator, whose parent
+                 // is a resampled stopped muon) has a parent from an earlier stage. That parent never entered the
+                 // calorimeter in this stage, so the injected particle is the ancestor.
+                 if (sim->parent()->simStage() != sim->simStage())                     break;
 
                  sim = sim->parent();
              }
