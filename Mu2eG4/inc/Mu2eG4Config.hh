@@ -104,7 +104,8 @@ namespace mu2e {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
       fhicl::Atom<std::string> process {Name("process"),
-          Comment("Geant4 process name, e.g. muIoni, muBrems, muPairProd. Applied to every particle that has it.")};
+          Comment("Geant4 process name, e.g. muIoni, muBrems. Applied to every particle that has it.\n"
+                  "Geant4 splits only interactions with one secondary, so pair production is refused for factor > 1")};
       fhicl::Sequence<std::string> regions {Name("regions"),
           Comment("G4Region names, e.g. DS2Vacuum (regions are made by minRangeRegionCuts)")};
       fhicl::Atom<double> factor {Name("factor"),

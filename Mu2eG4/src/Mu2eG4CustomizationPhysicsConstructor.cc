@@ -84,6 +84,16 @@ namespace {
         throw cet::exception("BADINPUT")
           << "physics.secondaryBiasing: factor for " << pname << " must be > 0, got " << factor << "\n";
       }
+      // G4EmBiasingManager splits only interactions that make exactly one secondary; an interaction
+      // with two (a pair, two annihilation photons) is left alone, without any message, while a user
+      // would weight its secondaries 1/factor. Seen in Mu2e: muPairProd split x10 in the tracker gave
+      // 1/10 of the unbiased pair electrons.
+      static const std::set<std::string> twoSecondaries{"muPairProd", "hPairProd", "conv", "annihil"};
+      if (factor > 1. && twoSecondaries.count(pname) != 0) {
+        throw cet::exception("BADINPUT")
+          << "physics.secondaryBiasing: Geant4 splits only interactions with one secondary; " << pname
+          << " makes two, so splitting it would do nothing\n";
+      }
 
       // a process object may be shared by several particles
       std::set<const G4VProcess*> done;
