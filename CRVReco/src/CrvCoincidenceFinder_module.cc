@@ -302,7 +302,8 @@ namespace mu2e
     {
       const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
 
-      if(_ignoreSecondaryPulses && crvRecoPulse->GetSequenceIndex()>0) continue;
+      if(crvRecoPulse->IsRemovedSecondaryPulse()) continue;
+      if(_ignoreSecondaryPulses && crvRecoPulse->GetSequenceIndex()>0) continue;  //TODO: this option is left for older files. should be removed soon.
 
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();

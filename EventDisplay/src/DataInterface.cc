@@ -1123,7 +1123,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crvbar->second->getComponentInfo()->setText(5,"Reco pulse SiPM2 PEs/time: ");
           crvbar->second->getComponentInfo()->setText(6,"Reco pulse SiPM3 PEs/time: ");
         }
-        crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%.1fPEs/%.1fns",PEs,time/CLHEP::ns));
+        if(!recoPulse.IsRemovedSecondaryPulse())
+        {
+          crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%.1fPEs/%.1fns",PEs,time/CLHEP::ns));
+        }
 
         //each digi collection and each SiPM gets its own multigraph
         std::vector<boost::shared_ptr<TObject> > &v=crvbar->second->getComponentInfo()->getHistVector();
@@ -1144,8 +1147,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             TF1 *f = new TF1(Form("peakfitter%i",functionList->GetSize()),
                              Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
                              fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
-            f->SetLineWidth(2);
+            f->SetLineWidth(1);
+            f->SetLineStyle(1);
             f->SetLineColor(2);
+            if(recoPulse.IsRemovedSecondaryPulse()) f->SetLineColor(15);
             if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
             functionList->Add(f);
           }

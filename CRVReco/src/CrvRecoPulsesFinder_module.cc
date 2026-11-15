@@ -86,6 +86,11 @@ namespace mu2e
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
+      fhicl::Atom<bool> removeSecondaryPulses{Name("removeSecondaryPulses"), Comment("remove secondary pulses caused by LPF ringing"), false}; //must be false for simulation
+      fhicl::Atom<bool> storeRemovedSecondaryPulses{Name("storeRemovedSecondaryPulses"), Comment("store remove secondary pulses (e.g. for EventDisplay)"), false};
+      fhicl::Atom<float> secondaryPulseParam0{Name("secondaryPulseParam0"), Comment("parameter 0 (height scale) for removal of secondary pulses"), 1.40}; //ns
+      fhicl::Atom<float> secondaryPulseParam1{Name("secondaryPulseParam1"), Comment("parameter 1 (time shift) for removal of secondary pulses"), 52.1}; //ns
+      fhicl::Atom<float> secondaryPulseParam2{Name("secondaryPulseParam2"), Comment("parameter 2 (beta adjustment) for removal of secondary pulses"), -2.30}; //ns
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -160,7 +165,12 @@ namespace mu2e
                                                                                                     conf().maxPulseHeightRatio(),
                                                                                                     conf().LEtimeFactor(),
                                                                                                     conf().samplesBefore(),
-                                                                                                    conf().samplesAfter()));
+                                                                                                    conf().samplesAfter(),
+                                                                                                    conf().removeSecondaryPulses(),
+                                                                                                    conf().storeRemovedSecondaryPulses(),
+                                                                                                    conf().secondaryPulseParam0(),
+                                                                                                    conf().secondaryPulseParam1(),
+                                                                                                    conf().secondaryPulseParam2()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -324,6 +334,8 @@ namespace mu2e
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
         bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
+        bool   removedSecondaryPulse  = _makeCrvRecoPulses->GetRemovedSecondaryPulses().at(j);
+
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
         if(zeroNdf)                flags.set(CrvRecoPulseFlagEnums::zeroNdf);
@@ -331,7 +343,7 @@ namespace mu2e
         if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, removedSecondaryPulse, j, flags,
                                              waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 

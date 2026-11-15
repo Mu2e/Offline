@@ -234,6 +234,9 @@ namespace mu2e
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
+      //only use the first pulse of a waveform
+      if(iter->GetSequenceIndex()>0) continue;
+      if(iter->IsRemovedSecondaryPulse()) continue;
       //check for any error flags, but ignore calibration flags
       auto flags = iter->GetRecoPulseFlags();
       if(flags.test(CrvRecoPulseFlagEnums::failedFit)) continue;

@@ -449,6 +449,8 @@ namespace mu2e
     for(auto crvRecoPulse=crvRecoPulseCollection->begin(); crvRecoPulse!=crvRecoPulseCollection->end(); ++crvRecoPulse)
     {
       if(crvRecoPulse->GetPEs()<_PEthreshold) continue;  //ignore pulses below a threshold
+      if(crvRecoPulse->GetSequenceIndex()>0) continue;  //only use the first pulse of a waveform
+      if(crvRecoPulse->IsRemovedSecondaryPulse()) continue;  //ignore secondary pulses
       if(crvRecoPulse->GetRecoPulseFlags().test(CrvRecoPulseFlagEnums::failedFit)) continue;  //ignore pulses with a failed fit
 
       auto barIndex         = crvRecoPulse->GetScintillatorBarIndex();

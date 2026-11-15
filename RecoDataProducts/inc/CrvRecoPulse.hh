@@ -20,7 +20,7 @@ namespace mu2e
     CrvRecoPulse() {}
 
     CrvRecoPulse(float PEs, float PEsPulseHeight, double pulseTime, float pulseHeight, float pulseBeta, float pulseFitChi2, double LEtime,
-                 size_t sequenceIndex, const CrvRecoPulseFlags &flags,
+                 bool removedSecondaryPulse, size_t sequenceIndex, const CrvRecoPulseFlags &flags,
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
                  uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
                  float pedestal, bool pedestalFromDB) :
@@ -31,6 +31,7 @@ namespace mu2e
                                                                             _pulseBeta(pulseBeta),
                                                                             _pulseFitChi2(pulseFitChi2),
                                                                             _LEtime(LEtime),
+                                                                            _removedSecondaryPulse(removedSecondaryPulse),
                                                                             _sequenceIndex(sequenceIndex),
                                                                             _flags(flags),
                                                                             _waveformIndices(waveformIndices),
@@ -50,6 +51,7 @@ namespace mu2e
     float  GetPulseBeta() const      {return _pulseBeta;}
     float  GetPulseFitChi2() const   {return _pulseFitChi2;}
     double GetLEtime() const         {return _LEtime;}
+    bool   IsRemovedSecondaryPulse() const{return _removedSecondaryPulse;}
     size_t GetSequenceIndex() const  {return _sequenceIndex;}
     const  CrvRecoPulseFlags &GetRecoPulseFlags() const {return _flags;}
 
@@ -72,6 +74,7 @@ namespace mu2e
     float  _pulseBeta{0};
     float  _pulseFitChi2{0};
     double _LEtime{0};
+    bool   _removedSecondaryPulse{false};
     size_t _sequenceIndex{0};  //index of reco pulse within a waveform
     CrvRecoPulseFlags  _flags;
 

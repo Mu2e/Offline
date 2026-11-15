@@ -13,7 +13,9 @@ class MakeCrvRecoPulses
   public:
   MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                     float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
-                    float LEtimeFactor, int samplesBefore, int samplesAfter);
+                    float LEtimeFactor, int samplesBefore, int samplesAfter,
+                    bool removeSecondaryPulses, bool storeRemovedSecondaryPulses,
+                    float secondaryPulseParam0, float secondaryPulseParam1, float secondaryPulseParam2);
   void         SetWaveform(const std::vector<int16_t> &waveform, uint16_t startTDC,
                            float digitizationPeriod, float pedestal, float calibrationFactor,
                            float calibrationFactorPulseHeight);
@@ -27,6 +29,7 @@ class MakeCrvRecoPulses
   const std::vector<float>  &GetPulseFitChi2s() const  {return _pulseFitChi2s;}
   const std::vector<bool>   &GetZeroNdfs() const       {return _zeroNdf;}
   const std::vector<bool>   &GetFailedFits() const     {return _failedFits;}
+  const std::vector<bool>   &GetRemovedSecondaryPulses() const  {return _removedSecondaryPulses;}
 
   private:
   typedef std::array<double,3> Vec3;
@@ -51,11 +54,13 @@ class MakeCrvRecoPulses
   float  _minPulseHeightRatio, _maxPulseHeightRatio;
   float  _LEtimeFactor;
   int    _samplesBefore, _samplesAfter;
+  bool   _removeSecondaryPulses, _storeRemovedSecondaryPulses;
+  float  _secondaryPulseParam0, _secondaryPulseParam1, _secondaryPulseParam2;
 
   std::vector<float>  _PEs, _PEsPulseHeight;
   std::vector<double> _pulseTimes, _LEtimes;
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
-  std::vector<bool>   _zeroNdf, _failedFits;
+  std::vector<bool>   _zeroNdf, _failedFits, _removedSecondaryPulses;
 };
 
 }

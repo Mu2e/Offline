@@ -188,6 +188,7 @@ namespace mu2e_eventdisplay
               fWithPedestal->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
               fWithPedestal->SetLineWidth(1);
               fWithPedestal->SetLineColor(2);
+              if(f->GetLineColor()==15) fWithPedestal->SetLineColor(15);
               if(f->GetLineStyle()==2) fWithPedestal->SetLineStyle(2);
 
               functionStringSum.Append("+");
