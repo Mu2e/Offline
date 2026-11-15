@@ -1,6 +1,8 @@
 //
 // Create STMHits from STMPHDigis
+// Input digi file where phDigis are negative
 //
+
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Handle.h"
@@ -38,6 +40,9 @@ namespace mu2e {
     using Comment=fhicl::Comment;
     struct Config {
       fhicl::Atom<art::InputTag> stmPHDigisMapTag{ Name("stmPHDigisMapTag"), Comment("InputTag for STMPHDigiCollectionMap")};
+      fhicl::Atom<float> samplingFrequency{ Name ("samplingFrequency"), Comment("Sampling Frequency in MHZ")};
+      fhicl::Atom<double> mCalibConstant{ Name("mCalibConstant"), Comment("InputTag for slope for ADC to Energy Conversion")};
+      fhicl::Atom<double> cCalibConstant{ Name("cCalibConstant"), Comment("InputTag for constant for ADC to Energy Conversion")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit MakeSTMHits(const Parameters& conf);
@@ -46,16 +51,22 @@ namespace mu2e {
     void produce(art::Event& e) override;
 
     art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisMapToken;
-    STMChannel _channel;
-    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    const float _samplingFrequency{0.0f};
+    const double _m{0.0}; // For E = m(ADC) + c
+    const double _c{0.0}; // Set up for Pass1 calibration
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
     ,_stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisMapTag()))
-    ,_channel(STMUtils::getChannel(config().stmPHDigisMapTag()))
-    ,_stmEnergyCalib_h()
+    ,_samplingFrequency(config().samplingFrequency())
+    ,_m(config().mCalibConstant())
+    ,_c(config().cCalibConstant())
     {
+      if (_samplingFrequency == 0.0f) {
+        throw cet::exception("MakeSTMHits")
+          << "Sampling Frequency must be greater than zero : " << _samplingFrequency;
+      }
       produces<STMHitCollectionMap>();
     }
 
@@ -63,11 +74,7 @@ namespace mu2e {
     // create output
     unique_ptr<STMHitCollectionMap> outputSTMHitsMap(new STMHitCollectionMap);
     auto phDigisHandle = event.getValidHandle(_stmPHDigisMapToken);
-
-    STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get calibration
-    const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    const auto& pars = stmEnergyCalib.calib(_channel);
-
+    const float nsPerCt = (1 / _samplingFrequency) * 1e3 ;
     for (const auto& mu2e_evt : *phDigisHandle) {
 
       const auto& stm_evt_header = mu2e_evt.first; // get header information
@@ -75,10 +82,10 @@ namespace mu2e {
 
       for (const auto& ph_digi : ph_digis) {
         auto uncalib_time = ph_digi.time();
-        auto uncalib_energy = ph_digi.energy();
+        auto uncalib_energy = -1 * ph_digi.energy(); // flip
         // make a hit
-        float time = uncalib_time*nsPerCt;
-        float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
+        float time = uncalib_time * nsPerCt;
+        float energy = _c + _m * uncalib_energy;
 
         // store hit
         STMHit stm_hit(time,energy);

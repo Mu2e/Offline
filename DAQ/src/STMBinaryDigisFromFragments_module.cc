@@ -2,7 +2,7 @@
 //
 // STMBinaryDigisFromFragments: Binary File Writing
 //
-// ======================================================================
+// =====================================================================
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
@@ -41,6 +41,7 @@ public:
       fhicl::Comment("Input module")
     };
 
+    // For all file names below: an empty string disables that output.
     fhicl::Atom<std::string> rawHPGeFile{
       fhicl::Name("rawHPGeFile"), "rawHPGe.bin"
     };
@@ -183,7 +184,16 @@ STMBinaryDigisFromFragments::STMBinaryDigisFromFragments(
   , _zsLaBrFile(config().zsLaBrFile())
   , _phLaBrFile(config().phLaBrFile())
   , _eventFile(config().eventFile())
-{}
+{
+  if (_rawHPGeFile.empty() && _rawHeaderHPGeFile.empty() &&
+      _zsHPGeFile.empty() && _phHPGeFile.empty() &&
+      _rawLaBrFile.empty() && _rawHeaderLaBrFile.empty() &&
+      _zsLaBrFile.empty() && _phLaBrFile.empty() &&
+      _eventFile.empty()) {
+    mf::LogWarning("STMBinaryDigisFromFragments")
+      << "All output file names are empty: this module will not write any files";
+  }
+}
 
 // =====================================================================
 
@@ -207,6 +217,8 @@ void STMBinaryDigisFromFragments::writeSortedSingle(
   std::vector<FragRecord>& buf,
   std::ofstream& out) {
 
+  if (!out.is_open()) { return; }
+
   std::sort(
     buf.begin(),
     buf.end(),
@@ -226,6 +238,8 @@ void STMBinaryDigisFromFragments::writeSortedSingle(
 void STMBinaryDigisFromFragments::writeSortedCombined(
   std::vector<FragRecord>& buf,
   std::ofstream& out) {
+
+  if (!out.is_open()) { return; }
 
   auto datasetOrder = [](uint16_t d) {
     if (d == static_cast<uint16_t>(stm::Dataset::RAW_HPGE)) return 0;
@@ -294,50 +308,31 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
 
     _baseName = base.str();
 
-    const std::string rawHPGeName       = _baseName + _rawHPGeFile;
-    const std::string zsHPGeName        = _baseName + _zsHPGeFile;
-    const std::string phHPGeName        = _baseName + _phHPGeFile;
-    const std::string rawHeaderHPGeName = _baseName + _rawHeaderHPGeFile;
+    auto openIf = [&](std::ofstream& out, const std::string& suffix) {
+      if (suffix.empty()) { return; }   // empty name => output disabled
+      const std::string name = _baseName + suffix;
+      out.open(name, std::ios::binary);
+      if (!out) {
+        throw cet::exception("FILEOPEN")
+          << "Failed to open STM binary output file " << name << "\n";
+      }
+      if (_verbosityLevel > 0) {
+        mf::LogInfo("STMBinaryDigisFromFragments")
+          << "Output file: " << name;
+      }
+    };
 
-    const std::string rawLaBrName       = _baseName + _rawLaBrFile;
-    const std::string zsLaBrName        = _baseName + _zsLaBrFile;
-    const std::string phLaBrName        = _baseName + _phLaBrFile;
-    const std::string rawHeaderLaBrName = _baseName + _rawHeaderLaBrFile;
+    openIf(_rawHPGeOut,       _rawHPGeFile);
+    openIf(_zsHPGeOut,        _zsHPGeFile);
+    openIf(_phHPGeOut,        _phHPGeFile);
+    openIf(_rawHeaderHPGeOut, _rawHeaderHPGeFile);
 
-    const std::string eventName         = _baseName + _eventFile;
+    openIf(_rawLaBrOut,       _rawLaBrFile);
+    openIf(_zsLaBrOut,        _zsLaBrFile);
+    openIf(_phLaBrOut,        _phLaBrFile);
+    openIf(_rawHeaderLaBrOut, _rawHeaderLaBrFile);
 
-    _rawHPGeOut.open(rawHPGeName, std::ios::binary);
-    _zsHPGeOut.open(zsHPGeName, std::ios::binary);
-    _phHPGeOut.open(phHPGeName, std::ios::binary);
-    _rawHeaderHPGeOut.open(rawHeaderHPGeName, std::ios::binary);
-
-    _rawLaBrOut.open(rawLaBrName, std::ios::binary);
-    _zsLaBrOut.open(zsLaBrName, std::ios::binary);
-    _phLaBrOut.open(phLaBrName, std::ios::binary);
-    _rawHeaderLaBrOut.open(rawHeaderLaBrName, std::ios::binary);
-
-    _eventOut.open(eventName, std::ios::binary);
-
-    if (!_rawHPGeOut || !_zsHPGeOut || !_phHPGeOut ||
-        !_rawHeaderHPGeOut || !_rawLaBrOut || !_zsLaBrOut ||
-        !_phLaBrOut || !_rawHeaderLaBrOut || !_eventOut) {
-      throw cet::exception("FILEOPEN")
-        << "Failed to open one or more STM binary output files\n";
-    }
-
-    if (_verbosityLevel > 0) {
-      mf::LogInfo("STMBinaryDigisFromFragments")
-        << "Output files:\n"
-        << "  " << rawHPGeName << "\n"
-        << "  " << zsHPGeName << "\n"
-        << "  " << phHPGeName << "\n"
-        << "  " << rawHeaderHPGeName << "\n"
-        << "  " << rawLaBrName << "\n"
-        << "  " << zsLaBrName << "\n"
-        << "  " << phLaBrName << "\n"
-        << "  " << rawHeaderLaBrName << "\n"
-        << "  " << eventName;
-    }
+    openIf(_eventOut,         _eventFile);
 
     _filesInitialized = true;
   }
@@ -366,9 +361,16 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
         auto inner_frag = cont_frag.at(i);
         mu2e::STMFragment stm_frag(*inner_frag);
 
-        // Number of int16_t words physically present in this artdaq fragment.
+        const uint64_t seqID = inner_frag->sequenceID();
+        const uint16_t dataset =
+          static_cast<uint16_t>(stm_frag.dataset());
+
+        // Number of int16_t words physically present in this artdaq fragment
         const size_t physicalWords =
           inner_frag->dataSizeBytes() / sizeof(int16_t);
+
+        // Note: FragRecords (and their data copies) are only built when the
+        // corresponding output is enabled, so disabled outputs cost nothing
 
         if (stm_frag.isRaw()) {
           ++_totalRaw;
@@ -377,7 +379,7 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
           const bool isHPGe = stm_frag.isHPGe();
           const bool isLaBr = stm_frag.isLaBr();
 
-          // Header + payload stream.
+          // Header + payload stream
           if (_verbosityLevel > 1) {
             std::ostringstream msg;
             msg << "First 25 raw words: ";
@@ -391,24 +393,26 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
               << msg.str();
           }
 
-          FragRecord rawHeaderRec{
-            inner_frag->sequenceID(),
-            static_cast<uint16_t>(stm_frag.dataset()),
-            std::vector<int16_t>(dataPtr, dataPtr + physicalWords)
-          };
-
           if (isHPGe) {
             ++_totalRawHPGe;
-            _rawHeaderHPGeBuf.push_back(std::move(rawHeaderRec));
+            if (_rawHeaderHPGeOut.is_open()) {
+              _rawHeaderHPGeBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(dataPtr, dataPtr + physicalWords)});
+            }
           } else if (isLaBr) {
             ++_totalRawLaBr;
-            _rawHeaderLaBrBuf.push_back(std::move(rawHeaderRec));
+            if (_rawHeaderLaBrOut.is_open()) {
+              _rawHeaderLaBrBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(dataPtr, dataPtr + physicalWords)});
+            }
           } else {
             ++_totalUnknownRawHeaderDetector;
             mf::LogWarning("STMBinaryDigisFromFragments")
               << "Raw fragment is neither HPGe nor LaBr while "
               << "dispatching raw-with-header data. "
-              << "sequenceID=" << inner_frag->sequenceID();
+              << "sequenceID=" << seqID;
           }
 
           // Payload-only stream.
@@ -434,37 +438,37 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
             if (_verbosityLevel > 1) {
               mf::LogDebug("STMBinaryDigisFromFragments")
                 << "RAW PAYLOAD DEBUG: "
-                << "SeqID=" << inner_frag->sequenceID()
+                << "SeqID=" << seqID
                 << " EWT=" << ewt
                 << " RAW_LEN=" << raw_len
                 << " physical payload=" << physicalPayloadWords
                 << " claimed payload=" << claimedPayloadWords;
             }
 
-            FragRecord rawRec{
-              inner_frag->sequenceID(),
-              static_cast<uint16_t>(stm_frag.dataset()),
-              std::vector<int16_t>(
-                payloadPtr,
-                payloadPtr + wordsToWrite)
-            };
-
             if (isHPGe) {
-              _rawHPGeBuf.push_back(std::move(rawRec));
+              if (_rawHPGeOut.is_open()) {
+                _rawHPGeBuf.push_back(FragRecord{
+                  seqID, dataset,
+                  std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+              }
             } else if (isLaBr) {
-              _rawLaBrBuf.push_back(std::move(rawRec));
+              if (_rawLaBrOut.is_open()) {
+                _rawLaBrBuf.push_back(FragRecord{
+                  seqID, dataset,
+                  std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+              }
             } else {
               ++_totalUnknownRawPayloadDetector;
               mf::LogWarning("STMBinaryDigisFromFragments")
                 << "Raw fragment is neither HPGe nor LaBr while "
                 << "dispatching raw payload data. "
-                << "sequenceID=" << inner_frag->sequenceID();
+                << "sequenceID=" << seqID;
             }
           } else {
             ++_totalShortRawHeader;
             mf::LogWarning("STMBinaryDigisFromFragments")
               << "Raw fragment is shorter than the expected RawHeader. "
-              << "sequenceID=" << inner_frag->sequenceID()
+              << "sequenceID=" << seqID
               << ", physicalWords=" << physicalWords
               << ", headerWords=" << stm::RawHeader::WORDS;
           }
@@ -480,25 +484,25 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
           const size_t wordsToWrite =
             std::min(claimedWords, physicalWords);
 
-          FragRecord rec{
-            inner_frag->sequenceID(),
-            static_cast<uint16_t>(stm_frag.dataset()),
-            std::vector<int16_t>(
-              payloadPtr,
-              payloadPtr + wordsToWrite)
-          };
-
           if (isHPGe) {
             ++_totalZSHPGe;
-            _zsHPGeBuf.push_back(std::move(rec));
+            if (_zsHPGeOut.is_open()) {
+              _zsHPGeBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+            }
           } else if (isLaBr) {
             ++_totalZSLaBr;
-            _zsLaBrBuf.push_back(std::move(rec));
+            if (_zsLaBrOut.is_open()) {
+              _zsLaBrBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+            }
           } else {
             ++_totalUnknownZSDetector;
             mf::LogWarning("STMBinaryDigisFromFragments")
               << "ZS fragment is neither HPGe nor LaBr. "
-              << "sequenceID=" << inner_frag->sequenceID();
+              << "sequenceID=" << seqID;
           }
         }
         else if (stm_frag.isPH()) {
@@ -512,25 +516,25 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
           const size_t wordsToWrite =
             std::min(claimedWords, physicalWords);
 
-          FragRecord rec{
-            inner_frag->sequenceID(),
-            static_cast<uint16_t>(stm_frag.dataset()),
-            std::vector<int16_t>(
-              payloadPtr,
-              payloadPtr + wordsToWrite)
-          };
-
           if (isHPGe) {
             ++_totalPHHPGe;
-            _phHPGeBuf.push_back(std::move(rec));
+            if (_phHPGeOut.is_open()) {
+              _phHPGeBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+            }
           } else if (isLaBr) {
             ++_totalPHLaBr;
-            _phLaBrBuf.push_back(std::move(rec));
+            if (_phLaBrOut.is_open()) {
+              _phLaBrBuf.push_back(FragRecord{
+                seqID, dataset,
+                std::vector<int16_t>(payloadPtr, payloadPtr + wordsToWrite)});
+            }
           } else {
             ++_totalUnknownPHDetector;
             mf::LogWarning("STMBinaryDigisFromFragments")
               << "PH fragment is neither HPGe nor LaBr. "
-              << "sequenceID=" << inner_frag->sequenceID();
+              << "sequenceID=" << seqID;
           }
         }
         else {
@@ -538,15 +542,13 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
 
           mf::LogWarning("STMBinaryDigisFromFragments")
             << "Encountered unknown STM inner fragment. "
-            << "sequenceID=" << inner_frag->sequenceID();
+            << "sequenceID=" << seqID;
         }
 
         // Combined stream. Preserve the existing dataset order for a
-        // given sequence ID.
+        // given sequence ID
         const int16_t* cptr = nullptr;
         size_t cwords = 0;
-        const uint16_t dataset =
-          static_cast<uint16_t>(stm_frag.dataset());
 
         if (stm_frag.isRaw()) {
           cptr = stm_frag.dataBegin();
@@ -563,17 +565,13 @@ void STMBinaryDigisFromFragments::produce(Event& event) {
         else {
           mf::LogWarning("STMBinaryDigisFromFragments")
             << "Unknown STM dataset: " << dataset
-            << ", sequenceID=" << inner_frag->sequenceID();
+            << ", sequenceID=" << seqID;
         }
 
-        if (cptr && cwords > 0) {
-          FragRecord rec{
-            inner_frag->sequenceID(),
-            dataset,
-            std::vector<int16_t>(cptr, cptr + cwords)
-          };
-
-          _eventBuf.push_back(std::move(rec));
+        if (cptr && cwords > 0 && _eventOut.is_open()) {
+          _eventBuf.push_back(FragRecord{
+            seqID, dataset,
+            std::vector<int16_t>(cptr, cptr + cwords)});
         }
       }
     }
