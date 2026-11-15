@@ -18,8 +18,15 @@
 // forced-decay weight below):
 //   family event:   1 / factor of the region its forced particle was born in;
 //   stripped event: 1 - (sum over the file's forced families of 1/factor) / (events kept from the file).
-// With these weights every quantity keeps its expectation, also when it is correlated with the splitting,
-// and the dataset keeps the livetime of its input (CosmicLivetime is copied unchanged).
+// The weights add up to the number of events kept, so the dataset keeps the livetime of its input
+// (CosmicLivetime is copied unchanged). Anything a family carries (the particles it makes) keeps its
+// expectation exactly. What the rest of an input event holds (the muon, unsplit particles) is written in
+// the stripped event and again in each of its family events, with total weight 1 - S/E + s, where s is
+// the sum of that event's family weights: right on average over the file, biased for quantities that
+// correlate with s. (The exact per-event stripped weight, 1 - s, can be negative.) In the cosmic
+// configuration S/E is about 0.02 and the muon count agrees with an unsplit sample to 0.1%; a soft-kill
+// exemption that let soft split copies survive in one region (S/E 0.028) made the count of muons
+// crossing the tracker 0.991 of it.
 //
 // Muon decays in flight (optional, muonDecayWindow = T > 0, proper time in ns). They are rare, so they
 // can come from a second stage-2 stream in which Mu2eG4 physics.muonMaxPreAssignedDecayProperTime = T makes
