@@ -81,8 +81,10 @@ CaloCluster : { @table::CaloCluster
 # drops only clusters below 10 MeV.
 #
 # To swap in SimpleEdgeNet for an A/B comparison job, declare a second
-# instance with modelPath and expectedModelVersion pointing at
-# simple_edge_net_v2.onnx, and tauEdge=0.26.
+# instance with
+#   modelPath            : "Offline/CaloCluster/data/simple_edge_net_v2.onnx"
+#   expectedModelVersion : "simple-edge-net-v2"
+#   tauEdge              : 0.26
 
 CaloClusterGNN : {
    caloHitGraphMakerGNN :
