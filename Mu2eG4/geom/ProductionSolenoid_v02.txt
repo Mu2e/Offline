@@ -34,7 +34,7 @@ double PS.VacVessel.WallThickness  = 20.;
 // e-mail 2012-03-27 from Tom Page, and PS-solenoid-magnet-assembly-2012-02-15.PDF in docdb-2066
 double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
-double PS.VacVessel.InnerExtension = 51.9;  // as-built non-TS-end weld stub, Mu2e-doc-44716-v7 Fig. 1-7 (the 38.8 mm TS-end stub is not modeled)
+double PS.VacVessel.InnerExtension = 101.4;  // this approximates the inner vacuum vessel junction to the PS enclosure endcap
 string PS.VacVessel.materialName   = "StainlessSteel";
 
 // Conical hard connect between the PS bore tube and the TSu upstream ring plate.
