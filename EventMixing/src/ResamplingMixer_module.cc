@@ -16,6 +16,7 @@
 
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/EventMixing/inc/Mu2eProductMixer.hh"
+#include "Offline/EventMixing/inc/SubRunCachingRootIOPolicy.hh"
 #include "Offline/Mu2eUtilities/inc/artURBG.hh"
 #include <random>
 
@@ -142,8 +143,9 @@ namespace mu2e {
 
 //================================================================
 namespace mu2e {
-  // This is the module class.
-  typedef art::MixFilter<ResamplingMixerDetail,art::RootIOPolicy> ResamplingMixer;
+  // This is the module class. Its I/O policy reads the SubRun-level products (stage-1 volume infos, livetime)
+  // once per secondary SubRun instead of once per event.
+  typedef art::MixFilter<ResamplingMixerDetail,SubRunCachingRootIOPolicy> ResamplingMixer;
 
 }
 
