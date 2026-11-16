@@ -14,6 +14,7 @@ S Middleton 2023
 #include <map>
 #include "cetlib_except/exception.h"
 #include "Offline/DbTables/inc/DbTable.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/CaloSiPMId.hh"
 
 namespace mu2e {
@@ -39,7 +40,7 @@ namespace mu2e {
     CalEnergyCalib():DbTable(cxname,"cal.energycalib","roid,adc2mev"){}
 
     const Row& row(CaloSiPMId id) const {
-                return _rows[id.id()];
+                return _rows.at(id.id());
     }
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const override { return _rows.size(); };
@@ -50,7 +51,7 @@ namespace mu2e {
     void addRow(const std::vector<std::string>& columns) override {
       std::uint16_t index = std::stoul(columns[0]);
     // enforce order, so channels can be looked up by index
-    if (index!=int(_rows.size())) {
+    if (index >= CaloConst::_nChannelDB || index != _rows.size()) {
         throw cet::exception("CALOENERGYCALIB_BAD_INDEX")<<"CalEnergyCalib::addRow found index out of order:"<<index << " != " << int(_rows.size()) <<"\n";
       }
        _rows.emplace_back(CaloSiPMId(index),std::stof(columns[1]));

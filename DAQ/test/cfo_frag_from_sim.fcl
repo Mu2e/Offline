@@ -1,0 +1,96 @@
+# Make the CFO fragment collection from simulated event timing, then decode it with
+# EventHeaderFromCFOFragment, as the trigger does on data (cfoTag daq:CFO).
+# Compare the decoded EventHeader and ProtonBunchTime with the simulated ones using diagLevel printout.
+#
+# To run the trigger from fragments on simulated events, add CFOFragmentFromSim and the
+# *DigisToFragments modules to the digi job. Then, in the trigger job, point the
+# EventHeaderFromCFOFragment module at the CFO fragments with
+#   cfoTag : "CFOFragmentFromSim:CFO"
+# Its label depends on the mu2e-trig-config version (e.g. ProcessCFOData). In a digi job, EWMProducer
+# is the EventWindowMarkerProducer that CFOFragmentFromSim reads, not the decoder.
+#
+# mu2e -c Offline/DAQ/test/cfo_frag_from_sim.fcl -n 20
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardServices.fcl"
+#include "Offline/CommonMC/fcl/prolog.fcl"
+
+process_name : CFOFromSim
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 20
+}
+
+services : @local::Services.Sim
+services.SeedService.baseSeed         : 8
+services.SeedService.maxUniqueEngines : 20
+
+physics : {
+  producers : {
+    # Simulated event window marker, proton bunch time and EventHeader
+    EWMProducer : {
+      @table::CommonMC.DigiProducers.EWMProducer
+      SpillType : 1 # on spill
+      RecoFromMCTruth : false
+    }
+
+    # CFO fragment from the simulated EventHeader
+    CFOFragmentFromSim : {
+      module_type : CFOFragmentFromSim
+      eventHeaderTag : "EWMProducer"
+      diagLevel : 2
+    }
+
+    # CFO fragment computed from the EventWindowMarker and ProtonBunchTimeMC, as for inputs without
+    # a simulated EventHeader (no EventHeader has this tag)
+    CFOFragmentFromEWM : {
+      module_type : CFOFragmentFromSim
+      eventHeaderTag : "noSuchModule"
+      instance : "CFOEWM"
+      diagLevel : 2
+    }
+
+    # Decode the CFO fragments
+    HeaderFromCFO : {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag : "CFOFragmentFromSim:CFO"
+      createEWM : true
+      diagLevel : 2
+    }
+    HeaderFromCFOEWM : {
+      module_type : EventHeaderFromCFOFragment
+      cfoTag : "CFOFragmentFromEWM:CFOEWM"
+      createEWM : true
+      diagLevel : 2
+    }
+  }
+
+  analyzers : {
+    # Simulated (EWMProducer) and decoded (HeaderFromCFO*) headers and proton bunch times
+    printModule : {
+      module_type : PrintModule
+      EventHeaderPrinter       : { verbose : 1 }
+      ProtonBunchTimePrinter   : { verbose : 1 }
+      ProtonBunchTimeMCPrinter : { verbose : 1 }
+    }
+  }
+
+  TrigPath : [ EWMProducer, CFOFragmentFromSim, CFOFragmentFromEWM, HeaderFromCFO, HeaderFromCFOEWM ]
+  trigger_paths : [ TrigPath ]
+  EndPath : [ printModule, out ]
+  end_paths : [ EndPath ]
+}
+
+outputs : {
+  out : {
+    module_type : RootOutput
+    fileName : "cfo_frag_from_sim.art"
+    outputCommands : [
+      "drop *_*_*_*",
+      "keep *_CFOFragmentFromSim_*_*",
+      "keep *_HeaderFromCFO_*_*",
+      "keep *_EWMProducer_*_*"
+    ]
+  }
+}

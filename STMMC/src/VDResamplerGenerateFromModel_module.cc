@@ -13,6 +13,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "Offline/MachineLearningTools/inc/ScoreBasedDiffusionModel.hh"
 
@@ -32,19 +33,27 @@
 #include "cetlib_except/exception.h"
 
 // fhicl includes
+#include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 // message handling
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Offline includes
 #include "Offline/DataProducts/inc/PDGCode.hh"
+#include "Offline/GeneralUtilities/inc/ParameterSetFromFile.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/SeedService/inc/SeedService.hh"
 #include "Offline/STMMC/inc/VDResamplerTransforms.hh"
+#include "Offline/STMMC/inc/VDResamplerPtotResampler.hh"
+#include "Offline/STMMC/inc/VDResamplerTrainCommon.hh"      // validateGeometry
+#include "Offline/STMMC/inc/VDResamplerGenerateCommon.hh"
+#include "Offline/STMMC/inc/VDResamplerNameHelper.hh"
+#include "Offline/STMMC/inc/VDResamplerValidationPlots.hh"
 
 // ROOT includes
 #include "art_root_io/TFileService.h"
@@ -54,11 +63,15 @@ namespace mu2e {
 
   namespace {
     // Utility function to extract PDG ID from the model filename, which is expected to contain a substring like "pdg[optional m][digits]", e.g. "pdg13" for muons, "pdgm13" for muon pluses.
-    int loadPDGIdFromFileName(const std::string& fileName) {
+    // The directory prefix is stripped first, so only the file name decides the PDG ID.
+    int loadPDGIdFromFileName(const std::string& path) {
+      const size_t slash = path.find_last_of("/\\");
+      const std::string fileName = (slash == std::string::npos) ? path : path.substr(slash + 1);
+
       const size_t pdgPos = fileName.find("pdg");
       if (pdgPos == std::string::npos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       size_t pos = pdgPos + 3;
       bool negative = false;
@@ -72,10 +85,31 @@ namespace mu2e {
       }
       if (startDigits == pos) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Cannot infer PDG ID from model filename: " << fileName;
+          << "Cannot infer PDG ID from model filename: " << path;
       }
       const int magnitude = std::stoi(fileName.substr(startDigits, pos - startDigits));
       return negative ? -magnitude : magnitude;
+    }
+
+    // Reject a checkpoint whose stored ModelLayout doesn't match the generation slot it is
+    // loaded into (an all-at-once file dropped into a stage slot, or vice versa, otherwise
+    // generates silently through the wrong inverse transform). The layout tag is only
+    // unambiguous for the V2 bases: V1 two-stage stages and the V1 all-at-once model all
+    // share layout AllAtOnce6D (the tag predates the stage layouts), so there is nothing to
+    // check there and we skip. A pre-tag (v<=6) file reads back as tag 0 == V1 AllAtOnce6D,
+    // which also lands here and is correctly left unenforced.
+    void requireLayout(const ScoreBasedDiffusionModel& model,
+                       VDResampler::ModelLayout expected, const std::string& file,
+                       const char* slot) {
+      const int tag = model.basisTag();
+      if (VDResampler::unpackMomentumBasis(tag) == VDResampler::MomentumBasis::V1_CylindricalTransformed)
+        return; // V1 layouts are ambiguous; nothing to enforce
+      if (VDResampler::unpackModelLayout(tag) != expected)
+        throw cet::exception("VDResamplerGenerateFromModel")
+          << "Checkpoint " << file << " loaded into the " << slot << " slot has "
+          << VDResampler::basisTagToString(tag) << ", but that slot requires layout "
+          << VDResampler::modelLayoutName(expected)
+          << ". The model file parameter points at the wrong model.";
     }
   }
 
@@ -92,22 +126,78 @@ namespace mu2e {
         };
         fhicl::Atom<std::string> stage1ModelFile{
           Name("stage1ModelFile"),
-          Comment("CSV filename for the stage-1 model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the stage-1 model parameters"),
           ""
         };
         fhicl::Atom<std::string> stage2ModelFile{
           Name("stage2ModelFile"),
-          Comment("CSV filename for the stage-2 model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the stage-2 model parameters"),
           ""
         };
         fhicl::Atom<std::string> allAtOnceModelFile{
           Name("allAtOnceModelFile"),
-          Comment("CSV filename for the all-at-once 6D model parameters"),
+          Comment("Model filename (.dat, or legacy .bin/.csv) for the all-at-once 6D model parameters"),
           ""
+        };
+        fhicl::Atom<std::string> SBDMstage1Method{
+          Name("SBDMstage1Method"),
+          Comment("V2 two-stage stage-1 pTotal source: DIFFUSION (trained 1-D model) "
+                  "or a non-diffusion resampler INVERSE_CDF / SPLINE_CDF / KDE. "
+                  "Applies ONLY when useTwoStageModel is true — an all-at-once 6-D model draws "
+                  "pTotal within its single sample and has no stage-1 to source, so this is "
+                  "ignored (with a warning) in that mode."),
+          "DIFFUSION"
+        };
+        // Peak tagging. Required (and only used) when the stage-2 model was TRAINED with the
+        // peak-tag condition dim — its basisTag records that, and generateTwoStage throws if
+        // the model expects tags and none are given. These MUST be the same line centers and
+        // half-widths, in the same order, that the model was trained with (SBDMpeakTagCenters
+        // / SBDMpeakTagHalfWidths in the train module): the network input is the line's INDEX
+        // in this list, so a reordered or different list relabels the classes.
+        fhicl::Sequence<double> SBDMpeakTagCenters{
+          Name("SBDMpeakTagCenters"),
+          Comment("Per-tag line center in RAW MeV/c on pTotal; must match the trained model's list."),
+          std::vector<double>()
+        };
+        fhicl::Sequence<double> SBDMpeakTagHalfWidths{
+          Name("SBDMpeakTagHalfWidths"),
+          Comment("Per-tag inclusive half-window in RAW MeV/c; must match the trained model's list."),
+          std::vector<double>()
+        };
+        fhicl::Atom<std::string> resamplerSourceRootFile{
+          Name("resamplerSourceRootFile"),
+          Comment("Source ROOT file for the pTotal resampler (required when SBDMstage1Method != DIFFUSION)."),
+          ""
+        };
+        fhicl::Atom<std::string> resamplerSourceTreeName{
+          Name("resamplerSourceTreeName"),
+          Comment("TTree name in resamplerSourceRootFile."),
+          "ttree"
+        };
+        // VirtualDetectorID, VDz0 and VDr are NOT module parameters: they come from the
+        // training plan's common_training_config, the single source of truth. VDr is baked
+        // into the inverse transforms, so a local override that disagreed with training
+        // would scale every generated position and momentum slope with nothing to flag it.
+        fhicl::Atom<std::string> trainingPlanFile{
+          Name("trainingPlanFile"),
+          Comment("The SAME training plan fhicl that configured the training job (e.g. "
+                  "VDResamplerTrainingPlan.fcl). REQUIRED: it supplies the VD geometry "
+                  "(VirtualDetectorID / VDz0 / VDr) from common_training_config, so the inverse "
+                  "transforms cannot drift from the coordinate system training used.")
         };
         fhicl::Atom<bool> useHeun{
           Name("useHeun"),
           Comment("If true, use Heun's method for reverse diffusion. Otherwise use Euler."),
+          true
+        };
+        fhicl::Atom<bool> useSDE{
+          Name("useSDE"),
+          Comment("If true, use SDE solver. Otherwise use ODE solver."),
+          true
+        };
+        fhicl::Atom<bool> useEMANetworkIfAvailable{
+          Name("useEMANetworkIfAvailable"),
+          Comment("If true, use the EMA network for inference when available. Pass false to force the base score network."),
           true
         };
         fhicl::Atom<int> diffusionSteps{
@@ -115,19 +205,22 @@ namespace mu2e {
           Comment("Number of reverse-diffusion steps used for sampling"),
           200
         };
-        fhicl::Atom<double> VDz0{
-          Name("VDz0"),
-          Comment("Nominal z coordinate of the virtual detector"),
-          37700.39
-        };
-        fhicl::Atom<double> VDr{
-          Name("VDr"),
-          Comment("Virtual detector radius used in the training transform"),
-          2000.0
+        fhicl::Atom<double> sdeToOdeSigmaThreshold{
+          Name("sdeToOdeSigmaThreshold"),
+          Comment("Switch from SDE to ODE when sigma falls below this threshold (-1 = always use useSDE setting)"),
+          -1.0
         };
         fhicl::Atom<bool> doROOTDump{
           Name("doROOTDump"),
           Comment("Whether to dump generated samples into a ROOT tree"),
+          false
+        };
+        fhicl::Atom<bool> doValidationPlots{
+          Name("doValidationPlots"),
+          Comment("Whether to write per-dimension generated-vs-mother comparison histograms and "
+                  "their W1/JSD/TV/KS metrics into the ROOT file. Requires doROOTDump, and requires "
+                  "resamplerSourceRootFile (the mother distribution is read from it) regardless of "
+                  "SBDMstage1Method."),
           false
         };
       };
@@ -136,8 +229,10 @@ namespace mu2e {
 
       explicit VDResamplerGenerateFromModel(const Parameters& conf);
       void produce(art::Event& event) override;
+      void endJob() override;
 
     private:
+
       art::RandomNumberGenerator::base_engine_t& engine_;
       CLHEP::RandFlat randFlat_;
       CLHEP::RandGaussQ randGaussQ_;
@@ -146,15 +241,38 @@ namespace mu2e {
       std::string stage2ModelFile_;
       std::string allAtOnceModelFile_;
       bool useHeun_;
+      bool useSDE_;
+      bool useEMANetworkIfAvailable_;
       int diffusionSteps_;
-      double VDz0_;
-      double VDr_;
+      double sdeToOdeSigmaThreshold_;
+      // VD geometry, read from the training plan's common_training_config at construction.
+      unsigned long virtualDetectorID_ = 0;
+      double VDz0_ = 0.0;
+      double VDr_ = 0.0;
       bool doROOTDump_;
+      bool doValidationPlots_;
       GlobalConstantsHandle<ParticleDataList> pdt_;
 
       std::unique_ptr<ScoreBasedDiffusionModel> allAtOnceModel_;
       std::unique_ptr<ScoreBasedDiffusionModel> stage1Model_;
       std::unique_ptr<ScoreBasedDiffusionModel> stage2Model_;
+
+      // Momentum basis + per-model layout, recovered from the loaded model(s)'
+      // opaque basisTag() so the inverse transform auto-selects (no fcl needed).
+      VDResampler::MomentumBasis momBasis_ = VDResampler::MomentumBasis::V1_CylindricalTransformed;
+      VDResampler::PositionBasis posBasis_ = VDResampler::PositionBasis::V1_Atanh;
+
+      // V2 stage-1 pTotal source. When != DIFFUSION the 1-D stage-1 diffusion model is
+      // replaced by ptotResampler_ (built from a required ROOT source file at ctor time).
+      VDResampler::Stage1Method stage1Method_ = VDResampler::Stage1Method::DIFFUSION;
+      VDResampler::PtotResampler ptotResampler_;
+
+      // Monoenergetic lines whose index becomes the stage-2 class label. Given explicitly here
+      // (rather than resolved from a training plan as VDResamplerGenerateMix does) because this
+      // module drives one model directly and carries no (pdg, source) plan coordinates. Empty
+      // unless the stage-2 model was trained peak-tagged; generateTwoStage checks that against
+      // the model's own basisTag.
+      std::vector<VDResampler::PeakTag> peakTags_;
 
       int pdgId_ = 0;
 
@@ -164,6 +282,9 @@ namespace mu2e {
       double t0_ = VDResampler::kT0;
       double tScale_ = VDResampler::kTScale;
       double p0_ = VDResampler::kP0;
+
+      // Per-dimension generated-vs-mother comparison, written when doValidationPlots_.
+      VDResampler::ValidationPlots validationPlots_;
 
       // Variables for optional ROOT dump.
       TTree* outTree_ = nullptr;
@@ -188,46 +309,177 @@ namespace mu2e {
       stage2ModelFile_(conf().stage2ModelFile()),
       allAtOnceModelFile_(conf().allAtOnceModelFile()),
       useHeun_(conf().useHeun()),
+      useSDE_(conf().useSDE()),
+      useEMANetworkIfAvailable_(conf().useEMANetworkIfAvailable()),
       diffusionSteps_(conf().diffusionSteps()),
-      VDz0_(conf().VDz0()),
-      VDr_(conf().VDr()),
-      doROOTDump_(conf().doROOTDump()) {
+      sdeToOdeSigmaThreshold_(conf().sdeToOdeSigmaThreshold()),
+      doROOTDump_(conf().doROOTDump()),
+      doValidationPlots_(conf().doValidationPlots()) {
 
     produces<GenParticleCollection>();
 
-    if (VDr_ <= 0.0) {
+    // Geometry from the training plan's common_training_config, so it cannot drift from what
+    // training used. VDr in particular is baked into the inverse position/momentum transforms.
+    const std::string planFile = conf().trainingPlanFile();
+    if (planFile.empty())
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDr must be positive (got " << VDr_ << "); "
-        << "rho = r/VDr would produce inf/NaN in generated samples.";
-    }
-    if (!std::isfinite(VDz0_)) {
+        << "trainingPlanFile is required: it is where the VD geometry (VirtualDetectorID, "
+        << "VDz0, VDr) comes from.";
+    const fhicl::ParameterSet plan = ParameterSetFromFile(planFile).pSet();
+    if (!plan.has_key("common_training_config"))
       throw cet::exception("VDResamplerGenerateFromModel")
-        << "VDz0 must be finite (got " << VDz0_ << ").";
+        << "trainingPlanFile " << planFile << " has no 'common_training_config' table.";
+    const fhicl::ParameterSet common = plan.get<fhicl::ParameterSet>("common_training_config");
+    virtualDetectorID_ = static_cast<unsigned long>(common.get<int>("VirtualDetectorID"));
+    VDz0_ = common.get<double>("VDz0");
+    VDr_  = common.get<double>("VDr");
+
+    VDResampler::validateGeometry(VDr_, VDz0_, "VDResamplerGenerateFromModel");
+
+    stage1Method_ = VDResampler::parseStage1Method(conf().SBDMstage1Method(), "VDResamplerGenerateFromModel");
+    const bool useResampler = (stage1Method_ != VDResampler::Stage1Method::DIFFUSION);
+
+    // Peak-tag lines. Validated to the same rules as the train module's assemblePeakTags
+    // (equal lengths, positive values, disjoint windows) so a typo is caught at setup rather
+    // than becoming a silently wrong class label on every generated event. Whether they are
+    // actually REQUIRED is decided by the stage-2 model's own basisTag, in generateTwoStage.
+    {
+      const std::vector<double> centers    = conf().SBDMpeakTagCenters();
+      const std::vector<double> halfWidths = conf().SBDMpeakTagHalfWidths();
+      if (centers.size() != halfWidths.size())
+        throw cet::exception("VDResamplerGenerateFromModel")
+          << "SBDMpeakTagCenters (" << centers.size() << " entries) and SBDMpeakTagHalfWidths ("
+          << halfWidths.size() << ") must have the same length.";
+      for (size_t k = 0; k < centers.size(); ++k) {
+        if (!(centers[k] > 0.0) || !(halfWidths[k] > 0.0))
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "Peak tag " << k << " has center " << centers[k] << " and half-width "
+            << halfWidths[k] << "; both must be > 0 (MeV/c).";
+        peakTags_.push_back(VDResampler::PeakTag{centers[k], halfWidths[k]});
+      }
+      for (size_t a = 0; a < peakTags_.size(); ++a)
+        for (size_t b = a + 1; b < peakTags_.size(); ++b)
+          if (std::abs(peakTags_[a].center - peakTags_[b].center)
+              <= peakTags_[a].halfWidth + peakTags_[b].halfWidth)
+            throw cet::exception("VDResamplerGenerateFromModel")
+              << "Peak tag windows " << a << " and " << b << " overlap; they must be disjoint "
+              << "so the class label does not depend on the order they are configured in.";
     }
 
     if (useTwoStageModel_) {
-      if (stage1ModelFile_.empty() || stage2ModelFile_.empty()) {
+      // stage1 may be supplied either by a trained 1-D diffusion model OR by the
+      // pTotal resampler. Stage2 is always required.
+      if (stage2ModelFile_.empty()) {
         throw cet::exception("VDResamplerGenerateFromModel")
-          << "Two-stage generation requires both stage1ModelFile and stage2ModelFile.";
+          << "Two-stage generation requires stage2ModelFile.";
+      }
+      if (!useResampler && stage1ModelFile_.empty()) {
+        throw cet::exception("VDResamplerGenerateFromModel")
+          << "Two-stage generation with SBDMstage1Method=DIFFUSION requires stage1ModelFile.";
       }
 
-      stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
-        ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
-      );
       stage2Model_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage2ModelFile_)
       );
-      pdgId_ = loadPDGIdFromFileName(stage1ModelFile_);
+      momBasis_ = VDResampler::unpackMomentumBasis(stage2Model_->basisTag());
+      posBasis_ = VDResampler::unpackPositionBasis(stage2Model_->basisTag());
+      mf::LogInfo("VDResamplerGenerateFromModel")
+        << "Loaded stage-2 model " << stage2ModelFile_ << ": "
+        << VDResampler::basisTagToString(stage2Model_->basisTag());
+      requireLayout(*stage2Model_, VDResampler::ModelLayout::TwoStageStage2_5D,
+                    stage2ModelFile_, "stage-2");
+      pdgId_ = loadPDGIdFromFileName(stage2ModelFile_);
+      // A v9+ checkpoint records the particle it was trained for, so the name-derived value
+      // is cross-checked against it; a pre-v9 one stores 0 and the name stands alone.
+      VDResampler::checkPdgId(stage2Model_->pdgId(), pdgId_,
+                              "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(stage2Model_->buildConstants(), VDr_, VDz0_,
+                                       "Stage-2 model " + stage2ModelFile_, "VDResamplerGenerateFromModel");
+
+      // The peak label is only as sharp as the pTotal it is derived from. A DIFFUSION stage-1
+      // is a continuous model over log(pTotal/p0): it cannot reproduce a line whose width is a
+      // keV, so it spreads those events out and the tag fires on a smeared population rather
+      // than on the line — the tagged fraction will not match the truth.
+      //
+      // A QUALITY warning, not an error: the stage-2 model is trained and used correctly either
+      // way (its training labels came from true hits), and a diffusion stage-1 is a legitimate
+      // choice. But peak tagging exists precisely to preserve a narrow line, so pairing it with
+      // the one stage-1 method that cannot is almost always unintended. (The complementary
+      // error — a tagged model with no tags configured — is raised by generateTwoStage.)
+      if (VDResampler::unpackPeakTagged(stage2Model_->basisTag()) && !useResampler)
+        mf::LogWarning("VDResamplerGenerateFromModel")
+          << "Stage-2 model " << stage2ModelFile_ << " was trained with peak tagging, but "
+          << "SBDMstage1Method=DIFFUSION. The stage-1 diffusion model smooths over the narrow "
+          << "line(s) the tags name, so the fraction of events tagged will not match the source. "
+          << "Use a pTotal resampler (INVERSE_CDF / SPLINE_CDF), which draws from the empirical "
+          << "distribution and preserves the line exactly.";
+
+      if (useResampler) {
+        // Build the pTotal resampler from the required source ROOT file. The basis is
+        // read from stage2 (stage1 has no model). The resampler source selection uses
+        // the fcl VD id and the pdgId derived from the stage2 file name (so source and
+        // model necessarily agree on the particle).
+        const std::string srcFile = conf().resamplerSourceRootFile();
+        if (srcFile.empty())
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "SBDMstage1Method=" << conf().SBDMstage1Method()
+            << " requires resamplerSourceRootFile (the pTotal source).";
+        ptotResampler_.buildFromRoot(srcFile, conf().resamplerSourceTreeName(),
+                                     virtualDetectorID_, pdgId_,
+                                     stage1Method_, "VDResamplerGenerateFromModel");
+      } else {
+        stage1Model_ = std::make_unique<ScoreBasedDiffusionModel>(
+          ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, stage1ModelFile_)
+        );
+        mf::LogInfo("VDResamplerGenerateFromModel")
+          << "Loaded stage-1 model " << stage1ModelFile_ << ": "
+          << VDResampler::basisTagToString(stage1Model_->basisTag());
+        requireLayout(*stage1Model_, VDResampler::ModelLayout::TwoStageStage1Ptot1D,
+                      stage1ModelFile_, "stage-1");
+        VDResampler::checkPdgId(stage1Model_->pdgId(), pdgId_,
+                                "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
+        VDResampler::checkBuildConstants(stage1Model_->buildConstants(), VDr_, VDz0_,
+                                         "Stage-1 model " + stage1ModelFile_, "VDResamplerGenerateFromModel");
+        // Two loaded models must carry the same basis tag, else the inverse is ambiguous.
+        const auto stage1Basis = VDResampler::unpackMomentumBasis(stage1Model_->basisTag());
+        if (stage1Basis != momBasis_)
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "Stage-1 and stage-2 models disagree on momentum basis (tags "
+            << stage1Model_->basisTag() << " vs " << stage2Model_->basisTag() << ").";
+      }
     } else {
       if (allAtOnceModelFile_.empty()) {
         throw cet::exception("VDResamplerGenerateFromModel")
           << "All-at-once generation requires allAtOnceModelFile.";
       }
+      // stage1Method_ was parsed above (so a typo is still caught) but nothing in this branch
+      // consults it: a 6-D all-at-once model draws pTotal as part of the single sample, so it
+      // has no stage-1 to source. Setting it to a resampler method here would otherwise be
+      // accepted in silence and produce a plain all-at-once job — say so instead.
+      if (useResampler) {
+        mf::LogWarning("VDResamplerGenerateFromModel")
+          << "SBDMstage1Method=" << conf().SBDMstage1Method() << " is IGNORED when "
+          << "useTwoStageModel is false: an all-at-once 6-D model has no separate stage-1 "
+          << "pTotal step to resample. No pTotal resampler is built, and resamplerSourceRootFile "
+          << "is used only if doValidationPlots is on (for the mother distribution). Set "
+          << "useTwoStageModel: true if you meant to use the configuration.";
+      }
 
       allAtOnceModel_ = std::make_unique<ScoreBasedDiffusionModel>(
         ScoreBasedDiffusionModel::loadModel(randFlat_, randGaussQ_, allAtOnceModelFile_)
       );
+      momBasis_ = VDResampler::unpackMomentumBasis(allAtOnceModel_->basisTag());
+      posBasis_ = VDResampler::unpackPositionBasis(allAtOnceModel_->basisTag());
+      mf::LogInfo("VDResamplerGenerateFromModel")
+        << "Loaded all-at-once model " << allAtOnceModelFile_ << ": "
+        << VDResampler::basisTagToString(allAtOnceModel_->basisTag());
+      requireLayout(*allAtOnceModel_, VDResampler::ModelLayout::AllAtOnce6D,
+                    allAtOnceModelFile_, "all-at-once");
       pdgId_ = loadPDGIdFromFileName(allAtOnceModelFile_);
+      VDResampler::checkPdgId(allAtOnceModel_->pdgId(), pdgId_,
+                              "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
+      VDResampler::checkBuildConstants(allAtOnceModel_->buildConstants(), VDr_, VDz0_,
+                                       "All-at-once model " + allAtOnceModelFile_, "VDResamplerGenerateFromModel");
     }
 
     z_gen_ = VDz0_;
@@ -244,79 +496,63 @@ namespace mu2e {
       outTree_->Branch("py", &py_gen_, "py/D");
       outTree_->Branch("pz", &pz_gen_, "pz/D");
       outTree_->Branch("E", &E_gen_, "E/D");
+
+      // Validation plots live in this same ROOT file, so they are booked here, under the
+      // dump, reusing its TFileService handle.
+      if (doValidationPlots_) {
+        // The mother distribution comes from the source ROOT file. For a DIFFUSION stage-1
+        // job nothing else needs that file, so it is optional there — but validation cannot
+        // run without a reference, hence it is mandatory whenever the plots are requested.
+        const std::string srcFile = conf().resamplerSourceRootFile();
+        if (srcFile.empty())
+          throw cet::exception("VDResamplerGenerateFromModel")
+            << "doValidationPlots requires resamplerSourceRootFile: it supplies the mother "
+            << "distribution the generated samples are compared against.";
+
+        // momBasis_ and pdgId_ are settled above from the loaded model(s), so the plot set is
+        // booked for exactly the basis that will be generated.
+        const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+        // The models' own training statistics size the transformed axes to where the
+        // population actually is, rather than to the static catch-all ranges.
+        const VDResampler::TransformedStatsBySlot stats =
+          VDResampler::collectTransformedStats(allAtOnceModel_.get(), stage1Model_.get(),
+                                               stage2Model_.get(), momBasis_);
+        validationPlots_.book(
+          tfs->mkdir("validation"),
+          "pdg" + VDResampler::pdgFileToken(pdgId_), momBasis_, posBasis_, pdgId_,
+          pdt_->particle(pdgId_).mass(),
+          srcFile, conf().resamplerSourceTreeName(), virtualDetectorID_, ip,
+          "VDResamplerGenerateFromModel", &stats);
+      }
+    } else if (doValidationPlots_) {
+      throw cet::exception("VDResamplerGenerateFromModel")
+        << "doValidationPlots requires doROOTDump (the comparison histograms are written "
+        << "into the ROOT dump file).";
     }
+  }
+
+  void VDResamplerGenerateFromModel::endJob() {
+    validationPlots_.finalize();
   }
 
   void VDResamplerGenerateFromModel::produce(art::Event& event) {
     auto output = std::make_unique<GenParticleCollection>();
 
-    double x_trans = 0.0;
-    double y_trans = 0.0;
-    double t_trans = 0.0;
-    double pr_t = 0.0;
-    double pphi_t = 0.0;
-    double pz_t = 0.0;
+    const VDResampler::SamplerSettings settings{
+      useEMANetworkIfAvailable_, useHeun_, useSDE_, diffusionSteps_, sdeToOdeSigmaThreshold_};
 
-    // Generate a new sample using the loaded model(s)
-    // note the values here are transformed and need to be inverted back to the original coordinates after sampling.
+    // Generate one transformed sample (shared with VDResamplerGenerateMix).
+    VDResampler::GeneratedTransformed g;
     if (useTwoStageModel_) {
-      const std::vector<double> stage1Sample = stage1Model_->generateSample({}, useHeun_, diffusionSteps_);
-      if (stage1Sample.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-1 model returned " << stage1Sample.size() << " values, expected 3.";
-      }
-
-      t_trans = stage1Sample[0];
-      x_trans = stage1Sample[1];
-      y_trans = stage1Sample[2];
-
-      const std::vector<double> stage2Condition = {t_trans, x_trans, y_trans};
-      const std::vector<double> stage2Sample = stage2Model_->generateSample(stage2Condition, useHeun_, diffusionSteps_);
-      if (stage2Sample.size() != 3u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "Stage-2 model returned " << stage2Sample.size() << " values, expected 3.";
-      }
-
-      pr_t = stage2Sample[0];
-      pphi_t = stage2Sample[1];
-      pz_t = stage2Sample[2];
+      g = VDResampler::generateTwoStage(
+        stage1Model_.get(), *stage2Model_, stage1Method_, ptotResampler_,
+        randFlat_, randGaussQ_, settings, p0_, "VDResamplerGenerateFromModel", peakTags_);
     } else {
-      const std::vector<double> sample = allAtOnceModel_->generateSample({}, useHeun_, diffusionSteps_);
-      if (sample.size() != 6u) {
-        throw cet::exception("VDResamplerGenerateFromModel")
-          << "All-at-once model returned " << sample.size() << " values, expected 6.";
-      }
-
-      t_trans = sample[0];
-      x_trans = sample[1];
-      y_trans = sample[2];
-      pr_t = sample[3];
-      pphi_t = sample[4];
-      pz_t = sample[5];
+      g = VDResampler::generateAllAtOnce(*allAtOnceModel_, settings, "VDResamplerGenerateFromModel");
     }
 
-    VDResampler::invertGeneratedSample(
-      x_trans,
-      y_trans,
-      t_trans,
-      pr_t,
-      pphi_t,
-      pz_t,
-      x0_,
-      y0_,
-      t0_,
-      tScale_,
-      p0_,
-      VDr_,
-      VDz0_,
-      x_gen_,
-      y_gen_,
-      z_gen_,
-      t_gen_,
-      px_gen_,
-      py_gen_,
-      pz_gen_
-    );
+    const VDResampler::InverseParams ip{x0_, y0_, t0_, tScale_, p0_, VDr_, VDz0_};
+    VDResampler::invertGenerated(g, ip, x_gen_, y_gen_, z_gen_, t_gen_, px_gen_, py_gen_, pz_gen_);
 
     mass_gen_ = pdt_->particle(pdgId_).mass();
     const CLHEP::Hep3Vector momParticle(px_gen_, py_gen_, pz_gen_);
@@ -337,6 +573,12 @@ namespace mu2e {
 
     if (doROOTDump_) {
       outTree_->Fill();
+    }
+    // booked() is true only when validation was requested, so it is the standing record of
+    // that decision — no separate flag check is needed.
+    if (validationPlots_.booked()) {
+      // g holds the model's own transformed output; the *_gen_ values are its inversion.
+      validationPlots_.fillGenerated(g, x_gen_, y_gen_, t_gen_, px_gen_, py_gen_, pz_gen_);
     }
   }
 

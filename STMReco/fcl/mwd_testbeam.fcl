@@ -1,5 +1,5 @@
 #
-# Apply mpoving window deconvolution algorithm to zero-suppressed STMWaveformDigis
+# Apply Moving Window Deconvolution algorithm to zero-suppressed STMWaveformDigis
 #
 
 #include "Offline/STMReco/fcl/prolog_testbeam.fcl"

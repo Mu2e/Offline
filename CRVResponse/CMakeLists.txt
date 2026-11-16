@@ -66,6 +66,7 @@ cet_build_plugin(CrvPlot art::module
       Offline::CRVConditions
       Offline::DataProducts
       Offline::GeometryService
+      Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::ProditionsService
       Offline::RecoDataProducts
@@ -141,6 +142,20 @@ cet_build_plugin(MakeCrvCoincidenceClusterMCAssns art::module
       Offline::CRVResponse
 
       Offline::MCDataProducts
+)
+
+cet_build_plugin(TrkCrvMatchMCMaker art::module
+    REG_SOURCE src/TrkCrvMatchMCMaker_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::KinKalGeom
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      KinKal::General
+      KinKal::Geometry
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl ${CURRENT_BINARY_DIR} fcl/prolog.fcl)

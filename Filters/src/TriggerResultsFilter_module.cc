@@ -34,6 +34,7 @@ namespace mu2e {
         fhicl::Atom<bool>         printFirst  {Name("PrintFirst")  , Comment("Print the TriggerResults on the first event"), false};
         fhicl::Atom<bool>         noFilter    {Name("NoFilter")    , Comment("If true, do not filter any events"), false};
         fhicl::Atom<string>       processName {Name("ProcessName") , Comment("Process which generated TriggerResults")};
+        fhicl::Atom<bool>         processTag  {Name("ProcessTag")  , Comment("Apply name matching given the process name"), false};
         fhicl::Sequence<string>   triggerNames{Name("TriggerNames"), Comment("Trigger line names to test; if any of these are set the event will pass the filter"), vector<string>()};
         fhicl::Sequence<unsigned> triggerBits {Name("TriggerBits") , Comment("Trigger line bits to test; if any of these are set the event will pass the filter"), vector<unsigned>()};
       };
@@ -46,6 +47,7 @@ namespace mu2e {
     private:
       int _diag;
       string _pname; // process name for the TriggerResults object to test
+      bool _ptag; // process name is a tag for matching the TriggerResults object to test
       bool _pfirst; // print lines on first event
       bool _noFilter; // if true, do not filter any events
       std::vector<string> _tnames; // trigger line names; if any of these lines are set, accept the event
@@ -59,6 +61,7 @@ namespace mu2e {
     : art::EDFilter{config},
     _diag(config().diagLevel()),
     _pname(config().processName()),
+    _ptag(config().processTag()),
     _pfirst(config().printFirst()),
     _noFilter(config().noFilter()),
     _tnames(config().triggerNames()),
@@ -78,10 +81,24 @@ namespace mu2e {
   //================================================================
   bool TriggerResultsFilter::filter(art::Event& event) {
     _nevts++;
-    // find the TriggerResults object for the requested process name
-    art::InputTag const tag{format("TriggerResults::{}", _pname.c_str())};
-    auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
-    const art::TriggerResults* trigResults = trigResultsH.product();
+
+    const art::TriggerResults* trigResults = nullptr;
+    if(_ptag) { // check for a trigger results object matching the tag
+      for(auto const& triggerResultsHandle : event.getMany<art::TriggerResults>()) {
+        if(!triggerResultsHandle.isValid()) continue;
+        if(triggerResultsHandle.provenance()->processName().find(_pname) == std::string::npos)
+          continue;
+        trigResults = triggerResultsHandle.product();
+        break;
+      }
+      if(!trigResults) throw cet::exception("CONFIG") << "No trigger process with name tag " << _pname;
+    } else { // check for a trigger results with the requested process name
+      art::InputTag const tag{format("TriggerResults::{}", _pname.c_str())};
+      auto triggerResultsHandle = event.getValidHandle<art::TriggerResults>(tag);
+      trigResults = triggerResultsHandle.product();
+    }
+
+    // Create the navigator
     TriggerResultsNavigator tnav(trigResults);
     if(_pfirst || _diag > 2){
       _pfirst = false;

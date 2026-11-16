@@ -3,8 +3,7 @@
 //
 // Interface for classes describing the layout of the crystals in the disk.
 //
-// Crystals could be square, hexagonal or triangular.
-//   Need to describe tesselation and shape
+// Crystals could be square, hexagonal or triangular
 //
 // Original author B. Echenard
 //
@@ -15,30 +14,20 @@
 
 namespace mu2e {
 
-    class CrystalMapper {
+  class CrystalMapper {
+    public:
+      //no constructor for this interface
+      virtual ~CrystalMapper() = default;
 
-        public:
-          //no constructor for this interface
-          virtual ~CrystalMapper() = default;
-
-          virtual int                        nCrystalMax    (int maxRing)                   const = 0;
-
-          virtual CLHEP::Hep2Vector          xyFromIndex    (int thisIndex)                 const = 0;
-          virtual int                        indexFromXY    (double x, double y)            const = 0;
-          virtual int                        indexFromRowCol(int nRow, int nCol)            const = 0;
-          virtual int                        rowFromIndex   (int thisIndex)                 const = 0;
-          virtual int                        colFromIndex   (int thisIndex)                 const = 0;
-
-          virtual int                        numNeighbors   (int level)                     const = 0;
-          virtual std::vector<int>           neighbors      (int thisIndex, int level)      const = 0;
-
-          virtual const std::vector<double>& apexX          ()                              const = 0;
-          virtual const std::vector<double>& apexY          ()                              const = 0;
-
-          virtual bool                       isInsideCrystal(double x, double y,
-                                                             const CLHEP::Hep3Vector& pos,
-                                                             const CLHEP::Hep3Vector& size) const = 0;
-    };
+      virtual unsigned                   nCrystalMax    (unsigned maxRing)                   const = 0;
+      virtual CLHEP::Hep2Vector          xyFromIndex    (unsigned thisIndex)                 const = 0;
+      virtual unsigned                   indexFromXY    (double x, double y)                 const = 0;
+      virtual unsigned                   indexFromRowCol(int nRow, int nCol)                 const = 0;
+      virtual int                        rowFromIndex   (unsigned thisIndex)                 const = 0;
+      virtual int                        colFromIndex   (unsigned thisIndex)                 const = 0;
+      virtual unsigned                   numNeighbors   (unsigned level)                     const = 0;
+      virtual std::vector<unsigned>      neighbors      (unsigned thisIndex, unsigned level) const = 0;
+   };
 
 }
 #endif

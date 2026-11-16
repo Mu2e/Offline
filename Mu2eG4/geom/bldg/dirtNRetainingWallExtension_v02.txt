@@ -1,5 +1,5 @@
 string dirt.NRetainingWall.extension.name     = "dirtNRetainingWallExtension";
-string dirt.NRetainingWall.extension.material = "StainlessSteel";
+string dirt.NRetainingWall.extension.material = "MBOverburden";
 double dirt.NRetainingWall.extension.offsetFromMu2eOrigin.x   = 947.40;
 double dirt.NRetainingWall.extension.offsetFromFloorSurface.y = 6248.40;
 double dirt.NRetainingWall.extension.offsetFromMu2eOrigin.z   = -3581.40;

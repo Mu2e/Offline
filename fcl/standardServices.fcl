@@ -5,6 +5,7 @@
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/DbService/fcl/prolog.fcl"
 #include "Offline/ProditionsService/fcl/prolog.fcl"
+#include "Offline/KinKalGeom/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -37,11 +38,12 @@ Services : {
 # define services for specific tasks: these are components needed for
 # a complete job
   Core            : {
-    message                    : @local::default_message
-    GeometryService            : {
-        inputFile           : "Offline/Mu2eG4/geom/geom_common.txt"
-        bFieldFile          : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
-        simulatedDetector   : { tool_type: "Mu2e" }
+    message                 : @local::default_message
+    GeometryService         : {
+        inputFile             : "Offline/Mu2eG4/geom/geom_common.txt"
+        bFieldFile            : "Offline/Mu2eG4/geom/bfgeom_v01.txt"
+        simulatedDetector     : { tool_type: "Mu2e" }
+        KinKalMaterial        : @local::KinKalGeom.KKMaterial
     }
     GlobalConstantsService  : { inputFile      : "Offline/GlobalConstantsService/data/globalConstants_01.txt" }
     DbService : @local::DbEmpty

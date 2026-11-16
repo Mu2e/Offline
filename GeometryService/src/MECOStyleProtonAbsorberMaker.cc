@@ -72,6 +72,11 @@ namespace mu2e {
     // region for PA
     const double pabsRegionLength = 2500.;
     std::string materialName = _config.getString("protonabsorber.materialName", "Polyethylene092");
+    // false drops the inner proton absorber (IPA) and its supports but keeps
+    // the outer one (OPA) and its supports, which hasProtonAbsorber = false
+    // would remove too. The IPA parts are still computed, so code that reads
+    // their dimensions keeps working; they are only marked unavailable.
+    const bool buildIPA = _config.getBool("protonabsorber.ipa.build", true);
     if (distFromTargetEnd > pabsRegionLength || distFromTargetEnd <0) {
       distFromTargetEnd = 0;
     }
@@ -124,6 +129,14 @@ namespace mu2e {
     // z of target end in mu2e coordinate
     // we add space for the virtual detector here
     double targetEnd = _target->centerInMu2e().z() + 0.5*_target->cylinderLength() + 2.*vdHL;;
+
+    // Optional absolute pinning: when protonabsorber.zStartInMu2e is set,
+    // the IPA's upstream end sits at that absolute z regardless of the
+    // stopping target; distFromTargetEnd then only anchors the cone-radius
+    // interpolation. Unset (default): stock target-relative behavior.
+    if ( _config.hasName("protonabsorber.zStartInMu2e") ) {
+      targetEnd = _config.getDouble("protonabsorber.zStartInMu2e") - distFromTargetEnd;
+    }
 
     // distance from target end to ds2-ds3 boundary
     double targetEndToDS2End = _ds->vac_zLocDs23Split() - targetEnd;
@@ -312,8 +325,8 @@ namespace mu2e {
     }
 
     // global variables
-    (_pabs->_pabs1flag) = pabs1;
-    (_pabs->_pabs2flag) = pabs2;
+    (_pabs->_pabs1flag) = pabs1 && buildIPA;
+    (_pabs->_pabs2flag) = pabs2 && buildIPA;
     (_pabs->_materialName) = materialName;
     (_pabs->_vdHL) = vdHL;
     (_pabs->_distfromtargetend) = distFromTargetEnd;
@@ -357,7 +370,7 @@ namespace mu2e {
     const string      wireMaterial    = _config.getString("protonabsorber.ipa.wireMaterial"      );
     const double      wireAngleOffset = _config.getDouble("protonabsorber.ipa.wireAngleOffset",0.);
 
-    _pabs->_buildSupports = _config.getBool("protonabsorber.ipa.buildSupports"   );
+    _pabs->_buildSupports = buildIPA && _config.getBool("protonabsorber.ipa.buildSupports"   );
     _pabs->_ipaSupport.reset( new InnerProtonAbsSupport( supportSets, wiresPerSet ) );
     _pabs->_ipaSupport->setWireAngleOffset(wireAngleOffset);
     // Calculate zPosition spacing

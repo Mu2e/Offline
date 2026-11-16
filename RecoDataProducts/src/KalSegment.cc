@@ -1,7 +1,37 @@
 #include "Offline/RecoDataProducts/inc/KalSegment.hh"
 #include "cetlib_except/exception.h"
-
 namespace mu2e {
+
+  KinKal::LoopHelix KalSegment::loopHelix(double mass) const {
+    if(mass < 0.0){
+      return KinKal::LoopHelix(_pstate, bnom(),timeRange());
+    } else {
+      return KinKal::LoopHelix(KinKal::ParticleStateEstimate(
+            KinKal::ParticleState(_pstate.position3(),_pstate.momentum3(),_pstate.time(),mass,_pstate.charge()),
+            _pstate.stateCovariance()),
+          bnom(),timeRange());
+    }
+  }
+  KinKal::CentralHelix KalSegment::centralHelix(double mass ) const {
+    if(mass < 0.0){
+      return KinKal::CentralHelix(_pstate, bnom(),timeRange());
+    } else {
+      return KinKal::CentralHelix(KinKal::ParticleStateEstimate(
+            KinKal::ParticleState(_pstate.position3(),_pstate.momentum3(),_pstate.time(),mass,_pstate.charge()),
+            _pstate.stateCovariance()),
+          bnom(),timeRange());
+    }
+  }
+  KinKal::KinematicLine KalSegment::kinematicLine(double mass ) const {
+    if(mass < 0.0){
+      return KinKal::KinematicLine(_pstate, bnom(),timeRange());
+    } else {
+      return KinKal::KinematicLine(KinKal::ParticleStateEstimate(
+            KinKal::ParticleState(_pstate.position3(),_pstate.momentum3(),_pstate.time(),mass,_pstate.charge()),
+            _pstate.stateCovariance()),
+          bnom(),timeRange());
+    }
+  }
 
   KinKal::TimeRange KalSegment::timeRange() const {
     // protect against unphysical times
@@ -25,10 +55,7 @@ namespace mu2e {
       auto kl = kinematicLine();
       return kl.paramVal(KinKal::KinematicLine::t0Index());
     }
-    //      throw cet::exception("RECO")<<"mu2e::KalSegment: no trajectory specified in flag" << std::endl;
-    // for now, revert to the legacy implementation.  Once BTrk is fully removed this should be removed
-    auto vel = _pstate.velocity();
-    return _pstate.time() - _pstate.position3().Z()/vel.Z();
+    throw cet::exception("RECO")<<"mu2e::KalSegment: no trajectory specified in flag" << std::endl;
   }
 
   double KalSegment::t0Var(TrkFitFlag const& flag) const {

@@ -2,11 +2,20 @@ cet_make_library(
     SOURCE
       src/CrvHelper.cc
       src/MakeCrvRecoPulses.cc
+      src/TrkCrvGeom.cc
+      src/TrkCrvMatchTool.cc
     LIBRARIES PUBLIC
 
       Offline::CosmicRayShieldGeom
       Offline::DataProducts
       Offline::GeometryService
+      Offline::KinKalGeom
+      Offline::RecoDataProducts
+      KinKal::General
+      KinKal::Geometry
+      art::Framework_Services_Registry
+      fhiclcpp::types
+      messagefacility::MF_MessageLogger
       ROOT::Hist
 )
 
@@ -28,6 +37,19 @@ cet_build_plugin(CrvCoincidenceFinder art::module
       Offline::DataProducts
       Offline::GeometryService
       Offline::RecoDataProducts
+)
+
+cet_build_plugin(TrkCrvMatcher art::module
+    REG_SOURCE src/TrkCrvMatcher_module.cc
+    LIBRARIES REG
+      Offline::CRVReco
+      Offline::CosmicRayShieldGeom
+      Offline::DataProducts
+      Offline::GeometryService
+      Offline::KinKalGeom
+      Offline::RecoDataProducts
+      KinKal::General
+      KinKal::Geometry
 )
 
 
@@ -86,8 +108,8 @@ cet_build_plugin(CrvWidebandTriggerFilter art::module
       Offline::RecoDataProducts
 )
 
-cet_build_plugin(CrvTimingStudies art::module
-    REG_SOURCE src/CrvTimingStudies_module.cc
+cet_build_plugin(CrvTimeOffsets art::module
+    REG_SOURCE src/CrvTimeOffsets_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::CRVReco

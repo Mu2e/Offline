@@ -21,10 +21,15 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
+  class Tracker;
+
   class Plane{
     using PanelCollection = std::array<const Panel*,StrawId::_npanels>;
     using TrackerPanelCollection = std::array<Panel,StrawId::_nupanels>;
     using xyzVec = CLHEP::Hep3Vector;
+
+    // Tracker re-points the panel pointers when it is copied
+    friend class Tracker;
 
     public:
 
@@ -78,6 +83,11 @@ namespace mu2e {
     }
 
     private:
+    // Fill the panel pointers from the given collection.  This is used both when
+    // building a plane and when a Tracker is copied, since the pointers must then
+    // refer to the panels owned by the copy and not to those of the original.
+    void rebindPanels( TrackerPanelCollection const& panels );
+
     StrawId             _id;
     HepTransform        _PlanetoDS; // transform from plane coordinates to DS (just a translation)
     xyzVec _udir, _vdir, _wdir; // direction vectors in DS frame

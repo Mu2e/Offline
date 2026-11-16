@@ -9,6 +9,9 @@
 #include <vector>
 #include <array>
 #include <Rtypes.h>
+#include <map>
+// Offline includes
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 
 namespace mu2e {
 
@@ -25,5 +28,6 @@ namespace mu2e {
     float _energy;
   };
   typedef std::vector<mu2e::STMHit> STMHitCollection;
+  typedef std::map<STMEventHeader,STMHitCollection> STMHitCollectionMap;
 }
 #endif

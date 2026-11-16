@@ -1,0 +1,4 @@
+# KinKalGeomCheck including the comparison with the G4 geometry, read from the GDML file that
+# "mu2e -c Offline/Mu2eG4/fcl/gdmldump.fcl" writes for the same geometry (mu2e_common.gdml in the current directory).
+#include "Offline/KinKalGeom/fcl/kinkalGeomCheck.fcl"
+physics.analyzers.KinKalGeomCheck.gdmlFile : "mu2e_common.gdml"

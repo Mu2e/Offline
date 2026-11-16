@@ -16,9 +16,10 @@ double dirt.beamline.upper.yHalfThickness           = 330.2;
 
 vector<int>    dirt.beamline.upper.xreplace   = { };
 vector<double> dirt.beamline.upper.xPositions = {
-  11684,  // R0 remote E wall
-  2463.8,   // RHC00
-  941.301,   // RHC01
+  11684,  // K rhc
+  3251.1,   // A rhc
+  3251.1,  // B rhc
+  1468.12,   // C rhc
   -2006.6,   // o9
   -2006.6,   // N to NRetWall
   3708.41,   // SE corner NRetWall
@@ -27,19 +28,20 @@ vector<double> dirt.beamline.upper.xPositions = {
   -2006.6,   // o9_to_N
   9550.5,   // to N of NE corner rem hatch
   9550.5,  // NE corner rem hatch
-  3403.59, // NW corner rem hatch
-  3403.59, // SW corner rem hatch
+  2946.4, //
+  2946.4, //
   9550.51, // SE corner rem hatch
   9550.51, // N of E wall rem hatch
   11684   // o7dirt_to_N
 };
 
-vector<int>    dirt.beamline.upper.yreplace   = { 8, 9, 14, 15 };
+vector<int>    dirt.beamline.upper.yreplace   = { 9, 10, 15, 16 };
 vector<double> dirt.beamline.upper.yPositions = {
-  10692.4, // R0 remote E wall S corner
-  8446,   // RHC00
-  6858,   // RHC01
-  6858,   // o9
+  10697.8, // K rhc
+  8674.2,   // A rhc
+  7289.9,   // B rhc
+  6858.1,   // C rhc
+  6858.1,   // o9
   9702.79,  // N to NRetWall
   9702.79,  // SE corner NRetWall
   10312.5,  // NE corner NRetWall
@@ -47,9 +49,9 @@ vector<double> dirt.beamline.upper.yPositions = {
   50000,   // o9_to_N
   50000,   // N of NE corner rem hatch
   16459.21, // NE corner rem hatch
-  16459.21, // NW corner rem hatch
-  13055.59, // SW corner rem hatch
-  13055.59, // SE corner rem hatch
+  16459.2, //
+  12598.4, //
+  12598.4, //
   50000,    // N of E wall rem hatch
   50000   // o7dirt_to_N
 };

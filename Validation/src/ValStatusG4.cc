@@ -1,5 +1,5 @@
-
 #include "Offline/Validation/inc/ValStatusG4.hh"
+#include <cmath>
 
 int mu2e::ValStatusG4::declare(const art::TFileDirectory& tfs) {
   _hVer = tfs.make<TH1D>("Ver", "Version Number", 101, -0.5, 100.0);

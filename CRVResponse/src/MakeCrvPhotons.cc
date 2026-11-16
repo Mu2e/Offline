@@ -275,6 +275,10 @@ void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
   for(unsigned int i=0; i<nScintillatorScintillationBins; i++) _bins[0][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nScintillatorCerenkovBins; i++)      _bins[1][i].Read(lookupfile,i);
   for(unsigned int i=0; i<nFiberCerenkovBins; i++)             _bins[2][i].Read(lookupfile,i);
+  // a truncated table would otherwise leave the bin boundaries and yield curves holding
+  // whatever was in the buffers, and the job would continue with silently wrong photon yields
+  if(!lookupfile) throw std::logic_error("Error while reading CRV lookup table file "+filename+
+                                         " (truncated or corrupt).");
   if(debug>0) std::cout<<"Done."<<std::endl;
 
   lookupfile.close();

@@ -79,8 +79,9 @@ namespace mu2e {
         }
     }
 
-    BFieldManagerMaker::BFieldManagerMaker(const BFieldConfig& config)
-        : _resolveFullPath() {
+    BFieldManagerMaker::BFieldManagerMaker(const BFieldConfig& config,
+                                           const std::map<std::string, double>& mapScales)
+        : _resolveFullPath(), _mapScales(mapScales) {
         bfieldVerbosityLevel = config.verbosityLevel();
 
         // break potential mapTypeList into two vectors... kind of ugly right now.
@@ -125,6 +126,24 @@ namespace mu2e {
           throw cet::exception("GEOM")
             << "Trying to add a new magnetic field when the named field map already exists: "
             << *dp << "\n";
+        }
+
+        // A per-map scale that names no loaded map is a typo: fail rather than
+        // silently run at the nominal field. A field-off config loads no maps,
+        // so there is nothing to scale and nothing to check.
+        if (keys.empty() && !_mapScales.empty()) {
+          cout << "BFieldManagerMaker: no field maps loaded; "
+               << _mapScales.size() << " bfield.mapScale entries unused" << endl;
+        }
+        for (auto const& [key, scale] : _mapScales) {
+          if (keys.empty()) break;
+          if (!std::binary_search(keys.begin(), keys.end(), key)) {
+            throw cet::exception("GEOM")
+              << "bfield.mapScale." << key << " = " << scale
+              << " names no loaded field map\n";
+          }
+          cout << "BFieldManagerMaker: map " << key << " scaled by " << scale
+               << " (times bfield.scaleFactor " << config.scaleFactor() << ")" << endl;
         }
 
         //copy non-const to const before giving maps to new BFieldManager
@@ -337,6 +356,11 @@ namespace mu2e {
 
     }  // end anonymous namespace
 
+    double BFieldManagerMaker::mapScale(const std::string& key) const {
+        auto it = _mapScales.find(key);
+        return it == _mapScales.end() ? 1.0 : it->second;
+    }
+
     // Loads a sequence of Parametric files
     void BFieldManagerMaker::loadMaps(MapContainerType& mapContainer,
                                        const BFieldConfig::FileSequenceType& files,
@@ -365,7 +389,8 @@ namespace mu2e {
                                        const BFieldConfig& config) {
         // Create an empty map.
       auto dsmap = std::make_shared<BFParamMap>(key, -4696, -3096, -800, 800, 3500, 14000,
-                                                BFMapType::PARAM, config.scaleFactor());
+                                                BFMapType::PARAM,
+                                                config.scaleFactor() * mapScale(key));
       // Fill the map from the disk file.
       readParamFile(resolvedFileName, *dsmap);
     }
@@ -390,7 +415,7 @@ namespace mu2e {
                                                  dim[1], X0[1], dX[1],
                                                  dim[2], X0[2], dX[2],
                                                  BFMapType::G4BL,
-                                                 config.scaleFactor(),
+                                                 config.scaleFactor() * mapScale(key),
                                                  config.interpolationStyle());
         dsmap->_flipy = extendYFound;
         // Fill the map from the disk file.

@@ -12,6 +12,7 @@ cet_make_library(
       src/PDGCode.cc
       src/PrescaleFilterFraction.cc
       src/STMChannel.cc
+      src/StageNormalization.cc
       src/StrawEnd.cc
       src/StrawId.cc
       src/StrawIdMask.cc

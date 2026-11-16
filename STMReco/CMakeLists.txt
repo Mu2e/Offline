@@ -15,15 +15,17 @@ cet_build_plugin(PlotSTMEnergySpectrum art::module
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
-cet_build_plugin(PlotSTMMWDSpectrum art::module
-    REG_SOURCE src/PlotSTMMWDSpectrum_module.cc
+cet_build_plugin(PlotSTMPHSpectrum art::module
+    REG_SOURCE src/PlotSTMPHSpectrum_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::GlobalConstantsService
       Offline::MCDataProducts
       Offline::RecoDataProducts
+      Offline::Mu2eUtilities
 )
 
 cet_build_plugin(PlotSTMWaveformDigis art::module
@@ -66,18 +68,37 @@ cet_build_plugin(STMAnalyzeDigis art::module
     Offline::RecoDataProducts
 )
 
+cet_build_plugin(STMPHDigiTree art::module
+    REG_SOURCE src/STMPHDigiTree_module.cc
+    LIBRARIES REG
+    art_root_io::TFileService_service
+    Offline::Mu2eUtilities
+    Offline::RecoDataProducts    
+)
+
+cet_build_plugin(STMHitsTree art::module
+    REG_SOURCE src/STMHitsTree_module.cc
+    LIBRARIES REG
+    art_root_io::TFileService_service
+    Offline::Mu2eUtilities
+    Offline::RecoDataProducts
+)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/makeSTMHits_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/makeSTMHits_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd.fcl   ${CURRENT_BINARY_DIR} fcl/mwd.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/mwd_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/mwd_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMEnergySpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMEnergySpectrum.fcl   COPYONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMMWDSpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMMWDSpectrum.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMPHSpectrum.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMPHSpectrum.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/plotSTMWaveformDigis.fcl   ${CURRENT_BINARY_DIR} fcl/plotSTMWaveformDigis.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog.fcl   ${CURRENT_BINARY_DIR} fcl/prolog.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/prolog_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/prolog_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/zeroSuppression_testbeam.fcl   ${CURRENT_BINARY_DIR} fcl/zeroSuppression_testbeam.fcl   COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/analyzeDigis.fcl   ${CURRENT_BINARY_DIR} fcl/analyzeDigis.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmPHTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmPHTrees.fcl   COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/fcl/stmHitsTrees.fcl   ${CURRENT_BINARY_DIR} fcl/stmHitsTrees.fcl   COPYONLY)
+
 
 
 install_source(SUBDIRS src)

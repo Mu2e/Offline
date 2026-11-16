@@ -1,6 +1,8 @@
 //
-// Create STMHits from STMMWDDigis
+// Create STMHits from STMPHDigis
+// Input digi file where phDigis are negative
 //
+
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Handle.h"
@@ -22,7 +24,7 @@
 #include "TH1F.h"
 #include "TTree.h"
 
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
 
 // C++
@@ -37,7 +39,10 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<art::InputTag> stmMWDDigisTag{ Name("stmMWDDigisTag"), Comment("InputTag for STMMWDDigiCollection")};
+      fhicl::Atom<art::InputTag> stmPHDigisMapTag{ Name("stmPHDigisMapTag"), Comment("InputTag for STMPHDigiCollectionMap")};
+      fhicl::Atom<float> samplingFrequency{ Name ("samplingFrequency"), Comment("Sampling Frequency in MHZ")};
+      fhicl::Atom<double> mCalibConstant{ Name("mCalibConstant"), Comment("InputTag for slope for ADC to Energy Conversion")};
+      fhicl::Atom<double> cCalibConstant{ Name("cCalibConstant"), Comment("InputTag for constant for ADC to Energy Conversion")};
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit MakeSTMHits(const Parameters& conf);
@@ -45,41 +50,51 @@ namespace mu2e {
   private:
     void produce(art::Event& e) override;
 
-    art::ProductToken<STMMWDDigiCollection> _stmMWDDigisToken;
-    STMChannel _channel;
-    ProditionsHandle<STMEnergyCalib> _stmEnergyCalib_h;
+    art::ProductToken<STMPHDigiCollectionMap> _stmPHDigisMapToken;
+    const float _samplingFrequency{0.0f};
+    const double _m{0.0}; // For E = m(ADC) + c
+    const double _c{0.0}; // Set up for Pass1 calibration
   };
 
   MakeSTMHits::MakeSTMHits(const Parameters& config )  :
     art::EDProducer{config}
-    ,_stmMWDDigisToken(consumes<STMMWDDigiCollection>(config().stmMWDDigisTag()))
-    ,_channel(STMUtils::getChannel(config().stmMWDDigisTag()))
-    ,_stmEnergyCalib_h()
+    ,_stmPHDigisMapToken(consumes<STMPHDigiCollectionMap>(config().stmPHDigisMapTag()))
+    ,_samplingFrequency(config().samplingFrequency())
+    ,_m(config().mCalibConstant())
+    ,_c(config().cCalibConstant())
     {
-      produces<STMHitCollection>();
+      if (_samplingFrequency == 0.0f) {
+        throw cet::exception("MakeSTMHits")
+          << "Sampling Frequency must be greater than zero : " << _samplingFrequency;
+      }
+      produces<STMHitCollectionMap>();
     }
 
     void MakeSTMHits::produce(art::Event& event) {
     // create output
-    unique_ptr<STMHitCollection> outputSTMHits(new STMHitCollection);
-    auto mwdDigisHandle = event.getValidHandle(_stmMWDDigisToken);
+    unique_ptr<STMHitCollectionMap> outputSTMHitsMap(new STMHitCollectionMap);
+    auto phDigisHandle = event.getValidHandle(_stmPHDigisMapToken);
+    const float nsPerCt = (1 / _samplingFrequency) * 1e3 ;
+    for (const auto& mu2e_evt : *phDigisHandle) {
 
-    STMEnergyCalib const& stmEnergyCalib = _stmEnergyCalib_h.get(event.id()); // get calibration
+      const auto& stm_evt_header = mu2e_evt.first; // get header information
+      const auto& ph_digis = mu2e_evt.second;
 
-    const auto nsPerCt = stmEnergyCalib.nsPerCt(_channel);
-    const auto& pars = stmEnergyCalib.calib(_channel);
+      for (const auto& ph_digi : ph_digis) {
+        auto uncalib_time = ph_digi.time();
+        auto uncalib_energy = -1 * ph_digi.energy(); // flip
+        // make a hit
+        float time = uncalib_time * nsPerCt;
+        float energy = _c + _m * uncalib_energy;
 
-    for (const auto& mwd_digi : *mwdDigisHandle) {
-      auto uncalib_time = mwd_digi.time();
-      auto uncalib_energy = mwd_digi.energy();
-      float time = uncalib_time*nsPerCt;
-      float energy = pars.p0 + pars.p1*uncalib_energy + pars.p2*uncalib_energy*uncalib_energy;
-
-      STMHit stm_hit(time,energy);
-      outputSTMHits->push_back(stm_hit);
+        // store hit
+        STMHit stm_hit(time,energy);
+        // Add to map
+        (*outputSTMHitsMap)[stm_evt_header].push_back(stm_hit);
+      }
     }
 
-    event.put(std::move(outputSTMHits));
+    event.put(std::move(outputSTMHitsMap));
   }
 }
 

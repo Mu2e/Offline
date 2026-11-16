@@ -3,6 +3,7 @@
 #include "TMath.h"
 #include <cmath>
 #include <algorithm>
+#include <array>
 #include "gsl/gsl_fit.h"
 
 using namespace std;
@@ -42,14 +43,18 @@ namespace mu2e {
 // find a range of N bins about the central bin
     int imin = std::max(0,ibin-halfrange);
     int imax = std::min(maxindex,ibin+halfrange);
-    std::vector<double> xfit, yfit;
+    // fixed-size stack buffers: this runs for every straw hit update, so avoid two heap allocations per call
+    constexpr int maxfit = 64;
+    int nfit = imax - imin + 1;
+    if(nfit > maxfit)throw cet::exception("RECO")<<"mu2e::StrawResponse: calibration interpolation range " << nfit << " exceeds " << maxfit << endl;
+    std::array<double,maxfit> xfit, yfit;
     for(int jbin=imin;jbin<=imax;++jbin){
-      xfit.push_back(bins[0]+xbin*(jbin+0.5)); // y values are at bin center, x vaues are bin edges
-      yfit.push_back(yvals[jbin]);
+      xfit[jbin-imin] = bins[0]+xbin*(jbin+0.5); // y values are at bin center, x vaues are bin edges
+      yfit[jbin-imin] = yvals[jbin];
     }
     double c0,c1;
     double cov00, cov01, cov11, sumsq;
-    auto fitok = gsl_fit_linear(xfit.data(),1,yfit.data(),1,xfit.size(),
+    auto fitok = gsl_fit_linear(xfit.data(),1,yfit.data(),1,nfit,
         &c0, &c1, &cov00, &cov01, &cov11, &sumsq);
 // test fitok
     if(fitok != 0)throw cet::exception("RECO")<<"mu2e::StrawResponse: calibration interpolation faiulre" << endl;
@@ -169,12 +174,11 @@ namespace mu2e {
 
   void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc,
       TrkTypes::TDCTimes &times, const StrawId &id) const {
-    double electronicsTimeDelay = _strawElectronics->electronicsTimeDelay();
     times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB()
-      - electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
+      - _electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
       + _timeOffsetStrawHV[id.uniqueStraw()];
     times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB()
-      - electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
+      - _electronicsTimeDelay + _timeOffsetPanel[id.uniquePanel()]
       + _timeOffsetStrawCal[id.uniqueStraw()];
   }
 

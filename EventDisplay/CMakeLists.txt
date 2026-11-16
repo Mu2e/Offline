@@ -30,7 +30,6 @@ cet_build_plugin(EventDisplay art::module
     LIBRARIES REG
       art_root_io::TFileService_service
       Offline::EventDisplay
-      Offline::EventDisplay_dict
 
       Offline::CRVConditions
       Offline::MCDataProducts
@@ -38,11 +37,16 @@ cet_build_plugin(EventDisplay art::module
       Offline::RecoDataProducts
 )
 
+# The Cone/Cube/Track/... classes use ClassDef, so their Class(), Streamer() and
+# vtables exist only in the rootcling-generated source.  LIB_TARGET puts that
+# source into EventDisplay itself instead of a separate EventDisplay_dict
+# library: otherwise libEventDisplay.so has unresolved references to its own
+# dictionary, which NO_UNDEFINED (-Wl,--unresolved-symbols=ignore-in-shared-libs)
+# rejects.  This matches what the scons build does via make_dict_and_map().
 art_dictionary( NO_CHECK_CLASS_VERSION # For some reason this segfaults
+    LIB_TARGET EventDisplay
     CLASSES_DEF_XML ${CMAKE_CURRENT_SOURCE_DIR}/src/classes_def.xml
     CLASSES_H ${CMAKE_CURRENT_SOURCE_DIR}/src/classes.h
-     DICTIONARY_LIBRARIES
-      Offline::EventDisplay
 )
 install_source(SUBDIRS src)
 install_headers(USE_PROJECT_NAME SUBDIRS src)

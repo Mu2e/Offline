@@ -1,203 +1,135 @@
-//
-// Square position map generator:
-//   tesselate a plane with squares, every row shifted horizontaly by 0.5 square size,
-//   starting from the center of the plane
-//
-//  original author : Bertrand Echenard (Caltech)
-//
-// Use basis vector, l and k, defined as
-// l = up right
-// k = down right
-//
-//       --------------------
-//       |         |        |
-//       |  0 -1   |   1 0  |
-//       |         |        |
-//       |         |        |
-// ------------------------------
-// |         |         |        |
-// |  -1 -1  |   0 0   |  1 1   |   l,k coordinates
-// |         |         |        |
-// |         |         |        |
-// ------------------------------
-//       |         |        |
-//       |  -1 0   |  0 1   |
-//       |         |        |
-//       |         |        |
-//       --------------------
-//
-//  steps :  (1,1) (0,1) (-1,0) (-1,-1) (0,-1) (1,0) (clockwise from top left corner)
-//
-// Tesselation algorithm: tessalate in "rings" from the center
-//   for each ring, start at 0,-l (top left corner),
-//   then go n time each step to create the ring
-//
-// Neighbors add (0,-1) and go around the ring
-// next ring of neighbours, add (0,-2) and go around the ring,...
-//
-
 #include "Offline/CalorimeterGeom/inc/SquareShiftMapper.hh"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include <cmath>
+#include <cstdlib>
 
 namespace mu2e {
 
+  //--------------------------------------------------------------------------------
+  unsigned SquareShiftMapper::nCrystalMax(unsigned maxRing) const
+  {
+    return 3u*maxRing*(maxRing+1u)+1u;
+  }
 
-      SquareShiftMapper::SquareShiftMapper() :
-        step_(),
-        apexX_({-0.5, 0.5,0.5,-0.5,-0.5}),
-        apexY_({-0.5,-0.5,0.5, 0.5,-0.5})
-      {
-         step_.push_back( SquShiftLK( 1, 1) ); //right
-         step_.push_back( SquShiftLK( 0, 1) ); //down right
-         step_.push_back( SquShiftLK(-1, 0) ); //down left
-         step_.push_back( SquShiftLK(-1,-1) ); //left
-         step_.push_back( SquShiftLK( 0,-1) ); //up left
-         step_.push_back( SquShiftLK( 1, 0) ); //up right
-      }
+  //--------------------------------------------------------------------------------
+  CLHEP::Hep2Vector SquareShiftMapper::xyFromIndex(unsigned thisIndex) const
+  {
+     SquShiftLK thisLK = lk(thisIndex);
+     return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
+  }
 
+  //--------------------------------------------------------------------------------
+  unsigned SquareShiftMapper::indexFromXY(double x0, double y0) const
+  {
+    int l=0, k=0;
+    int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
 
-      //--------------------------------------------------------------------------------
-      int SquareShiftMapper::nCrystalMax(int maxRing) const {return 3*maxRing*(maxRing+1)+1;}
+    if (ny%2==0) {
+      int nx = (x0>0) ? int(std::abs(x0)+0.5) : -int(std::abs(x0)+0.5);
+      l = nx + ny/2;
+      k = nx - ny/2;
+    } else {
+      int nx = (x0>0) ? int(std::abs(x0)) : -int(std::abs(x0))-1;
+      l = nx + (ny+1)/2;
+      k = nx - (ny-1)/2;
+    }
 
+    return index({l,k});
+  }
 
+  unsigned SquareShiftMapper::indexFromRowCol(int row, int col) const
+  {
+    const int p = ((row % 2) + 2) % 2; // 0 if row even, 1 if odd (negatives safe)
+    const int s = 2*col + p;           // s = l + k
+    const int l = (s + row)/2;
+    const int k = (s - row)/2;
+    return index({l,k});
+  }
 
-      //--------------------------------------------------------------------------------
-      CLHEP::Hep2Vector SquareShiftMapper::xyFromIndex(int thisIndex) const
-      {
-         SquShiftLK thisLK = lk(thisIndex);
-         return CLHEP::Hep2Vector( (thisLK.l_+thisLK.k_)/2.0, (thisLK.l_-thisLK.k_) );
-      }
+  //--------------------------------------------------------------------------------
+  int SquareShiftMapper::rowFromIndex(unsigned thisIndex) const
+  {
+    auto lk0 = lk(thisIndex);
+    return lk0.l_-lk0.k_;
+  }
 
-      int SquareShiftMapper::indexFromXY(double x0, double y0) const
-      {
-         int l(0),k(0);
-         int ny = (y0>0) ? int(std::abs(y0)+0.5) : -int(std::abs(y0)+0.5);
+  //--------------------------------------------------------------------------------
+  int SquareShiftMapper::colFromIndex(unsigned thisIndex) const
+  {
+    auto lk0 = lk(thisIndex);
+    int s = lk0.l_ + lk0.k_;
+    return (s >= 0) ? s/2 : -(((-s) + 1)/2); // floor((l+k)/2)
+  }
 
-         if (ny%2==0)
-         {
-             int nx = (x0>0) ? int(std::abs(x0)+0.5) : -int(std::abs(x0)+0.5);
-             l = nx+ny/2;
-             k = nx-ny/2;
-         } else {
-             int nx = (x0>0) ? int(std::abs(x0)) : (-int(std::abs(x0))-1);
-             l = nx + (ny+1)/2;
-             k = nx - (ny-1)/2;
-         }
+  //--------------------------------------------------------------------------------
+  std::vector<unsigned> SquareShiftMapper::neighbors(unsigned thisIndex, unsigned level) const
+  {
+    if (!level) return {};
 
-         SquShiftLK lk(l,k);
-         return index(lk);
-      }
+    std::vector<unsigned> result;
+    result.reserve(numNeighbors(level));
 
+    auto current = lk(thisIndex);
+    current.k_ -= int(level);
+    for (const auto& s : step_)
+      for (unsigned j=0; j<level; ++j) { current += s; result.push_back(index(current)); }
+    return result;
+  }
 
+  //--------------------------------------------------------------------------------
+  SquShiftLK SquareShiftMapper::lk(unsigned thisIndex) const
+  {
+    if (!thisIndex) return {0,0};
 
-      //--------------------------------------------------------------------------------
-      int SquareShiftMapper::indexFromRowCol(int nRow, int nCol) const
-      {
-         int k = nRow/2-nRow + nCol;
-         int l = nRow/2      + nCol;
+    unsigned nRing = unsigned(0.5+std::sqrt(0.25+(thisIndex-1u)/3.0));
+    unsigned nSeg = (thisIndex-3u*nRing*(nRing-1u)-1u)/nRing;
+    unsigned nPos = (thisIndex-3u*nRing*(nRing-1u)-1u)%nRing;
 
-         SquShiftLK lk(l,k);
-         return index(lk);
-      }
+    if (nSeg>=step_.size()) return {0,0};
 
-      int SquareShiftMapper::rowFromIndex(int thisIndex) const
-      {
-         SquShiftLK thisLK = lk(thisIndex);
-         return thisLK.l_ - thisLK.k_;
-      }
+    int l = int(nPos)*step_[nSeg].l_;
+    int k = -int(nRing)+int(nPos)*step_[nSeg].k_;
 
-      int SquareShiftMapper::colFromIndex(int thisIndex) const
-      {
-         SquShiftLK thisLK = lk(thisIndex);
-         if ((thisLK.l_+thisLK.k_)%2) return (thisLK.l_+thisLK.k_)/2;
-         else if (thisLK.l_!=0)       return (thisLK.l_+thisLK.k_-abs(thisLK.l_)/thisLK.l_)/2+abs(thisLK.l_)/thisLK.l_;
-         else                         return thisLK.k_/2+abs(thisLK.k_)/thisLK.k_;
-      }
+    for (unsigned i=0; i<nSeg; ++i) {
+      l += int(nRing)*step_[i].l_;
+      k += int(nRing)*step_[i].k_;
+    }
 
+    return {l,k};
+  }
 
-      //--------------------------------------------------------------------------------
-      bool SquareShiftMapper::isInsideCrystal(double x, double y, const CLHEP::Hep3Vector& pos,
-                                          const CLHEP::Hep3Vector& size) const
-      {
-         return (std::abs(x-pos.x()) < 0.5*size.x()) && (std::abs(y-pos.y()) < 0.5*size.y());
-      }
+  //--------------------------------------------------------------------------------
+  unsigned SquareShiftMapper::index(const SquShiftLK& lk0) const
+  {
+    if (!lk0.l_ && !lk0.k_) return 0u;
 
+    unsigned nRing = ring(lk0);
+    unsigned pos = 3u*nRing*(nRing-1u)+1u;
+    int r = int(nRing);
 
+    if (lk0.k_==-r && lk0.l_==0) return pos;
+    if (lk0.l_== r)    return pos + unsigned(r+lk0.k_);
+    if (lk0.l_==-r)    return pos + unsigned(4*r+std::abs(lk0.k_));
+    if (lk0.k_== r)    return pos + unsigned(3*r-lk0.l_);
+    if (lk0.k_==-r)    return pos + unsigned(6*r-std::abs(lk0.l_));
+    if (lk0.l_>lk0.k_) return pos + unsigned(lk0.l_);
+    return pos + 3u*nRing + unsigned(std::abs(lk0.l_));
+  }
 
-      //--------------------------------------------------------------------------------
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level) const
-      {
-         if (level<1) return std::vector<int>{};
+  //--------------------------------------------------------------------------------
+  unsigned SquareShiftMapper::ring(const SquShiftLK& lk0) const
+  {
+    if (lk0.l_*lk0.k_>0)
+      return unsigned(std::max(std::abs(lk0.l_),std::abs(lk0.k_)));
+    return unsigned(std::abs(lk0.l_-lk0.k_));
+  }
 
-         std::vector<int> thisNeighbour;
-
-         SquShiftLK init = lk(thisIndex);
-         SquShiftLK lk(init.l_, init.k_ - level);
-
-         for (size_t i=0; i<step_.size(); ++i) {
-           for (int iseg=0; iseg<level; ++iseg) {
-             lk.add(step_[i]);
-             thisNeighbour.push_back(index(lk));
-           }
-         }
-         return thisNeighbour;
-      }
-
-
-      //--------------------------------------------------------------------------------
-      SquShiftLK SquareShiftMapper::lk(int thisIndex) const
-      {
-         if (thisIndex<1) return SquShiftLK(0,0);
-
-         int nRing = int(0.5+sqrt(0.25+static_cast<float>(thisIndex-1)/3.0));
-         int nSeg  = (thisIndex - 3*nRing*(nRing-1)-1) / nRing;
-         int nPos  = (thisIndex - 3*nRing*(nRing-1)-1) % nRing;
-
-         if (nSeg<0) return SquShiftLK(0,0);
-         int l =         nPos*step_[nSeg].l_;
-         int k = -nRing + nPos*step_[nSeg].k_;
-
-         for (int i=0;i<nSeg;++i) {
-           l += step_[i].l_*nRing;
-           k += step_[i].k_*nRing;
-         }
-
-         return SquShiftLK(l,k);
-      }
-
-
-      //--------------------------------------------------------------------------------
-      int SquareShiftMapper::index(const SquShiftLK& thisLK) const
-      {
-         if (thisLK.l_==0 && thisLK.k_==0) return 0u;
-
-         int nRing = ring(thisLK);
-         int pos   = 3*nRing*(nRing-1)+1;
-
-         //add position along segment -- a drawing helps...
-         if (thisLK.k_ == -nRing && thisLK.l_==0) return pos;
-         if (thisLK.l_ ==  nRing)                return pos + nRing   + thisLK.k_;
-         if (thisLK.l_ == -nRing)                return pos + 4*nRing + std::abs(thisLK.k_);
-         if (thisLK.k_ ==  nRing)                return pos + 3*nRing - thisLK.l_;
-         if (thisLK.k_ == -nRing)                return pos + 6*nRing - std::abs(thisLK.l_);
-         if (thisLK.l_ > thisLK.k_)              return pos + thisLK.l_;
-         return                                      pos + 3*nRing +std::abs(thisLK.l_);
-      }
-
-
-      //--------------------------------------------------------------------------------
-      int SquareShiftMapper::ring(const SquShiftLK& thisLK) const
-      {
-         if (thisLK.l_*thisLK.k_>0) return std::max(std::abs(thisLK.l_),std::abs(thisLK.k_));
-         return std::abs(thisLK.l_-thisLK.k_);
-      }
-
-      //--------------------------------------------------------------------------------
-      int SquareShiftMapper::numNeighbors(int level) const
-      {
-         return level*static_cast<int>(step_.size());
-      }
+  //--------------------------------------------------------------------------------
+  unsigned SquareShiftMapper::numNeighbors(unsigned level) const
+  {
+    return level*unsigned(step_.size());
+  }
 
 }

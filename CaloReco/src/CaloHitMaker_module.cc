@@ -113,11 +113,17 @@ namespace mu2e {
 
 
     // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes
-    int nSiPM = cal.nCrystals()*cal.caloInfo().getInt("nSiPMPerCrystal");
+    int nSiPM = cal.nCrystals()*cal.G4Info().get<int>("nSiPMPerCrystal");
     std::vector<std::vector<const CaloRecoDigi*>> hitMap(nSiPM,std::vector<const CaloRecoDigi*>());
 
     for (unsigned i=0; i< recoCaloDigis.size(); ++i)
     {
+        // A digi with a zero or non-finite time error comes from a fit that put the pulse where no
+        // sample constrains it (seen before the start of a saturated waveform). It is not a
+        // measurement, and its 1/timeErr^2 weight would make the hit time NaN: leave it out of the hits.
+        double timeErr = recoCaloDigis[i].timeErr();
+        if (!std::isfinite(1.0/timeErr/timeErr)) continue;
+
         int crystalId = CaloSiPMId(recoCaloDigis[i].SiPMID()).crystal().id();
         hitMap[crystalId].push_back(&recoCaloDigis[i]);
     }

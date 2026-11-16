@@ -15,6 +15,7 @@
 // Offline
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 
 // ROOT
 #include "TH1F.h"
@@ -157,6 +158,7 @@ namespace mu2e {
         consumes<ComboHitCollection>(_chLabel);
         consumes<TimeClusterCollection>(_tcLabel);
         produces<TimeClusterCollection>();
+        produces<IntensityInfoTimeCluster>();
     }
 
     //-----------------------------------------------------------------------------
@@ -316,6 +318,7 @@ namespace mu2e {
         //-----------------------------------------------------------------------------
         // put time cluster collection into the event record
         //-----------------------------------------------------------------------------
+        event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tcColl->size())));
         event.put(std::move(tcColl));
 
         return cluster;

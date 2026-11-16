@@ -81,9 +81,9 @@ vector<double> building.dsArea.upper.yPositions = {
   -12014.2,   // i5
   -12014.2,   // i6
   -9550.4,   // i7
-  -9550.4,   // i8
-  -11734.8,   // i9
-  -11734.8   // j0
+  -9550.4,   // h1
+  -12014.2,  // h2
+  -12014.2   // j0
 };
 
 // Local Variables:

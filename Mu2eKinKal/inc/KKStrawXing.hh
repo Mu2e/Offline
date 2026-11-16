@@ -6,11 +6,12 @@
 #include "KinKal/Detector/ElementXing.hh"
 #include "Offline/Mu2eKinKal/inc/KKStrawHit.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
+#include "Offline/DataProducts/inc/StrawId.hh"
 #include "KinKal/Trajectory/ParticleTrajectory.hh"
 #include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
-#include "Offline/DataProducts/inc/StrawId.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using KinKal::SVEC3;
@@ -66,7 +67,7 @@ namespace mu2e {
         return rv;
       };
       // ElementXing interface
-      void updateReference(PTRAJ const& ptraj) override;
+      void updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) override;
       void updateState(MetaIterConfig const& config,bool first) override;
       Parameters params() const override;
       std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
@@ -130,14 +131,14 @@ namespace mu2e {
     return active_ || (shptr_ && shptr_->hitState().active());
   }
 
-  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj) {
+  template <class KTRAJ> void KKStrawXing<KTRAJ>::updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) {
     CAHint tphint(strawAxis()->timeAtMidpoint(),strawAxis()->timeAtMidpoint());
     if(ca_.usable()){
       tphint = ca_.hint();
     }else if(shptr_ && shptr_->closestApproach().usable()){
       tphint = shptr_->closestApproach().hint();
     }
-    PCA pca(ptraj,strawAxis(),tphint,precision());
+    PCA pca(ptraj,strawAxis(),tphint,precision(),miconfig.xingPieceIter());
     ca_ = static_cast<CA>(pca);
   }
 
@@ -164,7 +165,7 @@ namespace mu2e {
         varscale_ = 1.0;
     }
     // update the material xings from gas, straw wall, and wire
-    smat_.findXings(ca_.tpData(),sxconfig_,mxings_);
+    smat_.findXings(ca_.tpData(),sxconfig_.nsig_,mxings_,sxconfig_.diag_);
     // update the effect these have on the parameters
     fparams_ = this->parameterChange(varscale_);
   }

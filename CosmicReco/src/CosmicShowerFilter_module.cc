@@ -6,6 +6,7 @@
 
 // Mu2e includes.
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/TrackerConditions/inc/TrackerStatus.hh"
@@ -76,6 +77,7 @@ namespace mu2e {
     consumes<TimeClusterCollection>(_tcToken);
     consumes<ComboHitCollection>(_chToken);
     produces<TimeClusterCollection>();
+    produces<IntensityInfoTimeCluster>();
     _hasmaxnpanel = conf().maxnpanel(_maxnpanel);
   }
 
@@ -186,6 +188,7 @@ namespace mu2e {
       tcol->push_back(tclust);
     }
 
+    event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tccol_filter->size())));
     event.put(std::move(tccol_filter));
   }
 }

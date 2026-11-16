@@ -16,6 +16,7 @@
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 // tracking
 #include "Offline/TrkReco/inc/TrkTimeCalculator.hh"
 #include "Offline/TrkReco/inc/TrkUtilities.hh"
@@ -104,6 +105,7 @@ SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
 {
   _hasmaxnsh = conf().maxnsh(_maxnsh);
   produces<TimeClusterCollection>();
+  produces<IntensityInfoTimeCluster>();
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -130,6 +132,7 @@ void SimpleTimeCluster::produce(art::Event& event) {
       }
     }
   }
+  event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tccol->size())));
   event.put(std::move(tccol));
 }
 

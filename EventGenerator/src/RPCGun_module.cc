@@ -22,6 +22,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "Offline/SeedService/inc/SeedService.hh"
@@ -30,6 +31,7 @@
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 #include "Offline/MCDataProducts/inc/EventWeight.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/Mu2eUtilities/inc/simParticleList.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/Mu2eUtilities/inc/RandomUnitSphere.hh"
@@ -69,6 +71,7 @@ namespace mu2e {
     explicit RPCGun(const Parameters& conf);
 
     virtual void produce(art::Event& event) override;
+    virtual void endSubRun(art::SubRun& sr) override;
     void addParticles(StageParticleCollection* output,art::Ptr<SimParticle> pistop);
     double MakeEventWeight(art::Ptr<SimParticle> p);
     //----------------------------------------------------------------
@@ -81,6 +84,7 @@ namespace mu2e {
     CLHEP::RandFlat     randomFlat_;
     std::string RPCType_;
     BinnedSpectrum    spectrum_;
+    bool flatSpectrum_;
     const double czmin_;
     const double czmax_;
     bool pionDecayOff_;
@@ -123,6 +127,7 @@ namespace mu2e {
     , randomFlat_{eng_}
     , RPCType_{conf().RPCType()}
     , spectrum_{BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())}
+    , flatSpectrum_{conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat"}
     , czmin_(conf().czmin())
     , czmax_(conf().czmax())
     , pionDecayOff_{conf().pionDecayOff()}
@@ -133,6 +138,7 @@ namespace mu2e {
   {
     produces<mu2e::StageParticleCollection>();
     produces<mu2e::EventWeight>();
+    produces<mu2e::SpectrumConfig, art::InSubRun>();
     if(RPCType_ == "mu2eExternalRPC") process_ = ProcessCode::mu2eExternalRPC;
     else if(RPCType_ == "mu2eInternalRPC") process_ = ProcessCode::mu2eInternalRPC;
     else {
@@ -287,6 +293,15 @@ namespace mu2e {
       }
 
    }
+
+  //================================================================
+  void RPCGun::endSubRun(art::SubRun& sr) {
+    auto config = std::make_unique<SpectrumConfig>();
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., spectrum_.getXMin(), spectrum_.getXMax(),
+                                                  flatSpectrum_ ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    config->add_var(SpectrumConfig::RestrictedVar("cosz", (czmax_ - czmin_)/2., czmin_, czmax_));
+    sr.put(std::move(config), art::fullSubRun());
+  }
 
 
   //================================================================

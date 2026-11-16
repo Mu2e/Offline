@@ -17,6 +17,9 @@ cet_make_library(
       src/CrvDigiPrinter.cc
       src/CrvRecoPulsePrinter.cc
       src/CrvStepPrinter.cc
+      src/EventHeaderPrinter.cc
+      src/EventHeadersPrinter.cc
+      src/RawEventHeaderPrinter.cc
       src/EventWindowMarkerPrinter.cc
       src/GenParticlePrinter.cc
       src/FilterFractionPrinter.cc
@@ -52,6 +55,7 @@ cet_make_library(
       Offline::MCDataProducts
       Offline::Mu2eUtilities
       Offline::RecoDataProducts
+      artdaq-core-mu2e::Data
 )
 
 cet_make_exec(NAME artProductSizes

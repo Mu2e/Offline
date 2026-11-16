@@ -172,7 +172,7 @@ namespace mu2e {
     float         _stoca =0;    // reference sensor time of closest approach (TOCA)
     float         _rdoca, _rdocavar =0;   // reference (biased) DOCA from the track to the wire, signed by the angular momentum WRT the wire and the measurement end (and variance)
     float         _rdt, _rtocavar =0;   // reference (biased) time difference (and variance) at POCA
-    float         _udoca, _udocavar =0; // unbiaed DOCA (and variance)
+    float         _udoca, _udocavar =0; // unbiased DOCA (and variance) WRT the final fit trajectory; the hit-state updaters (ANNs) used the unbiased DOCA from the previous fit cycle.
     float         _udt, _utocavar =0;   //unbiased dt and variance
     float         _rupos =0; // reference POCA position along the straw WRT the straw middle
     float         _uupos =0; // unbiased POCA position along the straw WRT the straw middle

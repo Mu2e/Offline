@@ -8,7 +8,8 @@
 #define RecoDataProducts_TrkStraw_HH
 #include "Offline/DataProducts/inc/StrawId.hh"
 #include "Offline/RecoDataProducts/inc/StrawFlag.hh"
-#include "Offline/Mu2eKinKal/inc/KKStrawMaterial.hh"
+#include "Offline/KinKalGeom/inc/KKStrawMaterial.hh"
+#include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 #include "KinKal/Trajectory/ClosestApproachData.hh"
 
 namespace mu2e {
@@ -25,10 +26,20 @@ namespace mu2e {
       _dmom(dmom)
     {
       double wallpath, gaspath, wirepath;
-      _pcalc = smat.pathLengths(pocadata,caconfig,wallpath,gaspath,wirepath);
+      _pcalc = smat.pathLengths(pocadata,caconfig.nsig_,wallpath,gaspath,wirepath);
       _wallpath = wallpath;
       _gaspath = gaspath;
       _wirepath = wirepath;
+      static XYZVectorF zdir(0.0,0.0,1.0); // relative to Z
+      auto ppoca = XYZVectorF(pocadata.particlePoca().Vect());
+      auto smid = XYZVectorF(pocadata.sensorPoca().Vect());
+      auto sdir = XYZVectorF(pocadata.sensorDirection());
+      auto delta = ppoca - smid; // particle poca to wire WRT straw middle
+      auto dw = delta.Dot(sdir);
+      auto cperp = delta - dw*sdir; // just perp part
+      auto raddir = sdir.Cross(zdir);
+      if(raddir.Dot(smid) < 0.0) raddir *= -1.0; // sign radially outwards
+      _phi = atan2(cperp.Dot(raddir),cperp.Dot(zdir)); // angle around wire WRT z axis in range -pi,pi
     }
     TrkStraw() {}
 
@@ -36,6 +47,7 @@ namespace mu2e {
     bool hasHit() const { return _flag.hasAllProperties(StrawFlag::hashit); }
     bool activeHit() const { return _flag.hasAllProperties(StrawFlag::activehit); }
     bool driftHit() const { return _flag.hasAllProperties(StrawFlag::drifthit); }
+    bool dead() const { return _flag.hasAllProperties(StrawFlag::dead); }
     StrawId _straw; // which straw was traversed
     StrawFlag _flag; // description of how this straw was used in the fit
     int _pcalc = KKStrawMaterial::unknown; // how were pathlengths calculated?
@@ -49,6 +61,7 @@ namespace mu2e {
     float _wirepath = 0.0; // path length in straw wire material
     float _radlen = 0.0; // radiation lengths of material traversed in this straw (gas + wall)
     float _dmom =0.0; // momentum change due to energy loss in this straw (gas + wall)
+    float _phi =0.0; // angle around wire WRT z axis in range -pi,pi, where +pi/2 is in +v direction
   };
 }
 #endif

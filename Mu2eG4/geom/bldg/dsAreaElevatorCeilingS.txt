@@ -1,0 +1,18 @@
+string building.dsArea.elevator.ceilingS.name     = "dsAreaElevatorCeilingS";
+string building.dsArea.elevator.ceilingS.material = "CONCRETE_MARS";
+double building.dsArea.elevator.ceilingS.offsetFromMu2eOrigin.x   = 947.40;
+double building.dsArea.elevator.ceilingS.offsetFromFloorSurface.y = 3378.20;
+double building.dsArea.elevator.ceilingS.offsetFromMu2eOrigin.z   = -3581.40;
+double building.dsArea.elevator.ceilingS.yHalfThickness           = 76.20;
+vector<double> building.dsArea.elevator.ceilingS.xPositions = {
+37350.70, // D
+35839.40, // N
+35839.40, // T
+37350.70  // S
+};
+vector<double> building.dsArea.elevator.ceilingS.yPositions = {
+-17475.20, // D
+-17475.20, // N
+-14427.00, // T
+-14427.00  // S
+};

@@ -6,7 +6,9 @@
 //
 
 // Includes from C++
+#include <map>
 #include <memory>
+#include <string>
 
 // Includes from CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
@@ -30,7 +32,10 @@ namespace mu2e {
 
         typedef std::vector<std::shared_ptr<BFMap>> MapContainerType;
 
-        explicit BFieldManagerMaker(const BFieldConfig& config);
+        // mapScales: optional extra scale per map, keyed by map name (the file
+        // basename, e.g. "DSMap"), applied on top of bfield.scaleFactor.
+        explicit BFieldManagerMaker(const BFieldConfig& config,
+                                    const std::map<std::string, double>& mapScales = {});
 
         // Transfer ownership of the BFManager.
         std::unique_ptr<BFieldManager> getBFieldManager() { return std::move(_bfmgr); }
@@ -41,6 +46,10 @@ namespace mu2e {
 
         // Hold the object while we are creating it. The GeometryService will take ownership.
         std::unique_ptr<BFieldManager> _bfmgr;
+
+        std::map<std::string, double> _mapScales;
+
+        double mapScale(const std::string& key) const;
 
         // Load a series of G4BL or parametric magnetic field maps.
         void loadMaps(MapContainerType& whichMap,

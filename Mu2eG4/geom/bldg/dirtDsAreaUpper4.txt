@@ -1,0 +1,25 @@
+string dirt.dsArea.upper4.name     = "dirtDsAreaUpper4";
+string dirt.dsArea.upper4.material = "MBOverburden";
+double dirt.dsArea.upper4.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.dsArea.upper4.offsetFromFloorSurface.y = 7188.2;
+double dirt.dsArea.upper4.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.dsArea.upper4.yHalfThickness           = 177.8;
+vector<double> dirt.dsArea.upper4.xPositions = {
+24069.8,  // a
+29083.,   // b
+29083.,   // c
+21971.1,  // d
+21971.1,  // e
+24069.8  // f
+};
+vector<double> dirt.dsArea.upper4.yPositions = {
+-11404.6, // a
+-11404.6, // b
+-9271.,   // c
+-9271.,   // d
+-10312.4, // e
+-10312.4  // f
+};
+// Local Variables:
+// mode:c++
+// End:

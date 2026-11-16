@@ -130,15 +130,23 @@ double physicsParams.Al.capture.RMCInternalRate = 0.0069; //measurement of inter
 double physicsParams.Al.capture.photon.1809keV.energy = 1.809;
 double physicsParams.Al.capture.photon.1809keV.intensity = 0.51;
 
+double physicsParams.C.capture.protonRate = 0.33; // Per capture rates, measured with Geant4 on G4_C
+double physicsParams.C.capture.deuteronRate = 0.15;
+double physicsParams.C.capture.neutronRate = 1.77;
+double physicsParams.C.capture.photonRate = 1.73;
+double physicsParams.C.capture.RMCRate = 1.22e-4; //TRIUMF measured 1.67e-5 for E > 57 on Oxygen, full rate taken by dividing by closure fraction above 57 MeV for kmax = 88.4
+double physicsParams.C.capture.RMCInternalRate = 0.0069; //measurement of internal conversion rate for RPC on hydrogen
+
 //Ce+ endpoint energy
 double physicsParams.Al.ePlusEndpointEnergy = 92.32;
+double physicsParams.Ti.ePlusEndpointEnergy = 98.89;
 
 // parameters for RMC spectrum shape
 double physicsParams.Al.RMCbindingEnergyFit = 0.464;
 double physicsParams.Al.RMCrecoilEnergyFit  = 0.220;
 double physicsParams.Al.RMCdeltaMassFit     = 3.121;
-
-
+double physicsParams.Al.RMCKMaxKnockout.0   = 101.87; // 0 nucleon knockout
+double physicsParams.Al.RMCKMaxKnockout.1   =  95.45; // 1 neutron knockout
 
 // Shanker interpolation coefficients - Phys. Rev. D 25, 1847 (1982)
 // - The Shanker formula includes one D, E and F coefficient for a

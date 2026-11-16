@@ -17,7 +17,8 @@ namespace mu2e
       using Grad = ROOT::Math::SMatrix<double,3>; // field gradient: ie dBi/d(x,y,z)
       // construct from BField object and system translator.
       // This should be a single BField map valid in the detector system, to avoid making continuous translations FIXME!
-      KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) : bfmgr_(bfmgr), det_(det) {}
+      // The minimum usable field comes from the BField geometry (bfield.minUsableField), so every module in a job shares it.
+      KKBField(BFieldManager const& bfmgr, DetectorSystem const& det);
       virtual ~KKBField() {}
       // KinKal BField interface
       // return value of the field at a poin

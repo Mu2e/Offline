@@ -7,10 +7,10 @@ string dirt.beamline.slab2.NE.name     = "dirtBeamlineSlab2NE";
 string dirt.beamline.slab2.NE.material = "MBOverburden";
 
 double dirt.beamline.slab2.NE.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.slab2.NE.offsetFromFloorSurface.y = 6731;
+double dirt.beamline.slab2.NE.offsetFromFloorSurface.y = 6324.6;
 double dirt.beamline.slab2.NE.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.slab2.NE.yHalfThickness           = 635;
+double dirt.beamline.slab2.NE.yHalfThickness           = 228.6;
 
 vector<int>    dirt.beamline.slab2.NE.xreplace   = { 13, 14 };
 vector<double> dirt.beamline.slab2.NE.xPositions = {

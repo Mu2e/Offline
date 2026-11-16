@@ -9,7 +9,8 @@ BEGIN_PROLOG
       histBins                  : 401
       histMin                   : 1799.5
       histMax                   : 2200.5
-      maxADCspread              : 5  #if firstSampleOnly: false
+      maxADCspread              : 5  #if the entire waveform is used for NZS data
+      maxADCspreadFirstTwoSamples : 3   #if only the first sample is used for ZS data (in this case, the cut is a check that the first sample is not already part of the pulse)
       tmpDBfileName             : "pedestals.txt"
     }
 
@@ -55,12 +56,8 @@ BEGIN_PROLOG
                                         //e.g. 0.985 for a leading edge at 50% pulse height
                                         //e.g. 1.385 for a leading edge at 20% pulse height
                                         //e.g. 1.587 for a leading edge at 10% pulse height
-      pulseThreshold            : 0.5   //50% of ADC peak value above pedestal
-                                        //threshold used to determine the pulse time interval for the no-fit option
-      pulseAreaThreshold        : 5     //5 ADC above pedestal
-                                        //threshold used to determine the pulse area for the no-fit option
-      doublePulseSeparation     : 0.25  //25% of both ADC peaks of the double pulse
-                                        //threshold at which double pulses can be separated in the no-fit option
+      samplesBefore             : 4     //samples before the peak included in fit
+      samplesAfter              : 3     //samples after the peak included in fit (less to avoid hidden pulses from reflections)
       useTimeOffsetDB           : true   //applies time offsets from the DB
       timeOffsetScale           : 1.0    //scale factor for the time offsets from the database
                                          //examples:
@@ -388,6 +385,47 @@ BEGIN_PROLOG
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
+      ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform
+      addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
+    }
+
+    # track-CRV association, one instance per KalSeed collection (set KalSeedCollection); see TrkCrvMatchTool.hh.
+    # Resolutions and the track error model are from an MC truth study of 1.07M KKLine tracks (50 MDC2025bb cosmic
+    # files, extracted v06 geometry); the windows are loose storage windows, not selections.
+    TrkCrvMatcher :
+    {
+      module_type                      : TrkCrvMatcher
+      CrvCoincidenceClusterCollection  : "SelectReco:CrvCoincidenceClusterFinder"
+      CrvRecoPulseCollection           : "CrvRecoPulses"
+      ProbeAllPulses                   : true          # CrvRecoPulses holds every reco pulse (SelectReco only the clustered ones)
+      ReferenceSurfaces                : [ "TT_Front", "TT_Back", "TT_Outer" ]
+      EarliestReference                : true          # reference time = tracker entry
+      DtRefWindow                      : [ -350, 350 ] # ns
+      # DtRefCenter centres the best-time ranking only (the window is not shifted). It depends on the fit type and the
+      # geometry: this default is the median dtRef of each track's own cluster for KKLine on extracted-geometry MC
+      # (MDC2025bb cosmics); set it per instance for other fits (Production JobConfig/reco/prolog.fcl).
+      DtRefCenter                      : 13            # ns
+      DtXingWindow                     : [ -100, 100 ] # ns
+      MaxDv                            : 500           # mm
+      MaxDu                            : 3000          # mm
+      DoGeometric                      : true
+      # CRV resolution per cluster sector type (type 1 first). Sector type numbering depends on the geometry: these are
+      # the extracted geometry's types 1-4 (EX, T1, T2, muon taggers; crv_counters_extracted_v04.txt); other geometries
+      # need their own lists. SigmaV: robust spread of (cluster - true crossing) across the bars; SigmaU: along the bars,
+      # two-ended clusters (T1 and the taggers are single-ended).
+      SigmaV                           : [ 7, 13, 7, 17 ]  # mm
+      SigmaU                           : [ 300 ]           # mm
+      SigmaT                           : [ 5 ]             # ns  provisional (MC dtXing robust width 2.0-2.4 ns, two-ended)
+      SigmaTSingleEnded                : 15                # ns  provisional (MC dtXing robust width about 4 ns)
+      # track position error model: k^2 C + a^2 I, from pulls of the track against the true CRV crossing
+      TrackErrorScale                  : 1.5
+      TrackPosErrQuad                  : 24                # mm
+      MinTrackTimeErr                  : 1                 # ns
+      LayerProbe                       : true
+      ProbeBarWindow                   : 1                 # bars on each side of the predicted bar
+      ProbeDtWindow                    : [ -50, 50 ]       # ns
+      FiberSignalSpeed                 : @local::CrvCoincidenceClusterFinder.fiberSignalSpeed
+      ProbePulseDelay                  : @local::CrvCoincidenceClusterFinder.timeOffset
     }
 
 

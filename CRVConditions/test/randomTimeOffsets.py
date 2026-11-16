@@ -6,6 +6,7 @@ if len(sys.argv) != 6:
   print("usage \"randomTimeOffsets nChannels path_to_channelMapFile sigma limitlow limithigh\"")
   print("nChannels=22016 when using the full CRV\"")
   print("nChannels=2048 when using the extracted position\"")
+  print("nChannels=2304 when using the extracted position with muon taggers\"")
   sys.exit()
 
 nChannels=int(sys.argv[1])

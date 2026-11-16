@@ -1,0 +1,33 @@
+# Test TrackDtDt_module.cc
+
+#include "Offline/fcl/minimalMessageService.fcl"
+#include "Offline/fcl/standardProducers.fcl"
+#include "Offline/fcl/standardServices.fcl"
+
+process_name : TestTrkDtDt
+
+services : @local::Services.Reco
+services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
+services.scheduler.wantSummary: true
+
+source: {
+  module_type: RootInput
+  inputCommands:   [ "keep *_*_*_*"
+  ]
+}
+
+physics : {
+  producers : {
+    TrackDtDt : {
+      module_type : TrackDtDt
+      kalSeeds    : [ "KKDe" ]
+      diagLevel   : 0
+      doHistograms: true
+    }
+  }
+  RecoPath      : [ TrackDtDt ]
+  end_paths     : [ ]
+  trigger_paths : [ RecoPath ]
+}
+
+#include "Production/Validation/database.fcl"

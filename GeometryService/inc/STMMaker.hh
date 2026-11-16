@@ -8,8 +8,20 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
+
+// Held by value below while the hand-stacked sections are assembled,
+// so these need the definitions rather than a forward declaration.
+#include "Offline/STMGeom/inc/BrickWall.hh"
+#include "Offline/STMGeom/inc/FrontShieldingRight.hh"
+#include "Offline/STMGeom/inc/FrontShieldingLeft.hh"
+#include "Offline/STMGeom/inc/RightWall.hh"
+#include "Offline/STMGeom/inc/LeftWall.hh"
+#include "Offline/STMGeom/inc/TopWall.hh"
+#include "Offline/STMGeom/inc/BottomWall.hh"
+#include "Offline/STMGeom/inc/InnerShielding.hh"
 
 namespace mu2e {
 
@@ -46,6 +58,18 @@ namespace mu2e {
 
     int          _verbosityLevel;
     double       _stmZAllowed;
+
+    // updated, hand-stacked downstream shielding
+    bool         _handstacked;
+
+    // The standard lead bricks, shared by every structure that stacks them
+    // Numbered by type, so a new size is a new entry rather than a new
+    // member and a change to every caller.
+    std::vector<std::string>       _leadBrickNames;
+    std::vector<CLHEP::Hep3Vector> _leadBrickDims;
+    double      _leadBrickWearY;
+    double      _leadBrickWearXZ;
+    std::string _leadBrickMaterial;
 
     double       _stmReferenceZ;
 
@@ -211,6 +235,12 @@ namespace mu2e {
     double      _STM_SSCAperture_HPGe2;
     double      _STM_SSCAperture_LaBr1;
     double      _STM_SSCAperture_LaBr2;
+    // updated (hand-stacked) SSC: one block per slab, bores stepped in z
+    double      _STM_SSCW_width;
+    double      _STM_SSCr_LaBr_f;
+    double      _STM_SSCr_HPGe_f;
+    double      _STM_SSCr_LaBr_b;
+    double      _STM_SSCr_HPGe_b;
     double      _STM_SSCoffset_Spot;
     double      _STM_SSCleak;
     double      _STM_SSCFrontToWall;
@@ -242,7 +272,101 @@ namespace mu2e {
     double      _SSCSupportFAluminumShim_T;
     double      _SSCSupportFAluminumExtra_L;
     double      _SSCSupportFAluminumExtra_H;
+    // updated (hand-stacked) cradle: five plates around the collimator
+    double      _SSCSupportdepth;
+    double      _SSCSupportside_T;
+    double      _SSCSupportside_H;
+    double      _SSCSupportplate_base_T;
+    double      _SSCSupportbottom_T;
+    double      _SSCSupporttop_T;
+    double      _STM_SSCboreToBase;
+    std::string _SSCSupportMaterial;
 
+    // SSC front shield: the brick wall, the shelf and two poly blocks.
+    // Centers are stored with every offset already applied.
+    bool        _SSCFrontShieldBuild;
+    std::vector<BrickWallBrick>    _SSCFrontShieldBricks;
+    std::string _SSCFrontShieldShelfMaterial;
+    CLHEP::Hep3Vector _SSCFrontShieldShelfDim;
+    CLHEP::Hep3Vector _SSCFrontShieldShelfCenter;
+    std::string _SSCFrontShieldPoly1Material;
+    CLHEP::Hep3Vector _SSCFrontShieldPoly1Dim;
+    CLHEP::Hep3Vector _SSCFrontShieldPoly1Center;
+    double      _SSCFrontShieldPoly1BoreR;
+    double      _SSCFrontShieldPoly1BoreDX;
+    double      _SSCFrontShieldPoly1BoreDY;
+    std::string _SSCFrontShieldPoly2Material;
+    CLHEP::Hep3Vector _SSCFrontShieldPoly2Dim;
+    CLHEP::Hep3Vector _SSCFrontShieldPoly2Center;
+
+    // Front shielding, right. The lead courses and the poly sheets are
+    // expanded from the config's type lists in parseConfig, so what is
+    // held here is already the finished placement.
+    bool        _FrontShieldingRightBuild;
+    std::vector<BrickWall>                _FrontShieldingRightLeadLayers;
+    std::vector<FrontShieldingRightSheet> _FrontShieldingRightSheets;
+    // The four blocks are identical, so their material and size are
+    // shared and only their centers vary.
+    std::string _FrontShieldingRightBlockMaterial;
+    CLHEP::Hep3Vector _FrontShieldingRightBlockHalfDim;
+    std::vector<CLHEP::Hep3Vector>        _FrontShieldingRightBlockCenter;
+    std::vector<FrontShieldingRightPipe>  _FrontShieldingRightPipes;
+    FrontShieldingRightPlate              _FrontShieldingRightPlate;
+    double      _FrontShieldingRightBackZ;
+
+    // Landmarks of the front shielding that later sections butt
+    // against. Resolved where the section is expanded and kept so a
+    // wall downstream need not re-derive them from the layer sequence.
+    double      _FrontShieldingRightBrickEndX;
+    double      _FrontShieldingRightFrontZ;
+    double      _FrontShieldingRightLastLeadBackZ;
+
+    // The shield house's reference corner, where the walls meet the
+    // front shielding. Resolved once before any wall is expanded, so
+    // the right, left and top walls all key off the same point rather
+    // than each re-deriving it -- and so none of them has to read
+    // another wall's configuration keys.
+    double      _ShieldHouseRefX;
+    double      _ShieldHouseRefZ;
+
+    // Front shielding, left. Nothing here is bored and nothing
+    // interleaves, so it is three brick groups, four sheets and the
+    // prism, all keyed off the right half.
+    bool        _FrontShieldingLeftBuild;
+    std::vector<FrontShieldingLeftSheet>  _FrontShieldingLeftSheets;
+    std::vector<BrickWall>                _FrontShieldingLeftBrickGroups;
+    FrontShieldingLeftPrism               _FrontShieldingLeftPrism;
+
+    // Right wall. Five layers worked inward from the reference vertex,
+    // expanded in parseConfig so what is held here is already placed.
+    bool        _RightWallBuild;
+    std::vector<BrickWall> _RightWallLeadLayers;
+    std::vector<WallSheet> _RightWallSheets;
+    RightWallEdgePrism     _RightWallEdgePrism;
+
+    // Left wall. The same five kinds of layer, without the edge prism.
+    bool        _LeftWallBuild;
+    std::vector<BrickWall> _LeftWallLeadLayers;
+    std::vector<WallSheet> _LeftWallSheets;
+
+    // Top wall. One lead layer laid flat between two pairs of plates.
+    bool        _TopWallBuild;
+    std::vector<BrickWall> _TopWallLeadLayers;
+    std::vector<WallSheet> _TopWallSheets;
+
+    // Bottom wall. The baseplate plus two lead layers and four swept
+    // prisms; each lead layer holds its courses and its strays.
+    bool        _BottomWallBuild;
+    BottomWallPlate               _BottomWallPlate;
+    std::vector<BrickWall>        _BottomWallLeadLayers;
+    std::vector<BottomWallPrism>  _BottomWallPrisms;
+
+    // Inner shielding, updated. Not a stack of layers: every piece is
+    // placed on its own, so it is three lists rather than a sequence.
+    std::vector<InnerShieldingPrism>  _InnerShieldingPrisms;
+    std::vector<InnerShieldingBox>    _InnerShieldingBoxes;
+    std::vector<BrickWallBrick>       _InnerShieldingBricks;
+    std::vector<BrickWallBore>        _InnerShieldingBores;
 
     bool    _FrontShieldingBuild;
     double  _FrontSHeightofRoom;
@@ -354,6 +478,7 @@ namespace mu2e {
     double  _BackS_dX;
     double  _BackS_dY;
     double  _BackSPipeGap;
+    std::string _BackSBPMaterial = "BP";  // read only in the hand-stacked geometry
 
     bool   _InnerShieldingBuild;
 
@@ -364,8 +489,19 @@ namespace mu2e {
     double   _ElectronicSSiXcenter;
     double   _ElectronicSSiYcenter;
     double   _ElectronicSSiZcenter;
-    double   _ElectronicSConcreteT;
-    double   _ElectronicSGapToSi;
+    double   _ElectronicSConcreteT = 0.;
+    double   _ElectronicSGapToSi = 0.;
+    // hand-stacked only
+    double   _ElectronicSXOffset = 0.;
+    CLHEP::Hep3Vector _ElectronicSConcreteDims;
+    int      _ElectronicSConcreteBlockN = 0;
+    double   _ElectronicSConcreteBlockGap = 0.;
+    double   _ElectronicSConcreteFromGround = 0.;
+    double   _ElectronicSConcreteToWall = 0.;
+    int      _ElectronicSSiNX = 0;
+    int      _ElectronicSSiNY = 0;
+    double   _ElectronicSSiFromGround = 0.;
+    std::vector<double> _ElectronicSSiGapsToConcrete;
 
 
     bool     _STM_AbsorberBuild;

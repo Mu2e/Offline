@@ -228,6 +228,7 @@ void mu2e::StrawDigisToFragments::putBlockInEvent(DTCLib::DTC_Event& currentEven
     currentEvent.AddSubEvent(newSubEvt);
   } else {
     subEvt->AddDataBlock(thisBlock);
+    currentEvent.UpdateHeader(); // update the byte count
   }
 }
 

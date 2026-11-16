@@ -1,0 +1,25 @@
+#
+# Generator-level validation of the BNV muon capture tools (no Geant4), see
+# EventGenerator/fcl/prolog.fcl. Change decayProducts to any BNVMuonCapture.* or BNVMuonCaptureScan.* entry.
+#
+# mu2e -c Offline/EventGenerator/test/bnv_muon_capture_test.fcl -n 20000
+#
+#include "Production/JobConfig/primary/TargetStopParticle.fcl"
+process_name: BNVGenTest
+
+physics.producers.generate : {
+  @table::EventGenerator.producers.MuCapBNVGenerator
+  decayProducts : @local::BNVMuonCapture.DarkCascade
+}
+physics.producers.generate.decayProducts.makeHistograms : true
+physics.producers.generate.decayProducts.verbosity : 1
+
+physics.GenPath : [ TargetStopResampler, generate ]
+physics.trigger_paths : [ GenPath ]
+physics.EndPath : [ ]
+physics.end_paths : [ ]
+outputs : { }
+
+physics.filters.TargetStopResampler.fileNames : [ "/pnfs/mu2e/tape/phy-sim/sim/mu2e/MuminusStopsCat/MDC2025ac/art/95/88/sim.mu2e.MuminusStopsCat.MDC2025ac.001430_00000000.art" ]
+physics.filters.TargetStopResampler.mu2e.MaxEventsToSkip : 0
+services.TFileService.fileName : "nts.owner.bnv_muon_capture_test.version.sequencer.root"

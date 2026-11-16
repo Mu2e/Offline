@@ -209,7 +209,7 @@ namespace mu2e {
     CLHEP::Hep3Vector topSteelFlatPositionInShield( shieldingRot * (dump->topSteelFlatCenterInMu2e() - beamDumpConcrete.centerInMu2e()));
     nestBox("ProtonBeamDumpTopSteelFlat",
             dump->topSteelFlatHalfSize(),
-            materialFinder.get("protonBeamDump.material.core"),
+            materialFinder.get("protonBeamDump.material.steel"),
             &rotationInShield,
             topSteelFlatPositionInShield,
             beamDumpConcrete, 0,
@@ -270,7 +270,7 @@ namespace mu2e {
                                                   );
 
     finishNesting(scallopedSteel,
-                  materialFinder.get("protonBeamDump.material.core"),
+                  materialFinder.get("protonBeamDump.material.steel"),
                   &rotationInShield,
                   topSteelScallopedPositionInShield,
                   beamDumpConcrete.logical,

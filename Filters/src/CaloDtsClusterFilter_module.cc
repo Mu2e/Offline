@@ -20,7 +20,6 @@
 
 // Offline
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
@@ -50,7 +49,7 @@ namespace mu2e {
       fhicl::Atom<double>            minClusterEnergy  { Name("MinimumClusterEnergy") , Comment("Minimum cluster energy")};
       fhicl::Atom<double>            timeWindow        { Name("TimeWindow")           , Comment("Time window for clustering")};
       fhicl::Atom<double>            spaceWindow       { Name("SpaceWindow")          , Comment("Space window for clustering")};
-      fhicl::Atom<bool>              nullFilter        { Name("NullFilter")           , Comment("If true, do not apply any filtering and accept all events"), false };
+      fhicl::Atom<bool>              enabled           { Name("Enabled")              , Comment("If false, do not apply any filtering and accept all events"), true};
       fhicl::Atom<int>               diagLevel         { Name("DiagLevel")            , Comment("Diagnostic output level"), 0 };
     };
 
@@ -82,7 +81,7 @@ namespace mu2e {
     double                     minClusterEnergy_;
     double                     timeWindow_;
     double                     spaceWindow_;
-    bool                       nullFilter_;
+    bool                       enabled_;
     int                        diagLevel_;
 
     // Data
@@ -103,7 +102,7 @@ namespace mu2e {
     , minClusterEnergy_(conf().minClusterEnergy())
     , timeWindow_(conf().timeWindow())
     , spaceWindow_(conf().spaceWindow())
-    , nullFilter_(conf().nullFilter())
+    , enabled_(conf().enabled())
     , diagLevel_(conf().diagLevel())
     , calorimeter_(nullptr)
     , nEvents_(0)
@@ -141,9 +140,8 @@ namespace mu2e {
   CLHEP::Hep3Vector CaloDtsClusterFilter::stepPosition(const CaloShowerStep& step) const {
     // Get the position of the CaloShowerStep in tracker coordinates, so (x,y) are centered on (0,0)
     const CLHEP::Hep3Vector& pos = step.position();
-    const auto& calo_geom = calorimeter_->geomUtil();
-    const auto pos_in_mu2e = calo_geom.crystalToMu2e(step.volumeG4ID(), pos);
-    const auto pos_in_trk = calo_geom.mu2eToTracker(pos_in_mu2e);
+    const auto pos_in_mu2e = calorimeter_->crystalToMu2e(step.volumeG4ID(), pos);
+    const auto pos_in_trk = calorimeter_->mu2eToTracker(pos_in_mu2e);
     return pos_in_trk;
   }
 
@@ -305,7 +303,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------
   bool CaloDtsClusterFilter::filter(art::Event& event) {
     ++nEvents_;
-    if(nullFilter_) {
+    if(!enabled_) {
       ++nPassed_;
       return true;
     }

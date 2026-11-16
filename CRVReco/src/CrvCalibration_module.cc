@@ -47,8 +47,11 @@ namespace mu2e
       fhicl::Atom<double>      histMaxPulseHeight{Name("histMaxPulseHeight"), Comment("end range of pulseArea histogram"), 150.0};
       fhicl::Atom<double>      fitRangeStart{Name("fitRangeStart"), Comment("low end of the 1PE fit range as fraction of peak"), 0.8};
       fhicl::Atom<double>      fitRangeEnd{Name("fitRangeEnd"), Comment("high end of the 1PE fit range as fraction of peak"), 1.2};
-      fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted SPE peak for pulseArea histogram"), 280.0};
-      fhicl::Atom<double>      minPeakPulseHeight{Name("minPeakPulseHeight"), Comment("minimum accepted SPE peak for pulseHeight histogram"), 10.0};
+      fhicl::Atom<bool>        use2PE1PEdifference{Name("use2PE1PEdifference"), Comment("use the 2PE-1PE difference as calib constant"), false}; //removes impact of pedestal offsets, but returns unstable results
+      fhicl::Atom<double>      fitRangeStart2PE{Name("fitRangeStart2PE"), Comment("low end of the 2PE fit range as fraction of peak"), 0.9};
+      fhicl::Atom<double>      fitRangeEnd2PE{Name("fitRangeEnd2PE"), Comment("high end of the 2PE fit range as fraction of peak"), 1.1};
+      fhicl::Atom<double>      minPeakPulseArea{Name("minPeakPulseArea"), Comment("minimum accepted 1PE peak for pulseArea histogram"), 280.0};
+      fhicl::Atom<double>      minPeakPulseHeight{Name("minPeakPulseHeight"), Comment("minimum accepted 1PE peak for pulseHeight histogram"), 10.0};
       fhicl::Atom<int>         minHistEntries{Name("minHistEntries"), Comment("minimum number of entries required for a fit"), 100};
       fhicl::Atom<int>         spectrumNPeaks{Name("spectrumNPeaks"), Comment("maximum number of peaks searched by TSpectrum"), 100};
       fhicl::Atom<double>      spectrumPeakSigma{Name("spectrumPeakSigma"), Comment("TSpectrum search parameter sigma"), 4.0};
@@ -66,7 +69,8 @@ namespace mu2e
     void analyze(const art::Event& e);
     void beginRun(const art::Run&);
     void endJob();
-    bool FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference);
+    bool Find1PEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &OnePEpeak, double minPeak, double maxFitDifference);
+    bool Find2PEpeak(TH1F *hist, TF1 &function2PE, double OnePEpeak, double &TwoPEpeak);
 
     private:
     std::string        _crvRecoPulsesModuleLabel;
@@ -74,6 +78,8 @@ namespace mu2e
     int                _histBinsPulseArea, _histBinsPulseHeight;
     double             _histMaxPulseArea, _histMaxPulseHeight;
     double             _fitRangeStart, _fitRangeEnd;
+    bool               _use2PE1PEdifference;
+    double             _fitRangeStart2PE, _fitRangeEnd2PE;
     int                _minHistEntries;
     double             _minPeakPulseArea, _minPeakPulseHeight;
     int                _spectrumNPeaks;
@@ -87,7 +93,7 @@ namespace mu2e
     ProditionsHandle<CRVCalib> _calib_h;
 
     std::vector<double> _pedestals;
-    std::vector<double> _timeOffsets;
+    bool                _first{true};
   };
 
 
@@ -101,6 +107,9 @@ namespace mu2e
     _histMaxPulseHeight(conf().histMaxPulseHeight()),
     _fitRangeStart(conf().fitRangeStart()),
     _fitRangeEnd(conf().fitRangeEnd()),
+    _use2PE1PEdifference(conf().use2PE1PEdifference()),
+    _fitRangeStart2PE(conf().fitRangeStart2PE()),
+    _fitRangeEnd2PE(conf().fitRangeEnd2PE()),
     _minHistEntries(conf().minHistEntries()),
     _minPeakPulseArea(conf().minPeakPulseArea()),
     _minPeakPulseHeight(conf().minPeakPulseHeight()),
@@ -122,7 +131,6 @@ namespace mu2e
     _calibHistsPulseArea.reserve(counters.size()*CRVId::nChanPerBar);
     _calibHistsPulseHeight.reserve(counters.size()*CRVId::nChanPerBar);
     _pedestals.resize(counters.size()*CRVId::nChanPerBar);
-    _timeOffsets.resize(counters.size()*CRVId::nChanPerBar);
 
     art::ServiceHandle<art::TFileService> tfs;
     for(size_t barIndex=0; barIndex<counters.size(); ++barIndex)
@@ -138,7 +146,6 @@ namespace mu2e
                                                  Form("crvCalibrationHistPulseHeight_%lu",channelIndex),
                                                  _histBinsPulseHeight,0,_histMaxPulseHeight));
         _pedestals[channelIndex]=0;
-        _timeOffsets[channelIndex]=0;
       }
     }
   }
@@ -152,7 +159,8 @@ namespace mu2e
     treePedestal->Branch("channel", &channel);
     treePedestal->Branch("pedestal", &pedestal);
 
-    TF1 function("calibPeak","gaus");
+    TF1 function("calibPeak1PE","gaus");
+    TF1 function2PE("calibPeak2PE","gaus");
     TSpectrum spectrum(_spectrumNPeaks);
 
     std::ofstream outputFile;
@@ -170,31 +178,20 @@ namespace mu2e
         if(i==1) hist=_calibHistsPulseArea.at(channel);
         else hist=_calibHistsPulseHeight.at(channel);
 
-        double SPEpeak=-1;
-        if(!FindSPEpeak(hist, spectrum, function, SPEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea), (i==0?_maxFitDifferencePulseHeight:_maxFitDifferencePulseArea))) continue;
-        calibValue[i]=SPEpeak;
+        double OnePEpeak=-1;
+        if(!Find1PEpeak(hist, spectrum, function, OnePEpeak, (i==0?_minPeakPulseHeight:_minPeakPulseArea), (i==0?_maxFitDifferencePulseHeight:_maxFitDifferencePulseArea))) continue;
+        if(_use2PE1PEdifference)
+        {
+          double TwoPEpeak=-1;
+          if(!Find2PEpeak(hist, function2PE, OnePEpeak, TwoPEpeak)) continue;
+          calibValue[i]=TwoPEpeak-OnePEpeak;
+        }
+        else calibValue[i]=OnePEpeak;
       }
 
       pedestal=_pedestals.at(channel);
       outputFile<<channel<<","<<pedestal<<","<<calibValue[0]<<","<<calibValue[1]<<std::endl;  //write to DB text file
       treePedestal->Fill(); //fill tree
-    }
-
-    outputFile<<std::endl;
-
-    //time offsets
-    TTree *treeTimeOffset = tfs->make<TTree>("crvTimeOffsets","crvTimeOffsets");
-    double offset;
-    treeTimeOffset->Branch("channel", &channel);
-    treeTimeOffset->Branch("timeOffset", &offset);
-
-    outputFile<<"TABLE CRVTime"<<std::endl;
-    outputFile<<"#channel,timeOffset"<<std::endl;
-    for(channel=0; channel<_timeOffsets.size(); ++channel)
-    {
-      offset=_timeOffsets.at(channel);
-      outputFile<<channel<<","<<offset<<std::endl;  //write to DB text file
-      treeTimeOffset->Fill(); //fill tree
     }
 
     outputFile.close();
@@ -207,15 +204,13 @@ namespace mu2e
 
     //find pedestals and time offsets from first event
     //need to assume that this is only used for calibration runs where both values stay constant over the entire run
-    static bool first=true;
-    if(first)
+    if(_first)
     {
-      first=false;
+      _first=false;
       auto const& calib = _calib_h.get(event.id());
       for(size_t channelIndex=0; channelIndex<_pedestals.size(); ++channelIndex)
       {
         _pedestals[channelIndex] = calib.pedestal(channelIndex);
-        _timeOffsets[channelIndex] = calib.timeOffset(channelIndex);
       }
     }
 
@@ -230,12 +225,13 @@ namespace mu2e
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();
       int channelIndex=barIndex*CRVId::nChanPerBar+SiPM;
+
       _calibHistsPulseArea.at(channelIndex)->Fill(iter->GetPulseBeta()*iter->GetPulseHeight()*TMath::E());
       _calibHistsPulseHeight.at(channelIndex)->Fill(iter->GetPulseHeight());
     }
   }
 
-  bool CrvCalibration::FindSPEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &SPEpeak, double minPeak, double maxFitDifference)
+  bool CrvCalibration::Find1PEpeak(TH1F *hist, TSpectrum &spectrum, TF1 &function, double &OnePEpeak, double minPeak, double maxFitDifference)
   {
     if(hist->GetEntries()<_minHistEntries) return false; //not enough data
 
@@ -244,9 +240,9 @@ namespace mu2e
 
     //peaks are returned sorted by Y
     //from our long-time experience:
-    //-SPE peak is either the highest peak or second highest peak
-    //-if the SPE peak is the second highest, then the highest peak comes from the baseline
-    //-the peak from the baseline is always below the minPeak threshold, while the SPE peak is not
+    //-1PE peak is either the highest peak or second highest peak
+    //-if the 1PE peak is the second highest, then the highest peak comes from the baseline
+    //-the peak from the baseline is always below the minPeak threshold, while the 1PE peak is not
     //-the minPeak threshold may have to be adjusted for non-standard bias voltages
     double *peaksX = spectrum.GetPositionX();
     double x=peaksX[0];
@@ -261,10 +257,29 @@ namespace mu2e
     function.SetRange(x*_fitRangeStart,x*_fitRangeEnd);
     function.SetParameter(1,x);
     hist->Fit(&function, "QR");
-    SPEpeak = function.GetParameter(1);
+    OnePEpeak = function.GetParameter(1);
 
-    if(fabs(SPEpeak-x)>maxFitDifference) return false;
-    if(SPEpeak<minPeak) return false;
+    if(fabs(OnePEpeak-x)>maxFitDifference) return false;
+    if(OnePEpeak<minPeak) return false;
+    return true;
+  }
+
+  bool CrvCalibration::Find2PEpeak(TH1F *hist, TF1 &function2PE, double OnePEpeak, double &TwoPEpeak)
+  {
+    if(hist->GetEntries()<_minHistEntries) return false; //not enough data
+
+    if(OnePEpeak<=0) return false;  //no valid 1PE peak
+
+    hist->GetXaxis()->SetRangeUser(2.0*OnePEpeak*_fitRangeStart2PE,2.0*OnePEpeak*_fitRangeEnd2PE);
+    float x = hist->GetBinCenter(hist->GetMaximumBin());
+    hist->GetXaxis()->SetRange(0,0); //UnZoom()
+
+    function2PE.SetRange(x*_fitRangeStart2PE,x*_fitRangeEnd2PE);
+    function2PE.SetParameter(1,x);
+    hist->Fit(&function2PE, "QR");
+    TwoPEpeak = function2PE.GetParameter(1);
+
+    if(TwoPEpeak<x*_fitRangeStart2PE || TwoPEpeak>x*_fitRangeEnd2PE) return false;
     return true;
   }
 

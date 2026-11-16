@@ -1,4 +1,18 @@
 //
+// Find straight lines in time clusters (cosmic-ray seeds for KinematicLineFit).
+//
+// With MaxLines > 1, the search is iterative: after each line is found, its hits are removed from the time cluster and
+// the search is repeated on the rest, as long as at least minPeak hits remain. Each line becomes its own seed with the
+// same time cluster, e.g. for a cosmic and a secondary in time with it. MaxLines = 1 (the default) is a single search.
+//
+// With MaxWireDistPull > 0, a hit counts for a line only if the line also agrees with the hit's position along the wire
+// (within MaxWireDistPull * wireRes), not only with the wire (maxDOCA). Without it, any line in the plane of a near-
+// vertical cosmic's straws passes close to many of its wires. All hits within maxDOCA of a line are still removed
+// before the next search.
+//
+// With SkipFlatLines, candidate lines exactly parallel to the planes (dz = 0, from two hits at the same z) are skipped.
+// KinematicLineFit divides by the track's z direction when it looks for more straws (KKFit::addStrawHits), and fails
+// with an out-of-range straw index on such a seed. CosmicShowerFilter removes most clusters that make these lines.
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -16,12 +30,14 @@
 
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
+#include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
 #include "Offline/Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "Offline/RecoDataProducts/inc/ComboHit.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -38,6 +54,7 @@
 #include <float.h>
 #include <vector>
 #include <map>
+#include <algorithm>
 
 namespace mu2e{
 
@@ -54,13 +71,19 @@ namespace mu2e{
         fhicl::Atom<int> ntsteps{Name("NTSteps"), Comment("Number of transverse steps per straw")};
         fhicl::Atom<float> stepsize{Name("StepSize"), Comment("Size of each step in fraction of res")};
         fhicl::Atom<unsigned> nmax{Name("MaxPairs"), Comment("Max pairs to try")};
+        fhicl::Atom<unsigned> maxLines{Name("MaxLines"), Comment("Max lines per time cluster, each found after removing the previous lines' hits"), 1};
+        fhicl::Atom<float> maxWireDistPull{Name("MaxWireDistPull"), Comment("Max |line - hit position along the wire| / wireRes for a hit to count; <= 0: no cut"), 0.};
+        fhicl::Atom<bool> skipFlatLines{Name("SkipFlatLines"), Comment("Skip candidate lines parallel to the planes (dz = 0), which KKLine cannot fit"), false};
         fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for straw hit collection")};
         fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+        fhicl::Atom<art::InputTag> ccToken{Name("CaloClusterCollection"),Comment("tag for calo cluster collection"), ""};
+        fhicl::Atom<bool> addCaloClusters{Name("AddCaloClusters"), Comment("Whether to connect calo clusters to the line seeds"), false};
       };
       typedef art::EDProducer::Table<Config> Parameters;
       explicit LineFinder(const Parameters& conf);
       virtual ~LineFinder(){};
       virtual void produce(art::Event& event ) override;
+      virtual void beginRun(art::Run& run) override;
 
     private:
 
@@ -74,13 +97,28 @@ namespace mu2e{
       int _Nsteps, _Ntsteps;
       float _stepSize;
       unsigned _nmax;
+      unsigned _maxLines;
+      float _maxWireDistPull;
+      bool _skipFlatLines;
       art::InputTag  _chToken;
       art::InputTag  _tcToken;
+      art::InputTag  _ccToken;
+      bool _addCaloClusters;
 
       ProditionsHandle<Tracker> _alignedTracker_h;
+      const CaloClusterCollection* _cccol;
+      art::Handle<CaloClusterCollection> _cccolH;
+      const Calorimeter* _calorimeter;
 
-      int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed);
-  };
+      // fills used with the entries of shiv on the line
+      int findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed,
+                   std::vector<StrawHitIndex>& used);
+      void addClusterToSeed(CosmicTrackSeed& tseed);
+      // whether the line's position along the wire (dist) agrees with the hit's, if MaxWireDistPull is set
+      bool onWire(const ComboHit& hit, double dist) const {
+        return _maxWireDistPull <= 0. || std::abs(dist - hit.wireDist()) < _maxWireDistPull*hit.wireRes();
+      }
+};
 
 
  LineFinder::LineFinder(const Parameters& conf) :
@@ -93,14 +131,29 @@ namespace mu2e{
         _Ntsteps (conf().ntsteps()),
         _stepSize (conf().stepsize()),
         _nmax (conf().nmax()),
-            _chToken (conf().chToken()),
-        _tcToken (conf().tcToken())
+        _maxLines (conf().maxLines()),
+        _maxWireDistPull (conf().maxWireDistPull()),
+        _skipFlatLines (conf().skipFlatLines()),
+        _chToken (conf().chToken()),
+        _tcToken (conf().tcToken()),
+        _ccToken (conf().ccToken()),
+        _addCaloClusters (conf().addCaloClusters()),
+        _cccol(nullptr),
+        _calorimeter(nullptr)
 {
+  if(_maxLines < 1) throw cet::exception("CONFIG") << "[LineFinder] MaxLines must be at least 1\n";
   consumes<ComboHitCollection>(_chToken);
   consumes<TimeClusterCollection>(_tcToken);
+  if(_addCaloClusters) {
+    consumes<CaloClusterCollection>(_ccToken);
+  }
   produces<CosmicTrackSeedCollection>();
 
  }
+
+void LineFinder::beginRun(art::Run& run) {
+  _calorimeter = GeomHandle<Calorimeter>().get();
+}
 
 void LineFinder::produce(art::Event& event ) {
 
@@ -109,9 +162,18 @@ void LineFinder::produce(art::Event& event ) {
   auto  const& tcH = event.getValidHandle<TimeClusterCollection>(_tcToken);
   const TimeClusterCollection& tccol(*tcH);
 
+  if(_addCaloClusters) {
+    event.getByLabel(_ccToken, _cccolH);
+    if(!_cccolH.isValid()) {
+      throw cet::exception("RECO") << "[LineFinder::produce] Could not retrieve calo cluster collection with tag " << _ccToken.encode();
+    }
+    _cccol = _cccolH.product();
+  }
 
 
   std::unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
+  if(_diag > 2) std::cout << "[LineFinder:: " << __func__ << "] Event " << event.id()
+                         << " has " << tccol.size() << " time clusters\n";
 
   for (size_t index=0;index< tccol.size();++index) {
     const auto& tclust = tccol[index];
@@ -120,32 +182,53 @@ void LineFinder::produce(art::Event& event ) {
     auto chcp = chcol.fillStrawHitIndices(tclust.hits(),shiv,StrawIdMask::uniquestraw);
     auto chc = *chcp;
 
-    CosmicTrackSeed tseed;
-    tseed._straw_chits.setAsSubset(chH,StrawIdMask::uniquestraw);
+    if(_diag > 2) std::cout << "  Time cluster " << index << " has " << tclust.hits().size() << " hits"
+                           << " and " << chc.size() << " straw hits\n";
 
-    tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-    tseed._track.converged = true;
+    // search for lines among the hits not on an earlier line
+    for (unsigned iline=0; iline < _maxLines && shiv.size() >= (size_t) _minPeak; ++iline){
+      CosmicTrackSeed tseed;
+      tseed._straw_chits.setAsSubset(chH,StrawIdMask::uniquestraw);
 
-    int seedSize = findLine(chc, shiv, event, tseed);
-    if (_diag > 1)
-      std::cout << "LineFinder: seedSize = " << seedSize << std::endl;
+      tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
+      tseed._track.converged = true;
 
-    if (seedSize >= _minPeak){
+      std::vector<StrawHitIndex> used;
+      int seedSize = findLine(chc, shiv, event, tseed, used);
+      if (_diag > 1)
+        std::cout << "[LineFinder::" << __func__ <<"] Line " << iline << " seed N(hits) = " << seedSize
+                  << " of " << shiv.size() << std::endl;
+
+      if (seedSize < _minPeak) break;
       if (_diag > 0)
-        std::cout << "LineFinder: found line (" << seedSize << ")" << " " << tseed._track.FitParams.T0 << " " << tseed._track.FitParams.A0 << " " << tseed._track.FitParams.B0 << " " << tseed._track.FitParams.A1 << " " << tseed._track.FitParams.B1 << std::endl;
+        std::cout << "LineFinder: found line " << iline << " (N(hits) = " << seedSize << ")"
+                  << " " << tseed._track.FitParams.T0
+                  << " " << tseed._track.FitParams.A0
+                  << " " << tseed._track.FitParams.B0
+                  << " " << tseed._track.FitParams.A1
+                  << " " << tseed._track.FitParams.B1
+                  << std::endl;
+      if(_addCaloClusters) addClusterToSeed(tseed);
       tseed._status.merge(TrkFitFlag::Straight);
       tseed._status.merge(TrkFitFlag::hitsOK);
       tseed._status.merge(TrkFitFlag::helixOK);
       tseed._status.merge(TrkFitFlag::helixConverged);
       tseed._track.MinuitParams.cov = std::vector<double>(15, 0);
       seed_col->push_back(tseed);
+
+      // remove this line's hits before the next search
+      std::sort(used.begin(), used.end());
+      shiv.erase(std::remove_if(shiv.begin(), shiv.end(),
+                                [&used](StrawHitIndex ih){ return std::binary_search(used.begin(), used.end(), ih); }),
+                 shiv.end());
     }
   }
 
   event.put(std::move(seed_col));
 }
 
-int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed){
+int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitIndex> const& shiv, art::Event const& event, CosmicTrackSeed& tseed,
+                         std::vector<StrawHitIndex>& used){
 
   //mu2e::GeomHandle<mu2e::Tracker> th;
   auto tracker = _alignedTracker_h.getPtr(event.id());//th.get();
@@ -175,6 +258,7 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
           CLHEP::Hep3Vector jpos = shC[jloc].posCLHEP() + strawj.getDirection()*shC[jloc].wireRes()*_stepSize*js;
 
           CLHEP::Hep3Vector newdir = (jpos-ipos).unit();
+          if (_skipFlatLines && newdir.z() == 0.) continue; // parallel to the planes (see SkipFlatLines)
           CLHEP::Hep3Vector icross = (jpos-ipos).cross(strawi.getDirection()).unit();
           CLHEP::Hep3Vector jcross = (jpos-ipos).cross(strawj.getDirection()).unit();
           for (int its=-1*_Ntsteps;its<_Ntsteps+1;its++){
@@ -190,8 +274,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
                 Straw const& strawk = tracker->getStraw(shC[kloc].strawId());
                 TwoLinePCA pca( strawk.getMidPoint(), strawk.getDirection(),
                     ipos, newdir);
-                double dist = (pca.point1()-strawk.getMidPoint()).mag();
-                if (pca.dca() < _maxDOCA && dist < strawk.halfLength()){
+                double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
+                if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength() && onWire(shC[kloc], dist)){
                   count += 1;
                   ll += pow(dist-shC[kloc].wireDist(),2)/shC[kloc].wireVar();
                 }
@@ -233,6 +317,8 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
         seedInt, seedDir);
     double dist = (pca.point1()-strawk.getMidPoint()).dot(strawk.getDirection());
     if (pca.dca() < _maxDOCA && fabs(dist) < strawk.halfLength()){
+      used.push_back(kloc); // removed before the next search, even if off the line along the wire
+      if (!onWire(shC[kloc], dist)) continue;
       double traj_time = ((pca.point2() - seedInt).dot(seedDir.unit()))/299.9;
       double hit_t0 = shC[kloc].time() - shC[kloc].driftTime() - shC[kloc].propTime() - traj_time;
       avg_t0 += hit_t0;
@@ -269,6 +355,51 @@ int LineFinder::findLine(const ComboHitCollection& shC, std::vector<StrawHitInde
   tseed._track.SetMinuitEquation(XYZTrack);
 
   return good_hits;
+}
+
+void LineFinder::addClusterToSeed(CosmicTrackSeed& tseed) {
+  if(!_cccol) return;
+
+  // Get the track seed information
+  const XYZVectorF seedInt = tseed._track.Pos0();
+  const XYZVectorF seedDir = tseed._track.Dir();
+  if(std::abs(seedDir.z()) < 1e-3) return; // avoid near-vertical tracks
+  const CLHEP::Hep3Vector seedDirCLHEP(seedDir.x(), seedDir.y(), seedDir.z());
+  const CLHEP::Hep3Vector seedIntCLHEP(seedInt.x(), seedInt.y(), seedInt.z());
+  const double t0 = tseed._t0._t0;
+
+  // Check if a calo cluster can be matched to the line seed
+  const CaloCluster* matchedCluster = nullptr;
+  int matchedClusterIndex = -1;
+  double min_t0_diff = 1.e10;
+  constexpr double t0_match_window = 50.; // ns, loose time window for matching
+  for(size_t i_cl = 0; i_cl < _cccol->size(); ++i_cl) {
+    const CaloCluster& cl = _cccol->at(i_cl);
+    const CLHEP::Hep3Vector cl_pos = _calorimeter->mu2eToTracker(_calorimeter->diskToMu2e(cl.diskID(), cl.cog3Vector()));
+    const double cl_time = cl.time();
+    // Get the expected time at the calo disk based on the line seed
+    const double speed = CLHEP::c_light; // assume speed of the particle is close to the speed of light
+    const double dr = std::abs((cl_pos - seedIntCLHEP).dot(seedDirCLHEP.unit()));
+    const double t_flight = dr / speed;
+    // check either trajectory
+    const double t0_diff_1 = std::abs((t0 + t_flight) - cl_time);
+    const double t0_diff_2 = std::abs((t0 - t_flight) - cl_time);
+    const double t0_diff = std::min(t0_diff_1, t0_diff_2);
+    if(t0_diff < min_t0_diff && t0_diff < t0_match_window) {
+      min_t0_diff = t0_diff;
+      matchedCluster = &cl;
+      matchedClusterIndex = i_cl;
+    }
+  }
+
+  if(matchedCluster) {
+    tseed._caloCluster = art::Ptr<CaloCluster>(_cccolH, matchedClusterIndex);
+    if(_diag > 0) {
+      std::cout << "LineFinder: matched calo cluster with energy " << matchedCluster->energyDep() << " MeV"
+                << " time " << matchedCluster->time() << " ns to line seed with t0 = "
+                << tseed._t0._t0 << " ns" << std::endl;
+    }
+  }
 }
 
 }//end mu2e namespace

@@ -16,8 +16,8 @@ vector<double> dirt.central.stairwell.upper.xPositions = {
   5308.6,   // g1
   13630.275,   // g2
   13630.275,   // g3
-  11617.325,   // g4
-  11617.325,    // g5
+  11617.2,   // g4
+  11617.2,    // g5
   13630.275,    // g6
   13630.275,    // g7
   5308.6   // g8
@@ -27,8 +27,8 @@ vector<int> dirt.central.stairwell.upper.yreplace = { 6, 7 };
 vector<double> dirt.central.stairwell.upper.yPositions = {
   -12014.2,   // g1
   -12014.2,   // g2
-  -14740.25,   // g3
-  -14740.25,   // g4
+  -14827.27,   // g3
+  -14827.27,   // g4
   -25908,   // g5
   -25908,   // g6
   -50000,   // g7

@@ -51,6 +51,10 @@ namespace mu2e {
         throw std::runtime_error("Error: reclen too small");
       }
 
+      if(reclen > 4*_fbsize_words) {
+        throw std::runtime_error("Error: reclen too big");
+      }
+
       // Read the full record
       if(!input->read(_buf.ch, reclen)) {
         break;
@@ -87,6 +91,9 @@ namespace mu2e {
 
       break;
 
+    }
+    if(_infmt == Format::UNDEFINED) {
+      throw std::runtime_error("Error: could not read the RUNH record at the start of the file");
     }
     input->clear();
     input->seekg(0, ios::beg);
@@ -241,7 +248,7 @@ namespace mu2e {
         }
 
       } // loop over records
-      return true;
+      throw std::runtime_error("Error: file ended before the RUNE record");
   }
 
   bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned long long &primaries)

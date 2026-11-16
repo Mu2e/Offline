@@ -30,11 +30,15 @@ namespace mu2e {
     explicit MuplusMichelGenerator(Parameters const& conf) :
       _pdgId(PDGCode::e_plus),
       _mass(GlobalConstantsHandle<ParticleDataList>()->particle(_pdgId).mass()),
-      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>()))
+      _spectrum(BinnedSpectrum(conf().spectrum.get<fhicl::ParameterSet>())),
+      _spectrumXMin(_spectrum.getXMin()),
+      _spectrumXMax(_spectrum.getXMax()),
+      _flatSpectrum(conf().spectrum.get<fhicl::ParameterSet>().get<std::string>("spectrumShape", "") == "flat")
     {}
 
     std::vector<ParticleGeneratorTool::Kinematic> generate() override;
     void generate(std::unique_ptr<GenParticleCollection>& out, const IO::StoppedParticleF& stop) override;
+    std::unique_ptr<SpectrumConfig> spectrumConfig() override;
 
     void finishInitialization(art::RandomNumberGenerator::base_engine_t& eng, const std::string&, const bool isPrimary) override {
       _isPrimary = isPrimary;
@@ -47,6 +51,9 @@ namespace mu2e {
     double _mass;
 
     BinnedSpectrum    _spectrum;
+    double _spectrumXMin;
+    double _spectrumXMax;
+    bool _flatSpectrum;
 
     std::unique_ptr<RandomUnitSphere>  _randomUnitSphere;
     std::unique_ptr<CLHEP::RandGeneral> _randSpectrum;
@@ -77,6 +84,14 @@ namespace mu2e {
                         d.fourmom,
                         stop.t);
     }
+  }
+
+  std::unique_ptr<SpectrumConfig> MuplusMichelGenerator::spectrumConfig() {
+    auto config = std::make_unique<SpectrumConfig>();
+    // FIXME: calculate the spectrum fraction simulated
+    config->add_var(SpectrumConfig::RestrictedVar("energy", 1., _spectrumXMin, _spectrumXMax,
+                                                  _flatSpectrum ? SpectrumConfig::Type::kFlat : SpectrumConfig::Type::kPhysical));
+    return config;
   }
 
 }

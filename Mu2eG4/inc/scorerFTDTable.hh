@@ -17,6 +17,7 @@ namespace mu2e{
   {
      public:
         scorerFTDTable(const std::string& filename, const std::string& method);
+        scorerFTDTable()  = default;
         ~scorerFTDTable() = default;
 
         void    initialize();
@@ -28,6 +29,8 @@ namespace mu2e{
        std::string          method_;
        std::vector<double>  energies_;
        std::vector<double>  coeffs_;
+       std::vector<double>  lenergies_;
+       std::vector<double>  lcoeffs_;
   };
 
 }

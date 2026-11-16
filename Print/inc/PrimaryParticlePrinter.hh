@@ -19,7 +19,10 @@ namespace mu2e {
 class PrimaryParticlePrinter : public ProductPrinter {
  public:
   PrimaryParticlePrinter() {}
-  PrimaryParticlePrinter(const Config& conf) : ProductPrinter(conf) {}
+  PrimaryParticlePrinter(const Config& conf) : ProductPrinter(conf) {
+    gprint_.setVerbose(verbose());
+    sprint_.setVerbose(verbose());
+  }
 
   // all the ways to request a printout
   void Print(art::Event const& event, std::ostream& os = std::cout) override;

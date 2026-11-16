@@ -4,6 +4,7 @@
 // Structs for configuring the Mu2e KinKal fit
 //
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Tuple.h"
@@ -16,6 +17,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawXingUpdater.hh"
 namespace mu2e {
   namespace Mu2eKinKal{
@@ -34,9 +36,13 @@ namespace mu2e {
       fhicl::Atom<bool> bfieldCorr { Name("BFieldCorrection"), Comment("Apply correction for BField inhomogeneity") };
       fhicl::Atom<bool> ends { Name("ProcessEnds"), Comment("Process purely passive sites at the time range ends") };
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
+      fhicl::Atom<double> minDomainTimeStep { Name("MinDomainTimeStep"), Comment("Minimum BField domain time step (ns); 0 leaves it unbounded"), 0.0 };
+      fhicl::OptionalAtom<double> domainMargin { Name("DomainMargin"), Comment("Maximum time a BField domain may extend beyond the active range (ns, >= 0); absent leaves domains unconfined") };
       // Updater settings
       using MetaIterationSettings = fhicl::Sequence<fhicl::Tuple<float,std::string>>;
       MetaIterationSettings miConfig { Name("MetaIterationSettings"), Comment("Temperature (dimensionless), StrawHitUpdater algorithm") };
+      fhicl::OptionalSequence<std::string> hitRefPiece { Name("HitReferencePiece"), Comment("Per meta-iteration reference piece strategy for hits, DOCA or TOCA; one entry per MetaIterationSettings entry, absent = all DOCA") };
+      fhicl::OptionalSequence<std::string> xingRefPiece { Name("XingReferencePiece"), Comment("Per meta-iteration reference piece strategy for material crossings, DOCA or TOCA; one entry per MetaIterationSettings entry, absent = all DOCA") };
       using CADSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<float,float,float,float,std::string,std::string,std::string,int>>;
       CADSHUSettings cadshuConfig{ Name("CADSHUSettings"), Comment(CADSHU::configDescription()) };
       using DriftANNSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,float,std::string,float,float,std::string,std::string,int>>;
@@ -45,6 +51,8 @@ namespace mu2e {
       BkgANNSHUSettings bkgshuConfig{ Name("BkgANNSHUSettings"), Comment(BkgANNSHU::configDescription()) };
       using Chi2SHUSettings = fhicl::OptionalSequence<fhicl::Tuple<unsigned,float,float,float,std::string,std::string,std::string,std::string,int>>;
       Chi2SHUSettings combishuConfig{ Name("Chi2SHUSettings"), Comment(Chi2SHU::configDescription()) };
+      using PanelDiagSHUSettings = fhicl::OptionalSequence<fhicl::Tuple<std::string,std::string,int>>;
+      PanelDiagSHUSettings paneldiagshuConfig{ Name("PanelDiagSHUSettings"), Comment(PanelDiagSHU::configDescription()) };
       using StrawXingUpdaterSettings = fhicl::Sequence<fhicl::Tuple<float,float,bool,int>>;
       StrawXingUpdaterSettings sxuConfig{ Name("StrawXingUpdaterSettings"), Comment(StrawXingUpdater::configDescription()) };
     };
@@ -65,6 +73,7 @@ namespace mu2e {
       fhicl::Atom<bool> addHits { Name("AddHits"), Comment("Add hits to the fit") };
       fhicl::Atom<bool> addMaterial { Name("AddMaterial"), Comment("Add materials to the fit") };
       fhicl::Atom<bool> useCaloCluster { Name("UseCaloCluster"), Comment("Use CaloCluster in the fit") };
+      fhicl::Atom<bool> addCaloMaterial { Name("AddCaloMaterial"), Comment("Add the calorimeter front panel material crossed within the fit range"), false };
       fhicl::Atom<unsigned> minNStrawHits { Name("MinNStrawHits"), Comment("Minimum number of straw hits to attempt a fit") };
       fhicl::Atom<size_t> strawHitClusterDeltaStraw { Name("StrawHitClusterDeltaStraw"), Comment("Maximum straw index difference between StrawHits in StrawHitClusters") };
       fhicl::Atom<float> strawHitClusterDeltaT { Name("StrawHitClusterDeltaT"), Comment("Maximum time difference between StrawHits in StrawHitClusters") };
@@ -80,6 +89,7 @@ namespace mu2e {
       fhicl::Sequence<std::string> addHitReject { Name("AddHitReject"), Comment("Flags required not to be present to add a hit") };
       fhicl::Atom<float> maxStrawHitDOCA { Name("MaxStrawHitDOCA"), Comment("Max DOCA to add a hit (mm)") };
       fhicl::Atom<float> maxStrawHitDt { Name("MaxStrawHitDt"), Comment("Max Detla time to add a hit (ns)") };
+      fhicl::Atom<float> maxSeedStrawHitDt { Name("MaxSeedStrawHitDt"), Comment("Max |seed particle TOCA - hit time| for a straw hit to enter the initial fit (ns); 0 keeps every hit"), 0.0 };
       fhicl::Atom<int> maxDStraw { Name("MaxDStraw"), Comment("Maximum (integer) straw separation when adding straw hits") };
       fhicl::Atom<bool> skipStrawCheck { Name("SkipStrawCheck"), Comment("Skip rho and panel longitudinal checks when adding straws") };
       fhicl::Atom<float> addStrawMinDz { Name("AddStrawMinDz"), Comment("For tracks more vertical than this add all straws") };
@@ -95,6 +105,7 @@ namespace mu2e {
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<bool> sampleInRange { Name("SampleInRange"), Comment("Require sample times to be inside the fit trajectory time range") };
       fhicl::Atom<bool> sampleInBounds { Name("SampleInBounds"), Comment("Require sample intersection point be inside surface bounds (within tolerance)") };
+      fhicl::Atom<bool> saveMatXings { Name("SaveMaterialXings"), Comment("Save generic passive material Xings (filled during extrapolation) in the KalSeed intersections"), false };
     };
     // struct for configuring a KinKal fit module
     struct KKModuleConfig {
@@ -112,10 +123,16 @@ namespace mu2e {
       fhicl::Atom<float> btol { Name("BCorrTolerance"), Comment("Tolerance on BField correction momentum fractional accuracy (dimensionless)") };
       fhicl::Atom<float> interTol { Name("IntersectionTolerance"), Comment("Tolerance for surface intersections (mm)") };
       fhicl::Atom<float> MaxDt { Name("MaxDt"), Comment("Maximum time to extrapolate a fit (ns)") };
+      fhicl::Atom<float> MaxDtStep { Name("MaxDtStep"), Comment("Maximum time step when extrapolating a fit (ns)") };
+      fhicl::Atom<float> MinV { Name("MinV"), Comment("Minimum velocity perp to the surface extrapolate a straight track fit") };
       fhicl::Atom<bool> BackToTracker { Name("BackToTracker"), Comment("Extrapolate reflecting tracks back to the tracker") };
-      fhicl::Atom<bool> ToTrackerEnds { Name("ToTrackerEnds"), Comment("Extrapolate tracks to the tracker ends") };
+      fhicl::Atom<bool> ToTrackerPerimeter { Name("ToTrackerPerimeter"), Comment("Extrapolate tracks to the tracker perimeter (z-ends and outer wall)") };
       fhicl::Atom<bool> Upstream { Name("Upstream"), Comment("Extrapolate tracks upstream") };
       fhicl::Atom<bool> ToOPA { Name("ToOPA"), Comment("Test tracks for intersection with the OPA") };
+      fhicl::Atom<bool> ToCRV { Name("ToCRV"), Comment("Extrapolate tracks to the CRV modules") };
+      fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces") };
+      fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces") };
+      fhicl::Atom<bool> ToCaloMaterial { Name("ToCaloMaterial"), Comment("Add material effects from the calorimeter front panels when extrapolating to the calorimeter disks"), false };
     };
   }
 }

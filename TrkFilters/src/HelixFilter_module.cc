@@ -17,6 +17,8 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/TrackerGeom/inc/Tracker.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerStatus.hh"
 // data
 #include "Offline/RecoDataProducts/inc/HelixSeed.hh"
 #include "Offline/DataProducts/inc/Helicity.hh"
@@ -25,12 +27,15 @@
 // helper function
 #include "Offline/GeneralUtilities/inc/PhiPrescalingParams.hh"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 using namespace CLHEP;
 // c++
+#include <cmath>
 #include <string>
 #include <vector>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 namespace mu2e
@@ -57,6 +62,10 @@ namespace mu2e
       fhicl::OptionalAtom<double>             minAbsLambda         {     Name("minAbsLambda"),            Comment("minAbsLambda   ") };
       fhicl::OptionalAtom<double>             maxNLoops            {     Name("maxNLoops"),               Comment("maxNLoops      ") };
       fhicl::OptionalAtom<double>             minNLoops            {     Name("minNLoops"),               Comment("minNLoops      ") };
+      fhicl::OptionalAtom<double>             minEDepAvg           {     Name("minEDepAvg"),              Comment("Minimum mean straw hit energy deposit (MeV)")};
+      fhicl::OptionalAtom<double>             maxEDepAvg           {     Name("maxEDepAvg"),              Comment("Maximum mean straw hit energy deposit (MeV)")};
+      fhicl::OptionalAtom<double>             minMass              {     Name("minMass"),                 Comment("Minimum mass (MeV) from the momentum and the helix t vs z slope")};
+      fhicl::OptionalAtom<double>             maxMass              {     Name("maxMass"),                 Comment("Maximum mass (MeV) from the momentum and the helix t vs z slope")};
       fhicl::OptionalAtom<double>             slopeSigMin          {     Name("slopeSigMin"),             Comment("Minimum helix seed slope significance selection")};
       fhicl::OptionalAtom<double>             slopeSigMax          {     Name("slopeSigMax"),             Comment("Maximum helix seed slope significance selection")};
       fhicl::Sequence<std::string>            helixFitFlag         {     Name("helixFitFlag"),            Comment("helixFitFlag   "), std::vector<std::string>{"HelixOK"} };
@@ -85,6 +94,10 @@ namespace mu2e
           config.minAbsLambda(_minlambda);
           config.maxNLoops(_maxnloops);
           config.minNLoops(_minnloops);
+          config.minEDepAvg(_minedep);
+          config.maxEDepAvg(_maxedep);
+          _useMinMass = config.minMass(_minmass);
+          _useMaxMass = config.maxMass(_maxmass);
           _useSlopeSigMin = config.slopeSigMin(_slopeSigMin);
           _useSlopeSigMax = config.slopeSigMax(_slopeSigMax);
         }
@@ -103,6 +116,8 @@ namespace mu2e
       HelixCutsTool():_configured(false){};
 
       void setTrackerGeomHandle(const Tracker* TrackerGeom) { _myTracker = TrackerGeom; }
+      // straws without signal are not counted as expected hits in the hit ratio; nullptr: all straws live
+      void setTrackerStatus(const TrackerStatus* Status) { _trackerStatus = Status; }
 
       int   evalIPAPresc(const float &phi0){
         int val= (_prescalerPar._amplitude - (_prescalerPar._amplitude-1)*sin(_prescalerPar._frequency*phi0 + _prescalerPar._phase));
@@ -115,7 +130,11 @@ namespace mu2e
         //check the helicity
         if (_doHelicityCheck && !(Helix.helix().helicity() == Helicity(_hel)))  return false;
         float mm2MeV = 3./10.;//FIXME!
-        HelixTool helTool(&Helix, _myTracker);
+        HelixTool::StrawNoSignal noSignal;
+        if (_trackerStatus) {
+          noSignal = [status = _trackerStatus](StrawId const& sid) { return status->noSignal(sid) || status->suppress(sid); };
+        }
+        HelixTool helTool(&Helix, _myTracker, noSignal);
         // compute the helix momentum.  Note this is in units of mm!!!
         float hmom       = Helix.helix().momentum()*mm2MeV;
         int   nstrawhits = helTool.nstrawhits();
@@ -125,16 +144,22 @@ namespace mu2e
         float d0         = Helix.helix().rcent() - Helix.helix().radius();
         float lambda     = std::fabs(Helix.helix().lambda());
         float nLoops     = helTool.nLoops();
-        float hRatio     = helTool.hitRatio();
         const float slope          = Helix.recoDir().slope();
         const float slopeErr       = std::fabs(Helix.recoDir().slopeErr());
         const float slopeSignedSig = (slopeErr > 0.f) ? slope/slopeErr : 0.f; //signifance from 0 signed by the slope direction
+        const float edep           = Helix.hits().eDepAvg(); // straw hit weighted, as AgnosticHelixFinder maxEDepAvg
+        // mass from the momentum and the velocity along z from the t vs z slope (ns/mm), using only hit times:
+        // m^2 = (pz/beta_z)^2 - p^2, beta_z = 1/(|dt/dz| c). Negative if unphysical (no slope or beta > 1)
+        const float pz             = lambda*mm2MeV;
+        const float m2             = std::pow(pz*std::fabs(slope)*CLHEP::c_light, 2) - hmom*hmom;
+        const float mass           = (m2 > 0.f) ? std::sqrt(m2) : -1.f;
 
         if(Debug > 2){
           std::cout << "[HelixFilter] : status = " << Helix.status() << " nhits = " << nstrawhits << " mom = " << hmom << std::endl
                     << "[HelixFilter] : chi2XY = " << chi2XY << " chi2ZPHI = " << chi2PhiZ << " d0 = " << d0 << " lambda = "<< lambda
                     << " p = " << hmom << " pT = " << hpT
-                    << " nLoops = " << nLoops << " hRatio = "<< hRatio << " slopeSignedSig = " << slopeSignedSig << std::endl;
+                    << " nLoops = " << nLoops << " hRatio = "<< helTool.hitRatio() << " slopeSignedSig = " << slopeSignedSig
+                    << " eDepAvg = " << edep << " mass = " << mass << std::endl;
         }
         if( Helix.status().hasAllProperties(_goodh)      &&
             (!_hascc || Helix.caloCluster().isNonnull()) &&
@@ -150,9 +175,13 @@ namespace mu2e
             nLoops     >= _minnloops     &&
             hmom       >= _minmom        &&
             hmom       <= _maxmom        &&
+            edep       >= _minedep       &&
+            edep       <= _maxedep       &&
+            (!_useMinMass || (mass > 0.f && mass >= _minmass)) &&
+            (!_useMaxMass || mass <= _maxmass) &&
             (!_useSlopeSigMin || slopeSignedSig > _slopeSigMin) &&
             (!_useSlopeSigMax || slopeSignedSig < _slopeSigMax) &&
-            hRatio     >= _minHitRatio ) {
+            (_minHitRatio <= 0. || helTool.hitRatio() >= _minHitRatio) ) { // hit ratio last: it is the most expensive
           //now check if we want to prescake or not
           if (_prescaleUsingD0Phi) {
             float phiAtD0   = Helix.helix().fcent();
@@ -163,31 +192,42 @@ namespace mu2e
         }
         return false;
       }
+      // Every threshold below is filled through fhicl::OptionalAtom::operator()(T&),
+      // which leaves its target untouched when the key is absent.  The initializers
+      // are therefore the values used when a key is not configured, and each one is
+      // chosen so that the corresponding comparison in checkHelix() is a no-op.
       bool          _configured;
-      bool          _hascc; // Calo Cluster
-      bool          _doHelicityCheck;
-      int           _hel;
-      int           _minnstrawhits;
-      double        _minHitRatio;
-      double        _minmom, _maxmom;
-      double        _maxpT;
-      double        _minpT;
-      double        _maxchi2XY;
-      double        _maxchi2PhiZ;
-      double        _maxd0;
-      double        _mind0;
-      double        _maxlambda;
-      double        _minlambda;
-      double        _maxnloops;
-      double        _minnloops;
-      bool          _useSlopeSigMin;
-      double        _slopeSigMin;
-      bool          _useSlopeSigMax;
-      double        _slopeSigMax;
+      bool          _hascc           = false; // Calo Cluster
+      bool          _doHelicityCheck = false;
+      int           _hel             = 0;
+      int           _minnstrawhits   = 0;
+      double        _minHitRatio     = 0.;
+      double        _minmom          = 0.;
+      double        _maxmom          = std::numeric_limits<double>::max();
+      double        _minpT           = 0.;
+      double        _maxchi2XY       = std::numeric_limits<double>::max();
+      double        _maxchi2PhiZ     = std::numeric_limits<double>::max();
+      double        _maxd0           = std::numeric_limits<double>::max();
+      double        _mind0           = std::numeric_limits<double>::lowest();
+      double        _maxlambda       = std::numeric_limits<double>::max();
+      double        _minlambda       = 0.;  // the cut is applied to |lambda|
+      double        _maxnloops       = std::numeric_limits<double>::max();
+      double        _minnloops       = 0.;
+      double        _minedep         = std::numeric_limits<double>::lowest();
+      double        _maxedep         = std::numeric_limits<double>::max();
+      bool          _useMinMass      = false; // unphysical masses fail only if a minimum mass cut is set
+      bool          _useMaxMass      = false;
+      double        _minmass         = 0.;
+      double        _maxmass         = std::numeric_limits<double>::max();
+      bool          _useSlopeSigMin  = false;
+      double        _slopeSigMin     = 0.;
+      bool          _useSlopeSigMax  = false;
+      double        _slopeSigMax     = 0.;
       TrkFitFlag    _goodh; // helix fit flag
-      bool          _prescaleUsingD0Phi;
+      bool          _prescaleUsingD0Phi = false;
       PhiPrescalingParams     _prescalerPar;
-      const Tracker*_myTracker;
+      const Tracker*_myTracker     = nullptr;
+      const TrackerStatus* _trackerStatus = nullptr;
     };
 
     struct Config{
@@ -200,6 +240,7 @@ namespace mu2e
       fhicl::Atom<bool>               noFilter             { Name("noFilter"),                Comment("don't apply the filter decision"), false};
       fhicl::Atom<unsigned>           minNHelices          { Name("minNHelices"),             Comment("minimum number of helices passing the cuts"), 1};
       fhicl::Atom<float>              maxDt0               { Name("maxDt0"),                  Comment("maximum difference in time between helices"), -1};
+      fhicl::Atom<bool>               useTrackerStatus     { Name("useTrackerStatus"),        Comment("don't count straws without signal (TrackerStatus) as expected hits in the hit ratio")};
     };
 
 
@@ -224,6 +265,8 @@ namespace mu2e
     bool          _noFilter;
     unsigned      _minNHelices;
     float         _maxDt0;
+    bool          _useTrackerStatus;
+    ProditionsHandle<TrackerStatus> _trackerStatus_h;
 
     bool  checkHelixFromHelicity(const HelixSeed&helix);
   };
@@ -238,7 +281,8 @@ namespace mu2e
     _npass(0),
     _noFilter          (config().noFilter()),
     _minNHelices       (config().minNHelices()),
-    _maxDt0            (config().maxDt0())
+    _maxDt0            (config().maxDt0()),
+    _useTrackerStatus  (config().useTrackerStatus())
     {
       produces<TriggerInfo>();
       if(_minNHelices < 2 && _maxDt0 >= 0.) throw cet::exception("BADCONFIG") << "Requested a timing difference cut of " << _maxDt0 << " ns between helices but only " << _minNHelices << " helices required";
@@ -246,13 +290,13 @@ namespace mu2e
 
   void HelixFilter::beginJob() {
     if ( (!_posHelCuts._configured) && (!_negHelCuts._configured)) {
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
     if ( (!_posHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH POSITIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
     if ( (!_negHelCuts._configured)){
-      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGUREATION!" << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " NO HELIX CUT HAS BEEN SET FOR THE HELICES WITH NEGATIVE HELICITY. IF THAT'S NOT THE DESIRED BEHAVIOUR REVIEW YOUR CONFIGURATION!" << std::endl;
     }
   }
 
@@ -286,6 +330,11 @@ namespace mu2e
     // create output
     std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
+    if (_useTrackerStatus) {
+      const TrackerStatus& trackerStatus = _trackerStatus_h.get(evt.id());
+      _posHelCuts.setTrackerStatus(&trackerStatus);
+      _negHelCuts.setTrackerStatus(&trackerStatus);
+    }
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();

@@ -4,6 +4,7 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -16,6 +17,7 @@
 #include <vector>
 #include <queue>
 #include <cmath>
+#include <iterator>
 
 
 namespace mu2e {
@@ -94,7 +96,13 @@ namespace mu2e {
 
       std::vector<size_t> hits;
       hits.reserve(caloHits.size());
-      for (size_t i=0;i<caloHits.size();++i) if (caloHits[i].energyDep() > EnoiseCut_ && caloHits[i].nSiPMs() >= minSiPMPerHit_) hits.emplace_back(i);
+      for (size_t i=0;i<caloHits.size();++i) {
+          if (mu2e::CrystalId(caloHits[i].crystalID()).isValid() //Exclude pin diodes
+              && caloHits[i].energyDep() > EnoiseCut_
+              && caloHits[i].nSiPMs() >= minSiPMPerHit_) {
+                hits.emplace_back(i);
+          }
+      }
 
       auto functorTime = [&caloHits](auto a, auto b) {
           auto dt = caloHits[a].time() - caloHits[b].time();
@@ -103,29 +111,34 @@ namespace mu2e {
       };
       std::sort(hits.begin(),hits.end(),functorTime);
 
+      // Flag hits already assigned to a cluster. A value stored in "hits" cannot serve as the flag:
+      // every value in [0, caloHits.size()) is a real caloHits index.
+      std::vector<bool> isUsed(hits.size(),false);
+      auto used    = [&](auto it) -> bool {return isUsed[it - hits.begin()];};
+      auto setUsed = [&](auto it) {isUsed[it - hits.begin()] = true;};
+
       auto iterSeed = hits.begin();
       while (iterSeed != hits.end())
       {
           //find the first hit above the energy threshold, and the last hit within the required time window
-          const CaloHit& hitSeed = caloHits[*iterSeed];
-          if (*iterSeed==hits.size() || hitSeed.energyDep()< EminSeed_) {++iterSeed; continue;}
-          double timeStart = hitSeed.time();
+          if (used(iterSeed) || caloHits[*iterSeed].energyDep() < EminSeed_) {++iterSeed; continue;}
+          double timeStart = caloHits[*iterSeed].time();
 
           //find the range around the seed time to search for other hits to form clusters
           auto iterStart(iterSeed), iterStop(iterSeed);
-          while (iterStop  != hits.end()   && (*iterStop==hits.size()  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
-          while (iterStart != hits.begin() && (*iterStart==hits.size() || timeStart - caloHits[*iterStart].time() < deltaTime_)) --iterStart;
-          ++iterStart;
+          while (iterStop  != hits.end()   && (used(iterStop)  || caloHits[*iterStop].time() - timeStart < deltaTime_))  ++iterStop;
+          // test the hit before iterStart, so that hits.begin() is tested too
+          while (iterStart != hits.begin() && (used(std::prev(iterStart)) || timeStart - caloHits[*std::prev(iterStart)].time() < deltaTime_)) --iterStart;
 
           //start the clustering algorithm for the hits between iStart and iStop
-          std::queue<int> crystalToVisit;
+          std::queue<unsigned> crystalToVisit;
           std::vector<bool> isVisited(cal.nCrystals());
 
           //put the first hit in the cluster list
           std::vector<size_t> clusterList{*iterSeed};
           auto seedId = caloHits[*iterSeed].crystalID();
           crystalToVisit.push(seedId);
-          *iterSeed=hits.size();
+          setUsed(iterSeed);
 
           // loop until all seeds are processed
           while (!crystalToVisit.empty())
@@ -134,7 +147,8 @@ namespace mu2e {
               isVisited[visitId]=true;
 
               auto neighborsId = cal.crystal(visitId).neighbors();
-              if (extendSearch_) std::copy(cal.nextNeighbors(visitId).begin(), cal.nextNeighbors(visitId).end(), std::back_inserter(neighborsId));
+              auto nn = cal.crystal(visitId).nextNeighbors();
+              if (extendSearch_) std::copy(nn.begin(), nn.end(), std::back_inserter(neighborsId));
 
               for (const auto& iId : neighborsId)
               {
@@ -144,18 +158,18 @@ namespace mu2e {
                   //loop over the caloHits, check if one is in the neighbor list and add it to the cluster
                   for (auto it=iterStart; it != iterStop; ++it)
                   {
-                      if (*it==hits.size()) continue;
-                      if (caloHits[*it].crystalID() != iId) continue;
+                      if (used(it)) continue;
+                      if (caloHits[*it].crystalID() != static_cast<int>(iId)) continue;
 
                       if (caloHits[*it].energyDep() > ExpandCut_) crystalToVisit.push(iId);
                       clusterList.push_back(*it);
-                      *it = hits.size();
+                      setUsed(it);
                   }
                }
                crystalToVisit.pop();
            }
 
-           auto functorEnergy = [&caloHits](int a, int b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
+           auto functorEnergy = [&caloHits](auto a, auto b) {return caloHits[a].energyDep() > caloHits[b].energyDep();};
            std::sort(clusterList.begin(),clusterList.end(),functorEnergy);
 
            fillCluster(cal, caloHitsHandle, caloHits, clusterList, caloClusters );

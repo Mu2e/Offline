@@ -64,9 +64,12 @@ namespace mu2e {
 
         bool flipBFieldMaps() const { return flipBFieldMaps_; }
 
+        // smallest |B| (T) KinKal may use for field-corrected transport; 0 disables its low-field protection
+        double minUsableField() const { return minUsableField_; }
+
        private:
         BFieldConfig()
-            : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1), flipBFieldMaps_(false) {}
+            : scaleFactor_(1.), writeBinaries_(false), verbosityLevel_(1), flipBFieldMaps_(false), minUsableField_(0.) {}
 
         // G4BL, PARAM or possible future types.
         BFMapType mapType_;
@@ -91,6 +94,7 @@ namespace mu2e {
         bool writeBinaries_;
         int verbosityLevel_;
         bool flipBFieldMaps_;
+        double minUsableField_;
     };
 
 }  // namespace mu2e

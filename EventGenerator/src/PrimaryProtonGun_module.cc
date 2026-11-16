@@ -16,6 +16,7 @@
 // Mu2e includes.
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Particular generators that this code knows about.
 #include "Offline/EventGenerator/inc/PrimaryProtonGunImpl.hh"
@@ -24,6 +25,7 @@
 // Includes from art and its toolchain.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -47,6 +49,7 @@ namespace mu2e {
 
       virtual void produce(art::Event& e ) override;
       virtual void beginRun(art::Run& r ) override;
+      virtual void endSubRun(art::SubRun& sr) override;
 
   private:
 
@@ -66,6 +69,7 @@ namespace mu2e {
         _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
         produces<GenParticleCollection>();
+        produces<SpectrumConfig, art::InSubRun>();
     }
 
     void PrimaryProtonGun::beginRun(art::Run& run ){
@@ -92,6 +96,11 @@ namespace mu2e {
         evt.put(std::move(genParticles));
 
     }//produce()
+
+      void PrimaryProtonGun::endSubRun(art::SubRun& sr ) {
+        auto config = std::make_unique<SpectrumConfig>();
+        sr.put(std::move(config), art::fullSubRun());
+      }
 
 }
 

@@ -15,10 +15,12 @@
 // --> the first peak is never a pile-up
 //
 
-#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
-#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
+#include "Offline/CaloReco/inc/CaloWaveformProcessor.hh"
+#include "Offline/CaloReco/inc/CaloTemplateWFUtil.hh"
 #include "TH2.h"
 #include <vector>
 
@@ -33,8 +35,8 @@ namespace mu2e {
         {
             using Name    = fhicl::Name;
             using Comment = fhicl::Comment;
-            fhicl::Atom<std::string> pulseFileName     { Name("pulseFileName"),    Comment("Calo pulse file name") };
-            fhicl::Atom<std::string> pulseHistName     { Name("pulseHistName"),    Comment("Calo pulse hist name") };
+            using CPG     = CaloPulseUtil::Config;
+            fhicl::Table<CPG>        pulseCache        { Name("pulseCache"),       Comment("Pulse cache maker config") };
             fhicl::Atom<unsigned>    windowPeak        { Name("windowPeak"),       Comment("Number of bins around central value to inspect") };
             fhicl::Atom<double>      minPeakAmplitude  { Name("minPeakAmplitude"), Comment("Minimum peak amplitude") };
             fhicl::Atom<double>      minDTPeaks        { Name("minDTPeaks"),       Comment("Minimum time difference between consecutive peaks") };
@@ -42,7 +44,6 @@ namespace mu2e {
             fhicl::Atom<double>      psdThreshold      { Name("psdThreshold"),     Comment("Pulse shape discrimination threshold for secondary peaks") };
             fhicl::Atom<double>      chiThreshold      { Name("chiThreshold"),     Comment("Min chi2 for refit strategy") };
             fhicl::Atom<bool>        refitLeadingEdge  { Name("refitLeadingEdge"), Comment("Refit the leading edge to extract peak time") };
-            fhicl::Atom<double>      digiSampling      { Name("digiSampling"),     Comment("Digitization time sampling") };
             fhicl::Atom<int>         fitPrintLevel     { Name("fitPrintLevel"),    Comment("minuit fit print level") };
             fhicl::Atom<int>         fitStrategy       { Name("fitStrategy"),      Comment("Minuit fit strategy") };
             fhicl::Atom<int>         diagLevel         { Name("diagLevel"),        Comment("Diagnosis level") };
@@ -70,7 +71,8 @@ namespace mu2e {
        void   initHistos         ();
        void   setPrimaryPeakPar1 (const std::vector<double>& xvec, const std::vector<double>& yvec);
        void   setPrimaryPeakPar2 (const std::vector<double>& xvec, const std::vector<double>& yvec);
-       void   findRisingPeak     (int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec, const std::vector<double>& yvec, std::vector<double>& ywork);
+       void   findRisingPeak     (int ipeak, std::vector<double>& parInit, const std::vector<double>& xvec,
+                                  const std::vector<double>& yvec, std::vector<double>& ywork);
        void   setSecondaryPeakPar(const std::vector<double>& xvec, const std::vector<double>& yvec);
        double estimatePeakTime   (const std::vector<double>& xvec, const std::vector<double>& ywork, int ic);
        bool   checkPeakDist      (double x0);

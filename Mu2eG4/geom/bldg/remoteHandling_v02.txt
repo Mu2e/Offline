@@ -28,7 +28,7 @@ vector<double> building.remote.handling.xPositions = {
 };
 
 vector<double> building.remote.handling.yPositions = {
-  10692.4,   // R0
+  10697.25,   // R0
   16611.6,   // r1
   16611.6,   // r2
   6858,   // R3
@@ -39,7 +39,7 @@ vector<double> building.remote.handling.yPositions = {
   13716,   // R8
   16002,   // R9
   16002,   // S0
-  10544.6   // FR8
+  10550.85   // FR8
 };
 //East Wall
 //1st notch

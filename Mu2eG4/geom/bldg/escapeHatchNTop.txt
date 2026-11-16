@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_escape_hatch_N.ccl
+
+string building.escape.hatch.NTop.name     = "escapeHatchNTop";
+
+string building.escape.hatch.NTop.material = "CONCRETE_MARS";
+
+double building.escape.hatch.NTop.offsetFromMu2eOrigin.x   = 947.4;
+double building.escape.hatch.NTop.offsetFromFloorSurface.y = 10166.35;
+double building.escape.hatch.NTop.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.escape.hatch.NTop.yHalfThickness           = 349.25;
+
+vector<double> building.escape.hatch.NTop.xPositions = {
+  18696.6,   // O
+  17696.83,  // N
+  17840.38,  // K
+  18840.15   // L
+};
+
+vector<double> building.escape.hatch.NTop.yPositions = {
+  24361.63,  // O
+  24119.38,  // N
+  23526.93,  // K
+  23769.18  // L
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file:
+//
+//   geom/geom_beamline_ceiling.ccl
+
+string dirt.beamline.ceiling.upper.name     = "dirtBeamlineCeilingUpper";
+
+string dirt.beamline.ceiling.upper.material = "MBOverburden";
+
+double dirt.beamline.ceiling.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.ceiling.upper.offsetFromFloorSurface.y = 6045.2;
+double dirt.beamline.ceiling.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.ceiling.upper.yHalfThickness           = 50.8;
+
+vector<double> dirt.beamline.ceiling.upper.xPositions = {
+  7366,   // c inu
+  7366,   // b inu
+  3251.2,    // h1
+  3251.2,   // P5 bc
+  11684,    // i1
+  11684    // j1
+};
+
+vector<double> dirt.beamline.ceiling.upper.yPositions = {
+  3728.42,   // c inu
+  2438.4,   // b inu
+  2438.4,   // h1
+  8674.1,   // P5 bc
+  10697.778, // i1
+  4779.428 // j1
+};
+
+// Local Variables:
+// mode:c++
+// End:

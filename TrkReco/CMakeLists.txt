@@ -71,6 +71,7 @@ cet_build_plugin(SelectSameTrack art::module
       art_root_io::tfile_support
       Offline::TrkReco
       Offline::RecoDataProducts
+      Offline::DataProducts
 )
 
 install_source(SUBDIRS src)

@@ -29,6 +29,7 @@ namespace mu2e {
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       // clone op for reinstantiation
       KKCaloHit(KKCaloHit<KTRAJ> const& rhs):
+              KinKal::ResidualHit<KTRAJ>(rhs),
               caloCluster_(rhs.caloCluster()),
               tvar_(rhs.timeVariance()),
               wvar_(rhs.widthVariance()),
@@ -47,7 +48,7 @@ namespace mu2e {
       unsigned nResid() const override { return 1; } // 1 time residual
       Residual const& refResidual(unsigned ires=0) const override;
       double time() const override { return ca_.particleToca(); }
-      void updateReference(PTRAJ const& ptraj) override;
+      void updateReference(PTRAJ const& ptraj, MetaIterConfig const&) override; // the hint is the measurement time, so the piece-move limit does not apply
       void updateState(MetaIterConfig const& config,bool first) override;
       KTRAJPTR refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
@@ -83,7 +84,7 @@ namespace mu2e {
     return rresid_;
   }
 
-  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
+  template <class KTRAJ> void KKCaloHit<KTRAJ>::updateReference(PTRAJ const& ptraj, MetaIterConfig const&) {
     // compute PCA
     auto mtime = sensorAxis().measurementTime();
     CAHint tphint(mtime,mtime);

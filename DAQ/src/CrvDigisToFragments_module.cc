@@ -9,6 +9,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "artdaq-core-mu2e/Overlays/Decoders/CRVDataDecoder.hh"
 #include "artdaq-core-mu2e/Overlays/DTC_Packets/DTC_Event.h"
@@ -167,7 +168,11 @@ void CrvDigisToFragments::buildDtcEventsFromDigis(art::Event const& event, mu2e:
   {
     auto const& digi = crvDigis[i];
 
-    if(digi.IsNZS()) continue; //FEBs can't handle NZS data, yet
+    if(digi.IsNZS())
+    {
+      mf::LogError("CrvDigisToFragments") << "This seems to be a CrvDigiCollection with NZS data. Skipping this collection." << std::endl;
+      break; //FEBs can't handle NZS data, yet
+    }
 
     uint16_t ROC = digi.GetROC();
     if(ROC==0) //shouldn't happen

@@ -15,13 +15,16 @@ namespace mu2e {
 
   class BackShielding {
   public:
+    // material: configurable only in the hand-stacked geometry (STM_v11,
+    // Yongyi Wu Oct 2026); earlier ones keep "BP".
     BackShielding(bool build, double thick, double length, double height,
     double Back_dX, double Back_dY, double STMShieldingPipeGap,
-    CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation()
+    CLHEP::Hep3Vector const & originInMu2e = CLHEP::Hep3Vector(), CLHEP::HepRotation const & rotation = CLHEP::HepRotation(),
+    std::string const & material = "BP"
     ):
       _build(build), _BPThick(thick), _BPLength(length), _BPHeight(height),
       _Back_dX(Back_dX), _Back_dY(Back_dY), _STMShieldingPipeGap(STMShieldingPipeGap),
-      _originInMu2e(originInMu2e), _rotation(rotation)
+      _originInMu2e(originInMu2e), _rotation(rotation), _material(material)
     {}
 
    bool     build()                    const {return _build;}
@@ -31,6 +34,7 @@ namespace mu2e {
    double   Back_dX()                  const {return _Back_dX;}
    double   Back_dY()                  const {return _Back_dY;}
    double   STMShieldingPipeGap()                  const {return _STMShieldingPipeGap;}
+   std::string const & material()      const {return _material;}
 
     BackShielding() {}
   private:
@@ -45,6 +49,7 @@ namespace mu2e {
 
     CLHEP::Hep3Vector  _originInMu2e;
     CLHEP::HepRotation _rotation;
+    std::string        _material = "BP";
   };
 
 }

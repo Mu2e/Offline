@@ -39,6 +39,8 @@
 #include "Offline/Validation/inc/ValTimeCluster.hh"
 #include "Offline/Validation/inc/ValTriggerInfo.hh"
 #include "Offline/Validation/inc/ValTriggerResults.hh"
+#include "Offline/Validation/inc/ValTrkCrvMatch.hh"
+#include "Offline/Validation/inc/ValTrkCrvMatchMC.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art_root_io/TFileService.h"
 #include "fhiclcpp/types/Atom.h"
@@ -103,6 +105,8 @@ class Validation : public art::EDAnalyzer {
   std::vector<std::shared_ptr<ValComboHit>> _stht;
   std::vector<std::shared_ptr<ValTriggerResults>> _trrs;
   std::vector<std::shared_ptr<ValTriggerInfo>> _tris;
+  std::vector<std::shared_ptr<ValTrkCrvMatch>> _tcrv;
+  std::vector<std::shared_ptr<ValTrkCrvMatchMC>> _tcmc;
 
   // Loop over the products of type T and
   // call fill() on validation histogram class V to make histograms.
@@ -155,7 +159,10 @@ void mu2e::Validation::analyze(art::Event const& event) {
   analyzeProduct<TimeClusterCollection, ValTimeCluster>(_tmcl, event);
   analyzeProduct<HelixSeedCollection, ValHelixSeed>(_hxsd, event);
   analyzeProduct<KalSeedCollection, ValKalSeed>(_klsd, event);
+  analyzeProduct<TrkCrvMatchCollection, ValTrkCrvMatch>(_tcrv, event);
+  analyzeProduct<TrkCrvMatchMCCollection, ValTrkCrvMatchMC>(_tcmc, event);
   analyzeProduct<STMWaveformDigiCollection, ValSTMWaveformDigi>(_stmw, event);
+  analyzeProduct<STMWaveformDigiCollectionMap, ValSTMWaveformDigi>(_stmw, event);
   analyzeProduct<art::TriggerResults, ValTriggerResults>(_trrs, event);
   analyzeProduct<TriggerInfo, ValTriggerInfo>(_tris, event);
 }
@@ -184,6 +191,7 @@ int mu2e::Validation::analyzeProduct(std::vector<std::shared_ptr<V>>& list,
     if (fcn == "mu2e::BkgQualDetailmu2e::MVAStructs") fcn = "BkgQual";
     if (fcn.find("mu2e::", 0) == 0) fcn.erase(0, 6);
     if (fcn.find("art::", 0) == 0) fcn.erase(0, 5);
+    if (fcn.find("STMEventHeadermu2e::STMWaveformDigisstd::map", 0) == 0) fcn = "STMWaveformDigiCollectionMap";
 
     std::string inst = prov->productInstanceName();
     if (inst.size() == 0) inst = "noName";

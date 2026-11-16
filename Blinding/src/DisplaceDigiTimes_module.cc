@@ -28,6 +28,7 @@
 
 // mu2e
 #include "Offline/CaloMC/inc/CaloDigiWrapper.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
 #include "Offline/Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
@@ -64,11 +65,6 @@ namespace mu2e{
           fhicl::Name("SurfaceIds"),
           fhicl::Comment("Prioritized sequence of mu2e::SurfaceIds at which tracks may be sampled for reference timing")
         };
-        // would be better for the sampling period to come from conditions
-        fhicl::Atom<double> calo_adc_sample_period{
-          fhicl::Name("CaloADCSamplePeriod"),
-          fhicl::Comment("Sample spacing of calorimeter waveforms")
-        };
       };
 
       using Parameters = art::EDProducer::Table<Config>;
@@ -81,7 +77,6 @@ namespace mu2e{
       art::InputTag _calo_digi_tag;
       art::InputTag _kalseed_tag;
       SurfaceIdCollection _surface_ids;
-      double _calo_adc_sample_period;
       ProditionsHandle<StrawElectronics> _tracker_conditions_handle;
       art::RandomNumberGenerator::base_engine_t& _engine;
       BinnedSpectrum _target_distribution;
@@ -97,7 +92,6 @@ namespace mu2e{
       _tracker_digi_tag(config().tracker_digi_tag()),
       _calo_digi_tag(config().calo_digi_tag()),
       _kalseed_tag(config().kalseed_tag()),
-      _calo_adc_sample_period(config().calo_adc_sample_period()),
       _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())}{
     // initialize target distribution
     const auto pset = config().target_distribution.get<fhicl::ParameterSet>();
@@ -206,7 +200,7 @@ namespace mu2e{
     event.put(std::move(adcss));
 
     // apply the shift to calorimeter digis
-    double sample_period = _calo_adc_sample_period;
+    double sample_period = CaloConst::_digitizationPeriod;
     auto cdigis = std::make_unique<CaloDigiCollection>();
     if (0 < cdigi_handle->size()){
       for (const auto& old: *cdigi_handle){
@@ -215,11 +209,8 @@ namespace mu2e{
         auto peakpos = old.peakpos();
         auto& waveform = old.waveform();
 
-        // displace waveform start times
-        auto analog = t0 * sample_period;
-        auto shifted = analog + shift;
-        auto rounded = std::lround(shifted / sample_period);
-        t0 = static_cast<CaloDigiWrapper::sample_t>(rounded);
+        // displace waveform start times; t0 is in digitizer clock ticks, so shift by a whole number of samples
+        t0 = static_cast<CaloDigiWrapper::sample_t>(t0 + std::lround(shift / sample_period));
 
         // new digi is identical to input digi, with displaced start index
         cdigis->emplace_back(id, t0, waveform, peakpos);

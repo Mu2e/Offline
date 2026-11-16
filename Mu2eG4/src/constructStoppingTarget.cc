@@ -75,12 +75,13 @@ namespace mu2e {
     Mu2eG4Helper    & _helper = *(art::ServiceHandle<Mu2eG4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
-    //get the proton absorber elements to prevent overlaps
-    GeomHandle<MECOStyleProtonAbsorber> pabs;
+    //get the proton absorber elements to prevent overlaps; with hasProtonAbsorber = false there are none
+    bool const hasPabs = art::ServiceHandle<GeometryService>()->hasElement<MECOStyleProtonAbsorber>();
     bool overlapPabs = false;
     double cylinderRadius = target->cylinderRadius();
     double rAtZClosest, opaZCenter, opaR1, opaR2, opaHL, stZCenter, zclosest;
-    if(pabs->isAvailable(2)) { //there is the OPA in DS2
+    if(hasPabs && GeomHandle<MECOStyleProtonAbsorber>()->isAvailable(2)) { //there is the OPA in DS2
+      GeomHandle<MECOStyleProtonAbsorber> pabs;
       opaR1 = pabs->part(2).innerRadiusAtStart();
       opaR2 = pabs->part(2).innerRadiusAtEnd();
       if(!(cylinderRadius < opaR1 && cylinderRadius < opaR2)) { //could overlap

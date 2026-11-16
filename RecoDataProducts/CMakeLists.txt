@@ -4,7 +4,6 @@ cet_make_library(
       src/BkgClusterFlag.cc
       src/BkgQual.cc
       src/ComboHit.cc
-      src/CosmicTrack.cc
       src/CrvDAQerror.cc
       src/CrvDigi.cc
       src/CrvRecoPulse.cc
@@ -35,6 +34,7 @@ cet_make_library(
 
       Offline::DataProducts
       Offline::GeneralUtilities
+      Offline::GlobalConstantsService
       Offline::KinKalGeom
       Offline::Mu2eKinKal
       Offline::TrackerConditions

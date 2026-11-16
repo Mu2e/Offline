@@ -51,6 +51,7 @@ namespace mu2e {
       fhicl::Atom<bool>              protonTCs        {Name("protonTCs"        ), Comment("Produce proton time clusters"), false};
       fhicl::Atom<int>               useCCs           {Name("useCCs"           ), Comment("add CCs to TCs"              ) };
       fhicl::Atom<int>               recoverCCs       {Name("recoverCCs"       ), Comment("recover TCs using CCs"       ) };
+      fhicl::Atom<bool>              requireCCs       {Name("requireCCs"       ), Comment("Require TCs with CCs"        ), false };
       fhicl::Atom<art::InputTag>     chCollLabel      {Name("chCollLabel"      ), Comment("combo hit collection label"  ) };
       fhicl::Atom<art::InputTag>     tcCollLabel      {Name("tcCollLabel"      ), Comment("time cluster coll label"     ) };
       fhicl::Atom<art::InputTag>     ccCollLabel      {Name("ccCollLabel"      ), Comment("Calo Cluster coll label"     ) };
@@ -87,6 +88,7 @@ namespace mu2e {
     bool             _protonTCs;
     int              _useCaloClusters;
     int              _recoverCaloClusters;
+    bool             _requireCaloClusters;
     std::optional<art::ServiceHandle<TimeoutWatchdog>> _timeoutService;
     std::optional<TimeoutWatchdog::ModuleGuard> _timeoutGuard;
 
@@ -177,6 +179,7 @@ namespace mu2e {
     _protonTCs              (config().protonTCs()                               ),
     _useCaloClusters        (config().useCCs()                                  ),
     _recoverCaloClusters    (config().recoverCCs()                              ),
+    _requireCaloClusters    (config().requireCCs()                              ),
     _timeoutService         (std::nullopt                                       ),
     _timeoutGuard           (std::nullopt                                       ),
     _chLabel                (config().chCollLabel()                             ),
@@ -209,7 +212,8 @@ namespace mu2e {
       consumes<ComboHitCollection>(_chLabel);
       consumes<CaloClusterCollection>(_ccLabel);
       produces<TimeClusterCollection>();
-      produces<IntensityInfoTimeCluster>();
+      produces<IntensityInfoTimeCluster>("electron");
+      produces<IntensityInfoTimeCluster>("proton");
       if(_protonTCs) produces<TimeClusterCollection>("proton");
 
 
@@ -288,32 +292,39 @@ namespace mu2e {
     if (_enableTimeout && _timeoutService) {
       _timeoutGuard.emplace(*(*_timeoutService),
                             event,
+                            scheduleID(),
                             moduleDescription().moduleLabel(),
                             _timeoutMs);
     }
 
     _data._event = &event;
 
-    std::unique_ptr<IntensityInfoTimeCluster> iiTC(new IntensityInfoTimeCluster);
+    std::unique_ptr<IntensityInfoTimeCluster> iiTC_e(new IntensityInfoTimeCluster);
+    std::unique_ptr<IntensityInfoTimeCluster> iiTC_p(new IntensityInfoTimeCluster);
     std::unique_ptr<TimeClusterCollection>    tcColl(new TimeClusterCollection);
     std::unique_ptr<TimeClusterCollection>    protonTCColl = (_protonTCs) ? std::make_unique<TimeClusterCollection>() : nullptr;
 
     _data._tcColl = tcColl.get();
-    _data._iiTC = iiTC.get();
+    _data._iiTC = iiTC_p.get();
     _data._protonTCColl = (_protonTCs) ? protonTCColl.get() : nullptr;
 
     bool ok = findData(event);
 
     if (ok) { findClusters(*_data._tcColl); }
     else    { printf("%s ERROR: No straw hits found in event %i\n",oname,_iev); }
+    iiTC_e->setNTCs(tcColl->size());
 
     if (_diagLevel > 0) { _hmanager->fillHistograms(&_data);}
 
     //-----------------------------------------------------------------------------
     // put time cluster collection and protons counted into the event record
     //-----------------------------------------------------------------------------
+    if(_requireCaloClusters) { // remove time clusters without calo clusters from the output, keeping the counting/protons unchanged
+      std::erase_if(*tcColl, [](const TimeCluster& tc) { return !tc.hasCaloCluster();});
+    }
     event.put(std::move(tcColl));
-    event.put(std::move(iiTC));
+    event.put(std::move(iiTC_e), "electron");
+    event.put(std::move(iiTC_p), "proton");
     if(_protonTCs) event.put(std::move(protonTCColl), "proton");
 
     _timeoutGuard.reset();
@@ -785,7 +796,7 @@ namespace mu2e {
       }
     }
 
-    outIITC.setNProtonTCs(nProtons);
+    outIITC.setNTCs(nProtons);
 
   }
 

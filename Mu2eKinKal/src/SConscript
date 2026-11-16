@@ -20,6 +20,7 @@ mainlib = helper.make_mainlib([
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
   'mu2e_CalorimeterGeom',
+  'mu2e_KinKalGeom',
   'mu2e_TrackerGeom',
   'mu2e_RecoDataProducts',
   'mu2e_GlobalConstantsService',
@@ -40,7 +41,6 @@ mainlib = helper.make_mainlib([
   'tbb',
   'cetlib',
   'cetlib_except',
-  'mu2e_KinKalGeom',
   'KinKal_Fit',
   'KinKal_Trajectory',
   'KinKal_Geometry',
@@ -62,6 +62,7 @@ helper.make_plugins([mainlib,
   'mu2e_GeometryService',
   'mu2e_BFieldGeom',
   'mu2e_CalorimeterGeom',
+  'mu2e_KinKalGeom',
   'mu2e_TrackerGeom',
   'mu2e_RecoDataProducts',
   'mu2e_GlobalConstantsService',
@@ -87,7 +88,6 @@ helper.make_plugins([mainlib,
   'cetlib',
   'cetlib_except',
   'CLHEP',
-  'mu2e_KinKalGeom',
   'KinKal_Fit',
   'KinKal_Trajectory',
   'KinKal_Geometry',
@@ -100,6 +100,17 @@ helper.make_plugins([mainlib,
   'boost_filesystem',
   'pthread'
   ])
+
+helper.make_bin("ExtrapolateSweepTest", [
+  'mu2e_DataProducts',
+  'KinKal_Fit',
+  'KinKal_Detector',
+  'KinKal_Trajectory',
+  'KinKal_Geometry',
+  'KinKal_MatEnv',
+  'KinKal_General',
+  rootlibs
+], [])
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

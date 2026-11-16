@@ -49,9 +49,9 @@ namespace mu2e {
         double sx(0),sy(0),sz(0),sx2(0),sy2(0),sw(0);
         fill(sx,sy,sz,sx2,sy2,sw);
 
-        int iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();
+        auto iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();
         CLHEP::Hep3Vector cogMu2eFrame(sx/sw,sy/sw,sz/sw);
-        return cal_.geomUtil().mu2eToDiskFF(iSection,cogMu2eFrame);
+        return cal_.mu2eToDiskFF(iSection,cogMu2eFrame);
     }
 
     //-------------------------------------------------------------------------------------------------
@@ -65,10 +65,10 @@ namespace mu2e {
     //-------------------------------------------------------------------------------------------------
     void ClusterUtils::fill(double& sx, double& sy, double& sz, double& sx2, double& sy2, double& sw) const
     {
-        int iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();
+        auto iSection  = cal_.crystal(hits_[0]->crystalID()).diskID();
         for (const auto& hit : hits_)
         {
-           int    crId(hit->crystalID());
+           auto   crId(hit->crystalID());
            double energy(hit->energyDep());
 
            if (cal_.crystal(crId).diskID() != iSection) continue;

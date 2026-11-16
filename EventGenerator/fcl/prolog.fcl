@@ -142,6 +142,10 @@ CaloCalibGun : {
   phimax : 2.0
   tmin  :  500.
   tmax : 1694.
+  disks : [1]
+  # If multiphotons is true, then set tmin=0 and tmax= 100000 above. (off-spill gate)
+  multiphotons : false
+  sourceRate : 33.33 # photons/crystal/sec, docdb:54585
 }
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
@@ -188,6 +192,131 @@ genFilters : # in case we want to add more here
         GenFilter: @local::GenFilter
         PionFilter: @local::PionFilter
    }
+}
+
+#------------------------------------------------------------------------------
+# Nuclear model parameters for the BNV muon capture tools (MuCapBNVGenerator,
+# MuCapDarkCascadeGenerator), per stopping target material. The tools have no
+# defaults for these, and throw if nuclearMaterial does not match the generator's
+# stoppingTargetMaterial. Add a table here for a new target material.
+#------------------------------------------------------------------------------
+BNVNuclearModel : {
+    Al : {
+        # Fermi gas spectator: Moniz et al., PRL 26, 445 (1971) k_F and average removal energy for
+        # Mg (A=24), the closest measured nucleus to Al
+        FermiGas           : { nuclearModel : "fermiGas"  nuclearMaterial : "Al"  fermiMomentum : 235.  removalEnergy : 32. }
+        # Fermi gas with the 27Al ground state separation energy of the struck nucleon (S_p, S_n)
+        FermiGasProtonSep  : { nuclearModel : "fermiGas"  nuclearMaterial : "Al"  fermiMomentum : 235.  removalEnergy : 8.271 }
+        FermiGasNeutronSep : { nuclearModel : "fermiGas"  nuclearMaterial : "Al"  fermiMomentum : 235.  removalEnergy : 13.058 }
+        # Residual nucleus in the phase space, left in its ground state (27Al S_p, S_n)
+        NucleusProton      : { nuclearModel : "nucleus"   nuclearMaterial : "Al"  removalEnergy : 8.271 }
+        NucleusNeutron     : { nuclearModel : "nucleus"   nuclearMaterial : "Al"  removalEnergy : 13.058 }
+    }
+}
+
+# Fiducial region for long-lived chi2 decays in MuCapDarkCascadeGenerator, relative to the muon stop (mm):
+# within the tracker straw outer radius, and from upstream of the stopping target to the last tracker plane
+BNVChi2DecayRegion : { maxTransverseFlight : 700.  minLongitudinalFlight : -1500.  maxLongitudinalFlight : 5800. }
+
+#------------------------------------------------------------------------------
+# Baryon number violating (BNV) mu- + nucleon annihilation in the muonic atom,
+# for use as the decayProducts tool of SingleProcessGenerator (see MuCapBNVGenerator below).
+# These are phase space benchmarks (no matrix elements or final state interactions). The light dark
+# sector channels follow Fox, Hostert, Menzo, Pospelov, Zupan (arXiv:2407.03450).
+#------------------------------------------------------------------------------
+BNVMuonCapture : {
+    # mu- p --> pi0 pi0: Delta B = Delta L = -1 (B-L conserving, d=6 operator)
+    Pi0Pi0   : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 111, 111 ] }
+    # mu- p --> pi+ pi-: Delta B = Delta L = -1
+    PipPim   : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 211, -211 ] }
+    # mu- p --> gamma pi0: Delta B = Delta L = -1
+    GammaPi0 : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 22, 111 ] }
+    # mu- p --> e+ e-: Delta B = Delta L = -1 (charged lepton flavor also changes)
+    EpEm     : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ -11, 11 ] }
+    # mu- n --> pi- pi0: Delta B = Delta L = -1
+    PimPi0   : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ -211, 111 ]  nucleon : "neutron" }
+    # mu- p --> chi pi0 with chi an invisible dark scalar (massless by default)
+    DarkScalarPi0 : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 111 ]
+                      invisibles : [ { mass : 0.  fermion : false } ] }
+    # mu- p --> e- pi+ + invisible neutral fermion (neutrino or dark fermion)
+    EmPipInv : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 11, 211 ]
+                 invisibles : [ { mass : 0.  fermion : true } ] }
+    # mu- p --> e+ pi- + invisible neutral fermion (neutrino or dark fermion)
+    EpPimInv : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ -11, -211 ]
+                 invisibles : [ { mass : 0.  fermion : true } ] }
+    # mu- p --> chi pi0 with chi an invisible fermion requires a second fermion, e.g. mu- p --> chi nu pi0
+    DarkFermionNuPi0 : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 111 ]
+                         invisibles : [ { mass : 0.  fermion : true }, { mass : 0.  fermion : true } ] }
+    # Two-body e-+ pi+- kinematic benchmarks: an odd number of fermions, so angular momentum is not
+    # conserved and these are not physical processes, but they bound the lepton/pion energies
+    EmPip2Body : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ 11, 211 ]    requireSpinStatistics : false }
+    EpPim2Body : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGas  daughters : [ -11, -211 ]  requireSpinStatistics : false }
+
+    # Light dark sector models of arXiv:2407.03450
+    # mu- n --> e- chi1, paper Eq. 10: e- line at ~123 MeV for m1 = 900 MeV, smeared down to ~110 MeV by
+    # Fermi motion (Fermi gas with the 27Al ground state neutron separation energy)
+    EmDarkFermion : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGasNeutronSep  daughters : [ 11 ]  nucleon : "neutron"
+                      invisibles : [ { mass : 900.  fermion : true } ] }
+    # mu- p --> chi0 chi2, chi2 --> chi1 (A' --> e+ e-): paper benchmark masses (on-shell A'), with the
+    # residual nucleus included in the phase space as in the paper
+    DarkCascade : { tool_type : MuCapDarkCascadeGenerator  @table::BNVNuclearModel.Al.NucleusProton
+                    recoil : "chi0"  m0 : 0.  m1 : 900.  m2 : 1030.  mA : 20. }
+    # Same with a heavy, off-shell A': chi2 --> chi1 e+ e- three-body (prompt)
+    DarkCascadeOffShell : { tool_type : MuCapDarkCascadeGenerator  @table::BNVNuclearModel.Al.NucleusProton
+                            recoil : "chi0"  m0 : 0.  m1 : 900.  m2 : 1030.  mA : 200. }
+    # Long-lived chi2 (off-shell A'): displaced, delayed e+ e- pair. Off-axis decays bring soft leptons into the
+    # tracker acceptance; only decays inside the fiducial region are generated, with the fraction reported in the
+    # SpectrumConfig ("chi2DecayInRegion") for normalization. 30 ns maximizes the displaced pair acceptance.
+    DarkCascadeLongLived : { tool_type : MuCapDarkCascadeGenerator  @table::BNVNuclearModel.Al.NucleusProton  @table::BNVChi2DecayRegion
+                             recoil : "chi0"  m0 : 0.  m1 : 900.  m2 : 1030.  mA : 200.  chi2Lifetime : 30. }
+    # mu- n --> e- chi2, chi2 --> chi1 (A' --> e+ e-), paper Eq. 11
+    DarkCascadeElectron : { tool_type : MuCapDarkCascadeGenerator  @table::BNVNuclearModel.Al.NucleusNeutron
+                            recoil : "electron"  m1 : 900.  m2 : 1020.  mA : 20. }
+    # mu- p --> phi gamma with phi a light boson carrying B = L = 1 (Heeck, arXiv:2009.01256, crossed).
+    # Neutron stability (n --> phi nu-bar) requires m_phi > m_n, so E_gamma <~ 55-86 MeV: a photon line under
+    # the RMC spectrum. Fermi gas with the 27Al ground state proton separation energy.
+    DarkBosonGamma : { tool_type : MuCapBNVGenerator  @table::BNVNuclearModel.Al.FermiGasProtonSep  daughters : [ 22 ]
+                       invisibles : [ { mass : 945.  fermion : false } ] }
+}
+
+#------------------------------------------------------------------------------
+# Mass scan points for the light dark sector channels, spanning the signal region above the DIO
+# endpoint. Energies quoted are for the struck nucleon at rest (27Al ground state residual). For the
+# Fermi gas single-e- and photon lines, Fermi motion lowers the mean by ~12-15 MeV (lower mean W) and
+# smears them by ~ +-10-17 MeV; the e+ e- sums of the cascades (nucleus model) are within 1 MeV. Low m1 points must be checked against the proton decay
+# constraints of arXiv:2407.03450: for their Benchmark I (vector chi2-chi1-A' coupling) tau_p ~ 6e34 yr
+# at m1 = 900 MeV and lower m1 quickly becomes excluded, while the dipole coupling (Benchmark II) gives a
+# ~1e7 times longer proton lifetime at the same masses and so allows lower m1.
+#------------------------------------------------------------------------------
+BNVMuonCaptureScan : {
+    # mu- n --> e- chi1: e- line at E_e = (W^2 - m1^2)/2W, W = 1031.7 MeV
+    EmDarkFermion_m1_840 : { @table::BNVMuonCapture.EmDarkFermion  invisibles : [ { mass : 840.  fermion : true } ] } # E_e = 173.9 MeV
+    EmDarkFermion_m1_860 : { @table::BNVMuonCapture.EmDarkFermion  invisibles : [ { mass : 860.  fermion : true } ] } # E_e = 157.4 MeV
+    EmDarkFermion_m1_880 : { @table::BNVMuonCapture.EmDarkFermion  invisibles : [ { mass : 880.  fermion : true } ] } # E_e = 140.5 MeV
+    EmDarkFermion_m1_900 : { @table::BNVMuonCapture.EmDarkFermion  invisibles : [ { mass : 900.  fermion : true } ] } # E_e = 123.3 MeV
+    EmDarkFermion_m1_915 : { @table::BNVMuonCapture.EmDarkFermion  invisibles : [ { mass : 915.  fermion : true } ] } # E_e = 110.1 MeV
+
+    # mu- p --> chi0 chi2, chi2 --> chi1 (A' --> e+ e-): E+ + E- ~ (m2^2 - m1^2 + mA^2)/2 m2
+    DarkCascade_m1_840      : { @table::BNVMuonCapture.DarkCascade  m1 : 840. } # 172.7 MeV
+    DarkCascade_m1_870      : { @table::BNVMuonCapture.DarkCascade  m1 : 870. } # 147.8 MeV
+    DarkCascade_m1_900      : { @table::BNVMuonCapture.DarkCascade  m1 : 900. } # 122.0 MeV (paper benchmark)
+    DarkCascade_m1_900_mA45 : { @table::BNVMuonCapture.DarkCascade  m1 : 900.  mA : 45. } # 122.8 MeV
+    DarkCascade_m1_930      : { @table::BNVMuonCapture.DarkCascade  m1 : 930. } # 95.3 MeV (below 105 control)
+
+    # mu- n --> e- chi2, chi2 --> chi1 (A' --> e+ e-)
+    DarkCascadeElectron_m1_870 : { @table::BNVMuonCapture.DarkCascadeElectron  m1 : 870. } # 139.2 MeV
+    DarkCascadeElectron_m1_900 : { @table::BNVMuonCapture.DarkCascadeElectron  m1 : 900. } # 113.1 MeV
+
+    # Long-lived chi2 lifetime scan (proper lifetime in ns), off-shell A' as DarkCascadeLongLived
+    DarkCascadeLongLived_tau_10ns   : { @table::BNVMuonCapture.DarkCascadeLongLived  chi2Lifetime : 10. }
+    DarkCascadeLongLived_tau_30ns   : { @table::BNVMuonCapture.DarkCascadeLongLived  chi2Lifetime : 30. }
+    DarkCascadeLongLived_tau_100ns  : { @table::BNVMuonCapture.DarkCascadeLongLived  chi2Lifetime : 100. }
+    DarkCascadeLongLived_tau_300ns  : { @table::BNVMuonCapture.DarkCascadeLongLived  chi2Lifetime : 300. }
+    DarkCascadeLongLived_tau_1000ns : { @table::BNVMuonCapture.DarkCascadeLongLived  chi2Lifetime : 1000. }
+
+    # mu- p --> phi gamma: E_gamma(max) = (W^2 - m_phi^2)/2W, W = 1035.2 MeV
+    DarkBosonGamma_m_945  : { @table::BNVMuonCapture.DarkBosonGamma  invisibles : [ { mass : 945.  fermion : false } ] } # 86.3 MeV
+    DarkBosonGamma_m_1000 : { @table::BNVMuonCapture.DarkBosonGamma  invisibles : [ { mass : 1000.  fermion : false } ] } # 34.6 MeV
 }
 
 EventGenerator : { @table::EventGenerator
@@ -379,6 +508,14 @@ EventGenerator : { @table::EventGenerator
                 }
                 mode : "external" #Options are "external" "internal" or "physical"
             }
+            verbosity : 0
+        }
+
+        MuCapBNVGenerator : {
+            module_type : SingleProcessGenerator
+            inputSimParticles: TargetStopResampler
+            stoppingTargetMaterial : "Al"
+            decayProducts : @local::BNVMuonCapture.Pi0Pi0
             verbosity : 0
         }
 

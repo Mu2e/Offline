@@ -9,6 +9,7 @@
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 #include "Offline/RecoDataProducts/inc/CaloDigi.hh"
 #include "Offline/RecoDataProducts/inc/CaloTrigSeed.hh"
+#include "Offline/DataProducts/inc/CaloConst.hh"
 
 #include <iostream>
 #include <string>
@@ -39,7 +40,6 @@ namespace mu2e {
     explicit CaloTrigger(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
       caloDigiModuleLabel_(pset.get<std::string>("caloDigiModuleLabel")),
-      digiSampling_(       pset.get<double>("digiSampling")),
       windowPeak_(         pset.get<unsigned>("windowPeak")),
       minAmp_(             pset.get<unsigned>("minAmplitude")),
       minSeedAmp_(         pset.get<unsigned>("minSeedAmplitude")),
@@ -66,7 +66,6 @@ namespace mu2e {
   private:
 
     std::string  caloDigiModuleLabel_;
-    double       digiSampling_;
     unsigned     windowPeak_;
     double       minAmp_;
     double       minSeedAmp_;
@@ -134,10 +133,10 @@ namespace mu2e {
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const Calorimeter* cal = ch.get();
-    int nro = cal->caloInfo().getInt("nSiPMPerCrystal");
+    int nro = cal->G4Info().get<int>("nSiPMPerCrystal");
 
-    unsigned offsetT0_ = unsigned(blindTime_/digiSampling_);
-    unsigned nBinTime  = unsigned (mbtime_ - blindTime_ + endTimeBuffer_) / digiSampling_;
+    unsigned offsetT0_ = unsigned(blindTime_/CaloConst::_digitizationPeriod);
+    unsigned nBinTime  = unsigned (mbtime_ - blindTime_ + endTimeBuffer_) / CaloConst::_digitizationPeriod;
     unsigned winOffsetT0_ = windowPeak_+offsetT0_ ;
 
     if (hitList_.size() < nBinTime ) hitList_ = std::vector<std::list<FastHit>>(nBinTime,std::list<FastHit>());
@@ -164,7 +163,7 @@ namespace mu2e {
         if (countdown > 0) countdown--;
         else{
           if (deque_.front()> minAmp_ && deque_.front()== *std::prev(it,windowPeak_) && *std::prev(it,windowPeak_) != *std::prev(it,windowPeak_-1)){
-            int index = int(t0/digiSampling_) + nCount - winOffsetT0_;
+            int index = int(t0) + nCount - winOffsetT0_; // t0 is in digitizer clock ticks
             hitList_[index].push_back(FastHit(crId,index,deque_.front()));
             if (deque_.front()> minSeedAmp_) seeds_.emplace_back(&(hitList_[index].back()));
           }
@@ -192,7 +191,7 @@ namespace mu2e {
       int ring1max(0);
       int ring1max2(0);
       std::queue<int> crystalRing1;
-      for (const auto& nid : cal->neighbors(seed->crId_)) crystalRing1.push(nid);
+      for (const auto& nid : cal->crystal(seed->crId_).neighbors()) crystalRing1.push(nid);
       while (!crystalRing1.empty()){
         int nid = crystalRing1.front();
         for (int itimebin= seed->index_-DNTBINs_;itimebin<=seed->index_+DNTBINs_;++itimebin){
@@ -214,7 +213,7 @@ namespace mu2e {
       //
       int ring2max(0);
       std::queue<int> crystalRing2;
-      for (const auto& nid : cal->nextNeighbors(seed->crId_)) crystalRing2.push(nid);
+      for (const auto& nid : cal->crystal(seed->crId_).nextNeighbors()) crystalRing2.push(nid);
       while (!crystalRing2.empty()){
         int nid = crystalRing2.front();
         for (int itimebin= seed->index_-DNTBINs_;itimebin<=seed->index_+DNTBINs_;++itimebin){
@@ -233,7 +232,7 @@ namespace mu2e {
 
       std::queue<int> crystalToVisit;
       crystalToVisit.push(seed->crId_);
-      for (const auto& nid : cal->neighbors(seed->crId_)) crystalToVisit.push(nid);
+      for (const auto& nid : cal->crystal(seed->crId_).neighbors()) crystalToVisit.push(nid);
       if (diagLevel_ > 1) std::cout << " To visit: " << crystalToVisit.size() << std::endl;
 
       while (!crystalToVisit.empty()){
@@ -248,8 +247,8 @@ namespace mu2e {
             yc += cal->crystal(nid).localPosition().y()*hit.val_;
             hit.val_=-abs(hit.val_);
             if (diagLevel_ > 1)  std::cout << " index add close to: " << nid << std::endl;
-            for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);
-            if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(nid)) crystalToVisit.push(nneighbor);
+            for (const auto& neighbor : cal->crystal(nid).neighbors()) crystalToVisit.push(neighbor);
+            if (extendSecond_) for (const auto& nneighbor : cal->crystal(nid).nextNeighbors()) crystalToVisit.push(nneighbor);
           }
         }
         crystalToVisit.pop();
@@ -262,10 +261,10 @@ namespace mu2e {
       if (eDep > minEnergy_){
         xc /= cluEnergy;
         yc /= cluEnergy;
-        float clutime  = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
+        float clutime  = (seed->index_+offsetT0_)*CaloConst::_digitizationPeriod-timeCorrection_;
 
         // calorimeter trigger variables
-        float tpeak    = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
+        float tpeak    = (seed->index_+offsetT0_)*CaloConst::_digitizationPeriod-timeCorrection_;
         //        int   iSection = cal->crystal(seed->crId_).diskID();
 
         CaloTrigSeed trigseed(idpeak,epeak,tpeak,rpeak,ring1emax,ring1emax2,ring2emax,eDep,clutime,xc,yc);

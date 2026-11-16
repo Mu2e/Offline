@@ -20,13 +20,12 @@ namespace mu2e {
     public:
       enum class ScorerCode{CellFlux, DoseDeposit, EnergyDeposit, FlatSurfaceFlux,
                             TrackCounter, PassageCellFlux, VolumeFlux,
-                            DoseEffective,DelayedDose,Unknown};
+                            PromptDoseEff,PromptDoseAmb,ResidualDoseEff,ResidualDoseAmb,Unknown};
       enum class ParticleCode{Electron, Pion, Proton, Neutron, Photon, Unknown};
 
 
     public:
-      Mu2eG4ScoringManager(G4ScoringManager* fSMan,
-                           const Mu2eG4Config::Scoring& configScoring,
+      Mu2eG4ScoringManager(const Mu2eG4Config::Scoring& configScoring,
                            const Mu2eG4Config::Physics& configPhysics,
                            const Mu2eG4Config::Debug&   configDebug);
      ~Mu2eG4ScoringManager() = default;

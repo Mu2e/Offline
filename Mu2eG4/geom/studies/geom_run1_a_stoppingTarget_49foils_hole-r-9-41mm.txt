@@ -1,0 +1,68 @@
+//
+// Run 1A geometry with a 49-foil muon stopping target whose foil holes open up
+// along the beam. Everything except the stopping target is the Run 1A production
+// geometry (geom_run1_a.txt).
+//
+// 49 aluminum foils over 1066.7 mm (the 37-foil target: 800 mm) around the same
+// center. Outer radius, hole radius, thickness and position each follow a
+// quadratic profile through three control points (upstream / middle / downstream):
+//   outer radius   100 / 103 / 117 mm   (37-foil target: 75 mm)
+//   hole radius      9 /  27 /  41 mm   (21.5 mm)
+//   full thickness  36 / 143 /  72 um   (106 um)
+//
+// Origin: design foilspfbpz07R11_00 of the Bayesian optimization of the stopping
+// target (Mu2e/Mu2eBO, study "foilspfbpz", August 2026): the best design within
+// the deployed target's tracker radiation dose from the beam flash. Its fast
+// proxy for the conversion sensitivity, S/sqrt(B), is 4.15 against 3.26 for the
+// 37-foil target (+27%), at 0.98 times that target's tracker dose.
+//
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+double stoppingTarget.z0InMu2e = 5871.0000;
+double stoppingTarget.deltaZ   = 22.222222;
+
+// per-foil values, foil 0 most upstream; foil i sits at z0 + (i - 24) * deltaZ + zVars[i]
+vector<double> stoppingTarget.radii = {
+  99.6745, 99.6063, 99.5563, 99.5245, 99.5109, 99.5155, 99.5383,
+  99.5794, 99.6386, 99.7160, 99.8117, 99.9255, 100.0576, 100.2078,
+  100.3763, 100.5630, 100.7678, 100.9909, 101.2322, 101.4917, 101.7694,
+  102.0653, 102.3794, 102.7118, 103.0623, 103.4310, 103.8180, 104.2231,
+  104.6465, 105.0880, 105.5478, 106.0258, 106.5219, 107.0363, 107.5689,
+  108.1197, 108.6887, 109.2759, 109.8813, 110.5049, 111.1468, 111.8068,
+  112.4850, 113.1815, 113.8961, 114.6290, 115.3800, 116.1493, 116.9368 };
+vector<double> stoppingTarget.halfThicknesses = {
+  0.018037, 0.022028, 0.025865, 0.029548, 0.033077, 0.036452, 0.039673,
+  0.042739, 0.045652, 0.048411, 0.051015, 0.053466, 0.055762, 0.057905,
+  0.059893, 0.061727, 0.063407, 0.064933, 0.066306, 0.067524, 0.068588,
+  0.069498, 0.070253, 0.070855, 0.071303, 0.071597, 0.071736, 0.071722,
+  0.071553, 0.071231, 0.070754, 0.070124, 0.069339, 0.068400, 0.067307,
+  0.066061, 0.064660, 0.063105, 0.061396, 0.059532, 0.057515, 0.055344,
+  0.053019, 0.050540, 0.047906, 0.045119, 0.042177, 0.039082, 0.035832 };
+vector<double> stoppingTarget.holeRadii = {
+  9.0153, 9.8842, 10.7400, 11.5832, 12.4141, 13.2333, 14.0413,
+  14.8384, 15.6251, 16.4017, 17.1687, 17.9265, 18.6753, 19.4155,
+  20.1475, 20.8716, 21.5880, 22.2971, 22.9990, 23.6941, 24.3826,
+  25.0647, 25.7406, 26.4104, 27.0745, 27.7328, 28.3856, 29.0330,
+  29.6751, 30.3120, 30.9438, 31.5705, 32.1922, 32.8089, 33.4207,
+  34.0275, 34.6294, 35.2263, 35.8181, 36.4049, 36.9865, 37.5628,
+  38.1338, 38.6994, 39.2593, 39.8135, 40.3618, 40.9039, 41.4398 };
+vector<double> stoppingTarget.zVars = {
+  0.0000, -3.0306, -5.9322, -8.7048, -11.3485, -13.8632, -16.2490,
+  -18.5057, -20.6336, -22.6325, -24.5024, -26.2433, -27.8553, -29.3384,
+  -30.6925, -31.9176, -33.0137, -33.9809, -34.8192, -35.5285, -36.1088,
+  -36.5601, -36.8825, -37.0760, -37.1405, -37.0760, -36.8825, -36.5601,
+  -36.1088, -35.5285, -34.8192, -33.9809, -33.0137, -31.9176, -30.6925,
+  -29.3384, -27.8553, -26.2433, -24.5024, -22.6325, -20.6336, -18.5057,
+  -16.2490, -13.8632, -11.3485, -8.7048, -5.9322, -3.0306, 0.0000 };
+
+// The proton absorber is placed relative to the downstream end of the stopping
+// target. The longer target would move it 133 mm downstream; pin it at its
+// as-built position instead (6901.02 mm, the same as with geom_run1_a.txt).
+double protonabsorber.zStartInMu2e      = 6901.02;
+double protonabsorber.distFromTargetEnd = 491.666667;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

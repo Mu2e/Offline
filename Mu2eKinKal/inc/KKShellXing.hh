@@ -7,8 +7,13 @@
 #include "KinKal/Detector/ElementXing.hh"
 #include "KinKal/Geometry/Surface.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
+#include "KinKal/Trajectory/PiecewiseClosestApproach.hh"
+#include "KinKal/Trajectory/SensorLine.hh"
 #include "KinKal/MatEnv/DetMaterial.hh"
+#include "KinKal/General/TimeDir.hh"
 #include "Offline/DataProducts/inc/SurfaceId.hh"
+#include <algorithm>
+#include <cmath>
 
 namespace mu2e {
   template <class KTRAJ,class SURF> class KKShellXing : public KinKal::ElementXing<KTRAJ> {
@@ -16,10 +21,12 @@ namespace mu2e {
       using PTRAJ = KinKal::ParticleTrajectory<KTRAJ>;
       using KTRAJPTR = std::shared_ptr<KTRAJ>;
       using EXING = KinKal::ElementXing<KTRAJ>;
-      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,SensorLine>;
-      using CA = KinKal::ClosestApproach<KTRAJ,SensorLine>;
+      using PCA = KinKal::PiecewiseClosestApproach<KTRAJ,KinKal::SensorLine>;
+      using CA = KinKal::ClosestApproach<KTRAJ,KinKal::SensorLine>;
       using SURFPTR = std::shared_ptr<SURF>;
-      // construct from a surface, material, intersection, and transverse thickness
+      // construct from a surface, material, intersection, and transverse thickness.
+      // Material ionization eloss mode (mpv/moyalmean/bethemean) is configured per-material in
+      // TrackerConditions/data/MaterialsList.data (KinKal 3.7.0+); no Offline path-scale correction.
       KKShellXing(SURFPTR surface, SurfaceId const& sid, MatEnv::DetMaterial const& mat, KinKal::Intersection inter, KTRAJPTR reftraj, double thickness, double tol);
       virtual ~KKShellXing() {}
       // clone op for reinstantiation
@@ -32,13 +39,13 @@ namespace mu2e {
         return rv;
       };
       // ElementXing interface
-      void updateReference(PTRAJ const& ptraj) override;
-      void updateState(MetaIterConfig const& config,bool first) override;
-      Parameters params() const override;
+      void updateReference(PTRAJ const& ptraj, KinKal::MetaIterConfig const&) override; // the intersection time sets the piece, so the piece-move limit does not apply
+      void updateState(KinKal::MetaIterConfig const& config,bool first) override;
+      KinKal::Parameters params() const override;
       double time() const override { return inter_.time_; }
       double transitTime() const override;
       KTRAJ const& referenceTrajectory() const override { return *reftrajptr_; }
-      std::vector<MaterialXing>const&  matXings() const override { return mxings_; }
+      std::vector<KinKal::MaterialXing>const&  matXings() const override { return mxings_; }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       bool active() const override { return mxings_.size() > 0; }
       // specific accessors
@@ -67,19 +74,28 @@ namespace mu2e {
   {
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      mxings_.emplace_back(mat_, pathlen);
     }
   }
 
-  template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) {
+  template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::updateReference(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, KinKal::MetaIterConfig const&) {
     auto const& neartrajptr = ptraj.nearestTraj(inter_.time_);
     if(neartrajptr != reftrajptr_){
       // traj has changed; try intersecting with this piece
       reftrajptr_ = neartrajptr;
-      inter_ = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
-      // I should test if this is in range, but there's a missing piece in the ptraj intersection here that I don't know what direction,
-      // to go, and there can be multiple intersections. Not clear if there's a good answer here TODO
+      auto newinter = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
+      // a crossing inside the fit can move into a neighboring piece (ie when the fit is split into BField domains):
+      // search the full trajectory near the previous crossing
+      if(!(newinter.onsurface_ && newinter.inrange_)){
+        static const double dt(1.0); // ns
+        newinter = KinKal::intersect(ptraj,*surf_,KinKal::TimeRange(inter_.time_-dt,inter_.time_+dt),tol_);
+        if(newinter.onsurface_ && newinter.inrange_)reftrajptr_ = ptraj.nearestTraj(newinter.time_);
+      }
+      // keep the previous crossing rather than one with an invalid time if the surface can't be found
+      if(newinter.onsurface_ && newinter.inrange_)inter_ = newinter;
+      // there can be multiple intersections. Not clear if there's a good answer here TODO
     }
   }
 
@@ -90,13 +106,14 @@ namespace mu2e {
     // check if we are on the surface; if so, create the xing
     if(inter_.good()){
       // compute the path length
-      double pathlen = thick_/(inter_.norm_.Dot(inter_.pdir_));
-      mxings_.emplace_back(mat_,pathlen);
+      double dotprod = std::max(1e-6,std::fabs(inter_.norm_.Dot(inter_.pdir_)));
+      double pathlen = thick_/dotprod;
+      mxings_.emplace_back(mat_, pathlen);
       fparams_ = this->parameterChange(varscale_);
     }
   }
 
-  template <class KTRAJ,class SURF> Parameters KKShellXing<KTRAJ,SURF>::params() const {
+  template <class KTRAJ,class SURF> KinKal::Parameters KKShellXing<KTRAJ,SURF>::params() const {
     return fparams_;
   }
 
@@ -109,6 +126,16 @@ namespace mu2e {
   template <class KTRAJ,class SURF> void KKShellXing<KTRAJ,SURF>::print(std::ostream& ost,int detail) const {
     ost <<"Shell Xing time " << this->time();
     ost << std::endl;
+  }
+
+  // True if the particle stops in this crossing's material going forwards in time: the mean energy loss reaches the kinetic energy.
+  template <class KTRAJ> bool rangesOut(KinKal::ElementXing<KTRAJ> const& xing, KinKal::TimeDir tdir) {
+    if(tdir != KinKal::TimeDir::forwards) return false;
+    double dmom, paramomvar, perpmomvar;
+    xing.materialEffects(dmom,paramomvar,perpmomvar);
+    auto const& ref = xing.referenceTrajectory();
+    double energy = ref.energy();
+    return -dmom*ref.momentum()/energy >= energy - ref.mass(); // materialEffects gives dmom = dE E/p
   }
 
 }

@@ -14,6 +14,9 @@
 #include "Offline/Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
+#include <map>
+#include <string>
+
 namespace mu2e {
 
   class SimBookkeeper : public ProditionsEntity {
@@ -23,14 +26,8 @@ namespace mu2e {
 
     SimBookkeeper() : ProditionsEntity(cxname) {}
     // accessors
-    double const getEff(const std::string& name) const {
-      for (const auto& i_eff : _effs) {
-        if (i_eff.first == name) {
-          return i_eff.second;
-        }
-      }
-      return -1;
-    }
+    // throws if no efficiency with this tag was loaded
+    double getEff(const std::string& name) const;
 
     // setters
     void addEff(std::string name, double new_val) {

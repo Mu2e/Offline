@@ -22,6 +22,7 @@
 
 #include "Offline/CaloCluster/inc/ClusterFinder.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -118,6 +119,7 @@ namespace mu2e {
       //fill data structures
       for (const auto& hit : CaloHits)
       {
+          if (!mu2e::CrystalId(hit.crystalID()).isValid()) continue; //Exclude pin diodes
           if (hit.energyDep() < EnoiseCut_) continue;
           caloIdHitMap[hit.crystalID()].push_back(&hit);
           if (hit.energyDep() > EminSeed_ ) seedList.insert(&hit);

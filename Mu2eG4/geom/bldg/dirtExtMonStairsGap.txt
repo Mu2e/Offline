@@ -1,0 +1,19 @@
+string dirt.extMon.stairs.gap.name     = "dirtExtMonStairsGap";
+string dirt.extMon.stairs.gap.material = "MBOverburden";
+double dirt.extMon.stairs.gap.offsetFromMu2eOrigin.x   = -7523.50;
+double dirt.extMon.stairs.gap.offsetFromFloorSurface.y = 7316.85;
+double dirt.extMon.stairs.gap.offsetFromMu2eOrigin.z   = -15534.25;
+double dirt.extMon.stairs.gap.yHalfThickness           = 609.50;
+vector<double> dirt.extMon.stairs.gap.angles = {0.,0.,-1.5708};
+vector<double> dirt.extMon.stairs.gap.xPositions = {
+75.9, // 0
+-75.9, // 1
+-75.9, // 2
+75.9 // 3
+};
+vector<double> dirt.extMon.stairs.gap.yPositions = {
+306.05, // 0
+150.1, // 1
+-306.05, // 2
+-306.05 // 3
+};

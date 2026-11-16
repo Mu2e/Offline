@@ -603,6 +603,24 @@ namespace mu2e {
               doSurfaceCheck
               );
 
+    // The field is attached by constructExtMonFNALMagnetField().
+  }
+
+  //================================================================
+  // Field managers are per-thread objects in Geant4 MT.  One built here, in
+  // Construct(), would run only on the master and be shared by every worker,
+  // so this is called from ConstructSDandField(), once on each thread.
+  void constructExtMonFNALMagnetField(const ExtMonFNALMagnet& mag,
+                                      const std::string& volNameSuffix,
+                                      const SimpleConfig& config
+                                      )
+  {
+    Mu2eG4Helper& helper  = *(art::ServiceHandle<Mu2eG4Helper>());
+    AntiLeakRegistry& reg = helper.antiLeakRegistry();
+
+    G4LogicalVolume* magnetIron       = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetIron").logical;
+    G4LogicalVolume* apertureMarginUp = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginUp").logical;
+    G4LogicalVolume* apertureMarginDn = helper.locateVolInfo("ExtMonFNAL"+volNameSuffix+"MagnetApertureMarginDn").logical;
 
     //----------------------------------------------------------------
     // Define the field in the magnet
@@ -623,6 +641,8 @@ namespace mu2e {
     chordFinder->SetDeltaChord(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
+    // Owned by this thread's G4FieldManagerStore, which deletes it with the
+    // thread's G4RunManagerKernel.
     G4FieldManager *manager = new G4FieldManager(field, chordFinder);
 
     AGDEBUG("orig: manager epsMin = "<<manager->GetMinimumEpsilonStep()
@@ -640,10 +660,10 @@ namespace mu2e {
             );
 
 
-    magnetIron.logical->SetFieldManager(manager, true);
+    magnetIron->SetFieldManager(manager, true);
     // No field in the margins
-    apertureMarginUp.logical->SetFieldManager(0, true);
-    apertureMarginDn.logical->SetFieldManager(0, true);
+    apertureMarginUp->SetFieldManager(0, true);
+    apertureMarginDn->SetFieldManager(0, true);
   }
 
   //================================================================
@@ -669,45 +689,44 @@ namespace mu2e {
 
 
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
-    const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);
 
     nestBox("ExtMonShieldingNorthsteel",
-            emfb->shieldingNHalfSize(),
-            materialFinder.get("protonBeamDump.material.core"),
+            emfb->shieldingNSteelHalfSize(),
+            materialFinder.get("extMonFNAL.shielding.steelMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingNSteelCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Red()
             );
     nestBox("ExtMonShieldingNorthconcrete",
-            emfb->shieldingNHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            emfb->shieldingNConcreteHalfSize(),
+            materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            emfb->shieldingNConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );
     nestBox("ExtMonShieldingSouthsteel",
-            emfb->shieldingSHalfSize(),
-            materialFinder.get("protonBeamDump.material.core"),
+            emfb->shieldingSSteelHalfSize(),
+            materialFinder.get("extMonFNAL.shielding.steelMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingSSteelCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Red()
             );
     nestBox("ExtMonShieldingSouthconcrete",
-            emfb->shieldingSHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            emfb->shieldingSConcreteHalfSize(),
+            materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            emfb->shieldingSConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );
     nestBox("ExtMonShieldingFloorConcrete",
-            emfb->shieldingBHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
+            emfb->shieldingFloorConcreteHalfSize(),
+            materialFinder.get("extMonFNAL.shielding.concreteMaterial"),
             &shieldingRotationInMu2e,
-            emfb->shieldingBCenterInMu2e() - mainParent.centerInMu2e(),
+            emfb->shieldingFloorConcreteCenterInMu2e() - mainParent.centerInMu2e(),
             mainParent.logical, 0,
             G4Colour::Grey()
             );

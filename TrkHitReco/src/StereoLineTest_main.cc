@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
   double dz = deltaz/(npts-1);
   std::random_device r;
   std::default_random_engine eng(r());
-  std::uniform_int_distribution<int> phirange(-M_PI,M_PI);
+  std::uniform_real_distribution<double> phirange(-M_PI,M_PI);
   std::normal_distribution urand{0.0, ures};
   std::normal_distribution vrand{0.0, vres};
 

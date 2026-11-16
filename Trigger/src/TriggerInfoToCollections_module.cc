@@ -12,6 +12,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
+#include "cetlib_except/exception.h"
+
 // Offline
 #include "Offline/RecoDataProducts/inc/TriggerInfo.hh"
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
@@ -31,7 +33,7 @@ namespace mu2e {
    struct Config {
       using  Name    = fhicl::Name;
       using  Comment = fhicl::Comment;
-      fhicl::Atom<std::string> tag   { Name("triggerInfoName") , Comment("Trigger info (collection) name")};
+      fhicl::Atom<art::InputTag> tag { Name("triggerInfoName") , Comment("Trigger info (collection) tag")};
       fhicl::Atom<int>         debug { Name("debugLevel")      , Comment("Debug Level"), 0};
     };
 
@@ -56,8 +58,8 @@ namespace mu2e {
     }
 
   private:
-    std::string  _tag;
-    int          _debug;
+    art::InputTag _tag;
+    int           _debug;
   };
 
   TriggerInfoToCollections::TriggerInfoToCollections(const Parameters& config) :
@@ -136,10 +138,10 @@ namespace mu2e {
                __func__, moduleDescription().moduleLabel().c_str(), trkCol->size(), hlxCol->size(), tclCol->size());
       }
     } else {
-      if(_debug > 1) {
-        printf("[TriggerInfoToCollections::%s::%s] No TriggerInfo collection found with tag %s\n",
-               __func__, moduleDescription().moduleLabel().c_str(), _tag.c_str());
-      }
+      // Emitting six empty collections here would be indistinguishable downstream from
+      // "no trigger fired", so a tag that matches nothing has to fail loudly.
+      throw cet::exception("BADINPUTS") << "No TriggerInfo or TriggerInfoCollection found with tag "
+                                        << _tag << "\n";
     }
 
     // add the collections to the event

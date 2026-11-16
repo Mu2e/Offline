@@ -149,7 +149,7 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
     else if (_refPointChoice == "CALO") {
       GeomHandle<Calorimeter> calorimeter;
       _cosmicReferencePointInMu2e =
-          Hep3Vector(detsys->getOrigin().x(), _refY0, calorimeter->disk(0).geomInfo().origin().z());
+          Hep3Vector(detsys->getOrigin().x(), _refY0, calorimeter->disk(0).diskInfo().origin().z());
     } else if (_refPointChoice == "UNDEFINED")
       _cosmicReferencePointInMu2e = Hep3Vector(_refX0, _refY0, _refZ0);
 
@@ -167,6 +167,7 @@ void CosmicCRY::generate(GenParticleCollection& genParts) {
   // Getting CRY particles. Generate secondaries until you find one that intersects with the
   // projected box
   while (!passed) {
+    genParts.clear(); // drop the particles of a shower rejected by maxShowerEn
     std::vector<CRYParticle*> secondaries;
     _cryGen->genEvent(&secondaries);
     _numEvents++;

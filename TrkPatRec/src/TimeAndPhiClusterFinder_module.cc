@@ -21,6 +21,7 @@
 #include "Offline/RecoDataProducts/inc/StrawHitIndex.hh"
 #include "Offline/RecoDataProducts/inc/StrawHitFlag.hh"
 #include "Offline/RecoDataProducts/inc/TimeCluster.hh"
+#include "Offline/RecoDataProducts/inc/IntensityInfoTimeCluster.hh"
 #include "Offline/TrkPatRec/inc/TimeAndPhiClusterFinder_types.hh"
 
 namespace
@@ -174,6 +175,7 @@ namespace mu2e {
     data_()
     {
        produces<TimeClusterCollection>();
+       produces<IntensityInfoTimeCluster>();
 
        if (algoAssignHits_ !=1 && algoAssignHits_ !=2)
            throw cet::exception("CATEGORY")<< "Unrecognized time Algorthm in TimeAndPhiClusterFinder module";
@@ -213,6 +215,7 @@ namespace mu2e {
       findClusters(ccH, chcol, *tccol);
 
       if (diag_) diagTool_->fillHistograms(&data_);
+      event.put(std::make_unique<IntensityInfoTimeCluster>(static_cast<unsigned short>(tccol->size())));
       event.put(std::move(tccol));
   }
 

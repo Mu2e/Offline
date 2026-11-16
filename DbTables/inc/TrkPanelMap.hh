@@ -56,7 +56,7 @@ class TrkPanelMap : public DbTable {
   std::size_t             nrow   () const override { return _rows.size(); };
   // virtual std::size_t     nrowFix() const override { return 0; };  // the number of rows is variable
   size_t                  size   () const override { return baseSize() + nrow() * sizeof(Row); };
-  const std::string       orderBy() const          { return std::string("mnid"); }
+  const std::string       orderBy() const          { return std::string("plane,panel"); }
 
   void addRow(const std::vector<std::string>& columns) override {
     //    int index = std::stoi(columns[0]);

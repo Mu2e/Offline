@@ -26,11 +26,11 @@ namespace mu2e{
         << "zBinningForFoils: using a stopping target with no foils!\n";
     }
 
-    // Special case: set bin size to the foil thickness instead of basing it
+    // Special case: set bin size to the foil half-thickness instead of basing it
     // on the spacing between foils.
     if ( nfoils == 1 ){
       double dz = (nBinsDZ+0.5)*target.foil(0).halfThickness();
-      double z0 = target.foil(0).centerInMu2e().z();
+      double z0 = target.foil(0).centerInDetectorSystem().z();
       int nbins = 2*nBinsDZ + 1;
       return Binning( nbins, z0-dz, z0+dz );
     }

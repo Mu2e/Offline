@@ -8,6 +8,7 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "Offline/RecoDataProducts/inc/CosmicTrack.hh"
 #include "Offline/RecoDataProducts/inc/CosmicTrackSeed.hh"
 
@@ -51,6 +52,7 @@
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 #include "Offline/RecoDataProducts/inc/KalIntersection.hh"
 #include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
+#include "Offline/RecoDataProducts/inc/KalSeedDtDt.hh"
 #include "Offline/RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "Offline/RecoDataProducts/inc/TrkQual.hh"
 #include "Offline/RecoDataProducts/inc/RecoQual.hh"
@@ -67,6 +69,7 @@
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulseFlags.hh"
 #include "Offline/RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "Offline/RecoDataProducts/inc/TrkCrvMatch.hh"
 #include "Offline/RecoDataProducts/inc/CrvStatus.hh"
 #include "Offline/DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "artdaq-core-mu2e/Overlays/Decoders/CRVDataDecoder.hh"
@@ -94,8 +97,10 @@
 
 // STM
 #include "Offline/RecoDataProducts/inc/STMWaveformDigi.hh"
-#include "Offline/RecoDataProducts/inc/STMMWDDigi.hh"
+#include "Offline/RecoDataProducts/inc/STMPHDigi.hh"
 #include "Offline/RecoDataProducts/inc/STMHit.hh"
+#include "Offline/RecoDataProducts/inc/STMFragmentSummary.hh"
+#include "Offline/RecoDataProducts/inc/STMEventHeader.hh"
 
 // MSD
 #include "Offline/RecoDataProducts/inc/MSDHit.hh"

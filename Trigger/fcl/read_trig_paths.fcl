@@ -6,7 +6,6 @@
 process_name : readTriggerPaths
 
 services : @local::Services.Reco
-services.GeometryService.bFieldFile : "Offline/Mu2eG4/geom/bfgeom_reco_v01.txt"
 source: { module_type: RootInput }
 services.TFileService.fileName : "nts.user.read_trig_paths.sequencer.root"
 

@@ -3,14 +3,13 @@ cet_make_library(
       src/BkgANNSHU.cc
       src/CADSHU.cc
       src/Chi2SHU.cc
+      src/PanelDiagSHU.cc
       src/DriftANNSHU.cc
       src/KKBField.cc
       src/KKConstantBField.cc
       src/KKFitSettings.cc
       src/KKFitUtilities.cc
-      src/KKMaterial.cc
       src/KKSHFlag.cc
-      src/KKStrawMaterial.cc
       src/StrawHitUpdaters.cc
       src/StrawXingUpdater.cc
       src/WHSIterator.cc
@@ -84,6 +83,37 @@ cet_build_plugin(RegrowKinematicLine art::module
       LIBRARIES REG
       Offline::Mu2eKinKal
       Offline::TrkReco
+)
+
+cet_build_plugin(KKTruthSeed art::module
+    REG_SOURCE src/KKTruthSeed_module.cc
+    LIBRARIES REG
+      Offline::Mu2eKinKal
+
+      Offline::BFieldGeom
+      Offline::CalorimeterGeom
+      Offline::DataProducts
+      Offline::GeneralUtilities
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::RecoDataProducts
+      Offline::TrackerGeom
+      Offline::TrkReco
+)
+
+cet_make_exec(NAME ExtrapolateSweepTest
+    SOURCE src/ExtrapolateSweepTest_main.cc
+    LIBRARIES
+      KinKal::Fit
+      KinKal::Detector
+      KinKal::Trajectory
+      KinKal::Geometry
+      KinKal::MatEnv
+      KinKal::General
+      Offline::DataProducts
+      ROOT::MathCore
+      ROOT::GenVector
 )
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/data/TrainBkgFinal.dat   ${CURRENT_BINARY_DIR} data/TrainBkgFinal.dat   COPYONLY)

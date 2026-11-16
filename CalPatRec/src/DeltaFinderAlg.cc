@@ -308,7 +308,7 @@ namespace mu2e {
           double wx2   = hd2->fWx;
           double wy2   = hd2->fWy;
           double w1w2  = wx1*wx2+wy1*wy2;
-          double q12   = 1-w1w2*w1w2;
+          double q12   = 1.-w1w2*w1w2;
 //-----------------------------------------------------------------------------
 // hits are ordered in time, so if ct2-ct > _maxDriftTime, can proceed with the next panel
 //-----------------------------------------------------------------------------
@@ -594,7 +594,7 @@ namespace mu2e {
       DeltaCandidate* dc1 = _data->deltaCandidate(i1);
       if (dc1->Active() == 0)                                          continue;
       float x1 = dc1->Xc();
-      float y1 = dc1->Xc();
+      float y1 = dc1->Yc();
       for (int i2=i1+1; i2<ndelta; i2++) {
         DeltaCandidate* dc2 = _data->deltaCandidate(i2);
         if (dc2->Active() == 0)                                        continue;
@@ -790,7 +790,7 @@ namespace mu2e {
         DeltaSeed* ds2 = _data->deltaSeed(Station,i2);
         if (ds2->fGood < 0)                                           continue;
 
-        float chi2_ds2 = ds1->Chi2TotN()+ds1->Chi2Time();
+        float chi2_ds2 = ds2->Chi2TotN()+ds2->Chi2Time();
         if (chi2_ds2 > _maxChi2Seed) {
           ds2->fGood = -1000-i2;
                                                                       continue;

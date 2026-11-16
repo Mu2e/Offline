@@ -39,7 +39,6 @@ namespace mu2e {
 
     struct Data_t {
       const art::Event*    event;
-      std::string          shLabel;
 
       enum  { kMaxSeeds = 100, kMaxHits = 200 };
 

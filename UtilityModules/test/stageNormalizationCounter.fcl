@@ -1,0 +1,51 @@
+# Count the events an output stream keeps and record the origin-equivalent
+# generated count with them, as a StageNormalization SubRun product.
+#
+# This is the 1:1 (non-resampling) configuration: the normalization is seeded
+# from the job's own GenEventCount, so the input must carry one. Run it over
+# any art file with subrun bookkeeping, e.g.
+#
+#   mu2e -c Offline/UtilityModules/test/stageNormalizationCounter.fcl \
+#        -s sim.mu2e.TargetStops.<...>.art
+#
+# For a resampling stage, set upstreamTag to the StageNormalization the
+# resampling mixer produces instead; genCounter would count draws there.
+
+#include "Offline/fcl/minimalMessageService.fcl"
+
+process_name : stageNorm
+
+source : {
+  module_type : RootInput
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+  producers : {
+    # Named for the stream it counts: SubRun products ignore SelectEvents, so
+    # every output of a multi-stream job carries every counter's product and
+    # the label is the only thing that says which stream a count belongs to.
+    targetStopCounter : {
+      module_type : StageNormalizationCounter
+      genCountTag : "genCounter"
+      diagLevel   : 1
+    }
+  }
+
+  countPath     : [ targetStopCounter ]
+  trigger_paths : [ countPath ]
+
+  out           : [ Output ]
+  end_paths     : [ out ]
+}
+
+outputs : {
+  Output : {
+    module_type : RootOutput
+    SelectEvents : [ countPath ]
+    fileName : "sim.owner.stageNormTest.version.sequencer.art"
+  }
+}

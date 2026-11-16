@@ -518,8 +518,16 @@ namespace mu2e {
     if ( inGaragePosition ) {
       G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
 
+      // Optionally extend the upstream end of the fake DS3 volume, for
+      // extracted configurations where the detector train is longer than nominal.
+      // Not compatible with garage.extractOPA_IPA_ST, since garageFakeDS2Vacuum
+      // ends where this volume starts.
+      vector<double> garage_zPlanesDs3 = tmp_zPlanesDs3;
+      garage_zPlanesDs3.front() -= _config.getDouble("garage.ds3UpstreamExtension",0.);
+      PolyconsParams garageDs3PolyParams( garage_zPlanesDs3, tmp_rInnerDs3, tmp_rOuterDs3 );
+
       tmpDS = nestPolycone( "garageFakeDS3Vacuum",
-                            ds3PolyParams,
+                            garageDs3PolyParams,
                             airMaterial,
                             0,
                             ds3positionInMu2e - parent.centerInMu2e() + relPosExtracted,

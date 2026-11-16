@@ -1,7 +1,7 @@
 #ifndef CaloTemplateWFUtil_HH
 #define CaloTemplateWFUtil_HH
 
-#include "Offline/Mu2eUtilities/inc/CaloPulseShape.hh"
+#include "Offline/Mu2eUtilities/inc/CaloPulseUtil.hh"
 #include <vector>
 #include <string>
 
@@ -11,8 +11,8 @@ namespace mu2e {
   class CaloTemplateWFUtil  {
 
      public:
-        CaloTemplateWFUtil(const std::string& pulseFileName, const std::string& pulseHistName,
-                           double minPeakAmplitude, double digiSampling, double minDTPeaks, int printLevel=-1);
+        CaloTemplateWFUtil(const CaloPulseUtil::Config& configPulseCache, double minPeakAmplitude,
+                           double minDTPeaks, int printLevel);
 
         void                        initialize    ();
         void                        setXYVector   (const std::vector<double>& xvec, const std::vector<double>& yvec);
@@ -48,7 +48,7 @@ namespace mu2e {
      private:
         bool                selectComponent(const std::vector<double>& tempPar, const std::vector<double>& tempErr, unsigned ip);
 
-        CaloPulseShape      pulseCache_;
+        CaloPulseUtil       pulseCache_;
         double              minPeakAmplitude_;
         double              minDTPeaks_;
         int                 fitStrategy_;

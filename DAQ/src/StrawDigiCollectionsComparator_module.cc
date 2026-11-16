@@ -10,6 +10,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 
 #include "Offline/RecoDataProducts/inc/StrawDigi.hh"
 #include "Offline/DataProducts/inc/StrawEnd.hh"
@@ -33,14 +34,12 @@ public:
     fhicl::Atom<bool> compareWaveforms{fhicl::Name("compareWaveforms"),
                                        fhicl::Comment("Compare StrawDigiADCWaveformCollection"),
                                        true};
-    fhicl::Atom<art::InputTag> referenceWaveformTag{
+    fhicl::OptionalAtom<art::InputTag> referenceWaveformTag{
       fhicl::Name("referenceWaveformTag"),
-      fhicl::Comment("Reference StrawDigiADCWaveformCollection"),
-      art::InputTag("makeSD")};
-    fhicl::Atom<art::InputTag> candidateWaveformTag{
+      fhicl::Comment("Reference StrawDigiADCWaveformCollection, defaults to referenceDigiTag")};
+    fhicl::OptionalAtom<art::InputTag> candidateWaveformTag{
       fhicl::Name("candidateWaveformTag"),
-      fhicl::Comment("Candidate StrawDigiADCWaveformCollection"),
-      art::InputTag("makeSD")};
+      fhicl::Comment("Candidate StrawDigiADCWaveformCollection, defaults to candidateDigiTag")};
     fhicl::Atom<bool> failOnMismatch{fhicl::Name("failOnMismatch"),
                                      fhicl::Comment("Throw if any mismatch is found"),
                                      true};
@@ -123,8 +122,8 @@ StrawDigiCollectionsComparator::StrawDigiCollectionsComparator(Parameters const&
     , referenceDigiTag_(config().referenceDigiTag())
     , candidateDigiTag_(config().candidateDigiTag())
     , compareWaveforms_(config().compareWaveforms())
-    , referenceWaveformTag_(config().referenceWaveformTag())
-    , candidateWaveformTag_(config().candidateWaveformTag())
+    , referenceWaveformTag_(config().referenceWaveformTag().value_or(referenceDigiTag_))
+    , candidateWaveformTag_(config().candidateWaveformTag().value_or(candidateDigiTag_))
     , failOnMismatch_(config().failOnMismatch())
     , diagLevel_(config().diagLevel())
     , maxMismatchesToPrint_(config().maxMismatchesToPrint())

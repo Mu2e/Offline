@@ -1266,7 +1266,7 @@ namespace mu2e {
               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
                                            vdParamsInnerDisk,downstreamVacuumMaterial,0,
                                            posInnerDisk,caloDisk,
-                                           vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+                                           vdIdDiskEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
                                            placePV,false);
               ++vdIdDiskEdge;
 
@@ -1274,7 +1274,7 @@ namespace mu2e {
               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
                                             vdParamsOuterDisk,downstreamVacuumMaterial,0,
                                             posInnerDisk,caloDisk,
-                                            vdIdDiskSurf,1,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+                                            vdIdDiskEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
                                             placePV,false);
               ++vdIdDiskEdge;
 
@@ -1902,6 +1902,51 @@ namespace mu2e {
              << " at " << vdg->getGlobal(vdId) - parentInMu2e <<" or local "<< vdg->getLocal(vdId)<< " w.r.t. parent (HallAir) " << endl;
         cout << __func__ << "    VD parameters: " << vdParams << endl;
         cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+    }
+
+
+    // Optional virtual detectors in front of the tracker front-end boards.
+    // These only exist if VirtualDetectorMaker registered them, which it does
+    // only when the geometry sets hasTrackerFEBVirtualDetectors.
+    if ( _config.getBool("hasTracker",false) &&
+         vdg->exist(VirtualDetectorId::Tracker_FEB_0_SurfIn) ) {
+      Tracker const & tracker = *(GeomHandle<Tracker>());
+      // the radius of tracker support
+      double orvd = tracker.g4Tracker()->getSupportParams().getTubsParams().outerRadius()-20.1; // Avoid tracker support beam
+      double irvd = tracker.g4Tracker()->mother().tubsParams().innerRadius();
+
+      TubsParams vdParamsTracker(irvd,orvd,vdHalfLength);
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " tracker FEB VD outer, inner radius: " << orvd << " " << irvd << endl;
+        cout << __func__ << " tracker FEB VD parameters: " << vdParamsTracker << endl;
+      }
+
+      VolumeInfo const & trackerMother = _helper->locateVolInfo("TrackerMother");
+
+      for ( int ipln=0; ipln<StrawId::_nplanes+1; ipln+=2 ){
+        // placing virtual detectors before FEB of tracker stations
+        vdId = VirtualDetectorId::Tracker_FEB_0_SurfIn+ipln/2;
+        if( vdg->exist(vdId) ) {
+          CLHEP::Hep3Vector vdPos = vdg->getGlobal(vdId)-trackerMother.centerInMu2e();
+
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)
+                 << " at " << vdPos << " or local " << vdg->getLocal(vdId) << endl;
+          }
+
+          VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+                                    vdParamsTracker, downstreamVacuumMaterial, 0,
+                                    vdPos,
+                                    trackerMother,
+                                    vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false);
+
+          doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+        }
       }
     }
 

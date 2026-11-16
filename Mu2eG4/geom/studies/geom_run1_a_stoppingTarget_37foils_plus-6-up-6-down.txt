@@ -1,0 +1,67 @@
+//
+// Run 1A geometry with the 37-foil muon stopping target extended by 6 extra
+// foils at each end, 49 foils in all. Everything except the stopping target is
+// the Run 1A production geometry (geom_run1_a.txt).
+//
+// The 37 foils of geom_run1_a.txt are unchanged and stay where they are. The 12
+// extra foils continue the same 22.2 mm pitch, so the target grows from 800 mm
+// to 1066.7 mm around the same center. Each group of 6 shares one outer radius,
+// hole radius and thickness:
+//                   upstream 6   37-foil target   downstream 6
+//   outer radius    112.5 mm     75 mm            109.9 mm
+//   hole radius      20.0 mm     21.5 mm          none
+//   full thickness   126 um      106 um           289 um
+//
+// Origin: design foilsflashBASIN01_00 of the Bayesian optimization of the
+// stopping target (Mu2e/Mu2eBO, study "foilsflash", July 2026): the highest
+// sensitivity found when only the 12 extra foils may vary, regardless of the
+// tracker radiation dose from the beam flash. Rerun as ipafixAB01 with the
+// proton absorber at its as-built position, its fast proxy for the conversion
+// sensitivity, S/sqrt(B), is 4.10 against 3.26 for the 37-foil target (+26%),
+// at 1.51 times that target's tracker dose.
+//
+
+#include "Offline/Mu2eG4/geom/geom_run1_a.txt"
+
+double stoppingTarget.z0InMu2e = 5871.0000;
+double stoppingTarget.deltaZ   = 22.222222;
+
+// per-foil values, foil 0 most upstream; foil i sits at z0 + (i - 24) * deltaZ
+vector<double> stoppingTarget.radii = {
+  112.4760, 112.4760, 112.4760, 112.4760, 112.4760, 112.4760,
+  75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000,
+  75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000,
+  75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000,
+  75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000,
+  75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000, 75.0000,
+  75.0000, 75.0000,
+  109.9162, 109.9162, 109.9162, 109.9162, 109.9162, 109.9162 };
+vector<double> stoppingTarget.halfThicknesses = {
+  0.063100, 0.063100, 0.063100, 0.063100, 0.063100, 0.063100,
+  0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800,
+  0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800,
+  0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800,
+  0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800,
+  0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800, 0.052800,
+  0.052800, 0.052800,
+  0.144736, 0.144736, 0.144736, 0.144736, 0.144736, 0.144736 };
+vector<double> stoppingTarget.holeRadii = {
+  19.9982, 19.9982, 19.9982, 19.9982, 19.9982, 19.9982,
+  21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000,
+  21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000,
+  21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000,
+  21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000,
+  21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000, 21.5000,
+  21.5000, 21.5000,
+  0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000 };
+
+// The proton absorber is placed relative to the downstream end of the stopping
+// target. The longer target would move it 133 mm downstream; pin it at its
+// as-built position instead (6901.02 mm, the same as with geom_run1_a.txt).
+double protonabsorber.zStartInMu2e      = 6901.02;
+double protonabsorber.distFromTargetEnd = 491.666667;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

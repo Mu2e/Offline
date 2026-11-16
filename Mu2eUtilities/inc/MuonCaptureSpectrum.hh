@@ -22,7 +22,7 @@ namespace mu2e {
 
   public:
 
-    enum enum_type    { Flat  , RMC             };
+    enum enum_type    { Flat  , RMC            , PhaseSpace };
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
    MuonCaptureSpectrum(){}
@@ -31,6 +31,8 @@ namespace mu2e {
     MuonCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
 
     MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
+                        CLHEP::RandFlat* randFlat = 0, RandomUnitSphere* randomUnitSphere = 0);
+    MuonCaptureSpectrum(double kMax, int nKnockout,
                         CLHEP::RandFlat* randFlat = 0, RandomUnitSphere* randomUnitSphere = 0);
 
     ~MuonCaptureSpectrum(){}
@@ -45,6 +47,7 @@ namespace mu2e {
 
     double getFlat       (double e, double x = 0., double y = 0.) const ;
     double getRMCSpectrum(double e, bool kMaxUserSet, double kMaxUser, double kMaxMax) const;
+    double getRMCPhaseSpaceSpectrum(double e, double kMax, int nKnockout) const;
 
     void   getElecPosiVectors(double energy, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const;
 
@@ -60,6 +63,7 @@ namespace mu2e {
     bool               _kMaxUserSet;
     double             _kMaxUser;
     double             _kMaxMax;
+    int                _nKnockout; // for phase space approximation
 
     CLHEP::RandFlat*   _rnFlat;
     RandomUnitSphere*  _rnUnitSphere;

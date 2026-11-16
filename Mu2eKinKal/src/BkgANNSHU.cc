@@ -3,6 +3,7 @@
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Offline/Mu2eKinKal/inc/TrainBkg.hxx"
+#include <algorithm>
 #include <cmath>
 #include <array>
 
@@ -27,7 +28,9 @@ namespace mu2e {
       // this order is given by the training
       pars[0] = fabs(tpdata.doca());
       pars[1] = dinfo.cDrift_;
-      pars[2] = sqrt(tpdata.docaVar());
+      // clamp as DriftANNSHU.cc and KKFit.hh do: a non-positive docaVar would make this NaN, and
+      // NaN < mvacut_ is false, silently leaving (or re-activating) an unscoreable hit
+      pars[2] = sqrt(std::max(0.0,tpdata.docaVar()));
       pars[3] = chit.driftTime();
       // EDep is no longe used: it helps reject proton hits, but might bias muon reconstruction
       // compare the delta-t based U position with the fit U position; requires relative end

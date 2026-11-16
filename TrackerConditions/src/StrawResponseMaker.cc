@@ -16,6 +16,17 @@
 
 using namespace std;
 namespace mu2e {
+
+  namespace {
+    // a per-channel fcl list is either empty (no override) or covers every channel
+    void checkChannelListLength(char const* name, size_t size, size_t nchannels) {
+      if (size != 0 && size != nchannels)
+        throw cet::exception("BADCONFIG")
+          << "StrawResponse fcl parameter " << name << " has " << size
+          << " entries; it must be empty or have " << nchannels << "\n";
+    }
+  }
+
   StrawResponse::ptr_t StrawResponseMaker::fromFcl(
       StrawDrift::cptr_t strawDrift,
       StrawElectronics::cptr_t strawElectronics,
@@ -46,12 +57,14 @@ namespace mu2e {
     if(_config.ADCPedestal(x)) ADCped = x;
 
     double pmpEnergyScaleAvg = 0;
+    auto const peakMinusPedestalEnergyScale = _config.peakMinusPedestalEnergyScale();
+    checkChannelListLength("peakMinusPedestalEnergyScale", peakMinusPedestalEnergyScale.size(), StrawId::_nustraws);
     std::array<double, StrawId::_nustraws> pmpEnergyScale;
-    if (_config.peakMinusPedestalEnergyScale().size() == 0){
+    if (peakMinusPedestalEnergyScale.size() == 0){
       pmpEnergyScale.fill(_config.defaultPeakMinusPedestalEnergyScale());
     }else{
       for (size_t i=0;i<pmpEnergyScale.size();i++) {
-        pmpEnergyScale[i] = _config.peakMinusPedestalEnergyScale()[i];
+        pmpEnergyScale[i] = peakMinusPedestalEnergyScale[i];
       }
     }
     for (size_t i=0;i<pmpEnergyScale.size();i++) {
@@ -61,7 +74,11 @@ namespace mu2e {
 
     if ( _config.unsignedDriftRMS().size() != _config.signedDriftRMS().size()
         || _config.driftOffBins().size() != 2
-        || _config.driftRMSBins().size() != 2){
+        || _config.driftRMSBins().size() != 2
+        || _config.llDriftTimeOffBins().size() != 2
+        || _config.llDriftTimeRMSBins().size() != 2
+        || _config.llDriftTimeOffset().size() < 2
+        || _config.llDriftTimeRMS().size() < 2){
       throw cet::exception("BADCONFIG")
         << "StrawResponse drift res vector lengths incorrect" << "\n";
     }
@@ -117,19 +134,28 @@ namespace mu2e {
         pmpEnergyScaleAvg, strawHalfPropVelocity,
         _config.driftIgnorePhi());
 
+    auto const timeOffsetPanelFcl = _config.timeOffsetPanel();
+    auto const timeOffsetStrawHVFcl = _config.timeOffsetStrawHV();
+    auto const timeOffsetStrawCalFcl = _config.timeOffsetStrawCal();
+    checkChannelListLength("timeOffsetPanel", timeOffsetPanelFcl.size(), StrawId::_nupanels);
+    checkChannelListLength("timeOffsetStrawHV", timeOffsetStrawHVFcl.size(), StrawId::_nustraws);
+    if (timeOffsetStrawCalFcl.size() != timeOffsetStrawHVFcl.size())
+      throw cet::exception("BADCONFIG")
+        << "StrawResponse fcl parameters timeOffsetStrawHV and timeOffsetStrawCal must have the same length, not "
+        << timeOffsetStrawHVFcl.size() << " and " << timeOffsetStrawCalFcl.size() << "\n";
     std::array<double, StrawId::_nupanels> timeOffsetPanel;
     std::array<double, StrawId::_nustraws> timeOffsetStrawHV, timeOffsetStrawCal;
-    if (_config.timeOffsetPanel().size() > 0){
+    if (timeOffsetPanelFcl.size() > 0){
       for (size_t i=0;i<timeOffsetPanel.size();i++)
-        timeOffsetPanel[i] = _config.timeOffsetPanel()[i];
+        timeOffsetPanel[i] = timeOffsetPanelFcl[i];
     }else{
       for (size_t i=0;i<timeOffsetPanel.size();i++)
         timeOffsetPanel[i] = strawElectronics->getTimeOffsetPanel(i);
     }
-    if (_config.timeOffsetStrawHV().size() > 0){
+    if (timeOffsetStrawHVFcl.size() > 0){
       for(size_t i=0;i<timeOffsetStrawHV.size();i++){
-        timeOffsetStrawHV[i] = _config.timeOffsetStrawHV()[i];
-        timeOffsetStrawCal[i] = _config.timeOffsetStrawCal()[i];
+        timeOffsetStrawHV[i] = timeOffsetStrawHVFcl[i];
+        timeOffsetStrawCal[i] = timeOffsetStrawCalFcl[i];
       }
     }else{
       for (size_t i=0;i<timeOffsetStrawHV.size();i++){

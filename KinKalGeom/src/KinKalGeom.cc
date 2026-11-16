@@ -1,7 +1,6 @@
 #include "Offline/KinKalGeom/inc/KinKalGeom.hh"
 #include "cetlib_except/exception.h"
 namespace mu2e {
-  KinKalGeom::KinKalGeom() : ProditionsEntity("KinKalGeom") {}
 
   void KinKalGeom::surfaces(SurfaceId const& id, SurfacePairCollection& surfs) const {
     // find all surfaces that match the input, including index wildcard

@@ -22,6 +22,9 @@ GRANT USAGE ON SCHEMA crv TO PUBLIC;
 CREATE SCHEMA cal;
 GRANT USAGE ON SCHEMA cal TO PUBLIC;
 
+CREATE SCHEMA daq;
+GRANT USAGE ON SCHEMA daq TO PUBLIC;
+
 -- rows are calibration tables
 CREATE TABLE val.tables 
   (tid SERIAL, 
@@ -40,6 +43,7 @@ GRANT UPDATE ON val.tables_tid_seq TO manager_role;
 CREATE TABLE val.calibrations
   (cid SERIAL, 
   tid INTEGER NOT NULL,
+  chash TEXT NOT NULL DEFAULT '',
   create_time TIMESTAMP WITH TIME ZONE NOT NULL, 
   create_user TEXT NOT NULL,  
   CONSTRAINT calibrations_pk PRIMARY KEY (cid), 
@@ -346,6 +350,32 @@ CREATE TABLE trk.delayrstraw
 GRANT SELECT ON trk.delayrstraw TO PUBLIC;
 GRANT INSERT ON trk.delayrstraw TO trk_role;
 
+-- tracker panel name decoding
+
+CREATE TABLE trk.panelmap
+  (cid INTEGER,
+   mnid INTEGER, dtc INTEGER, link INTEGER, plane INTEGER,
+   ppid INTEGER, panel INTEGER, zface INTEGER,
+   CONSTRAINT trk_panelmap_pk PRIMARY KEY (cid,plane,panel) );
+GRANT SELECT ON trk.panelmap TO PUBLIC;
+GRANT INSERT ON trk.panelmap TO trk_role;
+
+
+--
+-- daq schema tables
+--
+
+-- table of subdet timing offsets
+
+CREATE TABLE daq.timing
+  (cid INTEGER,
+   crvtrackertimeoffset NUMERIC,
+   calotrackertimeoffset NUMERIC,
+   timefromprotonstodrmarker NUMERIC,
+   CONSTRAINT daq_timing_pk PRIMARY KEY (cid) );
+GRANT SELECT ON daq.timing TO PUBLIC;
+GRANT INSERT ON daq.timing TO daq_role;
+
 --
 -- sim schema tables
 --
@@ -414,6 +444,14 @@ CREATE TABLE cal.energycalib
    CONSTRAINT cal_energycalib_pk PRIMARY KEY (cid,roid) );
 GRANT SELECT ON cal.energycalib TO PUBLIC;
 GRANT INSERT ON cal.energycalib TO cal_role;
+
+CREATE TABLE cal.timecalib
+  (cid INTEGER,
+   roid INTEGER, tcorr NUMERIC,
+   CONSTRAINT cal_timecalib_pk PRIMARY KEY (cid,roid) );
+GRANT SELECT ON cal.timecalib TO PUBLIC;
+GRANT INSERT ON cal.timecalib TO cal_role;
+
 
 CREATE TABLE cal.channels
   (cid INTEGER,

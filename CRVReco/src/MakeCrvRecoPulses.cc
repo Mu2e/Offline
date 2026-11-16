@@ -1,17 +1,76 @@
 #include "Offline/CRVReco/inc/MakeCrvRecoPulses.hh"
-#ifndef CRVStandalone
-#include "canvas/Utilities/Exception.h"
-#endif
-#include <TFitResult.h>
-#include <TFitResultPtr.h>
-#include <TMath.h>
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace
 {
-  double Gumbel(double* xs, double* par)
+  typedef std::array<double,3> Vec3;
+  typedef std::array<std::array<double,3>,3> Mat3;
+
+  constexpr double kE = 2.718281828459045;
+  constexpr int    kLMIterations = 40;        // Levenberg-Marquardt iterations
+  constexpr int    kPolishIterations = 8;     // Gauss-Newton iterations with step halving after LM
+  constexpr double kLimitTolerance = 0.01;    // a parameter within this fraction of its range from a limit fails the fit
+  constexpr double kEdmTolerance = 1e-3;      // converged if the expected chi2 decrease is below this x max(chi2,1)
+
+  double Gumbel(double t, const Vec3 &p)
   {
-    double const x = xs[0];
-    return par[0]*(TMath::Exp(-(x-par[1])/par[2]-TMath::Exp(-(x-par[1])/par[2])));
+    double const z = (t-p[1])/p[2];
+    return p[0]*std::exp(-z-std::exp(-z));
+  }
+
+  // Minuit's sine transformation between bounded external and unbounded internal parameters
+  double ToExternal(double u, double lo, double hi) {return lo+(hi-lo)*(std::sin(u)+1.0)*0.5;}
+  double ToInternal(double p, double lo, double hi) {return std::asin(std::clamp(2.0*(p-lo)/(hi-lo)-1.0,-1.0,1.0));}
+
+  // solves M x = b by Gaussian elimination with partial pivoting; false if M is singular
+  bool Solve3(Mat3 M, Vec3 b, Vec3 &x)
+  {
+    for(int c=0; c<3; ++c)
+    {
+      int piv=c;
+      for(int r=c+1; r<3; ++r) if(std::abs(M[r][c])>std::abs(M[piv][c])) piv=r;
+      if(M[piv][c]==0.0 || !std::isfinite(M[piv][c])) return false;
+      std::swap(M[c],M[piv]);
+      std::swap(b[c],b[piv]);
+      for(int r=c+1; r<3; ++r)
+      {
+        double const f=M[r][c]/M[c][c];
+        for(int k=c; k<3; ++k) M[r][k]-=f*M[c][k];
+        b[r]-=f*b[c];
+      }
+    }
+    for(int r=2; r>=0; --r)
+    {
+      double s=b[r];
+      for(int k=r+1; k<3; ++k) s-=M[r][k]*x[k];
+      x[r]=s/M[r][r];
+    }
+    return std::isfinite(x[0]) && std::isfinite(x[1]) && std::isfinite(x[2]);
+  }
+
+  // smallest and largest eigenvalue of a symmetric 3x3 matrix (closed form)
+  void EigenRange3(const Mat3 &A, double &emin, double &emax)
+  {
+    double const p1=A[0][1]*A[0][1]+A[0][2]*A[0][2]+A[1][2]*A[1][2];
+    double const q=(A[0][0]+A[1][1]+A[2][2])/3.0;
+    if(p1==0.0)
+    {
+      emin=std::min({A[0][0],A[1][1],A[2][2]});
+      emax=std::max({A[0][0],A[1][1],A[2][2]});
+      return;
+    }
+    double const p2=(A[0][0]-q)*(A[0][0]-q)+(A[1][1]-q)*(A[1][1]-q)+(A[2][2]-q)*(A[2][2]-q)+2.0*p1;
+    double const p=std::sqrt(p2/6.0);
+    Mat3 B;
+    for(int i=0; i<3; ++i) for(int j=0; j<3; ++j) B[i][j]=(A[i][j]-(i==j?q:0.0))/p;
+    double const detB=B[0][0]*(B[1][1]*B[2][2]-B[1][2]*B[2][1])-B[0][1]*(B[1][0]*B[2][2]-B[1][2]*B[2][0])
+                     +B[0][2]*(B[1][0]*B[2][1]-B[1][1]*B[2][0]);
+    double const phi=std::acos(std::clamp(detB/2.0,-1.0,1.0))/3.0;
+    emax=q+2.0*p*std::cos(phi);
+    emin=q+2.0*p*std::cos(phi+2.0*M_PI/3.0);
   }
 }
 
@@ -20,208 +79,185 @@ namespace mu2eCrv
 
 MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                                      float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
-                                     float LEtimeFactor, float pulseThreshold, float pulseAreaThreshold, float doublePulseSeparation) :
-                                     _f1("peakfitter",Gumbel,0,0,3),
+                                     float LEtimeFactor, int samplesBefore, int samplesAfter) :
                                      _minADCdifference(minADCdifference),
                                      _defaultBeta(defaultBeta), _minBeta(minBeta), _maxBeta(maxBeta),
                                      _maxTimeDifference(maxTimeDifference),
                                      _minPulseHeightRatio(minPulseHeightRatio),
                                      _maxPulseHeightRatio(maxPulseHeightRatio),
                                      _LEtimeFactor(LEtimeFactor),
-                                     _pulseThreshold(pulseThreshold),
-                                     _pulseAreaThreshold(pulseAreaThreshold),
-                                     _doublePulseSeparation(doublePulseSeparation)
+                                     _samplesBefore(samplesBefore), _samplesAfter(samplesAfter)
 {
-  if(_pulseAreaThreshold>_minADCdifference)
-      throw cet::exception("CRVRECO_BAD_CONFIG")
-      << "MakeCrvRecoPulses pulseAreaThreshold " << _pulseAreaThreshold
-      << "  larger than minADCdifference " << _minADCdifference;
 }
 
-void MakeCrvRecoPulses::FillGraphAndFindPeaks(const std::vector<int16_t> &waveform, uint16_t startTDC,
-                                              float digitizationPeriod, float pedestal,
-                                              TGraph &g, std::vector<std::pair<size_t,size_t> > &peaks)
+bool MakeCrvRecoPulses::FindNextPeak(const std::vector<double> &y, int start, int &peakStart, int &peakEnd, int &fitStart, int &fitEnd) const
 {
-  size_t nBins = waveform.size();
-  size_t peakStartBin=0;
-  size_t peakEndBin=0;
-  for(size_t bin=0; bin<nBins; ++bin)
+  int const n=y.size();
+  bool foundRisingEdge=false;
+  bool foundPeak=false;
+  for(int bin=start+1; bin<n; ++bin)
   {
-    g.SetPoint(bin,(startTDC+bin)*digitizationPeriod,waveform[bin]-pedestal);
-
-    if(bin<1) continue; //don't search for peaks here
-
-    if(waveform[bin-1]<waveform[bin]) //rising edge
+    if(y[bin-1]<y[bin]) //rising edge
     {
-      peakStartBin=bin;
-      peakEndBin=bin;
+      foundRisingEdge=true;
+      peakStart=bin;
+      peakEnd=bin;
     }
-    if(waveform[bin-1]==waveform[bin]) //potentially a peak where consecutive ADC values are equal
+    if(y[bin-1]==y[bin] && foundRisingEdge) //potentially a peak where consecutive ADC values are equal
     {
-      peakEndBin=bin;
+      peakEnd=bin;
     }
-    if(waveform[bin-1]>waveform[bin]) //falling edge
+    if(y[bin-1]>y[bin] && foundRisingEdge) //falling edge
     {
-      if(peakStartBin>0)  //found a peak
+      if(y[peakEnd]>_minADCdifference)
       {
-        if(waveform[peakEndBin]-pedestal>_minADCdifference) peaks.emplace_back(peakStartBin,peakEndBin);
-        peakStartBin=0;  //so that the loop has to wait for the next rising edge
+        foundPeak=true;
+        break; //found the peak. stop searching.
       }
+      foundRisingEdge=false;  //so that the loop has to wait for the next rising edge
     }
   }
-}
 
-void MakeCrvRecoPulses::RangeFinder(const std::vector<int16_t> &waveform, const size_t peakStart, const size_t peakEnd, size_t &start, size_t &end)
-{
-#ifndef CRVStandalone
-  if(peakStart<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakStart<1"<<std::endl;
-  if(peakEnd+1>=waveform.size()) throw cet::exception("RECO")<<"MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()"<<std::endl;
-#else
-  if(peakStart<1) throw std::logic_error("MakeCrvRecoPulse::RangeFinder: peakStart<1");
-  if(peakEnd+1>=waveform.size()) throw std::logic_error("MakeCrvRecoPulse::RangeFinder: peakEnd+1>=waveform.size()");
-#endif
+  if(!foundPeak) return false;
 
-  //select a range of up to 4 points before and after the peak
-  //-find up to 5 points before and after the peak for which the waveform is stricly decreasing
+  //select a range of up to 3 points before and 2 after the peak (to avoid hidden reflection pulses)
+  //-find up to 4/3 points before and after the peak for which the waveform is stricly decreasing
   //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
-  end=peakEnd+1;
-  start=peakStart-1;
-  for(size_t i=peakStart-1; i+5>=peakStart; --i)
+
+  fitStart=peakStart-1;
+  fitEnd=peakEnd+1;
+  for(int i=peakStart-1; i>=peakStart-_samplesBefore; --i)
   {
-    if(waveform[i]<=waveform[i+1]) start=i;
+    if(y[i]<=y[i+1]) fitStart=i;
     else break;
     if(i==0) break;
   }
-  for(size_t i=peakEnd+1; i<waveform.size() && i<=peakEnd+5; ++i)
+  for(int i=peakEnd+1; i<n && i<=peakEnd+_samplesAfter; ++i)
   {
-    if(waveform[i-1]>=waveform[i]) end=i;
+    if(y[i-1]>=y[i]) fitEnd=i;
     else break;
   }
-  if(peakStart-start>1) start++;
-  if(end-peakEnd>1) end--;
+  if(peakStart-fitStart>1) fitStart++;
+  if(fitEnd-peakEnd>1) fitEnd--;
 
+  return true;
 }
 
-bool MakeCrvRecoPulses::FailedFit(TFitResultPtr fr)
+//bounded least-squares Gumbel fit: Levenberg-Marquardt in sine-mapped parameters, then a Gauss-Newton polish
+MakeCrvRecoPulses::FitResult MakeCrvRecoPulses::FitGumbel(const std::vector<double> &t, const std::vector<double> &y,
+                                                          const Vec3 &p0, const Vec3 &lower, const Vec3 &upper) const
 {
-  if(fr!=0) return true;
-  if(!fr->IsValid()) return true;
+  size_t const n=t.size();
+  std::vector<double> r(n), rn(n);
+  std::vector<Vec3> J(n), Jn(n);
 
-  const double tolerance=0.01; //TODO: Try to ask the minimizer, if the parameter is at the limit
-  for(int i=0; i<=2; ++i)
+  auto residualsAndJacobian=[&](const Vec3 &u, std::vector<double> &res, std::vector<Vec3> &jac)
   {
-    double v=fr->Parameter(i);
-    double lower, upper;
-    fr->ParameterBounds(i,lower,upper);
-    if((v-lower)/(upper-lower)<tolerance) return true;
-    if((upper-v)/(upper-lower)<tolerance) return true;
+    Vec3 p, dpdu;
+    for(int k=0; k<3; ++k)
+    {
+      p[k]=ToExternal(u[k],lower[k],upper[k]);
+      dpdu[k]=(upper[k]-lower[k])*0.5*std::cos(u[k]);
+    }
+    double chi2=0;
+    for(size_t i=0; i<n; ++i)
+    {
+      double const z=(t[i]-p[1])/p[2];
+      double const ez=std::exp(-z);
+      double const g=std::exp(-z-ez);
+      double const f=p[0]*g;
+      double const dfdz=f*(ez-1.0);
+      res[i]=y[i]-f;
+      jac[i]={g*dpdu[0], -dfdz/p[2]*dpdu[1], -dfdz*z/p[2]*dpdu[2]};
+      chi2+=res[i]*res[i];
+    }
+    return chi2;
+  };
+  auto normalEquations=[&](Mat3 &JTJ, Vec3 &JTr)
+  {
+    for(int a=0; a<3; ++a)
+    {
+      JTr[a]=0;
+      for(int b=0; b<3; ++b) JTJ[a][b]=0;
+    }
+    for(size_t i=0; i<n; ++i)
+    {
+      for(int a=0; a<3; ++a)
+      {
+        JTr[a]+=J[i][a]*r[i];
+        for(int b=0; b<3; ++b) JTJ[a][b]+=J[i][a]*J[i][b];
+      }
+    }
+  };
+
+  Vec3 u;
+  for(int k=0; k<3; ++k) u[k]=ToInternal(p0[k],lower[k],upper[k]);
+  double chi2=residualsAndJacobian(u,r,J);
+  double lambda=1e-3;
+  Mat3 JTJ;
+  Vec3 JTr, du;
+
+  for(int iter=0; iter<kLMIterations; ++iter)
+  {
+    normalEquations(JTJ,JTr);
+    Mat3 M=JTJ;
+    for(int k=0; k<3; ++k) M[k][k]+=lambda*(JTJ[k][k]+1e-12);
+    if(!Solve3(M,JTr,du)) du={0,0,0};
+    Vec3 un={u[0]+du[0],u[1]+du[1],u[2]+du[2]};
+    double const chi2n=residualsAndJacobian(un,rn,Jn);
+    bool const better=chi2n<chi2;
+    if(better)
+    {
+      u=un;
+      r.swap(rn);
+      J.swap(Jn);
+      chi2=chi2n;
+    }
+    lambda=std::clamp(better?lambda*0.3:lambda*10.0,1e-9,1e9);
   }
-  return false;
-}
 
-void MakeCrvRecoPulses::NoFitOption(const std::vector<int16_t> &waveform, const std::vector<std::pair<size_t,size_t> > &peaks,
-                                    uint16_t startTDC, float digitizationPeriod, float pedestal, float calibrationFactor)
-{
-  //find troughs between peaks, that may be used to separate double pusles
-  std::vector<size_t> troughs;
-  for(size_t i=1; i<peaks.size(); ++i)
+  for(int iter=0; iter<kPolishIterations; ++iter)
   {
-    size_t peak1=peaks[i-1].first;
-    size_t peak2=peaks[i].first;
-    auto troughIter=std::min_element(waveform.begin()+peak1,waveform.begin()+peak2+1);
-    size_t trough=std::distance(waveform.begin(),troughIter);
-    if(*troughIter-pedestal<_doublePulseSeparation*(waveform[peak1]-pedestal) && *troughIter-pedestal<_doublePulseSeparation*(waveform[peak2]-pedestal)) troughs.push_back(trough);
-  }
-
-  bool    aboveAreaThreshold=false;
-  bool    pulseFound=false;
-  bool    doublePulseThisPeak=false;
-  bool    doublePulseNextPeak=false;
-  size_t  pulseStart=0, pulseEnd=0;
-  float   sum=0;
-  for(size_t i=0; i<waveform.size(); ++i)
-  {
-    float ADC=waveform[i]-pedestal;
-    if(ADC>_pulseAreaThreshold && !aboveAreaThreshold) //waveform rises above area threshold
+    normalEquations(JTJ,JTr);
+    Mat3 M=JTJ;
+    for(int k=0; k<3; ++k) M[k][k]+=1e-12;
+    if(!Solve3(M,JTr,du)) break;
+    for(double scale : {1.0,0.5,0.25,0.125})
     {
-      aboveAreaThreshold=true;
-      pulseStart=i;
-    }
-    if(ADC<=_pulseAreaThreshold && aboveAreaThreshold) //waveform falls below area threshold
-    {
-      aboveAreaThreshold=false;
-      pulseFound=true;
-      pulseEnd=i-1;
-    }
-    if(aboveAreaThreshold) sum+=ADC;
-    if(i+1==waveform.size() && aboveAreaThreshold) //end of waveform, but still above area threshold
-    {
-      aboveAreaThreshold=false;
-      pulseFound=true;
-      pulseEnd=i;
-    }
-    if(find(troughs.begin(),troughs.end(),i)!=troughs.end() && aboveAreaThreshold && !doublePulseNextPeak) //found the lowest point between the peaks of a double pulse
-    {
-      aboveAreaThreshold=false;
-      pulseFound=true;
-      pulseEnd=i;
-      doublePulseThisPeak=true;
-    }
-    if(pulseFound)  //a full waveform section above area threshold has been found
-    {
-      std::vector<float> peaksInCurrentPulse;
-      for(auto ipeak=peaks.begin(); ipeak!=peaks.end(); ++ipeak)
+      Vec3 un={u[0]+scale*du[0],u[1]+scale*du[1],u[2]+scale*du[2]};
+      double const chi2n=residualsAndJacobian(un,rn,Jn);
+      if(chi2n<chi2)
       {
-        if(ipeak->first>=pulseStart && ipeak->second<=pulseEnd)  //found a peak within this pulse
-        {
-          float peakADC=waveform[ipeak->first]-pedestal;
-          peaksInCurrentPulse.push_back(peakADC);
-          _pulseTimesNoFit.push_back((startTDC+0.5*(ipeak->first+ipeak->second))*digitizationPeriod);
-          _PEsNoFit.push_back(sum*digitizationPeriod/calibrationFactor);  //every peak of this pulse gets the same PEs
-          _separatedDoublePulses.push_back(doublePulseThisPeak || doublePulseNextPeak);
-        }
-      }
-
-      pulseFound=false;
-      sum=0;
-      doublePulseNextPeak=false;
-      if(doublePulseThisPeak)
-      {
-        doublePulseThisPeak=false;
-        doublePulseNextPeak=true;
-#ifndef CRVStandalone
-        if(i<1) throw cet::exception("RECO")<<"MakeCrvRecoPulse::NoFitOption: peakStart<1"<<std::endl;
-#else
-        if(i<1) throw std::logic_error("MakeCrvRecoPulse::NoFitOption: peakStart<1");
-#endif
-        --i; //the shared trough point gets added to both pulses
-      }
-
-      if(peaksInCurrentPulse.empty()) continue;
-
-      //every peak of this pulse gets the same start/end pulse time:
-      //the times when it crosses the threshold fraction of the lowest peak of this pulse
-      float  minPeakInCurrentPulse=*std::min_element(peaksInCurrentPulse.begin(),peaksInCurrentPulse.end());
-      float  rangeThreshold=_pulseThreshold*minPeakInCurrentPulse;
-      size_t pulseRangeStart=pulseStart;
-      size_t pulseRangeEnd=pulseEnd;
-      for(size_t j=pulseStart; j<=pulseEnd; ++j)
-      {
-        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeStart=j; break;}
-      }
-      for(size_t j=pulseEnd; j>=pulseStart; --j)
-      {
-        if(waveform[j]-pedestal>rangeThreshold) {pulseRangeEnd=j; break;}
-        if(j==0) break;
-      }
-      for(size_t j=0; j<peaksInCurrentPulse.size(); ++j)
-      {
-        _pulseStart.push_back((startTDC+pulseRangeStart-1)*digitizationPeriod);
-        _pulseEnd.push_back((startTDC+pulseRangeEnd+1)*digitizationPeriod);
-        _duplicateNoFitPulses.push_back(j==0?false:true);
+        u=un;
+        r.swap(rn);
+        J.swap(Jn);
+        chi2=chi2n;
+        break;
       }
     }
   }
+
+  FitResult result;
+  for(int k=0; k<3; ++k) result.par[k]=ToExternal(u[k],lower[k],upper[k]);
+  result.chi2=chi2;
+  normalEquations(JTJ,JTr);
+  Mat3 M=JTJ;
+  for(int k=0; k<3; ++k) M[k][k]+=1e-12;
+  Vec3 step;
+  if(Solve3(M,JTr,step))
+  {
+    double const edm=0.5*(JTr[0]*step[0]+JTr[1]*step[1]+JTr[2]*step[2]);
+    double emin, emax;
+    EigenRange3(JTJ,emin,emax);
+    result.converged=std::isfinite(edm) && edm<=kEdmTolerance*std::max(chi2,1.0);
+    result.hessianOk=emin>1e-12*std::max(emax,1e-300);
+  }
+  else
+  {
+    result.converged=false;
+    result.hessianOk=false;
+  }
+  return result;
 }
 
 void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
@@ -237,61 +273,61 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
   _LEtimes.clear();
   _zeroNdf.clear();
   _failedFits.clear();
-  _duplicateNoFitPulses.clear();
-  _separatedDoublePulses.clear();
-  _PEsNoFit.clear();
-  _pulseTimesNoFit.clear();
-  _pulseStart.clear();
-  _pulseEnd.clear();
 
-  //fill graph and find peaks
-  std::vector<std::pair<size_t,size_t> > peaks;
-  size_t nBins = waveform.size();
-  TGraph g(nBins);
-  FillGraphAndFindPeaks(waveform, startTDC, digitizationPeriod, pedestal, g, peaks);
+  size_t nBins=waveform.size();
+  std::vector<double> y(nBins);
+  for(size_t bin=0; bin<nBins; ++bin) y[bin]=waveform[bin]-pedestal;
+  std::vector<double> tFit, yFit;
 
   //loop through all peaks
-  for(size_t ipeak=0; ipeak<peaks.size(); ++ipeak)
+  int start=0;
+  int peakStart=0;
+  int peakEnd=0;
+  int fitStart=0;
+  int fitEnd=0;
+  while(FindNextPeak(y, start, peakStart, peakEnd, fitStart, fitEnd))
   {
-    size_t peakStartBin=peaks[ipeak].first;
-    size_t peakEndBin=peaks[ipeak].second;
-    double peakStartTime=(startTDC+peakStartBin)*digitizationPeriod;
-    double peakEndTime=(startTDC+peakEndBin)*digitizationPeriod;
+    double peakStartTime=(startTDC+peakStart)*digitizationPeriod;
+    double peakEndTime=(startTDC+peakEnd)*digitizationPeriod;
     double peakTime=0.5*(peakStartTime+peakEndTime);
 
-    _f1.SetParameter(0, (waveform[peakStartBin]-pedestal)*TMath::E());
-    _f1.SetParameter(1, peakTime);
-    _f1.SetParameter(2, _defaultBeta);
-    _f1.SetParLimits(0,(waveform[peakStartBin]-pedestal)*TMath::E()*_minPulseHeightRatio,(waveform[peakStartBin]-pedestal)*TMath::E()*_maxPulseHeightRatio);
-    _f1.SetParLimits(1,peakStartTime-_maxTimeDifference,peakEndTime+_maxTimeDifference);
-    _f1.SetParLimits(2, _minBeta, _maxBeta);
+    double const peakValue=y[peakStart];
+    Vec3 const p0={peakValue*kE, peakTime, _defaultBeta};
+    Vec3 const lower={peakValue*kE*_minPulseHeightRatio, peakStartTime-_maxTimeDifference, _minBeta};
+    Vec3 const upper={peakValue*kE*_maxPulseHeightRatio, peakEndTime+_maxTimeDifference, _maxBeta};
 
-    size_t fitStartBin, fitEndBin;
-    RangeFinder(waveform, peakStartBin, peakEndBin, fitStartBin, fitEndBin);
-    double fitStartTime=(startTDC+fitStartBin)*digitizationPeriod;
-    double fitEndTime=(startTDC+fitEndBin)*digitizationPeriod;
-    _f1.SetRange(fitStartTime,fitEndTime);
+    tFit.clear();
+    yFit.clear();
+    for(int bin=fitStart; bin<=fitEnd; ++bin)
+    {
+      tFit.push_back((startTDC+bin)*digitizationPeriod);
+      yFit.push_back(y[bin]);
+    }
 
     //do the fit
-    TFitResultPtr fr = g.Fit(&_f1,"NQSR");
-    double fitParam0 = fr->Parameter(0);
-    double fitParam1 = fr->Parameter(1);
-    double fitParam2 = fr->Parameter(2);
+    FitResult const fr=FitGumbel(tFit, yFit, p0, lower, upper);
+    int const ndf=static_cast<int>(tFit.size())-3;
+    bool atLimit=false;
+    for(int k=0; k<3; ++k)
+    {
+      double const range=upper[k]-lower[k];
+      if((fr.par[k]-lower[k])/range<kLimitTolerance || (upper[k]-fr.par[k])/range<kLimitTolerance) atLimit=true;
+    }
 
     //collect fit information for the first peak
-    float  PEs          = fitParam0*fitParam2 / calibrationFactor;
-    double pulseTime    = fitParam1;
-    float  pulseHeight  = fitParam0/TMath::E();
-    float  pulseBeta    = fitParam2;
-    float  pulseFitChi2 = (fr->Ndf()>0?fr->Chi2()/fr->Ndf():-1);
-    bool   zeroNdf      = (fr->Ndf()>0?false:true);
-    bool   failedFit    = FailedFit(fr);
+    float  PEs          = fr.par[0]*fr.par[2] / calibrationFactor;
+    double pulseTime    = fr.par[1];
+    float  pulseHeight  = fr.par[0]/kE;
+    float  pulseBeta    = fr.par[2];
+    float  pulseFitChi2 = (ndf>0?fr.chi2/ndf:-1);
+    bool   zeroNdf      = (ndf>0?false:true);
+    bool   failedFit    = !fr.converged || !fr.hessianOk || atLimit;
 
     if(failedFit)
     {
-      PEs          = (waveform[peakStartBin]-pedestal)*TMath::E() * _defaultBeta / calibrationFactor;
+      PEs          = peakValue * kE * _defaultBeta / calibrationFactor;
       pulseTime    = peakTime;
-      pulseHeight  = waveform[peakStartBin]-pedestal;
+      pulseHeight  = peakValue;
       pulseBeta    = _defaultBeta;
       pulseFitChi2 = -1;
     }
@@ -307,12 +343,20 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
     _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
     _zeroNdf.push_back(zeroNdf);
-    _failedFits.push_back(failedFit);
+    //if one pulse reconstruction fails, all subsequent pulses should also get the error flag,
+    //because a wrong pulse subtraction will create wrong secondary pulses
+    if(_failedFits.size()>0)
+    {
+      if(_failedFits.back()) _failedFits.push_back(true);
+      else _failedFits.push_back(failedFit);
+    }
+    else _failedFits.push_back(failedFit);
+
+    //subtract the fitted pulse (also for a failed fit) before searching for the next peak
+    for(size_t bin=0; bin<nBins; ++bin) y[bin]-=std::round(Gumbel((startTDC+bin)*digitizationPeriod, fr.par));
+    start=fitEnd;
   }
 
-  NoFitOption(waveform, peaks, startTDC, digitizationPeriod, pedestal, calibrationFactor);
-
 }
 
 }
-

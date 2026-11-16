@@ -34,6 +34,15 @@
  <class name="mu2e::StageParticleCollection"/>
  <class name="art::Wrapper<mu2e::StageParticleCollection>"/>
 
+ <class name="mu2e::SpectrumConfig"/>
+ <class name="art::Wrapper<mu2e::SpectrumConfig>"/>
+ <class name="mu2e::SpectrumConfig::RestrictedVar"/>
+ <class name="art::Wrapper<mu2e::SpectrumConfig::RestrictedVar>"/>
+ <class name="std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>"/>
+ <class name="art::Wrapper<std::map<std::string,mu2e::SpectrumConfig::RestrictedVar>>"/>
+ <class name="std::pair<std::string,mu2e::SpectrumConfig::RestrictedVar>"/>
+ <class name="art::Wrapper<std::pair<std::string,mu2e::SpectrumConfig::RestrictedVar>>"/>
+
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
  <class name="std::vector<mu2e::StatusG4>"/>
@@ -186,6 +195,11 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="std::vector<art::Ptr<mu2e::CaloHitMC> >" />
 <class name="art::Wrapper<mu2e::CaloHitMCCollection>"/>
 
+<class name="mu2e::CaloHitEntrant"/>
+<class name="mu2e::CaloHitEntrantCollection"/>
+<class name="std::vector<mu2e::CaloHitEntrant>" />
+<class name="art::Wrapper<mu2e::CaloHitEntrantCollection>"/>
+
 <class name="mu2e::CaloClusterMC" />
 <class name="mu2e::CaloClusterMCCollection" />
 <class name="art::Ptr<mu2e::CaloClusterMC>" />
@@ -293,6 +307,15 @@ include="Math/Vector3D.h, Math/Vector4D.h, CLHEP/Vector/LorentzVector.h, CLHEP/V
 <class name="art::Assns<mu2e::CrvCoincidenceClusterMC,mu2e::CrvCoincidenceCluster,void>" />
 <class name="art::Wrapper<art::Assns<mu2e::CrvCoincidenceCluster,mu2e::CrvCoincidenceClusterMC,void> >" />
 <class name="art::Wrapper<art::Assns<mu2e::CrvCoincidenceClusterMC,mu2e::CrvCoincidenceCluster,void> >" />
+
+<class name="mu2e::TrkCrvXingMC" />
+<class name="std::vector<mu2e::TrkCrvXingMC>" />
+<class name="mu2e::TrkCrvCandidateMC" />
+<class name="std::vector<mu2e::TrkCrvCandidateMC>" />
+<class name="mu2e::TrkCrvMatchMC" />
+<class name="std::vector<mu2e::TrkCrvMatchMC>" />
+<class name="mu2e::TrkCrvMatchMCCollection" />
+<class name="art::Wrapper<mu2e::TrkCrvMatchMCCollection>" />
 
 <!--  checksum from file->ShowStreamerInfo() -->
 <ioread sourceClass="mu2e::CrvDigiMC"

@@ -1,0 +1,27 @@
+string dirt.remote.handling.ceiling.strip.name     = "dirtRemoteHandlingCeilingStrip";
+
+string dirt.remote.handling.ceiling.strip.material = "MBOverburden";
+
+double dirt.remote.handling.ceiling.strip.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.remote.handling.ceiling.strip.offsetFromFloorSurface.y = 5207.;
+double dirt.remote.handling.ceiling.strip.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.remote.handling.ceiling.strip.yHalfThickness           = 25.4;
+
+vector<double> dirt.remote.handling.ceiling.strip.xPositions = {
+-12319.0, // 0
+-4749.8, // 1
+-4749.8, // 2
+-12319.0 // 3
+};
+
+vector<double> dirt.remote.handling.ceiling.strip.yPositions = {
+6857.90, // 0
+6857.90, // 1
+6502.41, // 2
+6502.41 // 3
+};
+
+// Local Variables:
+// mode:c++
+// End:

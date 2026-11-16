@@ -7,10 +7,10 @@ string building.remote.handling.ceiling.Sliver.name     = "remoteHandlingCeiling
 string building.remote.handling.ceiling.Sliver.material = "CONCRETE_MARS";
 
 double building.remote.handling.ceiling.Sliver.offsetFromMu2eOrigin.x   = 947.4;
-double building.remote.handling.ceiling.Sliver.offsetFromFloorSurface.y = 4800.6;
+double building.remote.handling.ceiling.Sliver.offsetFromFloorSurface.y = 4826;
 double building.remote.handling.ceiling.Sliver.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.remote.handling.ceiling.Sliver.yHalfThickness           = 381;
+double building.remote.handling.ceiling.Sliver.yHalfThickness           = 406.4;
 
 vector<double> building.remote.handling.ceiling.Sliver.xPositions = {
   9245.6,   // R0

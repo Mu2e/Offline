@@ -228,7 +228,7 @@ mu2eg4runDefaultSingleStage: {
     Scoring : {
         enabled         : false
         meshNames       : ["WorldMesh","MARSMesh"]
-        scorerNames     : ["DoseDeposit","DelayedDose"]
+        scorerNames     : ["PromptDoseAmb","ResidualDoseAmb"]
         verboseLevel    : 0
     }
 }

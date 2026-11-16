@@ -1,3 +1,16 @@
+cet_build_plugin(AprHelixTruthAna art::module
+    REG_SOURCE src/AprHelixTruthAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+      Offline::RecoDataProducts
+      ROOT::Tree
+)
+
 cet_build_plugin(BFieldPlotter art::module
     REG_SOURCE src/BFieldPlotter_module.cc
     LIBRARIES REG
@@ -143,6 +156,18 @@ cet_build_plugin(DiskCal00 art::module
       Offline::RecoDataProducts
 )
 
+cet_build_plugin(EdepAna art::module
+    REG_SOURCE src/EdepAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::BFieldGeom
+      Offline::GeometryService
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(EMFCSimpleDumper art::module
     REG_SOURCE src/EMFCSimpleDumper_module.cc
     LIBRARIES REG
@@ -268,6 +293,15 @@ cet_build_plugin(Mu2eG4StudyReadBack art::module
       Offline::GeometryService
       Offline::GlobalConstantsService
       Offline::MCDataProducts
+)
+
+cet_build_plugin(OccupancyAna art::module
+    REG_SOURCE src/OccupancyAna_module.cc
+    LIBRARIES REG
+      art_root_io::TFileService_service
+
+      Offline::DataProducts
+      Offline::RecoDataProducts
 )
 
 cet_build_plugin(ParticleIDScan art::module

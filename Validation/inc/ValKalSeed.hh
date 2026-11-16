@@ -58,7 +58,8 @@ class ValKalSeed {
   TH1D* _hCCEoverP;
   TH1D* _hCCDt;
   TH1D* _hCCDOCA;
-  TH1D* _hCCcdepth;
+  TH1D* _hCCcdepth0;
+  TH1D* _hCCcdepth1;
   TH1D* _hCCtz;
   TH1D* _hHDrift;
   TH1D* _hHDOCA;
@@ -66,6 +67,23 @@ class ValKalSeed {
   TH1D* _hHPanel;
   TH1D* _hSRadLen;
   TH1D* _hSRadLenSum;
+  TH1D* _hNST;
+  TH1D* _hSTdP;
+  TH1D* _hNIPA;
+  TH1D* _hIPAdP;
+  // intersections with the CRV sectors (from the CentralHelix and KinematicLine extrapolation)
+  std::map<SurfaceIdDetail::enum_type,int> _crvbin; // CRV sector -> bin of _hCRVSector
+  TH1D* _hNCRV;
+  TH1D* _hCRVSector;
+  TH1D* _hCRVInBounds;
+  TH1D* _hCRVdT;
+  TH1D* _hCRVMom;
+  TH1D* _hCRVMomErr;
+  TH1D* _hCRVdP;
+  TH1D* _hCRVx;
+  TH1D* _hCRVy;
+  TH1D* _hCRVz;
+  TH1D* _hNCRVSB;
 };
 }  // namespace mu2e
 #endif

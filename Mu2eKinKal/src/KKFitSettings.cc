@@ -2,6 +2,7 @@
 #include "Offline/Mu2eKinKal/inc/WireHitState.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/GeneralUtilities/inc/splitLine.hh"
+#include "cetlib_except/exception.h"
 #include <iostream>
 
 namespace mu2e {
@@ -22,22 +23,48 @@ namespace mu2e {
       config.bfcorr_ = fitconfig.bfieldCorr();
       config.ends_ = fitconfig.ends();
       config.tol_ = fitconfig.btol();
+      config.mindtstep_ = fitconfig.minDomainTimeStep();
+      double domainmargin(0.0);
+      if(fitconfig.domainMargin(domainmargin)){ // absent keeps KinKal's unconfined default
+        if(domainmargin < 0.0) throw cet::exception("RECO") << "mu2e::Mu2eKinKal::makeConfig: DomainMargin must be >= 0, got " << domainmargin << std::endl;
+        config.domainmargin_ = domainmargin;
+      }
       // create the updaters requested
       std::vector<CADSHU::Config> cadshusettings;
       std::vector<DriftANNSHU::Config> driftannshusettings;
       std::vector<BkgANNSHU::Config> bkgannshusettings;
+      std::vector<PanelDiagSHU::Config> paneldiagshusettings;
       std::vector<Chi2SHU::Config> chi2shusettings;
       // specific updaters can be empty, so fetch config data with a default empty vector
       cadshusettings = fitconfig.cadshuConfig().value_or(cadshusettings);
       driftannshusettings = fitconfig.annshuConfig().value_or(driftannshusettings);
       bkgannshusettings = fitconfig.bkgshuConfig().value_or(bkgannshusettings);
+      paneldiagshusettings = fitconfig.paneldiagshuConfig().value_or(paneldiagshusettings);
       chi2shusettings = fitconfig.combishuConfig().value_or(chi2shusettings);
       // straw material updater must always be here
       auto const& sxusettings = fitconfig.sxuConfig();
+      // reference piece strategies, one per meta-iteration; absent keeps every meta-iteration on DOCA
+      auto refpieces = [&fitconfig](std::vector<std::string> const& names, const char* key) {
+        std::vector<KinKal::RefPieceStrategy> retval(fitconfig.miConfig().size(),KinKal::RefPieceStrategy::DOCA);
+        if(names.empty()) return retval;
+        if(names.size() != retval.size())
+          throw cet::exception("RECO")<<"mu2e::KKFitSettings: " << key << " has " << names.size() << " entries but MetaIterationSettings has " << retval.size() << std::endl;
+        for(size_t imeta=0; imeta < names.size(); ++imeta) {
+          if(names[imeta] != "DOCA" && names[imeta] != "TOCA")
+            throw cet::exception("RECO")<<"mu2e::KKFitSettings: unknown " << key << " value " << names[imeta] << ", must be DOCA or TOCA" << std::endl;
+          retval[imeta] = KinKal::refPieceStrategy(names[imeta]);
+        }
+        return retval;
+      };
+      std::vector<std::string> hitrefnames, xingrefnames;
+      auto hitrefs = refpieces(fitconfig.hitRefPiece().value_or(hitrefnames),"HitReferencePiece");
+      auto xingrefs = refpieces(fitconfig.xingRefPiece().value_or(xingrefnames),"XingReferencePiece");
       // set the schedule for the meta-iterations
-      unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0);
+      unsigned ncadshu(0), nann(0), nbkg(0), ncomb(0), nnone(0), nsxu(0), npdiag(0);
       for(auto const& misetting : fitconfig.miConfig()) {
         MetaIterConfig miconfig(std::get<0>(misetting));
+        miconfig.setHitRefPiece(hitrefs.at(config.schedule_.size()));
+        miconfig.setXingRefPiece(xingrefs.at(config.schedule_.size()));
         // parse StrawHit updaters, and add to the config of this meta-iteraion
         std::vector<std::string> anames;
         splitLine( std::get<1>(misetting), ":", anames);
@@ -49,6 +76,9 @@ namespace mu2e {
             miconfig.addUpdater(std::any(DriftANNSHU(driftannshusettings.at(nann++))));
           } else if(alg == StrawHitUpdaters::BkgANN) {
             miconfig.addUpdater(std::any(BkgANNSHU(bkgannshusettings.at(nbkg++))));
+          } else if(alg == StrawHitUpdaters::PanelDiag) {
+            miconfig.addUpdater(std::any(PanelDiagSHU(paneldiagshusettings.at(npdiag))));
+            if (paneldiagshusettings.size()>npdiag+1)npdiag++;
           } else if(alg == StrawHitUpdaters::Chi2) {
             miconfig.addUpdater(std::any(Chi2SHU(chi2shusettings.at(ncomb++))));
           } else if(alg == StrawHitUpdaters::none) {

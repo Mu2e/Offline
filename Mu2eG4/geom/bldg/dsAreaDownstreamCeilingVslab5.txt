@@ -13,10 +13,10 @@ double building.dsArea.downstreamCeiling.vslab5.offsetFromMu2eOrigin.z   = -3581
 double building.dsArea.downstreamCeiling.vslab5.yHalfThickness           = 876.3;
 
 vector<double> building.dsArea.downstreamCeiling.vslab5.xPositions = {
-  39928.8,   // v1
-  40538.4,   // v2
-  40538.4,   // v3
-  39928.8   // v4
+  39751,   // v1
+  40360.6,   // v2
+  40360.6,   // v3
+  39751   // v4
 };
 
 vector<double> building.dsArea.downstreamCeiling.vslab5.yPositions = {

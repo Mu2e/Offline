@@ -1,56 +1,94 @@
-# Run StrawAndCaloDigisFromFragments module to convert artdaq::Fragment collections
-# into TRK and CAL digi collections.
-# Usage: mu2e -c DAQ/test/generateDigiFromFragment.fcl -s <input art files> -n '-1'
+# Run STMDigisFromFragments module to convert artdaq::Fragment collections
+# into STM digi collections.
+# Usage: mu2e -c DAQ/test/inspectSTMFile.fcl -s <input art files> -n '-1'
 #
 #
 # Contact person G. Pezzullo
+
 process_name : STMDigiFromFragment
 
 source : {
    module_type : RootInput
    fileNames   : @nil
-
-   # firstEvent  : 500
    maxEvents   : -1
 }
 
-
 physics : {
-
    producers : {
-      makeSTMDigisHPGe : {
-         module_type : STMWaveformDigisFromFragments
-	 stmTag : "daq:STM"
-	 }
+      makeSTMDigis : {
+         module_type : STMDigisFromFragments
+         stmTag : "daq:ContainerSTM"
+         verbosityLevel : 0
+         saveSTMFragSummary : true
+         saveRawWaveformsWithHeaderHPGe: true
+         saveRawWaveformsHPGe: true
+         saveZSWaveformsHPGe: true
+         saveRawWaveformsWithHeaderLaBr: true
+         saveRawWaveformsLaBr: true
+         saveZSWaveformsLaBr: true
+        }
+
+       makeSTMBinary : {
+         module_type : STMBinaryDigisFromFragments
+         stmTag : "daq:ContainerSTM"
+         verbosityLevel : 0
+         rawHPGeFile : "rawHPGe.bin"
+         zsHPGeFile  : "zsHPGe.bin"
+         phHPGeFile  : "phHPGe.bin"
+         rawHeaderHPGeFile : "rawWithHeaderHPGe.bin"
+         rawLaBrFile : "rawLaBr.bin"
+         zsLaBrFile  : "zsLaBr.bin"
+         phLaBrFile  : "phLaBr.bin"
+         rawHeaderLaBrFile : "rawWithHeaderLaBr.bin"
+         eventFile : "event.bin"
+      }
    }
+
 
    analyzers  : {
 
-   frag:
-      {	
-	module_type : FragmentWatcher
-	mode_bitmask : 7
-	}	     
-      #stm :
-      #{
-      #   module_type : STMPrintFragments
-      #}
+    stmPrint : {
+      module_type : STMPrintFragments
+      stmTag : "daq:ContainerSTM"
+      printEverything : false
+      printInnerFrags : false
+      printPayloads   : false
+    }
 
    }
 
-   t1 : [ makeSTMDigisHPGe ]
-   # e1 : [ stm, stmOutput ]
-   e1 : [ frag, stmOutput ]  
+   t1 : [ makeSTMDigis ]
+   e1 : [ stmOutput ]
+   #e1 : [ ]
+   #e1 : [ frag, stmOutput ]
 
    trigger_paths  : [t1]
    end_paths      : [e1]
 
 }
 
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+services.message: {
+    debugModules: ["*"]
+
+    destinations: {
+        console: {
+            type: cout
+            threshold: "DEBUG"
+            categories: {
+                default: { limit: -1 }
+            }
+        }
+    }
+}
+
 outputs : {
    stmOutput : {
       module_type : RootOutput
       fileName : "dig.stm.art"
-      outputCommands : [ "drop *_*_*_*", "keep mu2e::STMWaveformDigis_*_*_*" ]
+      #fileName : "dig.%ifb.art"
+      outputCommands : [ "keep *_*_*_*", "drop artdaq::*_*_*_*" ]
    }
 }

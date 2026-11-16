@@ -29,10 +29,9 @@ namespace {
     }
 
     bool operator<(pConePlane const& a) const{
-      if ( z    < a.z    ) return true;
-      if ( rmin < a.rmin ) return true;
-      if ( rmax < a.rmax ) return true;
-      return false;
+      if ( z    != a.z    ) return z    < a.z;
+      if ( rmin != a.rmin ) return rmin < a.rmin;
+      return rmax < a.rmax;
     }
   };
 

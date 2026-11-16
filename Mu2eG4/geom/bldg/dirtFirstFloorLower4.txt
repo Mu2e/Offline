@@ -1,0 +1,18 @@
+string dirt.firstFloor.lower.4.name     = "dirtFirstFloorLower4";
+string dirt.firstFloor.lower.4.material = "MBOverburden";
+double dirt.firstFloor.lower.4.offsetFromMu2eOrigin.x   = 947.40;
+double dirt.firstFloor.lower.4.offsetFromFloorSurface.y = 6959.6;
+double dirt.firstFloor.lower.4.offsetFromMu2eOrigin.z   = -3581.40;
+double dirt.firstFloor.lower.4.yHalfThickness           = 406.40;
+vector<double> dirt.firstFloor.lower.4.xPositions = {
+37007.80, // 0
+37007.80, // 1
+29895.80, //  2
+29895.80 //   3
+};
+vector<double> dirt.firstFloor.lower.4.yPositions = {
+2031.95, // 1
+-431.8, // 2
+-431.8, // 3
+2031.95  // 4
+};

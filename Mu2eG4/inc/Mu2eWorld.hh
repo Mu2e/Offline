@@ -23,6 +23,7 @@
 
 #include <string>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include <map>
 #include <list>
@@ -105,6 +106,9 @@ namespace mu2e {
     std::unique_ptr<FieldMgr> _dsGradient;
 
     SensitiveDetectorHelper *sdHelper_; // Non-owning
+
+    // One Mu2eWorld serves every G4 thread; see constructSDandField().
+    std::mutex constructSDandFieldMutex_;
 
     Mu2eG4Config::Top conf_;
 

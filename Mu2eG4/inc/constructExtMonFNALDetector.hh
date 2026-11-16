@@ -29,6 +29,12 @@ namespace mu2e {
                                  const SimpleConfig& config
                                  );
 
+  // Call from ConstructSDandField(), on every thread.
+  void constructExtMonFNALMagnetField(const ExtMonFNALMagnet& mag,
+                                      const std::string& volNameSuffix,
+                                      const SimpleConfig& config
+                                      );
+
   void constructExtMonFNALPlanes(const VolumeInfo& mother,
                                  const ExtMonFNALModule& module,
                                  const ExtMonFNALPlaneStack& stack,

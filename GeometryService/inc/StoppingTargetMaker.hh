@@ -51,6 +51,7 @@ private:
   double _rIn; // inner radius of foils.  Currently 0.
 
   std::vector<double> _rOut; //outer Radii of foils
+  std::vector<double> _holeRadii; //optional per-foil hole radii; overrides the scalar _rIn
   std::vector<double> _halfThicknesses; //half thicknesses of foils
   std::vector<double> _xVars; //variation of x position from axis of foils
   std::vector<double> _yVars; //variation of y position from axis of foils

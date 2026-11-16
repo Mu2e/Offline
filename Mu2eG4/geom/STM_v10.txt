@@ -1,0 +1,11 @@
+// (Muon) Stoping Target Monitor (STM)
+//
+// Author: Yongyi Wu
+
+#include "Offline/Mu2eG4/geom/STM_v09.txt"
+bool stm.shieldingHolePoly.build = false;
+
+// This tells emacs to view this file in c++ mode
+// Local Variables:
+// mode:c++
+// End:

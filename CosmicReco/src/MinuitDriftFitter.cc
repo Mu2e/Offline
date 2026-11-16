@@ -66,14 +66,14 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
   // Initiate Minuit Fit:
   ROOT::Minuit2::MnStrategy mnStrategy(2);
   ROOT::Minuit2::MnUserParameters params(seed, errors);
+  // Set Limits as tracker dimensions:
+  params.SetLimits((signed)0, -10000, 10000);
+  params.SetLimits((signed)1, -5, 5);
+  params.SetLimits((signed)2, -5000, 5000);
+  params.SetLimits((signed)3, -10, 10);
+  params.Fix((unsigned)4);
   ROOT::Minuit2::MnMigrad migrad(fit, params, mnStrategy);
 
-  // Set Limits as tracker dimensions:
-  migrad.SetLimits((signed)0, -10000, 10000);
-  migrad.SetLimits((signed)1, -5, 5);
-  migrad.SetLimits((signed)2, -5000, 5000);
-  migrad.SetLimits((signed)3, -10, 10);
-  migrad.Fix((unsigned)4);
   int maxfcn = MaxLogL;
   double tolerance = 1000;
 
@@ -157,14 +157,14 @@ FitResult DoFit(int const& _diag, CosmicTrackSeed& tseed, StrawResponse const& s
                               _gaussTres, 1, tracker);
 
     ROOT::Minuit2::MnUserParameters newparams(newseed, newerrors);
+    // Set Limits as tracker dimensions:
+    newparams.SetLimits((signed)0, -10000, 10000);
+    newparams.SetLimits((signed)1, -5, 5);
+    newparams.SetLimits((signed)2, -5000, 5000);
+    newparams.SetLimits((signed)3, -10, 10);
+    newparams.Fix((unsigned)4);
     ROOT::Minuit2::MnMigrad newmigrad(fulldriftfit, newparams, mnStrategy);
 
-    // Set Limits as tracker dimensions:
-    newmigrad.SetLimits((signed)0, -10000, 10000);
-    newmigrad.SetLimits((signed)1, -5, 5);
-    newmigrad.SetLimits((signed)2, -5000, 5000);
-    newmigrad.SetLimits((signed)3, -10, 10);
-    newmigrad.Fix((unsigned)4);
 
     // Define Minimization method as "MIGRAD" (see minuit documentation)
     min = newmigrad(MaxLogL, tolerance);
@@ -219,14 +219,14 @@ void DoDriftTimeFit(
   ROOT::Minuit2::MnMigrad migrad(fit, params, mnStrategy);
 
   if (mnprecision > 0) {
-    migrad.SetPrecision(mnprecision);
+    migrad.State().SetPrecision(mnprecision);
   }
 
   // Do first fit stage with fixed drift res
   // and minimal t0
   fit.setFixedT0(true);
   fit.setFixedDriftRes(true,driftres);
-  migrad.Fix(4);
+  migrad.State().Fix(4);
   ROOT::Minuit2::FunctionMinimum temp_min = migrad(0, mntolerance);
   ROOT::Minuit2::MnUserParameters const& temp_results = temp_min.UserParameters();
   for (size_t i=0;i<4;i++){
@@ -239,7 +239,7 @@ void DoDriftTimeFit(
   pars[4] = fit.averageT0(pars);
   fit.setFixedT0(false);
   fit.setFixedDriftRes(false);
-  migrad.Release(4);
+  migrad.State().Release(4);
 
   // Define Minimization method as "MIGRAD" (see minuit documentation)
   ROOT::Minuit2::FunctionMinimum min = migrad(0, mntolerance);

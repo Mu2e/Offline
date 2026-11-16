@@ -12,6 +12,7 @@ cet_make_library(
       src/GrlList.cc
       src/GrlTool.cc
       src/OpenTool.cc
+      src/RunConfig.cc
       src/RunInfo.cc
       src/RunTool.cc
     LIBRARIES PUBLIC

@@ -51,7 +51,7 @@ class Straw: public VirtualShape
     double x2=x-halflength*st*sp;
     double y2=y+halflength*st*cp;
     double z2=z-halflength*ct;
-    _line->SetLineWidth(1);
+    _line->SetLineWidth(2);
     _line->SetPoint(0,x1,y1,z1);
     _line->SetPoint(1,x2,y2,z2);
     start();

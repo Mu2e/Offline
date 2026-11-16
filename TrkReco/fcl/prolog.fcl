@@ -13,6 +13,15 @@ TrkReco: {
     comboHitCollTag    : "makeSH"
     strawDigiMCCollTag : "compressDigiMCs"
   }
+# standard track selection
+  TrkSel : {
+    tool_type : SimpleKalSeedSelector
+    MinMomentum : 40.0 # MeV/c
+    MaxMomentum : 300.0 #MeV/c
+    MinFitConsistency : 1e-6
+    MinDeltaNHitFraction : 0.0
+    MinActiveHits : 15
+  }
 }
 
 TrkReco: { @table::TrkReco
@@ -135,23 +144,39 @@ TrkReco: { @table::TrkReco
       MinNHitOverlap             : 10
     }
   }
-# standard config for reflection selection
-  SelectReflections: {
-    module_type : SelectReflections
-    MaxDeltaT : 20 # ns
-    MaxDeltaP : 10 # MeV
-    # optionally only merge selected candidates
-    # a simple selector is used here, but any selector implemented as a tool can be used
-    Selector : {
-      tool_type : SimpleKalSeedSelector
-      MinMomentum : 40.0 # MeV/c
-      MaxMomentum : 300.0 #MeV/c
-      MinFitConsistency : 1e-6
-      MinDeltaNHitFraction : 0.0
-      MinActiveHits : 0
+  filters : {
+    # t0 segment selection needs very wide time window
+    SelectT0Reflections: {
+      module_type : SelectReflections
+      MaxDeltaT : 200 # ns. Allow large differences to accomodate upstream reflection transit time
+      MaxDeltaP : 10 # MeV
+      Selector : @local::TrkReco.TrkSel
+      SelectBestPair : "DeltaP" # select pair with best momentum match
+      ReflectionTestDirection : "Any" # test for reflection in any direction
+      debugLevel : 0
     }
-    SelectBestPair : 0 # select highest-momentum match
-    debugLevel : 0
+    # tight selection at tracker front
+    SelectReflections: {
+      module_type : SelectReflections
+      MaxDeltaT : 5 # ns
+      MaxDeltaP : 10 # MeV
+      Selector : @local::TrkReco.TrkSel
+      SelectBestPair : "NActive" # select pair with highest # of active hits
+      ReflectionTestDirection : "Any" # test for reflection in any direction
+      Surface : "TT_Front"
+    }
+
+    SelectSameTrack: {
+      module_type : SelectSameTrack
+      debugLevel : 0
+      MaxDeltaT : 10
+      MaxDeltaP : 10
+      MinHitFrac : 0.6
+      Selector : @local::TrkReco.TrkSel
+      SelectBestPair : "HitFraction" # highest hit overlap
+      ComparisonDirection : "Downstream"
+      ComparisonSurface : TT_Front
+    }
   }
 }
 END_PROLOG

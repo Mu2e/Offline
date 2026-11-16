@@ -23,6 +23,7 @@
 #include "Offline/Mu2eKinKal/inc/DriftANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/BkgANNSHU.hh"
 #include "Offline/Mu2eKinKal/inc/Chi2SHU.hh"
+#include "Offline/Mu2eKinKal/inc/PanelDiagSHU.hh"
 #include "Offline/Mu2eKinKal/inc/StrawHitUpdaters.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 // Other
@@ -52,6 +53,7 @@ namespace mu2e {
           ComboHit const& chit, Straw const& straw, StrawHitIndex const& shindex, StrawResponse const& sresponse);
       // clone op for reinstantiation
       KKStrawHit(KKStrawHit<KTRAJ> const& rhs):
+          KinKal::ResidualHit<KTRAJ>(rhs),
           bfield_(rhs.bfield()),
           whstate_(rhs.hitState()),
           dVar_(rhs.dVar_),
@@ -81,7 +83,7 @@ namespace mu2e {
       auto const& timeResidual() const { return resids_[Mu2eKinKal::tresid];}
       auto const& distResidual() const { return resids_[Mu2eKinKal::dresid];}
       double time() const override { return ca_.particleToca(); }
-      void updateReference(PTRAJ const& ptraj) override;
+      void updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) override;
       KTRAJPTR refTrajPtr() const override { return ca_.particleTrajPtr(); }
       void print(std::ostream& ost=std::cout,int detail=0) const override;
       // re-override; even though this is implemented in the base class
@@ -155,18 +157,19 @@ namespace mu2e {
     return CA(utraj,wirePtr(),ca.hint(),ca.precision());
   }
 
-  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj) {
+  template <class KTRAJ> void KKStrawHit<KTRAJ>::updateReference(PTRAJ const& ptraj, MetaIterConfig const& miconfig) {
     // if we already computed PCA in the previous iteration, use that to set the hint.  This speeds convergence
     // otherwise use the time at the center of the wire, corrected for drift
     auto mtime =wire().timeAtMidpoint();
+    unsigned maxiter = miconfig.hitPieceIter();
     CAHint tphint = ca_.usable() ?  ca_.hint() : CAHint(mtime-chit_.driftTime(),mtime);
-    PCA pca(ptraj,wirePtr(),tphint,precision());
+    PCA pca(ptraj,wirePtr(),tphint,precision(),maxiter);
     // check that we're on the right branch: we can move off if t0 changes a lot between iterations
-    double dz = straw().origin().z() - ca_.particlePoca().Z();
+    double dz = straw().origin().z() - pca.particlePoca().Z();
     double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
     if((!pca.usable()) || fabs(dz) >  maxdz) {
       tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),mtime-chit_.driftTime()),mtime);
-      pca = PCA(ptraj,wirePtr(),tphint,precision());
+      pca = PCA(ptraj,wirePtr(),tphint,precision(),maxiter);
       dz = straw().origin().z() - pca.particlePoca().Z();
       if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try
     }
@@ -178,10 +181,12 @@ namespace mu2e {
     auto cashu = miconfig.findUpdater<CADSHU>();
     auto driftshu = miconfig.findUpdater<DriftANNSHU>();
     auto bkgshu = miconfig.findUpdater<BkgANNSHU>();
+    auto diagshu = miconfig.findUpdater<PanelDiagSHU>();
     CA ca = unbiasedClosestApproach();
     if(ca.usable()){
       auto dinfo = fillDriftInfo(ca);
       // there can be multiple updaters: apply them all
+      if(diagshu)whstate_ = diagshu->wireHitState(whstate_,straw_.id());
       if(cashu)whstate_ = cashu->wireHitState(whstate_,ca.tpData(),dinfo);
       if(bkgshu)whstate_ = bkgshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);
       if(driftshu)whstate_ = driftshu->wireHitState(whstate_,ca.tpData(),dinfo,chit_);

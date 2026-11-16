@@ -100,7 +100,7 @@ namespace mu2e
   bool CaloCosmicCalib::beginRun(art::Run & run){
     GeomHandle<Calorimeter> ch;
     _calogeom    = ch.get();
-    _crystalsize = _calogeom->caloInfo().getDouble("crystalXYLength") +  2.*_calogeom->caloInfo().getDouble("wrapperThickness");
+    _crystalsize = _calogeom->G4Info().get<double>("crystalXYLength") +  2.*_calogeom->G4Info().get<double>("wrapperThickness");
 
     return true;
   }
@@ -152,7 +152,7 @@ namespace mu2e
           int _cryid = hitcalo->crystalID();
           int DiskId = _calogeom->crystal(_cryid).diskID();
 
-          CLHEP::Hep3Vector crystalpos = _calogeom->geomUtil().mu2eToDiskFF(DiskId,_calogeom->crystal(_cryid).position());
+          CLHEP::Hep3Vector crystalpos = _calogeom->mu2eToDiskFF(DiskId,_calogeom->crystal(_cryid).position());
 
           if( ene> _mincelcut){         // Use cells with energy above a MIP-like threshold
             xval = crystalpos.x();

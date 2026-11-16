@@ -47,6 +47,7 @@ namespace mu2e {
         bfconf_->flipBFieldMaps_ = config.getBool("bfield.flipMaps", false);
 
         bfconf_->scaleFactor_ = config.getDouble("bfield.scaleFactor", 1.0);
+        bfconf_->minUsableField_ = config.getDouble("bfield.minUsableField", 0.0);
 
         bfconf_->dsFieldForm_ = BFieldConfig::DSFieldModel(
             config.getInt("detSolFieldForm", BFieldConfig::dsModelUniform));

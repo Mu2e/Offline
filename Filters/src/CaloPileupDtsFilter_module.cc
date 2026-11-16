@@ -18,7 +18,6 @@
 
 // Offline
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
-#include "Offline/CalorimeterGeom/inc/CaloGeomUtil.hh"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
@@ -123,8 +122,7 @@ namespace mu2e {
   CLHEP::Hep3Vector CaloPileupDtsFilter::stepPosition(const CaloShowerStep& step) const {
     // Get the position of the CaloShowerStep in Mu2e coordinates
     const CLHEP::Hep3Vector& pos = step.position();
-    const auto& calo_geom = calorimeter_->geomUtil();
-    const auto pos_in_mu2e = calo_geom.crystalToMu2e(step.volumeG4ID(), pos);
+    const auto pos_in_mu2e = calorimeter_->crystalToMu2e(step.volumeG4ID(), pos);
     return pos_in_mu2e;
   }
 

@@ -1,4 +1,4 @@
-//
+ //
 // Construct materials requested by the run-time configuration system.
 //
 
@@ -122,7 +122,6 @@ namespace mu2e {
   //  *************************************************
   void ConstructMaterials::constructMu2eMaterials(){
 
-
     CheckedG4String mat = uniqueMaterialOrThrow( "CONCRETE_MARS" );
     {
       G4Material* ConcreteMars = new G4Material(mat.name, 2.35*CLHEP::g/CLHEP::cm3, 9 );
@@ -135,6 +134,13 @@ namespace mu2e {
       ConcreteMars->AddElement( getElementOrThrow("K") , 0.010); //Potassium
       ConcreteMars->AddElement( getElementOrThrow("Ca"), 0.200); //Calcium
       ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
+    }
+
+    mat = uniqueMaterialOrThrow( "CONCRETE_EXTMON_HANDSTACKED" );
+    {
+      // 2.06 g/cm3 from weighing ExtMon blocks, see docdb-58926
+      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.06*CLHEP::g/CLHEP::cm3, 1 );
+      ConcreteHandstacked->AddMaterial( findMaterialOrThrow("CONCRETE_MARS"), 1.);
     }
 
     // SDF the average density refers to the average density of an 8'' Masonry Concrete Unit (see doc-db 11669 Architectural Drawings pag.9)
@@ -230,21 +236,6 @@ namespace mu2e {
       HeavyConcrete->AddElement( getElementOrThrow("Mn"), 0.00321757); //Manganese
       HeavyConcrete->AddElement( getElementOrThrow("Fe"), 0.47423935); //Iron
       HeavyConcrete->AddElement( getElementOrThrow("Sr"), 6.4097E-4);  //Strontium
-    }
-
-    mat = uniqueMaterialOrThrow( "ShieldingConcrete");
-    {
-      //
-      // Concrete is 2.00 for fraction, but shielding concrete has reinforcing Iron bars:
-      // www-esh.fnal.gov/TM1834_PDF_FILES/TM_1834_Revision_9.pdf
-      //
-      G4Material* ShieldingConcrete = new G4Material( mat.name, 2.5*CLHEP::g/CLHEP::cm3, 6);
-      ShieldingConcrete->AddElement( getElementOrThrow("O") ,  0.5200);
-      ShieldingConcrete->AddElement( getElementOrThrow("Si"),  0.3250);
-      ShieldingConcrete->AddElement( getElementOrThrow("Ca"),  0.0600);
-      ShieldingConcrete->AddElement( getElementOrThrow("Na"),  0.0150);
-      ShieldingConcrete->AddElement( getElementOrThrow("Fe"),  0.0400);
-      ShieldingConcrete->AddElement( getElementOrThrow("Al"),  0.0400);
     }
 
     mat = uniqueMaterialOrThrow( "Polyethylene");
@@ -448,7 +439,7 @@ namespace mu2e {
     mat = uniqueMaterialOrThrow( "RackSteel" );
     {
       G4Material* RackSteel = new G4Material( mat.name, 8.05*CLHEP::g/CLHEP::cm3, 2);
-      RackSteel->AddMaterial(findMaterialOrThrow("G4_Al"),0.985);
+      RackSteel->AddMaterial(findMaterialOrThrow("G4_Fe"),0.985);
       RackSteel->AddMaterial(findMaterialOrThrow("G4_C"), 0.015);
     }
 
@@ -1263,6 +1254,30 @@ namespace mu2e {
       tgt->AddMaterial(met, 1.);
     }
 
+    // Proton beam dump core material
+    mat = uniqueMaterialOrThrow( "BEAMDUMP_CORE");
+    {
+      // The beam dump core is made of steel plates separated by air
+      // gaps, but it is modeled here as a single block of material.
+      // Define a lower density material to account for the effect of
+      // the air gaps.
+
+      G4Material* bmat = findMaterialOrThrow("G4_Fe");
+
+      // The total thickness of the steel plates per the drawing SC-38.
+      const double sumOfSteel = 2084. * CLHEP::mm;
+
+      // The distance from the front to the back face of the dump core,
+      // which includes the plates and the air gaps.
+      const double totalLength = 2140. * CLHEP::mm; // drawing SC-38
+
+      // Scale down density of the original solid material
+      const double density = (sumOfSteel/totalLength) * bmat->GetDensity();
+
+      G4Material* coreMaterial = new G4Material(mat.name, density, 1);
+      coreMaterial->AddMaterial(bmat, 1.);
+    }
+
     mat = uniqueMaterialOrThrow( "CarbonFiber_resin");
     {
       G4double density;
@@ -1334,6 +1349,15 @@ namespace mu2e {
       CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
     }
 
+    mat = uniqueMaterialOrThrow("IPAPolystyrene");
+    {
+      // We used an explicity density here
+      // Reflects the corrected density for End Ring material
+      G4double IPAEffectiveDensity = 0.426*CLHEP::g/CLHEP::cm3; //explicit density refer to Doc-57487-v3
+      G4Material* IPAPolystyrene = new G4Material( mat.name, IPAEffectiveDensity, 2);
+      IPAPolystyrene->AddElement( getElementOrThrow("C"), 8);
+      IPAPolystyrene->AddElement( getElementOrThrow("H"), 8);
+    }
 
     //G10-FR4 used for printed board of the I-Tracker
     // G10 http://personalpages.to.infn.it/~tosello/EngMeet/ITSmat/SDD/SDD_G10FR4.html

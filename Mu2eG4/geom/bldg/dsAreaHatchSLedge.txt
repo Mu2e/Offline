@@ -18,8 +18,8 @@ vector<double> building.dsArea.hatchsledge.xPositions = {
 };
 
 vector<double> building.dsArea.hatchsledge.yPositions = {
-  -8305.8,   // B
-  -8305.8,   // C
+  -8178.8,   // B
+  -8178.8,   // C
   -8661.4,   // C1
   -8661.4   // E
 };

@@ -21,6 +21,7 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 
 #include <iostream>
 #include <string>
@@ -66,6 +67,7 @@ namespace mu2e {
      private:
         art::ProductToken<CaloProtoClusterCollection>  mainToken_;
         art::ProductToken<CaloProtoClusterCollection>  splitToken_;
+        ProditionsHandle<Calorimeter>                  alignedCal_h;
         double                                         deltaTime_;
         double                                         maxDistSplit_;
         double                                         maxDistMain_;
@@ -73,30 +75,33 @@ namespace mu2e {
         int                                            diagLevel_;
 
         std::vector<double> clusterTimeEnergy(const std::vector<art::Ptr<CaloHit>>& hits);
-        void                makeCaloClusters(CaloClusterCollection&, const CaloProtoClusterCollection&, const CaloProtoClusterCollection&);
+        void                makeCaloClusters(const Calorimeter& cal,  CaloClusterCollection&,
+                                             const CaloProtoClusterCollection&,
+                                             const CaloProtoClusterCollection&);
   };
 
 
   //---------------------------------------------------------------------------------------------------------------
   void CaloClusterMaker::produce(art::Event& event)
   {
+      const Calorimeter& alignedCal = alignedCal_h.get(event.id());
+
       const auto& caloClustersMain  = *event.getValidHandle(mainToken_);
       const auto& caloClustersSplit = *event.getValidHandle(splitToken_);
 
       auto caloClusters = std::make_unique<CaloClusterCollection>();
-      makeCaloClusters(*caloClusters, caloClustersMain, caloClustersSplit);
+      makeCaloClusters(alignedCal, *caloClusters, caloClustersMain, caloClustersSplit);
 
       event.put(std::move(caloClusters));
   }
 
 
   //---------------------------------------------------------------------------------------------------------------
-  void CaloClusterMaker::makeCaloClusters(CaloClusterCollection& caloClusters, const CaloProtoClusterCollection& caloClustersMain,
+  void CaloClusterMaker::makeCaloClusters(const Calorimeter& cal,
+                                          CaloClusterCollection& caloClusters,
+                                          const CaloProtoClusterCollection& caloClustersMain,
                                           const CaloProtoClusterCollection& caloClustersSplit)
   {
-      const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-
-
       ClusterAssociator associator(cal);
       associator.associateSplitOff(caloClustersMain, caloClustersSplit, deltaTime_,maxDistSplit_);
 
@@ -116,8 +121,8 @@ namespace mu2e {
               isSplit = true;
 
               caloHitsPtrVector.insert(caloHitsPtrVector.end(),
-                                              caloClustersSplit.at(isplit).caloHitsPtrVector().begin(),
-                                              caloClustersSplit.at(isplit).caloHitsPtrVector().end());
+                                       caloClustersSplit.at(isplit).caloHitsPtrVector().begin(),
+                                       caloClustersSplit.at(isplit).caloHitsPtrVector().end());
 
               if (diagLevel_ > 1) std::cout<<"Associated main cluster "<<imain <<" with split cluster "<<isplit<<std::endl;
           }

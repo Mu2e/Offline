@@ -14,8 +14,8 @@ double dirt.central.stairwell.middle.yHalfThickness           = 1635.125;
 
 vector<double> dirt.central.stairwell.middle.xPositions = {
   5308.6,   // g1
-  11617.325,   // g2
-  11617.325,    // g3
+  11617.2,   // g2
+  11617.2,    // g3
   13630.275,    // g4
   13630.275,    // g5
   5308.6   // g6

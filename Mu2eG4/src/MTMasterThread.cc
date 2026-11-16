@@ -12,6 +12,7 @@
 //G4 includes
 #include "Geant4/G4PhysicalVolumeStore.hh"
 #include "Geant4/G4LogicalVolumeStore.hh"
+#include "Geant4/G4HadronicInteractionRegistry.hh"
 
 //art includes
 #include "art/Framework/Principal/Run.h"
@@ -109,6 +110,9 @@ namespace mu2e {
 
         masterRunManager.reset();
         storeCleanUp();
+        // Delete the master's hadronic models on the thread that owns their
+        // G4Cache slots, instead of at process exit on the main thread.
+        G4HadronicInteractionRegistry::Instance()->Clean();
 
         if (m_mtDebugOutput > 0) {
           G4cout << "Master thread: reset shared_ptr" << G4endl;

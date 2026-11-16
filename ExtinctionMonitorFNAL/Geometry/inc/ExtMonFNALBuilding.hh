@@ -40,12 +40,16 @@ namespace mu2e {
     // Shielding that is not part of the civil construction
 
     CLHEP::HepRotation shieldingRotationInMu2e() const { return shieldingRotationInMu2e_; }
-    CLHEP::Hep3Vector shieldingNCenterInMu2e() const { return shieldingNCenterInMu2e_; }
-    CLHEP::Hep3Vector shieldingSCenterInMu2e() const { return shieldingSCenterInMu2e_; }
-    CLHEP::Hep3Vector shieldingBCenterInMu2e() const { return shieldingBCenterInMu2e_; }
-    const std::vector<double>& shieldingNHalfSize() const { return shieldingNHalfSize_; }
-    const std::vector<double>& shieldingSHalfSize() const { return shieldingSHalfSize_; }
-    const std::vector<double>& shieldingBHalfSize() const { return shieldingBHalfSize_; }
+    CLHEP::Hep3Vector shieldingNSteelCenterInMu2e() const { return shieldingNSteelCenterInMu2e_; }
+    const std::vector<double>& shieldingNSteelHalfSize() const { return shieldingNSteelHalfSize_; }
+    CLHEP::Hep3Vector shieldingSSteelCenterInMu2e() const { return shieldingSSteelCenterInMu2e_; }
+    const std::vector<double>& shieldingSSteelHalfSize() const { return shieldingSSteelHalfSize_; }
+    CLHEP::Hep3Vector shieldingNConcreteCenterInMu2e() const { return shieldingNConcreteCenterInMu2e_; }
+    const std::vector<double>& shieldingNConcreteHalfSize() const { return shieldingNConcreteHalfSize_; }
+    CLHEP::Hep3Vector shieldingSConcreteCenterInMu2e() const { return shieldingSConcreteCenterInMu2e_; }
+    const std::vector<double>& shieldingSConcreteHalfSize() const { return shieldingSConcreteHalfSize_; }
+    CLHEP::Hep3Vector shieldingFloorConcreteCenterInMu2e() const { return shieldingFloorConcreteCenterInMu2e_; }
+    const std::vector<double>& shieldingFloorConcreteHalfSize() const { return shieldingFloorConcreteHalfSize_; }
 
     const CLHEP::Hep3Vector& coll2ShieldingCenterInMu2e() const { return coll2ShieldingCenterInMu2e_; }
     const CLHEP::HepRotation& coll2ShieldingRotationInMu2e() const { return coll2ShieldingRotationInMu2e_; }
@@ -79,12 +83,16 @@ namespace mu2e {
     CLHEP::Hep3Vector HVACductCenterInMu2e_;
 
     CLHEP::HepRotation shieldingRotationInMu2e_;
-    CLHEP::Hep3Vector shieldingNCenterInMu2e_;
-    CLHEP::Hep3Vector shieldingSCenterInMu2e_;
-    CLHEP::Hep3Vector shieldingBCenterInMu2e_;
-    std::vector<double> shieldingNHalfSize_;
-    std::vector<double> shieldingSHalfSize_;
-    std::vector<double> shieldingBHalfSize_;
+    CLHEP::Hep3Vector shieldingNSteelCenterInMu2e_;
+    std::vector<double> shieldingNSteelHalfSize_;
+    CLHEP::Hep3Vector shieldingSSteelCenterInMu2e_;
+    std::vector<double> shieldingSSteelHalfSize_;
+    CLHEP::Hep3Vector shieldingNConcreteCenterInMu2e_;
+    std::vector<double> shieldingNConcreteHalfSize_;
+    CLHEP::Hep3Vector shieldingSConcreteCenterInMu2e_;
+    std::vector<double> shieldingSConcreteHalfSize_;
+    CLHEP::Hep3Vector shieldingFloorConcreteCenterInMu2e_;
+    std::vector<double> shieldingFloorConcreteHalfSize_;
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e_;
     CLHEP::HepRotation coll2ShieldingRotationInMu2e_;

@@ -24,6 +24,7 @@
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -38,6 +39,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "Offline/DataProducts/inc/VirtualDetectorId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
+#include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 #include "Offline/MCDataProducts/inc/MARSInfo.hh"
 #include "Offline/MCDataProducts/inc/GenParticleMARSAssns.hh"
 
@@ -157,6 +159,7 @@ namespace mu2e {
       explicit ExtMonFNALBoxGenerator(const fhicl::ParameterSet& pset);
       virtual void produce(art::Event& event);
       virtual void beginRun(art::Run& run);
+      virtual void endSubRun(art::SubRun& sr) override;
     };
 
     //================================================================
@@ -190,6 +193,7 @@ namespace mu2e {
       produces<mu2e::GenParticleCollection>();
       produces<mu2e::MARSInfoCollection>();
       produces<mu2e::GenParticleMARSAssns>();
+      produces<mu2e::SpectrumConfig, art::InSubRun>();
 
       if(inputFiles_.empty()) {
         throw cet::exception("BADCONFIG")<<"Error: no inputFiles";
@@ -649,6 +653,11 @@ namespace mu2e {
                          posMu2e,
                          momMu2e,
                          muonTime);
+    }
+
+    void ExtMonFNALBoxGenerator::endSubRun(art::SubRun& sr) {
+      auto config = std::make_unique<SpectrumConfig>();
+      sr.put(std::move(config), art::fullSubRun());
     }
 
     //================================================================

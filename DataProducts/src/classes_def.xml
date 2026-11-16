@@ -60,10 +60,20 @@
  <class name="art::Wrapper<mu2e::STMTestBeamEventInfo>" />
 
 <!--  ********* filter  ********* -->
- <class name="mu2e::FilterFraction"/>
- <class name="art::Wrapper<mu2e::FilterFraction>" />
- <class name="mu2e::PrescaleFilterFraction"/>
- <class name="art::Wrapper<mu2e::PrescaleFilterFraction>" />
+<class name="mu2e::FilterFraction"/>
+<class name="art::Wrapper<mu2e::FilterFraction>" />
+<class name="mu2e::PrescaleFilterFraction"/>
+<class name="art::Wrapper<mu2e::PrescaleFilterFraction>" />
+<class name="map<art::SubRunID,mu2e::PrescaleFilterFraction>"/>
+<class name="map<string,map<art::SubRunID,mu2e::PrescaleFilterFraction> >"/>
+<class name="art::Sampled<mu2e::PrescaleFilterFraction>"/>
+<class name="art::Wrapper<art::Sampled<mu2e::PrescaleFilterFraction> >"/>
+<class name="mu2e::StageNormalization"/>
+<class name="art::Wrapper<mu2e::StageNormalization>" />
+<class name="map<art::SubRunID,mu2e::StageNormalization>"/>
+<class name="map<string,map<art::SubRunID,mu2e::StageNormalization> >"/>
+<class name="art::Sampled<mu2e::StageNormalization>"/>
+<class name="art::Wrapper<art::Sampled<mu2e::StageNormalization> >"/>
 
 <!--  ********* general  ********* -->
  <class name="mu2e::SurfaceIdDetail"/>
