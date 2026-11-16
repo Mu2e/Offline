@@ -260,6 +260,8 @@ namespace mu2e {
     }
 
     // ----- 5. Per-source-node degree cap at k_max (keep nearest dsts).
+    //         Stable sort: equal distances keep the (src, dst) order of
+    //         step 4, so ties go to the lower dst index.
     if (cfg_.kMax > 0) {
       std::vector<std::vector<int>> bySrc(n);
       for (std::size_t k = 0; k < srcL.size(); ++k) {
@@ -269,7 +271,7 @@ namespace mu2e {
       for (std::size_t s = 0; s < n; ++s) {
         if (bySrc[s].size() <= cfg_.kMax) continue;
         auto& idx = bySrc[s];
-        std::sort(idx.begin(), idx.end(), [&](int a, int b) {
+        std::stable_sort(idx.begin(), idx.end(), [&](int a, int b) {
           const int da = dstL[a], db = dstL[b];
           const double dxa = xs[s] - xs[da];
           const double dya = ys[s] - ys[da];
