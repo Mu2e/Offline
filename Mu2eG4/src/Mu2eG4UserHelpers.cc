@@ -417,14 +417,11 @@ namespace mu2e {
         key_type const & simid = sim.id();
 
         // Check that daughters point to the mother.
-        std::vector<key_type> const& dau = sim.daughterIds();
-
-        for ( std::vector<key_type>::const_iterator j=dau.begin();
-              j!=dau.end(); ++j) {
+        for ( auto const& dptr : sim.daughters() ) {
 
           key_type parentId;
 
-          map_type::const_iterator fdi = transientMap.find(*j);
+          map_type::const_iterator fdi = transientMap.find(key_type(dptr.key()));
           bool daugterFound = fdi !=transientMap.end();
           if (daugterFound) {
             parentId = (fdi->second).parentId();
@@ -465,12 +462,9 @@ namespace mu2e {
             }
           } else {
 
-            std::vector<key_type> const& mdau = (fpi->second).daughterIds();
-            bool inList(false);
-
-            if (find(mdau.begin(), mdau.end(), simid)!=mdau.end()) {
-              inList = true;
-            }
+            auto const& mdau = (fpi->second).daughters();
+            bool inList = std::any_of(mdau.begin(), mdau.end(),
+                                      [&simid](auto const& dptr){ return key_type(dptr.key()) == simid; });
 
             if ( !inList ){
               ok = false;
