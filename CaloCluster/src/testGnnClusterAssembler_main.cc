@@ -5,8 +5,13 @@
 // Reads a JSON parity payload (produced by
 // calorimeter/GNN/scripts/dump_parity_payloads.py), replays
 // GnnClusterAssembler::assemble for each graph, and asserts the
-// emitted cluster_labels are byte-identical to the Python reference
-// labels stored in the same payload. Exits non-zero on any mismatch.
+// emitted partition is identical to the Python reference labels stored
+// in the same payload. Cluster IDs are compared after renumbering both
+// sides in first-appearance order (Python numbers clusters by seed
+// energy, the assembler by first appearance); -1 (dropped) must match
+// exactly. A payload without any multi-hit reference cluster is
+// rejected, since it cannot test the assembly. Exits non-zero on any
+// mismatch.
 //
 // Usage:
 //   testGnnClusterAssembler  <path-to-parity.json>
@@ -23,6 +28,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -31,6 +37,20 @@ namespace {
 
   constexpr const char* kDefaultPayload =
     "/exp/mu2e/app/users/wzhou2/projects/calorimeter/GNN/tests/parity/calo_cluster_net_v2_stage1.parity.json";
+
+  // Renumber cluster IDs in first-appearance order; -1 stays -1.
+  std::vector<int> canonical(const std::vector<int>& labels)
+  {
+    std::map<int, int> remap;
+    std::vector<int> out(labels.size(), -1);
+    for (std::size_t i = 0; i < labels.size(); ++i) {
+      if (labels[i] < 0) continue;
+      auto it = remap.find(labels[i]);
+      if (it == remap.end()) it = remap.emplace(labels[i], static_cast<int>(remap.size())).first;
+      out[i] = it->second;
+    }
+    return out;
+  }
 
 }
 
@@ -78,6 +98,7 @@ int main(int argc, char* argv[])
   std::size_t nMismatchGraphs = 0;
   std::size_t nMismatchNodes = 0;
   std::size_t maxMismatchPerGraph = 0;
+  std::size_t nRefMultiHit = 0;
 
   for (const auto& g : graphs) {
     const int N = g.at("n_nodes").get<int>();
@@ -104,6 +125,12 @@ int main(int argc, char* argv[])
       return 2;
     }
 
+    std::map<int, int> refSizes;
+    for (int v : refLabels) if (v >= 0) ++refSizes[v];
+    for (const auto& [id, size] : refSizes) if (size > 1) ++nRefMultiHit;
+
+    refLabels = canonical(refLabels);
+    outLabels = canonical(outLabels);
     std::size_t diffs = 0;
     for (int i = 0; i < N; ++i) {
       if (outLabels[i] != refLabels[i]) ++diffs;
@@ -131,13 +158,19 @@ int main(int argc, char* argv[])
   std::cout << "mismatch graphs: " << nMismatchGraphs << "\n";
   std::cout << "mismatch nodes:  " << nMismatchNodes << "\n";
   std::cout << "max diffs/graph: " << maxMismatchPerGraph << "\n";
+  std::cout << "multi-hit reference clusters: " << nRefMultiHit << "\n";
 
+  if (nRefMultiHit == 0) {
+    std::cerr << "[FAIL] payload has no multi-hit reference cluster;"
+              << " it cannot test the assembly\n";
+    return 2;
+  }
   if (nMismatchGraphs > 0) {
     std::cerr << "[FAIL] cluster-label parity broken on "
               << nMismatchGraphs << " / " << nGraphs << " graph(s)\n";
     return 1;
   }
   std::cout << "[PASS] all " << nGraphs
-            << " graphs match Python cluster_labels byte-exactly\n";
+            << " graphs match the Python cluster partition exactly\n";
   return 0;
 }
