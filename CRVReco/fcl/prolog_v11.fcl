@@ -413,6 +413,10 @@ BEGIN_PROLOG
                                                  //are compensated by the other channel on the same counter side
       ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
+      ignoreReflectedPulses              : false  //ignore secondary pulses that are likely reflected pulses of the primary pulse
+      reflectedPulseMaxPulseHeightRatio  : 0.3    //max pulse height ratio b/w secondary and primary pulse to count as reflected pulse
+      reflectedPulseMinTimeDifference    : 30     //30 ns min time difference b/w secondary and primary pulse to count as reflected pulse
+      reflectedPulseMaxTimeDifference    : 80     //80 ns max time difference b/w secondary and primary pulse to count as reflected pulse
     }
 
 

@@ -236,7 +236,6 @@ namespace mu2e
     {
       //only use the first pulse of a waveform
       if(iter->GetSequenceIndex()>0) continue;
-      if(iter->IsRemovedSecondaryPulse()) continue;
       //check for any error flags, but ignore calibration flags
       auto flags = iter->GetRecoPulseFlags();
       if(flags.test(CrvRecoPulseFlagEnums::failedFit)) continue;

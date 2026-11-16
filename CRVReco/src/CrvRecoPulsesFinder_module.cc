@@ -86,11 +86,10 @@ namespace mu2e
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
-      fhicl::Atom<bool> removeSecondaryPulses{Name("removeSecondaryPulses"), Comment("remove secondary pulses caused by LPF ringing"), false}; //must be false for simulation
-      fhicl::Atom<bool> storeRemovedSecondaryPulses{Name("storeRemovedSecondaryPulses"), Comment("store remove secondary pulses (e.g. for EventDisplay)"), false};
-      fhicl::Atom<float> secondaryPulseParam0{Name("secondaryPulseParam0"), Comment("parameter 0 (height scale) for removal of secondary pulses"), 1.40}; //ns
-      fhicl::Atom<float> secondaryPulseParam1{Name("secondaryPulseParam1"), Comment("parameter 1 (time shift) for removal of secondary pulses"), 52.1}; //ns
-      fhicl::Atom<float> secondaryPulseParam2{Name("secondaryPulseParam2"), Comment("parameter 2 (beta adjustment) for removal of secondary pulses"), -2.30}; //ns
+      fhicl::Atom<bool> removeRingingArtifacts{Name("removeRingingArtifacts"), Comment("remove ringing artifacts caused by AFE's LPF"), false}; //must be false for simulation
+      fhicl::Atom<float> ringingArtifactParam0{Name("ringingArtifactParam0"), Comment("parameter 0 (height scale) of ringing artifacts"), 0.0684};
+      fhicl::Atom<float> ringingArtifactParam1{Name("ringingArtifactParam1"), Comment("parameter 1 (time shift) of ringing artifacts"), 51.1}; //ns
+      fhicl::Atom<float> ringingArtifactParam2{Name("ringingArtifactParam2"), Comment("parameter 2 (beta) of ringing artifacts"), 11.25}; //ns
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -166,11 +165,10 @@ namespace mu2e
                                                                                                     conf().LEtimeFactor(),
                                                                                                     conf().samplesBefore(),
                                                                                                     conf().samplesAfter(),
-                                                                                                    conf().removeSecondaryPulses(),
-                                                                                                    conf().storeRemovedSecondaryPulses(),
-                                                                                                    conf().secondaryPulseParam0(),
-                                                                                                    conf().secondaryPulseParam1(),
-                                                                                                    conf().secondaryPulseParam2()));
+                                                                                                    conf().removeRingingArtifacts(),
+                                                                                                    conf().ringingArtifactParam0(),
+                                                                                                    conf().ringingArtifactParam1(),
+                                                                                                    conf().ringingArtifactParam2()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -334,7 +332,6 @@ namespace mu2e
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
         bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
-        bool   removedSecondaryPulse  = _makeCrvRecoPulses->GetRemovedSecondaryPulses().at(j);
 
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
@@ -343,7 +340,13 @@ namespace mu2e
         if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, removedSecondaryPulse, j, flags,
+        double ringingArtifactTime   = _makeCrvRecoPulses->GetRingingArtifactTimes().at(j);
+        float  ringingArtifactHeight = _makeCrvRecoPulses->GetRingingArtifactHeights().at(j);
+        float  ringingArtifactBeta   = _makeCrvRecoPulses->GetRingingArtifactBetas().at(j);
+        if(ringingArtifactHeight>0) ringingArtifactTime += TDC0time + timeOffset;
+
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
+                                             ringingArtifactTime, ringingArtifactHeight, ringingArtifactBeta,
                                              waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
       }
 

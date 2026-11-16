@@ -14,8 +14,7 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                     float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
                     float LEtimeFactor, int samplesBefore, int samplesAfter,
-                    bool removeSecondaryPulses, bool storeRemovedSecondaryPulses,
-                    float secondaryPulseParam0, float secondaryPulseParam1, float secondaryPulseParam2);
+                    bool removeRingingArtifacts, float ringingArtifactParam0, float ringingArtifactParam1, float ringingArtifactParam2);
   void         SetWaveform(const std::vector<int16_t> &waveform, uint16_t startTDC,
                            float digitizationPeriod, float pedestal, float calibrationFactor,
                            float calibrationFactorPulseHeight);
@@ -29,7 +28,9 @@ class MakeCrvRecoPulses
   const std::vector<float>  &GetPulseFitChi2s() const  {return _pulseFitChi2s;}
   const std::vector<bool>   &GetZeroNdfs() const       {return _zeroNdf;}
   const std::vector<bool>   &GetFailedFits() const     {return _failedFits;}
-  const std::vector<bool>   &GetRemovedSecondaryPulses() const  {return _removedSecondaryPulses;}
+  const std::vector<double> &GetRingingArtifactTimes() const    {return _ringingArtifactTimes;}
+  const std::vector<float>  &GetRingingArtifactHeights() const  {return _ringingArtifactHeights;}
+  const std::vector<float>  &GetRingingArtifactBetas() const    {return _ringingArtifactBetas;}
 
   private:
   typedef std::array<double,3> Vec3;
@@ -54,13 +55,16 @@ class MakeCrvRecoPulses
   float  _minPulseHeightRatio, _maxPulseHeightRatio;
   float  _LEtimeFactor;
   int    _samplesBefore, _samplesAfter;
-  bool   _removeSecondaryPulses, _storeRemovedSecondaryPulses;
-  float  _secondaryPulseParam0, _secondaryPulseParam1, _secondaryPulseParam2;
+  bool   _removeRingingArtifacts;
+  float  _ringingArtifactParam0, _ringingArtifactParam1, _ringingArtifactParam2;
 
   std::vector<float>  _PEs, _PEsPulseHeight;
   std::vector<double> _pulseTimes, _LEtimes;
   std::vector<float>  _pulseHeights, _pulseBetas, _pulseFitChi2s;
-  std::vector<bool>   _zeroNdf, _failedFits, _removedSecondaryPulses;
+  std::vector<bool>   _zeroNdf, _failedFits;
+
+  std::vector<double> _ringingArtifactTimes;
+  std::vector<float>  _ringingArtifactHeights, _ringingArtifactBetas;
 };
 
 }

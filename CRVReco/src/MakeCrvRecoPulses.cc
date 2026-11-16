@@ -80,8 +80,7 @@ namespace mu2eCrv
 MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, float minBeta, float maxBeta,
                                      float maxTimeDifference, float minPulseHeightRatio, float maxPulseHeightRatio,
                                      float LEtimeFactor, int samplesBefore, int samplesAfter,
-                                     bool removeSecondaryPulses, bool storeRemovedSecondaryPulses,
-                                     float secondaryPulseParam0, float secondaryPulseParam1, float secondaryPulseParam2) :
+                                     bool removeRingingArtifacts, float ringingArtifactParam0, float ringingArtifactParam1, float ringingArtifactParam2) :
                                      _minADCdifference(minADCdifference),
                                      _defaultBeta(defaultBeta), _minBeta(minBeta), _maxBeta(maxBeta),
                                      _maxTimeDifference(maxTimeDifference),
@@ -89,11 +88,10 @@ MakeCrvRecoPulses::MakeCrvRecoPulses(float minADCdifference, float defaultBeta, 
                                      _maxPulseHeightRatio(maxPulseHeightRatio),
                                      _LEtimeFactor(LEtimeFactor),
                                      _samplesBefore(samplesBefore), _samplesAfter(samplesAfter),
-                                     _removeSecondaryPulses(removeSecondaryPulses),
-                                     _storeRemovedSecondaryPulses(storeRemovedSecondaryPulses),
-                                     _secondaryPulseParam0(secondaryPulseParam0),
-                                     _secondaryPulseParam1(secondaryPulseParam1),
-                                     _secondaryPulseParam2(secondaryPulseParam2)
+                                     _removeRingingArtifacts(removeRingingArtifacts),
+                                     _ringingArtifactParam0(ringingArtifactParam0),
+                                     _ringingArtifactParam1(ringingArtifactParam1),
+                                     _ringingArtifactParam2(ringingArtifactParam2)
 {
 }
 
@@ -280,7 +278,9 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
   _LEtimes.clear();
   _zeroNdf.clear();
   _failedFits.clear();
-  _removedSecondaryPulses.clear();
+  _ringingArtifactTimes.clear();
+  _ringingArtifactHeights.clear();
+  _ringingArtifactBetas.clear();
 
   size_t nBins=waveform.size();
   std::vector<double> y(nBins);
@@ -351,9 +351,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
     _PEsPulseHeight.push_back(PEsPulseHeight);
     _LEtimes.push_back(LEtime);
     _zeroNdf.push_back(zeroNdf);
-    _removedSecondaryPulses.push_back(false);
     //if one pulse reconstruction fails, all subsequent pulses should also get the error flag,
-    //because a wrong pulse subtraction will create wrong secondary pulses
+    //because a wrong pulse subtraction will create wrong subsequent pulses
     if(_failedFits.size()>0)
     {
       if(_failedFits.back()) _failedFits.push_back(true);
@@ -361,41 +360,29 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
     }
     else _failedFits.push_back(failedFit);
 
-    if(!_removeSecondaryPulses || _failedFits.back() || fr.par[2]+_secondaryPulseParam2<=0.0)
+    if(!_removeRingingArtifacts || _failedFits.back())
     {
       //subtract the fitted pulse (also for a failed fit) before searching for the next peak
       for(size_t bin=0; bin<nBins; ++bin) y[bin]-=std::round(Gumbel((startTDC+bin)*digitizationPeriod, fr.par));
+      _ringingArtifactTimes.push_back(0);
+      _ringingArtifactHeights.push_back(0);
+      _ringingArtifactBetas.push_back(0);
     }
     else
     {
-      //subtract the fitted pulse and the secondary pulse caused by ringing in the AFE's LPF
-      //(but only if the fit for the primary pulse did not fail and if fr.par[2]+_secondaryPulseParam2>0)
-      //these secondary pulses can be described by a Gumbel function and their parameters are related to the parameters of the primary pulse
-      Vec3 paramsSecondaryPulse;
-      paramsSecondaryPulse[0]=fr.par[0]*_secondaryPulseParam0/(fr.par[2]+_secondaryPulseParam2);
-      paramsSecondaryPulse[1]=fr.par[1]+_secondaryPulseParam1;
-      paramsSecondaryPulse[2]=fr.par[2]+_secondaryPulseParam2;
+      //subtract the fitted pulse and the ringing artifact from the AFE's LPF
+      //(but only if the fit for the primary pulse did not fail)
+      //these ringing artifacts can be described by a Gumbel function and their parameters are related to the parameters of the primary pulse
+      Vec3 paramsRingingArtifact;
+      paramsRingingArtifact[0]=fr.par[0]*_ringingArtifactParam0;
+      paramsRingingArtifact[1]=fr.par[1]+_ringingArtifactParam1;
+      paramsRingingArtifact[2]=_ringingArtifactParam2;
       for(size_t bin=0; bin<nBins; ++bin) y[bin]-=std::round(Gumbel((startTDC+bin)*digitizationPeriod, fr.par)+
-                                                             Gumbel((startTDC+bin)*digitizationPeriod, paramsSecondaryPulse));
+                                                             Gumbel((startTDC+bin)*digitizationPeriod, paramsRingingArtifact));
 
-      if(_storeRemovedSecondaryPulses) //useful, if one wants plot the reconstructed waveforms
-      {
-         pulseTime    = paramsSecondaryPulse[1];
-         pulseHeight  = paramsSecondaryPulse[0]/kE;
-         pulseBeta    = paramsSecondaryPulse[2];
-         LEtime         = pulseTime-_LEtimeFactor*pulseBeta;  //50% pulse height is reached at -0.985*beta before the peak
-
-        _pulseTimes.push_back(pulseTime);
-        _pulseHeights.push_back(pulseHeight);
-        _pulseBetas.push_back(pulseBeta);
-        _pulseFitChi2s.push_back(-1);
-        _PEs.push_back(0);  //set to zero, because it's not a real pulse
-        _PEsPulseHeight.push_back(0);
-        _LEtimes.push_back(LEtime);
-        _zeroNdf.push_back(true);
-        _failedFits.push_back(_failedFits.back());
-        _removedSecondaryPulses.push_back(true);
-      }
+      _ringingArtifactTimes.push_back(paramsRingingArtifact[1]);
+      _ringingArtifactHeights.push_back(paramsRingingArtifact[0]/kE);
+      _ringingArtifactBetas.push_back(paramsRingingArtifact[2]);
     }
 
     start=fitEnd;

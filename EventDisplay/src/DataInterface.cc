@@ -1123,10 +1123,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           crvbar->second->getComponentInfo()->setText(5,"Reco pulse SiPM2 PEs/time: ");
           crvbar->second->getComponentInfo()->setText(6,"Reco pulse SiPM3 PEs/time: ");
         }
-        if(!recoPulse.IsRemovedSecondaryPulse())
-        {
-          crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%.1fPEs/%.1fns",PEs,time/CLHEP::ns));
-        }
+        crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%.1fPEs/%.1fns",PEs,time/CLHEP::ns));
 
         //each digi collection and each SiPM gets its own multigraph
         std::vector<boost::shared_ptr<TObject> > &v=crvbar->second->getComponentInfo()->getHistVector();
@@ -1144,15 +1141,30 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
             TList *functionList = boost::dynamic_pointer_cast<TMultiGraph>(v[k])->GetListOfFunctions();
             if(functionList->GetSize()==0) functionList->Add(new TF1("pedestal",Form("%f",recoPulsePedestal))); //TODO: Use compiled function
-            TF1 *f = new TF1(Form("peakfitter%i",functionList->GetSize()),
+            TF1 *f = new TF1(Form("peakFitter%i",functionList->GetSize()),
                              Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
                              fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
             f->SetLineWidth(1);
             f->SetLineStyle(1);
             f->SetLineColor(2);
-            if(recoPulse.IsRemovedSecondaryPulse()) f->SetLineColor(15);
             if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
             functionList->Add(f);
+
+            if(recoPulse.IsRingingArtifactRemoved())
+            {
+              double ringingParam0 = recoPulse.GetRingingArtifactHeight()*TMath::E();
+              double ringingParam1 = recoPulse.GetRingingArtifactTime();
+              double ringingParam2 = recoPulse.GetRingingArtifactBeta();
+
+              TF1 *f2 = new TF1(Form("ringingArtifact%i",functionList->GetSize()),
+                                Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
+                                ringingParam0,ringingParam1,ringingParam2,ringingParam1,ringingParam2));  //TODO: Use compiled function
+              f2->SetLineWidth(1);
+              f2->SetLineStyle(1);
+              f2->SetLineColor(15);
+              if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f2->SetLineStyle(2);
+              functionList->Add(f2);
+            }
           }
         }
       }
