@@ -67,6 +67,9 @@ BEGIN_PROLOG
                                          // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                          // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
+      removeRingingArtifacts    : false  //remove ringing artifacts in a waveform
+                                         //needs to stay false for simulation, since the simulation doesn't contain ringing
+                                         //should be set to true for real data, since real data does contain ringing
     }
 
     CrvCoincidenceClusterFinder:
@@ -411,9 +414,9 @@ BEGIN_PROLOG
       timeOffset                       :  34.5  //34.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
-      ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform
+      ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform (obsolete)
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
-      ignoreReflectedPulses              : false  //ignore secondary pulses that are likely reflected pulses of the primary pulse
+      ignoreReflectedPulses              : true   //ignore secondary pulses that are likely reflected pulses of the primary pulse
       reflectedPulseMaxPulseHeightRatio  : 0.3    //max pulse height ratio b/w secondary and primary pulse to count as reflected pulse
       reflectedPulseMinTimeDifference    : 30     //30 ns min time difference b/w secondary and primary pulse to count as reflected pulse
       reflectedPulseMaxTimeDifference    : 80     //80 ns max time difference b/w secondary and primary pulse to count as reflected pulse

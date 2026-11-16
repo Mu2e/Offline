@@ -145,7 +145,6 @@ namespace mu2e
       double _x, _y;
       double _time;
       double _PEs;
-      bool   _reflectedPulse;
       int    _crvSector;
       int    _layer;
       int    _counter;
@@ -162,13 +161,11 @@ namespace mu2e
                            //with a min value of finalClusterMaxDistance. These updated _maxDistance values are used for the final clustering process.
 
       CrvHit(const art::Ptr<CrvRecoPulse> crvRecoPulse, const CLHEP::Hep3Vector &pos,
-             double x, double y, double time, double PEs, bool reflectedPulse,
-             int crvSector, int layer, int counter, int SiPM, int PEthreshold,
+             double x, double y, double time, double PEs, int crvSector, int layer, int counter, int SiPM, int PEthreshold,
              double maxTimeDifferenceAdjacentPulses, double maxTimeDifference,
              double minSlope, double maxSlope, double maxSlopeDifference, int coincidenceLayers, double minClusterPEs, double maxDistance) :
                _crvRecoPulse(crvRecoPulse), _pos(pos),
-               _x(x), _y(y), _time(time), _PEs(PEs), _reflectedPulse(reflectedPulse),
-               _crvSector(crvSector), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold),
+               _x(x), _y(y), _time(time), _PEs(PEs), _crvSector(crvSector), _layer(layer), _counter(counter), _SiPM(SiPM), _PEthreshold(PEthreshold),
                _maxTimeDifferenceAdjacentPulses(maxTimeDifferenceAdjacentPulses), _maxTimeDifference(maxTimeDifference),
                _minSlope(minSlope), _maxSlope(maxSlope), _maxSlopeDifference(maxSlopeDifference), _coincidenceLayers(coincidenceLayers),
                _minClusterPEs(minClusterPEs), _maxDistance(maxDistance) {}
@@ -322,8 +319,10 @@ namespace mu2e
 
       if(_ignoreSecondaryPulses && crvRecoPulse->GetSequenceIndex()>0) continue;  //TODO: this option is left for older files. should be removed soon.
 
-      bool reflectedPulse = false;
-      if(_ignoreReflectedPulses) reflectedPulse = IsReflectedPulse(crvRecoPulseCollection, recoPulseIndex);
+      if(_ignoreReflectedPulses)
+      {
+        if(IsReflectedPulse(crvRecoPulseCollection, recoPulseIndex)) continue;
+      }
 
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
@@ -377,7 +376,7 @@ namespace mu2e
 
       //separate hits by sector types
       hitMap[sector.sectorType].emplace_back(crvRecoPulse, crvCounterPos,
-                                                    x, y, time, PEs, reflectedPulse, sectorNumber,
+                                                    x, y, time, PEs, sectorNumber,
                                                     layerNumber, counterNumber, SiPM, sector.PEthreshold,
                                                     sector.maxTimeDifferenceAdjacentPulses, sector.maxTimeDifference,
                                                     sector.minSlope, sector.maxSlope, sector.maxSlopeDifference, sector.coincidenceLayers,
@@ -970,10 +969,6 @@ namespace mu2e
   bool CrvCoincidenceFinder::checkCombination(std::vector<CrvHit>::iterator layerIterators[], int n)
   {
     typedef const std::vector<CrvHit>::iterator L;
-
-    bool allReflectedPulses = std::all_of(layerIterators,layerIterators+n,
-                                          [](L &a){return a->_reflectedPulse==true;});
-    if(allReflectedPulses) return false;
 
     double maxTimeDifference = (*std::max_element(layerIterators,layerIterators+n,
                                [](L &a, L &b){return a->_maxTimeDifference < b->_maxTimeDifference;}))->_maxTimeDifference;

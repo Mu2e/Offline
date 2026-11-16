@@ -376,7 +376,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<int16_t> &waveform,
       Vec3 paramsRingingArtifact;
       paramsRingingArtifact[0]=fr.par[0]*_ringingArtifactParam0;
       paramsRingingArtifact[1]=fr.par[1]+_ringingArtifactParam1;
-      paramsRingingArtifact[2]=_ringingArtifactParam2;
+      paramsRingingArtifact[2]=fr.par[2]*_ringingArtifactParam2;
       for(size_t bin=0; bin<nBins; ++bin) y[bin]-=std::round(Gumbel((startTDC+bin)*digitizationPeriod, fr.par)+
                                                              Gumbel((startTDC+bin)*digitizationPeriod, paramsRingingArtifact));
 

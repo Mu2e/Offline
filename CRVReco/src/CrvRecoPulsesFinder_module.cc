@@ -89,7 +89,7 @@ namespace mu2e
       fhicl::Atom<bool> removeRingingArtifacts{Name("removeRingingArtifacts"), Comment("remove ringing artifacts caused by AFE's LPF"), false}; //must be false for simulation
       fhicl::Atom<float> ringingArtifactParam0{Name("ringingArtifactParam0"), Comment("parameter 0 (height scale) of ringing artifacts"), 0.0684};
       fhicl::Atom<float> ringingArtifactParam1{Name("ringingArtifactParam1"), Comment("parameter 1 (time shift) of ringing artifacts"), 51.1}; //ns
-      fhicl::Atom<float> ringingArtifactParam2{Name("ringingArtifactParam2"), Comment("parameter 2 (beta) of ringing artifacts"), 11.25}; //ns
+      fhicl::Atom<float> ringingArtifactParam2{Name("ringingArtifactParam2"), Comment("parameter 2 (beta scale) of ringing artifacts"), 0.75};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
