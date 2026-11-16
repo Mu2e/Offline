@@ -47,7 +47,7 @@ physics : {
       expectedEdgeFeatures   : ["dx","dy","d","dt","dlog_e","asym_e","logsum_e","dr"]
       tauEdge                : 0.20
       bfsExpandCut           : 10.0
-      minHits                : 2
+      minHits                : 1
       minEnergyMeV           : 10.0
       outputInstance         : "GNN"
     }

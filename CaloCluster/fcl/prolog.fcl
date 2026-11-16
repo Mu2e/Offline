@@ -76,7 +76,9 @@ CaloCluster : { @table::CaloCluster
 #   physics.<reco-path> : [ ..., CaloClusterGNN.Reco ]
 #
 # Frozen recipe values (CCN+BFS10, calorimeter/GNN/docs/findings.md 7.4):
-#   tauEdge=0.20  bfsExpandCut=10.0  minHits=2  minEnergyMeV=10.0
+#   tauEdge=0.20  bfsExpandCut=10.0  minHits=1  minEnergyMeV=10.0
+# minHits=1 keeps single-crystal clusters, as BFS does; the cleanup then
+# drops only clusters below 10 MeV (calorimeter/GNN/docs/findings.md 9.6).
 #
 # To swap in SimpleEdgeNet for an A/B comparison job, declare a second
 # instance with model_path/expected_model_version pointing at sen.onnx
@@ -104,7 +106,7 @@ CaloClusterGNN : {
       expectedEdgeFeatures   : ["dx","dy","d","dt","dlog_e","asym_e","logsum_e","dr"]
       tauEdge                : 0.20
       bfsExpandCut           : 10.0
-      minHits                : 2
+      minHits                : 1
       minEnergyMeV           : 10.0
       outputInstance         : "GNN"
    }

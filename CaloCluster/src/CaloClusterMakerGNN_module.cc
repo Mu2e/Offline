@@ -9,9 +9,10 @@
 //
 // produce(): consumes CaloHitGraphCollection (from CaloHitGraphMaker),
 // runs ONNX inference per disk, then assembles CaloClusters via the
-// CCN+BFS10 recipe. The assembly logic (16f) is not yet implemented;
-// produce() currently emits an empty CaloClusterCollection so the
-// module compiles and links.
+// CCN+BFS10 recipe (GnnClusterAssembler). A disk graph without edges
+// (for example a disk with a single hit) skips inference: each hit is
+// its own cluster and the minHits / minEnergyMeV cleanup decides what
+// survives, as BFS keeps a lone hit above its seed threshold.
 //
 // The module is model-agnostic — the same C++ class instances run
 // SimpleEdgeNet or CaloClusterNet (or any future model with the same
@@ -35,7 +36,7 @@
 #include "Offline/CaloCluster/inc/GnnClusterAssembler.hh"
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "Offline/GeometryService/inc/GeomHandle.hh"
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloHitGraph.hh"
@@ -123,7 +124,7 @@ namespace mu2e {
         fhicl::Atom<unsigned>      minHits {
           Name("minHits"),
           Comment("Drop clusters with fewer than this many hits"),
-          2 };
+          1 };
         fhicl::Atom<double>        minEnergyMeV {
           Name("minEnergyMeV"),
           Comment("Drop clusters with less than this much total energy (MeV)"),
@@ -140,6 +141,7 @@ namespace mu2e {
 
     private:
       art::ProductToken<CaloHitGraphCollection> graphToken_;
+      ProditionsHandle<Calorimeter>             alignedCal_h;  // cluster centroid, as CaloClusterMaker
 
       std::string outputInstance_;
       std::vector<std::string> expectedNodeFeatures_;
@@ -247,43 +249,47 @@ namespace mu2e {
       return;
     }
 
-    const Calorimeter& cal = *(GeomHandle<Calorimeter>());
+    const Calorimeter& cal = alignedCal_h.get(event.id());
     const auto memInfo = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator,
                                                     OrtMemTypeDefault);
 
     for (const auto& graph : *graphHandle) {
-      if (graph.nNodes <= 0 || graph.nEdges <= 0) continue;
+      if (graph.nNodes <= 0) continue;
 
       const int N = graph.nNodes;
       const int E = graph.nEdges;
 
-      // Wrap the graph tensors as Ort::Value views — no copy.
-      const std::array<int64_t, 2> xShape  {N, 6};
-      const std::array<int64_t, 2> eiShape {2, E};
-      const std::array<int64_t, 2> eaShape {E, 8};
-      std::array<Ort::Value, 3> inputs{
-        Ort::Value::CreateTensor<float>(memInfo,
-            const_cast<float*>(graph.x.data()), graph.x.size(),
-            xShape.data(), xShape.size()),
-        Ort::Value::CreateTensor<int64_t>(memInfo,
-            const_cast<int64_t*>(graph.edgeIndex.data()), graph.edgeIndex.size(),
-            eiShape.data(), eiShape.size()),
-        Ort::Value::CreateTensor<float>(memInfo,
-            const_cast<float*>(graph.edgeAttr.data()), graph.edgeAttr.size(),
-            eaShape.data(), eaShape.size())
-      };
+      // No edges: skip inference, every hit becomes its own cluster.
+      std::vector<float> edgeLogits;
+      if (E > 0) {
+        // Wrap the graph tensors as Ort::Value views — no copy.
+        const std::array<int64_t, 2> xShape  {N, 6};
+        const std::array<int64_t, 2> eiShape {2, E};
+        const std::array<int64_t, 2> eaShape {E, 8};
+        std::array<Ort::Value, 3> inputs{
+          Ort::Value::CreateTensor<float>(memInfo,
+              const_cast<float*>(graph.x.data()), graph.x.size(),
+              xShape.data(), xShape.size()),
+          Ort::Value::CreateTensor<int64_t>(memInfo,
+              const_cast<int64_t*>(graph.edgeIndex.data()), graph.edgeIndex.size(),
+              eiShape.data(), eiShape.size()),
+          Ort::Value::CreateTensor<float>(memInfo,
+              const_cast<float*>(graph.edgeAttr.data()), graph.edgeAttr.size(),
+              eaShape.data(), eaShape.size())
+        };
 
-      auto outputs = session_.Run(Ort::RunOptions{nullptr},
-                                  inputNames_.data(), inputs.data(), inputs.size(),
-                                  outputNames_.data(), outputNames_.size());
+        auto outputs = session_.Run(Ort::RunOptions{nullptr},
+                                    inputNames_.data(), inputs.data(), inputs.size(),
+                                    outputNames_.data(), outputNames_.size());
 
-      // Read edge_logits into a local buffer (don't mutate the
-      // runtime's output).
-      const Ort::Value& logitsVal = outputs.front();
-      const float* logitsPtr = logitsVal.GetTensorData<float>();
-      const std::size_t logitsCount =
-        logitsVal.GetTensorTypeAndShapeInfo().GetElementCount();
-      std::vector<float> edgeLogits(logitsPtr, logitsPtr + logitsCount);
+        // Read edge_logits into a local buffer (don't mutate the
+        // runtime's output).
+        const Ort::Value& logitsVal = outputs.front();
+        const float* logitsPtr = logitsVal.GetTensorData<float>();
+        const std::size_t logitsCount =
+          logitsVal.GetTensorTypeAndShapeInfo().GetElementCount();
+        edgeLogits.assign(logitsPtr, logitsPtr + logitsCount);
+      }
 
       // Per-node energies (raw MeV) for the seed selection / expand
       // cut / min-energy cleanup. Pulled from the original CaloHits.
