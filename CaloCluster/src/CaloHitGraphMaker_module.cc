@@ -26,6 +26,7 @@
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
 #include "Offline/CalorimeterGeom/inc/Crystal.hh"
 #include "Offline/ConfigTools/inc/ConfigFileLookupPolicy.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/CaloHitGraph.hh"
@@ -123,6 +124,7 @@ namespace mu2e {
 
     for (std::size_t i = 0; i < hits.size(); ++i) {
       const CaloHit& h = hits[i];
+      if (!CrystalId(h.crystalID()).isValid()) continue; // Exclude pin diodes, as CaloProtoClusterMaker does
       const int disk = cal.crystal(h.crystalID()).diskID();
 
       // Find/register the bucket for this disk.

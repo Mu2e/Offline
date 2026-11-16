@@ -32,6 +32,7 @@
 #include "fhiclcpp/types/Atom.h"
 
 #include "Offline/CalorimeterGeom/inc/Calorimeter.hh"
+#include "Offline/DataProducts/inc/CrystalId.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/RecoDataProducts/inc/CaloCluster.hh"
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
@@ -130,6 +131,7 @@ namespace mu2e {
     // Partition CaloHits by disk and emit one TTree entry per disk.
     std::map<int, std::vector<const CaloHit*>> hitsByDisk;
     for (const auto& h : hits) {
+      if (!CrystalId(h.crystalID()).isValid()) continue; // pin diodes never enter a graph
       const int d = cal.crystal(h.crystalID()).diskID();
       hitsByDisk[d].push_back(&h);
     }
