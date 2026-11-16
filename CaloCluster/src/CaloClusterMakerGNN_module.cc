@@ -44,7 +44,13 @@
 // Member-init order matters: env must outlive session_options, and
 // session_options must outlive session. RAII resources lifetime
 // captured in declaration order at the bottom of this class.
+// The muse/SCons build puts <view>/include on the include path; the
+// onnxruntime::onnxruntime CMake target exports <prefix>/include/onnxruntime.
+#if __has_include("onnxruntime/onnxruntime_cxx_api.h")
 #include "onnxruntime/onnxruntime_cxx_api.h"
+#else
+#include "onnxruntime_cxx_api.h"
+#endif
 
 #include <algorithm>
 #include <cmath>
