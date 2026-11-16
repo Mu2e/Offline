@@ -46,6 +46,7 @@
 // captured in declaration order at the bottom of this class.
 #include "onnxruntime/onnxruntime_cxx_api.h"
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <memory>
@@ -315,10 +316,8 @@ namespace mu2e {
       }
 
       for (const auto& [cid, nodeIdxs] : clusters) {
-        // Energy aggregates + seed identification.
+        // Energy aggregates.
         float energy = 0.0f, energyErrSq = 0.0f;
-        int seedIdx = nodeIdxs.front();
-        float seedEnergy = energiesMeV[seedIdx];
         CaloHitPtrVector caloHits;
         caloHits.reserve(nodeIdxs.size());
         for (int idx : nodeIdxs) {
@@ -326,12 +325,15 @@ namespace mu2e {
           energy      += h.energyDep();
           energyErrSq += h.energyDepErr() * h.energyDepErr();
           caloHits.push_back(graph.caloHitPtrs[idx]);
-          if (h.energyDep() > seedEnergy) {
-            seedEnergy = h.energyDep();
-            seedIdx    = idx;
-          }
         }
-        const auto& seedHit = *graph.caloHitPtrs[seedIdx];
+
+        // Hits by decreasing energy, as CaloClusterMaker stores them:
+        // ClusterUtils::e1/e2/e9/e25 take the first hit as the seed.
+        std::stable_sort(caloHits.begin(), caloHits.end(),
+                         [](const art::Ptr<CaloHit>& lhs, const art::Ptr<CaloHit>& rhs) {
+                           return lhs->energyDep() > rhs->energyDep();
+                         });
+        const auto& seedHit = *caloHits.front();
         const float time    = seedHit.time();
         const float timeErr = seedHit.timeErr();
 
@@ -347,6 +349,12 @@ namespace mu2e {
                           /*isSplit=*/false);
       }
     }
+
+    // Clusters by decreasing energy, as CaloClusterMaker orders them.
+    std::stable_sort(out->begin(), out->end(),
+                     [](const CaloCluster& lhs, const CaloCluster& rhs) {
+                       return lhs.energyDep() > rhs.energyDep();
+                     });
 
     event.put(std::move(out), outputInstance_);
   }
