@@ -184,6 +184,12 @@ namespace mu2e {
     ConfigFileLookupPolicy lookup;
     const std::string modelPath = lookup(config().modelPath());
 
+    // One thread: by default ONNX Runtime starts a pool sized to the
+    // machine's cores, which oversubscribes shared and grid nodes and
+    // makes the floating-point reduction order depend on the machine.
+    sessionOptions_.SetIntraOpNumThreads(1);
+    sessionOptions_.SetInterOpNumThreads(1);
+
     // Move-construct the session in place (Ort::Session has no
     // copy-assign; the trick is to assign via std::move from a
     // temporary built with the resolved path).
