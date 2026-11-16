@@ -123,6 +123,8 @@ vector<double> physicsParams.Ti.czarneckiCoefficients =
 // Capture product emission rates
 double physicsParams.Al.capture.protonRate = 0.05;
 double physicsParams.Al.capture.deuteronRate = 0.025;
+double physicsParams.Al.capture.tritonRate = 4.42e-3; // AlCap, PRC 105, 035501 (2022): integral of MuCapChargedSpectra.AlCapTriton
+double physicsParams.Al.capture.alphaRate = 7.90e-3;  // AlCap, PRC 105, 035501 (2022): integral of MuCapChargedSpectra.AlCapAlpha
 double physicsParams.Al.capture.neutronRate = 1.2;
 double physicsParams.Al.capture.photonRate = 2.0;
 double physicsParams.Al.capture.RMCRate = 9.460e-5; //TRIUMF measured 1.41e-5 for E > 57, full rate taken by dividing by closure fraction above 57 MeV for kmax = 90.1

@@ -129,6 +129,12 @@ namespace mu2e
     double   getCaptureDeuteronRate     (targetMat material = "") const {
       return doubleOrThrow(_captureDeuteronRate,material,"captureDeuteronRate");
     }
+    double   getCaptureTritonRate     (targetMat material = "") const {
+      return doubleOrThrow(_captureTritonRate,material,"captureTritonRate");
+    }
+    double   getCaptureAlphaRate     (targetMat material = "") const {
+      return doubleOrThrow(_captureAlphaRate,material,"captureAlphaRate");
+    }
     double   getCaptureNeutronRate     (targetMat material = "") const {
       return doubleOrThrow(_captureNeutronRate,material,"captureNeutronRate");
     }
@@ -216,6 +222,8 @@ namespace mu2e
 
     std::map<targetMat, double> _captureProtonRate;
     std::map<targetMat, double> _captureDeuteronRate;
+    std::map<targetMat, double> _captureTritonRate;
+    std::map<targetMat, double> _captureAlphaRate;
     std::map<targetMat, double> _captureNeutronRate;
     std::map<targetMat, double> _capturePhotonRate;
     std::map<targetMat, double> _captureRMCRate;

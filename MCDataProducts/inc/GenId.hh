@@ -45,8 +45,8 @@ namespace mu2e {
       MuCapProtonGenTool, MuCapDeuteronGenTool, DIOGenTool, MuCapNeutronGenTool, // 48
       MuCapPhotonGenTool, MuCapGammaRayGenTool, CeLeadingLogGenTool, MuplusMichelGenTool,// 52
       gammaPairProduction, antiproton, Mu2eXGenTool, STMDownStreamGenTool,//56
-      MuCapBNVGenTool, //57
-      lastEnum //58
+      MuCapBNVGenTool, MuCapTritonGenTool, MuCapAlphaGenTool, //59
+      lastEnum //60
     };
 
 #ifndef SWIG
@@ -66,7 +66,7 @@ namespace mu2e {
     "MuCapProtonGenTool", "MuCapDeuteronGenTool", "DIOGenTool", "MuCapNeutronGenTool", \
       "MuCapPhotonGenTool", "MuCapGammaRayGenTool","CeLeadingLogGenTool","MuplusMichelGenTool", \
       "gammaPairProduction", "antiproton", "Mu2eXGenTool", "STMDownStreamGenTool", \
-      "MuCapBNVGenTool"
+      "MuCapBNVGenTool", "MuCapTritonGenTool", "MuCapAlphaGenTool"
 #endif
 
   public:
