@@ -1,7 +1,8 @@
 #ifndef CaloCluster_GnnGraphBuilder_hh
 #define CaloCluster_GnnGraphBuilder_hh
 //
-// C++ port of calorimeter/GNN/src/data/graph_builder.py.
+// C++ port of src/data/graph_builder.py of the GNN training code
+// (Mu2e/MLTrain, CaloClusterGNN/).
 //
 // Builds one CaloHitGraph per calorimeter disk per event:
 //   1. Collect CaloHits per disk; look up (x, y) in the disk-local
@@ -16,7 +17,7 @@
 //      sidecar passed at construction (loaded via loadStatsFromJson).
 //
 // Feature column order is canonical and matches the model's
-// metadata_props (see calorimeter/GNN/docs/onnx_deployment.md):
+// metadata_props:
 //
 //   nodes : log_e, t, x, y, r, e_rel
 //   edges : dx, dy, d, dt, dlog_e, asym_e, logsum_e, dr
@@ -57,7 +58,7 @@ namespace mu2e {
         : cfg_(cfg), stats_(stats) {}
 
       // Load Stats from the JSON sidecar produced by
-      // calorimeter/GNN/scripts/export_norm_stats.py. Throws
+      // scripts/export_norm_stats.py of the training code. Throws
       // cet::exception on missing keys, wrong sizes, or canonical
       // node/edge feature-name mismatches.
       static Stats loadStatsFromJson(const std::string& jsonPath);

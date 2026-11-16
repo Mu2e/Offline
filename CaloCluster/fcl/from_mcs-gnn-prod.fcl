@@ -5,15 +5,13 @@
 # both the BFS sequence and the GNN sequence to emit two
 # CaloClusterCollections side by side.
 #
-# Usage (working_dir, with u092):
+# Usage (muse work area, envset p110 or later):
 #   mu2e -c Offline/CaloCluster/fcl/from_mcs-gnn-prod.fcl \
 #        -s <mcs.art>  -T mcs.gnn.art  -n 100
 #
 # The output art file carries:
 #   * caloClusterMaker       :: CaloClusterCollection ("")     -- BFS, untouched
 #   * caloClusterMakerGNN    :: CaloClusterCollection ("GNN")  -- GNN
-#
-# Task 16h (production FHiCL wiring).
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"
@@ -43,8 +41,8 @@ outputs : {
     module_type    : RootOutput
     fileName       : "mcs.gnn.art"
     # CaloHitGraphCollection is a transient data product (no ROOT
-    # dictionary by design -- see Offline/RecoDataProducts/inc/CaloHitGraph.hh
-    # and offline_integration.md 2.2). Drop it from the output art file.
+    # dictionary by design, see Offline/RecoDataProducts/inc/CaloHitGraph.hh).
+    # Drop it from the output art file.
     outputCommands : [ "keep *",
                        "drop *_caloHitGraphMakerGNN_*_*" ]
   }

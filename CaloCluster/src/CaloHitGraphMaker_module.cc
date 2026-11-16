@@ -1,6 +1,5 @@
 //
-// CaloHitGraphMaker — first half of the GNN clustering split design
-// (see calorimeter/GNN/docs/offline_integration.md §1.2).
+// CaloHitGraphMaker: first half of the GNN clustering split design.
 //
 // Per event, partitions the input CaloHitCollection by disk and runs
 // the C++ port of the Python graph builder (GnnGraphBuilder) once per
@@ -10,7 +9,7 @@
 // has no normalisation responsibility.
 //
 // Frozen hyper-parameters and feature column order live in the
-// canonical norm sidecar (calorimeter/GNN/scripts/export_norm_stats.py)
+// canonical norm sidecar (scripts/export_norm_stats.py of the training code)
 // and are validated against canonical names at sidecar load time.
 // FHiCL parameters expose the graph-construction knobs so swapping
 // future models with different feature lists is config-driven.

@@ -28,7 +28,7 @@
 //   edgeSrc[nEdges], edgeDst[nEdges] : std::vector<int>
 //   nodeX[6 * nHits]                 : std::vector<float>  (normalized)
 //
-// Used as the Stage 1 and Stage 3 parity check in Task 16g.
+// Used for the C++/Python parity check of the graphs and the clusters.
 //
 
 #include "art/Framework/Core/EDAnalyzer.h"

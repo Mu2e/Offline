@@ -57,7 +57,7 @@ CaloCluster : { @table::CaloCluster
 
 
 # ---------------------------------------------------------------------
-# GNN clustering (split design -- see calorimeter/GNN/docs/offline_integration.md).
+# GNN clustering (split design).
 #
 # Two producers run alongside the existing BFS chain (CaloProtoClusterMaker
 # + CaloClusterMaker), reading the same CaloHitCollection. The graph
@@ -75,14 +75,14 @@ CaloCluster : { @table::CaloCluster
 # Or use the bundled sequence:
 #   physics.<reco-path> : [ ..., CaloClusterGNN.Reco ]
 #
-# Frozen recipe values (CCN+BFS10, calorimeter/GNN/docs/findings.md 7.4):
+# Frozen recipe values (CCN+BFS10):
 #   tauEdge=0.20  bfsExpandCut=10.0  minHits=1  minEnergyMeV=10.0
 # minHits=1 keeps single-crystal clusters, as BFS does; the cleanup then
-# drops only clusters below 10 MeV (calorimeter/GNN/docs/findings.md 9.6).
+# drops only clusters below 10 MeV.
 #
 # To swap in SimpleEdgeNet for an A/B comparison job, declare a second
-# instance with model_path/expected_model_version pointing at sen.onnx
-# and tauEdge=0.26 (see offline_integration.md 2.2).
+# instance with modelPath and expectedModelVersion pointing at
+# simple_edge_net_v2.onnx, and tauEdge=0.26.
 
 CaloClusterGNN : {
    caloHitGraphMakerGNN :

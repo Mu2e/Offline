@@ -1,6 +1,5 @@
 //
-// CaloClusterMakerGNN — second half of the GNN clustering split design
-// (calorimeter/GNN/docs/offline_integration.md §1.2).
+// CaloClusterMakerGNN: second half of the GNN clustering split design.
 //
 // Constructor: load the ONNX session for one model artifact and assert
 // the model's metadata_props match what the FHiCL config expects. Bail

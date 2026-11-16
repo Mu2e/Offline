@@ -22,7 +22,7 @@
 namespace {
 
   // Canonical feature names — must agree with the norm sidecar emitted
-  // by calorimeter/GNN/scripts/export_norm_stats.py and with the
+  // by scripts/export_norm_stats.py of the training code and with the
   // model_version-stamped metadata_props of the .onnx artifacts.
   const std::vector<std::string> kNodeFeatures{
     "log_e", "t", "x", "y", "r", "e_rel"

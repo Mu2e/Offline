@@ -1,9 +1,8 @@
 #ifndef CaloCluster_GnnClusterAssembler_hh
 #define CaloCluster_GnnClusterAssembler_hh
 //
-// C++ port of calorimeter/GNN/src/inference/cluster_reco.py for the
-// CCN+BFS10 recipe (the winning configuration in
-// docs/findings.md §7.4).
+// C++ port of src/inference/cluster_reco.py of the GNN training code
+// (Mu2e/MLTrain, CaloClusterGNN/) for the CCN+BFS10 recipe.
 //
 // Steps applied to the directed edge logits emitted by the ONNX model:
 //   1. Sigmoid → per-edge probabilities.

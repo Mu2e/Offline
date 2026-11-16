@@ -6,14 +6,12 @@
 # event-disk to a flat TTree for byte-comparison against the
 # Python pipeline.
 #
-# Usage (build node, with u092):
+# Usage (muse work area, envset p110 or later):
 #   mu2e -c Offline/CaloCluster/fcl/from_mcs-gnn-test.fcl \
 #        <slim.art>  -T parity_dump.root  -n 100
 #
-# Companion Python script:
-#   calorimeter/GNN/scripts/compare_parity_dump.py
-#
-# Task 16g, Stage 3.
+# The dump is compared with the Python pipeline by
+# scripts/compare_parity_dump.py of the GNN training code.
 
 #include "Offline/fcl/minimalMessageService.fcl"
 #include "Offline/fcl/standardServices.fcl"

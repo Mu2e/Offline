@@ -8,8 +8,7 @@
 // CaloClusterMakerGNN in the same job. Not registered in
 // classes_def.xml (no ROOT serialisation).
 //
-// Tensor layout matches the ONNX model interface in
-// calorimeter/GNN/docs/onnx_deployment.md (§2 / §7):
+// Tensor layout matches the ONNX model interface:
 //
 //   x          : nNodes * 6 floats, row-major (one row per hit)
 //   edgeIndex  : 2 * nEdges int64s, row-major (src row first, dst row second)

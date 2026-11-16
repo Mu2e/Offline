@@ -1,9 +1,9 @@
 //
 // testGnnClusterAssembler_main — Stage-2 parity test for the C++
-// GnnClusterAssembler (Task 16g).
+// GnnClusterAssembler.
 //
 // Reads a JSON parity payload (produced by
-// calorimeter/GNN/scripts/dump_parity_payloads.py), replays
+// scripts/dump_parity_payloads.py of the GNN training code), replays
 // GnnClusterAssembler::assemble for each graph, and asserts the
 // emitted partition is identical to the Python reference labels stored
 // in the same payload. Cluster IDs are compared after renumbering both
@@ -15,9 +15,6 @@
 //
 // Usage:
 //   testGnnClusterAssembler  <path-to-parity.json>
-//
-// Default path (relative to MUSE_WORK_DIR):
-//   ../projects/calorimeter/GNN/tests/parity/calo_cluster_net_v2_stage1.parity.json
 //
 
 #include "Offline/CaloCluster/inc/GnnClusterAssembler.hh"
@@ -34,9 +31,6 @@
 
 
 namespace {
-
-  constexpr const char* kDefaultPayload =
-    "/exp/mu2e/app/users/wzhou2/projects/calorimeter/GNN/tests/parity/calo_cluster_net_v2_stage1.parity.json";
 
   // Renumber cluster IDs in first-appearance order; -1 stays -1.
   std::vector<int> canonical(const std::vector<int>& labels)
@@ -57,7 +51,11 @@ namespace {
 
 int main(int argc, char* argv[])
 {
-  const std::string path = (argc > 1) ? argv[1] : kDefaultPayload;
+  if (argc != 2) {
+    std::cerr << "usage: " << argv[0] << " <path-to-parity.json>\n";
+    return 2;
+  }
+  const std::string path = argv[1];
 
   std::ifstream in(path);
   if (!in.is_open()) {
