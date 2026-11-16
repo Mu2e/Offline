@@ -28,6 +28,7 @@ namespace mu2e {
     Mu2eProductMixer spm_;
     const int debugLevel_;
     const unsigned maxEventsToSkip_;
+    bool skipDrawn_ = false; // per instance: only the first call draws a random skip
     bool writeEventIDs_;
     art::EventIDSequence idseq_;
     art::RandomNumberGenerator::base_engine_t& engine_;
@@ -73,10 +74,9 @@ namespace mu2e {
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
 
     size_t eventsToSkip() {
-      static bool first(true);
       size_t result(0);
-      if(first) {
-        first = false;
+      if(!skipDrawn_) {
+        skipDrawn_ = true;
         std::uniform_int_distribution<size_t> uniform(0, maxEventsToSkip_);
         result = uniform(urbg_);
       }

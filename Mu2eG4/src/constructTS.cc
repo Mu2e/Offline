@@ -14,7 +14,9 @@
 // C++ includes
 #include <array>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 // CLHEP includes
@@ -39,6 +41,7 @@
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
 #include "Offline/Mu2eG4/inc/nestTorus.hh"
 #include "Offline/Mu2eG4/inc/nestCons.hh"
+#include "Offline/Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
 #include "Offline/GeometryService/inc/VirtualDetector.hh"
 #include "Offline/GeomPrimitives/inc/Tube.hh"
@@ -548,6 +551,70 @@ namespace mu2e {
                 G4Color::Red(),
                 "TSCryo"
                 );
+    }
+
+    // Add the restraint braces on the TSu-TSd interconnect (Mu2e-doc-54322,
+    // Mu2e-doc-50662). Each brace is one extruded profile: the profile lies in
+    // the plane that contains the TS3 axis and is extruded along the
+    // tangential direction. The braces are copies of that profile rotated about
+    // the TS3 axis, which, as for the interconnect shells above, is the Mu2e x axis.
+    if(config.getBool("ts.braces.build", false)) {
+      //strsec = TS3 section
+      G4Material* braceMaterial = findMaterialOrThrow(config.getString("ts.braces.material"));
+      const double braceRBase     = config.getDouble("ts.braces.rBase")*CLHEP::mm;
+      const double braceHalfThick = config.getDouble("ts.braces.halfThickness")*CLHEP::mm;
+      std::vector<double> braceAxial, braceRadial, bracePhi;
+      config.getVectorDouble("ts.braces.profileAxial",  braceAxial);
+      config.getVectorDouble("ts.braces.profileRadial", braceRadial);
+      config.getVectorDouble("ts.braces.phi",           bracePhi);
+      if(braceAxial.size() != braceRadial.size() || braceAxial.size() < 3) {
+        throw cet::exception("GEOM")
+          << __func__ << ": ts.braces.profileAxial (" << braceAxial.size()
+          << " entries) and ts.braces.profileRadial (" << braceRadial.size()
+          << " entries) must have the same length, at least 3\n";
+      }
+      if(bracePhi.empty()) {
+        throw cet::exception("GEOM")
+          << __func__ << ": ts.braces.build is true but ts.braces.phi is empty\n";
+      }
+
+      std::vector<G4TwoVector> bracePolygon;
+      for(size_t i = 0; i < braceAxial.size(); ++i) {
+        bracePolygon.emplace_back(braceAxial[i]*CLHEP::mm, braceRadial[i]*CLHEP::mm);
+      }
+      const std::vector<G4ExtrudedSolid::ZSection> braceZSections = {
+        G4ExtrudedSolid::ZSection(-braceHalfThick, G4TwoVector(0., 0.), 1.),
+        G4ExtrudedSolid::ZSection( braceHalfThick, G4TwoVector(0., 0.), 1.)
+      };
+
+      for(size_t i = 0; i < bracePhi.size(); ++i) {
+        const double phi = bracePhi[i]*CLHEP::degree;
+        // The active rotation by phi about x takes the profile's local y axis to
+        // the radial direction (0, cos phi, sin phi); G4PVPlacement wants its inverse.
+        CLHEP::HepRotation* braceRot = reg.add(CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY));
+        braceRot->rotateX(-phi);
+        const CLHEP::Hep3Vector radial(0., std::cos(phi), std::sin(phi));
+
+        std::ostringstream braceName;
+        braceName << "TSBrace" << std::setw(2) << std::setfill('0') << i+1;
+        nestExtrudedSolid( braceName.str(),
+                           bracePolygon,
+                           braceZSections,
+                           braceMaterial,
+                           braceRot,
+                           strsec->getGlobal() + braceRBase*radial - _hallOriginInMu2e,
+                           parent,
+                           0,
+                           G4Color::Magenta(),
+                           "TSCryo"
+                           );
+      }
+
+      if(verbosityLevel > 0) {
+        const double braceMass = _helper->locateVolInfo("TSBrace01").logical->GetMass()/CLHEP::kg;
+        G4cout << __func__ << " " << bracePhi.size() << " TSBrace volumes, "
+               << braceMass << " kg each, " << braceMass*bracePhi.size() << " kg total" << G4endl;
+      }
     }
 
     // Build TS4

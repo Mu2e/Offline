@@ -7,6 +7,7 @@
 //  [00:13] : Giani
 //  [14:15] : Pasha - parameters of fit with non-equal weights
 //
+#include <limits>
 #include "Offline/BTrkLegacy/inc/HelixParams.hh"
 #include "Offline/CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "art_root_io/TFileService.h"
@@ -2082,7 +2083,8 @@ namespace mu2e {
                                                       HitInfo_t&         IWorst)
   {
     LsqSums4   sxy;
-    float     chi2, chi2_min (-1.), x, y;
+    // the worst hit is the one whose removal gives the smallest circle chi2, so start from the largest value
+    float     chi2, chi2_min (std::numeric_limits<float>::max()), x, y;
 
     //reset the coordinates of the worst hit found previousl
     IWorst.face          = -1;

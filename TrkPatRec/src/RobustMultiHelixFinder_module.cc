@@ -429,8 +429,8 @@ chi2dXY = bestHelix.fita_zt_;
           float x13x13y13y13 = x3*x3+y3*y3;
           if (x13x13y13y13<minDXY2Circle_) continue;
 
-          float x4           = chk.pos().x()-x2;
-          float y4           = chk.pos().y()-y2;
+          float x4           = x3-x2; // hit3 - hit2 (x2, x3 are relative to hit1)
+          float y4           = y3-y2;
           float x23x23y23y23 = x4*x4+y4*y4;
           if (x23x23y23y23<minDXY2Circle_) continue;
           float rad2x3y3 = chk.pos().x()*chk.pos().x()+chk.pos().y()*chk.pos().y();
@@ -454,7 +454,8 @@ chi2dXY = bestHelix.fita_zt_;
           // Select hits with good deltaR and pick best deltaR if several hits have same unique panel id
           // could alternatively use the chi2
           stubby.clear();
-          unsigned id_prev(chcol[hits[0]].strawId().uniquePanel()), ilast(chcol.size()), nsh(0);
+          // hits are sorted by uniquePanel; ilast is the best hit of the current panel group (chcol.size() = none yet)
+          unsigned id_prev(0), ilast(chcol.size()), nsh(0);
           float    val_prev(1e6),sumChisq(0);
 
           for (size_t i=0;i<hits.size();++i){
@@ -468,15 +469,15 @@ chi2dXY = bestHelix.fita_zt_;
              if (chisq > minDR2Circle_) continue;
              //if (chisq > maxChi2Hit_) continue;
 
-             if (ch.strawId().uniquePanel()!=id_prev && ilast<chcol.size() ) {
+             unsigned id = ch.strawId().uniquePanel();
+             if (ilast<chcol.size() && id!=id_prev) {
+                 // new panel: keep the best hit of the finished group
                  stubby.push_back(hits[ilast]);
                  nsh      += chcol[hits[ilast]].nStrawHits();
-                 val_prev  = chisq;
                  sumChisq += val_prev;
-                 id_prev   = ch.strawId().uniquePanel();
-                 ilast     = i;
+                 ilast     = chcol.size();
              }
-             else if (chisq<val_prev) {val_prev = chisq; ilast=i;}
+             if (ilast==chcol.size() || chisq<val_prev) {val_prev = chisq; ilast = i; id_prev = id;}
           }
           if (ilast<chcol.size()) {stubby.push_back(hits[ilast]);nsh += chcol[hits[ilast]].nStrawHits(); sumChisq+=val_prev;}
           if (nsh>0) sumChisq /= nsh;

@@ -342,6 +342,23 @@
  <class name="std::vector<mu2e::CrvCoincidenceCluster>" />
  <class name="mu2e::CrvCoincidenceClusterCollection" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceClusterCollection>" />
+ <class name="art::Ptr<mu2e::CrvCoincidenceCluster>" />
+
+ <class name="mu2e::TrkCrvLayerProbe" />
+ <class name="std::vector<mu2e::TrkCrvLayerProbe>" />
+ <class name="mu2e::TrkCrvXing" />
+ <class name="std::vector<mu2e::TrkCrvXing>" />
+ <class name="mu2e::TrkCrvCandidate" />
+ <class name="std::vector<mu2e::TrkCrvCandidate>" />
+ <class name="mu2e::TrkCrvMatch" />
+ <class name="std::vector<mu2e::TrkCrvMatch>" />
+ <class name="mu2e::TrkCrvMatchCollection" />
+ <class name="art::Ptr<mu2e::TrkCrvMatch>" />
+ <class name="art::Wrapper<mu2e::TrkCrvMatchCollection>" />
+ <class name="art::Assns<mu2e::KalSeed,mu2e::CrvCoincidenceCluster,void>" />
+ <class name="art::Assns<mu2e::CrvCoincidenceCluster,mu2e::KalSeed,void>" />
+ <class name="art::Wrapper<art::Assns<mu2e::KalSeed,mu2e::CrvCoincidenceCluster,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::CrvCoincidenceCluster,mu2e::KalSeed,void> >" />
 
 <!--  checksum from file->ShowStreamerInfo() -->
 <ioread sourceClass="mu2e::CrvDigi"

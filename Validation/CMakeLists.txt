@@ -34,6 +34,8 @@ cet_make_library(
       src/ValTimeCluster.cc
       src/ValTriggerInfo.cc
       src/ValTriggerResults.cc
+      src/ValTrkCrvMatch.cc
+      src/ValTrkCrvMatchMC.cc
     LIBRARIES PUBLIC
 
       Offline::DataProducts

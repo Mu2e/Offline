@@ -21,6 +21,7 @@
 #include "Offline/BeamlineGeom/inc/Beamline.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -29,6 +30,7 @@
 #include "cetlib_except/exception.h"
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 #include <map>
@@ -386,30 +388,68 @@ namespace mu2e {
   }
 
   void KinKalGeomMaker::makeTarget() {
-    // currently use hard-coded geometry
-    auto outer = std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-4300),75,400.0);
-    auto inner= std::make_shared<Cylinder>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-4300),21.5,400.0);
+    // build the foils from the stopping target served by GeometryService, so that any target geometry
+    // (foil count, positions, tilts, radii, holes and thicknesses) is used in the fit and extrapolation
+    GeomHandle<StoppingTarget> target;
+    if(target->nFoils() <= 0) throw cet::exception("GEOM") << "KinKalGeomMaker: the stopping target has no foils" << std::endl;
+    std::vector<AnnPtr> foils;
+    std::vector<double> thicknesses;
+    foils.reserve(target->nFoils());
+    thicknesses.reserve(target->nFoils());
+    // the bounding surfaces enclose all the foils: outer radius, inner (hole) radius and z extent
+    double rout(0.0), rin(std::numeric_limits<double>::max());
+    double zmin(std::numeric_limits<double>::max()), zmax(std::numeric_limits<double>::lowest());
+    VEC3 xdir(1.0,0.0,0.0);
+    for(int ifoil=0; ifoil < target->nFoils(); ++ifoil){
+      auto const& tfoil = target->foil(ifoil);
+      VEC3 center(tfoil.centerInDetectorSystem());
+      VEC3 norm = VEC3(tfoil.normal()).Unit();
+      if(std::fabs(norm.X()) > 0.99) throw cet::exception("GEOM") << "KinKalGeomMaker: stopping target foil " << ifoil
+        << " normal " << norm << " lies along x" << std::endl;
+      // U is the x axis projected onto the foil plane; for an untilted foil it is the x axis
+      VEC3 udir = (xdir - xdir.Dot(norm)*norm).Unit();
+      foils.push_back(std::make_shared<Annulus>(norm,udir,center,tfoil.rIn(),tfoil.rOut()));
+      thicknesses.push_back(2.0*tfoil.halfThickness());
+      // a foil off the axis reaches further out, and its hole edge comes closer to the axis
+      double roff = center.Rho();
+      rout = std::max(rout, tfoil.rOut() + roff);
+      rin = std::min(rin, tfoil.rIn() - roff);
+      // a tilted foil extends in z beyond its center by its outer radius times the sine of the tilt
+      double dz = tfoil.halfThickness() + tfoil.rOut()*std::sqrt(std::max(0.0, 1.0 - norm.Z()*norm.Z()));
+      zmin = std::min(zmin, center.Z() - dz);
+      zmax = std::max(zmax, center.Z() + dz);
+    }
+    VEC3 zdir(0.0,0.0,1.0);
+    VEC3 zmid(0.0,0.0,0.5*(zmin+zmax));
+    double halflen = 0.5*(zmax-zmin);
+    auto outer = std::make_shared<Cylinder>(zdir,zmid,rout,halflen);
+    // no inner boundary when the hole of some foil reaches the axis (a foil without a hole)
+    std::shared_ptr<Cylinder> inner;
+    if(rin > 0.0) inner = std::make_shared<Cylinder>(zdir,zmid,rin,halflen);
     auto front= std::make_shared<KinKal::Disk>(outer->frontDisk());
     auto back= std::make_shared<KinKal::Disk>(outer->backDisk());
-    double startz = -4700;
-    double endz = -3900;
-    double dz = (endz-startz)/36.0;
 
-    std::vector<AnnPtr> foils;
-    for(int ifoil=0;ifoil < 37; ++ifoil){
-      double zpos = startz + ifoil*dz;
-      foils.push_back(std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,zpos),21.5,75));
+    if(debug_ > 0){
+      std::cout << "KinKalGeomMaker: stopping target with " << foils.size() << " foils, z " << zmin << " to " << zmax
+        << " outer radius " << rout << " inner radius ";
+      if(inner) std::cout << rin; else std::cout << "none";
+      std::cout << std::endl;
+      for(size_t ifoil=0; ifoil < foils.size(); ++ifoil){
+        auto const& foil = *foils[ifoil];
+        std::cout << "  foil " << ifoil << " center " << foil.center() << " normal " << foil.normal()
+          << " radii " << foil.innerRadius() << " " << foil.outerRadius() << " thickness " << thicknesses[ifoil] << std::endl;
+      }
     }
 
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Back),std::static_pointer_cast<Surface>(back)));
-    kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Inner),std::static_pointer_cast<Surface>(inner)));
+    if(inner) kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Inner),std::static_pointer_cast<Surface>(inner)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Outer),std::static_pointer_cast<Surface>(outer)));
     for(size_t ifoil=0;ifoil < foils.size();++ifoil){
       kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::ST_Foils,ifoil),std::static_pointer_cast<Surface>(foils[ifoil])));
     }
 
-    kkg_->st_ = std::make_unique<KKGeom::StoppingTarget>(outer,inner,front,back,foils);
+    kkg_->st_ = std::make_unique<KKGeom::StoppingTarget>(outer,inner,front,back,foils,thicknesses);
   }
 
   void KinKalGeomMaker::makeCRV() {

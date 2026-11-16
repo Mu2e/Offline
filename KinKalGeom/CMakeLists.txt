@@ -4,7 +4,6 @@ cet_make_library(
       src/CaloFrontPanelPipes.cc
       src/CaloInnerSupport.cc
       src/KinKalGeom.cc
-      src/KinKalGeomCheck.cc
       src/KKMaterial.cc
       src/KKStrawMaterial.cc
     LIBRARIES PUBLIC
