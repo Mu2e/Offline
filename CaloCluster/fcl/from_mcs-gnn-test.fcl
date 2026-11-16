@@ -59,6 +59,7 @@ physics : {
       module_type           : "CaloHitGraphParityDump"
       caloHitCollection     : "CaloHitMaker"
       caloClusterCollection : "caloClusterMakerGNN:GNN"
+      caloHitGraphCollection: "caloHitGraphMakerGNN"
     }
   }
 
