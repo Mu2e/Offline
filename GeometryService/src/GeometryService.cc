@@ -301,7 +301,7 @@ namespace mu2e {
       }
 
       if(_config->getBool("hasTSdA",false)){
-        addDetector( TSdAMaker::make(*_config,ds) );
+        addDetector( TSdAMaker::make(*_config,ds,beamline) );
       }
 
       if(_config->getBool("hasExternalShielding",false)) {

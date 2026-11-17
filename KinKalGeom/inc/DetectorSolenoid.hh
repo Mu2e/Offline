@@ -32,9 +32,9 @@ namespace mu2e {
         // default constructor with nominal geometry
         DetectorSolenoid( CylPtr inner, CylPtr outer, DiskPtr front, DiskPtr back,
             CylPtr ipa, DiskPtr ipafront, DiskPtr ipaback,
-            FruPtr opa, AnnPtr tsda, DiskPtr ts5face, MaterialCylinderCollection const& materialCylinders = MaterialCylinderCollection()) :
+            FruPtr opa, AnnPtr tsda, MaterialCylinderCollection const& materialCylinders = MaterialCylinderCollection()) :
           inner_(inner) , outer_(outer), front_(front), back_(back),
-          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda), ts5face_(ts5face),
+          ipa_(ipa), ipa_front_(ipafront), ipa_back_(ipaback), opa_(opa), tsda_(tsda),
           materialCylinders_(materialCylinders)
       {}
 
@@ -49,7 +49,6 @@ namespace mu2e {
         auto const& innerProtonAbsorberBack() const { return *ipa_back_; }
         auto const& outerProtonAbsorber() const { return *opa_; }
         auto const& upstreamAbsorber() const { return *tsda_; }
-        auto const& ts5Face() const { return *ts5face_; }
         // return by ptr
         auto const& outerPtr() const { return outer_; }
         auto const& innerPtr() const { return inner_; }
@@ -60,7 +59,6 @@ namespace mu2e {
         auto const& innerProtonAbsorberBackPtr() const { return ipa_back_; }
         auto const& outerProtonAbsorberPtr() const { return opa_; }
         auto const& upstreamAbsorberPtr() const { return tsda_; }
-        auto const& ts5FacePtr() const { return ts5face_; }
         auto const& materialCylinders() const { return materialCylinders_; }
       private:
         CylPtr inner_; //  inner cryostat cylinder boundary
@@ -72,7 +70,6 @@ namespace mu2e {
         DiskPtr ipa_back_;
         FruPtr opa_; // outer proton absorber
         AnnPtr tsda_; // TS downstream absorber
-        DiskPtr ts5face_; // TS5 face: disk out to the DS inner radius, 1 mm downstream of the KinKal TSDA plane (inside the absorber)
         MaterialCylinderCollection materialCylinders_; // passive cylindrical material shells
     };
   }

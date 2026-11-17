@@ -22,6 +22,7 @@
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "Offline/BeamlineGeom/inc/TSdA.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -372,12 +373,26 @@ namespace mu2e {
     auto ipafront= std::make_shared<KinKal::Disk>(ipa->frontDisk());
     auto ipaback= std::make_shared<KinKal::Disk>(ipa->backDisk());
     auto opa= std::make_shared<Frustrum>(VEC3(0.0,0.0,1.0),VEC3(0.0,0.0,-3766),454.0,728.4,2125.0); // inner surface
-    auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,-5967),235.0,525.0); // mid-plane: TSdA_v02 spans z = -5991.8 to -5941.0
-    // TS5 face: a disk out to the DS inner radius, 1 mm downstream of the KinKal TSDA plane (so inside the absorber), so an
-    // upstream-going extrapolation crosses it just before the TSDA plane. A crossing means the extrapolated helix reaches the
-    // TSDA plane inside the DS bore; it is not by itself a cosmic tag (see KKExtrap ToTS5)
-    static constexpr double ts5FaceOffset = 1.0; // mm
-    auto ts5face= std::make_shared<KinKal::Disk>(tsda->normal(),tsda->uDirection(),tsda->center()+VEC3(0.0,0.0,ts5FaceOffset),inner->radius());
+    // TS downstream absorber (TSDA), from the TSdA geometry. The KinKal TSDA plane is the absorber mid-plane.
+    // Geometries without a TSdA keep the nominal (TSdA_v02-like) plane, as the upstream extrapolation ends on it.
+    double tsdaz(-5967.0), tsdarin(235.0), tsdarout(525.0), tsdahalfl(25.4);
+    art::ServiceHandle<GeometryService> geomService;
+    if(geomService->hasElement<TSdA>()){
+      GeomHandle<TSdA> tsdageom;
+      double zmu2e = tsdageom->position().z();
+      // version 1 is placed at the front of DS2Vacuum, overriding its configured position (see constructTSdA)
+      if(tsdageom->version() <= 1) zmu2e = ds->vac_zLocDs23Split() - 2.0*ds->vac_halfLengthDs2() + tsdageom->halfLength4();
+      tsdaz = toDetectorZ(zmu2e);
+      tsdarin = tsdageom->rIn();
+      tsdarout = tsdageom->r4();
+      tsdahalfl = tsdageom->halfLength4();
+    }
+    auto tsda= std::make_shared<Annulus>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,tsdaz),tsdarin,tsdarout); // mid-plane
+    // TS5 face: a disk out to the DS inner radius on the downstream face of the TSDA. It is used as a sample surface (KKFit
+    // SampleSurfaces); the upstream extrapolation ends on the TSDA plane, so it covers the face. A crossing means the extrapolated
+    // helix reaches the TSDA inside the DS bore; for downstream fits it comes from the backwards extrapolation, so it is not
+    // by itself a cosmic tag.
+    auto ts5face= std::make_shared<KinKal::Disk>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,tsdaz+tsdahalfl),inner->radius());
 
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Front),std::static_pointer_cast<Surface>(front)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::DS_Back),std::static_pointer_cast<Surface>(back)));
@@ -390,7 +405,7 @@ namespace mu2e {
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TSDA),std::static_pointer_cast<Surface>(tsda)));
     kkg_->map_.emplace(std::make_pair(SurfaceId(SurfaceIdEnum::TS5_Face),std::static_pointer_cast<Surface>(ts5face)));
 
-    kkg_->ds_ = std::make_unique<KKGeom::DetectorSolenoid>(inner, outer, front, back, ipa, ipafront, ipaback, opa, tsda, ts5face, materialCylinders);
+    kkg_->ds_ = std::make_unique<KKGeom::DetectorSolenoid>(inner, outer, front, back, ipa, ipafront, ipaback, opa, tsda, materialCylinders);
   }
 
   void KinKalGeomMaker::makeTarget() {

@@ -16,6 +16,8 @@ namespace mu2e {
   class TSdA : virtual public Detector {
   public:
 
+    double rIn() const { return _rIn; } // inner (hole) radius
+
     double r4() const { return _r4; }
 
     double halfLength4() const { return _halfLength4; }
@@ -32,6 +34,8 @@ namespace mu2e {
 
     // Private ctr: the class should be only obtained via TSdA::TSdAMaker.
     TSdA();
+
+    double _rIn;
 
     double _r4;
 
