@@ -23,6 +23,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -113,11 +114,15 @@ namespace mu2e
     outputFile<<"TABLE CRVSiPM"<<std::endl;
     outputFile<<"#channel, pedestal, calibPulseHeight, calibPulseArea"<<std::endl;
 
+    size_t nOutOfRange(0), nFailedFits(0);
     for(size_t channel=0; channel<_pedestalHists.size(); ++channel)
     {
       TH1F *hist=_pedestalHists.at(channel);
-      if(hist->GetEntries()<100) //not enough data
+      //count only entries inside the histogram range: GetEntries() also counts underflow and overflow,
+      //and a channel whose ADC values all fall outside [histMin, histMax] has nothing to fit
+      if(hist->Integral(1,hist->GetNbinsX())<100) //not enough data
       {
+        if(hist->GetEntries()>=100) ++nOutOfRange;
         outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
         continue;
       }
@@ -136,11 +141,24 @@ namespace mu2e
       double peakPedestal = hist->GetBinCenter(maxbinPedestal);
       funcPedestal.SetRange(peakPedestal-4,peakPedestal+4);
       funcPedestal.SetParameter(1,peakPedestal);
-      hist->Fit(&funcPedestal, "0QR");
+      int fitStatus = hist->Fit(&funcPedestal, "0QR");
+      if(fitStatus!=0) //do not write the start value of a failed fit as a pedestal
+      {
+        ++nFailedFits;
+        outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
+        continue;
+      }
       outputFile<<channel<<","<<funcPedestal.GetParameter(1)<<",-1,-1"<<std::endl;  //only print out pedestal values
     }
 
     outputFile.close();
+
+    if(nOutOfRange>0 || nFailedFits>0)
+    {
+      mf::LogWarning("CrvPedestalFinder") << nOutOfRange << " channels had at least 100 entries but fewer than 100 inside ["
+                                          << _histMin << ", " << _histMax << "], and " << nFailedFits
+                                          << " pedestal fits failed. These channels were written without a pedestal (0,-1,-1).";
+    }
   }
 
   void CrvPedestalFinder::analyze(const art::Event& event)
