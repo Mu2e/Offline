@@ -138,7 +138,7 @@ double pbar.coll1In.pegRadialPosition = 166.7; // midway between inner and
 
 // Collar pbar absorber in TS1 collimator near end
 bool   pbar.coll1Out.build = true;
-string pbar.coll1Out.material1Name = "G4_GRAPHITE_POROUS";
+string pbar.coll1Out.material1Name = "GRAPHITE_POROUS_CUSTOM";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
 double pbar.coll1Out.z = -3154;
@@ -176,7 +176,7 @@ double ts.coll1.innerRadius4 = 240.0;
 double ts.coll1.outerRadius4 = 243.0;
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
 // and both materials to G4_Cu to get the previous setup
-string ts.coll1.material1Name = "G4_GRAPHITE_POROUS";
+string ts.coll1.material1Name = "GRAPHITE_POROUS_CUSTOM";
 string ts.coll1.material2Name = "BronzeC608";
 string ts.coll1.material3Name = "BronzeC608";
 

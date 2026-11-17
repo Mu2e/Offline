@@ -59,7 +59,7 @@ double PSEnclosure.window1.pipe.rout =   84.14; //6.625" outer diameter
 double PSEnclosure.window1.pipe.thetaX =  -9.59; //degrees
 double PSEnclosure.window1.pipe.thetaY = -12.26; //degrees
 // Primary beam window
-string PSEnclosure.window2.materialName = "G4_Ti";
+string PSEnclosure.window2.materialName = "StainlessSteel316";
 double PSEnclosure.window2.thickness = 3.226 ;
 double PSEnclosure.window2.r =  152.4;
 double PSEnclosure.window2.x = -786.05; // relative to PS center
