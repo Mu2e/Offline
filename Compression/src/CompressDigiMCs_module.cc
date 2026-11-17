@@ -143,6 +143,7 @@ public:
   void copyCaloShowerSim(const mu2e::CaloShowerSim& old_calo_shower_sim, const CaloShowerStepRemap& remap);
   void copyCaloShowerRO(const mu2e::CaloShowerRO& old_calo_shower_step_ro, const CaloShowerStepRemap& remap);
   void keepSimParticle(const art::Ptr<SimParticle>& sim_ptr);
+  static const SimParticle* resolveSimParticle(const art::Ptr<SimParticle>& sim_ptr);
   void copyCaloClusterMC(const mu2e::CaloClusterMC& old_calo_cluster_mc);
   art::Ptr<CaloHitMC> copyCaloHitMC(const mu2e::CaloHitMC& old_calo_hit_mc);
   void copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc, size_t i_tag);
@@ -832,7 +833,7 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressDigiMCs::copyCaloShowerStep(const m
   // is not there... The Ptr itself is valid (i.e. old_step.simParticle().isNonnull() returns true)
   // but there is no object there and so when we try to get the id of the SimParticle
   // there is a segfault
-  if (old_calo_shower_step.simParticle().get()) {
+  if (resolveSimParticle(old_calo_shower_step.simParticle())) {
     art::Ptr<SimParticle> oldSimPtr = old_calo_shower_step.simParticle();
 
     keepSimParticle(oldSimPtr);
@@ -970,16 +971,30 @@ art::Ptr<mu2e::CrvStep> mu2e::CompressDigiMCs::copyCrvStep(const mu2e::CrvStep& 
 
 void mu2e::CompressDigiMCs::keepSimParticle(const art::Ptr<SimParticle>& sim_ptr) {
 
-  // Also need to add all the parents too
-  _simParticlesToKeep[sim_ptr.id()].insert(sim_ptr);
-  art::Ptr<SimParticle> childPtr = sim_ptr;
-  art::Ptr<SimParticle> parentPtr = childPtr->parent();
-
-  while (parentPtr.isNonnull()) {
-    _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
-    childPtr = parentPtr;
-    parentPtr = parentPtr->parent();
+  // Also need to add all the parents too.
+  // Every insertion into a keep set comes through here and adds the whole ancestry, so
+  // a particle already in the set has its ancestors there too: stop at the first one.
+  if (sim_ptr.isNull()) {
+    throw cet::exception("CompressDigiMCs::keepSimParticle") << "asked to keep a null SimParticle Ptr\n";
   }
+  SimParticleSet& keep = _simParticlesToKeep[sim_ptr.id()];
+  art::Ptr<SimParticle> ptr = sim_ptr;
+  while (ptr.isNonnull() && keep.insert(ptr).second) {
+    ptr = resolveSimParticle(ptr)->parent();
+  }
+}
+
+// Look a SimParticle up in its collection instead of dereferencing the Ptr.
+// art caches a resolved element only in the Ptr object itself, and resolving a Ptr into a
+// cet::map_vector normalizes the type name with std::regex on every call (canvas setPtr).
+// The parent Ptrs copied out of SimParticles are never resolved, so walking ancestries
+// through them paid that once per step and generation.
+// Same result as Ptr::get(): nullptr for a null Ptr, an exception for a missing element.
+const mu2e::SimParticle* mu2e::CompressDigiMCs::resolveSimParticle(const art::Ptr<SimParticle>& sim_ptr) {
+  if (sim_ptr.isNull()) {
+    return nullptr;
+  }
+  return &sim_ptr.parentAs<SimParticleCollection>().getOrThrow(cet::map_vector_key(sim_ptr.key()));
 }
 
 
