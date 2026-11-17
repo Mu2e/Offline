@@ -90,6 +90,9 @@ namespace mu2e
       fhicl::Atom<float> ringingArtifactParam0{Name("ringingArtifactParam0"), Comment("parameter 0 (height scale) of ringing artifacts"), 0.0684};
       fhicl::Atom<float> ringingArtifactParam1{Name("ringingArtifactParam1"), Comment("parameter 1 (time shift) of ringing artifacts"), 51.1}; //ns
       fhicl::Atom<float> ringingArtifactParam2{Name("ringingArtifactParam2"), Comment("parameter 2 (beta scale) of ringing artifacts"), 0.75};
+      fhicl::Atom<float> reflectedPulseMaxPulseHeightRatio{Name("reflectedPulseMaxPulseHeightRatio"), Comment("max pulse height ratio b/w secondary and primary pulse to count as reflected pulse"), 0.3};
+      fhicl::Atom<float> reflectedPulseMinTimeDifference{Name("reflectedPulseMinTimeDifference"), Comment("min time difference b/w secondary and primary pulse to count as reflected pulse"), 30.0}; //ns
+      fhicl::Atom<float> reflectedPulseMaxTimeDifference{Name("reflectedPulseMaxTimeDifference"), Comment("max time difference b/w secondary and primary pulse to count as reflected pulse"), 80.0}; //ns
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -123,6 +126,10 @@ namespace mu2e
 
     bool  _ignoreChannels;
 
+    float _reflectedPulseMaxPulseHeightRatio;
+    float _reflectedPulseMinTimeDifference;
+    float _reflectedPulseMaxTimeDifference;
+
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
     ProditionsHandle<EventTiming> _eventTiming;
@@ -152,7 +159,10 @@ namespace mu2e
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _timeOffsetScale(conf().timeOffsetScale()),
-    _ignoreChannels(conf().ignoreChannels())
+    _ignoreChannels(conf().ignoreChannels()),
+    _reflectedPulseMaxPulseHeightRatio(conf().reflectedPulseMaxPulseHeightRatio()),
+    _reflectedPulseMinTimeDifference(conf().reflectedPulseMinTimeDifference()),
+    _reflectedPulseMaxTimeDifference(conf().reflectedPulseMaxTimeDifference())
   {
     produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -345,9 +355,18 @@ namespace mu2e
         float  ringingArtifactBeta   = _makeCrvRecoPulses->GetRingingArtifactBetas().at(j);
         if(ringingArtifactHeight>0) ringingArtifactTime += TDC0time + timeOffset;
 
+        bool   reflectedPulse=false;
+        if(j==1)
+        {
+          if(!_makeCrvRecoPulses->GetFailedFits().at(j) && !_makeCrvRecoPulses->GetFailedFits().at(j-1) &&
+             _makeCrvRecoPulses->GetPulseHeights().at(j)<_reflectedPulseMaxPulseHeightRatio*_makeCrvRecoPulses->GetPulseHeights().at(j-1) &&
+             _makeCrvRecoPulses->GetPulseTimes().at(j)-_makeCrvRecoPulses->GetPulseTimes().at(j-1)>_reflectedPulseMinTimeDifference &&
+             _makeCrvRecoPulses->GetPulseTimes().at(j)-_makeCrvRecoPulses->GetPulseTimes().at(j-1)<_reflectedPulseMaxTimeDifference) reflectedPulse=true;
+        }
+
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
                                              ringingArtifactTime, ringingArtifactHeight, ringingArtifactBeta,
-                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
+                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB, reflectedPulse);
       }
 
     }

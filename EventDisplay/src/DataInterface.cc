@@ -1148,6 +1148,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             f->SetLineStyle(1);
             f->SetLineColor(2);
             if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f->SetLineStyle(2);
+            if(recoPulse.IsReflectedPulseCandidate()) f->SetLineColor(44);
             functionList->Add(f);
 
             if(recoPulse.IsRingingArtifactRemoved())
@@ -1161,7 +1162,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
                                 ringingParam0,ringingParam1,ringingParam2,ringingParam1,ringingParam2));  //TODO: Use compiled function
               f2->SetLineWidth(1);
               f2->SetLineStyle(1);
-              f2->SetLineColor(15);
+              f2->SetLineColor(17);
               if(recoPulse.GetRecoPulseFlags().test(mu2e::CrvRecoPulseFlagEnums::failedFit)) f2->SetLineStyle(2);
               functionList->Add(f2);
             }

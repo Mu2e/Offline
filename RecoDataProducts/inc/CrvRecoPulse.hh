@@ -24,7 +24,7 @@ namespace mu2e
                  double ringingArtifactTime, float ringingArtifactHeight, float ringingArtifactBeta,
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
                  uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
-                 float pedestal, bool pedestalFromDB) :
+                 float pedestal, bool pedestalFromDB, bool reflectedPulseCandidate) :
                                                                             _PEs(PEs),
                                                                             _PEsPulseHeight(PEsPulseHeight),
                                                                             _pulseTime(pulseTime),
@@ -44,7 +44,8 @@ namespace mu2e
                                                                             _FEB(FEB),
                                                                             _FEBchannel(FEBchannel),
                                                                             _pedestal(pedestal),
-                                                                            _pedestalFromDB(pedestalFromDB)
+                                                                            _pedestalFromDB(pedestalFromDB),
+                                                                            _reflectedPulseCandidate(reflectedPulseCandidate)
                                                                              {}
 
     float  GetPEs() const            {return _PEs;}
@@ -72,6 +73,8 @@ namespace mu2e
     float                         GetPedestal() const             {return _pedestal;}
     bool                          IsPedestalFromDB() const        {return _pedestalFromDB;}
 
+    bool   IsReflectedPulseCandidate() const {return _reflectedPulseCandidate;}
+
     private:
 
     float  _PEs{0};
@@ -96,6 +99,8 @@ namespace mu2e
     uint8_t                        _FEBchannel{0};
     float                          _pedestal;
     bool                           _pedestalFromDB;
+
+    bool                           _reflectedPulseCandidate{false};
   };
   typedef std::vector<mu2e::CrvRecoPulse> CrvRecoPulseCollection;
 }

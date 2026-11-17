@@ -67,9 +67,35 @@ BEGIN_PROLOG
                                          // with a sigma equal to 1ns is used and one wants to run a simulation with a sigma of 0.5ns,
                                          // then the scale factor should be set to 0.5 (i.e. scaled to a sigma of 50%)
       ignoreChannels            : true   //ignore channels that have status bit 1 ("ignore channels") in CRVstatus DB
+
+                                         //the AFE low pass filter produces ringing artifacts about 50 ns after each pulse
+                                         //the parameters below were derived in the following way:
+                                         //1. find average 1PE dark count pulse that has main pulse and ringing artifact
+                                         //2. derive an FIR filter that turns this 1PE pulse into a 1PE pulse without the ringing artifact
+                                         //3. apply the filter to waveforms: W (main + ring + late photons) -> WF (main + late photons, but no ringing),
+                                         //   because a cosmic pulse is a sum of 1PE pulses
+                                         //4. extract the ringing shape for each waveform: R = (W - Gumbel fit to W) - (WF - Gumbel fit to WF)
+                                         //   -subtraction of a Gumbel fit is needed (to remove the main pulses), because the filter changes the main pulse slightly
+                                         //   -the late light mostly cancels (only the small ringing of the late photons remains in R)
+                                         //5. divide each R by the primary's height to normalize R and to be able to find an average R,
+                                         //   which is fitted with a Gumbel function to extract the ringing params 0 and 1
+                                         //6. find param2: a relationship between the betas of the primary and the ringing pulse
       removeRingingArtifacts    : false  //remove ringing artifacts in a waveform
                                          //needs to stay false for simulation, since the simulation doesn't contain ringing
                                          //should be set to true for real data, since real data does contain ringing
+      ringingArtifactParam0     : 0.0684 //height scale factor of ringing artifacts
+      ringingArtifactParam1     : 51.1   //51.1ns time shift of ringing artifacts
+      ringingArtifactParam2     : 0.75   //beta scale factor of ringing artifacts
+
+                                                  //a large fraction of pulses also have reflected pulses
+                                                  //the values below are not optimized, but were checked on MC (CRY with and without background) and real data
+                                                  //- to make sure that removing pulses marked as reflected pulses
+                                                  //  doesn't remove any clusters containing cosmic ray muons, and
+                                                  //- that the remaining secondary pulses not marked as reflected pulses
+                                                  //  have only a small impact on the coincidence clusters
+      reflectedPulseMaxPulseHeightRatio  : 0.3    //max pulse height ratio b/w secondary and primary pulse to count as reflected pulse
+      reflectedPulseMinTimeDifference    : 30     //30 ns min time difference b/w secondary and primary pulse to count as reflected pulse
+      reflectedPulseMaxTimeDifference    : 80     //80 ns max time difference b/w secondary and primary pulse to count as reflected pulse
     }
 
     CrvCoincidenceClusterFinder:
@@ -411,15 +437,12 @@ BEGIN_PROLOG
       bigClusterThreshold              : 50000  //disables it
       fiberSignalSpeed                 : 140    //140 mm/ns  //FIXME: The correct value should be 175 mm/ns.
       maxTimeInterval                  :  20    //20 ns   maximum time interval of hits on one side to be considered for calculation of hit time/pos
-      timeOffset                       :  34.5  //34.5 ns
+      timeOffset                       :  33.5  //33.5 ns
       compensateChannelStatus          : [0,1,2] //not connected channels (bit 0), ignored channels in reco (bit 1), channels that have no data (bit 2)
                                                  //are compensated by the other channel on the same counter side
       ignoreSecondaryPulses            : false  //ignore secondary pulses in a waveform (obsolete)
       addOppositeSidePulses            : true   //add pulses without a coincidence at their own side to the cluster containing the other end of their counter
-      ignoreReflectedPulses              : true   //ignore secondary pulses that are likely reflected pulses of the primary pulse
-      reflectedPulseMaxPulseHeightRatio  : 0.3    //max pulse height ratio b/w secondary and primary pulse to count as reflected pulse
-      reflectedPulseMinTimeDifference    : 30     //30 ns min time difference b/w secondary and primary pulse to count as reflected pulse
-      reflectedPulseMaxTimeDifference    : 80     //80 ns max time difference b/w secondary and primary pulse to count as reflected pulse
+      ignoreReflectedPulses            : true   //ignore secondary pulses that are likely reflected pulses of the primary pulse
     }
 
 

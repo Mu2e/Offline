@@ -69,9 +69,6 @@ namespace mu2e
       fhicl::Atom<bool>   ignoreSecondaryPulses{Name("ignoreSecondaryPulses"), Comment("ignore secondary pulses in a waveform.")};
       fhicl::Atom<bool>   addOppositeSidePulses{Name("addOppositeSidePulses"), Comment("add pulses that are not part of a coincidence at their own readout side to the coincidence cluster that contains the opposite end of the same counter")};
       fhicl::Atom<bool>   ignoreReflectedPulses{Name("ignoreReflectedPulses"), Comment("ignore secondary pulses that are likely reflected pulses of the primary pulse")};
-      fhicl::Atom<float>  reflectedPulseMaxPulseHeightRatio{Name("reflectedPulseMaxPulseHeightRatio"), Comment("max pulse height ratio b/w secondary and primary pulse to count as reflected pulse")};
-      fhicl::Atom<float>  reflectedPulseMinTimeDifference{Name("reflectedPulseMinTimeDifference"), Comment("min time difference b/w secondary and primary pulse to count as reflected pulse")};
-      fhicl::Atom<float>  reflectedPulseMaxTimeDifference{Name("reflectedPulseMaxTimeDifference"), Comment("max time difference b/w secondary and primary pulse to count as reflected pulse")};
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -98,9 +95,6 @@ namespace mu2e
     bool                                    _ignoreSecondaryPulses;
     bool                                    _addOppositeSidePulses;
     bool                                    _ignoreReflectedPulses;
-    float                                   _reflectedPulseMaxPulseHeightRatio;
-    float                                   _reflectedPulseMinTimeDifference;
-    float                                   _reflectedPulseMaxTimeDifference;
 
 
     int         _totalEvents;
@@ -171,7 +165,6 @@ namespace mu2e
                _minClusterPEs(minClusterPEs), _maxDistance(maxDistance) {}
     };
 
-    bool IsReflectedPulse(const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection, size_t recoPulseIndex) const;
     void clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
                            std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection);
     void filterHits(const std::vector<CrvHit> &hits, std::list<CrvHit> &hitsFiltered, unsigned int readoutSide);
@@ -197,9 +190,6 @@ namespace mu2e
     _ignoreSecondaryPulses(conf().ignoreSecondaryPulses()),
     _addOppositeSidePulses(conf().addOppositeSidePulses()),
     _ignoreReflectedPulses(conf().ignoreReflectedPulses()),
-    _reflectedPulseMaxPulseHeightRatio(conf().reflectedPulseMaxPulseHeightRatio()),
-    _reflectedPulseMinTimeDifference(conf().reflectedPulseMinTimeDifference()),
-    _reflectedPulseMaxTimeDifference(conf().reflectedPulseMaxTimeDifference()),
     _totalEvents(0),
     _totalEventsCoincidence(0)
   {
@@ -319,10 +309,7 @@ namespace mu2e
 
       if(_ignoreSecondaryPulses && crvRecoPulse->GetSequenceIndex()>0) continue;  //TODO: this option is left for older files. should be removed soon.
 
-      if(_ignoreReflectedPulses)
-      {
-        if(IsReflectedPulse(crvRecoPulseCollection, recoPulseIndex)) continue;
-      }
+      if(_ignoreReflectedPulses && crvRecoPulse->IsReflectedPulseCandidate()) continue;
 
       //get information about the counter
       const CRSScintillatorBarIndex &crvBarIndex = crvRecoPulse->GetScintillatorBarIndex();
@@ -457,23 +444,6 @@ namespace mu2e
 
     event.put(std::move(crvCoincidenceClusterCollection));
   } // end produce
-
-  bool CrvCoincidenceFinder::IsReflectedPulse(const art::Handle<CrvRecoPulseCollection> &crvRecoPulseCollection, size_t recoPulseIndex) const
-  {
-    if(recoPulseIndex==0) return false;
-    const mu2e::CrvRecoPulse &recoPulse = crvRecoPulseCollection->at(recoPulseIndex);
-    const mu2e::CrvRecoPulse &prevRecoPulse = crvRecoPulseCollection->at(recoPulseIndex-1);
-    if(prevRecoPulse.GetSequenceIndex()!=0 || recoPulse.GetSequenceIndex()!=1) return false;
-    //the next two checks are actually redundant
-    if(prevRecoPulse.GetScintillatorBarIndex()!=recoPulse.GetScintillatorBarIndex()) return false;
-    if(prevRecoPulse.GetSiPMNumber()!=recoPulse.GetSiPMNumber()) return false;
-
-    if(recoPulse.GetPulseHeight()>_reflectedPulseMaxPulseHeightRatio*prevRecoPulse.GetPulseHeight()) return false;
-    if(recoPulse.GetPulseTime()-prevRecoPulse.GetPulseTime()<_reflectedPulseMinTimeDifference) return false;
-    if(recoPulse.GetPulseTime()-prevRecoPulse.GetPulseTime()>_reflectedPulseMaxTimeDifference) return false;
-
-    return true;
-  }
 
   void CrvCoincidenceFinder::clusterProperties(int crvSectorType, const std::vector<std::vector<CrvHit> > &clusters,
                                                std::unique_ptr<CrvCoincidenceClusterCollection> &crvCoincidenceClusterCollection)
