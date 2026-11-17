@@ -149,6 +149,7 @@ namespace mu2e
     CLHEP::RandFlat       _randFlat;
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
+    CLHEP::RandBinomial   _randBinomial;
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(const Parameters& conf) :
@@ -173,7 +174,8 @@ namespace mu2e
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat(_engine),
     _randGaussQ(_engine),
-    _randPoissonQ(_engine)
+    _randPoissonQ(_engine),
+    _randBinomial(_engine)
   {
     //if(_moduleLabels.size()==0) throw std::logic_error("ERROR: a list of crvSteps module labels needs to be provided");
     if(_moduleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (crvStepModuleLabels/crvStepProcessNames)");
@@ -211,7 +213,7 @@ namespace mu2e
       }
       if(tableLoaded) continue;
 
-      _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
+      _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ, _randBinomial)));
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
       if(_localLookupTables)
       {
