@@ -6,6 +6,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvDigi.hh"
@@ -23,6 +24,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TH1F.h>
 #include <TF1.h>
@@ -65,6 +67,11 @@ namespace mu2e
     double             _maxADCspreadFirstTwoSamples;
     std::string        _tmpDBfileName;
     std::vector<TH1F*> _pedestalHists;
+
+    mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
+    std::unordered_set<size_t>               _invalidChannels;
+    bool                                     _first{true};
+    int                                      _failedPedestals{0};
   };
 
 
@@ -116,9 +123,10 @@ namespace mu2e
     for(size_t channel=0; channel<_pedestalHists.size(); ++channel)
     {
       TH1F *hist=_pedestalHists.at(channel);
-      if(hist->GetEntries()<100) //not enough data
+      if(hist->Integral(1,hist->GetNbinsX())<100) //not enough data
       {
         outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
+        if(!_invalidChannels.count(channel)) ++_failedPedestals;
         continue;
       }
 
@@ -128,6 +136,7 @@ namespace mu2e
       if(overflow/((double)hist->GetEntries())>0.1) //too much underflow/overflow. something may be wrong.
       {
         outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
+        if(!_invalidChannels.count(channel)) ++_failedPedestals;
         continue;
       }
 */
@@ -136,17 +145,34 @@ namespace mu2e
       double peakPedestal = hist->GetBinCenter(maxbinPedestal);
       funcPedestal.SetRange(peakPedestal-4,peakPedestal+4);
       funcPedestal.SetParameter(1,peakPedestal);
-      hist->Fit(&funcPedestal, "0QR");
+      if(hist->Fit(&funcPedestal, "0QR")!=0)  //check if fit failed
+      {
+        outputFile<<channel<<","<<0<<",-1,-1"<<std::endl;
+        if(!_invalidChannels.count(channel)) ++_failedPedestals;
+        continue;
+      }
       outputFile<<channel<<","<<funcPedestal.GetParameter(1)<<",-1,-1"<<std::endl;  //only print out pedestal values
     }
 
     outputFile.close();
+
+    if(_failedPedestals) mf::LogError("CrvPedestalFinder") << "Found " << _failedPedestals << " channels for which no pedestal could be found." << std::endl;
   }
 
   void CrvPedestalFinder::analyze(const art::Event& event)
   {
     art::Handle<CrvDigiCollection> crvDigiCollection;
     if(!event.getByLabel(_crvDigiModuleLabel,(_useNZS?"NZS":""),crvDigiCollection)) return;
+
+    if(_first)
+    {
+      auto const& channelMap = _channelMap_h.get(event.id());
+      for(size_t channel=0; channel<_pedestalHists.size(); ++channel)
+      {
+        if(!channelMap.onlineExists(channel)) _invalidChannels.insert(channel);
+      }
+      _first=false;
+    }
 
     for(auto iter=crvDigiCollection->begin(); iter!=crvDigiCollection->end(); ++iter)
     {

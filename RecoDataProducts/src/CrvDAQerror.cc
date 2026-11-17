@@ -22,7 +22,8 @@ namespace mu2e
     {CrvDAQerrorCodeDetail::byteCountMismatch          , "byteCountMismatch" },
     {CrvDAQerrorCodeDetail::invalidChannel             , "invalidChannel" },
     {CrvDAQerrorCodeDetail::invalidDtcId               , "invalidDtcId" },
-    {CrvDAQerrorCodeDetail::zeroBlockError             , "zeroBlockError" }
+    {CrvDAQerrorCodeDetail::zeroBlockError             , "zeroBlockError" },
+    {CrvDAQerrorCodeDetail::testPulse                  , "testPulse" }
   };
 
   std::map<CrvDAQerrorCodeDetail::enum_type,std::string> const& CrvDAQerrorCodeDetail::names()

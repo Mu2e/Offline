@@ -86,6 +86,13 @@ namespace mu2e
       fhicl::Atom<bool> useTimeOffsetDB{Name("useTimeOffsetDB"), Comment("apply time offsets from the DB")}; //true
       fhicl::Atom<float> timeOffsetScale{Name("timeOffsetScale"), Comment("scale factor for time offsets from database (use 1.0, if measured values)")}; //1.0
       fhicl::Atom<bool> ignoreChannels{Name("ignoreChannels"), Comment("ignore channels that have status 2 (bit 1) in CRVstatus DB")}; //true
+      fhicl::Atom<bool> removeRingingArtifacts{Name("removeRingingArtifacts"), Comment("remove ringing artifacts caused by AFE's LPF"), false}; //must be false for simulation
+      fhicl::Atom<float> ringingArtifactParam0{Name("ringingArtifactParam0"), Comment("parameter 0 (height scale) of ringing artifacts"), 0.0684};
+      fhicl::Atom<float> ringingArtifactParam1{Name("ringingArtifactParam1"), Comment("parameter 1 (time shift) of ringing artifacts"), 51.1}; //ns
+      fhicl::Atom<float> ringingArtifactParam2{Name("ringingArtifactParam2"), Comment("parameter 2 (beta scale) of ringing artifacts"), 0.75};
+      fhicl::Atom<float> reflectedPulseMaxPulseHeightRatio{Name("reflectedPulseMaxPulseHeightRatio"), Comment("max pulse height ratio b/w secondary and primary pulse to count as reflected pulse"), 0.3};
+      fhicl::Atom<float> reflectedPulseMinTimeDifference{Name("reflectedPulseMinTimeDifference"), Comment("min time difference b/w secondary and primary pulse to count as reflected pulse"), 30.0}; //ns
+      fhicl::Atom<float> reflectedPulseMaxTimeDifference{Name("reflectedPulseMaxTimeDifference"), Comment("max time difference b/w secondary and primary pulse to count as reflected pulse"), 80.0}; //ns
     };
 
     typedef art::EDProducer::Table<Config> Parameters;
@@ -119,6 +126,10 @@ namespace mu2e
 
     bool  _ignoreChannels;
 
+    float _reflectedPulseMaxPulseHeightRatio;
+    float _reflectedPulseMinTimeDifference;
+    float _reflectedPulseMaxTimeDifference;
+
     ProditionsHandle<CRVCalib>  _calib;
     ProditionsHandle<CRVStatus> _sipmStatus;
     ProditionsHandle<EventTiming> _eventTiming;
@@ -148,7 +159,10 @@ namespace mu2e
     _protonBunchTimeTag(conf().protonBunchTimeTag()),
     _useTimeOffsetDB(conf().useTimeOffsetDB()),
     _timeOffsetScale(conf().timeOffsetScale()),
-    _ignoreChannels(conf().ignoreChannels())
+    _ignoreChannels(conf().ignoreChannels()),
+    _reflectedPulseMaxPulseHeightRatio(conf().reflectedPulseMaxPulseHeightRatio()),
+    _reflectedPulseMinTimeDifference(conf().reflectedPulseMinTimeDifference()),
+    _reflectedPulseMaxTimeDifference(conf().reflectedPulseMaxTimeDifference())
   {
     produces<CrvRecoPulseCollection>(_NZSdata?"NZS":"");
     _makeCrvRecoPulses=boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(conf().minADCdifference(),
@@ -160,7 +174,11 @@ namespace mu2e
                                                                                                     conf().maxPulseHeightRatio(),
                                                                                                     conf().LEtimeFactor(),
                                                                                                     conf().samplesBefore(),
-                                                                                                    conf().samplesAfter()));
+                                                                                                    conf().samplesAfter(),
+                                                                                                    conf().removeRingingArtifacts(),
+                                                                                                    conf().ringingArtifactParam0(),
+                                                                                                    conf().ringingArtifactParam1(),
+                                                                                                    conf().ringingArtifactParam2()));
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -324,6 +342,7 @@ namespace mu2e
 
         bool   failedFit              = _makeCrvRecoPulses->GetFailedFits().at(j);
         bool   zeroNdf                = _makeCrvRecoPulses->GetZeroNdfs().at(j);
+
         CrvRecoPulseFlags flags;
         if(failedFit)              flags.set(CrvRecoPulseFlagEnums::failedFit);
         if(zeroNdf)                flags.set(CrvRecoPulseFlagEnums::zeroNdf);
@@ -331,8 +350,23 @@ namespace mu2e
         if(calibPulseArea<=0) {PEs=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea);}
         if(calibPulseHeight<=0) {PEsPulseHeight=0; flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight);}
 
+        double ringingArtifactTime   = _makeCrvRecoPulses->GetRingingArtifactTimes().at(j);
+        float  ringingArtifactHeight = _makeCrvRecoPulses->GetRingingArtifactHeights().at(j);
+        float  ringingArtifactBeta   = _makeCrvRecoPulses->GetRingingArtifactBetas().at(j);
+        if(ringingArtifactHeight>0) ringingArtifactTime += TDC0time + timeOffset;
+
+        bool   reflectedPulse=false;
+        if(j==1)
+        {
+          if(!_makeCrvRecoPulses->GetFailedFits().at(j) && !_makeCrvRecoPulses->GetFailedFits().at(j-1) &&
+             _makeCrvRecoPulses->GetPulseHeights().at(j)<_reflectedPulseMaxPulseHeightRatio*_makeCrvRecoPulses->GetPulseHeights().at(j-1) &&
+             _makeCrvRecoPulses->GetPulseTimes().at(j)-_makeCrvRecoPulses->GetPulseTimes().at(j-1)>_reflectedPulseMinTimeDifference &&
+             _makeCrvRecoPulses->GetPulseTimes().at(j)-_makeCrvRecoPulses->GetPulseTimes().at(j-1)<_reflectedPulseMaxTimeDifference) reflectedPulse=true;
+        }
+
         crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, j, flags,
-                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB);
+                                             ringingArtifactTime, ringingArtifactHeight, ringingArtifactBeta,
+                                             waveformIndices, barIndex, SiPM, ROC, FEB, FEBchannel, pedestal, pedestalFromDB, reflectedPulse);
       }
 
     }

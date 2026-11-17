@@ -21,9 +21,10 @@ namespace mu2e
 
     CrvRecoPulse(float PEs, float PEsPulseHeight, double pulseTime, float pulseHeight, float pulseBeta, float pulseFitChi2, double LEtime,
                  size_t sequenceIndex, const CrvRecoPulseFlags &flags,
+                 double ringingArtifactTime, float ringingArtifactHeight, float ringingArtifactBeta,
                  const std::vector<size_t> &waveformIndices, mu2e::CRSScintillatorBarIndex scintillatorBarIndex, uint8_t SiPMNumber,
                  uint8_t ROC, uint8_t FEB, uint8_t FEBchannel,
-                 float pedestal, bool pedestalFromDB) :
+                 float pedestal, bool pedestalFromDB, bool reflectedPulseCandidate) :
                                                                             _PEs(PEs),
                                                                             _PEsPulseHeight(PEsPulseHeight),
                                                                             _pulseTime(pulseTime),
@@ -33,6 +34,9 @@ namespace mu2e
                                                                             _LEtime(LEtime),
                                                                             _sequenceIndex(sequenceIndex),
                                                                             _flags(flags),
+                                                                            _ringingArtifactTime(ringingArtifactTime),
+                                                                            _ringingArtifactHeight(ringingArtifactHeight),
+                                                                            _ringingArtifactBeta(ringingArtifactBeta),
                                                                             _waveformIndices(waveformIndices),
                                                                             _scintillatorBarIndex(scintillatorBarIndex),
                                                                             _SiPMNumber(SiPMNumber),
@@ -40,7 +44,8 @@ namespace mu2e
                                                                             _FEB(FEB),
                                                                             _FEBchannel(FEBchannel),
                                                                             _pedestal(pedestal),
-                                                                            _pedestalFromDB(pedestalFromDB)
+                                                                            _pedestalFromDB(pedestalFromDB),
+                                                                            _reflectedPulseCandidate(reflectedPulseCandidate)
                                                                              {}
 
     float  GetPEs() const            {return _PEs;}
@@ -53,6 +58,11 @@ namespace mu2e
     size_t GetSequenceIndex() const  {return _sequenceIndex;}
     const  CrvRecoPulseFlags &GetRecoPulseFlags() const {return _flags;}
 
+    bool   IsRingingArtifactRemoved() const  {return _ringingArtifactHeight>0;}
+    double GetRingingArtifactTime() const    {return _ringingArtifactTime;}
+    float  GetRingingArtifactHeight() const  {return _ringingArtifactHeight;}
+    float  GetRingingArtifactBeta() const    {return _ringingArtifactBeta;}
+
     const std::vector<size_t>    &GetWaveformIndices() const      {return _waveformIndices;}
     std::vector<size_t>          &GetWaveformIndices()            {return _waveformIndices;} // used in reco compression
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
@@ -62,6 +72,8 @@ namespace mu2e
     uint8_t                       GetFEBchannel() const           {return _FEBchannel;}
     float                         GetPedestal() const             {return _pedestal;}
     bool                          IsPedestalFromDB() const        {return _pedestalFromDB;}
+
+    bool   IsReflectedPulseCandidate() const {return _reflectedPulseCandidate;}
 
     private:
 
@@ -75,6 +87,10 @@ namespace mu2e
     size_t _sequenceIndex{0};  //index of reco pulse within a waveform
     CrvRecoPulseFlags  _flags;
 
+    double _ringingArtifactTime{0};
+    float  _ringingArtifactHeight{0};
+    float  _ringingArtifactBeta{0};
+
     std::vector<size_t>            _waveformIndices;  //indices in the vector of the CrvDigiCollection (which is the same as the index in the CrvDigiMCCollection)
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     uint8_t                        _SiPMNumber{0};
@@ -83,6 +99,8 @@ namespace mu2e
     uint8_t                        _FEBchannel{0};
     float                          _pedestal;
     bool                           _pedestalFromDB;
+
+    bool                           _reflectedPulseCandidate{false};
   };
   typedef std::vector<mu2e::CrvRecoPulse> CrvRecoPulseCollection;
 }

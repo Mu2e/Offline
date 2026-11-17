@@ -244,10 +244,17 @@ namespace mu2e
               {
                 uint16_t rocPort = crvHit.getPortNumber(); //Port numbers beween 1 and 24
                 uint16_t febChannel = (crvHit.getFpgaNumber()<<4) + (crvHit.getFpgaChannel() & 0xF);  //use only 4 lowest bits of the fpgaChannel
-                //the 5th bit indicates special situations
-                //e.g. fake pulses
-                if((crvHit.getFpgaChannel() & 0x10) != 0) continue;  //special situation, if the 5th bit of the fpgaChannel is non-zero
+                //the 5th bit indicates special situations e.g. fake pulses
                 //don't decode them, since there is no match to any offline channel.
+                if((crvHit.getFpgaChannel() & 0x10) != 0)
+                {
+                  crvDaqErrors->emplace_back(mu2e::CrvDAQerrorCode::testPulse,iFragment,iSubEvent,iDataBlock,header->GetPacketCount());
+                  mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
+                            << std::dec << "Run/Subrun/Event: " << event.run() << "/" << event.subRun() << "/" << eventNumber << std::endl
+                            << "iSubEvent/iDataBlock: " << iSubEvent << "/" << iDataBlock << std::endl
+                            << "Test pulse found!" << std::endl;
+                  continue;
+                }
                 if(rocPort==0) //one of the indicators of a "zero-block error". TODO: implement a better check for this error
                 {
                   mf::LogError("CrvDigisFromArtdaqFragmentsFEBII")
