@@ -110,6 +110,9 @@ namespace mu2e {
         unsigned trueCluBest = 0, trueCluProj = 0;                // ... best in its sector; projected from another sector
         double chi2nd = 0, chi2ndProj = 0;                        // sums of chi2/ndof of those geometric candidates
         unsigned trueX = 0, trueFound = 0, trueMissed = 0, trueNoGeom = 0;
+        unsigned recoProj = 0, recoProjTrue = 0, trueMissedProj = 0;   // projections of line fits with no CRV crossing
+        unsigned trueCluNoXing = 0;                               // own cluster geometric through such a projection
+        double chi2ndNoXing = 0;                                  // ... their chi2/ndof sum, kept out of chi2nd
       };
       art::InputTag matchTag_, ksmcTag_, spTag_, trajTag_, stepTag_, ccmcTag_;
       bool requireSteps_;
@@ -382,8 +385,9 @@ namespace mu2e {
       bool crosses = false;
       for(size_t ir = 0; ir < m.xings_.size(); ++ir) {
         auto& c = counts_[m.xings_[ir].sector_];
-        ++c.recoX;
         int t = mc.recoXingTruth_[ir];
+        if(!m.xings_[ir].inBounds_) { ++c.recoProj; if(t >= 0) ++c.recoProjTrue; continue; }   // not a crossing the extrapolation found
+        ++c.recoX;
         if(t < 0) { ++c.recoFake; if(m.xings_[ir].edgeSig_ < edgeSigCut_) ++c.recoFakeEdge; if(mc.recoXingNeighbor_[ir] >= 0) ++c.recoFakeNbr; }
         else if(mc.xings_[t].rel_ != MCRelationship::same) ++c.recoTrueAnc;
         else if(mc.xings_[t].edep_ > 0) ++c.recoTrueDep;
@@ -395,11 +399,12 @@ namespace mu2e {
         if(!xm.geom_) { if(xm.edep_ > 0) ++c.trueNoGeom; continue; }
         crosses = true;
         ++c.trueX;
-        if(xm.recoXing_ >= 0) ++c.trueFound;
+        if(xm.recoXing_ >= 0 && m.xings_[xm.recoXing_].inBounds_) ++c.trueFound;
         else {
           ++c.trueMissed;
+          if(xm.recoXing_ >= 0) ++c.trueMissedProj;
           for(auto const& rx : m.xings_)
-            if(rx.sector_ >= 0 && xm.sector_ >= 0 && planeGroup_[rx.sector_] >= 0 && planeGroup_[rx.sector_] == planeGroup_[xm.sector_]) { ++c.trueMissedNbr; break; }
+            if(rx.inBounds_ && rx.sector_ >= 0 && xm.sector_ >= 0 && planeGroup_[rx.sector_] >= 0 && planeGroup_[rx.sector_] == planeGroup_[xm.sector_]) { ++c.trueMissedNbr; break; }
         }
       }
       for(auto const& xm : mc.xings_) {   // is the particle's own cluster in each sector associated geometrically?
@@ -414,7 +419,8 @@ namespace mu2e {
             excl = cand.hasFlag(TrkCrvCandidate::exclusive);
             if(cand.hasFlag(TrkCrvCandidate::bestInSector)) ++c.trueCluBest;
             double cn = cand.ndof_ > 0 ? cand.chi2_ / cand.ndof_ : 0.0;
-            c.chi2nd += cn;
+            if(cand.xing_ >= 0 && !m.xings_[cand.xing_].inBounds_) { ++c.trueCluNoXing; c.chi2ndNoXing += cn; }
+            else c.chi2nd += cn;
             if(!cand.hasFlag(TrkCrvCandidate::sameSector)) { ++c.trueCluProj; c.chi2ndProj += cn; }
           }
         }
@@ -446,11 +452,11 @@ namespace mu2e {
           auto const& rect = *sectors_[xm.sector_].rect;
           auto const& rx = m.xings_[c.xing_];
           auto const& ki = m.track_->intersections()[rx.inter_];
-          KinKal::VEC3 px(rx.pos_.X(), rx.pos_.Y(), rx.pos_.Z());
+          KinKal::VEC3 px = ki.position3();   // the state the error is carried from; a projection's crossing is already on the plane
           KinKal::VEC3 mom = ki.momentum3(), d = mom.Unit();
           KinKal::VEC3 const& w = rect.normal();
           double dw = d.Dot(w);
-          if(std::fabs(dw) < 1e-3) continue;
+          if(std::fabs(dw) < trkCrvMinCosToNormal) continue;
           double s = (rect.center() - px).Dot(w) / dw;
           KinKal::VEC3 r = KinKal::VEC3(xm.pos_.X(), xm.pos_.Y(), xm.pos_.Z()) - (px + s * d);
           auto const& cov = ki.pstate_.stateCovariance();
@@ -476,18 +482,19 @@ namespace mu2e {
     log << "TrkCrvMatchMC summary (" << moduleDescription().moduleLabel() << "): tracks " << nTracks_ << ", with MC " << nTracksMC_
         << ", whose particle crosses a CRV sector " << nTracksCrossing_ << "\n"
         << std::setw(10) << "sector" << std::setw(8) << "reco" << std::setw(9) << "true:dep" << std::setw(9) << "true:gap"
-        << std::setw(9) << "true:anc" << std::setw(7) << "fake" << std::setw(10) << "fake:edge" << std::setw(9) << "fake:nbr" << " |" << std::setw(7) << "truth" << std::setw(7) << "found"
-        << std::setw(8) << "missed" << std::setw(9) << "miss:nbr" << std::setw(12) << "dep-no-geom";
+        << std::setw(9) << "true:anc" << std::setw(7) << "fake" << std::setw(10) << "fake:edge" << std::setw(9) << "fake:nbr" << std::setw(6) << "proj" << std::setw(11) << "proj:true" << " |" << std::setw(7) << "truth" << std::setw(7) << "found"
+        << std::setw(8) << "missed" << std::setw(9) << "miss:nbr" << std::setw(10) << "miss:proj" << std::setw(12) << "dep-no-geom";
     for(auto const& [s, c] : counts_) {
       std::string n = (s >= 0 && static_cast<size_t>(s) < shieldNames_.size()) ? shieldNames_[s] : std::to_string(s);
       log << "\n" << std::setw(10) << n << std::setw(8) << c.recoX << std::setw(9) << c.recoTrueDep << std::setw(9) << c.recoTrueGap
-          << std::setw(9) << c.recoTrueAnc << std::setw(7) << c.recoFake << std::setw(10) << c.recoFakeEdge << std::setw(9) << c.recoFakeNbr << " |" << std::setw(7) << c.trueX << std::setw(7) << c.trueFound
-          << std::setw(8) << c.trueMissed << std::setw(9) << c.trueMissedNbr << std::setw(12) << c.trueNoGeom;
+          << std::setw(9) << c.recoTrueAnc << std::setw(7) << c.recoFake << std::setw(10) << c.recoFakeEdge << std::setw(9) << c.recoFakeNbr << std::setw(6) << c.recoProj << std::setw(11) << c.recoProjTrue << " |" << std::setw(7) << c.trueX << std::setw(7) << c.trueFound
+          << std::setw(8) << c.trueMissed << std::setw(9) << c.trueMissedNbr << std::setw(10) << c.trueMissedProj << std::setw(12) << c.trueNoGeom;
     }
     for(auto const& [s, c] : counts_) {
       std::string n = (s >= 0 && static_cast<size_t>(s) < shieldNames_.size()) ? shieldNames_[s] : std::to_string(s);
       log << "\nclusters " << n << " true " << c.trueClu << " geom " << c.trueCluGeom << " exclusive " << c.trueCluExcl
-          << " best " << c.trueCluBest << " chi2nd " << c.chi2nd << " proj " << c.trueCluProj << " chi2ndProj " << c.chi2ndProj;
+          << " best " << c.trueCluBest << " chi2nd " << c.chi2nd << " proj " << c.trueCluProj << " chi2ndProj " << c.chi2ndProj
+          << " noxing " << c.trueCluNoXing << " chi2ndNoXing " << c.chi2ndNoXing;
     }
     log << "\nbest geometric candidate:";
     for(int i = 0; i < nRel; ++i) log << " " << relName[i] << " " << bestGeomRel_[i];

@@ -10,21 +10,24 @@ int mu2e::ValTrkCrvMatch::declare(const art::TFileDirectory& tfs) {
   _hNTrk = tfs.make<TH1D>("NTrk", "N tracks", 21, -0.5, 20.5);
   _hNCand = tfs.make<TH1D>("NCand", "N candidates per track", 51, -0.5, 50.5);
   _hNGeom = tfs.make<TH1D>("NGeom", "N geometric candidates per track", 21, -0.5, 20.5);
-  _hNXing = tfs.make<TH1D>("NXing", "N CRV crossings per track", 11, -0.5, 10.5);
+  _hNXing = tfs.make<TH1D>("NXing", "N CRV crossings per track (extrapolated, in bounds)", 11, -0.5, 10.5);
+  _hNXingProj = tfs.make<TH1D>("NXingProj", "N projected CRV crossings per line track with no crossing", 11, -0.5, 10.5);
   _hDtRef = tfs.make<TH1D>("dtRef", "t_{trk}(ref) - t_{cluster}, all candidates;ns", 200, -1000., 1000.);
   _hDtRefBest = tfs.make<TH1D>("dtRefBest", "t_{trk}(ref) - t_{cluster}, best candidate;ns", 200, -400., 400.);
   _hDtRefToF = tfs.make<TH1D>("dtRefToF", "dtRef - flight time, best candidate;ns", 200, -400., 400.);
-  _hChi2 = tfs.make<TH1D>("chi2ndof", "#chi^{2}/ndof, best in sector", 100, 0., 20.);
+  _hChi2 = tfs.make<TH1D>("chi2ndof", "#chi^{2}/ndof, best in sector, from an in-bounds crossing", 100, 0., 20.);
+  _hChi2Proj = tfs.make<TH1D>("chi2ndofProj", "#chi^{2}/ndof, best in sector, from a projected crossing", 100, 0., 20.);
   _hNShare = tfs.make<TH1D>("NShare", "tracks sharing the cluster", 11, -0.5, 10.5);
   _hFlags = tfs.make<TH1D>("Flags", "candidate flag bits", 16, -0.5, 15.5);
-  _hXingShield = tfs.make<TH1D>("XingShield", "CRV crossings per sector", ns, lo, hi);
-  _hXingGeomShield = tfs.make<TH1D>("XingGeomShield", "crossings with a geometric candidate in their sector", ns, lo, hi);
+  _hXingShield = tfs.make<TH1D>("XingShield", "CRV crossings per sector (extrapolated, in bounds)", ns, lo, hi);
+  _hXingGeomShield = tfs.make<TH1D>("XingGeomShield", "in-bounds crossings with a geometric candidate in their sector", ns, lo, hi);
+  _hXingProjShield = tfs.make<TH1D>("XingProjShield", "projected crossings per sector (line tracks with no crossing)", ns, lo, hi);
   _hDtXing = tfs.make<TH2D>("dtXing", "t_{cluster} - t_{trk} at the plane, best in sector;cluster sector;ns", ns, lo, hi, 100, -100., 100.);
   _hDu = tfs.make<TH2D>("du", "cluster - track along the bars, best in sector;cluster sector;mm", ns, lo, hi, 100, -3000., 3000.);
   _hDv = tfs.make<TH2D>("dv", "cluster - track across the bars, best in sector;cluster sector;mm", ns, lo, hi, 100, -500., 500.);
   _hPredMatched = tfs.make<TH2D>("PredMatched", "best geometric candidate;reference crossing sector;cluster sector", ns, lo, hi, ns, lo, hi);
   _hSlopeNoGeom = tfs.make<TH1D>("SlopeNoGeom", "best in sector, not in dvVsSlope: sector not in this job's geometry;cluster sector", ns, lo, hi);
-  for (TH1* h : {static_cast<TH1*>(_hXingShield), static_cast<TH1*>(_hXingGeomShield), static_cast<TH1*>(_hDtXing),
+  for (TH1* h : {static_cast<TH1*>(_hXingShield), static_cast<TH1*>(_hXingGeomShield), static_cast<TH1*>(_hXingProjShield), static_cast<TH1*>(_hDtXing),
                  static_cast<TH1*>(_hDu), static_cast<TH1*>(_hDv), static_cast<TH1*>(_hPredMatched), static_cast<TH1*>(_hSlopeNoGeom)})
     _axis.label(h->GetXaxis());
   _axis.label(_hPredMatched->GetYaxis());
@@ -53,7 +56,7 @@ int mu2e::ValTrkCrvMatch::declare(const art::TFileDirectory& tfs) {
 int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Event const& event) {
   // increment this by 1 any time the definitions of the histograms or the
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(1.0);
+  _hVer->Fill(2.0);
 
   // a cluster's sector: the SurfaceId of a crossing with the same shield index in the product's geometry
   auto clusterBin = [&](int16_t shield) {
@@ -64,7 +67,10 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
   for (auto const& m : coll) {
     for (auto const& x : m.xings_) _shieldBin[x.sector_] = _axis.bin(x.sid_);
     _hNCand->Fill(m.cands_.size());
-    _hNXing->Fill(m.xings_.size());
+    int nproj = 0;
+    for (auto const& x : m.xings_) nproj += !x.inBounds_;
+    _hNXing->Fill(m.xings_.size() - nproj);
+    if (nproj > 0) _hNXingProj->Fill(nproj);
     int ngeom = 0;
     for (auto const& c : m.cands_) {
       _hDtRef->Fill(c.dtRef_);
@@ -75,7 +81,8 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
       ++ngeom;
       if (!c.hasFlag(TrkCrvCandidate::bestInSector)) continue;
       int b = clusterBin(c.sector_);
-      if (c.ndof_ > 0) _hChi2->Fill(c.chi2_ / c.ndof_);
+      bool proj = c.xing_ >= 0 && static_cast<size_t>(c.xing_) < m.xings_.size() && !m.xings_[c.xing_].inBounds_;
+      if (c.ndof_ > 0) (proj ? _hChi2Proj : _hChi2)->Fill(c.chi2_ / c.ndof_);
       _hDtXing->Fill(b, c.dtXing_);
       if (!c.hasFlag(TrkCrvCandidate::singleEnded)) _hDu->Fill(b, c.du_);
       _hDv->Fill(b, c.dv_);
@@ -105,6 +112,10 @@ int mu2e::ValTrkCrvMatch::fill(const mu2e::TrkCrvMatchCollection& coll, art::Eve
         _hPredMatched->Fill(_axis.bin(m.xings_[c.xing_].sid_), clusterBin(c.sector_));
     }
     for (auto const& x : m.xings_) {
+      if (!x.inBounds_) {
+        _hXingProjShield->Fill(_axis.bin(x.sid_));
+        continue;
+      }
       _hXingShield->Fill(_axis.bin(x.sid_));
       if (x.best_ >= 0) _hXingGeomShield->Fill(_axis.bin(x.sid_));
       for (size_t L = 0; L < x.layers_.size(); ++L) {

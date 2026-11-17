@@ -10,6 +10,7 @@
 
 namespace mu2e {
   using TrkCrvCov2 = ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>;
+  constexpr double trkCrvMinCosToNormal = 1e-3;   // |direction . plane normal| below which a track is parallel to the plane
 
   // Covariance of the track position on the plane with normal w, in the in-plane axes (a, b), after a straight step of
   // signed path length s from a state (position, momentum p) with 6x6 covariance C (position first). With d = p/|p|
@@ -23,7 +24,7 @@ namespace mu2e {
     if(pm <= 0) return out;
     KinKal::VEC3 d = p / pm;
     double dw = d.Dot(w);
-    if(std::fabs(dw) < 1e-3) return out;
+    if(std::fabs(dw) < trkCrvMinCosToNormal) return out;
     double g[2][6];
     KinKal::VEC3 const* axes[2] = {&a, &b};
     for(int k = 0; k < 2; ++k) {

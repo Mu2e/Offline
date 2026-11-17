@@ -40,14 +40,17 @@ class ValTrkCrvMatch {
   TH1D* _hNCand;
   TH1D* _hNGeom;
   TH1D* _hNXing;
+  TH1D* _hNXingProj;
   TH1D* _hDtRef;
   TH1D* _hDtRefBest;
   TH1D* _hDtRefToF;
   TH1D* _hChi2;
+  TH1D* _hChi2Proj;
   TH1D* _hNShare;
   TH1D* _hFlags;
   TH1D* _hXingShield;
   TH1D* _hXingGeomShield;
+  TH1D* _hXingProjShield;
   TH2D* _hDtXing;
   TH2D* _hDu;
   TH2D* _hDv;
