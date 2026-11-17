@@ -28,6 +28,7 @@
 #include "Offline/DataProducts/inc/PDGCode.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/setPtr.h"
 
 #include "cetlib/map_vector.h"
 
@@ -297,6 +298,16 @@ namespace mu2e {
 
   };
   typedef cet::map_vector<mu2e::SimParticle> SimParticleCollection;
+
+  // Ptr<SimParticle> resolution (art::Wrapper finds this by ADL): skips art's per-call type-name comparison
+  inline void setPtr(SimParticleCollection const& coll, std::type_info const& toType, unsigned long key,
+                     void const*& ptr) {
+    if (toType == typeid(SimParticle)) {
+      ptr = &coll.findOrThrow(cet::map_vector_key{key})->second;
+    } else {
+      art::setPtr(coll, toType, key, ptr);
+    }
+  }
   typedef art::Ptr<mu2e::SimParticle> SimParticlePtr;
   typedef std::vector<mu2e::SimParticlePtr> SimParticlePtrCollection;
 
