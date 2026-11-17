@@ -138,6 +138,7 @@ namespace mu2e {
     virtual ~KinematicLineFit();
     void beginRun(art::Run& run) override;
     void produce(art::Event& event) override;
+    void endJob() override;
     private:
     // utility functions
     KTRAJ makeSeedTraj(CosmicTrackSeed const& hseed) const;
@@ -238,6 +239,10 @@ namespace mu2e {
     // translate the sample surface names to actual surfaces using the KinKalGeom. This must be done after construction as the KKGeom object now comes from GeometryService
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     kkg_h->surfaces(ssids_,surfacess_to_sample_);
+  }
+
+  void KinematicLineFit::endJob() {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
   }
 
   void KinematicLineFit::produce(art::Event& event ) {
