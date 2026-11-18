@@ -49,7 +49,7 @@ namespace mu2e {
       auto lh = loopHelix();
       return lh.paramVal(KinKal::LoopHelix::t0Index());
     } else if(flag.hasAllProperties(TrkFitFlag::KKCentralHelix)) {
-      auto ch = loopHelix();
+      auto ch = centralHelix();
       return ch.paramVal(KinKal::CentralHelix::t0Index());
     } else if (flag.hasAllProperties(TrkFitFlag::KKLine)) {
       auto kl = kinematicLine();
@@ -64,7 +64,7 @@ namespace mu2e {
       auto lh = loopHelix();
       return lh.paramVar(KinKal::LoopHelix::t0Index());
     } else if(flag.hasAllProperties(TrkFitFlag::KKCentralHelix)) {
-      auto ch = loopHelix();
+      auto ch = centralHelix();
       return ch.paramVar(KinKal::CentralHelix::t0Index());
     } else if (flag.hasAllProperties(TrkFitFlag::KKLine)) {
       auto kl = kinematicLine();
