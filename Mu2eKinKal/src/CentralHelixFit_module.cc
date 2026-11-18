@@ -143,6 +143,7 @@ namespace mu2e {
       virtual ~CentralHelixFit() {}
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
+      void endJob() override;
     protected:
       bool goodFit(KKTRK const& ktrk) const;
       void sampleFit(KKTRK& ktrk) const;
@@ -258,6 +259,10 @@ namespace mu2e {
     GeomHandle<mu2e::KinKalGeom> kkg_h;
     auto const& kkg = *kkg_h;
     kkg.surfaces(ssids_,surfacess_to_sample_);
+  }
+
+  void CentralHelixFit::endJob() {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
   }
 
   void CentralHelixFit::produce(art::Event& event ) {
