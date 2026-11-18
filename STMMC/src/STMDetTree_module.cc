@@ -24,6 +24,15 @@
 //   ttree_genealogy  one row per (count, ancestor): the back-trace chain.
 //                    Written when WriteGenealogy is true (the default).
 //
+// ZERO-ENERGY ROWS ARE KEPT, AND AN ANALYSIS MUST FILTER THEM OUT OF A RATE.
+// Every STMDet step enters the clustering, including steps that deposited nothing - a
+// neutron crossing the crystal without interacting, say. A cluster whose steps all deposit
+// zero is written as a row with E and nonIonE both 0. Such a row is a real crossing, with a
+// valid time, position, nSteps and genealogy, and is kept because that is information the
+// simulation has; but it is NOT a detector pulse, so counting it inflates a rate. Select
+// E > 0 (or a threshold of your own) before counting. MinEdep can drop them at production
+// instead, at the cost of losing the crossings entirely.
+//
 // A count is identified by (run, subRun, event, detector, groupId, cluster):
 //   detector  which crystal - 0 = HPGe, 1 = LaBr.
 //   groupId   the SimParticle KEY of the particle the deposit is attributed to, i.e. the
@@ -202,8 +211,9 @@ namespace mu2e {
         fhicl::Atom<double> minEdep{
           Name("MinEdep"),
           Comment("Drop counts whose TOTAL (ionizing + non-ionizing) deposit is below this "
-                  "[MeV]. 0 keeps everything; filter in the analysis instead unless the file "
-                  "size demands otherwise."),
+                  "[MeV]. 0 keeps everything, INCLUDING zero-energy rows - see the header "
+                  "on what those are and why they are kept. Filter in the analysis instead "
+                  "unless the file size demands otherwise."),
           0.0};
       };
 
@@ -667,12 +677,26 @@ namespace mu2e {
         lastTime_   = stepList[e - 1].time;
         nSteps_     = e - b;
 
+        // Energy-weighted mean where there is energy to weight with. A cluster whose steps
+        // all deposited nothing - a neutron crossing the crystal, say - has no such mean,
+        // and the unweighted centroid of its steps is used instead: that is still where
+        // the particle was, whereas a fixed fallback like (0,0,0) is a real coordinate
+        // some 40 m upstream and would put a false cluster there on any position plot.
         if (sumW > 0.0) {
           x_ = sumWx / sumW;
           y_ = sumWy / sumW;
           z_ = sumWz / sumW;
         } else {
-          x_ = y_ = z_ = 0.0;
+          double sx = 0.0, sy = 0.0, sz = 0.0;
+          for (size_t i = b; i < e; ++i) {
+            sx += stepList[i].x;
+            sy += stepList[i].y;
+            sz += stepList[i].z;
+          }
+          const double n = static_cast<double>(e - b);
+          x_ = sx / n;
+          y_ = sy / n;
+          z_ = sz / n;
         }
 
         startTime_ = group->startGlobalTime();
