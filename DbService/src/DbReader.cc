@@ -224,6 +224,11 @@ int mu2e::DbReader::openHandle() {
   curl_easy_setopt(_curl_handle, CURLOPT_FOLLOWLOCATION, 1);
   // do not require certificate verification
   curl_easy_setopt(_curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
+  // abort a transfer that stalls (under 1 byte/s for 120 s) so the retry
+  // loop in queryCore sees an error and the overall timeout is enforced;
+  // without this a server that stops sending blocks curl_easy_perform forever
+  curl_easy_setopt(_curl_handle, CURLOPT_LOW_SPEED_LIMIT, 1L);
+  curl_easy_setopt(_curl_handle, CURLOPT_LOW_SPEED_TIME, 120L);
 
   return 0;
 }
@@ -307,7 +312,7 @@ int mu2e::DbReader::queryCore(std::string& csv, const std::string& select,
     // save error state
     _lastError = curl_easy_strerror(_curl_ret);
 
-    int http_code = 0;
+    long http_code = 0;  // CURLINFO_RESPONSE_CODE writes a long
     curl_easy_getinfo(_curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
     if (_curl_ret == CURLE_OK && http_code == 200) {
