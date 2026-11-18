@@ -522,18 +522,18 @@ namespace mu2e {
       CLHEP::Hep3Vector const & dsP ( ds->position() );
       const CLHEP::Hep3Vector zeroVector(0.,0.,0.);
 
-      GeomHandle<CosmicRayShield> CRS;
-      const double z_crv_max = CRS->getSectorPosition("D").z() + (CRS->getSectorHalfLengths("D"))[2];
+      // Reference z of the STM geometry, the same value STMMaker uses. It used to be the downstream edge of CRV
+      // sector "D", which the Run 1 CRV does not have (the sector lookup then returned 0 without an error).
+      const double stmReferenceZ = c.getDouble("stm.referenceZ");
 
       // Create a reference position (most things in the STM geometry will be defined w.r.t. this position)
-      // Our reference z is the downstream edge of the CRV
-      const CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(), 0.0, z_crv_max);
+      const CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(), 0.0, stmReferenceZ);
       const CLHEP::Hep3Vector mstmReferencePositionInParent = mstmReferencePositionInMu2e - parentPositionInMu2e;
 
       //WARNING: This must be the same as in constructMSTM.cc for now.
       GeomHandle<Mu2eHall> hall;
       const double z_hall_inside_max = hall->getWallExtentz("dsArea",1)/CLHEP::mm;//the integer allows you to specify which side of which wall you want the z for: 1 = west side of east wall (i.e. the z of the inside surface of the east wall)
-      const double mstmMotherHalfLength = (z_hall_inside_max - z_crv_max)/2.0;
+      const double mstmMotherHalfLength = (z_hall_inside_max - stmReferenceZ)/2.0;
 
       // Create a reference position for the downstream area
       const CLHEP::Hep3Vector BeamAxisAtEastWallInMu2e(dsP.x(), 0.0, z_hall_inside_max );
@@ -631,7 +631,7 @@ namespace mu2e {
 
       if ( c.getBool("vd.STMMagDnStr.build", false) ) {//VD87 - in front of magnet before FOV collimator
         PermanentMagnet const & pSTMMagnetParams = *stmgh.getSTMMagnetPtr();
-        double z_offset = pSTMMagnetParams.zEnd()+vd->_halfLength-z_crv_max;
+        double z_offset = pSTMMagnetParams.zEnd()+vd->_halfLength-stmReferenceZ;
         TransportPipe const & pSTMTransportPipeParams = *stmgh.getSTMTransportPipePtr();
         if (pSTMTransportPipeParams.build()){
           z_offset += 2.0*pSTMTransportPipeParams.dnStrHalflength();//c.getDouble("stm.pipe.DnStrHalfLength");
