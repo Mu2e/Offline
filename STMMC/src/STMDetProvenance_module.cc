@@ -1,53 +1,21 @@
 // STMDetProvenance_module.cc
 //
-// DIAGNOSTIC for the STMDet-vs-VD entry-count discrepancy. This module does not replace
-// HPGeTree - it answers the question HPGeTree's summary cannot: for every StepPointMC in
-// STMDet, where did the depositing particle come from, and what does its full genealogy
-// look like?
+// Test module for the STMDet genealogy. One row per StepPointMC in STMDet, recording
+// whether the depositing particle is a primary, truncated (parent dropped by the
+// compression) or has a parent, together with two groupings of it: the top parent
+// HPGeTree assigns (walking up only while the parent itself deposited in STMDet) and the
+// root of its full genealogy. Nothing is aggregated, so either grouping can be rebuilt
+// offline. The endJob summary prints the totals, the number of distinct groups under each
+// grouping, and the birth volumes of the depositing particles.
 //
-// The question it exists to settle
-// -------------------------------
-// HPGeTree reports more tree entries (219) than the front virtual detector has crossings
-// (142 gamma + 8 n = 150), and reports 242 steps whose SimParticle "had no reachable
-// parent". Several very different mechanisms could produce either number, and the existing
-// summary cannot tell them apart:
-//
-//   (a) GENUINE PRIMARIES. VDResamplerGenerateMix emits exactly ONE GenParticle per event,
-//       so at most one parentless particle per event is expected. A count far above the
-//       event count means (a) is not the whole story.
-//   (b) TRUNCATED genealogy. SimParticle::isTruncated() is true when the parent Ptr is null
-//       but the creation code is NOT mu2ePrimary - i.e. the particle HAD a parent that is
-//       not in the collection. HPGeTree's test (parent.isNull() || !parent.isAvailable())
-//       fires identically for (a) and (b), so both are counted together in nNoParent and
-//       both are treated as their own top parent.
-//   (c) SHELL-BORN SECONDARIES whose ancestor never deposited in a crystal. HPGeTree stops
-//       its walk when the parent is absent from SimParticleIds (which holds only particles
-//       that deposited in STMDet), so such a secondary becomes its own top parent. This is
-//       the mechanism that splits one incident particle into several tree entries.
-//   (d) DIFFERENT EVENT SETS. STMCrystalPath filters on crystal deposits while STMVD90Path
-//       filters on VD90 crossings - a photon can reach the Ge without crossing VD90 (side
-//       or angled entry through the endcap) and vice versa. Then 219 vs 150 is not
-//       double-counting at all and no code change is warranted.
-//
-// Branches are chosen so each hypothesis has a decisive test; see the per-branch comments
-// and the "How to read this" block printed at endJob.
-//
-// One row per StepPointMC (not per particle, not per event), so nothing is pre-aggregated:
-// every grouping HPGeTree might apply can be reconstructed offline from these rows, and the
-// aggregation itself is then testable rather than assumed.
-//
-// Volumes are carried as the raw startVolumeIndex everywhere - in the tree and in the
-// tallies - and resolved to names ONCE, at endJob, only for the printed summary. A file
-// that dropped the volume table therefore still produces every number; its summary just
-// lists bare indices. This keeps the per-row cost to an integer and puts the one place
-// names actually help (reading the born-in-volume tally) behind an optional input.
+// Volumes are stored as raw startVolumeIndex and resolved to names only for the endJob
+// summary, and only if PhysicalVolumesTag is given.
 //
 // Yongyi Wu, Oct. 2026
 
 #include <map>
 #include <set>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -127,11 +95,10 @@ namespace mu2e {
       int      trackId_ = 0;      // SimParticle key of the depositing particle
       int      pdgId_ = 0;
       int      creationCode_ = 0; // ProcessCode that made it; mu2ePrimary for a primary
-      unsigned startVolumeIndex_ = 0;  // where it was BORN - the shell test (hypothesis c)
+      unsigned startVolumeIndex_ = 0;  // where it was BORN
       double   startGlobalTime_ = 0.0;
 
       // ---- the three classifications HPGeTree collapses into one ----
-      // isPrimary_ is hypothesis (a), isTruncated_ is (b); hasParent_ is everything else.
       bool   isPrimary_ = false;    // genParticle set AND creationCode == mu2ePrimary
       bool   isTruncated_ = false;  // parent Ptr null but NOT a primary: parent was dropped
       bool   hasParent_ = false;    // parent Ptr resolvable
@@ -140,7 +107,7 @@ namespace mu2e {
       int    hpgeTopParentId_ = 0;  // the id HPGeTree's topParent() would return
       int    hpgeTopParentPdg_ = 0;
       bool   hpgeStoppedAtShell_ = false;  // a resolvable parent existed but had no STMDet
-                                           // step, so the walk stopped early -> (c)
+                                           // step, so the walk stopped early
 
       // ---- the full genealogy, walked WITHOUT the STMDet restriction ----
       // This is the grouping that ties a shell secondary back to the particle that entered
@@ -158,13 +125,10 @@ namespace mu2e {
       unsigned long nStoppedAtShell_ = 0;
       std::map<int, unsigned long> rootPdgCounts_;
       // Where the depositing particles were born, and where the ones that made HPGeTree
-      // stop early were born. The second is the shell test: if hypothesis (c) holds, its
-      // volumes are the capsule / endcap, not the crystal.
+      // stop early were born.
       std::map<unsigned, unsigned long> startVolumeCounts_, shellStopVolumeCounts_;
-      // Distinct ids per event, to compare against the VD crossing count. Keyed by the
-      // full (run, subRun, event) triple: event numbers alone repeat across subRuns, which
-      // would merge unrelated events in a multi-subRun or hadd'ed file.
-      std::map<std::tuple<int,int,int>, std::set<int>> hpgeTopsPerEvent_, rootsPerEvent_;
+      // Distinct HPGeTree top parents and genealogy roots, summed over events.
+      unsigned long nEventsWithSteps_ = 0, nHPGeTops_ = 0, nRoots_ = 0;
   };
 
   STMDetProvenance::STMDetProvenance(const Parameters& conf) :
@@ -264,7 +228,7 @@ namespace mu2e {
     runId_    = event.run();
     subRunId_ = event.subRun();
     eventId_  = event.event();
-    const auto eventKey = std::make_tuple(runId_, subRunId_, eventId_);
+    std::set<int> hpgeTops, roots;   // distinct ids in this event
 
     // The set HPGeTree builds: particles that have at least one STMDet step. Reproduced
     // exactly (including that it is keyed on the SimParticle id) so hpgeTopParentId_ below
@@ -293,10 +257,9 @@ namespace mu2e {
       startVolumeIndex_ = p.startVolumeIndex();
       startGlobalTime_  = p.startGlobalTime();
 
-      // The three-way split HPGeTree cannot make. isTruncated() is the one that matters
-      // most: a null parent with a non-mu2ePrimary creation code means the parent WAS
-      // dropped, which with noCompression + keepNGenerations:-1 should never happen - so a
-      // nonzero count means the compression is not behaving as configured.
+      // HPGeTree treats primaries and truncated particles alike. A truncated particle has a
+      // null parent but a non-mu2ePrimary creation code, i.e. its parent was dropped, which
+      // should not happen with noCompression + keepNGenerations:-1.
       isPrimary_   = p.isPrimary();
       isTruncated_ = p.isTruncated();
       hasParent_   = p.hasParent();
@@ -310,8 +273,8 @@ namespace mu2e {
           hpgeTopParentId_  = trackId_;
           hpgeTopParentPdg_ = pdgId_;
         } else if (stmDetIds.find(parent->id()) == stmDetIds.end()) {
-          // A resolvable parent exists but deposited nothing in a crystal: this is exactly
-          // hypothesis (c), the shell-born secondary that becomes its own top parent.
+          // A resolvable parent exists but deposited nothing in a crystal, so this particle
+          // becomes its own top parent.
           hpgeTopParentId_    = trackId_;
           hpgeTopParentPdg_   = pdgId_;
           hpgeStoppedAtShell_ = true;
@@ -361,30 +324,27 @@ namespace mu2e {
         ++shellStopVolumeCounts_[startVolumeIndex_];
       }
       ++rootPdgCounts_[rootPdg_];
-      hpgeTopsPerEvent_[eventKey].insert(hpgeTopParentId_);
-      rootsPerEvent_[eventKey].insert(rootId_);
+      hpgeTops.insert(hpgeTopParentId_);
+      roots.insert(rootId_);
     }
+
+    ++nEventsWithSteps_;
+    nHPGeTops_ += hpgeTops.size();
+    nRoots_    += roots.size();
   }
 
   void STMDetProvenance::endJob() {
-    // The two "distinct ..." numbers are the ones to compare against the VD crossing count:
-    // the first is what HPGeTree produces as its entry count, the second is what grouping
-    // by full genealogy would produce instead.
-    unsigned long hpgeTops = 0, roots = 0;
-    for (const auto& [key, ids] : hpgeTopsPerEvent_) hpgeTops += ids.size();
-    for (const auto& [key, ids] : rootsPerEvent_)    roots    += ids.size();
-
     mf::LogInfo log("STMDetProvenance");
     log << "========== STMDet provenance summary ==========\n"
         << "steps total                         : " << nSteps_ << "\n"
         << "  depositing particle is a PRIMARY  : " << nPrimary_ << "\n"
-        << "  depositing particle is TRUNCATED  : " << nTruncated_ << "\n"
+        << "  depositing particle is TRUNCATED  : " << nTruncated_ << "   <- expected 0\n"
         << "  depositing particle HAS a parent  : " << nWithParent_ << "\n"
         << "  HPGeTree walk stopped at a shell  : " << nStoppedAtShell_ << "\n"
-        << "events with >=1 STMDet step         : " << rootsPerEvent_.size() << "\n"
-        << "distinct HPGeTree top parents       : " << hpgeTops
+        << "events with >=1 STMDet step         : " << nEventsWithSteps_ << "\n"
+        << "distinct HPGeTree top parents       : " << nHPGeTops_
         << "   <- HPGeTree's entry count\n"
-        << "distinct genealogy roots            : " << roots
+        << "distinct genealogy roots            : " << nRoots_
         << "   <- entry count if grouped by full ancestry\n";
 
     if (volumeNames_.empty())
@@ -399,33 +359,12 @@ namespace mu2e {
     for (const auto& [idx, n] : startVolumeCounts_)
       log << "  " << volumeLabel(idx) << ": " << n << "\n";
 
-    // The decisive table for hypothesis (c): the birthplaces of exactly those particles
-    // that made HPGeTree stop its walk early. Capsule / endcap volumes here mean the shell
-    // is splitting incident particles across entries; crystal volumes mean something else
-    // is (a particle born in the crystal whose parent deposited nothing there).
     if (!shellStopVolumeCounts_.empty()) {
       log << "\nof those, the ones that made HPGeTree stop early were born in:\n";
       for (const auto& [idx, n] : shellStopVolumeCounts_)
         log << "  " << volumeLabel(idx) << ": " << n << "\n";
     }
-
-    log << "\nHow to read this:\n"
-        << "  TRUNCATED > 0              -> the genealogy IS being cut despite "
-        << "noCompression / keepNGenerations:-1; fix the compression before anything else, "
-        << "because no grouping can recover a parent that is not in the file.\n"
-        << "  PRIMARY ~= event count     -> expected (one GenParticle per event). Far above "
-        << "it means more than one parentless particle per event, which contradicts the "
-        << "generator and points back at truncation.\n"
-        << "  stopped at shell > 0       -> confirms shell-born secondaries become their own "
-        << "top parent, splitting one incident particle across several entries. Read the "
-        << "born-in table above it to see WHICH volume.\n"
-        << "  roots < HPGeTree tops      -> grouping by full ancestry merges those splits; "
-        << "the difference is how many entries the current code over-counts.\n"
-        << "  roots ~= VD crossings      -> ancestry grouping reconciles the two trees.\n"
-        << "  roots still > VD crossings -> the residual is NOT mis-grouping: the crystal "
-        << "and VD paths select different events (a particle can reach the Ge without "
-        << "crossing the VD, and vice versa). Compare per-event, not totals.\n"
-        << "===============================================\n";
+    log << "===============================================\n";
   }
 
 } // namespace mu2e
