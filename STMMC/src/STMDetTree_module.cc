@@ -146,6 +146,7 @@
 
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/STMMC/inc/STMGenealogy.hh"
 
 namespace mu2e {
 
@@ -193,7 +194,9 @@ namespace mu2e {
           Comment("false (default): group by GENEALOGY ROOT, then split into time clusters. "
                   "true: reproduce HPGeTree's grouping exactly (walk up only while the "
                   "parent itself deposited in STMDet) and DISABLE time clustering, so the "
-                  "output is directly comparable with the old modules."),
+                  "output is directly comparable with the old modules. time is NOT "
+                  "HPGeTree's: HPGeTree takes the earliest step of the top parent itself, "
+                  "this module the earliest depositing step of any particle in the group."),
           false};
         fhicl::Atom<bool> writeGenealogy{
           Name("WriteGenealogy"),
@@ -496,7 +499,8 @@ namespace mu2e {
     // depends on the whole time-ordered set, not on any one step. An ordered map so rows
     // come out in a stable order regardless of step ordering.
     std::map<std::pair<int, int>, std::vector<StepInfo>> byGroup;
-    std::map<int, art::Ptr<SimParticle>> groupPtrs;
+    // Pointers into this event's SimParticle collection, valid for the rest of analyze().
+    std::map<int, const SimParticle*> groupPtrs;
     std::map<int, int> groupDepth;
 
     for (const StepPointMC& step : steps) {
@@ -529,37 +533,16 @@ namespace mu2e {
           << "separate SimParticle collection.";
 
       // ---- find the particle this deposit is attributed to ----
-      art::Ptr<SimParticle> group = particle;
-      int depth = 0;
-      if (groupByTopParent_) {
-        // HPGeTree's walk: up only while the parent itself deposited in a crystal.
-        if (group->hasParent() && group->parent().isAvailable() &&
-            stmDetIds.count(group->parent()->id())) {
-          while (group->parent()->hasParent() &&
-                 group->parent()->parent().isAvailable() &&
-                 stmDetIds.count(group->parent()->parent()->id())) {
-            group = group->parent();
-            ++depth;
-          }
-          group = group->parent();
-          ++depth;
-        }
-      } else {
-        // To the genealogy root, with no STMDet restriction.
-        while (group->hasParent() && group->parent().isAvailable()) {
-          group = group->parent();
-          ++depth;
-          if (depth > 10000)
-            throw cet::exception("STMDetTree")
-              << "Genealogy walk exceeded 10000 generations in event " << eventId_
-              << "; the parent links are cyclic.";
-        }
-      }
+      // HPGeTree's walk (up only while the parent itself deposited in a crystal), or to the
+      // genealogy root with no STMDet restriction.
+      const STMGenealogy::Walk walk = groupByTopParent_
+        ? STMGenealogy::topParentInDetector(*particle, stmDetIds)
+        : STMGenealogy::genealogyRoot(*particle);
 
-      const int gid = static_cast<int>(group->id().asUint());
+      const int gid = static_cast<int>(walk.particle->id().asUint());
       if (!groupPtrs.count(gid)) {
-        groupPtrs[gid]  = group;
-        groupDepth[gid] = depth;
+        groupPtrs[gid]  = walk.particle;
+        groupDepth[gid] = walk.depth;
       }
 
       StepInfo s;
@@ -630,7 +613,7 @@ namespace mu2e {
       }
       unsigned nEnergyClusters = 0;   // clusters with total deposit > 0
 
-      const art::Ptr<SimParticle>& group = groupPtrs[gid];
+      const SimParticle* group = groupPtrs[gid];
       const int gPdg = group->pdgId();
 
       for (size_t ci = 0; ci < clusters.size(); ++ci) {

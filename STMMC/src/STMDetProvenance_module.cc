@@ -35,6 +35,7 @@
 #include "Offline/MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
+#include "Offline/STMMC/inc/STMGenealogy.hh"
 
 namespace mu2e {
 
@@ -266,44 +267,20 @@ namespace mu2e {
 
       // ---- reproduce HPGeTree's topParent() decision ----
       // Walk up only while the parent is itself in stmDetIds, exactly as HPGeTree does.
+      // stoppedAtShell: a resolvable parent exists but deposited nothing in a crystal, so
+      // this particle becomes its own top parent.
       {
-        art::Ptr<SimParticle> parent = p.parent();
-        hpgeStoppedAtShell_ = false;
-        if (parent.isNull() || !parent.isAvailable()) {
-          hpgeTopParentId_  = trackId_;
-          hpgeTopParentPdg_ = pdgId_;
-        } else if (stmDetIds.find(parent->id()) == stmDetIds.end()) {
-          // A resolvable parent exists but deposited nothing in a crystal, so this particle
-          // becomes its own top parent.
-          hpgeTopParentId_    = trackId_;
-          hpgeTopParentPdg_   = pdgId_;
-          hpgeStoppedAtShell_ = true;
-        } else {
-          while (parent->parent().isNonnull() && parent->parent().isAvailable() &&
-                 stmDetIds.find(parent->parent()->id()) != stmDetIds.end())
-            parent = parent->parent();
-          hpgeTopParentId_  = static_cast<int>(parent->id().asUint());
-          hpgeTopParentPdg_ = parent->pdgId();
-        }
+        const STMGenealogy::Walk top = STMGenealogy::topParentInDetector(p, stmDetIds);
+        hpgeTopParentId_    = static_cast<int>(top.particle->id().asUint());
+        hpgeTopParentPdg_   = top.particle->pdgId();
+        hpgeStoppedAtShell_ = top.stoppedAtShell;
       }
 
       // ---- walk the FULL genealogy, with no STMDet restriction ----
-      // Walked by hand rather than via SimParticle::originParticle(), which recurses on
-      // selfParent() (parent set AND creationCode == mu2ePrimary) and so crosses SIMULATION
-      // STAGE boundaries rather than physics-genealogy ones - a different question than the
-      // one being asked here.
       {
-        const SimParticle* cur = &p;
-        genDepth_ = 0;
-        while (cur->parent().isNonnull() && cur->parent().isAvailable()) {
-          cur = cur->parent().get();
-          ++genDepth_;
-          // Defensive: a cyclic parent link would otherwise hang the job.
-          if (genDepth_ > 10000)
-            throw cet::exception("STMDetProvenance")
-              << "Genealogy walk exceeded 10000 generations starting from SimParticle "
-              << trackId_ << " in event " << eventId_ << "; the parent links are cyclic.";
-        }
+        const STMGenealogy::Walk root = STMGenealogy::genealogyRoot(p);
+        const SimParticle* cur = root.particle;
+        genDepth_             = root.depth;
         rootId_               = static_cast<int>(cur->id().asUint());
         rootPdg_              = cur->pdgId();
         rootStartTime_        = cur->startGlobalTime();
