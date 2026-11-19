@@ -25,13 +25,15 @@
 //                    Written when WriteGenealogy is true (the default).
 //
 // ZERO-ENERGY ROWS ARE KEPT, AND AN ANALYSIS MUST FILTER THEM OUT OF A RATE.
-// Every STMDet step enters the clustering, including steps that deposited nothing - a
-// neutron crossing the crystal without interacting, say. A cluster whose steps all deposit
-// zero is written as a row with E and nonIonE both 0. Such a row is a real crossing, with a
-// valid time, position, nSteps and genealogy, and is kept because that is information the
-// simulation has; but it is NOT a detector pulse, so counting it inflates a rate. Select
-// E > 0 (or a threshold of your own) before counting. MinEdep can drop them at production
-// instead, at the cost of losing the crossings entirely.
+// Steps that deposited nothing - a neutron crossing the crystal without interacting, say -
+// are clustered separately from the depositing ones and written as rows with E = 0. Such a
+// row is a real crossing, with a valid time, position, nSteps and genealogy, and is kept
+// because that is information the simulation has; but it is NOT a detector pulse, so
+// counting it inflates a rate. Select E > 0 (or a threshold of your own) before counting.
+// MinEdep can drop them at production instead, at the cost of losing the crossings.
+//
+// `time` is the earliest depositing step of the count (for an E = 0 row, its earliest
+// step), so zero-deposit steps never make a count early or join two deposits into one.
 //
 // A count is identified by (run, subRun, event, detector, groupId, cluster):
 //   detector  which crystal - 0 = HPGe, 1 = LaBr.
@@ -90,8 +92,9 @@
 //
 // It is answered by testing the step position against the LABR region - x > LaBrRegionXMin
 // AND z > LaBrRegionZMin - everything else is HPGe. The asymmetry is deliberate. The LaBr
-// sits at a FIXED place inside its copper lining, so its region can be stated once and
-// stays valid; the HPGe x offset is itself a scannable variable, so a boundary
+// sits at a FIXED place inside its copper lining, so its region holds for a whole geometry
+// version (the bounds in STMDetTree.fcl are for STM_v11; STM_v09 needs different ones);
+// the HPGe x offset is itself a scannable variable, so a boundary
 // defined by where the HPGe is would have to move campaign by campaign and silently
 // mis-assign the moment it was not updated. Testing the fixed crystal and letting the other
 // take the remainder removes that failure mode.
@@ -122,7 +125,6 @@
 // Yongyi Wu, Oct. 2026
 
 #include <algorithm>
-#include <cmath>
 #include <map>
 #include <set>
 #include <string>
@@ -142,8 +144,6 @@
 #include "art_root_io/TFileService.h"
 #include "TTree.h"
 
-#include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "Offline/GlobalConstantsService/inc/ParticleDataList.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
 
@@ -169,8 +169,7 @@ namespace mu2e {
         // The LaBr REGION, in the Mu2e frame - a loose half-space around the LaBr crystal,
         // not a tight bound on it. A step with x > LaBrRegionXMin AND z > LaBrRegionZMin is
         // LaBr; anything else is HPGe. Only the FIXED crystal is described here; see the
-        // header for why the moving one is not. The region only has to separate the two
-        // crystals, so it can sit anywhere in the empty space between them.
+        // header for why the moving one is not. The bounds depend on the geometry version.
         fhicl::Atom<double> labrRegionXMin{
           Name("LaBrRegionXMin"),
           Comment("Steps with x above this (and z above LaBrRegionZMin) are LaBr [mm].")};
@@ -229,8 +228,6 @@ namespace mu2e {
       };
 
       int detectorForStep(const StepPointMC& step) const;
-      // Kinetic energy from a momentum vector and the species' rest mass.
-      double kineticEnergy(const CLHEP::Hep3Vector& p, int pdgId) const;
       void fillGenealogy(const std::vector<StepInfo>& stepList, size_t begin, size_t end);
 
       art::ProductToken<StepPointMCCollection> stepsToken_;
@@ -241,8 +238,6 @@ namespace mu2e {
       bool   groupByTopParent_ = false;
       bool   writeGenealogy_ = true;
       double minEdep_ = 0.0;
-
-      GlobalConstantsHandle<ParticleDataList> pdt_;
 
       TTree* ttree = nullptr;
       TTree* gtree = nullptr;
@@ -300,8 +295,9 @@ namespace mu2e {
       double totalIon_[kNDetectors] = {0.0, 0.0};
       double totalNonIon_[kNDetectors] = {0.0, 0.0};
       unsigned long nRowsPerDet_[kNDetectors] = {0, 0};
-      // Attributed particles, and how many of them produced >1 cluster - i.e. where the
-      // detector would see several waveforms from one of them. The reason clustering exists.
+      unsigned long nRowsWithEnergyPerDet_[kNDetectors] = {0, 0};   // rows with totalE > 0
+      // Attributed particles, and how many of them produced >1 cluster WITH ENERGY - i.e.
+      // where the detector would see several waveforms from one of them.
       unsigned long nGroupsPerDet_[kNDetectors] = {0, 0};
       unsigned long nSplitGroupsPerDet_[kNDetectors] = {0, 0};
       std::map<int, unsigned long> groupPdgRows_;
@@ -400,19 +396,6 @@ namespace mu2e {
     }
   }
 
-  double STMDetTree::kineticEnergy(const CLHEP::Hep3Vector& p, int pdgId) const {
-    // An unknown pdgId (an exotic ion, say) has no ParticleDataList entry; treat it as
-    // massless rather than aborting the job, since this is a plotting convenience and the
-    // momentum is recorded alongside it either way.
-    double mass = 0.0;
-    try {
-      mass = pdt_->particle(pdgId).mass();
-    } catch (...) {
-      mass = 0.0;
-    }
-    return std::sqrt(p.mag2() + mass * mass) - mass;
-  }
-
   // Which crystal a step is in: inside the LaBr region is LaBr, everything else is HPGe.
   // Total by construction - every STMDet step is in one crystal or the other, and only the
   // fixed crystal is described, so there is no "neither" outcome. See the header for why
@@ -422,14 +405,9 @@ namespace mu2e {
     return (pos.x() > labrRegionXMin_ && pos.z() > labrRegionZMin_) ? kLaBr : kHPGe;
   }
 
-  // Walk from `particle` up to the genealogy root, writing one row per ancestor. The caller
-  // has already set the join-key branches (run/subRun/event/detector/groupId/cluster).
-  //
-  // Both the start and end point of every ancestor are recorded, not just the start: a
-  // back-trace draws one segment per link, and the deepest ancestor would otherwise have no
-  // endpoint to draw to.
   // Write the genealogy TREE of one cluster: every particle that deposited in it, and
-  // every ancestor of those, each recorded exactly once.
+  // every ancestor of those, each recorded exactly once. The caller has already set the
+  // join-key branches (run/subRun/event/detector/groupId/cluster).
   //
   // A cluster aggregates steps from many particles - a shower has tens - whose chains share
   // most of their length. Walking each depositor independently would re-record those shared
@@ -476,7 +454,7 @@ namespace mu2e {
         gStartPx_ = cur->startMomentum().x();
         gStartPy_ = cur->startMomentum().y();
         gStartPz_ = cur->startMomentum().z();
-        gStartE_  = kineticEnergy(cur->startMomentum().vect(), gPdgId_);
+        gStartE_  = cur->startMomentum().e() - cur->startMomentum().m();
         // The particle's own key and its parent's, so the topology can be rebuilt without
         // relying on depth ordering.
         gTrackId_  = static_cast<int>(cur->id().asUint());
@@ -611,6 +589,11 @@ namespace mu2e {
       // exceeds this detector's window. In the HPGeTree-compatibility mode clustering is
       // disabled outright, so the old one-row-per-top-parent output is reproduced.
       //
+      // Depositing and zero-deposit steps are clustered SEPARATELY. A zero-deposit step (a
+      // neutron crossing the crystal, say) is not part of any pulse, so it must neither set
+      // a count's time nor bridge the gap between two deposits and merge them into one
+      // count. The zero-deposit steps form their own clusters, written as E = 0 rows.
+      //
       // Note the scope: stepList holds ONE (detector, groupId) pair, so this only ever
       // splits a single incident particle's own deposits. Steps from different roots are
       // never merged, however close in time - with one GenParticle per event there is no
@@ -622,15 +605,30 @@ namespace mu2e {
       // cannot be: it needs a beam time structure imposed across events downstream.
       const double window = window_[det];
       std::vector<std::pair<size_t, size_t>> clusters;   // [begin, end)
-      size_t begin = 0;
-      for (size_t i = 1; i < stepList.size(); ++i) {
-        if (!groupByTopParent_ && (stepList[i].time - stepList[i - 1].time) > window) {
-          clusters.emplace_back(begin, i);
-          begin = i;
-        }
+      if (groupByTopParent_) {
+        clusters.emplace_back(0, stepList.size());
+      } else {
+        // Depositing steps first, then zero-deposit ones, each part still in time order.
+        const size_t nDep = std::stable_partition(stepList.begin(), stepList.end(),
+            [](const StepInfo& s) { return s.total > 0.0; }) - stepList.begin();
+        auto clusterRange = [&](size_t from, size_t to) {
+          if (from == to) return;
+          size_t begin = from;
+          for (size_t i = from + 1; i < to; ++i)
+            if (stepList[i].time - stepList[i - 1].time > window) {
+              clusters.emplace_back(begin, i);
+              begin = i;
+            }
+          clusters.emplace_back(begin, to);
+        };
+        clusterRange(0, nDep);
+        clusterRange(nDep, stepList.size());
+        // Number the clusters in time order, whichever kind they are.
+        std::sort(clusters.begin(), clusters.end(),
+                  [&](const std::pair<size_t, size_t>& a, const std::pair<size_t, size_t>& c) {
+                    return stepList[a.first].time < stepList[c.first].time; });
       }
-      clusters.emplace_back(begin, stepList.size());
-      if (clusters.size() > 1) ++nSplitGroupsPerDet_[det];
+      unsigned nEnergyClusters = 0;   // clusters with total deposit > 0
 
       const art::Ptr<SimParticle>& group = groupPtrs[gid];
       const int gPdg = group->pdgId();
@@ -653,6 +651,8 @@ namespace mu2e {
         }
 
         totalEdep_ = ion + nonIon;
+        const bool hasEnergy = totalEdep_ > 0.0;
+        if (hasEnergy) ++nEnergyClusters;
         if (minEdep_ > 0.0 && totalEdep_ < minEdep_) { ++nDropped_; continue; }
 
         detector_         = det;
@@ -667,7 +667,12 @@ namespace mu2e {
 
         edep_       = ion;
         nonIonEdep_ = nonIon;
-        time_       = stepList[b].time;
+        // The earliest DEPOSITING step, so a zero-deposit step cannot make a count early.
+        // Only the compatibility mode mixes the two kinds in one cluster; an E = 0 row has
+        // no depositing step and takes its earliest step.
+        size_t first = b;
+        while (first < e && !(stepList[first].total > 0.0)) ++first;
+        time_       = stepList[first < e ? first : b].time;
         lastTime_   = stepList[e - 1].time;
         nSteps_     = e - b;
 
@@ -700,12 +705,14 @@ namespace mu2e {
         startPx_ = group->startMomentum().x();
         startPy_ = group->startMomentum().y();
         startPz_ = group->startMomentum().z();
-        startE_  = kineticEnergy(group->startMomentum().vect(), gPdg);
+        // startMomentum() carries Geant4's total energy, so e() - m() is the kinetic energy.
+        startE_  = group->startMomentum().e() - group->startMomentum().m();
 
         ttree->Fill();
 
         ++nRows_;
         ++nRowsPerDet_[det];
+        if (hasEnergy) ++nRowsWithEnergyPerDet_[det];
         totalIon_[det]    += ion;
         totalNonIon_[det] += nonIon;
         ++groupPdgRows_[gPdg];
@@ -718,6 +725,8 @@ namespace mu2e {
           fillGenealogy(stepList, b, e);
         }
       }
+      // Split = more than one count WITH ENERGY, i.e. several pulses from one particle.
+      if (nEnergyClusters > 1) ++nSplitGroupsPerDet_[det];
     }
   }
 
@@ -738,12 +747,14 @@ namespace mu2e {
     if (nDropped_)
       log << "  dropped below MinEdep  : " << nDropped_ << "\n";
     for (int d = 0; d < kNDetectors; ++d) {
-      log << "  " << DETECTOR_NAMES[d] << ": " << nRowsPerDet_[d] << " count(s) from "
+      log << "  " << DETECTOR_NAMES[d] << ": " << nRowsPerDet_[d] << " row(s), "
+          << nRowsWithEnergyPerDet_[d] << " with E > 0, from "
           << nGroupsPerDet_[d] << " attributed particle(s), " << totalIon_[d]
           << " MeV ionizing, " << totalNonIon_[d] << " MeV non-ionizing\n";
       if (!groupByTopParent_)
         log << "        " << nSplitGroupsPerDet_[d]
-            << " of them split into >1 count by the " << window_[d] << " ns window\n";
+            << " of them split into >1 count with E > 0 by the " << window_[d]
+            << " ns window\n";
     }
     log << "counts by attributed-particle PDG:\n";
     for (const auto& [pdg, n] : groupPdgRows_)

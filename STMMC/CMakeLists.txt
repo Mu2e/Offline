@@ -76,7 +76,6 @@ cet_build_plugin(STMDetTree art::module
     REG_SOURCE src/STMDetTree_module.cc
     LIBRARIES REG
       art_root_io::TFileService_service
-      Offline::GlobalConstantsService
       Offline::MCDataProducts
 )
 
