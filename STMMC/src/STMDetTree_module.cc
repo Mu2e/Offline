@@ -173,27 +173,21 @@ namespace mu2e {
         // crystals, so it can sit anywhere in the empty space between them.
         fhicl::Atom<double> labrRegionXMin{
           Name("LaBrRegionXMin"),
-          Comment("Steps with x above this (and z above LaBrRegionZMin) are LaBr [mm]."),
-          -4000.0};
+          Comment("Steps with x above this (and z above LaBrRegionZMin) are LaBr [mm].")};
         fhicl::Atom<double> labrRegionZMin{
           Name("LaBrRegionZMin"),
           Comment("Steps with z above this (and x above LaBrRegionXMin) are LaBr [mm]. The "
                   "LaBr sits some 270 mm downstream of the HPGe, so this separates them "
-                  "independently of the x test."),
-          40900.0};
+                  "independently of the x test.")};
 
         // Coincidence windows. One count per time cluster, so these set how finely a single
         // incident particle's deposits are resolved into separate waveforms.
         fhicl::Atom<double> hpgeCoincidenceWindow{
           Name("HPGeCoincidenceWindow"),
-          Comment("HPGe gap [ns] above which a new count starts. Default 50 us is the "
-                  "detector's recovery time."),
-          50000.0};
+          Comment("HPGe gap [ns] above which a new count starts.")};
         fhicl::Atom<double> labrCoincidenceWindow{
           Name("LaBrCoincidenceWindow"),
-          Comment("LaBr gap [ns] above which a new count starts. Default 50 ns is the "
-                  "scintillation timescale, so LaBr resolves arrivals that HPGe merges."),
-          50.0};
+          Comment("LaBr gap [ns] above which a new count starts.")};
 
         fhicl::Atom<bool> groupByTopParentInDetector{
           Name("GroupByTopParentInDetector"),

@@ -40,13 +40,16 @@ physics : {
       # Which crystal a step is in: inside the LaBr region is LaBr, everything else is
       # HPGe. Only the FIXED crystal is described - the HPGe x offset is itself a scanned
       # variable, so a bound placed on the HPGe would have to move campaign by campaign.
-      # These are loose region bounds in the empty space between the crystals, not tight
-      # cuts on either one.
+      # Values for STM_v11 (all Run 1 geometries): LaBr centre z 41006.3, HPGe z 40734.8,
+      # so the z bound alone separates them. The x bound does not - HPGe steps lie on both
+      # sides of -4000. Wrong for STM_v09 (LaBr centre z 40891.5); set per geometry.
       LaBrRegionXMin : -4000.0
       LaBrRegionZMin : 40900.0
 
       # Gap above which a new count starts, per detector. HPGe's recovery time is ~50 us;
       # LaBr's scintillation timescale is ~50 ns, so LaBr resolves arrivals HPGe merges.
+      # Both are general, order-of-magnitude values for these detector types, not
+      # measurements of the STM crystals or their readout.
       HPGeCoincidenceWindow : 50000.0
       LaBrCoincidenceWindow : 50.0
 

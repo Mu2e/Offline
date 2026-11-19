@@ -92,8 +92,7 @@ namespace mu2e {
         fhicl::Atom<double> xBeamCentre{
           Name("xBeamCentre"),
           Comment("The x split HPGeTree uses to separate HPGe (x<) from LaBr (x>). Recorded "
-                  "per step so the cut can be audited rather than applied here."),
-          -3904.0};
+                  "per step so the cut can be audited rather than applied here.")};
       };
 
       using Parameters = art::EDAnalyzer::Table<Config>;
