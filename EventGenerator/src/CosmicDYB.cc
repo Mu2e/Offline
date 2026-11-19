@@ -175,30 +175,31 @@ namespace mu2e
       _generators.emplace_back(boost::shared_ptr<DYBGenerator>(new DYBGenerator(_direction, _muThMin, _muThMax, _muEMin, _muEMax, _muPhiMin, _muPhiMax, _nth, _ne)));
     }
 
-    double totalRate=0;
     for(unsigned int i=0; i<_generators.size(); i++)
     {
-      double rate = _generators[i]->GetRate();  //in cm^-2 * s^-1
+      double area = 0;  //plane area in cm^2 (the half lengths are in mm)
       switch(_generators[i]->GetDirection())
       {
-        case DYBGenerator::Direction::NEGATIVE_Y: rate*=0.04*_dx*_dz; break;
+        case DYBGenerator::Direction::NEGATIVE_Y: area=0.04*_dx*_dz; break;
         case DYBGenerator::Direction::POSITIVE_X:
-        case DYBGenerator::Direction::NEGATIVE_X: rate*=0.04*_dy*_dz; break;
+        case DYBGenerator::Direction::NEGATIVE_X: area=0.04*_dy*_dz; break;
         case DYBGenerator::Direction::POSITIVE_Z:
-        case DYBGenerator::Direction::NEGATIVE_Z: rate*=0.04*_dx*_dy; break;
+        case DYBGenerator::Direction::NEGATIVE_Z: area=0.04*_dx*_dy; break;
                                          default: throw cet::exception("Configuration")<<"Invalid direction in DYB generator\n";
       };
+      double rate = _generators[i]->GetRate()*area;  //GetRate is in cm^-2 * s^-1
       _boxFraction.push_back(rate);
-      totalRate+=rate;
+      _totalRate+=rate;
+      _area+=area*1e-4;  //m^2
     }
     for(unsigned int i=0; i<_generators.size(); i++)
     {
-      _boxFraction[i]/=totalRate;
+      _boxFraction[i]/=_totalRate;
       if(i>0) _boxFraction[i]+=_boxFraction[i-1];
     }
     _boxFraction.back()=1; //to counteract rounding errors;
 
-    log << "Total cosmic rate = " << totalRate << " Hz\n";
+    log << "Total cosmic rate = " << _totalRate << " Hz\n";
 
     if(_doHistograms)
     {
@@ -215,6 +216,14 @@ namespace mu2e
   }  // CosmicDYB()
 
   CosmicDYB::~CosmicDYB() { }
+
+  double CosmicDYB::liveTime() const
+  {
+    if(_totalRate<=0) return 0;
+    // Fixed multiplicity: every generated muon stands for 1/rate seconds.
+    // Poisson multiplicity: every event stands for mean/rate seconds, whatever number of muons it got.
+    return (_mean<0) ? _nMuons/_totalRate : _nEvents*_mean/_totalRate;
+  }
 
   void CosmicDYB::generate( GenParticleCollection& genParts )
   {
@@ -244,6 +253,8 @@ namespace mu2e
 
     // Choose the number of muons to generate this event.
     long n = (_mean < 0) ? static_cast<long>(-_mean) : _randPoissonQ.fire();
+    ++_nEvents;
+    _nMuons += n;
 
     for(int i=0; i<n; i++)
     {
