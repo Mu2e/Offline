@@ -13,6 +13,7 @@
 //
 // Updated by David Norvil Brown to allow for a "barrel of slats" geometry
 // for the outer proton absorber.
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -489,16 +490,24 @@ namespace mu2e {
     const double endRingRadialLength = _config.getDouble("protonabsorber.ipa.endRingRadialLength", 0);
     const string endRingMaterial = _config.getString("protonabsorber.ipa.endRingMaterial", "DSVacuum");
 
+    const double ipazend = ipazstart + 2*pabs1halflen;
+    // inner radius of the IPA at z
+    auto ipaInnerRadius = [&](double z) { return pabs1rIn0 + ( z-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen); };
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
+      // the ring starts at zPosition (the front ring's front face is at the front of the IPA), but it must stay
+      // inside the IPA: the ring at the downstream end has its back face at the end of the IPA
+      const double zCenter = std::min(zPosition + endRingHalfLength, ipazend - endRingHalfLength);
 
-      const double endRingOuterRadius = pabs1rIn0 + ( zPosition-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen) - 0.01; // have the end ring on the inside of the IPA
+      // have the end ring on the inside of the IPA over its full length
+      const double endRingOuterRadius = std::min(ipaInnerRadius(zCenter - endRingHalfLength),
+                                                 ipaInnerRadius(zCenter + endRingHalfLength)) - 0.01;
       const double endRingInnerRadius = endRingOuterRadius - endRingRadialLength;
 
       _pabs->_ipaSupport->_endRingMap.push_back( Tube( endRingInnerRadius,
                                                        endRingOuterRadius,
                                                        endRingHalfLength,
-                                                       CLHEP::Hep3Vector( -3904, 0., zPosition+endRingHalfLength ), // want the front end of the ring to be at the front of the IPA
+                                                       CLHEP::Hep3Vector( -3904, 0., zCenter ),
                                                        CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
                                                        0,
                                                        CLHEP::twopi,
