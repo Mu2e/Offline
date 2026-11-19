@@ -3,6 +3,8 @@
 #include "Offline/GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "Offline/GlobalConstantsService/inc/PhysicsParams.hh"
 
+#include <cmath>
+
 namespace mu2e
 {
   void CrvMCHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
@@ -73,6 +75,9 @@ namespace mu2e
       const CrvStep &step = **stepPointIter;
       double t_s = step.startTime();
       double t_e = step.endTime();
+      //CrvSteps made before the fix of Mu2e/Offline#2072 have a NaN endTime if the particle stopped in the bar.
+      //CrvPhotonGenerator uses the start time as the end time of such a step, so do the same here.
+      if(std::isnan(t_e)) t_e = t_s;
       if(firstLoop || earliestHitTime>t_s)
       {
         firstLoop=false;
