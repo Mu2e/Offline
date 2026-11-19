@@ -47,9 +47,15 @@ namespace mu2e {
     c.knots   = spline.get<std::vector<double>>("knots");
     c.weights = spline.get<std::vector<double>>("weights");
     const auto onset = pset.get<fhicl::ParameterSet>("onset");
-    c.onsetTc    = onset.get<double>("Tc");
-    c.onsetAlpha = onset.get<double>("alpha");
-    c.onsetBeta  = onset.get<double>("beta");
+    if(onset.has_key("power")) {
+      c.onsetPower = onset.get<double>("power");
+    } else {
+      c.onsetTc    = onset.get<double>("Tc");
+      c.onsetAlpha = onset.get<double>("alpha");
+      c.onsetBeta  = onset.get<double>("beta");
+    }
+    const auto taper = pset.get<fhicl::ParameterSet>("taper", fhicl::ParameterSet());
+    c.taperWidth = taper.get<double>("width", 0.);
     const auto hard = pset.get<fhicl::ParameterSet>("hard", fhicl::ParameterSet());
     c.hardYield = hard.get<double>("yield", 0.);
     c.hardSlope = hard.get<double>("slope", 1.);
@@ -67,11 +73,28 @@ namespace mu2e {
 
     const double pmin = _c.knots.front();
     _Tmin = std::sqrt(pmin*pmin + _c.mass*_c.mass) - _c.mass;
-    if(_Tmin <= _c.onsetTc)
-      throw cet::exception("BADCONFIG") << "MuCapChargedSpectrum: onset Tc " << _c.onsetTc
-                                        << " must be below the first knot (T = " << _Tmin << " MeV)";
-    _onsetK = 1.;
-    _onsetK = measured(pmin)/onset(_Tmin); // continuity at p_min
+    if(_c.taperWidth < 0. || _c.taperWidth >= _c.endpoint - _Tmin)
+      throw cet::exception("BADCONFIG") << "MuCapChargedSpectrum: taper width " << _c.taperWidth
+                                        << " must be in [0, endpoint - T_min = " << _c.endpoint - _Tmin << ")";
+    if(_c.onsetPower > 0.) {
+      // smooth onset: value and log-slope of the measured part continuous at T_min (one-sided,
+      // second-order difference just above the first knot)
+      const double h = 1e-4;
+      auto lnm = [&](double T) { return std::log(measured(std::sqrt(T*(T + 2.*_c.mass)))); };
+      const double v = measured(pmin);
+      const double slope = (-3.*std::log(v) + 4.*lnm(_Tmin + h) - lnm(_Tmin + 2.*h))/(2.*h);
+      _onsetB = _c.onsetPower/_Tmin - slope;
+      if(!(_onsetB > 0.))
+        throw cet::exception("BADCONFIG") << "MuCapChargedSpectrum: onset power " << _c.onsetPower
+                                          << " too small for a smooth join (needs > " << slope*_Tmin << ")";
+      _onsetK = v;
+    } else {
+      if(_Tmin <= _c.onsetTc)
+        throw cet::exception("BADCONFIG") << "MuCapChargedSpectrum: onset Tc " << _c.onsetTc
+                                          << " must be below the first knot (T = " << _Tmin << " MeV)";
+      _onsetK = 1.;
+      _onsetK = measured(pmin)/onset(_Tmin); // continuity of the value at p_min
+    }
 
     // normalize the hard component to its yield between Ton and the endpoint
     _hardNorm = 0.;
@@ -98,6 +121,10 @@ namespace mu2e {
   }
 
   double MuCapChargedSpectrum::onset(double T) const {
+    if(_c.onsetPower > 0.) {
+      if(T <= 0.) return 0.;
+      return _onsetK*std::pow(T/_Tmin, _c.onsetPower)*std::exp(-_onsetB*(T - _Tmin));
+    }
     if(T <= _c.onsetTc) return 0.;
     return _onsetK*std::pow(1. - _c.onsetTc/T, _c.onsetAlpha)*std::exp(-_c.onsetBeta*T);
   }
@@ -108,11 +135,19 @@ namespace mu2e {
     return _hardNorm*std::exp(-x/_c.hardSlope)/(1. + std::exp(-x/_c.hardWidth));
   }
 
+  double MuCapChargedSpectrum::taper(double T) const {
+    if(_c.taperWidth <= 0.) return 1.;
+    const double x = (T - (_c.endpoint - _c.taperWidth))/_c.taperWidth;
+    if(x <= 0.) return 1.;
+    if(x >= 1.) return 0.;
+    return (1. - x*x)*(1. - x*x);
+  }
+
   double MuCapChargedSpectrum::getWeight(double T) const {
-    if(T <= 0. || T > _c.endpoint) return 0.;
+    if(T <= 0. || T >= _c.endpoint) return 0.;
     const double p = std::sqrt(T*(T + 2.*_c.mass));
     const double soft = (p < _c.knots.front()) ? onset(T) : measured(p);
-    return soft + hard(T);
+    return (soft + hard(T))*taper(T);
   }
 
 }

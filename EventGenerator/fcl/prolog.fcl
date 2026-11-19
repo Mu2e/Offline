@@ -540,14 +540,20 @@ EventGenerator : { @table::EventGenerator
 # capture per MeV), for spectrumShape : muCapCharged (Mu2eUtilities/inc/MuCapChargedSpectrum.hh).
 # Use with spectrumVariable : kineticEnergy.
 #   TWIST* : TWIST unfolded spectra, PRC 101, 035502 (2020), appendix. Below the TWIST thresholds
-#            (80 MeV/c p, 130 MeV/c d) the MECO/GMC onset, matched at threshold.
-#            Integrals: p 0.042, d 0.016 per capture (TWIST extrapolated: 0.045(3), 0.018(2)).
+#            (80 MeV/c p, 130 MeV/c d; no data) an onset k T^3 exp(-b T) with value and slope
+#            continuous at threshold, going to zero smoothly at T -> 0.
+#            Integrals: p 0.046, d 0.0146 per capture (TWIST extrapolated: 0.045(3), 0.018(2)).
 #   Krane* : TWIST plus a hard component with slope 7.5 MeV turning on at 40 MeV, bringing the p+d
 #            yield above 40 MeV to Krane et al., PRC 20, 1873 (1979): 1.38e-3. Each species is
 #            scaled by the same factor above 40 MeV (6.49), so the TWIST p/d split is kept. TWIST
 #            alone gives 2.1e-4. The 4 MeV turn-on width is the sharpest that keeps the spectra
 #            falling; it puts 1.36e-3 below 40 MeV, where TWIST has 1.5e-3 in 25-40 MeV.
-# Endpoints: AME2020 masses, mu 1s binding 0.46 MeV, E_nu -> 0.
+#            With the endpoint taper the p+d yield above 40 MeV is 1.353e-3 (-2%).
+# Endpoints: AME2020 masses, mu 1s binding 0.46 MeV, E_nu -> 0. Every spectrum is tapered to zero
+# over the last 20 MeV below its endpoint, (1 - x^2)^2, like E_nu^2 near the endpoint; this changes
+# the yield above 40 MeV by < 3%.
+# The first version (GMC onset matched in value only, hard cut at the endpoint) is
+#   onset : { Tc : 1.4  alpha : 1.3279  beta : 0.32218 }  and no taper.
 #------------------------------------------------------------------------------
 MuCapChargedSpectra : {
   TWISTproton : {
@@ -557,7 +563,8 @@ MuCapChargedSpectra : {
     nbins         : 1000
     tail          : { A : 6.0e-3  gamma : 0.150 } # 1/MeV
     spline        : { knots : [ 80, 80, 80, 80, 155, 230 ]  weights : [ 0.74, 0.51 ] } # MeV/c
-    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.32218 }
+    onset         : { power : 3. }
+    taper         : { width : 20. } # MeV
   }
   TWISTdeuteron : {
     spectrumShape : muCapCharged
@@ -566,7 +573,8 @@ MuCapChargedSpectra : {
     nbins         : 1000
     tail          : { A : 2.7e-3  gamma : 0.130 } # 1/MeV
     spline        : { knots : [ 130, 130, 130, 130, 165, 200 ]  weights : [ -0.036, 0.21 ] } # MeV/c
-    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.32218 }
+    onset         : { power : 3. }
+    taper         : { width : 20. } # MeV
   }
 }
 MuCapChargedSpectra : { @table::MuCapChargedSpectra
@@ -581,13 +589,13 @@ MuCapChargedSpectra : { @table::MuCapChargedSpectra
 # Tritons and alphas: AlCap, PRC 105, 035501 (2022). An exponential normalized to the AlCap yield in
 # its measured range, continued to the endpoint, with an onset below the range (no spline: the four
 # equal knots are the momentum at the low edge of the range).
-#   AlCapTriton  : 2.58e-3 in 5-17 MeV, slope 6.6 MeV; GMC onset shape (Tc 1.4 MeV) below 5 MeV.
-#                  Integral 4.42e-3 per capture.
-#   AlCapAlpha   : 0.44e-3 in 15-20 MeV, slope 3.7 MeV; onset with Tc 2.8 MeV (twice the p/d value,
-#                  Coulomb barrier ~ Z) below 15 MeV. Integral 7.90e-3 per capture, at the lower bound
-#                  set by the exclusive 27Al(mu,nu alpha)23Ne activation yield, 7.6(1.1)e-3 (Wyttenbach).
-#   AlCapAlpha20 : as AlCapAlpha with a steeper onset below 15 MeV, integral 20e-3 (Lifshitz-Singer
-#                  inclusive alpha yield).
+# Onset and taper as for p and d: k T^power exp(-b T) below the range, value and slope continuous.
+#   AlCapTriton  : 2.58e-3 in 5-17 MeV, slope 6.6 MeV. Integral 4.64e-3 per capture.
+#   AlCapAlpha   : 0.44e-3 in 15-20 MeV, slope 3.7 MeV. Integral 6.81e-3 per capture; 93% of it is
+#                  below 15 MeV, where there are no data (power 2-4 gives 5.4-9.3e-3). For comparison,
+#                  the exclusive 27Al(mu,nu alpha)23Ne activation yield is 7.6(1.1)e-3 (Wyttenbach).
+#   AlCapAlpha20 : as AlCapAlpha with onset power 0.55355, integral 20e-3 (Lifshitz-Singer inclusive
+#                  alpha yield).
 # 3He is not included: AlCap sees no evidence for it.
 #------------------------------------------------------------------------------
 MuCapChargedSpectra : { @table::MuCapChargedSpectra
@@ -598,7 +606,8 @@ MuCapChargedSpectra : { @table::MuCapChargedSpectra
     nbins         : 1000
     tail          : { A : 9.95426e-4  gamma : 0.151515 } # 1/MeV
     spline        : { knots : [ 167.683, 167.683, 167.683, 167.683 ]  weights : [ ] } # MeV/c, T = 5 MeV
-    onset         : { Tc : 1.4  alpha : 1.3279  beta : 0.151515 }
+    onset         : { power : 3. }
+    taper         : { width : 20. } # MeV
   }
   AlCapAlpha : {
     spectrumShape : muCapCharged
@@ -607,12 +616,13 @@ MuCapChargedSpectra : { @table::MuCapChargedSpectra
     nbins         : 1000
     tail          : { A : 9.24744e-3  gamma : 0.270270 } # 1/MeV
     spline        : { knots : [ 334.735, 334.735, 334.735, 334.735 ]  weights : [ ] } # MeV/c, T = 15 MeV
-    onset         : { Tc : 2.8  alpha : 1.3279  beta : 0.270270 }
+    onset         : { power : 3. }
+    taper         : { width : 20. } # MeV
   }
 }
 MuCapChargedSpectra : { @table::MuCapChargedSpectra
   AlCapAlpha20 : { @table::MuCapChargedSpectra.AlCapAlpha
-    onset : { Tc : 2.8  alpha : 1.3279  beta : 0.39427 }
+    onset : { power : 0.55355 }
   }
 }
 
