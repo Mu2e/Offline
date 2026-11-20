@@ -724,7 +724,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     for (const auto& i_mcTrajectory : *_mcTrajectoriesHandle) {
       art::Ptr<SimParticle> oldSimPtr = i_mcTrajectory.first;
       if (remap.find(oldSimPtr) != remap.end()) {
-        _newMCTrajectories->insert(std::pair<art::Ptr<SimParticle>, mu2e::MCTrajectory>(safeRemapRef(remap,oldSimPtr,__LINE__), i_mcTrajectory.second));
+        // MCTrajectory holds its own SimParticle Ptr as well as the map key: remap both,
+        // otherwise sim() keeps pointing into the input collection, which is dropped from the output
+        mu2e::MCTrajectory newMCTrajectory(i_mcTrajectory.second);
+        newMCTrajectory.sim() = safeRemapRef(remap,oldSimPtr,__LINE__);
+        _newMCTrajectories->insert(std::make_pair(newMCTrajectory.sim(), newMCTrajectory));
       }
     }
   }

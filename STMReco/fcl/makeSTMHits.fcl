@@ -1,6 +1,8 @@
 #
 # Create STMHits from STMPHDigis
 #
+# Calibration Constants come from Doc-58725-V2
+# Both detetcors sample at the same frequency
 
 #include "Offline/fcl/standardServices.fcl"
 
@@ -14,10 +16,16 @@ services : @local::Services.Reco
 physics: {
   producers : {
     stmHitsHPGe : { module_type : MakeSTMHits
-                    stmPHDigisMapTag : "makeSTMDigis:phHPGe"
+                    stmPHDigisMapTag  : "makeSTMDigis:phHPGe"
+                    samplingFrequency : 300.0  // MHz
+                    mCalibConstant    : 0.374  // Kev / ADC
+                    cCalibConstant    : 1.63   // KeV
     }
     stmHitsLaBr : { module_type : MakeSTMHits
-                    stmPHDigisMapTag : "makeSTMDigis:phLaBr"
+                    stmPHDigisMapTag  : "makeSTMDigis:phLaBr"
+                    samplingFrequency : 300.0  // MHz
+                    mCalibConstant    : 0.358  // KeV / ADC
+                    cCalibConstant    : 6.097  // KeV
     }
   }
   filters : {
@@ -40,4 +48,5 @@ outputs: {
     SelectEvents: [ ]
     fileName : "mcs.owner.STM.version.sequencer.art"
   }
+
 }

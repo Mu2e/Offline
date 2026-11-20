@@ -5,6 +5,7 @@
 //
 // mu2e includes
 #include "Offline/TrackerMC/inc/StrawCluster.hh"
+#include "Offline/TrackerGeom/inc/Straw.hh"
 // general includes
 
 using namespace std;
@@ -22,8 +23,11 @@ namespace mu2e {
         float drifttime,
         float proptime,
         art::Ptr<StrawGasStep> const& sgsptr,
-        float ctime) : _type(type), _strawId(sid), _end(end), _time(time),
-    _charge(charge), _wdist(wdist), _pos(pos), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _ctime(ctime) {}
+        float ctime,
+        StrawElectronics const& strawele,
+        Straw const& straw) : _type(type), _strawId(sid), _end(end), _time(time),
+    _charge(charge), _wdist(wdist), _pos(pos), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _ctime(ctime),
+    _rgeom(strawele.responseGeometry(straw,_wdist)) {}
 
     // delegating constructors in C++11!
     StrawCluster::StrawCluster(const StrawCluster& primary, StrawId const& id, float xfactor) :

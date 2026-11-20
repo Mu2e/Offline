@@ -181,7 +181,8 @@ namespace mu2e {
     // Quickly check if there are any bins above the minimum
     const double hist_max = hist->GetMaximum();
     if(hist_max > minClusterEnergy_) return true; // found a bin above the threshold, accept
-    if(hist_max < minClusterEnergy_/2.) return false; // no bins even close to the threshold, reject
+    // A 3x3 sum above the threshold needs at least one bin above threshold/9, so below that no cluster can pass
+    if(hist_max < minClusterEnergy_/9.) return false;
 
     // Loop over the histogram bins and check if there are any bins above the energy threshold
     const int n_bins_x = hist->GetNbinsX();

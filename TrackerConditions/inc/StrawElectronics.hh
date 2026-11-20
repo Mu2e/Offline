@@ -45,6 +45,14 @@ namespace mu2e {
           _sigma(sigma), _t0(t0) {};
       };
 
+      // distance-dependent terms of the response of one cluster on one straw; maxResponseTime and maxLinearResponse use only distIndex and distFrac
+      struct ResponseGeometry {
+        int distIndex = 0;
+        double distFrac = 0.0;
+        double reflectionTime = 0.0;
+        double reflectionScale = 0.0;
+      };
+
       typedef std::shared_ptr<StrawElectronics> ptr_t;
       typedef std::shared_ptr<const StrawElectronics> cptr_t;
       constexpr static const char* cxname = {"StrawElectronics"};
@@ -108,11 +116,15 @@ namespace mu2e {
       // linear response to a charge pulse.  This does NOT include saturation effects,
       // since those are cumulative and cannot be computed for individual charges
       double linearResponse(Straw const& straw, Path ipath, double time, double charge, double distance, bool forsaturation=false) const; // mvolts per pCoulomb
+      // same as above, with the distance-dependent terms precomputed by responseGeometry
+      double linearResponse(Straw const& straw, Path ipath, double time, double charge, ResponseGeometry const& rgeom, bool forsaturation=false) const;
+      ResponseGeometry responseGeometry(Straw const& straw, double distance) const;
       double adcImpulseResponse(StrawId sid, double time, double charge) const;
       // Given a (linear) total voltage, compute the saturated voltage
       double saturatedResponse(double lineearresponse) const;
       // relative time when linear response is maximal
       double maxResponseTime(StrawId id, Path ipath,double distance) const;
+      double maxResponseTime(StrawId id, Path ipath, ResponseGeometry const& rgeom) const;
       // digization
       TrkTypes::ADCValue adcResponse(StrawId id, double mvolts) const; // ADC response to analog inputs
       TrkTypes::TDCValue tdcResponse(double time) const; // TDC response to a signal input to electronics at a given time (in ns since eventWindowMarker)
@@ -155,6 +167,7 @@ namespace mu2e {
 
       double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.uniqueStraw()]; }
       double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
+      double maxLinearResponse(StrawId sid, Path ipath, ResponseGeometry const& rgeom, double charge=1.0) const;
       double clusterLookbackTime() const { return _clusterLookbackTime;}
 
       double truncationTime(Path ipath) const { return _ttrunc[ipath];}
@@ -216,6 +229,8 @@ namespace mu2e {
       double timeDigitalToAnalog(TrkTypes::TDCValue time, StrawId& sid) const;
 
     private:
+      // wire-distance interpolation interval and weight
+      void fillDistanceInterval(double distance, ResponseGeometry& rgeom) const;
       bool _overrideDbTimeOffsets; // for digitization we override Db parameters and zero all time offsets
 
       // generic waveform parameters

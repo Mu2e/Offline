@@ -138,8 +138,8 @@ namespace mu2e {
 
     mat = uniqueMaterialOrThrow( "CONCRETE_EXTMON_HANDSTACKED" );
     {
-      // 2.1 g/cm3 from weighing ExtMon blocks, consistent with Menards info
-      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.1*CLHEP::g/CLHEP::cm3, 1 );
+      // 2.06 g/cm3 from weighing ExtMon blocks, see docdb-58926
+      G4Material* ConcreteHandstacked = new G4Material(mat.name, 2.06*CLHEP::g/CLHEP::cm3, 1 );
       ConcreteHandstacked->AddMaterial( findMaterialOrThrow("CONCRETE_MARS"), 1.);
     }
 
@@ -1864,6 +1864,13 @@ namespace mu2e {
       poly->AddMaterial(met, 1.);
     }
 
+    // POROUS GRAPHITE WITH INCREASED DENSITY, for COL1 (Coll11): Semco 152-N2L, as-built
+    // 1.789+-0.011 g/cm3 (Mu2e-doc-40565-v1 slide 42); datasheet typical value 1.79 (Mu2e-doc-53676)
+    mat = uniqueMaterialOrThrow("GRAPHITE_POROUS_CUSTOM");
+    {
+      G4Material* CPorous = new G4Material(mat.name, 1.79*CLHEP::g/CLHEP::cm3, 1);
+      CPorous->AddMaterial(findMaterialOrThrow("G4_GRAPHITE_POROUS"),1);
+    }
     // Add new materials before this line
 
   }

@@ -32,6 +32,7 @@
 #include "Offline/MCDataProducts/inc/GenId.hh"
 #include "Offline/MCDataProducts/inc/GenParticle.hh"
 #include "Offline/MCDataProducts/inc/G4BeamlineInfo.hh"
+#include "Offline/MCDataProducts/inc/CosmicLivetime.hh"
 #include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
 // Particular generators that this code knows about.
@@ -93,6 +94,10 @@ namespace mu2e {
     // when that product will actually be produced.
     bool _produceG4blInfo;
 
+    // The CosmicDYB generator, when enabled, records the live time of each SubRun in a CosmicLivetime.
+    bool _produceCosmicLivetime;
+    CosmicDYB* _cosmicDYB = nullptr;   // owned by _generators
+
     CLHEP::HepRandomEngine& _engine;
 
     // A collection of all of the generators that we will run.
@@ -106,6 +111,9 @@ namespace mu2e {
     // are present in the configuration.
     bool checkForG4blFile();
 
+    // Check whether the CosmicDYB generator is enabled.
+    bool checkForCosmicDYB();
+
   };
 
   EventGenerator::EventGenerator(fhicl::ParameterSet const& pSet):
@@ -117,6 +125,7 @@ namespace mu2e {
     _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
     _printConfig(          pSet.get<bool>       ("printConfig",           false)),
     _produceG4blInfo(checkForG4blFile()),
+    _produceCosmicLivetime(checkForCosmicDYB()),
     // A common random engine for the generators to use.
     _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
   {
@@ -124,6 +133,9 @@ namespace mu2e {
     produces<SpectrumConfig, art::InSubRun>();
     if ( _produceG4blInfo  ){
       produces<G4BeamlineInfoCollection>();
+    }
+    if ( _produceCosmicLivetime ){
+      produces<CosmicLivetime, art::InSubRun>();
     }
   }
 
@@ -135,6 +147,11 @@ namespace mu2e {
     // At the present time the only code that produces G4BeamlineInfo
     // is the FromG4BLFile option.
     return config.getBool( "fromG4BLFile.do", false );
+  }
+
+  bool EventGenerator::checkForCosmicDYB(){
+    SimpleConfig config(_configfile, true, false, false );
+    return config.getBool( "cosmicDYB.do", false );
   }
 
   // Run these at beginRun time in case any of them depend on geoemtry
@@ -165,6 +182,7 @@ namespace mu2e {
 
     // Delete generators from the previous run.
     _generators.clear();
+    _cosmicDYB = nullptr;
 
     // Which generators will we run?
     bool doParticleGun          = config.getBool( "particleGun.do",      false );
@@ -174,7 +192,11 @@ namespace mu2e {
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(     _engine,  run, config)) );
-    if ( doCosmicDYB)            _generators.push_back( GeneratorBasePtr( new CosmicDYB(       _engine,  run, config)) );
+    if ( doCosmicDYB){
+      auto dyb = boost::shared_ptr<CosmicDYB>( new CosmicDYB( _engine, run, config) );
+      _cosmicDYB = dyb.get();
+      _generators.push_back( dyb );
+    }
     if ( doCosmicFromTH2)        _generators.push_back( GeneratorBasePtr( new CosmicFromTH2(   _engine,  run, config)) );
     if ( doFromG4BLFile)         _generators.push_back( GeneratorBasePtr( new FromG4BLFile(    _engine,  run, config)) );
 
@@ -217,6 +239,23 @@ namespace mu2e {
   void EventGenerator::endSubRun(art::SubRun& sr){
     auto config = std::make_unique<SpectrumConfig>();
     sr.put(std::move(config), art::fullSubRun());
+
+    if ( _produceCosmicLivetime ){
+      if ( _cosmicDYB == nullptr ){
+        throw cet::exception("CONFIG")
+          << "EventGenerator: cosmicDYB.do is true but no CosmicDYB generator was made\n";
+      }
+      // The live time of this SubRun from the DYB flux; the flux constant is not used (0).
+      auto livetime = std::make_unique<CosmicLivetime>(_cosmicDYB->nMuons(),
+                                                       _cosmicDYB->area(),
+                                                       _cosmicDYB->eMin(),
+                                                       _cosmicDYB->eMax(),
+                                                       0.,
+                                                       _cosmicDYB->liveTime());
+      std::cout << *livetime << std::endl;
+      sr.put(std::move(livetime), art::fullSubRun());
+      _cosmicDYB->resetCounts();
+    }
   }
 
   // Look for inconsistencies in the config file.

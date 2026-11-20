@@ -117,6 +117,10 @@ namespace mu2e {
       if(config.hasName(name)) _captureProtonRate[material] = config.getDouble(name);
       name = "physicsParams."+material+".capture.deuteronRate";
       if(config.hasName(name)) _captureDeuteronRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.tritonRate";
+      if(config.hasName(name)) _captureTritonRate[material] = config.getDouble(name);
+      name = "physicsParams."+material+".capture.alphaRate";
+      if(config.hasName(name)) _captureAlphaRate[material] = config.getDouble(name);
       name = "physicsParams."+material+".capture.neutronRate";
       if(config.hasName(name)) _captureNeutronRate[material] = config.getDouble(name);
       name = "physicsParams."+material+".capture.photonRate";

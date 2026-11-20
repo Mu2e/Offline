@@ -360,7 +360,9 @@ namespace mu2e {
   }
 
   void RegrowLoopHelix::endJob()
-  {}
+  {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
+  }
 
 }
 DEFINE_ART_MODULE(mu2e::RegrowLoopHelix)

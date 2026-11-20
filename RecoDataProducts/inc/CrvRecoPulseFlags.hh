@@ -5,7 +5,7 @@
 
 namespace mu2e
 {
-  enum CrvRecoPulseFlagEnums{failedFit=0, duplicateNoFitPulse=1, separatedDoublePulse=2, zeroNdf=3, noCalibConstPulseArea=4, noCalibConstPulseHeight=5};
+  enum CrvRecoPulseFlagEnums{failedFit=0, unused1=1, unused2=2, zeroNdf=3, noCalibConstPulseArea=4, noCalibConstPulseHeight=5};
 
   static constexpr int nFlags=8;
 

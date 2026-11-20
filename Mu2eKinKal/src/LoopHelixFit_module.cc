@@ -548,6 +548,7 @@ namespace mu2e {
   }
 
   void LoopHelixFit::endJob() {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
     if(print_ > 0) {
       printf("[LoopHelixFit::%s::%s] Saw %i helix seeds, %i had ambiguous dz/dt slopes, accepted %i downstream and %i upstream fits\n",
           __func__, moduleDescription().moduleLabel().c_str(), nSeen_, nAmbiguous_, nDownstream_, nUpstream_);

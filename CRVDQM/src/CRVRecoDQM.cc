@@ -11,9 +11,11 @@
 #include "TMath.h"
 #include "TString.h"
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 #include <memory>
+#include <utility>
 
 namespace {
 
@@ -148,6 +150,56 @@ void CRVRecoDQM::book()
              kCoordinate[i]),
         positionAxis(cfg, i)));
   }
+
+  // Sector pairs, last so the v3 set keeps its order.
+  const Layout& l = kLayouts[cfg];
+  for (int a = 0; a < l.nSectors; ++a) {
+    for (int b = a + 1; b < l.nSectors; ++b) {
+      h_sectorDt_.push_back(h.book1<TH1F>(
+          Form("crvCoincidenceDt%s_%s", sectorTag(cfg, a).c_str(), l.sectors[b]),
+          Form("Coincidence time, %s minus %s;t_{%s} - t_{%s} [ns];Cluster pairs",
+               l.sectors[b], l.sectors[a], l.sectors[b], l.sectors[a]),
+          kSectorDt));
+    }
+  }
+}
+
+int CRVRecoDQM::sectorPairIndex(int sectorA, int sectorB) const
+{
+  const int n = kLayouts[bookedConfiguration_].nSectors;
+  return sectorA * n - sectorA * (sectorA + 1) / 2 + (sectorB - sectorA - 1);
+}
+
+TH1F* CRVRecoDQM::sectorDt(int sectorA, int sectorB) const
+{
+  const int n = kLayouts[bookedConfiguration_].nSectors;
+  if (sectorA == sectorB || sectorA < 0 || sectorB < 0 || sectorA >= n || sectorB >= n) {
+    return nullptr;
+  }
+  return h_sectorDt_[sectorPairIndex(std::min(sectorA, sectorB), std::max(sectorA, sectorB))];
+}
+
+int CRVRecoDQM::clusterSector(const CrvCoincidenceCluster& cluster) const
+{
+  int sector = kNoSector;
+  for (const auto& pulsePtr : cluster.GetCrvRecoPulses()) {
+    if (!pulsePtr) {
+      continue;
+    }
+    const int channel = pulsePtr->GetScintillatorBarIndex().asInt() *
+                            static_cast<int>(CRVId::nChanPerBar) +
+                        pulsePtr->GetSiPMNumber();
+    if (channel < 0 || static_cast<std::size_t>(channel) >= channelToSector_.size() ||
+        channelToSector_[channel] < 0) {
+      continue;
+    }
+    if (sector == kNoSector) {
+      sector = channelToSector_[channel];
+    } else if (channelToSector_[channel] != sector) {
+      return kSeveralSectors;
+    }
+  }
+  return sector;
 }
 
 TH1F* CRVRecoDQM::PEsMPVROC(int roc) const
@@ -228,9 +280,25 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
                  "no CRV configuration was set; cluster positions are not filled.");
   }
 
+  std::vector<std::pair<int, double>> sectorTimes;  //(sector, average hit time)
   for (const auto& cluster : clusters) {
     ++nClusters_;
     h_coincidenceClusters_.Fill(cluster.GetCrvSectorType());
+    if (configuration_ >= 0) {
+      const int sector = clusterSector(cluster);
+      if (sector >= 0) {
+        sectorTimes.emplace_back(sector, cluster.GetAvgHitTime());
+      } else if (sector == kSeveralSectors) {
+        diag().Count("clusterSpansSectors",
+                     "a coincidence cluster has pulses in more than one sector of the sector "
+                     "map (the finder groups sectors by type, e.g. M1-M8); its time mixes "
+                     "them, so it is left out of crvCoincidenceDt.");
+      } else {
+        diag().Count("clusterWithoutSector",
+                     "a coincidence cluster has no pulse on a channel of the sector map "
+                     "(all notConnected, or null Ptrs); it is left out of crvCoincidenceDt.");
+      }
+    }
     h_NPc_.Fill(cluster.GetCrvRecoPulses().size());
     h_PEc_.Fill(cluster.GetPEs());
     h_tc_.Fill(cluster.GetStartTime());
@@ -286,6 +354,23 @@ void CRVRecoDQM::fillClusters(const CrvCoincidenceClusterCollection& clusters)
                      "a reco pulse's ROC/FEB/channel is outside CRVId; the online MPV "
                      "maps leave its channel out.");
       }
+    }
+  }
+
+  // Every pair of clusters in two different sectors, t of the later sector in
+  // the configuration's list minus t of the earlier one.
+  for (std::size_t i = 0; i < sectorTimes.size(); ++i) {
+    for (std::size_t j = i + 1; j < sectorTimes.size(); ++j) {
+      auto [sA, tA] = sectorTimes[i];
+      auto [sB, tB] = sectorTimes[j];
+      if (sA == sB) {
+        continue;
+      }
+      if (sA > sB) {
+        std::swap(sA, sB);
+        std::swap(tA, tB);
+      }
+      h_sectorDt_[sectorPairIndex(sA, sB)].Fill(tB - tA);
     }
   }
 }

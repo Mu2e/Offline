@@ -187,8 +187,8 @@ namespace mu2e_eventdisplay
               TF1 *fWithPedestal = new TF1("recoFunctionWithPedestal",functionString.Data());
               fWithPedestal->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
               fWithPedestal->SetLineWidth(1);
-              fWithPedestal->SetLineColor(2);
-              if(f->GetLineStyle()==2) fWithPedestal->SetLineStyle(2);
+              fWithPedestal->SetLineColor(f->GetLineColor());
+              fWithPedestal->SetLineStyle(f->GetLineStyle());
 
               functionStringSum.Append("+");
               functionStringSum.Append(f->GetExpFormula());

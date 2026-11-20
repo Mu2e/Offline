@@ -6,6 +6,7 @@
 
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
+#include "Offline/CRVConditions/inc/CRVOrdinal.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/ProditionsService/inc/ProditionsHandle.hh"
 #include "Offline/RecoDataProducts/inc/CrvRecoPulse.hh"
@@ -22,6 +23,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include <TMath.h>
 #include <TH1F.h>
@@ -94,6 +96,11 @@ namespace mu2e
 
     std::vector<double> _pedestals;
     bool                _first{true};
+
+    mu2e::ProditionsHandle<mu2e::CRVOrdinal> _channelMap_h;
+    std::unordered_set<size_t>               _invalidChannels;
+    int                                      _failedCalibHeight{0};
+    int                                      _failedCalibArea{0};
   };
 
 
@@ -192,9 +199,18 @@ namespace mu2e
       pedestal=_pedestals.at(channel);
       outputFile<<channel<<","<<pedestal<<","<<calibValue[0]<<","<<calibValue[1]<<std::endl;  //write to DB text file
       treePedestal->Fill(); //fill tree
+
+      if(!_invalidChannels.count(channel)) //ignore channels that don't exist
+      {
+        if(calibValue[0]<0) ++_failedCalibHeight;
+        if(calibValue[1]<0) ++_failedCalibArea;
+      }
     }
 
     outputFile.close();
+
+    if(_failedCalibHeight) mf::LogError("CrvCalibration") << "Found " << _failedCalibHeight << " channels for which no height calibration constant could be found." << std::endl;
+    if(_failedCalibArea) mf::LogError("CrvCalibration") << "Found " << _failedCalibArea << " channels for which no area calibration constant could be found." << std::endl;
   }
 
   void CrvCalibration::analyze(const art::Event& event)
@@ -208,19 +224,21 @@ namespace mu2e
     {
       _first=false;
       auto const& calib = _calib_h.get(event.id());
-      for(size_t channelIndex=0; channelIndex<_pedestals.size(); ++channelIndex)
+      auto const& channelMap = _channelMap_h.get(event.id());
+      for(size_t channel=0; channel<_pedestals.size(); ++channel)
       {
-        _pedestals[channelIndex] = calib.pedestal(channelIndex);
+        _pedestals[channel] = calib.pedestal(channel);
+        if(!channelMap.onlineExists(channel)) _invalidChannels.insert(channel);
       }
     }
 
     for(auto iter=crvRecoPulseCollection->begin(); iter!=crvRecoPulseCollection->end(); ++iter)
     {
+      //only use the first pulse of a waveform
+      if(iter->GetSequenceIndex()>0) continue;
       //check for any error flags, but ignore calibration flags
       auto flags = iter->GetRecoPulseFlags();
-      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseArea,0);
-      flags.set(CrvRecoPulseFlagEnums::noCalibConstPulseHeight,0);
-      if(!flags.none()) continue;
+      if(flags.test(CrvRecoPulseFlagEnums::failedFit)) continue;
 
       int barIndex = iter->GetScintillatorBarIndex().asInt();
       int SiPM = iter->GetSiPMNumber();

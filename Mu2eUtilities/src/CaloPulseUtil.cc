@@ -20,7 +20,7 @@ namespace mu2e {
       nBinShape_(0),
       pulseVec_(),
       deltaT_(0.),
-      digitizedPulse_()
+      digitizedPulses_()
    {}
 
    CaloPulseUtil::CaloPulseUtil(const std::string& fileName, const std::string& histName) :
@@ -31,7 +31,7 @@ namespace mu2e {
       nBinShape_(0),
       pulseVec_(),
       deltaT_(0.),
-      digitizedPulse_()
+      digitizedPulses_()
    {}
 
    //----------------------------------------------------------------------------------------------------------------------
@@ -61,7 +61,12 @@ namespace mu2e {
        // calculate the number of bins for the digitized waveform
        for (int j=1;j<=(nbins+nSteps_);++j)pulseVec_.push_back((j>nSteps_) ? pulseShape.GetBinContent(j-nSteps_) : 0.0);
        nBinShape_      = int(nbins/nSteps_);
-       digitizedPulse_ = std::vector<double>(nBinShape_,0);
+
+       // digitized pulse for every shift bin that digitizedPulse can request (1 to 2*nSteps_-1)
+       digitizedPulses_.assign(2*nSteps_, std::vector<double>(nBinShape_,0));
+       for (int shiftBin=1;shiftBin<2*nSteps_;++shiftBin) {
+         for (int i=0;i<nBinShape_;++i) digitizedPulses_[shiftBin][i] = pulseVec_[shiftBin+i*nSteps_];
+       }
 
        deltaT_ = 0.0;
        // find difference between peak time and t0 for digitized waveform.
@@ -76,8 +81,7 @@ namespace mu2e {
    const std::vector<double>& CaloPulseUtil::digitizedPulse(double hitTime) const
    {
        int shiftBin = nSteps_ - int(hitTime/digiStep_)%nSteps_;
-       for (int i=0;i<nBinShape_;++i) digitizedPulse_[i] = pulseVec_[shiftBin+i*nSteps_];
-       return digitizedPulse_;
+       return digitizedPulses_[shiftBin];
    }
 
    //----------------------------------------------------------------------------
@@ -102,8 +106,8 @@ namespace mu2e {
    {
        std::cout<<"Number of digi bins "<<nBinShape_<<std::endl;
 
-       std::cout<<"Cache content "<<std::endl;
-       for (auto& h : digitizedPulse_) std::cout<<h<<" ";
+       std::cout<<"Cache content (zero shift) "<<std::endl;
+       for (auto& h : digitizedPulse(0.0)) std::cout<<h<<" ";
        std::cout<<std::endl;
 
        if (!fullDiag) return;

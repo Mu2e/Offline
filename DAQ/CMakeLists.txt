@@ -33,6 +33,17 @@ cet_build_plugin(EventHeaderFromCFOFragment art::module
     Offline::ProditionsService
 )
 
+cet_build_plugin(CFOFragmentFromSim art::module
+    REG_SOURCE src/CFOFragmentFromSim_module.cc
+    LIBRARIES REG
+    Offline::DAQ
+    Offline::DataProducts
+    Offline::DAQConditions
+    Offline::GlobalConstantsService
+    Offline::MCDataProducts
+    Offline::ProditionsService
+)
+
 
 cet_build_plugin(CaloHitsFromDTCEvents art::module
     REG_SOURCE src/CaloHitsFromDTCEvents_module.cc

@@ -25,15 +25,17 @@ physics: {
     stmHitsHPGe : {
       module_type     : STMHitsTree
       stmHitsMapTag   : "stmHitsHPGe"
+      maxEnergy       : 1000
     }
 
     stmHitsLaBr : {
       module_type     : STMHitsTree
       stmHitsMapTag   : "stmHitsLaBr"
+      maxEnergy       : 3500
     }
 
   }
-  # setup apths
+  # setup paths
   trigger_paths : [ ]
   anaPath : [stmHitsHPGe, stmHitsLaBr]
   end_paths: [anaPath]

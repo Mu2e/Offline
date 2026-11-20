@@ -279,7 +279,9 @@ namespace mu2e {
   }
 
   void RegrowKinematicLine::endJob()
-  {}
+  {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
+  }
 
 }
 DEFINE_ART_MODULE(mu2e::RegrowKinematicLine)

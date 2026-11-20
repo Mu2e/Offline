@@ -36,6 +36,20 @@ namespace mu2e {
 
     virtual void generate( GenParticleCollection&  );
 
+    // Muons per second crossing the production surfaces (Hz), from the flux parametrization.
+    double rate() const { return _totalRate; }
+
+    // Total area of the production surfaces (m^2) and the muon energy range (GeV).
+    double area() const { return _area; }
+    double eMin() const { return _muEMin; }
+    double eMax() const { return _muEMax; }
+
+    // Muons generated, and the live time they represent (s), since the last resetCounts().
+    // Fixed multiplicity (cosmicDYB.mean < 0): muons / rate. Poisson multiplicity: events * mean / rate.
+    unsigned long long nMuons() const { return _nMuons; }
+    double liveTime() const;
+    void resetCounts() { _nEvents = 0; _nMuons = 0; }
+
   private:
 
     int   _verbose;
@@ -84,6 +98,11 @@ namespace mu2e {
 
     std::vector<boost::shared_ptr<DYBGenerator> > _generators;
     std::vector<double>                           _boxFraction;
+
+    double             _totalRate = 0;  // Hz
+    double             _area = 0;       // m^2
+    unsigned long long _nEvents = 0;
+    unsigned long long _nMuons = 0;
   };  // CosmicDYB
 
 }  // namespace mu2e

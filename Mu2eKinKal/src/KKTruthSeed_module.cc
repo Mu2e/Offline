@@ -97,6 +97,7 @@ namespace mu2e {
       explicit KKTruthSeed(const Parameters& settings);
       void beginRun(art::Run& run) override;
       void produce(art::Event& event) override;
+      void endJob() override;
 
     private:
       // true muon state (pos, mom, time) from the MC trajectory point nearest a detector-frame location.
@@ -332,6 +333,10 @@ namespace mu2e {
     tsseed._hitcalibs = recoseed.hitCalibInfos();
     tsseed._chit = recoseed.caloHit();
     return tsseed;
+  }
+
+  void KKTruthSeed::endJob() {
+    if(extrap_) extrap_->printSummary(moduleDescription().moduleLabel());
   }
 
   void KKTruthSeed::produce(art::Event& event) {

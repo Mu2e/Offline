@@ -1,15 +1,22 @@
 # CRV DQM client tables: one per client, offline and online.
 #
-# Each table is the whole configuration of a CRV client (DQMClientFhicl): its
-# `hists` block. There is no binning here and no CRV configuration switch; the
-# clients book both the Run 1A/1B and the KPP (extracted) families and fill
-# the one the geometry names, so the same tables serve both detectors.
+# Each table is the whole configuration of a CRV client (DQMClientFhicl; the
+# digi tables are CRVDigiDQMFhicl): its `hists` block. There is no binning here
+# and no CRV configuration switch; the module's `configuration` parameter picks
+# the detector, so the same tables serve both detectors.
 #
 #   #include "Offline/CRVDQM/fcl/prolog.fcl"
 #   crvDigiDQM : { module_type : ...  dqm : @local::CRVDQM.Digi }
 #
 # Override a table below the include, e.g. per-subrun copies offline:
 #   physics.analyzers.crvDigiDQM.dqm.hists : @local::DQMHelpers.Hists.PerSubrun
+#
+# The digi tables (CRVDigiDQMFhicl) also take `dtPairs`, the (ROC, FEB, FPGA)
+# pairs to book a dtPair_* histogram for; none by default. Any two FPGAs of the
+# readout; Offline/CRVDQM/inc/CRVDigiDQMConfig.hh has the syntax:
+#   physics.analyzers.crvDigiDQM.dqm.dtPairs : [
+#     { rocA : 1  febA : 3  fpgaA : 0  fpgaB : 1 },
+#     { rocA : 1  febA : 3  fpgaA : 0  rocB : 2  febB : 5  fpgaB : 0 } ]
 #
 # Online, rules pick what HistoSender ships. `publish` selects a histogram,
 # `group` collects its copies under one folder (omit it to ship each copy under
@@ -67,7 +74,9 @@ CRVDQM : {
         { match : "sectorsPerEvent"  modes : [ "job" ]  publish : true  group : "timing_feb" },
 
         # Intra-FEB FPGA timing: one TH2, one column per FEB and FPGA pair.
-        { match : "dtFpgaPairs"  modes : [ "job" ]  publish : true  group : "timing_fpga" }
+        { match : "dtFpgaPairs"  modes : [ "job" ]  publish : true  group : "timing_fpga" },
+        # Configured FPGA pairs (dqm.dtPairs), all digis: TH1Fs, cheap to ship.
+        { match : "dtPair_*"     modes : [ "job" ]  publish : true  group : "timing_pairs" }
 
         # Anything else is booked job-only and not shipped (crvDigiRates*,
         # crvDigisPerChannel: large and not on the display).

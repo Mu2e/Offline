@@ -25,12 +25,13 @@ namespace mu2e
               const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses, float slope, const std::vector<int> &layers,
               const std::array<size_t,CRVId::nSidesPerBar> &sideHits, const std::array<float, CRVId::nSidesPerBar> &sidePEs,
               const std::array<double,CRVId::nSidesPerBar> &sideTimes, double avgHitTime, const CLHEP::Hep3Vector &avgHitPos,
-               bool hitPosAndTimeCalculated) :
+               bool hitPosAndTimeCalculated, double startTimeAdjusted, double endTimeAdjusted) :
               _crvSectorType(crvSectorType), _startTime(startTime), _endTime(endTime), _PEs(PEs),
               _crvRecoPulses(crvRecoPulses), _slope(slope), _layers(layers),
               _sideHits(sideHits), _sidePEs(sidePEs), _sideTimes(sideTimes),
               _avgHitTime(avgHitTime), _avgHitPos(avgHitPos),
-              _hitPosAndTimeCalculated(hitPosAndTimeCalculated) {}
+              _hitPosAndTimeCalculated(hitPosAndTimeCalculated),
+              _startTimeAdjusted(startTimeAdjusted), _endTimeAdjusted(endTimeAdjusted) {}
 
     int                                         GetCrvSectorType() const {return _crvSectorType;}
     double                                      GetStartTime() const     {return _startTime;}
@@ -47,6 +48,9 @@ namespace mu2e
     const CLHEP::Hep3Vector                         &GetAvgHitPos() const       {return _avgHitPos;}
 
     bool HitPosAndTimeCalculated() const  {return _hitPosAndTimeCalculated;}
+
+    double GetStartTimeAdjusted() const {return _startTimeAdjusted;}
+    double GetEndTimeAdjusted() const   {return _endTimeAdjusted;}
 
     // allow setting the Ptrs for reco compression
     void SetCrvRecoPulses(std::vector<art::Ptr<CrvRecoPulse> > const& pulses) { _crvRecoPulses = pulses; }
@@ -82,6 +86,8 @@ namespace mu2e
                                                             //PE-weighted average center of all involved counters.
     bool _hitPosAndTimeCalculated{false};         //indicates that the hits at both readout sides seem to be correlated, i.e. they could have been
                                                   //caused by the same particle (based on the time difference, signal speed, and distance)
+    double _startTimeAdjusted{0};    //pulse time ranges of both sides shifted to the hit pos (avgHitPos)
+    double _endTimeAdjusted{0};
   };
   typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }

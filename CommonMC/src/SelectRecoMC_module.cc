@@ -81,7 +81,8 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> EWM              { Name("EventWindowMarker"),               Comment("EventWindowMarker")};
         fhicl::Sequence<std::string> KalSeeds       { Name("KalSeedCollections"),              Comment("KalSeedCollections")};
         fhicl::Sequence<art::InputTag> TimeClusters { Name("TimeClusterCollections"),          Comment("TimeClusterCollections")};
-        fhicl::Atom<art::InputTag> VDSPC            { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
+        fhicl::Sequence<art::InputTag> TimeClusterHits { Name("TimeClusterComboHitCollections"), Comment("ComboHitCollection that each TimeClusterCollection indexes (the one its finder ran on), in the same order"), std::vector<art::InputTag>{}};
+        fhicl::Atom<art::InputTag> VDSPC           { Name("VDSPCollection"),                  Comment("Virtual Detector StepPointMC collection")};
         fhicl::Atom<double> CCME                    { Name("CaloClusterMinE"),                 Comment("Minimum energy CaloCluster to save digis (MeV)")};
       };
       using Parameters = art::EDProducer::Table<Config>;
@@ -107,7 +108,7 @@ namespace mu2e {
       bool _saveallenergy, _saveunused, _saveallunused, _saveallcrv;
       art::InputTag _pp, _ccc, _sdc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _crvrpc, _pbtmc, _ewm, _vdspc;
       std::vector<std::string> _kscs, _hscs;
-      std::vector<art::InputTag> _tccs, _crvcccs;
+      std::vector<art::InputTag> _tccs, _tcchcs, _crvcccs;
       double _ccme;
       // cache
       double _mbtime; // period of 1 microbunch
@@ -139,6 +140,7 @@ namespace mu2e {
     _vdspc(config().VDSPC()),
     _kscs(config().KalSeeds()),
     _tccs(config().TimeClusters()),
+    _tcchcs(config().TimeClusterHits()),
     _crvcccs(config().CrvCCCs()),
     _ccme(config().CCME())
     {
@@ -158,8 +160,14 @@ namespace mu2e {
       consumes<CrvDigiMCCollection>(_crvdmcc);
       consumes<ProtonBunchTimeMC>(_pbtmc);
       consumes<EventWindowMarker>(_ewm);
+      if (_tcchcs.size() != _tccs.size())
+        throw cet::exception("CONFIGURATION") << "SelectRecoMC: TimeClusterComboHitCollections must name one ComboHitCollection per TimeClusterCollection ("
+          << _tcchcs.size() << " given for " << _tccs.size() << ")" << std::endl;
       for (const auto& i_tc : _tccs) {
         consumes<TimeClusterCollection>(i_tc);
+      }
+      for (const auto& i_ch : _tcchcs) {
+        consumes<ComboHitCollection>(i_ch);
       }
       produces <IndexMap>("StrawDigiMap");
       if (!_trkonly){
@@ -448,17 +456,25 @@ namespace mu2e {
     // add the MC primary SimParticles
     for(auto const& spp : pp.primarySimParticles()) simps.insert(spp);
 
-    // save configured TimeCluster collections and preserve referenced straw/calo content
-    for (auto const& tcTag : _tccs) {
-      auto tcch = event.getHandle<TimeClusterCollection>(tcTag);
+    // save configured TimeCluster collections and preserve referenced straw/calo content.
+    // TimeCluster hit indices point into the ComboHitCollection the cluster finder ran on
+    // (often panel hits), so expand each one to the StrawDigis behind it
+    std::vector<StrawDigiIndex> tcsdis;
+    for (size_t itc = 0; itc < _tccs.size(); ++itc) {
+      auto tcch = event.getHandle<TimeClusterCollection>(_tccs[itc]);
       if (!tcch.isValid()) continue;
       auto const& tcc = *tcch;
+      auto tchch = event.getValidHandle<ComboHitCollection>(_tcchcs[itc]);
+      auto const& tchc = *tchch;
 
       for (auto const& tc : tcc) {
         for (auto const& hitIndex : tc.hits()) {
-          auto const ich = static_cast<size_t>(hitIndex);
-          (void)chc.at(ich); // bounds check
-          sdindices.insert(static_cast<StrawDigiIndex>(ich));
+          tcsdis.clear();
+          tchc.fillStrawDigiIndices(static_cast<size_t>(hitIndex), tcsdis); // bounds checked
+          for (auto const sdi : tcsdis) {
+            (void)sdc.at(sdi); // bounds check
+            sdindices.insert(sdi);
+          }
         }
         if (tc.hasCaloCluster()) {
           ccptrs.insert(tc.caloCluster());

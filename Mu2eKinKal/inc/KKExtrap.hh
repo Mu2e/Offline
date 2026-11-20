@@ -16,6 +16,7 @@
 #include "Offline/GeometryService/inc/GeometryService.hh"
 #include <utility>
 #include <algorithm>
+#include <atomic>
 #include <limits>
 #include <cmath>
 #include <iostream>
@@ -42,6 +43,8 @@ namespace mu2e {
       // and, for a new Effect, a case in addCrossing that builds its KinKal material xing; a surface that is neither a Plane nor a Cylinder is searched with KinKal::intersect
       // and is never cut by withinReach; add a case to ExtrapolateSweepTest and, if optional, a KKExtrapConfig switch.
       SweepTargetCollection targets(bool updir) const;
+      // end of job: how many tracks ranged out, and in how many KinKal refused to truncate the trajectory at the stop
+      void printSummary(std::string const& label) const;
     private:
       // where a track entered a calorimeter crystal case inner support: the material still to cross at the carbon fiber ring inner radius
       struct SupportEntry { double path_ = 0.0; KKGeom::CaloInnerSupport::Crossing xing_ = KKGeom::CaloInnerSupport::cfRing; double time_ = 0.0; };
@@ -54,12 +57,13 @@ namespace mu2e {
           TimeDir tdir, SupportEntries& entries) const;
       template <class KTRAJ> bool reflect(ExtrapolateSweep& xs, KinKal::ParticleTrajectory<KTRAJ> const& ftraj, TimeDir tdir) const;
       int debug_;
+      mutable std::atomic<unsigned> nRangedOut_{0}, nNotTruncated_{0}; // counted in rangeOut, reported by printSummary
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
-      // nominal literals like the hard-coded KinKalGeom IPA and ST surfaces (KinKalGeomMaker::makeDS/makeTarget); TODO: take both from the geometry service
+      // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
+      // The ST foil thicknesses come from the geometry service (KKGeom::StoppingTarget::foilThickness)
       double ipathick_ = 0.511; // ipa thickness (mm)
-      double stthick_ = 0.1056; // st foil thickness (mm)
       static constexpr unsigned maxCrossings_ = 1000; // per sweep, against endless reflection loops
       static constexpr double dsShellMinCos_ = 0.1; // thin-shell approximation: skip near-tangent DS shell crossings
       static constexpr double ipaMinCos_ = 0.1; // as the DS shells; no truth IPA crossing on CE has |cos| < 0.2
@@ -121,11 +125,25 @@ namespace mu2e {
     ktrk.addExtrapolationFailure(failure);
   }
 
-  // The particle stops in this material: the forwards direction ends before it, keeping the crossings already added.
+  // The particle stops in this material: the forwards direction and the trajectory end at the crossing, keeping the crossings already added.
   template <class KTRAJ> bool KKExtrap::rangeOut(KKTrack<KTRAJ>& ktrk, SweepTarget const& tg, KinKal::Intersection const& inter) const {
     if(debug_ > 0) std::cout << "KKExtrap: ranged out in " << tg.sid_ << " at " << inter.time_ << std::endl;
     ktrk.setRangedOut();
+    ++nRangedOut_;
+    // the extension can run domains past the crossing; KinKal removes them, and refuses the cut if an active hit or material lies beyond it.
+    // A refused cut keeps the trajectory past the stop, so it is counted and reported at the end of the job (printSummary).
+    // KinKal currently also refuses for material sites the fit never processed (KFTrack/KinKal#234 review): if a later KinKal
+    // release stops doing that, the refused count should fall to zero and this check can be revisited
+    if(!ktrk.truncate(TimeDir::forwards,inter.time_)){
+      ++nNotTruncated_;
+      if(debug_ > 0) std::cout << "KKExtrap: trajectory not truncated at " << inter.time_ << std::endl;
+    }
     return false;
+  }
+
+  inline void KKExtrap::printSummary(std::string const& label) const {
+    if(nRangedOut_ > 0) std::cout << "KKExtrap " << label << ": " << nRangedOut_ << " tracks ranged out, " << nNotTruncated_
+      << " of them not truncated at the stop (KinKal refused the cut)" << std::endl;
   }
 
   inline SweepTargetCollection KKExtrap::targets(bool updir) const {
@@ -188,7 +206,7 @@ namespace mu2e {
         tg.pl_ = foil.get(); // a grazing foil is crossed again only after the track leaves its tolerance
         tg.ann_ = foil;
         tg.mat_ = &*kkmat_h->STMaterial();
-        tg.thick_ = stthick_;
+        tg.thick_ = st.foilThickness(ifoil);
         tg.maxcross_ = 0;
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;

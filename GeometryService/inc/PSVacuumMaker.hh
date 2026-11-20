@@ -19,6 +19,7 @@ namespace mu2e {
 
   class ProductionSolenoid;
   class PSEnclosure;
+  class TransportSolenoid;
 
   class PSVacuumMaker {
   public:
@@ -26,7 +27,8 @@ namespace mu2e {
     static std::unique_ptr<PSVacuum>  make(const SimpleConfig& config,
                                          const ProductionSolenoid& ps,
                                          const PSEnclosure& pse,
-                                         double zmax /*interface to TS*/
+                                         double zmax, /*interface to TS*/
+                                         const TransportSolenoid& ts
                                          );
   };
 

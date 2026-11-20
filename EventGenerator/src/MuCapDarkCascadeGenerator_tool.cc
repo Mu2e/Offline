@@ -227,8 +227,8 @@ namespace mu2e {
     MuonNucleonKinematics::checkMaterial(_nuclear, material, "MuCapDarkCascadeGenerator");
     GlobalConstantsHandle<PhysicsParams> phy;
     const double muonEnergy = phy->getMuonEnergy(material);
-    // Nuclear mass of the initial nucleus, from the atomic mass
-    const double nucleusMass = phy->getAtomicMass(material)*CLHEP::amu_c2
+    // Nuclear mass of the initial nucleus, from the atomic mass (getAtomicMass is already in MeV)
+    const double nucleusMass = phy->getAtomicMass(material)
       - phy->getAtomicNumber(material)*GlobalConstantsHandle<ParticleDataList>()->particle(PDGCode::e_minus).mass();
     _kinematics = std::make_unique<MuonNucleonKinematics>(eng, muonEnergy, _nucleonMass, nucleusMass,
                                                           _nuclear);

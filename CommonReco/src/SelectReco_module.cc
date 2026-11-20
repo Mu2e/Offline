@@ -63,6 +63,7 @@ namespace mu2e {
         fhicl::Atom<art::InputTag> CRVDC            { Name("CrvDigiCollection"),              Comment("CrvDigiCollection")};
         fhicl::Sequence<art::InputTag> KalSeeds     { Name("KalSeedCollections"),             Comment("KalSeedCollections")};
         fhicl::Sequence<art::InputTag> TimeClusters { Name("TimeClusterCollections"),         Comment("TimeClusterCollections")};
+        fhicl::Sequence<art::InputTag> TimeClusterHits { Name("TimeClusterComboHitCollections"), Comment("ComboHitCollection that each TimeClusterCollection indexes (the one its finder ran on), in the same order"), std::vector<art::InputTag>{}};
 // selection parameters
         fhicl::Atom<double> CCME                    { Name("CaloClusterMinE"),                Comment("Minimum energy CaloCluster to save (MeV)")};
         fhicl::Atom<bool> saveNearby                { Name("SaveNearbyDigis"),                Comment("Save StrawDigis near the fit")};
@@ -84,6 +85,7 @@ namespace mu2e {
       art::InputTag ccct_, sdct_, chct_, cdct_, crvcct_, crvdct_;
       std::vector<art::InputTag> kscts_;
       std::vector<art::InputTag> tccts_;
+      std::vector<art::InputTag> tcchcts_;
       double ccme_;
       bool saveunused_;
   };
@@ -99,6 +101,7 @@ namespace mu2e {
     crvdct_(config().CRVDC()),
     kscts_(config().KalSeeds()),
     tccts_(config().TimeClusters()),
+    tcchcts_(config().TimeClusterHits()),
     ccme_(config().CCME()),
     saveunused_(config().saveNearby())
    {
@@ -110,8 +113,14 @@ namespace mu2e {
       consumes<CrvDigiCollection>(crvdct_);
       consumes<CrvCoincidenceClusterCollection>(crvcct_);
       consumesMany<KalSeedCollection>();
+      if (tcchcts_.size() != tccts_.size())
+        throw cet::exception("CONFIGURATION") << "SelectReco: TimeClusterComboHitCollections must name one ComboHitCollection per TimeClusterCollection ("
+          << tcchcts_.size() << " given for " << tccts_.size() << ")" << std::endl;
       for (auto const& tcct : tccts_) {
         consumes<TimeClusterCollection>(tcct);
+      }
+      for (auto const& tcchct : tcchcts_) {
+        consumes<ComboHitCollection>(tcchct);
       }
 
       produces <IndexMap>("StrawDigiMap");
@@ -164,18 +173,26 @@ namespace mu2e {
     // straw digi indices that are referenced by the tracks, or are 'close to' the track
     SDIS sdindices;
 
-    // save configured TimeCluster collections and keep referenced content
-    for (auto const& tcct : tccts_) {
+    // save configured TimeCluster collections and keep referenced content.
+    // TimeCluster hit indices point into the ComboHitCollection the cluster finder ran on
+    // (often panel hits), so expand each one to the StrawDigis behind it
+    std::vector<StrawDigiIndex> tcsdis;
+    for (size_t itc = 0; itc < tccts_.size(); ++itc) {
       std::unique_ptr<TimeClusterCollection> stcc(new TimeClusterCollection);
-      auto tcch = event.getHandle<TimeClusterCollection>(tcct);
+      auto tcch = event.getHandle<TimeClusterCollection>(tccts_[itc]);
       if (tcch.isValid()) {
         auto const& tcc = *tcch;
+        auto tchch = event.getValidHandle<ComboHitCollection>(tcchcts_[itc]);
+        auto const& tchc = *tchch;
         stcc->reserve(tcc.size());
         for (auto const& tc : tcc) {
           for (auto const& hitIndex : tc.hits()) {
-            auto const ich = static_cast<size_t>(hitIndex);
-            (void)chc.at(ich); // bounds check vs input ComboHitCollection
-            sdindices.insert(static_cast<StrawDigiIndex>(ich));
+            tcsdis.clear();
+            tchc.fillStrawDigiIndices(static_cast<size_t>(hitIndex), tcsdis); // bounds checked
+            for (auto const sdi : tcsdis) {
+              (void)sdc.at(sdi); // bounds check
+              sdindices.insert(sdi);
+            }
           }
           if (tc.hasCaloCluster()) {
             ccptrs.insert(tc.caloCluster());

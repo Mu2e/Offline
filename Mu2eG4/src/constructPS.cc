@@ -8,6 +8,7 @@
 // Construct the PS. Parent volume is the air inside of the hall.
 
 // C++ includes
+#include <array>
 #include <iostream>
 #include <map>
 
@@ -27,6 +28,7 @@
 #include "Offline/Mu2eG4/inc/constructTargetPS.hh"
 #include "Offline/Mu2eG4/inc/constructHaymanRings.hh"
 #include "Offline/Mu2eG4/inc/nestTubs.hh"
+#include "Offline/Mu2eG4/inc/nestCons.hh"
 #include "Offline/Mu2eG4/inc/finishNesting.hh"
 
 #include "Offline/ProductionSolenoidGeom/inc/PSVacuum.hh"
@@ -151,7 +153,29 @@ namespace mu2e {
                  "PS"
                  );
 
-
+    // Conical hard connect between the PS bore tube and the TSu ring plate
+    PSVacuum const & psVacuumGeom = *GeomHandle<PSVacuum>();
+    if (psVacuumGeom.hasTSInterconnect()) {
+      Cone const & cone = psVacuumGeom.tsInterconnect();
+      const std::array<double,consDim> coneParams {
+        cone.innerRadius1(), cone.outerRadius1(),
+          cone.innerRadius2(), cone.outerRadius2(),
+          cone.halfLength(), cone.phi0(), cone.deltaPhi() };
+      VolumeInfo psTSInterconnectInfo =
+        nestCons("PSTSInterconnect",
+                 coneParams,
+                 findMaterialOrThrow(cone.materialName()),
+                 0,
+                 cone.originInMu2e()-_hallOriginInMu2e,
+                 parent,
+                 0,
+                 G4Colour::Green(),
+                 "PS"
+                 );
+      verbosityLevel > 0 &&
+        cout << __func__ << " PSTSInterconnect z from " << cone.zBegin() << " to " << cone.zEnd()
+             << ", mass " << psTSInterconnectInfo.logical->GetMass()/CLHEP::kg << " kg" << endl;
+    }
 
     // Put vacuum inside vacuum vessel
     double vacRIn = psVacVesselInnerParams.getTubsParams().outerRadius();
