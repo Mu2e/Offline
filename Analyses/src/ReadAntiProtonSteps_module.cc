@@ -139,8 +139,7 @@ namespace mu2e {
     art::Handle<GenParticleCollection> genParticleHandle;
     event.getByLabel(_generatorModuleLabel, genParticleHandle);
     bool haveGenPart = genParticleHandle.isValid();
-    GenParticleCollection const& genParticles(*genParticleHandle);
-    if ( haveGenPart ) haveGenPart = !(genParticles.empty());
+    if ( haveGenPart ) haveGenPart = !(genParticleHandle->empty());
     CLHEP::HepLorentzVector initialProtonFourMomentum(0.,0.,0.,0.);
     //
     // look at the genParticles and see that the geantino with the initial proton is still there.
@@ -151,7 +150,7 @@ namespace mu2e {
     // in new style, we don't use the gen particle!
     if (haveGenPart)
       {
-        for (auto iGen : genParticles )
+        for (auto const& iGen : *genParticleHandle )
           {
             if (_diagLevel > 0)
               {
@@ -209,7 +208,12 @@ namespace mu2e {
                       startingFourMomentum = originalParticle.startMomentum();
                       startingPosition     = originalParticle.startPosition();
                       currentKE = sqrt( mom.mag()*mom.mag() + pbarMass2) - pbarMass;
-                      initialProtonFourMomentum = (sim.parent())->endMomentum();
+                      // The pbar made by PrimaryAntiProtonGun is the origin particle (a later stage's
+                      // primary points back to it); its parent is the proton that interacted.
+                      // sim.parent() is that gun pbar itself once the pbar has been restaged.
+                      if (originalParticle.hasParent()) {
+                        initialProtonFourMomentum = originalParticle.parent()->endMomentum();
+                      }
                       if (_diagLevel > 0)
                         {
                           std::cout << "\n inside hit number: " << i << std::endl;
