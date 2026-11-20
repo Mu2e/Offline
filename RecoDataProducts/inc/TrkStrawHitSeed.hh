@@ -143,9 +143,15 @@ namespace mu2e {
     float signalTime() const { return _stime; }
     float wireDOCA() const { return _rdoca; }
     int ambig() const { return _ambig; }
-    // return a true WireHitState
+    // return a true WireHitState, including the frozen flag and the qualities
     WireHitState wireHitState() const {
-      return WireHitState(static_cast<WireHitState::State>(_ambig),static_cast<StrawHitUpdaters::algorithm>(_algo),_kkshflag);
+      WireHitState whs(static_cast<WireHitState::State>(_ambig),static_cast<StrawHitUpdaters::algorithm>(_algo),_kkshflag);
+      whs.frozen_ = _frozen;
+      whs.quality_[WireHitState::bkg] = _bkgqual;
+      whs.quality_[WireHitState::sign] = _signqual;
+      whs.quality_[WireHitState::drift] = _driftqual;
+      whs.quality_[WireHitState::chi2] = _chi2qual;
+      return whs;
     }
     //
     //  Payload
