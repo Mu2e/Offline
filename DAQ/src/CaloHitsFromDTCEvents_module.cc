@@ -298,9 +298,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
 
-        //Check that the channel is valid in the offline world, before any per-channel lookup:
-        //CalCalib is sized to the offline channels and throws on an unmapped one
+        //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
           if (diagLevel_ > 1) {
             std::cout << "[CaloHitsFromDataDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
@@ -311,8 +312,6 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
           total_hits_bad++;
           continue;
         }
-        double adc2MeV = calCalib.ADC2MeV(SiPMID);
-        double timeOffset = calCalib.timeoffset(SiPMID);
 
         if (!offlineId.crystal().isValid()) continue; // Skip pin-diodes
         uint16_t crystalID = offlineId.crystal().id();
@@ -377,9 +376,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
 
-        //Check that the channel is valid in the offline world, before any per-channel lookup:
-        //CalCalib is sized to the offline channels and throws on an unmapped one
+        //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
           if (diagLevel_ > 1) {
             std::cout << "[CaloHitsFromDataDTCEvents] Invalid channel! DTC: " << dtcID << ", ROC: " << iROC
@@ -390,8 +390,6 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
           total_hits_bad++;
           continue;
         }
-        double adc2MeV = calCalib.ADC2MeV(SiPMID);
-        double timeOffset = calCalib.timeoffset(SiPMID);
 
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
