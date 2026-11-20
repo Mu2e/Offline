@@ -1040,9 +1040,11 @@ namespace mu2e {
       ranges.push_back(ptraj.range());
     }
     for(auto range : ranges) {
-      double tbeg = range.begin();
       double tend = range.end();
       for(auto const& surf : tosample){
+        // search each surface over the whole range: the start moves past each crossing found on this surface only,
+        // so an earlier crossing of a later-listed surface is not skipped
+        double tbeg = range.begin();
         // search for intersections with each surface within the specified time range, going forwards in time
         bool goodinter(true);
         size_t max_inter = 100; // limit the number of intersections
