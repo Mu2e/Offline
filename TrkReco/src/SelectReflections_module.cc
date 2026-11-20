@@ -20,6 +20,7 @@
 // mu2e data products
 #include "Offline/RecoDataProducts/inc/KalSeed.hh"
 // C++
+#include <algorithm>
 #include <vector>
 #include <tuple>
 #include <limits>
@@ -237,6 +238,11 @@ namespace mu2e {
           }
         }
       }
+      // apply the reflection-direction requirement before choosing the best pair, so a best-ranked pair
+      // that fails it cannot hide another pair that passes
+      matches.erase(std::remove_if(matches.begin(), matches.end(), [this](auto const& match){
+            return !(refdir_ == RefDir::any || std::get<6>(match) == RefDir::both || std::get<6>(match) == refdir_); }),
+          matches.end());
       // if there are >1 matches select the best
       int ibest = -1;
       if(matches.size() >0 ){
