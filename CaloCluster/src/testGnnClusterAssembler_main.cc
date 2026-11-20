@@ -1,0 +1,174 @@
+//
+// testGnnClusterAssembler_main — Stage-2 parity test for the C++
+// GnnClusterAssembler.
+//
+// Reads a JSON parity payload (produced by
+// scripts/dump_parity_payloads.py of the GNN training code), replays
+// GnnClusterAssembler::assemble for each graph, and asserts the
+// emitted partition is identical to the Python reference labels stored
+// in the same payload. Cluster IDs are compared after renumbering both
+// sides in first-appearance order (Python numbers clusters by seed
+// energy, the assembler by first appearance); -1 (dropped) must match
+// exactly. A payload without any multi-hit reference cluster is
+// rejected, since it cannot test the assembly. Exits non-zero on any
+// mismatch.
+//
+// Usage:
+//   testGnnClusterAssembler  <path-to-parity.json>
+//
+
+#include "Offline/CaloCluster/inc/GnnClusterAssembler.hh"
+
+#include "nlohmann/json.hpp"
+
+#include <cstdint>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
+
+
+namespace {
+
+  // Renumber cluster IDs in first-appearance order; -1 stays -1.
+  std::vector<int> canonical(const std::vector<int>& labels)
+  {
+    std::map<int, int> remap;
+    std::vector<int> out(labels.size(), -1);
+    for (std::size_t i = 0; i < labels.size(); ++i) {
+      if (labels[i] < 0) continue;
+      auto it = remap.find(labels[i]);
+      if (it == remap.end()) it = remap.emplace(labels[i], static_cast<int>(remap.size())).first;
+      out[i] = it->second;
+    }
+    return out;
+  }
+
+}
+
+
+int main(int argc, char* argv[])
+{
+  if (argc != 2) {
+    std::cerr << "usage: " << argv[0] << " <path-to-parity.json>\n";
+    return 2;
+  }
+  const std::string path = argv[1];
+
+  std::ifstream in(path);
+  if (!in.is_open()) {
+    std::cerr << "[FAIL] cannot open " << path << "\n";
+    return 2;
+  }
+  nlohmann::json j;
+  try { in >> j; }
+  catch (const std::exception& e) {
+    std::cerr << "[FAIL] JSON parse error in " << path
+              << ": " << e.what() << "\n";
+    return 2;
+  }
+
+  if (j.value("schema_version", 0) != 1) {
+    std::cerr << "[FAIL] unsupported schema_version "
+              << j.value("schema_version", 0) << "\n";
+    return 2;
+  }
+
+  mu2e::GnnClusterAssembler::Config cfg;
+  cfg.tauEdge      = j.at("tau_edge").get<double>();
+  cfg.bfsExpandCut = j.at("bfs_expand_cut").get<double>();
+  cfg.minHits      = j.at("min_hits").get<unsigned>();
+  cfg.minEnergyMeV = j.at("min_energy_mev").get<double>();
+  mu2e::GnnClusterAssembler asm_(cfg);
+
+  const auto& graphs = j.at("graphs");
+  std::cout << "Loaded " << graphs.size() << " graphs from " << path << "\n";
+  std::cout << "Recipe: tauEdge=" << cfg.tauEdge
+            << " bfsExpandCut=" << cfg.bfsExpandCut
+            << " minHits=" << cfg.minHits
+            << " minEnergyMeV=" << cfg.minEnergyMeV << "\n";
+  std::cout << "model_version="
+            << j.value("model_version", std::string("?")) << "\n";
+
+  std::size_t nGraphs = 0;
+  std::size_t nMismatchGraphs = 0;
+  std::size_t nMismatchNodes = 0;
+  std::size_t maxMismatchPerGraph = 0;
+  std::size_t nRefMultiHit = 0;
+
+  for (const auto& g : graphs) {
+    const int N = g.at("n_nodes").get<int>();
+    const int E = g.at("n_edges").get<int>();
+    auto edgeIndex   = g.at("edge_index").get<std::vector<int64_t>>();
+    auto edgeLogits  = g.at("edge_logits").get<std::vector<float>>();
+    auto energies    = g.at("energies").get<std::vector<float>>();
+    auto refLabels   = g.at("cluster_labels").get<std::vector<int>>();
+
+    if (static_cast<int>(edgeLogits.size()) != E
+        || static_cast<int>(energies.size()) != N
+        || static_cast<int>(edgeIndex.size()) != 2 * E
+        || static_cast<int>(refLabels.size()) != N) {
+      std::cerr << "[FAIL] graph " << nGraphs
+                << ": shape mismatch in payload\n";
+      return 2;
+    }
+
+    auto outLabels = asm_.assemble(N, edgeIndex, edgeLogits, energies);
+    if (static_cast<int>(outLabels.size()) != N) {
+      std::cerr << "[FAIL] graph " << nGraphs
+                << ": assemble returned size " << outLabels.size()
+                << " (expected " << N << ")\n";
+      return 2;
+    }
+
+    std::map<int, int> refSizes;
+    for (int v : refLabels) if (v >= 0) ++refSizes[v];
+    for (const auto& [id, size] : refSizes) if (size > 1) ++nRefMultiHit;
+
+    refLabels = canonical(refLabels);
+    outLabels = canonical(outLabels);
+    std::size_t diffs = 0;
+    for (int i = 0; i < N; ++i) {
+      if (outLabels[i] != refLabels[i]) ++diffs;
+    }
+    if (diffs > 0) {
+      ++nMismatchGraphs;
+      nMismatchNodes += diffs;
+      if (diffs > maxMismatchPerGraph) maxMismatchPerGraph = diffs;
+      if (nMismatchGraphs <= 5) {
+        std::cerr << "[diff] graph " << nGraphs
+                  << " (N=" << N << ", E=" << E
+                  << "): " << diffs << " mismatched node(s)\n";
+        std::cerr << "       py : ";
+        for (int v : refLabels) std::cerr << v << " ";
+        std::cerr << "\n       cpp: ";
+        for (int v : outLabels) std::cerr << v << " ";
+        std::cerr << "\n";
+      }
+    }
+    ++nGraphs;
+  }
+
+  std::cout << "\n=== Summary ===\n";
+  std::cout << "graphs:         " << nGraphs << "\n";
+  std::cout << "mismatch graphs: " << nMismatchGraphs << "\n";
+  std::cout << "mismatch nodes:  " << nMismatchNodes << "\n";
+  std::cout << "max diffs/graph: " << maxMismatchPerGraph << "\n";
+  std::cout << "multi-hit reference clusters: " << nRefMultiHit << "\n";
+
+  if (nRefMultiHit == 0) {
+    std::cerr << "[FAIL] payload has no multi-hit reference cluster;"
+              << " it cannot test the assembly\n";
+    return 2;
+  }
+  if (nMismatchGraphs > 0) {
+    std::cerr << "[FAIL] cluster-label parity broken on "
+              << nMismatchGraphs << " / " << nGraphs << " graph(s)\n";
+    return 1;
+  }
+  std::cout << "[PASS] all " << nGraphs
+            << " graphs match the Python cluster partition exactly\n";
+  return 0;
+}

@@ -73,6 +73,13 @@ find_package(artdaq-core-mu2e REQUIRED EXPORT)
 find_package(TRACE REQUIRED EXPORT)
 find_package(KinKal REQUIRED EXPORT)
 
+# Optional ONNX Runtime: only the GNN calorimeter clustering module
+# (CaloCluster/CaloClusterMakerGNN) needs it and is skipped without it.
+find_package(onnxruntime)
+if(onnxruntime_FOUND)
+  message("onnxruntime found, building CaloClusterMakerGNN")
+endif()
+
 if( ${WITH_G4} )
     message("--> ADDING G4 LIBS")
     find_package(Geant4 REQUIRED EXPORT)

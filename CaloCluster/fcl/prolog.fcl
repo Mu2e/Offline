@@ -55,4 +55,72 @@ CaloCluster : { @table::CaloCluster
    Reco : [ CaloProtoClusterMaker, CaloClusterMaker, CaloClusterFastMaker ]
 }
 
+
+# ---------------------------------------------------------------------
+# GNN clustering (split design).
+#
+# Two producers run alongside the existing BFS chain (CaloProtoClusterMaker
+# + CaloClusterMaker), reading the same CaloHitCollection. The graph
+# producer emits a transient CaloHitGraphCollection that the cluster
+# producer consumes. The cluster producer's output ships under instance
+# name "GNN" so downstream consumers select via (module_label, "GNN")
+# and existing BFS-reading analyses keep working unchanged.
+#
+# Production FCLs that want both BFS and GNN clustering should append:
+#   physics.producers.caloHitGraphMakerGNN : @local::CaloClusterGNN.caloHitGraphMakerGNN
+#   physics.producers.caloClusterMakerGNN  : @local::CaloClusterGNN.caloClusterMakerGNN
+#   physics.<reco-path> : [ ..., CaloHitMaker, CaloProtoClusterMaker, CaloClusterMaker,
+#                                caloHitGraphMakerGNN, caloClusterMakerGNN ]
+#
+# Or use the bundled sequence:
+#   physics.<reco-path> : [ ..., CaloClusterGNN.Reco ]
+#
+# Frozen recipe values (CCN+BFS10):
+#   tauEdge=0.20  bfsExpandCut=10.0  minHits=1  minEnergyMeV=10.0
+# minHits=1 keeps single-crystal clusters, as BFS does; the cleanup then
+# drops only clusters below 10 MeV.
+#
+# To swap in SimpleEdgeNet for an A/B comparison job, declare a second
+# instance with
+#   modelPath            : "Offline/CaloCluster/data/simple_edge_net_v2.onnx"
+#   expectedModelVersion : "simple-edge-net-v2"
+#   tauEdge              : 0.26
+
+CaloClusterGNN : {
+   caloHitGraphMakerGNN :
+   {
+      module_type        : CaloHitGraphMaker
+      caloHitCollection  : CaloHitMaker
+      normSidecar        : "Offline/CaloCluster/data/calo_cluster_net_v2_stage1.norm.json"
+      rMax               : 210.0
+      dtMax              :  25.0
+      kMin               :   3
+      kMax               :  20
+   }
+
+   caloClusterMakerGNN :
+   {
+      module_type            : CaloClusterMakerGNN
+      caloHitGraphCollection : caloHitGraphMakerGNN
+      modelPath              : "Offline/CaloCluster/data/calo_cluster_net_v2_stage1.onnx"
+      expectedModelVersion   : "calo-cluster-net-v2-stage1"
+      expectedNodeFeatures   : ["log_e","t","x","y","r","e_rel"]
+      expectedEdgeFeatures   : ["dx","dy","d","dt","dlog_e","asym_e","logsum_e","dr"]
+      tauEdge                : 0.20
+      bfsExpandCut           : 10.0
+      minHits                : 1
+      minEnergyMeV           : 10.0
+      outputInstance         : "GNN"
+   }
+}
+
+CaloClusterGNN : { @table::CaloClusterGNN
+   producers : {
+      caloHitGraphMakerGNN : { @table::CaloClusterGNN.caloHitGraphMakerGNN }
+      caloClusterMakerGNN  : { @table::CaloClusterGNN.caloClusterMakerGNN  }
+   }
+
+   Reco : [ caloHitGraphMakerGNN, caloClusterMakerGNN ]
+}
+
 END_PROLOG
