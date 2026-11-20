@@ -391,6 +391,7 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
           continue;
         }
 
+        if (!offlineId.crystal().isValid()) continue; // Skip pin-diodes
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
         float eDep = thisHitPeak * adc2MeV;
@@ -415,9 +416,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
     }
   }   // End loop over ROCs
 
-  // Store summary intensity info
-  int_info->setCaloEnergy(evtEnergy);
-  int_info->setNCaloHits(nhits);
+  // This function runs once per calorimeter DTC: add this DTC's sums to the event totals
+  int_info->setCaloEnergy(int_info->caloEnergy() + evtEnergy);
+  int_info->setNCaloHitsD0(int_info->nCaloHitsD0() + nhits[0]);
+  int_info->setNCaloHitsD1(int_info->nCaloHitsD1() + nhits[1]);
 }
 
 void art::CaloHitsFromDataDTCEvents::endJob() {
