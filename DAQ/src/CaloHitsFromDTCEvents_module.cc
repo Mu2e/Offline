@@ -298,8 +298,6 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
-        double adc2MeV = calCalib.ADC2MeV(SiPMID);
-        double timeOffset = calCalib.timeoffset(SiPMID);
 
         //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
@@ -316,6 +314,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         if (!offlineId.crystal().isValid()) continue; // Skip pin-diodes
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
+        // Look up the calibration only after the channel check: CalCalib uses at(),
+        // and unconnected raw channels map to an out-of-range offline id.
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
         float eDep = thisHitPeak * adc2MeV;
         float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod - timeOffset; // packet Time is in clock ticks
 
@@ -376,8 +378,6 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
         mu2e::CaloRawSiPMId rawId(thisHitPacket.BoardID, thisHitPacket.ChannelID);
         mu2e::CaloSiPMId offlineId = calodaqconds.offlineId(rawId);
         uint16_t SiPMID = offlineId.id();
-        double adc2MeV = calCalib.ADC2MeV(SiPMID);
-        double timeOffset = calCalib.timeoffset(SiPMID);
 
         //Check that the channel is valid in the offline world
         if (SiPMID >= mu2e::CaloConst::_nChannel){
@@ -393,6 +393,10 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
 
         uint16_t crystalID = offlineId.crystal().id();
         size_t peakIndex = thisHitPacket.IndexOfMaxDigitizerSample;
+        // Look up the calibration only after the channel check: CalCalib uses at(),
+        // and unconnected raw channels map to an out-of-range offline id.
+        double adc2MeV = calCalib.ADC2MeV(SiPMID);
+        double timeOffset = calCalib.timeoffset(SiPMID);
         float eDep = thisHitPeak * adc2MeV;
         float time = (thisHitPacket.Time + peakIndex) * mu2e::CaloConst::_digitizationPeriod - timeOffset; // packet Time is in clock ticks
 
