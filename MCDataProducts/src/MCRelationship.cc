@@ -11,6 +11,20 @@ namespace mu2e
 {
   using std::vector;
 
+  namespace {
+    // A particle simulated in several stages has one SimParticle per stage; each later copy is a self-parent of
+    // the copy before it. Relationships are between physical particles, so every Ptr is mapped to its first copy.
+    MCRelationship::SPPtr firstCopy(MCRelationship::SPPtr sp) {
+      while(sp->selfParent()) sp = sp->parent();
+      return sp;
+    }
+    // the first copy of the parent of a first copy, or a null Ptr for a primary
+    MCRelationship::SPPtr parentCopy(MCRelationship::SPPtr const& sp) {
+      auto const& parent = sp->parent();
+      return parent.isNonnull() ? firstCopy(parent) : parent;
+    }
+  }
+
   MCRelationship::MCRelationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) :
     MCRelationship(mcd1.earlyStrawGasStep()->simParticle(),mcd2.earlyStrawGasStep()->simParticle())
   {}
@@ -19,14 +33,16 @@ namespace mu2e
     MCRelationship(mcd.earlyStrawGasStep()->simParticle(),spp)
   {}
 
-  MCRelationship::MCRelationship(SPPtr const& sppi,SPPtr const& sppj) : _rel(none), _rem(-1) {
-    if(sppi.isNonnull() && sppj.isNonnull()){
+  MCRelationship::MCRelationship(SPPtr const& sppi_in,SPPtr const& sppj_in) : _rel(none), _rem(-1) {
+    if(sppi_in.isNonnull() && sppj_in.isNonnull()){
+      SPPtr const sppi = firstCopy(sppi_in);
+      SPPtr const sppj = firstCopy(sppj_in);
       if(sppi == sppj){
         _rel= same;
         _rem = 0;
       } else {
-        SPPtr pi = sppi->originParticle().parent();
-        SPPtr pj = sppj->originParticle().parent();
+        SPPtr pi = parentCopy(sppi);
+        SPPtr pj = parentCopy(sppj);
         if(pi.isNonnull() && pi == sppj){
           _rel = daughter;
           _rem = 1;
@@ -42,11 +58,11 @@ namespace mu2e
           pvj.push_back(sppj);
           while(pi.isNonnull()){
             pvi.push_back(pi);
-            pi = pi->originParticle().parent();
+            pi = parentCopy(pi);
           }
           while(pj.isNonnull()){
             pvj.push_back(pj);
-            pj = pj->originParticle().parent();
+            pj = parentCopy(pj);
           }
           auto idau = find(pvi.begin(),pvi.end(),sppj);
           auto jdau = find(pvj.begin(),pvj.end(),sppi);
