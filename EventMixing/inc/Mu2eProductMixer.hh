@@ -262,6 +262,7 @@ namespace mu2e {
     bool mixVolumeInfos(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in,
                         PhysicalVolumeInfoMultiCollection& out,
                         art::PtrRemapper const&);
+    bool sameAsLastVolumeInputs(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in) const;
 
     bool mixGenEventCount(std::vector<GenEventCount const*> const& in,
                           GenEventCount& out,
@@ -300,6 +301,9 @@ namespace mu2e {
     typedef std::map<cet::map_vector_key,PhysicalVolumeInfo> VolumeMap;
     typedef std::vector<VolumeMap> MultiStageMap;
     MultiStageMap subrunVolumes_;
+    // Without event-level volume output: a copy of the inputs of the last merge into subrunVolumes_
+    // (cleared in beginSubRun). mixVolumeInfos skips an event whose inputs equal it.
+    std::vector<PhysicalVolumeInfoMultiCollection> lastVolumeInputs_;
     bool mixVolumes_;
     art::InputTag volumesInput_;
     std::string subrunVolInstanceName_;

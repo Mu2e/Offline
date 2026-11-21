@@ -275,6 +275,7 @@ namespace mu2e {
   //----------------------------------------------------------------
   void Mu2eProductMixer::beginSubRun(const art::SubRun& s) {
     subrunVolumes_.clear();
+    lastVolumeInputs_.clear();
     resampledEvents_ = 0;
     perEventSum_ = 0.;
     nDraws_ = 0;
@@ -697,6 +698,13 @@ namespace mu2e {
                                         PhysicalVolumeInfoMultiCollection& out,
                                         art::PtrRemapper const&)
   {
+    // Without event-level output only the subrun-level union matters, and inputs equal to those of the
+    // last merge add nothing to it. A resampler gets the same volume infos for every event it draws from
+    // one secondary SubRun: comparing them costs much less than merging them again.
+    if(!evtVolInstanceName_ && !in.empty() && sameAsLastVolumeInputs(in)) {
+      return false;
+    }
+
     if(!in.empty()) {
       // We add incoming data to the smaller event-level structure that eliminates
       // some duplicates.  Then we transfer unuque event level data into the larger
@@ -744,10 +752,38 @@ namespace mu2e {
         }
       }
 
+      if(!evtVolInstanceName_) {
+        lastVolumeInputs_.clear();
+        for(const auto& mcoll: in) {
+          lastVolumeInputs_.push_back(*mcoll);
+        }
+      }
     }
 
     const bool putVolsIntoEvent{evtVolInstanceName_};
     return putVolsIntoEvent;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::sameAsLastVolumeInputs(std::vector<PhysicalVolumeInfoMultiCollection const*> const& in) const
+  {
+    if(in.size() != lastVolumeInputs_.size()) {
+      return false;
+    }
+    for(std::size_t i=0; i<in.size(); ++i) {
+      const auto& a = *in[i];
+      const auto& b = lastVolumeInputs_[i];
+      if(a.size() != b.size()) {
+        return false;
+      }
+      for(std::size_t stage=0; stage<a.size(); ++stage) {
+        if(!std::equal(a[stage].begin(), a[stage].end(), b[stage].begin(), b[stage].end(),
+                       [](const auto& x, const auto& y) { return x.first == y.first && x.second == y.second; })) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 
     //----------------------------------------------------------------
