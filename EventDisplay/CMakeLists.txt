@@ -22,6 +22,7 @@ cet_make_library(
       Offline::TrkReco
       ROOT::Gui
       ROOT::Geom
+      ROOT::ASImage
       ROOT::Cling
 )
 

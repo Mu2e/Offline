@@ -32,6 +32,21 @@ physics :
 #      physicalVolumesMultiLabel : "compressPV"
 #      timeOffsets               : { inputs : [ ] }  #if the art file has no time maps
       kalSeedStepSize           : 0.1
+#     Batch mode: with an imageOutput table the display does not wait for the user, it saves
+#     one image per view for every event and moves on. No X display is needed: ROOT draws
+#     the images itself in its batch mode, with imageSize pixels (default 1298 x 754).
+#     Entries are the texts of the display's lists; a missing entry stops the job.
+#     File names may contain %r, %s, %e (run, subrun, event); the extension sets the format.
+#     range (optional): [minx, maxx, miny, maxy, minz, maxz] in mm, display frame; the image
+#     has the same scale on both axes when horizontal range / vertical range = image width / height.
+#      imageOutput :
+#      {
+#        imageSize : [ 1298, 754 ]
+#        tracks  : [ "SimParticle:compressRecoMCs:", "KalSeed:KKDe:" ]
+#        crvHits : "CrvRecoPulse:SelectReco:"
+#        views   : [ { view : "side" file : "evd_%r_%s_%e_side.png" range : [ -2500, 2700, -1000, 4500, -5750, 3719 ] },
+#                    { view : "end"  file : "evd_%r_%s_%e_end.png" } ]
+#      }
     }
   }
 

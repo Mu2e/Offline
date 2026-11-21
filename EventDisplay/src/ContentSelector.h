@@ -99,6 +99,10 @@ class ContentSelector
                   std::string const &protonBunchTimeLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
+  //selects collections by their entry text as the lists show it (e.g. "SimParticle:compressRecoMCs:");
+  //an empty string (or an empty track list) keeps the current selection; a name that is not offered throws
+  void selectByName(std::string const &trackerHits, std::string const &caloHits,
+                    std::string const &crvHits, std::vector<std::string> const &tracks);
 
   bool getSelectedHitsName(std::string &className,
                            std::string &moduleLabel,
