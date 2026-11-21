@@ -55,6 +55,7 @@ namespace mu2e {
       template <class KTRAJ> bool reflect(ExtrapolateSweep& xs, KinKal::ParticleTrajectory<KTRAJ> const& ftraj, TimeDir tdir) const;
       int debug_;
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
+      double nearfrac_, crvnearfrac_; // near-miss bounds fractions for material targets (see ExtrapolateSweep), 0 to disable
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
@@ -73,6 +74,8 @@ namespace mu2e {
     maxdt_(extrapconfig.MaxDt()),
     maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
+    nearfrac_(extrapconfig.NearMissFraction()),
+    crvnearfrac_(extrapconfig.CRVNearMissFraction()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
@@ -173,6 +176,7 @@ namespace mu2e {
       ipatg.thick_ = ipathick_;
       ipatg.maxcross_ = 0;
       ipatg.mincos_ = std::max(minv_,ipaMinCos_);
+      ipatg.nearfrac_ = nearfrac_;
       zrange(*ipa,ipatg.zreglo_,ipatg.zreghi_);
       tgts.push_back(ipatg);
       auto const& st = *kkg_h->ST();
@@ -191,6 +195,7 @@ namespace mu2e {
         tg.thick_ = st.foilThickness(ifoil);
         tg.maxcross_ = 0;
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
+        tg.nearfrac_ = nearfrac_;
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
         tgts.push_back(tg);
       }
@@ -235,6 +240,7 @@ namespace mu2e {
         tg.thick_ = cyl.thickness_;
         tg.mincos_ = std::max(minv_,dsShellMinCos_);
         tg.rmax_ = cyl.surface_->radius() + 0.5*cyl.thickness_;
+        tg.nearfrac_ = nearfrac_;
         tgts.push_back(tg);
       }
       auto plane = [&](SweepTarget& tg, KinKal::Plane const& pl){
@@ -249,6 +255,7 @@ namespace mu2e {
         tg.plane_ = pmp.surface_;
         tg.mat_ = &*kkmat_h->material(pmp.material_);
         tg.thick_ = pmp.thickness_;
+        tg.nearfrac_ = nearfrac_;
         plane(tg,*pmp.surface_);
         tgts.push_back(tg);
       }
@@ -262,6 +269,7 @@ namespace mu2e {
           tg.mat_ = &*kkmat_h->CRVMaterial();
           tg.thick_ = 2*sector.whw_;
           tg.crvsector_ = &sector;
+          tg.nearfrac_ = crvnearfrac_;
           plane(tg,*sector.sector_);
           tgts.push_back(tg);
         }
@@ -280,6 +288,7 @@ namespace mu2e {
         tg.mat_ = &*kkmat_h->material(*layer.material_);
         tg.thick_ = layer.thickness_;
         tg.pipes_ = layer.pipes_;
+        tg.nearfrac_ = nearfrac_;
         tg.rmax_ = bore;
         tgts.push_back(tg);
       }
@@ -444,8 +453,21 @@ namespace mu2e {
       ktrk.addIntersection(tg.sid_,inter);
       return true;
     }
+    // a near miss (out of bounds, see ExtrapolateSweep) is added as an inactive xing: it has no effect unless a refit moves it in bounds
+    bool near = ExtrapolateSweep::nearMiss(tg,inter);
     double thick = tg.pipes_ ? tg.pipes_->wallDepth(inter.pos_) : tg.thick_;
-    if(tg.crvsector_) thick *= tg.crvsector_->layerFraction(inter.pos_,inter.pdir_); // near a seam, the staggered layers are shared with the next sector
+    if(tg.crvsector_){
+      // near a seam, the staggered layers are shared with the next sector. A near miss uses the closest point on the sector edge
+      auto lpos = inter.pos_;
+      if(near){
+        auto const& rect = *tg.crvsector_->sector_;
+        auto rel = lpos - rect.center();
+        double u = std::clamp(rel.Dot(rect.uDirection()),-rect.uHalfLength(),rect.uHalfLength());
+        double v = std::clamp(rel.Dot(rect.vDirection()),-rect.vHalfLength(),rect.vHalfLength());
+        lpos = rect.center() + u*rect.uDirection() + v*rect.vDirection() + rel.Dot(rect.normal())*rect.normal();
+      }
+      thick *= tg.crvsector_->layerFraction(lpos,inter.pdir_);
+    }
     if(tg.effect_ == SweepTarget::calopanel && thick <= 0.0) return true; // the pipe plane between the pipes
     if(tg.effect_ == SweepTarget::crvsector && thick <= 0.0){ ktrk.addIntersection(tg.sid_,inter); return true; } // inside the envelope but between layers
     // KinKal records why a fit became unusable (e.g. a failed domain walk); the direction just ends
@@ -464,27 +486,27 @@ namespace mu2e {
       case SweepTarget::cylshell:
       case SweepTarget::ipashell: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Cylinder>>(tg.cyl_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         if(tg.effect_ == SweepTarget::cylshell) ktrk.addMaterialCylXing(shell,tdir);
         else ktrk.addIPAXing(shell,tdir);
         return true;
       }
       case SweepTarget::stfoil: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Annulus>>(tg.ann_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addSTXing(shell,tdir);
         return true;
       }
       case SweepTarget::planeshell:
       case SweepTarget::calopanel: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Plane>>(tg.plane_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addMaterialPlaneXing(shell,tdir);
         return true;
       }
       case SweepTarget::crvsector: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Rectangle>>(tg.rect_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addCRVXing(shell,tdir);
         return true;
       }

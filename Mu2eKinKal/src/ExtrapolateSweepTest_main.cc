@@ -739,6 +739,90 @@ namespace {
     require(limited == 1 && unlimited == 2,"notBefore crossings " + std::to_string(limited) + " and " + std::to_string(unlimited));
   }
 
+  // Out-of-bounds crossings are accepted as near misses when enough of the projected position covariance is in bounds;
+  // the near miss doesn't use up its group, and its material xing is inactive so it doesn't split the trajectory.
+  void nearMiss(TimeDir dir, MatEnv::DetMaterial const& material) {
+    using Line = KinKal::KinematicLine;
+    using PTraj = KinKal::ParticleTrajectory<Line>;
+    bool forward = dir == TimeDir::forwards;
+    double const sigma = 1.0; // position sigma (mm)
+    auto makeTraj = [&](double x){
+      KinKal::ParticleState state(VEC3(x,0.0,0.0),VEC3(0.0,30.0,100.0),0.0,105.658,1); // tilted in v: the line parameters are degenerate along z
+      KinKal::DMAT cov;
+      for(unsigned i = 0; i < 6; ++i) cov(i,i) = i < 3 ? sigma*sigma : 1.0e-8;
+      Line line(KinKal::ParticleStateEstimate(state,cov),VEC3(0.0,0.0,0.0),TimeRange(0.0,1.0));
+      line.setRange(TimeRange(0.0,200.0/line.velocity(0.0).Z()));
+      return PTraj(line);
+    };
+    auto rect = std::make_shared<KinKal::Rectangle>(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,100.0),50.0,50.0);
+    auto first = [&](PTraj const& traj, SweepTarget const& tg, bool& found){
+      SweepTargetCollection targets{tg};
+      ExtrapolateSweep sweep(targets,dir,1.0e6,1.0e6,1.0e-4,tol,1.0e-6,0);
+      sweep.start(forward ? traj.range().begin() : traj.range().end());
+      sweep.limit(forward ? traj.range().end() : traj.range().begin(),false);
+      require(!sweep.needsExtrapolation(traj,dir) && !sweep.failed(),"near-miss search failed");
+      found = sweep.hasCrossing();
+      return found ? sweep.crossing().inter_ : KinKal::Intersection();
+    };
+    auto target = [&](double nearfrac){
+      auto tg = planeTarget(*rect,mu2e::SurfaceIdEnum::DS_Front,SweepTarget::planeshell,material);
+      tg.nearfrac_ = nearfrac;
+      return tg;
+    };
+    bool found(false);
+    // in bounds: the projected covariance is filled only for near-miss targets
+    auto inter = first(makeTraj(0.0),target(0.0),found);
+    require(found && inter.inbounds_ && !inter.hascov_,"in-bounds crossing without near misses");
+    inter = first(makeTraj(0.0),target(0.1),found);
+    require(found && inter.inbounds_ && inter.hascov_ && inter.inbfrac_ > 0.999,"in-bounds crossing lacks its bounds fraction");
+    require(std::fabs(std::sqrt(inter.pcov_(0,0))-sigma) < 1.0e-3 && std::fabs(std::sqrt(inter.pcov_(1,1))-sigma*std::sqrt(1.09)) < 1.0e-3,"unexpected projected covariance");
+    // half a sigma out of bounds: about 31% in bounds
+    first(makeTraj(50.5),target(0.0),found);
+    require(!found,"near miss accepted with near misses disabled");
+    inter = first(makeTraj(50.5),target(0.1),found);
+    require(found && !inter.inbounds_ && inter.onsurface_ && inter.hascov_ && std::fabs(inter.inbfrac_-0.3085) < 0.02,"half-sigma near miss");
+    require(ExtrapolateSweep::nearMiss(target(0.1),inter),"near miss not identified");
+    // 3 sigma out: below the default fraction, above a small one
+    first(makeTraj(53.0),target(0.1),found);
+    require(!found,"3-sigma miss accepted at fraction 0.1");
+    inter = first(makeTraj(53.0),target(1.0e-3),found);
+    require(found && !inter.inbounds_ && inter.inbfrac_ > 1.0e-3 && inter.inbfrac_ < 2.0e-3,"3-sigma near miss at fraction 1e-3");
+    // 10 sigma out: rejected by the pre-filter
+    first(makeTraj(60.0),target(1.0e-3),found);
+    require(!found,"10-sigma miss accepted");
+    // a near miss doesn't use up its group: a later in-bounds group member is still crossed
+    {
+      auto traj = makeTraj(50.5);
+      KinKal::Rectangle later(VEC3(0.0,0.0,1.0),VEC3(1.0,0.0,0.0),VEC3(0.0,0.0,forward ? 150.0 : 50.0),100.0,100.0);
+      auto a = target(0.1);
+      auto b = planeTarget(later,mu2e::SurfaceIdEnum::DS_Back,SweepTarget::planeshell,material);
+      a.group_ = b.group_ = 0;
+      SweepTargetCollection targets{a,b};
+      ExtrapolateSweep sweep(targets,dir,1.0e6,1.0e6,1.0e-4,tol,1.0e-6,0);
+      sweep.start(forward ? traj.range().begin() : traj.range().end());
+      sweep.limit(forward ? traj.range().end() : traj.range().begin(),false);
+      require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 0 &&
+          !sweep.crossing().inter_.inbounds_,"grouped near miss not found first");
+      sweep.accept();
+      require(!sweep.needsExtrapolation(traj,dir) && sweep.hasCrossing() && sweep.crossing().itarget_ == 1 &&
+          sweep.crossing().inter_.inbounds_,"near miss used up its group");
+      sweep.accept();
+      require(!sweep.needsExtrapolation(traj,dir) && !sweep.hasCrossing(),"group crossed twice");
+    }
+    // the material of a near miss is inactive and doesn't split the trajectory; an in-bounds crossing does
+    using Shell = mu2e::KKShellXing<Line,KinKal::Rectangle>;
+    for(double x : {0.0,50.5}){
+      auto traj = makeTraj(x);
+      inter = first(traj,target(0.1),found);
+      require(found,"material fixture has no crossing");
+      auto shell = std::make_shared<Shell>(rect,mu2e::SurfaceId(mu2e::SurfaceIdEnum::DS_Front),material,inter,traj.backPtr(),1.0,tol);
+      KinKal::Material<Line> mat(shell,traj);
+      require(mat.active() == inter.inbounds_,"near-miss material activity");
+      mat.extrapolate(traj,dir);
+      require(traj.pieces().size() == (inter.inbounds_ ? 2u : 1u),"inactive material split the trajectory");
+    }
+  }
+
   void emptySearch() {
     KinKal::ParticleState state(VEC3(0.0,0.0,0.0),VEC3(0.0,0.0,100.0),0.0,105.658,1);
     KinKal::KinematicLine line(state,VEC3(0.0,0.0,0.0),TimeRange(0.0,0.1));
@@ -779,6 +863,7 @@ int main() {
       longPlaneQuery<KinKal::LoopHelix>(dir);
       longPlaneQuery<KinKal::CentralHelix>(dir);
       speculativeRecross(dir,*targetMaterial);
+      nearMiss(dir,*targetMaterial);
       for(bool split : {false,true}){
         for(bool windows : {false,true}){
           for(bool reverse : {false,true}){

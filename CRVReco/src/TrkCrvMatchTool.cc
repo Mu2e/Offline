@@ -1,5 +1,4 @@
 #include "Offline/CRVReco/inc/TrkCrvMatchTool.hh"
-#include "Offline/CRVReco/inc/TrkCrvPlaneError.hh"
 #include "Offline/CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Offline/GeometryService/inc/DetectorSystem.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -29,7 +28,7 @@ namespace mu2e {
     for(auto const& s : conf.refSurfaces()) refSurfaces_.emplace_back(s);
   }
 
-  TrkCrvPlaneCov TrkCrvMatchTool::errorModel(TrkCrvCov2 const& cov) const {
+  TrkCrvPlaneCov TrkCrvMatchTool::errorModel(KinKal::PMAT const& cov) const {
     TrkCrvPlaneCov out;
     for(int i = 0; i < 2; ++i)
       for(int j = i; j < 2; ++j) out(i, j) = trkErrScale_ * trkErrScale_ * cov(i, j) + (i == j ? posErrQuad_ * posErrQuad_ : 0.0);
@@ -157,44 +156,6 @@ namespace mu2e {
     }
   }
 
-  bool TrkCrvMatchTool::projectXing(KalSeed const& ks, int shield, double sigT, TrkCrvXing& x) const {
-    auto const& g = sectors_[shield];
-    // the straight line from the KalIntersection nearest in path to the sector's extended mid-plane
-    int kbest = -1;
-    double sbest = 0;
-    for(size_t k = 0; k < ks.intersections().size(); ++k) {
-      auto const& ki = ks.intersections()[k];
-      double dn = ki.momentum3().Unit().Dot(g.w);
-      if(std::fabs(dn) < trkCrvMinCosToNormal) continue;
-      double s = (g.center - ki.position3()).Dot(g.w) / dn;
-      if(kbest < 0 || std::fabs(s) < std::fabs(sbest)) { kbest = static_cast<int>(k); sbest = s; }
-    }
-    if(kbest < 0) return false;
-    auto const& ki = ks.intersections()[kbest];
-    auto d = ki.momentum3().Unit();
-    KinKal::VEC3 p = ki.position3() + sbest * d;
-    KinKal::VEC3 loc = p - g.center;
-    double dEdgeU = g.uHalf - std::fabs(loc.Dot(g.u)), dEdgeV = g.vHalf - std::fabs(loc.Dot(g.v));
-    if(dEdgeU >= 0 && dEdgeV >= 0) return false;   // in-bounds crossings belong to the extrapolation's intersections
-    double speed = std::sqrt(ki.velocity().Mag2());
-    x.sid_ = g.sid;
-    x.inter_ = static_cast<int16_t>(kbest);
-    x.sector_ = static_cast<int16_t>(shield);
-    x.pos_ = XYZVectorF(p.X(), p.Y(), p.Z());
-    x.dir_ = XYZVectorF(d.X(), d.Y(), d.Z());
-    x.time_ = ki.time() + (speed > 0 ? sbest / speed : 0.0);
-    x.inBounds_ = false;
-    x.cov_ = errorModel(trkCrvPlaneCovariance(ki.pstate_.stateCovariance(), ki.momentum3(), g.u, g.v, g.w, sbest));
-    x.sigT_ = sigT;
-    x.mom_ = ki.mom();
-    x.momErr_ = ki.momerr();
-    x.dEdgeU_ = dEdgeU;
-    x.dEdgeV_ = dEdgeV;
-    x.edgeSig_ = (x.sigU() > 0 && x.sigV() > 0) ? std::min(x.dEdgeU_ / x.sigU(), x.dEdgeV_ / x.sigV()) : 0.f;
-    if(layerProbe_) probe(x, speed);
-    return true;
-  }
-
   TrkCrvMatch TrkCrvMatchTool::match(art::Ptr<KalSeed> const& seed, std::vector<art::Ptr<CrvCoincidenceCluster>> const& usedInFit) const {
     auto const& ks = *seed;
     TrkCrvMatch m;
@@ -252,8 +213,9 @@ namespace mu2e {
         x.pos_ = XYZVectorF(p.X(), p.Y(), p.Z());
         x.dir_ = XYZVectorF(d.X(), d.Y(), d.Z());
         x.time_ = ki.time();
-        x.inBounds_ = ki.inBounds();
-        x.cov_ = errorModel(trkCrvPlaneCovariance(ki.pstate_.stateCovariance(), ki.momentum3(), g.u, g.v, g.w, 0.0));
+        x.inBounds_ = ki.inBounds();   // false for a near miss: an out-of-bounds crossing the extrapolation kept for its bounds fraction
+        x.inbFrac_ = ki.intersection().hascov_ ? ki.intersection().inbfrac_ : (x.inBounds_ ? 1.0f : 0.0f);
+        x.cov_ = errorModel(trkCrvXingCovariance(ki, g));
         x.sigT_ = sigT;
         x.mom_ = ki.mom();
         x.momErr_ = ki.momerr();
@@ -265,22 +227,6 @@ namespace mu2e {
         m.xings_.push_back(x);
       }
     }
-    // a straight-line fit with no CRV crossing passes outside every sector: project it onto the extended plane of each
-    // cluster's sector, so that edge clusters get geometric candidates
-    bool projectLine = doGeometric_ && m.xings_.empty() && ks.kinematicLineFit();
-    std::map<int,int16_t> projected;   // cluster shield -> its projected crossing in m.xings_
-    if(projectLine) {
-      std::set<int> shields;
-      for(auto const& ci : cinfo_)
-        if(ci.shield >= 0 && static_cast<size_t>(ci.shield) < sectors_.size() && sectors_[ci.shield].valid) shields.insert(ci.shield);
-      for(int s : shields) {
-        TrkCrvXing x;
-        if(!projectXing(ks, s, sigT, x)) continue;
-        projected[s] = static_cast<int16_t>(m.xings_.size());
-        m.xings_.push_back(x);
-      }
-    }
-
     // candidates
     for(size_t ic = 0; ic < clusters_.size(); ++ic) {
       auto const& ci = cinfo_[ic];
@@ -296,10 +242,7 @@ namespace mu2e {
       // geometric evidence: project from the CRV crossing nearest in path to the cluster's plane (straight line outside the field)
       int bestx = -1; double bds = 1e30;
       bool hasPlane = ci.shield >= 0 && static_cast<size_t>(ci.shield) < sectors_.size() && sectors_[ci.shield].valid;
-      if(hasPlane && projectLine) {   // a projected line: from the projection onto the cluster's own sector
-        auto ip = projected.find(ci.shield);
-        if(ip != projected.end()) bestx = ip->second;
-      } else if(hasPlane) {
+      if(hasPlane) {
         auto const& g = sectors_[ci.shield];
         for(size_t k = 0; k < m.xings_.size(); ++k) {
           if(requireSameSector_ && m.xings_[k].sector_ != ci.shield) continue;
@@ -325,10 +268,8 @@ namespace mu2e {
         c.du_ = r.Dot(g.u);
         c.dv_ = r.Dot(g.v);
         c.dtXing_ = ci.time - tp;
-        // track covariance on the cluster's plane: the reference crossing's covariance carried over the straight step;
-        // a projected crossing carries that of the intersection it was projected from, over the step from there
-        double dsCov = ki.surfaceId() == x.sid_ ? ds : (ci.pos - ki.position3()).Dot(g.w) / dn;
-        c.cov_ = errorModel(trkCrvPlaneCovariance(ki.pstate_.stateCovariance(), ki.momentum3(), g.u, g.v, g.w, dsCov));
+        // track covariance on the cluster's plane: the reference crossing's covariance carried over the straight step
+        c.cov_ = errorModel(trkCrvPlaneCovariance(ki, g, pp, tp));
         double sv = resolution(sigmaV_, ci.sectorType), su = resolution(sigmaU_, ci.sectorType);
         double st = ci.singleEnded ? sigmaTSingle_ : resolution(sigmaT_, ci.sectorType);
         c.chi2_ = c.dtXing_*c.dtXing_/(st*st + x.sigT_*x.sigT_);
@@ -356,17 +297,6 @@ namespace mu2e {
         m.cands_.push_back(c);
       }
     }
-    if(!projected.empty()) {   // keep only the projected crossings a geometric candidate refers to, in sector order
-      std::vector<bool> used(m.xings_.size(), false);
-      for(auto const& c : m.cands_) if(c.xing_ >= 0) used[c.xing_] = true;
-      std::vector<int16_t> remap(m.xings_.size(), -1);
-      std::vector<TrkCrvXing> kept;
-      for(size_t k = 0; k < m.xings_.size(); ++k)
-        if(used[k]) { remap[k] = static_cast<int16_t>(kept.size()); kept.push_back(std::move(m.xings_[k])); }
-      m.xings_ = std::move(kept);
-      for(auto& c : m.cands_) if(c.xing_ >= 0) c.xing_ = remap[c.xing_];
-    }
-
     // rank: geometric by chi2, then time-only by distance from the time centre
     std::stable_sort(m.cands_.begin(), m.cands_.end(), [&](TrkCrvCandidate const& a, TrkCrvCandidate const& b) {
       bool ga = a.hasFlag(TrkCrvCandidate::geomCand), gb = b.hasFlag(TrkCrvCandidate::geomCand);

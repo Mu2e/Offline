@@ -133,6 +133,8 @@ namespace mu2e {
       fhicl::Atom<bool> ToCaloD0 { Name("ToCaloD0"), Comment("Extrapolate tracks to the calorimeter disk0 surfaces") };
       fhicl::Atom<bool> ToCaloD1 { Name("ToCaloD1"), Comment("Extrapolate tracks to the calorimeter disk1 surfaces") };
       fhicl::Atom<bool> ToCaloMaterial { Name("ToCaloMaterial"), Comment("Add material effects from the calorimeter front panels when extrapolating to the calorimeter disks"), false };
+      fhicl::Atom<float> NearMissFraction { Name("NearMissFraction"), Comment("Record out-of-bounds material crossings (as inactive material) when at least this fraction of the projected position covariance is in bounds; 0 to disable"), 0.0 };
+      fhicl::Atom<float> CRVNearMissFraction { Name("CRVNearMissFraction"), Comment("NearMissFraction for the CRV sectors"), 0.0 };
     };
   }
 }

@@ -34,13 +34,13 @@ class ValTrkCrvMatchMC {
   TH1D* _hTrueCluBest;
   TH1D* _hRecoXing;
   TH1D* _hRecoXingTrue;
-  TH1D* _hRecoXingProj;
-  TH1D* _hRecoXingProjTrue;
+  TH1D* _hRecoXingNear;
+  TH1D* _hRecoXingNearTrue;
   TH1D* _hTrueXing;
   TH1D* _hTrueXingFound;
-  TH1D* _hTrueXingProj;
+  TH1D* _hTrueXingNear;
   TH2D* _hXingDist;
-  TH2D* _hXingDistProj;
+  TH2D* _hXingDistNear;
   TH2D* _hXingDt;
 };
 }  // namespace mu2e

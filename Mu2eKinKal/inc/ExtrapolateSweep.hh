@@ -9,6 +9,10 @@
 // - Stop: nothing driving is reachable (reachable), MaxDt passes without a crossing, a terminal target is crossed, a watched reflection occurs, or the search fails (error()).
 // - Limit: limit(t,recordonly) caps the search at t (optionally to record targets only); KKExtrap uses it for the fitted trajectory before the end piece, where no material can be added, and unlimit() removes the cap.
 // - Re-crossing guard: a plane, CRV sector or foil is crossed again only after the trajectory has left the slab of half-width intertol around it (departed).
+// - Near misses: a target with nearfrac_ > 0 also accepts an out-of-bounds crossing when at least that fraction of the trajectory position covariance,
+//   projected onto the surface, lies within the surface bounds (KinKal::Intersection::inbfrac_).  KKExtrap adds it like an in-bounds crossing; its
+//   material xing is inactive (it has no effect unless a refit moves it in bounds), and it doesn't count against maxcross_ or the target group.
+//   The projected covariance is filled for every crossing of such a target.
 // - Planes: the signed plane distance of a helix or line is monotonic between the extrema of its normal velocity, which are known in closed form (visitPlaneExtrema), so plane roots are bracketed and bisected (planeCrossing); cylinders use KinKal::intersect.
 // Adding a material target: see KKExtrap::targets and KKExtrap::addCrossing.
 #ifndef Mu2eKinKal_ExtrapolateSweep_hh
@@ -17,6 +21,7 @@
 #include "KinKal/General/TimeRange.hh"
 #include "KinKal/General/Vectors.hh"
 #include "KinKal/Geometry/Intersection.hh"
+#include "KinKal/Geometry/Intersect.hh"
 #include "KinKal/Geometry/ParticleTrajectoryIntersect.hh"
 #include "KinKal/Geometry/Annulus.hh"
 #include "KinKal/Geometry/Cylinder.hh"
@@ -68,6 +73,7 @@ namespace mu2e {
     bool drives_ = true; // keep extending while this target is reachable
     bool terminal_ = false; // a crossing ends the sweep
     bool inbounds_ = true; // require the crossing inside the surface bounds
+    double nearfrac_ = 0.0; // if inbounds_, also accept out-of-bounds crossings (near misses) with at least this fraction of the projected position covariance in bounds; 0 to disable
     bool active_ = true; // initial state; the upstream reflection logic switches targets on and off
     double mincos_ = 0.0; // minimum |cos| between the surface normal and the direction at the crossing
     double rmax_ = inf; // unreachable beyond this transverse radius when moving outward (mm)
@@ -79,9 +85,10 @@ namespace mu2e {
   class ExtrapolateSweep {
     public:
       struct Crossing { size_t itarget_ = 0; KinKal::Intersection inter_; };
+      static bool nearMiss(SweepTarget const& tg, KinKal::Intersection const& inter) { return tg.inbounds_ && !inter.inbounds_; } // an accepted out-of-bounds crossing of a target requiring bounds
       ExtrapolateSweep(SweepTargetCollection const& targets, KinKal::TimeDir tdir, double maxdt, double maxdtstep, double dptol,
           double intertol, double minv, int debug) : targets_(targets), tdir_(tdir), maxDt_(maxdt), maxDtStep_(maxdtstep),
-      dptol_(dptol), intertol_(intertol), minv_(minv), debug_(debug), active_(targets.size()), count_(targets.size(),0),
+      dptol_(dptol), intertol_(intertol), minv_(minv), debug_(debug), active_(targets.size()), count_(targets.size(),0), seen_(targets.size(),false),
       tlast_(targets.size(),0.0), coslast_(targets.size(),1.0), notbefore_(targets.size(),std::numeric_limits<double>::quiet_NaN()),
       guarded_(targets.size(),false), planes_(targets.size(),nullptr), cylinders_(targets.size(),nullptr) {
         for(size_t itg = 0; itg < targets_.size(); ++itg){
@@ -121,6 +128,7 @@ namespace mu2e {
       template <class KTRAJ, class VISIT> bool visitPlaneExtrema(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& range, VISIT&& visit) const; // times where the plane distance is extremal, in sweep order
       template <class KTRAJ> KinKal::Intersection planeCrossing(KTRAJ const& piece, KinKal::Plane const& plane, KinKal::TimeRange const& query) const; // first plane root in query, bracketed between extrema
       template <class KTRAJ> void ownBoundary(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const; // move a root on a piece edge just inside that piece
+      template <class KTRAJ> bool nearMissCrossing(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const; // fill the projected covariance of an out-of-bounds crossing and test its bounds fraction
       template <class KTRAJ> bool departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, size_t itg, double accepted, double proposed) const; // the trajectory left the plane's tolerance slab between two crossing times
       template <class KTRAJ> bool reachable(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const; // a driving target can still be crossed from the trajectory end
       SweepTargetCollection const& targets_;
@@ -128,7 +136,8 @@ namespace mu2e {
       double maxDt_, maxDtStep_, dptol_, intertol_, minv_;
       int debug_;
       std::vector<bool> active_; // per target
-      std::vector<unsigned> count_; // crossings processed per target
+      std::vector<unsigned> count_; // crossings processed per target, excluding near misses
+      std::vector<bool> seen_; // a crossing (including a near miss) was processed for this target
       std::vector<double> tlast_; // time of the last processed crossing per target
       std::vector<double> coslast_; // |cos| between the surface normal and the direction at that crossing
       std::vector<double> notbefore_; // per target, NaN for no limit
@@ -164,7 +173,8 @@ namespace mu2e {
       double along = rel.Dot(cyl.axis());
       double rho = (rel - along*cyl.axis()).R();
       if(std::fabs(rho - cyl.radius()) > reach) return false;
-      return !targets_[itg].inbounds_ || std::fabs(along) <= cyl.halfLength() + reach;
+      // a near miss can be beyond the bounds by several position sigma, which aren't known here
+      return !targets_[itg].inbounds_ || targets_[itg].nearfrac_ > 0.0 || std::fabs(along) <= cyl.halfLength() + reach;
     }
     return true;
   }
@@ -174,12 +184,17 @@ namespace mu2e {
     auto itg = crossing_.itarget_;
     auto const& tg = targets_[itg];
     double time = crossing_.inter_.time_;
-    ++count_[itg];
+    bool near = nearMiss(tg,crossing_.inter_);
+    // a near miss doesn't use up the target or its group: the track can still cross it (or a group member) in bounds
+    if(!near){
+      ++count_[itg];
+      if(tg.group_ >= 0) doneGroups_.push_back(tg.group_);
+    }
+    seen_[itg] = true;
     tlast_[itg] = time;
     coslast_[itg] = std::fabs(crossing_.inter_.norm_.Dot(crossing_.inter_.pdir_));
-    if(tg.group_ >= 0) doneGroups_.push_back(tg.group_);
     guarded_[itg] = (tg.effect_ == SweepTarget::planeshell || tg.effect_ == SweepTarget::crvsector || tg.effect_ == SweepTarget::stfoil) &&
-      tg.pl_ && tg.surf_->inBounds(crossing_.inter_.pos_,intertol_);
+      tg.pl_ && (near || tg.surf_->inBounds(crossing_.inter_.pos_,intertol_));
     searched_ = time;
     found_ = false;
   }
@@ -328,6 +343,20 @@ namespace mu2e {
     return result;
   }
 
+  template <class KTRAJ> bool ExtrapolateSweep::nearMissCrossing(KTRAJ const& piece, SweepTarget const& tg, KinKal::Intersection& inter) const {
+    // cheap pre-filter: the projected covariance's largest sigma bounds how far out of bounds a near miss can be
+    static constexpr double dirtol = 1.0e-10; // minimum |cos| between the particle direction and the surface normal for a covariance projection
+    auto tplane = tg.surf_->tangentPlane(inter.pos_);
+    if(std::fabs(tplane.normal().Dot(inter.pdir_)) < 2*dirtol) return false;
+    auto pcov = piece.planeCovariance(inter.time_,KinKal::Plane(tplane.normal(),tplane.uDirection(),inter.pos_),dirtol);
+    double trace = pcov(0,0)+pcov(1,1), det = pcov(0,0)*pcov(1,1)-pcov(0,1)*pcov(1,0);
+    double lmax = 0.5*(trace + std::sqrt(std::max(trace*trace-4.0*det,0.0)));
+    static constexpr double nsigma = 5.0; // KinKal::boundsFraction integrates the Gaussian out to 5 sigma
+    if(!std::isfinite(lmax) || !(lmax > 0.0) || !tg.surf_->inBounds(inter.pos_,nsigma*std::sqrt(lmax))) return false;
+    KinKal::fillPlaneCovariance(piece,*tg.surf_,inter,intertol_,dirtol);
+    return inter.hascov_ && inter.inbfrac_ >= tg.nearfrac_;
+  }
+
   template <class KTRAJ> bool ExtrapolateSweep::departed(KinKal::ParticleTrajectory<KTRAJ> const& ptraj,
       size_t itg, double accepted, double proposed) const {
     // Candidate searches are speculative: only the current trajectory between the accepted and proposed crossings is a witness.
@@ -391,7 +420,7 @@ namespace mu2e {
     // a track at incidence |cos| stays within the tolerance for about tolerance/|cos| of path; skip past it before finding this target again
     double leave = tg.mincos_ > 0.0 ? 2.0*intertol_/(std::max(coslast_[itg],tg.mincos_)*speed) : 0.0;
     double guard = std::max(step,leave);
-    if(count_[itg] > 0) ts = sgn > 0.0 ? std::max(ts,tlast_[itg]+guard) : std::min(ts,tlast_[itg]-guard);
+    if(seen_[itg]) ts = sgn > 0.0 ? std::max(ts,tlast_[itg]+guard) : std::min(ts,tlast_[itg]-guard);
     if(std::isfinite(notbefore_[itg])) ts = sgn > 0.0 ? std::max(ts,notbefore_[itg]) : std::min(ts,notbefore_[itg]);
     auto const* plane = dynamic_cast<KinKal::Plane const*>(tg.surf_);
     unsigned nroot(0);
@@ -425,7 +454,8 @@ namespace mu2e {
       if(sgn*(inter.time_ - ts) < 0.0 || sgn*(stop - inter.time_) < 0.0) return false;
       if(!inter.inrange_) throw std::runtime_error("KKExtrap: surface root has no owning piece");
       bool grazing = std::fabs(inter.norm_.Dot(inter.pdir_)) < tg.mincos_;
-      if((inter.inbounds_ || !tg.inbounds_) && !grazing && (!guarded_[itg] || departed(ptraj,itg,tlast_[itg],inter.time_))) return true;
+      bool near = !inter.inbounds_ && tg.inbounds_ && tg.nearfrac_ > 0.0 && !grazing && nearMissCrossing(piece,tg,inter);
+      if((inter.inbounds_ || !tg.inbounds_ || near) && !grazing && (!guarded_[itg] || departed(ptraj,itg,tlast_[itg],inter.time_))) return true;
       // Roots within four intersection tolerances of path length are unresolved by this search; a grazing track first leaves the tolerance.
       double next = inter.time_ + sgn*(grazing ? std::max(step,2.0*intertol_/(tg.mincos_*speed)) : step);
       if(!std::isfinite(next) || sgn*(next - ts) <= 0.0)
@@ -446,6 +476,7 @@ namespace mu2e {
       KinKal::TimeRange window(std::min(t0,t1),std::max(t0,t1));
       bool found(false);
       Crossing best;
+      size_t bestpiece(0);
       size_t first = ptraj.nearestIndex(window.begin());
       size_t last = ptraj.nearestIndex(window.end());
       for(size_t ip = first; ip <= last; ++ip){
@@ -464,10 +495,14 @@ namespace mu2e {
             found = true;
             best.itarget_ = itg;
             best.inter_ = inter;
+            bestpiece = ip;
           }
         }
       }
       if(found){
+        // the projected covariance of a near-miss target crossing (filled already for a near miss), only for the winning candidate as it is costly
+        if(targets_[best.itarget_].nearfrac_ > 0.0 && !best.inter_.hascov_)
+          KinKal::fillPlaneCovariance(ptraj.piece(bestpiece),*targets_[best.itarget_].surf_,best.inter_,intertol_);
         crossing_ = best;
         found_ = true;
         searched_ = t0;
