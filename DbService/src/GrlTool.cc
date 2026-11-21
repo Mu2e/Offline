@@ -477,46 +477,51 @@ int GrlTool::genList(const std::string& comFile, const std::string& base) {
       // and can remove and replace the iovs
       // start with the current list of good runs
       std::list<DbIoV> ivl(iv.begin(), iv.end());
-      auto it = ivl.begin();
-      while (it != ivl.end()) {
+      // take each rejecting entry in turn and cut it out of every interval
+      // of the list. Erasing returns the next element, which is either a
+      // surviving piece just inserted (it no longer overlaps this entry) or
+      // the next original interval, so the list is walked without skipping.
+      for (auto const& ee : _entries) {
         if (_verbose > 5)
-          std::cout << "ivl " << it->to_string(true) << std::endl;
-        for (auto const& ee : _entries) {
+          std::cout << "entry " << ee.iov().to_string(true) << std::endl;
+        if (ee.name() != name || ee.retired() != 0 ||
+            (ee.value() & mask) == 0)
+          continue;
+        auto it = ivl.begin();
+        while (it != ivl.end()) {
           if (_verbose > 5)
-            std::cout << "entry " << ee.iov().to_string(true) << std::endl;
-          if (ee.name() == name && ee.retired() == 0 &&
-              (ee.value() & mask) != 0) {
-            int iover = it->isOverlapping(ee.iov());
-            if (iover == 3 || iover == 4) {
-              // there is a late piece of the grl iov that should continue
-              DbIoV iiov = *it;
-              // subtract bad runs, ee.iov, from grl, keeping the early part
-              iiov.subtract(ee.iov(), iiov.endRun(), iiov.endSubrun());
-              // insert the surviving piece
-              if (_verbose > 5)
-                std::cout << "insert1 " << iiov.to_string(true) << std::endl;
-              ivl.insert(std::next(it), iiov);
-            }
-            if (iover == 2 || iover == 4) {
-              // there is a early piece of the grl iov that should continue
-              DbIoV iiov = *it;
-              // subtract bad runs, ee.iov, from grl, keeping the early part
-              iiov.subtract(ee.iov(), iiov.startRun(), iiov.startSubrun());
-              // insert the surviving piece
-              if (_verbose > 5)
-                std::cout << "insert2 " << iiov.to_string(true) << std::endl;
-              ivl.insert(std::next(it), iiov);
-            }
-            if (iover != 0) {
-              // then the old grl iov was rejected or split, remove original
-              if (_verbose > 5)
-                std::cout << "erase " << it->to_string(true) << std::endl;
-              it = ivl.erase(it);
-            }
-          }  // iff ee is relevant
-        }    // loop over entries
-        it++;
-      }
+            std::cout << "ivl " << it->to_string(true) << std::endl;
+          int iover = it->isOverlapping(ee.iov());
+          if (iover == 0) {
+            it++;
+            continue;
+          }
+          if (iover == 3 || iover == 4) {
+            // there is a late piece of the grl iov that should continue
+            DbIoV iiov = *it;
+            // subtract bad runs, ee.iov, from grl, keeping the late part
+            iiov.subtract(ee.iov(), iiov.endRun(), iiov.endSubrun());
+            // insert the surviving piece
+            if (_verbose > 5)
+              std::cout << "insert1 " << iiov.to_string(true) << std::endl;
+            ivl.insert(std::next(it), iiov);
+          }
+          if (iover == 2 || iover == 4) {
+            // there is a early piece of the grl iov that should continue
+            DbIoV iiov = *it;
+            // subtract bad runs, ee.iov, from grl, keeping the early part
+            iiov.subtract(ee.iov(), iiov.startRun(), iiov.startSubrun());
+            // insert the surviving piece
+            if (_verbose > 5)
+              std::cout << "insert2 " << iiov.to_string(true) << std::endl;
+            ivl.insert(std::next(it), iiov);
+          }
+          // the old grl iov was rejected or split, remove original
+          if (_verbose > 5)
+            std::cout << "erase " << it->to_string(true) << std::endl;
+          it = ivl.erase(it);
+        }  // loop over the list
+      }    // loop over entries
       // after these mecanations, need to save the result for next action
       ivout.clear();
       for (const auto& x : ivl) {

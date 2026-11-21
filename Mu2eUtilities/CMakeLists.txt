@@ -21,6 +21,7 @@ cet_make_library(
       src/McUtilsToolBase.cc
       src/MedianCalculator.cc
       src/ModuleHistToolBase.cc
+      src/MuCapChargedSpectrum.cc
       src/MuonCaptureSpectrum.cc
       src/MVATools.cc
       src/ParametricFit.cc

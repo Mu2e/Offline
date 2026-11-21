@@ -3,6 +3,8 @@
 #include "Offline/ConfigTools/inc/checkForStale.hh"
 #include "Offline/DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "Offline/BeamlineGeom/inc/TSdA.hh"
+#include "Offline/BeamlineGeom/inc/Beamline.hh"
+#include "Offline/BeamlineGeom/inc/StraightSection.hh"
 #include "Offline/GeometryService/inc/TSdAMaker.hh"
 
 // C++ includes
@@ -18,11 +20,19 @@
 
 namespace mu2e {
 
-  std::unique_ptr<TSdA> TSdAMaker::make(const SimpleConfig& c, const DetectorSolenoid& ds ) {
+  std::unique_ptr<TSdA> TSdAMaker::make(const SimpleConfig& c, const DetectorSolenoid& ds, const Beamline& beamline ) {
 
     checkForStale( "intneutronabs", c );
 
     std::unique_ptr<TSdA> tsda ( new TSdA() );
+
+    // inner radius: the TS5 inner cryostat radius if not provided
+    tsda->_rIn         = c.getDouble("tsda.rin",0.0);
+    if ( tsda->_rIn < 1.0e-06 ) {
+      StraightSection const* ts5out = beamline.getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
+                                                                                    TransportSolenoid::TSRadialPart::IN );
+      tsda->_rIn = ts5out->rIn();
+    }
 
     tsda->_r4          = c.getDouble("tsda.r4");
 

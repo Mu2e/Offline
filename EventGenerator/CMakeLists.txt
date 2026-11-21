@@ -594,6 +594,28 @@ cet_build_plugin(MuCapDeuteronGenerator art::tool
       Offline::Mu2eUtilities
 )
 
+cet_build_plugin(MuCapTritonGenerator art::tool
+    REG_SOURCE src/MuCapTritonGenerator_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+      
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
+cet_build_plugin(MuCapAlphaGenerator art::tool
+    REG_SOURCE src/MuCapAlphaGenerator_tool.cc
+    LIBRARIES REG
+      Offline::EventGenerator
+      
+      Offline::DataProducts
+      Offline::GlobalConstantsService
+      Offline::MCDataProducts
+      Offline::Mu2eUtilities
+)
+
 cet_build_plugin(MuCapNeutronGenerator art::tool
     REG_SOURCE src/MuCapNeutronGenerator_tool.cc
     LIBRARIES REG

@@ -49,8 +49,6 @@ namespace mu2e {
   void constructTSdA(SimpleConfig const & _config){
 
     int const verbosityLevel = _config.getInt("tsda.verbosityLevel",0);
-    double tmpRin = _config.getDouble("tsda.rin",0.0)*CLHEP::mm;
-
 
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( _config, "tsda", "tsda");
@@ -71,13 +69,7 @@ namespace mu2e {
     GeomHandle<TSdA> atsd;
 
     int version = atsd->version();
-    if ( tmpRin < 1.0e-06 ) {  // just a check for zero
-      // TS5 outer radius
-      GeomHandle<Beamline> beamg;
-      const StraightSection * ts5out = beamg->getTS().getTSCryo<StraightSection>( TransportSolenoid::TSRegion::TS5,
-                                                                                  TransportSolenoid::TSRadialPart::IN );
-      tmpRin = ts5out->rIn();
-    }
+    double const tmpRin = atsd->rIn(); // TS5 inner cryostat radius if tsda.rin is not provided
     if ( verbosityLevel > 0) {
       cout << __func__ << " TSdA rin                      : "<< tmpRin << endl;
       cout << __func__ << " TSdA rout                          : "<< atsd->r4() << endl;

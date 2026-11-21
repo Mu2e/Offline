@@ -511,7 +511,9 @@ Mu2eKinKal : {
       @table::Mu2eKinKal.KKFIT
       MaxSeedStrawHitDt : 200.0 # ns; drop seed hits whose TOCA lands on another turn of the seed helix
       AddCaloMaterial : true
-      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back"] # these are additional surfaces; surfaces used in extrapolation are also sampled
+      # these are additional surfaces; surfaces used in extrapolation are also sampled. TS5_Face records where the upstream
+      # extrapolation reaches the TSDA inside the DS bore; for downstream fits it comes from the backwards extrapolation, so it is not by itself a cosmic tag
+      SampleSurfaces : ["ST_Outer","ST_Front","ST_Back","TS5_Face"]
       # save trajectories in the Detector region
       SaveDomains : true
       SaveTrajectory : Detector
@@ -674,7 +676,7 @@ Mu2eKinKal : {
     }
     KKFitSettings: {
       @table::Mu2eKinKal.KKFIT
-      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back"]
+      SampleSurfaces : ["ST_Outer","ST_Inner","ST_Front","ST_Back","TS5_Face"]
       AddHits : false
       SaveDomains : true
       SaveTrajectory : Full

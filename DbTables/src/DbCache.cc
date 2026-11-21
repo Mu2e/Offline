@@ -26,12 +26,12 @@ void mu2e::DbCache::purge() {
   if (_size < _limitSize) return;
 
   _nPurges++;
-  while (_size > _purgeEnd * _limitSize) {
+  while (!_cidFifo.empty() && _size > _purgeEnd * _limitSize) {
     int cid = _cidFifo.front();
     _cidFifo.pop();
     auto it = _tables.find(cid);
     if (it != _tables.end()) {
-      _size = -it->second->size();
+      _size -= it->second->size();
       _nPurged++;
       _tables.erase(it);
     }

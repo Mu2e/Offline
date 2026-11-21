@@ -14,6 +14,8 @@
 //   material xing is inactive (it has no effect unless a refit moves it in bounds), and it doesn't count against maxcross_ or the target group.
 //   The projected covariance is filled for every crossing of such a target.
 // - Planes: the signed plane distance of a helix or line is monotonic between the extrema of its normal velocity, which are known in closed form (visitPlaneExtrema), so plane roots are bracketed and bisected (planeCrossing); cylinders use KinKal::intersect.
+//   TEMPORARY: this works around KFTrack/KinKal#233 (KinKal::intersect can return a plane root outside the query). Once Offline uses a KinKal release
+//   with KFTrack/KinKal#235, remove visitPlaneExtrema and planeCrossing and use KinKal::intersect for planes too.
 // Adding a material target: see KKExtrap::targets and KKExtrap::addCrossing.
 #ifndef Mu2eKinKal_ExtrapolateSweep_hh
 #define Mu2eKinKal_ExtrapolateSweep_hh
