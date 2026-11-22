@@ -1,5 +1,6 @@
 #include "Offline/EventDisplay/src/ContentSelector.h"
 #include "art/Framework/Principal/SubRun.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e_eventdisplay
 {
@@ -31,6 +32,39 @@ void ContentSelector::firstLoop()  //This is useful for now, but may be changed 
 
   _selectedHitFlagEntry="Nothing Selected";
   _selectedHitPositionEntry="Nothing Selected";
+}
+
+void ContentSelector::selectByName(std::string const &trackerHits, std::string const &caloHits,
+                                   std::string const &crvHits, std::vector<std::string> const &tracks)
+{
+  auto entryList=[](std::vector<entryStruct> const &entries)
+  {
+    std::string list;
+    for(auto const &e : entries) list+="\n  \""+e.entryText+"\"";
+    return list;
+  };
+  auto selectInCombo=[&entryList](TGComboBox *box, std::vector<entryStruct> const &entries,
+                                  std::string const &name, std::string const &what)
+  {
+    if(name.empty()) return;
+    TGLBEntry *entry=box->FindEntry(name.c_str());
+    if(entry==nullptr) throw cet::exception("EventDisplay")<<"\""<<name<<"\" is not offered as "<<what
+                                                        <<" for this event. The list has:"<<entryList(entries)<<"\n";
+    box->Select(entry->EntryId());
+  };
+  selectInCombo(_hitBox,     _hitEntries,     trackerHits, "tracker hits");
+  selectInCombo(_caloHitBox, _caloHitEntries, caloHits,    "calorimeter hits");
+  selectInCombo(_crvHitBox,  _crvHitEntries,  crvHits,     "CRV hits");
+
+  if(tracks.empty()) return;
+  for(auto const &name : tracks)
+  {
+    if(_trackBox->FindEntry(name.c_str())==nullptr)
+      throw cet::exception("EventDisplay")<<"\""<<name<<"\" is not offered as tracks for this event. The list has:"
+                                          <<entryList(_trackEntries)<<"\n";
+  }
+  for(auto const &e : _trackEntries) _trackBox->Select(e.entryID, false);
+  for(auto const &name : tracks) _trackBox->Select(_trackBox->FindEntry(name.c_str())->EntryId(), true);
 }
 
 template<class CollectionType>

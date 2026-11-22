@@ -19,6 +19,7 @@
 
 #include "TApplication.h"
 #include "TGMsgBox.h"
+#include "TROOT.h"
 
 #include "Offline/EventDisplay/src/EventDisplayFrame.h"
 #include "Offline/EventDisplay/src/RootFileManager.h"
@@ -43,6 +44,7 @@ namespace mu2e
                                                          bool &showEvent);
     mu2e_eventdisplay::EventDisplayFrame *_frame;
     bool _firstLoop;
+    bool _batchMode;  //imageOutput: images get saved without waiting for the user and without an X display
 
     fhicl::ParameterSet _pset;
 
@@ -54,11 +56,15 @@ namespace mu2e
     art::EDAnalyzer(pset),
     _frame(0),
     _firstLoop(true),
+    _batchMode(mu2e_eventdisplay::EventDisplayFrame::hasImageOutput(pset)),
     _pset(pset)
   {}
 
   void EventDisplay::beginJob()
   {
+    //ROOT's batch mode has to be chosen before the TApplication gets created
+    if(_batchMode) gROOT->SetBatch(kTRUE);
+
     //Bare pointer are needed for gApplication and _mainframe to avoid
     //that the destructor for these two objects gets called, i.e.
     //there cannot be a "delete" for these two objects.
@@ -79,11 +85,15 @@ namespace mu2e
     auto const& calib = _calib_h.get(event.id());  //needed to get the Crv pedestals
     if(_firstLoop)
     {
-      int x,y;
-      unsigned int width,height;
-      gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(),x,y,width,height);
-      width-=30;
-      height-=70;
+      unsigned int width=1570, height=1080;  //batch mode: nominal window size; the image size is set separately
+      if(_batchMode) mu2e_eventdisplay::EventDisplayFrame::prepareBatchMode();
+      else
+      {
+        int x,y;
+        gVirtualX->GetWindowSize(gClient->GetRoot()->GetId(),x,y,width,height);
+        width-=30;
+        height-=70;
+      }
       _frame = new mu2e_eventdisplay::EventDisplayFrame(gClient->GetRoot(), width, height, _pset);
       if(!_frame->isClosed()) _frame->fillGeometry();
     }
@@ -140,7 +150,11 @@ namespace mu2e
 
   void EventDisplay::endJob()
   {
+    if(_frame==nullptr) return;  //no event was processed
     _frame->getRootFileManager()->write();
+    //batch mode: nobody to show a message box to, and CloseWindow() would end the process
+    //(gApplication->Terminate outside of gApplication->Run)
+    if(_frame->isBatchMode()) return;
     if(!_frame->isClosed())
     {
       bool findEvent=false;

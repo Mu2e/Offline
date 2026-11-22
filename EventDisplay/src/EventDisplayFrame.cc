@@ -36,16 +36,93 @@ using namespace std;
 #include "Offline/CRVConditions/inc/CRVCalib.hh"
 
 #include "fhiclcpp/ParameterSet.h"
+#include "cetlib_except/exception.h"
 
+#include "TASImage.h"
+#include "TError.h"
+#include "TGClient.h"
 #include "TGGC.h"
 #include "TGFont.h"
 #include "TClass.h"
 #include "TClassMenuItem.h"
 
 #include <iostream>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace
+{
+  //gives access to the protected function TASImage::InitVisual
+  struct ASImageVisual : public TASImage
+  {
+    static void init() {InitVisual();}
+  };
+
+  //Without a window system, ROOT complains while the GUI objects get built: a canvas has no size before it
+  //gets one from the frame, and icons cannot be turned into pixmaps. art makes an exception out of every
+  //ROOT warning or error, so these expected ones are dropped. Everything else goes to the previous handler.
+  ErrorHandlerFunc_t previousErrorHandler=nullptr;
+  void batchModeErrorHandler(int level, Bool_t abort, const char *location, const char *msg)
+  {
+    const std::string message(msg!=nullptr ? msg : "");
+    if(level<kSysError)
+    {
+      if(message.find("zero dimension")!=std::string::npos) return;    //TCanvas::ResizePad, TPad::ResizePad
+      if(message.find(".xpm not found")!=std::string::npos) return;    //TGComboBox, TGNumberEntry
+      if(message.find("pixmap not found")!=std::string::npos) return;  //TGPictureButton
+    }
+    if(previousErrorHandler!=nullptr) previousErrorHandler(level,abort,location,msg);
+  }
+
+  //drops the expected messages as long as it exists
+  class ExpectedRootMessages
+  {
+    public:
+    explicit ExpectedRootMessages(bool active) : _active(active)
+    {
+      if(_active) previousErrorHandler=SetErrorHandler(batchModeErrorHandler);
+    }
+    ~ExpectedRootMessages()
+    {
+      if(_active) SetErrorHandler(previousErrorHandler);
+    }
+    ExpectedRootMessages(const ExpectedRootMessages&) = delete;
+    ExpectedRootMessages& operator=(const ExpectedRootMessages&) = delete;
+
+    private:
+    bool _active;
+  };
+}
 
 namespace mu2e_eventdisplay
 {
+
+bool EventDisplayFrame::hasImageOutput(fhicl::ParameterSet const &pset)
+{
+  return pset.has_key("imageOutput");
+}
+
+void EventDisplayFrame::prepareBatchMode()
+{
+  if(!gROOT->IsBatch()) throw cet::exception("EventDisplay")<<"imageOutput needs ROOT's batch mode\n";
+
+  //the GUI objects get built on ROOT's batch graphics system, which needs no X display
+  if(gClient==nullptr) new TGClient();
+  if(gClient==nullptr || gClient->IsZombie())
+    throw cet::exception("EventDisplay")<<"imageOutput: could not make ROOT's GUI client\n";
+
+  //Workaround for a ROOT problem (seen with ROOT 6.32.06 and 6.38.00): in batch mode, TASImage gives
+  //libAfterImage a fake display pointer (1), and reading an XPM icon which uses named colors
+  //(scroll bars, combo boxes) then crashes in asim_parse_argb_color; in ROOT alone:
+  //  root -b -e 'TImage::Open(TROOT::GetDataDir()+"/icons/arrow_left.xpm")'
+  //With a null pointer the color lookup through X is skipped. Icons are not shown in batch mode.
+  //The display pointer is the first member of ASVisual.
+  ASImageVisual::init();
+  void **display=reinterpret_cast<void**>(const_cast<ASVisual*>(TASImage::GetVisual()));
+  if(display!=nullptr && *display==reinterpret_cast<void*>(1)) *display=nullptr;
+}
 
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
   TGMainFrame(p, w, h),
@@ -57,6 +134,40 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _protonBunchTimeLabel(pset.get<std::string>("protonBunchTimeTag","EWMProducer")),
   _kalStepSize(pset.get<double>("kalSeedStepSize"))
 {
+  //batch mode: save images of every event without waiting for the user, and without an X display
+  fhicl::ParameterSet imageOutput;
+  if(pset.get_if_present<fhicl::ParameterSet>("imageOutput",imageOutput))
+  {
+    _imageTracks      = imageOutput.get<std::vector<std::string> >("tracks",std::vector<std::string>());
+    _imageTrackerHits = imageOutput.get<std::string>("trackerHits","");
+    _imageCaloHits    = imageOutput.get<std::string>("caloHits","");
+    _imageCrvHits     = imageOutput.get<std::string>("crvHits","");
+    const std::map<std::string,int> viewIds={{"end",70},{"side",71},{"top",72},{"allTracks",73},{"perspective",74}};
+    for(auto const &view : imageOutput.get<std::vector<fhicl::ParameterSet> >("views"))
+    {
+      std::string viewName=view.get<std::string>("view");
+      auto viewId=viewIds.find(viewName);
+      if(viewId==viewIds.end())
+        throw cet::exception("CONFIG")<<"EventDisplay imageOutput: unknown view \""<<viewName
+                                      <<"\" (use end, side, top, allTracks or perspective)\n";
+      std::vector<double> range=view.get<std::vector<double> >("range",std::vector<double>());
+      if(!range.empty() && (range.size()!=6 || range[0]>=range[1] || range[2]>=range[3] || range[4]>=range[5]))
+        throw cet::exception("CONFIG")<<"EventDisplay imageOutput: range must be [minx, maxx, miny, maxy, minz, maxz]"
+                                      <<" with every min below its max\n";
+      _imageViewIds.push_back(viewId->second);
+      _imageFiles.push_back(view.get<std::string>("file"));
+      _imageRanges.push_back(range);
+    }
+    if(_imageViewIds.empty()) throw cet::exception("CONFIG")<<"EventDisplay imageOutput: views is empty\n";
+
+    std::vector<unsigned int> imageSize=imageOutput.get<std::vector<unsigned int> >("imageSize",std::vector<unsigned int>{1298,754});
+    if(imageSize.size()!=2 || imageSize[0]==0 || imageSize[1]==0)
+      throw cet::exception("CONFIG")<<"EventDisplay imageOutput: imageSize must be [width, height] in pixels\n";
+    _imageWidth=imageSize[0];
+    _imageHeight=imageSize[1];
+  }
+  ExpectedRootMessages expectedRootMessages(isBatchMode());  //while the GUI objects get built in this constructor
+
   SetCleanup(kDeepCleanup);
   Move(20,20);
 
@@ -93,6 +204,12 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   //bare pointers needed since ROOT manages the following object
   _mainFrame = new TGHorizontalFrame(this,GetWidth()-270,GetHeight()*0.7);
   _mainCanvas = new TRootEmbeddedCanvas("EventDisplayCanvas",_mainFrame,GetWidth()-270,GetHeight()*0.7);
+  if(isBatchMode())
+  {
+    //there is no X window which would give the canvas its size; it gets the size of the images
+    _mainCanvas->GetCanvas()->SetBatch(kTRUE);
+    _mainCanvas->GetCanvas()->SetCanvasSize(_imageWidth,_imageHeight);
+  }
   _subFrame = new TGVerticalFrame(_mainFrame,270,GetHeight()*0.7);
   _subFrame->SetMaxHeight(GetHeight()*0.7);
 
@@ -242,6 +359,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGCompositeFrame *container = new TGCompositeFrame(_infoCanvas->GetViewPort());
   _infoCanvas->SetContainer(container);
   _infoEmbeddedCanvas = new TRootEmbeddedCanvas(0, container, 100, 100);//default size - exact size will be set later
+  if(isBatchMode())
+  {
+    _infoEmbeddedCanvas->GetCanvas()->SetBatch(kTRUE);
+    _infoEmbeddedCanvas->GetCanvas()->SetCanvasSize(100,100);
+  }
   container->AddFrame(_infoEmbeddedCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
 
   TGGroupFrame *zoomangleFrame  = new TGGroupFrame(_footLine,"Zoom & Angle");
@@ -274,8 +396,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _phiField   = new TGNumberEntry(angleFrame, 180., 3, 1601, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
   _thetaField   = new TGNumberEntry(angleFrame, 60., 3, 1602, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
   _psiField   = new TGNumberEntry(angleFrame, 90., 3, 1603, TGNumberFormat::kNESInteger, TGNumberFormat::kNEAAnyNumber, TGNumberFormat::kNELLimitMinMax, -360, 640);
-  _perspectiveButton = new TGRadioButton(perspectiveFrame, "perspective", 1700);
-  _parallelButton    = new TGRadioButton(perspectiveFrame, "parallel", 1701);
+  //ROOT cannot make radio buttons without a window system (it does not get their pixmaps, and crashes)
+  _perspectiveButton = isBatchMode() ? nullptr : new TGRadioButton(perspectiveFrame, "perspective", 1700);
+  _parallelButton    = isBatchMode() ? nullptr : new TGRadioButton(perspectiveFrame, "parallel", 1701);
   _zoomInButton      = new TGTextButton(zoomFrame3, "ZoomIn", 1507);
   _zoomOutButton     = new TGTextButton(zoomFrame3, "ZoomOut", 1508);
   _plusXButton       = new TGTextButton(zoomFrame3, "+X", 1509);
@@ -316,8 +439,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   angleFrame->AddFrame(angleLabel3, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(_psiField, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   angleFrame->AddFrame(angleLabel4, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
-  perspectiveFrame->AddFrame(_perspectiveButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
-  perspectiveFrame->AddFrame(_parallelButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  if(!isBatchMode())
+  {
+    perspectiveFrame->AddFrame(_perspectiveButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+    perspectiveFrame->AddFrame(_parallelButton, new TGLayoutHints(kLHintsLeft,0,0,0,0));
+  }
   zoomFrame3->AddFrame(_zoomInButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame3->AddFrame(_zoomOutButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
   zoomFrame3->AddFrame(_plusXButton, new TGLayoutHints(kLHintsLeft|kLHintsCenterY,1,0,1,0));
@@ -348,8 +474,11 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _psiField->Associate(this);
   setRangeButton->Associate(this);
   setAngleButton->Associate(this);
-  _perspectiveButton->Associate(this);
-  _parallelButton->Associate(this);
+  if(!isBatchMode())
+  {
+    _perspectiveButton->Associate(this);
+    _parallelButton->Associate(this);
+  }
   _zoomInButton->Associate(this);
   _zoomOutButton->Associate(this);
   _plusXButton->Associate(this);
@@ -358,8 +487,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _minusYButton->Associate(this);
   _plusZButton->Associate(this);
   _minusZButton->Associate(this);
-  _perspectiveButton->SetState(kButtonDown);
-  _parallelButton->SetState(kButtonUp);
+  setProjectionButtons(true);
 
   TGVerticalFrame *innerFrame1   = new TGVerticalFrame(_footLine,100,400);
 
@@ -585,13 +713,11 @@ void EventDisplayFrame::fillZoomAngleFields()
   _psiField->SetText(Form("%.0f",_mainPad->GetView()->GetPsi()));
   if(_mainPad->GetView()->IsPerspective())
   {
-    _perspectiveButton->SetState(kButtonDown);
-    _parallelButton->SetState(kButtonUp);
+    setProjectionButtons(true);
   }
   else
   {
-    _perspectiveButton->SetState(kButtonUp);
-    _parallelButton->SetState(kButtonDown);
+    setProjectionButtons(false);
   }
 }
 
@@ -607,8 +733,7 @@ void EventDisplayFrame::fillGeometry()
   if(_wideband || _extracted || _extractedCrvOnly)
   {
     EventDisplayViewSetup::sideview();
-    _parallelButton->SetState(kButtonDown);
-    _perspectiveButton->SetState(kButtonUp);
+    setProjectionButtons(false);
     _mainPad->GetView()->SetParallel();
   }
   else EventDisplayViewSetup::perspectiveview();
@@ -627,10 +752,48 @@ void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop, const 
 
   _contentSelector->setAvailableCollections(event);
   if(firstLoop) _contentSelector->firstLoop();
+  if(isBatchMode()) _contentSelector->selectByName(_imageTrackerHits, _imageCaloHits, _imageCrvHits, _imageTracks);
   fillEvent(firstLoop);
   fillZoomAngleFields();
 
+  if(isBatchMode())
+  {
+    saveImages();
+    return;
+  }
+
   gApplication->Run(true);
+}
+
+void EventDisplayFrame::saveImages()
+{
+  for(size_t i=0; i<_imageViewIds.size(); ++i)
+  {
+    setView(_imageViewIds[i]);
+    std::vector<double> const &r=_imageRanges[i];
+    if(!r.empty())
+    {
+      double min[3]={r[0],r[2],r[4]};
+      double max[3]={r[1],r[3],r[5]};
+      _mainPad->GetView()->SetRange(min,max);
+      _mainPad->Modified();
+      _mainPad->Update();
+      fillZoomAngleFields();
+    }
+
+    std::string fileName=_imageFiles[i];
+    const std::pair<std::string,int> fields[]={{"%r",_runNumber},{"%s",_subrunNumber},{"%e",_eventNumber}};
+    for(auto const &field : fields)
+    {
+      size_t pos;
+      while((pos=fileName.find(field.first))!=std::string::npos) fileName.replace(pos,2,std::to_string(field.second));
+    }
+
+    gSystem->Unlink(fileName.c_str());
+    _mainPad->GetCanvas()->SaveAs(fileName.c_str());
+    if(gSystem->AccessPathName(fileName.c_str()))  //returns true if the file does NOT exist
+      throw cet::exception("EventDisplay")<<"imageOutput: "<<fileName<<" was not written\n";
+  }
 }
 
 void EventDisplayFrame::fillEvent(bool firstLoop)
@@ -789,6 +952,41 @@ void EventDisplayFrame::CloseWindow()
   gApplication->Terminate();
 }
 
+void EventDisplayFrame::setProjectionButtons(bool perspective)
+{
+  if(_perspectiveButton==nullptr || _parallelButton==nullptr) return;  //batch mode
+  _perspectiveButton->SetState(perspective ? kButtonDown : kButtonUp);
+  _parallelButton->SetState(perspective ? kButtonUp : kButtonDown);
+}
+
+//viewButtonId: 70 end view, 71 side view, 72 top view, 73 all tracks view, 74 perspective (reset) view
+void EventDisplayFrame::setView(int viewButtonId)
+{
+  _mainPad->cd();
+  DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, viewButtonId==73, _showCRV);
+  if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
+  if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
+  if(_extractedCrvOnly) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
+  _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
+  if(viewButtonId<73)
+  {
+    if(viewButtonId==70) EventDisplayViewSetup::endview();
+    if(viewButtonId==71) EventDisplayViewSetup::sideview();
+    if(viewButtonId==72) EventDisplayViewSetup::topview();
+    setProjectionButtons(false);
+    _mainPad->GetView()->SetParallel();
+  }
+  if(viewButtonId==74)
+  {
+    EventDisplayViewSetup::perspectiveview();
+    setProjectionButtons(true);
+    _mainPad->GetView()->SetPerspective();
+  }
+  _mainPad->Modified();
+  _mainPad->Update();
+  fillZoomAngleFields();
+}
+
 Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param2)
 {
   switch (GET_MSG(msg))
@@ -886,34 +1084,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _timeCurrent=NAN;
                            gApplication->Terminate();
                          }
-                         if(param1>=70 && param1<=74)
-                         {
-                           _mainPad->cd();
-                           DataInterface::spaceminmax m=_dataInterface->getSpaceBoundary(true, true, true, param1==73, _showCRV);
-                           if(_wideband) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
-                           if(_extracted) m=_dataInterface->getSpaceBoundary(true, false, true, false, true);
-                           if(_extractedCrvOnly) m=_dataInterface->getSpaceBoundary(false, false, false, false, true);
-                           _mainPad->GetView()->SetRange(m.minx,m.miny,m.minz,m.maxx,m.maxy,m.maxz);
-                           if(param1<73)
-                           {
-                             if(param1==70) EventDisplayViewSetup::endview();
-                             if(param1==71) EventDisplayViewSetup::sideview();
-                             if(param1==72) EventDisplayViewSetup::topview();
-                             _parallelButton->SetState(kButtonDown);
-                             _perspectiveButton->SetState(kButtonUp);
-                             _mainPad->GetView()->SetParallel();
-                           }
-                           if(param1==74)
-                           {
-                             EventDisplayViewSetup::perspectiveview();
-                             _parallelButton->SetState(kButtonUp);
-                             _perspectiveButton->SetState(kButtonDown);
-                             _mainPad->GetView()->SetPerspective();
-                           }
-                           _mainPad->Modified();
-                           _mainPad->Update();
-                           fillZoomAngleFields();
-                         }
+                         if(param1>=70 && param1<=74) setView(param1);
                          if(param1==80) updateTimeIntervalFields(false);
                          if(param1==81) updateTimeIntervalFields(true);
                          if(param1==50)
@@ -1046,16 +1217,14 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          break;
    case kCM_RADIOBUTTON: if(param1==1700)
                          {
-                           _parallelButton->SetState(kButtonUp);
-                           _perspectiveButton->SetState(kButtonDown);
+                           setProjectionButtons(true);
                            _mainPad->GetView()->SetPerspective();
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
                          if(param1==1701)
                          {
-                           _perspectiveButton->SetState(kButtonUp);
-                           _parallelButton->SetState(kButtonDown);
+                           setProjectionButtons(false);
                            _mainPad->GetView()->SetParallel();
                            _mainPad->Modified();
                            _mainPad->Update();

@@ -9,6 +9,8 @@
 #define EventDisplay_src_EventDisplayFrame_h
 
 #include <iostream>
+#include <string>
+#include <vector>
 #include <TGFrame.h>
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
@@ -59,6 +61,10 @@ namespace mu2e_eventdisplay
     boost::shared_ptr<RootFileManager> getRootFileManager() {return _rootFileManager;}
     std::vector<boost::shared_ptr<HistDraw> > &getHistDrawVector(){return _histDrawVector;}
     bool             isClosed() const;
+    bool             isBatchMode() const {return !_imageViewIds.empty();}
+    //batch mode (fcl table imageOutput): images get saved without waiting for the user and without an X display
+    static bool      hasImageOutput(fhicl::ParameterSet const &pset);
+    static void      prepareBatchMode();  //needs ROOT's batch mode; call before the frame gets constructed
     bool             getSelectedHitsName(std::string &className,
                                          std::string &moduleLabel,
                                          std::string &productInstanceName) const;
@@ -86,6 +92,9 @@ namespace mu2e_eventdisplay
     void drawSituation();
     void drawEverything();
     void createAnimFile();
+    void setView(int viewButtonId);
+    void setProjectionButtons(bool perspective);  //the radio buttons; they do not exist in batch mode
+    void saveImages();
     //the following functions are inherited from TGMainFrame
     virtual Bool_t HandleConfigureNotify(Event_t *event);
     virtual Bool_t ProcessMessage(Long_t msg, Long_t param1, Long_t param2);
@@ -135,6 +144,14 @@ namespace mu2e_eventdisplay
     TPolyLine           *_legendParticleLine[30];
     std::string         _g4ModuleLabel, _physicalVolumesMultiLabel, _protonBunchTimeLabel;
     double              _kalStepSize;
+
+    //batch mode (fcl table imageOutput): one entry per image saved for each event
+    std::vector<int>                  _imageViewIds;   //view button IDs: 70 end, 71 side, 72 top, 73 all tracks, 74 perspective
+    std::vector<std::string>          _imageFiles;     //file names, may contain %r, %s, %e (run, subrun, event)
+    std::vector<std::vector<double> > _imageRanges;    //empty, or minx maxx miny maxy minz maxz [mm, display frame]
+    std::vector<std::string>          _imageTracks;    //entries of the track list to select
+    std::string                       _imageTrackerHits, _imageCaloHits, _imageCrvHits;  //empty: keep the default
+    unsigned int                      _imageWidth=0, _imageHeight=0;   //image size in pixels
 
     ClassDef(EventDisplayFrame,0);
   };
