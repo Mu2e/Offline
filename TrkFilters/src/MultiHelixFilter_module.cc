@@ -12,6 +12,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
+#include "cetlib_except/exception.h"
 
 #include "Offline/BFieldGeom/inc/BFieldManager.hh"
 #include "Offline/GeometryService/inc/GeomHandle.hh"
@@ -137,13 +138,13 @@ namespace mu2e
         if(_debugLevel > 2) std::cout << "  hel = " << hel.value() << " d0 = " << d0 << " lambda = " << lambda << " nLoops = " << nLoops
                                       << " slopeSig = " << slopeSignedSig << std::endl;
 
-        if(_hel != 0 && hel == Helicity(_hel))                       return false;
+        if(_hel != 0 && hel != Helicity(_hel))                       return false; // keep only the configured helicity
         if(d0 < _minD0)                                              return false;
         if(d0 > _maxD0)                                              return false;
         if(lambda < _minAbsLambda)                                   return false;
-        if(lambda > _maxAbsLambda)                                   return false;
+        if(_maxAbsLambda >= 0. && lambda > _maxAbsLambda)            return false; // -1 (not set): no cut
         if(nLoops < _minNLoops)                                      return false;
-        if(nLoops > _maxNLoops)                                      return false;
+        if(_maxNLoops >= 0. && nLoops > _maxNLoops)                  return false;
         if(slopeSignedSig < _minSlopeSig)                            return false;
         if(slopeSignedSig > _maxSlopeSig)                            return false;
 
@@ -155,8 +156,8 @@ namespace mu2e
         if(_debugLevel > 2) std::cout << " chi2XY = " << chi2XY << " chi2PhiZ = " << chi2PhiZ
                                       << " nhits = " << nhits << " hitRatio = " << hTool.hitRatio() << " hasCC = " << hasCluster << std::endl;
 
-        if(chi2XY > _maxChi2XY)                                      return false;
-        if(chi2PhiZ > _maxChi2PhiZ)                                  return false;
+        if(_maxChi2XY >= 0. && chi2XY > _maxChi2XY)                  return false;
+        if(_maxChi2PhiZ >= 0. && chi2PhiZ > _maxChi2PhiZ)            return false;
         if(nhits < _minNStrawHits)                                   return false;
         if(_requireCaloCluster && !hasCluster)                       return false;
         if(_minHitRatio > 0. && hTool.hitRatio() < _minHitRatio)     return false; // last: the most expensive
@@ -293,6 +294,12 @@ namespace mu2e
     {
       produces<TriggerInfo>();
       for(auto& cuts : config().HelixCuts()) _helixCuts.push_back(cuts);
+      // checkHelixList applies HelixCuts[i] to the i-th helix of each set of minNHelices helices,
+      // so with minNHelices = 0 or more than the number of tables no set can ever pass
+      if(_minNHelices < 1 || _minNHelices > _helixCuts.size())
+        throw cet::exception("BADCONFIG") << "MultiHelixFilter: minNHelices (" << _minNHelices
+                                          << ") must be at least 1 and at most the number of HelixCuts tables ("
+                                          << _helixCuts.size() << "), otherwise no event can pass\n";
     }
 
   //--------------------------------------------------------------------------------------
