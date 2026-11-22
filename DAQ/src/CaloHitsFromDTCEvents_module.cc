@@ -23,7 +23,10 @@
 #include "Offline/RecoDataProducts/inc/CaloHit.hh"
 #include "Offline/RecoDataProducts/inc/IntensityInfoCalo.hh"
 
+#include <algorithm>
+#include <cmath>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <array>
 #include <list>
@@ -91,7 +94,8 @@ private:
                             const mu2e::CalorimeterDataDecoder& cc,
                             std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
                             std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
-                            std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info);
+                            std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info,
+                            double& evtEnergy);
 
   void addPulse(uint16_t& crystalID, float& time, float& eDep,
                 std::unique_ptr<mu2e::CaloHitCollection> const& hits_calo,
@@ -196,6 +200,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
 
   // IntensityInfoCalo
   std::unique_ptr<mu2e::IntensityInfoCalo> int_info(new mu2e::IntensityInfoCalo);
+  double evtEnergy = 0.; // total calorimeter energy [MeV], summed over all calorimeter DTCs
 
   size_t totalSize = 0;
   size_t numCalDecoders = 0;
@@ -209,7 +214,7 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     for (auto& subevent : caloSEvents) {
       decoderColl->emplace_back(subevent);
       auto& decoder = decoderColl->back();
-      analyze_calorimeter_(calodaqconds, calCalib, decoder, calo_hits, caphri_hits, int_info);
+      analyze_calorimeter_(calodaqconds, calCalib, decoder, calo_hits, caphri_hits, int_info, evtEnergy);
       for (size_t i = 0; i < decoder.block_count(); ++i) {
         totalSize += decoder.blockSizeBytes(i);
       }
@@ -235,7 +240,9 @@ void art::CaloHitsFromDataDTCEvents::produce(Event& event) {
     std::cout << "Total Size: " << (int)totalSize << " bytes." << std::endl;
   }
 
-  // Store the summary intensity info
+  // Store the summary intensity info: round the energy sum once, to the nearest MeV
+  constexpr double maxCaloEnergy = std::numeric_limits<unsigned short>::max();
+  int_info->setCaloEnergy(static_cast<unsigned short>(std::lround(std::clamp(evtEnergy, 0.0, maxCaloEnergy))));
   event.put(std::move(int_info));
 
   // Store the calo hits in the event
@@ -248,11 +255,11 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
     mu2e::CalDAQMap const& calodaqconds, mu2e::CalCalib const& calCalib, const mu2e::CalorimeterDataDecoder& cc,
     std::unique_ptr<mu2e::CaloHitCollection> const& calo_hits,
     std::unique_ptr<mu2e::CaloHitCollection> const& caphri_hits,
-    std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info) {
+    std::unique_ptr<mu2e::IntensityInfoCalo> const& int_info,
+    double& evtEnergy) {
 
   auto dtcID = cc.event_.GetDTCID();
 
-  unsigned evtEnergy(0);
   std::array<unsigned short, 2> nhits = {0, 0}; //N(hits) by disk
 
   // Loop through the ROCs of this caloDecoder
@@ -416,8 +423,8 @@ void art::CaloHitsFromDataDTCEvents::analyze_calorimeter_(
     }
   }   // End loop over ROCs
 
-  // This function runs once per calorimeter DTC: add this DTC's sums to the event totals
-  int_info->setCaloEnergy(int_info->caloEnergy() + evtEnergy);
+  // This function runs once per calorimeter DTC: add this DTC's hit counts to the event totals.
+  // The energy is summed in evtEnergy and stored once per event, in produce().
   int_info->setNCaloHitsD0(int_info->nCaloHitsD0() + nhits[0]);
   int_info->setNCaloHitsD1(int_info->nCaloHitsD1() + nhits[1]);
 }
