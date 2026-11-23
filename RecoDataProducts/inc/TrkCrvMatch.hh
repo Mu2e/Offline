@@ -53,7 +53,7 @@ namespace mu2e {
     float     mom_ = 0;          // track momentum magnitude at the crossing [MeV/c]
     float     momErr_ = 0;       // its error [MeV/c]
     bool      inBounds_ = false; // crossing inside the sector rectangle; false for a near miss, whose candidates run to larger chi2
-    float     inbFrac_ = 0;      // fraction of the (unscaled) track position covariance inside the sector rectangle; 1 (0) in (out of) bounds if it wasn't computed
+    float     inbFrac_ = 0;      // fraction of the (unscaled) track position covariance inside the sector rectangle; 1 (0) in (out of) bounds if it wasn't computed; 0 in files written before this field existed
     float     dEdgeU_ = 0;       // distance inside the sector edge along the bars [mm], negative outside
     float     dEdgeV_ = 0;       // distance inside the sector edge across the bars [mm], negative outside
     float     edgeSig_ = 0;      // min(dEdgeU_/sigU(), dEdgeV_/sigV()): edge distance in units of the track error

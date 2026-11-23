@@ -410,8 +410,6 @@ Mu2eKinKal : {
     ToCRV : false
     ToCaloD0 : false
     ToCaloD1 : false
-    NearMissFraction : 0.1 # record out-of-bounds material crossings with at least this fraction of the position covariance in bounds, as inactive material
-    CRVNearMissFraction : 1e-3 # the same for CRV sectors
   }
 
   KLXTRAP : {

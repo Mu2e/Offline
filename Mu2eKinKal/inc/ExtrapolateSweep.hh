@@ -443,7 +443,9 @@ namespace mu2e {
       } else if(plane) {
         inter = planeCrossing(piece,*plane,query);
       } else {
-        inter = KinKal::intersect(piece,*tg.surf_,query,intertol_,tdir_);
+        // out-of-bounds roots are needed for targets that accept any crossing or near misses; others search in bounds only
+        bool oob = !tg.inbounds_ || tg.nearfrac_ > 0.0;
+        inter = KinKal::intersect(piece,*tg.surf_,query,intertol_,tdir_,false,oob);
       }
       if(debug_ > 3) std::cout << "Sweep " << tg.sid_ << " " << inter << std::endl;
       if(!inter.onsurface_) return false;
