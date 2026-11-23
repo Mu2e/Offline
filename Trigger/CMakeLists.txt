@@ -23,6 +23,12 @@ cet_build_plugin(PrescaleEvent art::module
       Offline::DataProducts
 )
 
+cet_build_plugin(RandomEventPrescale art::module
+    REG_SOURCE src/RandomEventPrescale_module.cc
+    LIBRARIES REG
+      Offline::DataProducts
+)
+
 cet_build_plugin(ReadTriggerInfo art::module
     REG_SOURCE src/ReadTriggerInfo_module.cc
     LIBRARIES REG
