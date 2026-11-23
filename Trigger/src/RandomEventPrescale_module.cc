@@ -1,23 +1,25 @@
-// RandomEventPrescale: event and path ID seeded random engine for repeatable, random prescaling
+// RandomEventPrescale: prescale with a tunable acceptance fraction (e.g. 30%). Each event's decision
+// comes from a stateless hash of (run, subRun, event, pathID), so it is reproducible whatever the
+// processing order or threading, and independent between paths with different pathIDs.
 // Original author: Michael MacKenzie, 2026
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
+#include "canvas/Utilities/InputTag.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
-#include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/DataProducts/inc/EventWindowMarker.hh"
 #include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
 
 #include <cstdint>
 #include <memory>
-#include <iostream>
 #include <string>
+#include <vector>
 
 namespace mu2e
 {
@@ -52,29 +54,29 @@ namespace mu2e
 
     struct EventModeConfig {
       fhicl::Atom<std::string>   eventMode{ Name("eventMode"), Comment("EventMode: OnSpill or OffSpill")};
-      fhicl::Atom<double>        prescale { Name("prescale") , Comment("Prescale rejection fraction, 0 - 1, 0 = 100% acceptance, 1 = 0% acceptance")};
+      fhicl::Atom<double>        acceptFraction { Name("acceptFraction") , Comment("Fraction of events accepted, 0 - 1 (e.g. 0.3 = 30%); negative = mode disabled")};
     };
 
-    //prescale is the rejection fraction: 0 accepts every event, 0.7 accepts 30%, 1 rejects every event.
-    //A negative prescale means the mode is disabled and rejects every event (unlike PrescaleEvent,
-    //where 0 also disables). mu2e-trig-config sets prescale:-1 on the paths that are turned off, so
-    //this is a configured state rather than a bad configuration
+    //acceptFraction is the probability to accept an event: 1 accepts every event, 0.3 accepts 30%,
+    //0 rejects every event. A negative value means the mode is disabled and also rejects every event;
+    //mu2e-trig-config marks paths that are turned off with -1, so this is a configured state rather
+    //than a bad configuration. Values above 1 are a configuration error.
     struct EventMode {
       EventWindowMarker::SpillType type_;
       double fraction_;
       std::string name_;
-      EventMode(EventWindowMarker::SpillType type, double prescale, std::string const& name ) : type_(type),
-                                                                                                fraction_((prescale < 0.) ? 0. : 1. - prescale),
-                                                                                                name_(name) {
-        if(fraction_ < 0.) throw cet::exception("BADCONFIG") << "Prescale " << name_ << " (type = " << type_ << ") has > 1 prescale of " << prescale;
+      EventMode(EventWindowMarker::SpillType type, double acceptFraction, std::string const& name ) : type_(type),
+                                                                                                      fraction_((acceptFraction < 0.) ? 0. : acceptFraction),
+                                                                                                      name_(name) {
+        if(fraction_ > 1.) throw cet::exception("BADCONFIG") << "Prescale " << name_ << " (type = " << type_ << ") has acceptFraction " << acceptFraction << " > 1";
       }
     };
 
     struct Config {
       fhicl::Atom<art::InputTag>                       EWM       { Name("EventWindowMarker"), Comment("EventWindowMarker")};
       fhicl::Atom<int>                                 debug     { Name("debugLevel")       , Comment("Debug Level"), 0};
-      fhicl::Sequence<fhicl::Table<EventModeConfig>>   eventMode { Name("eventModeConfig")  , Comment("List of the Event modes with their PS factor")};
-      fhicl::Atom<int>                                 pathID    { Name("pathID")           , Comment("ID to include in random seed hash function")};
+      fhicl::Sequence<fhicl::Table<EventModeConfig>>   eventMode { Name("eventModeConfig")  , Comment("List of the Event modes with their acceptance fractions")};
+      fhicl::Atom<int>                                 pathID    { Name("pathID")           , Comment("Path ID mixed into the random hash; must differ between paths for independent decisions (set from the trigger menu bits)")};
     };
     using        Parameters = art::EDFilter::Table<Config>;
     explicit     RandomEventPrescale(const Parameters& conf);
@@ -108,8 +110,8 @@ namespace mu2e
     , npass_(config().eventMode().size(),0)
     , debug_(config().debug()) {
     for(const auto& mode : config().eventMode()) {
-      if(mode.eventMode() == "OffSpill") eventMode_.push_back(EventMode(EventWindowMarker::offspill, mode.prescale(),mode.eventMode()));
-      else if(mode.eventMode() == "OnSpill") eventMode_.push_back(EventMode(EventWindowMarker::onspill, mode.prescale(),mode.eventMode()));
+      if(mode.eventMode() == "OffSpill") eventMode_.push_back(EventMode(EventWindowMarker::offspill, mode.acceptFraction(),mode.eventMode()));
+      else if(mode.eventMode() == "OnSpill") eventMode_.push_back(EventMode(EventWindowMarker::onspill, mode.acceptFraction(),mode.eventMode()));
       else throw cet::exception("TRIGGER") << "Unknown prescale mode " << mode.eventMode();
       produces<mu2e::PrescaleFilterFraction,art::InSubRun>(mode.eventMode());
     }

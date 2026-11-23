@@ -1,9 +1,9 @@
 #include "Offline/Print/inc/PrescaleFilterFractionPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
-#include "canvas/Persistency/Common/Sampled.h"
-#include "canvas/Persistency/Provenance/SampledInfo.h"
+#include "art/Framework/Principal/SubRun.h"
 #include <iomanip>
 #include <string>
+#include <vector>
 
 void mu2e::PrescaleFilterFractionPrinter::Print(art::Event const& event, std::ostream& os) {}
 
@@ -45,8 +45,15 @@ void mu2e::PrescaleFilterFractionPrinter::Print(
 void mu2e::PrescaleFilterFractionPrinter::Print(const mu2e::PrescaleFilterFraction& obj,
     int ind, std::ostream& os) {
   os << std::setiosflags(std::ios::fixed | std::ios::right);
-  os << " Fraction passing filter " << obj.filterFraction()  <<  " N Seen " << obj.nSeen()
-    << " with prescale fraction " << obj.prescaleFraction();
+  os << " Passed " << obj.nPassed() << " of " << obj.nSeen()
+     << " (fraction " << std::setprecision(4) << obj.filterFraction() << ")";
+  // a fractional prescale has no integer factor; a discrete one passes 1 in prescale() events
+  if (obj.isFractional())
+    os << ", fractional prescale with accept fraction " << obj.prescaleFraction();
+  else if (obj.prescale() == 0)
+    os << ", discrete prescale disabled";
+  else
+    os << ", discrete prescale 1/" << obj.prescale() << " (accept fraction " << obj.prescaleFraction() << ")";
   if(obj.chained())os << " chained";
   os << std::endl;
 }
