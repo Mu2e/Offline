@@ -76,7 +76,7 @@ namespace mu2e
       fhicl::Atom<art::InputTag>                       EWM       { Name("EventWindowMarker"), Comment("EventWindowMarker")};
       fhicl::Atom<int>                                 debug     { Name("debugLevel")       , Comment("Debug Level"), 0};
       fhicl::Sequence<fhicl::Table<EventModeConfig>>   eventMode { Name("eventModeConfig")  , Comment("List of the Event modes with their acceptance fractions")};
-      fhicl::Atom<int>                                 pathID    { Name("pathID")           , Comment("Path ID mixed into the random hash; must differ between paths for independent decisions (set from the trigger menu bits)")};
+      fhicl::Atom<unsigned>                            pathID    { Name("pathID")           , Comment("Path ID mixed into the random hash; must differ between paths for independent decisions (set from the trigger menu bits)")};
     };
     using        Parameters = art::EDFilter::Table<Config>;
     explicit     RandomEventPrescale(const Parameters& conf);
@@ -97,7 +97,7 @@ namespace mu2e
 
     art::ProductToken<EventWindowMarker> const ewmtoken_;
     std::vector<EventMode>                     eventMode_;
-    const int                                  pathID_;
+    const uint32_t                             pathID_;
     std::vector<uint64_t>                      nevt_, npass_;
     int                                        debug_;
   };
@@ -130,7 +130,7 @@ namespace mu2e
         ++nevt_[imode];
         // Apply the prescale: r is uniform in [0, 1), so fraction 0 rejects all and 1 accepts all
         const auto& id = e.id();
-        const double r = eventUniform(id.run(), id.subRun(), id.event(), static_cast<uint32_t>(pathID_));
+        const double r = eventUniform(id.run(), id.subRun(), id.event(), pathID_);
         const bool retval = r < mode.fraction_;
         if(retval) ++npass_[imode];
         return retval;

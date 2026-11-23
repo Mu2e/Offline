@@ -1,6 +1,7 @@
 #include "Offline/Print/inc/PrescaleFilterFractionPrinter.hh"
 #include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Principal/SubRun.h"
+#include <boost/io/ios_state.hpp>
 #include <iomanip>
 #include <string>
 #include <vector>
@@ -44,16 +45,21 @@ void mu2e::PrescaleFilterFractionPrinter::Print(
 
 void mu2e::PrescaleFilterFractionPrinter::Print(const mu2e::PrescaleFilterFraction& obj,
     int ind, std::ostream& os) {
-  os << std::setiosflags(std::ios::fixed | std::ios::right);
-  os << " Passed " << obj.nPassed() << " of " << obj.nSeen()
-     << " (fraction " << std::setprecision(4) << obj.filterFraction() << ")";
+  boost::io::ios_all_saver saver(os);  // leave the caller's stream formatting unchanged
+  // The first part of the line keeps its original text, which downstream parsers match.
+  // The prescale fraction uses significant digits so that small fractions (e.g. 4e-05) stay visible.
+  os << std::setiosflags(std::ios::right);
+  os << " Fraction passing filter " << std::fixed << std::setprecision(6) << obj.filterFraction()
+     << " N Seen " << obj.nSeen()
+     << " with prescale fraction " << std::defaultfloat << std::setprecision(6) << obj.prescaleFraction();
+  os << " N Passed " << obj.nPassed();
   // a fractional prescale has no integer factor; a discrete one passes 1 in prescale() events
   if (obj.isFractional())
-    os << ", fractional prescale with accept fraction " << obj.prescaleFraction();
+    os << " fractional";
   else if (obj.prescale() == 0)
-    os << ", discrete prescale disabled";
+    os << " discrete disabled";
   else
-    os << ", discrete prescale 1/" << obj.prescale() << " (accept fraction " << obj.prescaleFraction() << ")";
+    os << " discrete 1/" << obj.prescale();
   if(obj.chained())os << " chained";
   os << std::endl;
 }

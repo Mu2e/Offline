@@ -17,10 +17,9 @@ namespace mu2e {
   }
 
   PrescaleFilterFraction& PrescaleFilterFraction::operator +=(PrescaleFilterFraction const& other) {
-    // discrete products must match exactly; otherwise compare the configured pass fractions
-    const bool conflict = (!isFractional() && !other.isFractional())
-      ? other.prescale_ != prescale_
-      : other.prescaleFraction() != prescaleFraction();
+    // both products must be the same kind with the same prescale (N if discrete, fraction if fractional)
+    const bool conflict = (isFractional() != other.isFractional())
+      || (isFractional() ? other.fraction_ != fraction_ : other.prescale_ != prescale_);
     if(conflict) throw std::runtime_error("Prescale values conflict");
     // invoke base class
     (static_cast<FilterFraction*>(this))->operator+=(other);

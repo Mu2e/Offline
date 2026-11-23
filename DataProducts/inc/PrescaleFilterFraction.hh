@@ -29,7 +29,7 @@ namespace mu2e {
       uint32_t prescale() const { return isFractional() ? 0 : prescale_; }
       // expected fraction of events passing the prescale, for either kind; 0 if disabled
       double prescaleFraction() const;
-      // concatenate multiple subruns in the same path
+      // concatenate multiple subruns in the same path; throws unless both are the same kind with the same prescale
       PrescaleFilterFraction& operator +=(PrescaleFilterFraction const& other);
       PrescaleFilterFraction operator + (PrescaleFilterFraction const& other) const;
       // concatenate with an upstream prescale filter
