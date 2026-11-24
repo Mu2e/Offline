@@ -116,6 +116,22 @@ namespace mu2e {
           1.e8};
     };
 
+    // Make every interaction of one process N times where it happens (Mu2eG4ProcessCopier): the
+    // secondaries of all N samples are kept with weight 1/N, the primary continues with the last sample.
+    // Works for interactions with any number of secondaries (pair production) and for decays in flight.
+    struct ProcessCopies {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<std::string> process {Name("process"),
+          Comment("Geant4 process name, e.g. muPairProd, Decay. Only its discrete part (PostStepDoIt) is repeated:\n"
+                  "decays at rest are not")};
+      fhicl::Sequence<std::string> particles {Name("particles"),
+          Comment("Geant4 particle names, e.g. [ \"mu-\", \"mu+\" ]")};
+      fhicl::OptionalSequence<std::string> regions {Name("regions"),
+          Comment("G4Region names; absent: everywhere. Interactions in other regions are made once")};
+      fhicl::Atom<unsigned> factor {Name("factor"), Comment("N >= 2")};
+    };
+
     struct Physics {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -188,6 +204,11 @@ namespace mu2e {
 
       fhicl::OptionalSequence<fhicl::Table<SecondaryBiasing>> secondaryBiasing {Name("secondaryBiasing"),
           Comment("Split (or Russian-roulette) EM secondaries of the named processes in the listed G4Regions.\n"
+                  "Secondaries carry the G4Track weight; SimParticle does not store it.")};
+
+      fhicl::OptionalSequence<fhicl::Table<ProcessCopies>> processCopies {Name("processCopies"),
+          Comment("Make each interaction of the named processes N times (Mu2eG4ProcessCopier), in the listed\n"
+                  "G4Regions or everywhere. A process may not be in secondaryBiasing too.\n"
                   "Secondaries carry the G4Track weight; SimParticle does not store it.")};
 
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};

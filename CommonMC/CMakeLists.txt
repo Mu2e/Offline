@@ -108,6 +108,12 @@ cet_build_plugin(SimParticleDaughterSelector art::module
       Offline::MCDataProducts
 )
 
+cet_build_plugin(StepPointMCCopier art::module
+    REG_SOURCE src/StepPointMCCopier_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+)
+
 cet_build_plugin(StoppedParticlesFinder art::module
     REG_SOURCE src/StoppedParticlesFinder_module.cc
     LIBRARIES REG

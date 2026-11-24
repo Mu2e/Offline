@@ -2,12 +2,15 @@
 // A constructor implementing Mu2e specific customizations
 
 // C++ includes
+#include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 // Mu2e includes
 #include "Offline/Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Offline/Mu2eG4/inc/Mu2eG4ProcessCopier.hh"
 #include "Offline/Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "Offline/Mu2eG4/inc/toggleProcesses.hh"
 
@@ -92,7 +95,7 @@ namespace {
       if (factor > 1. && twoSecondaries.count(pname) != 0) {
         throw cet::exception("BADINPUT")
           << "physics.secondaryBiasing: Geant4 splits only interactions with one secondary; " << pname
-          << " makes two, so splitting it would do nothing\n";
+          << " makes two, so splitting it would do nothing; use physics.processCopies\n";
       }
 
       // a process object may be shared by several particles
@@ -132,6 +135,130 @@ namespace {
       if (done.empty()) {
         throw cet::exception("BADINPUT")
           << "physics.secondaryBiasing: no particle has a process named " << pname << "\n";
+      }
+    }
+  }
+
+  // Replace each requested process of each requested particle by a Mu2eG4ProcessCopier that wraps it.
+  // Runs on the master and on every worker thread in the same order, so the process lists stay aligned
+  // (Geant4 pairs a worker's process with the master's one by its index in the list).
+  void activateProcessCopies(const mu2e::Mu2eG4Config::Physics& phys,
+                             const mu2e::Mu2eG4Config::Debug& debug) {
+
+    std::vector<mu2e::Mu2eG4Config::ProcessCopies> requests;
+    if (!phys.processCopies(requests)) { return; }
+
+    std::set<std::string> biased;
+    std::vector<mu2e::Mu2eG4Config::SecondaryBiasing> biasing;
+    if (phys.secondaryBiasing(biasing)) {
+      for (const auto& b : biasing) { biased.insert(b.process()); }
+    }
+
+    struct Plan {
+      unsigned everywhere = 0;
+      std::vector<std::pair<const G4Region*, unsigned>> regions;
+    };
+    std::map<std::pair<std::string, std::string>, Plan> plans;   // (particle, process)
+    G4RegionStore* regionStore = G4RegionStore::GetInstance();
+    for (const auto& req : requests) {
+      const std::string pname = req.process();
+      const unsigned factor = req.factor();
+      if (factor < 2) {
+        throw cet::exception("BADINPUT")
+          << "physics.processCopies: factor for " << pname << " must be >= 2, got " << factor << "\n";
+      }
+      if (biased.count(pname) != 0) {
+        throw cet::exception("BADINPUT")
+          << "physics.processCopies: " << pname << " is in physics.secondaryBiasing too\n";
+      }
+      if (req.particles().empty()) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: no particles for " << pname << "\n";
+      }
+      std::vector<std::string> rnames;
+      const bool hasRegions = req.regions(rnames);
+      if (hasRegions && rnames.empty()) {
+        throw cet::exception("BADINPUT")
+          << "physics.processCopies: empty region list for " << pname << " (leave it out for everywhere)\n";
+      }
+      for (const auto& part : req.particles()) {
+        Plan& plan = plans[{part, pname}];
+        if (plan.everywhere > 0 || (!hasRegions && !plan.regions.empty())) {
+          throw cet::exception("BADINPUT")
+            << "physics.processCopies: " << pname << " of " << part
+            << " is requested everywhere and again in other entries\n";
+        }
+        if (!hasRegions) { plan.everywhere = factor; continue; }
+        for (const auto& rname : rnames) {
+          const G4Region* region = regionStore->GetRegion(rname, false);
+          if (region == nullptr) {
+            throw cet::exception("BADINPUT") << "physics.processCopies: unknown G4Region " << rname << "\n";
+          }
+          for (const auto& r : plan.regions) {
+            if (r.first == region) {
+              throw cet::exception("BADINPUT") << "physics.processCopies: G4Region " << rname << " given twice for "
+                                               << pname << " of " << part << "\n";
+            }
+          }
+          plan.regions.emplace_back(region, factor);
+        }
+      }
+    }
+
+    const bool print = G4Threading::IsMasterThread() || debug.diagLevel() > 0;
+    G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
+    for (const auto& [key, plan] : plans) {
+      const auto& [part, pname] = key;
+      G4ParticleDefinition* particle = ptable->FindParticle(part);
+      if (particle == nullptr) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: unknown particle " << part << "\n";
+      }
+      G4ProcessManager* pmanager = particle->GetProcessManager();
+      if (pmanager == nullptr) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: " << part << " has no process manager\n";
+      }
+      G4VProcess* proc = nullptr;
+      G4ProcessVector* plist = pmanager->GetProcessList();
+      for (G4int j = 0; j < pmanager->GetProcessListLength(); ++j) {
+        if ((*plist)[j]->GetProcessName() == pname) {
+          if (proc != nullptr) {
+            throw cet::exception("BADINPUT") << "physics.processCopies: " << part << " has two processes named "
+                                             << pname << "\n";
+          }
+          proc = (*plist)[j];
+        }
+      }
+      if (proc == nullptr) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: " << part << " has no process named " << pname << "\n";
+      }
+      if (dynamic_cast<G4WrapperProcess*>(proc) != nullptr) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: " << pname << " of " << part
+                                         << " is already wrapped\n";
+      }
+      const G4int ordAtRest = pmanager->GetProcessOrdering(proc, idxAtRest);
+      const G4int ordAlongStep = pmanager->GetProcessOrdering(proc, idxAlongStep);
+      const G4int ordPostStep = pmanager->GetProcessOrdering(proc, idxPostStep);
+      if (ordPostStep < 0) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: " << pname << " of " << part
+                                         << " has no discrete (PostStep) part\n";
+      }
+      if (pmanager->RemoveProcess(proc) != proc) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: could not remove " << pname << " of " << part << "\n";
+      }
+      auto* copier = new mu2e::Mu2eG4ProcessCopier(proc, plan.everywhere, plan.regions);
+      if (pmanager->AddProcess(copier, ordAtRest, ordAlongStep, ordPostStep) < 0) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: could not add the copier of " << pname
+                                         << " to " << part << "\n";
+      }
+      if (copier->GetProcessName() != pname) {
+        throw cet::exception("BADINPUT") << "physics.processCopies: copier of " << pname << " is named "
+                                         << copier->GetProcessName() << "\n";
+      }
+      if (print) {
+        G4cout << "Mu2eG4 processCopies: " << pname << " of " << part << " (ordering " << ordAtRest << " "
+               << ordAlongStep << " " << ordPostStep << ")";
+        if (plan.everywhere > 0) { G4cout << " factor " << plan.everywhere << " everywhere"; }
+        for (const auto& r : plan.regions) { G4cout << " " << r.first->GetName() << ":" << r.second; }
+        G4cout << G4endl;
       }
     }
   }
@@ -195,6 +322,9 @@ namespace mu2e {
 
     // EM secondary splitting in several G4Regions if requested
     activateSecondaryBiasing(*phys_, *debug_);
+
+    // repeat the interactions of some processes (pair production, decays in flight) if requested
+    activateProcessCopies(*phys_, *debug_);
 
     // use more accurate boundary crossing algorithm for muons and hadrons
     // place this late in the setup sequence to avoid a subsequent change

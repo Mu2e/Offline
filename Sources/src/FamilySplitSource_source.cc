@@ -10,9 +10,22 @@
 // the event would hold two signal-like electrons at once. One family per event removes both problems
 // and lets N be large.
 //
-// A forced particle is a direct daughter of a muon, created by one of `processes`, born inside one of
-// `regions` (cylinders along z, Mu2e coordinates); its family is itself and all its descendants. Geant4
-// secondary splitting made `factor` alternatives of it, each of weight 1/factor.
+// A forced particle is one of which Geant4 made `factor` alternatives, each of weight 1/factor; its family is
+// itself and all its descendants. Three kinds:
+//   region:  a direct daughter of a muon, created by one of `processes`, born inside one of `regions`
+//            (cylinders along z, Mu2e coordinates), factor of that region. Made by Mu2eG4
+//            physics.secondaryBiasing (muIoni, muBrems) or physics.processCopies (muPairProd) in the
+//            matching G4Regions.
+//   decay:   a direct daughter of a muon that decayed in flight (creation code Decay or DecayWithSpin, the
+//            muon's end momentum > 0), anywhere, factor `decayFactor`. Made by Mu2eG4 physics.processCopies
+//            for the Decay process of mu+ and mu- everywhere; decays at rest are not copied.
+//   primary: a stage-2 primary with one of `copiedPrimaries.pdgIds` and start momentum above
+//            `copiedPrimaries.minMomentum`, factor `copiedPrimaries.factor`. Made by StepPointMCCopier, which
+//            writes such stage-1 steps N times before Mu2eG4 turns them into primaries. An event with too many
+//            such steps is not copied; StepPointMCCopier's EventWeight (`copiedPrimaries.copierLabel`, 1/N or 1)
+//            says which, and in an event that was not copied these primaries are not forced.
+// The factors here must be those used in stage 2; the job checks only that no muon decay and no stage-1 step
+// has more copies than the factor.
 //
 // Every output event carries an EventWeight (label `weightLabel`), times the base weight (1, or the
 // forced-decay weight below):
@@ -59,6 +72,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -85,6 +99,7 @@
 #include "canvas/Utilities/TypeID.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/TableFragment.h"
@@ -165,10 +180,22 @@ namespace mu2e {
       fhicl::Atom<double> zmax{fhicl::Name("zmax")};
       fhicl::Atom<double> factor{fhicl::Name("factor"), fhicl::Comment("splitting factor used in this region")};
     };
+    struct CopiedPrimaries {
+      fhicl::Sequence<int> pdgIds{fhicl::Name("pdgIds"), fhicl::Comment("as in StepPointMCCopier")};
+      fhicl::Atom<double> minMomentum{fhicl::Name("minMomentum"), fhicl::Comment("[MeV/c], as in StepPointMCCopier")};
+      fhicl::Atom<unsigned> factor{fhicl::Name("factor"), fhicl::Comment("StepPointMCCopier copies, >= 2")};
+      fhicl::Atom<std::string> copierLabel{fhicl::Name("copierLabel"),
+          fhicl::Comment("module label of StepPointMCCopier: its EventWeight is 1/factor (copied) or 1 (not)")};
+    };
     struct Config {
       fhicl::Sequence<std::string> processes{fhicl::Name("processes"),
-          fhicl::Comment("creation codes of forced daughters of muons")};
+          fhicl::Comment("creation codes of forced daughters of muons, split by region")};
       fhicl::Sequence<fhicl::Table<Region>> regions{fhicl::Name("regions")};
+      fhicl::Atom<unsigned> decayFactor{fhicl::Name("decayFactor"),
+          fhicl::Comment("0: muon decays in flight are not copied. N >= 2: Mu2eG4 processCopies made every muon decay\n"
+                         "in flight N times; their direct daughters are forced, factor N, wherever the muon decays"), 0};
+      fhicl::OptionalTable<CopiedPrimaries> copiedPrimaries{fhicl::Name("copiedPrimaries"),
+          fhicl::Comment("stage-2 primaries made from StepPointMCCopier copies; absent: none")};
       fhicl::Atom<unsigned> stride{fhicl::Name("stride"), 1000};
       fhicl::Atom<std::string> weightLabel{fhicl::Name("weightLabel"), "FamilySplit"};
       fhicl::Atom<std::string> inputProcessName{fhicl::Name("inputProcessName"),
@@ -199,9 +226,16 @@ namespace mu2e {
 
   private:
     struct Cyl { double xc, yc, rmin, rmax, zmin, zmax, factor; };
+    enum Kind { kRegion = 0, kDecay = 1, kPrimary = 2, nKinds = 3 };
+    struct Forced { size_t key; double factor; Kind kind; };
     art::SourceHelper const& sh_;
     std::vector<std::string> processes_;
     std::vector<Cyl> regions_;
+    unsigned decayFactor_ = 0;
+    std::set<int> copyPdgIds_;
+    double copyMinMomentum_ = 0.;
+    unsigned copyFactor_ = 0;
+    std::string copierLabel_;
     unsigned stride_;
     std::string weightLabel_, process_;
     double window_, lifetime_, baseWeight_;
@@ -227,6 +261,7 @@ namespace mu2e {
     Branch<std::vector<art::EventID>> eids_{"CosmicResampler", ""};
     Branch<CosmicLivetime> evLive_{"CosmicResampler", ""};
     Branch<PrimaryParticle> primary_{"FindMCPrimary", ""};
+    Branch<EventWeight> copierW_{"", ""};                         // with copiedPrimaries only
     Branch<CosmicLivetime> srLive_{"CosmicResampler", "mixed"};
     Branch<GenEventCount> srCount_{"genCounter", ""};                // optional
     Branch<StageNormalization> srNorm_{"s2Counter", ""};             // optional
@@ -243,7 +278,8 @@ namespace mu2e {
     // state
     Long64_t nEntries_ = 0, entry_ = -1;
     std::vector<char> keep_;                                  // per input entry, after the muon-decay rule
-    std::vector<std::pair<size_t, double>> forced_;          // key, factor of the current input event
+    std::vector<Forced> forced_;                              // the forced particles of the current input event
+    unsigned eventCopyFactor_ = 0;                            // copy factor of the current input event (1: not copied)
     std::unordered_set<size_t> roots_;                        // the forced keys of the current input event
     std::unordered_map<size_t, long> family_;                 // particle key -> forced key or -1
     size_t j_ = 1;                                            // next output index of the current input event
@@ -255,13 +291,16 @@ namespace mu2e {
     // totals
     unsigned long nIn_ = 0, nOut_ = 0, nFamilies_ = 0;
     unsigned long nDecayDropped_ = 0, nMultiMuon_ = 0, nLateForced_ = 0, nEmptySubRuns_ = 0;
+    unsigned long nNotCopied_ = 0;                            // input events StepPointMCCopier did not copy
     std::map<size_t, unsigned long> multiplicity_;
+    unsigned long nFamiliesByKind_[nKinds] = {0, 0, 0};
 
     bool keepByDecay(SimParticleCollection const& sims);
     void writeSubRun(art::SubRunID const& id, art::Timestamp const& ts,
                      art::RunPrincipal*& outR, art::SubRunPrincipal*& outSR);
     double regionFactor(SimParticle const& p) const;
-    void findForced(SimParticleCollection const& sims, std::vector<std::pair<size_t, double>>& out) const;
+    unsigned copyFactorOf(Long64_t entry);
+    void findForced(SimParticleCollection const& sims, unsigned eventCopyFactor, std::vector<Forced>& out) const;
     long familyOf(art::Ptr<SimParticle> const& ptr, SimParticleCollection const& sims);
     void checkBranches();
   };
@@ -270,6 +309,7 @@ namespace mu2e {
                                                    art::SourceHelper const& sh)
     : sh_(sh)
     , processes_(conf().processes())
+    , decayFactor_(conf().decayFactor())
     , stride_(conf().stride())
     , weightLabel_(conf().weightLabel())
     , process_(conf().inputProcessName())
@@ -290,15 +330,33 @@ namespace mu2e {
       }
       regions_.push_back({r.xc(), r.yc(), r.rmin(), r.rmax(), r.zmin(), r.zmax(), r.factor()});
     }
-    if (regions_.empty() || processes_.empty() || stride_ < 2) {
-      throw cet::exception("CONFIG") << "FamilySplitSource: need regions, processes and stride >= 2\n";
+    CopiedPrimaries cp;
+    if (conf().copiedPrimaries(cp)) {
+      for (int id : cp.pdgIds()) { copyPdgIds_.insert(id); }
+      copyMinMomentum_ = cp.minMomentum();
+      copyFactor_ = cp.factor();
+      copierLabel_ = cp.copierLabel();
+      if (copyPdgIds_.empty() || copyFactor_ < 2 || copyMinMomentum_ < 0. || copierLabel_.empty()) {
+        throw cet::exception("CONFIG") << "FamilySplitSource: copiedPrimaries needs pdgIds, factor >= 2, minMomentum >= 0"
+                                       << " and copierLabel\n";
+      }
+      copierW_ = Branch<EventWeight>(copierLabel_, "");
+    }
+    if (decayFactor_ == 1) {
+      throw cet::exception("CONFIG") << "FamilySplitSource: decayFactor must be 0 (off) or >= 2\n";
+    }
+    if (regions_.empty() != processes_.empty() || stride_ < 2) {
+      throw cet::exception("CONFIG") << "FamilySplitSource: need both regions and processes (or neither), and stride >= 2\n";
+    }
+    if (processes_.empty() && decayFactor_ == 0 && copyFactor_ == 0) {
+      throw cet::exception("CONFIG") << "FamilySplitSource: nothing is forced\n";
     }
     simsPID_ = art::ProductID{art::canonicalProductName(art::TypeID(typeid(SimParticleCollection)).friendlyClassName(),
                                                         "compressDetStepMCs", "", process_)};
     sims_.setName(process_); sgs_.setName(process_); css_.setName(process_); crv_.setName(process_);
     surf_.setName(process_); vd_.setName(process_); traj_.setName(process_); gen_.setName(process_);
     status_.setName(process_); crvStage1_.setName(process_); eids_.setName(process_); evLive_.setName(process_);
-    primary_.setName(process_); srLive_.setName(process_); srCount_.setName(process_);
+    primary_.setName(process_); srLive_.setName(process_); srCount_.setName(process_); copierW_.setName(process_);
     srNorm_.setName(process_);
     triggerResultsName_ = branchName(art::canonicalProductName("art::TriggerResults", "TriggerResults", "", process_));
 
@@ -326,6 +384,12 @@ namespace mu2e {
               << " family events " << nFamilies_ << " | families per input event";
     for (auto const& [k, n] : multiplicity_) { std::cout << " " << k << ":" << n; }
     std::cout << std::endl;
+    std::cout << "FamilySplitSource: family events by kind: region " << nFamiliesByKind_[kRegion] << " (factors by region,"
+              << " processes";
+    for (auto const& p : processes_) { std::cout << " " << p; }
+    std::cout << "), decay " << nFamiliesByKind_[kDecay] << " (factor " << decayFactor_ << "), stage-1 copies "
+              << nFamiliesByKind_[kPrimary] << " (factor " << copyFactor_ << "; input events not copied "
+              << nNotCopied_ << ")" << std::endl;
     if (window_ > 0.) {
       std::cout << "FamilySplitSource: " << (forcedStream_ ? "forced-decay" : "main") << " stream, muon decay window "
                 << window_ << " ns: " << nDecayDropped_ << " input events dropped, base weight " << baseWeight_
@@ -400,20 +464,63 @@ namespace mu2e {
     return 0.;
   }
 
-  void FamilySplitSourceDetail::findForced(SimParticleCollection const& sims,
-                                           std::vector<std::pair<size_t, double>>& out) const {
+  // copy factor StepPointMCCopier used for this input entry: copyFactor_, or 1 if it did not copy the event
+  unsigned FamilySplitSourceDetail::copyFactorOf(Long64_t entry) {
+    if (copyFactor_ == 0) { return 0; }
+    const double w = copierW_.read(entry).weight();
+    if (!(w > 0.)) {
+      throw cet::exception("FamilySplitSource") << copierW_.name << " entry " << entry << ": weight " << w << "\n";
+    }
+    const double f = 1. / w;
+    if (std::abs(f - 1.) < 1.e-9) { return 1; }
+    if (std::abs(f - static_cast<double>(copyFactor_)) < 1.e-6 * copyFactor_) { return copyFactor_; }
+    throw cet::exception("FamilySplitSource") << copierW_.name << " entry " << entry << ": copy factor " << f
+                                              << ", expected 1 or copiedPrimaries.factor = " << copyFactor_ << "\n";
+  }
+
+  void FamilySplitSourceDetail::findForced(SimParticleCollection const& sims, unsigned eventCopyFactor,
+                                           std::vector<Forced>& out) const {
     out.clear();
+    std::map<size_t, unsigned> decayElectrons;                                   // muon key -> e+- copies
+    std::map<std::tuple<size_t, double, double, double>, unsigned> copies;       // stage-1 step -> copies
     for (auto const& kv : sims) {
       SimParticle const& p = kv.second;
+      const size_t key = kv.first.asUint();
+      if (static_cast<int>(p.simStage()) == primaryStage_ && p.creationCode().id() == ProcessCode::mu2ePrimary) {
+        if (copyFactor_ == 0 || copyPdgIds_.count(p.pdgId()) == 0) { continue; }
+        const CLHEP::Hep3Vector mom = p.startMomentum().vect();
+        const double pm = mom.mag();
+        if (std::abs(pm - copyMinMomentum_) < 1.e-6) {
+          throw cet::exception("FamilySplitSource") << "stage-2 primary " << key << " momentum " << pm
+                                                    << " MeV/c within 1e-6 of copiedPrimaries.minMomentum\n";
+        }
+        if (pm <= copyMinMomentum_) { continue; }
+        const size_t parentKey = p.hasParent() ? p.parent().key() : std::numeric_limits<size_t>::max();
+        if (++copies[{parentKey, mom.x(), mom.y(), mom.z()}] > eventCopyFactor) {
+          throw cet::exception("FamilySplitSource") << "a stage-1 step has more than " << eventCopyFactor
+                                                    << " copies (the event's copy factor)\n";
+        }
+        if (eventCopyFactor > 1) { out.push_back({key, static_cast<double>(eventCopyFactor), kPrimary}); }
+        continue;
+      }
       if (!p.hasParent() || p.parent().id() != simsPID_) { continue; }
       SimParticle const* par = sims.getOrNull(cet::map_vector_key(p.parent().key()));
       if (par == nullptr || std::abs(par->pdgId()) != 13) { continue; }
       const std::string code = p.creationCode().name();
+      if (code == "Decay" || code == "DecayWithSpin") {
+        if (decayFactor_ == 0 || !(par->endMomentum().vect().mag() > 0.)) { continue; }   // at rest: not copied
+        if (std::abs(p.pdgId()) == 11 && ++decayElectrons[p.parent().key()] > decayFactor_) {
+          throw cet::exception("FamilySplitSource") << "a muon decay in flight has more than decayFactor = "
+                                                    << decayFactor_ << " electrons\n";
+        }
+        out.push_back({key, static_cast<double>(decayFactor_), kDecay});
+        continue;
+      }
       bool ok = false;
       for (auto const& c : processes_) { if (code == c) { ok = true; break; } }
       if (!ok) { continue; }
       const double f = regionFactor(p);
-      if (f > 0.) { out.emplace_back(kv.first.asUint(), f); }
+      if (f > 0.) { out.push_back({key, f, kRegion}); }
     }
   }
 
@@ -446,6 +553,7 @@ namespace mu2e {
     std::set<std::string> known{"EventAuxiliary", triggerResultsName_, sims_.name, sgs_.name, css_.name, crv_.name,
                                 surf_.name, vd_.name, traj_.name, gen_.name, status_.name, crvStage1_.name,
                                 eids_.name, evLive_.name, primary_.name};
+    if (copyFactor_ > 0) { known.insert(copierW_.name); }   // read here, not passed on
     for (auto* obj : *events_->GetListOfBranches()) {
       if (known.count(obj->GetName()) == 0) {
         throw cet::exception("FamilySplitSource") << "input Events branch " << obj->GetName()
@@ -484,6 +592,7 @@ namespace mu2e {
     surf_.attach(events_); vd_.attach(events_); traj_.attach(events_); gen_.attach(events_);
     status_.attach(events_); crvStage1_.attach(events_); eids_.attach(events_); evLive_.attach(events_);
     primary_.attach(events_);
+    if (copyFactor_ > 0) { copierW_.attach(events_); }
 
     // subrun products
     subRunProducts_.clear();
@@ -511,14 +620,14 @@ namespace mu2e {
     keep_.assign(nEntries_, 0);
     double sumInv = 0.;
     Long64_t nKept = 0;
-    std::vector<std::pair<size_t, double>> f;
+    std::vector<Forced> f;
     for (Long64_t i = 0; i < nEntries_; ++i) {
       SimParticleCollection const& sims = sims_.read(i);
       if (!keepByDecay(sims)) { continue; }
       keep_[i] = 1;
       ++nKept;
-      findForced(sims, f);
-      for (auto const& x : f) { sumInv += 1. / x.second; }
+      findForced(sims, copyFactorOf(i), f);
+      for (auto const& x : f) { sumInv += 1. / x.factor; }
     }
     stripWeight_ = nKept > 0 ? 1. - sumInv / static_cast<double>(nKept) : 1.;
     entry_ = -1;
@@ -559,13 +668,15 @@ namespace mu2e {
       sims_.read(entry_); sgs_.read(entry_); css_.read(entry_); crv_.read(entry_); surf_.read(entry_);
       vd_.read(entry_); traj_.read(entry_); gen_.read(entry_); status_.read(entry_); crvStage1_.read(entry_);
       eids_.read(entry_); evLive_.read(entry_); primary_.read(entry_);
-      findForced(*sims_.wrapper->product(), forced_);
+      eventCopyFactor_ = copyFactorOf(entry_);
+      if (eventCopyFactor_ == 1) { ++nNotCopied_; }
+      findForced(*sims_.wrapper->product(), eventCopyFactor_, forced_);
       if (forced_.size() + 1 > stride_) {
         throw cet::exception("FamilySplitSource") << forced_.size() << " families in one event, stride "
                                                   << stride_ << " too small\n";
       }
       roots_.clear();
-      for (auto const& x : forced_) { roots_.insert(x.first); }
+      for (auto const& x : forced_) { roots_.insert(x.key); }
       family_.clear();
       j_ = 0;
       ++nIn_;
@@ -590,7 +701,7 @@ namespace mu2e {
     }
 
     SimParticleCollection const& sims = *sims_.wrapper->product();
-    const long kept = j_ == 0 ? -2 : static_cast<long>(forced_[j_ - 1].first);
+    const long kept = j_ == 0 ? -2 : static_cast<long>(forced_[j_ - 1].key);
     auto wanted = [&](art::Ptr<SimParticle> const& p) {
       const long f = familyOf(p, sims);
       return f == -1 || f == kept;
@@ -625,7 +736,7 @@ namespace mu2e {
                                   "CosmicResampler");
     art::put_product_in_principal(std::make_unique<PrimaryParticle>(*primary_.wrapper->product()), *outE,
                                   "FindMCPrimary");
-    const double w = baseWeight_ * (j_ == 0 ? stripWeight_ : 1. / forced_[j_ - 1].second);
+    const double w = baseWeight_ * (j_ == 0 ? stripWeight_ : 1. / forced_[j_ - 1].factor);
     art::put_product_in_principal(std::make_unique<EventWeight>(w), *outE, weightLabel_);
 
     if (verbosity_ > 1) {
@@ -633,7 +744,7 @@ namespace mu2e {
                 << forced_.size() << " weight " << w << std::endl;
     }
     ++nOut_;
-    if (j_ > 0) { ++nFamilies_; }
+    if (j_ > 0) { ++nFamilies_; ++nFamiliesByKind_[forced_[j_ - 1].kind]; }
     ++j_;
     return true;
   }

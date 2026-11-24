@@ -90,6 +90,7 @@ cet_make_library(
       src/Mu2eG4PerThreadStorage.cc
       src/Mu2eG4PrimaryGeneratorAction.cc
       src/Mu2eG4PrimaryType.cc
+      src/Mu2eG4ProcessCopier.cc
       src/Mu2eG4ResourceLimits.cc
       src/Mu2eG4RunAction.cc
       src/Mu2eG4ScoreWriter.cc
