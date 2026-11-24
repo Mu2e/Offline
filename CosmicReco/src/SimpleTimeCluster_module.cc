@@ -43,7 +43,7 @@ public:
     using Comment = fhicl::Comment;
     fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints")};
     fhicl::Atom<int> minnsh{Name("minNStrawHits"), Comment("minimum number of straw hits ")};
-    fhicl::Atom<int> minnshgood{Name("minNGoodStrawHits"), Comment("minimum number of straw hits passing noise cuts")};
+    fhicl::Atom<int> minnshgood{Name("minNGoodStrawHits"), Comment("minimum number of straw hits passing noise cuts"), 1};
     fhicl::Atom<int> minnpanels{Name("minNPanels"), Comment("minimum number of panels ")};
     fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
     fhicl::Atom<int> timewindow{Name("TimeWindow"), Comment("Width of time window in ns")};
@@ -174,7 +174,7 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
       ++end;                                                      // hit accepted into cluster
       count += ordChCol[end].nStrawHits();
       if (ordChCol[end].flag().hasAllProperties(_hnotnoise))
-        nonNoise += ordChCol[start].nStrawHits();
+        nonNoise += ordChCol[end].nStrawHits();
     }
     next = end + 1;                                               // no shared hits
 
