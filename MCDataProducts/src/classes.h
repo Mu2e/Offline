@@ -20,6 +20,7 @@
 #include "Offline/MCDataProducts/inc/PrimaryParticle.hh"
 #include "Offline/MCDataProducts/inc/GenSimParticleLink.hh"
 #include "Offline/MCDataProducts/inc/GenEventCount.hh"
+#include "Offline/MCDataProducts/inc/FamilySplitSummary.hh"
 #include "Offline/MCDataProducts/inc/StageParticle.hh"
 #include "Offline/MCDataProducts/inc/SpectrumConfig.hh"
 
