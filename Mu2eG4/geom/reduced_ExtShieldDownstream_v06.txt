@@ -318,14 +318,14 @@ string ExtShieldDownstream.materialType20  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType21  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType22  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType23  = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType24  = "CONCRETE_MASONRY";
+string ExtShieldDownstream.materialType24  = "CONCRETE_EXTMON_HANDSTACKED";
 string ExtShieldDownstream.materialType25  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType26  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType27  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType28  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType29  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType30  = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType31  = "CONCRETE_MASONRY";
+string ExtShieldDownstream.materialType31  = "CONCRETE_EXTMON_HANDSTACKED";
 
 // The position of each shield block in Mu2e Offline coordinates
 //Start with 20 regular concrete wall T-blocks.  10 on north side then 10 south
@@ -706,8 +706,8 @@ vector<double> ExtShieldDownstream.notchDimType14Box1Notch1 = {3099,460,1880.0};
 
 // PS Shielding extrusion notches
 int ExtShieldDownstream.nNotchesType17Box1 = 2;
-vector<double> ExtShieldDownstream.notchCenterType17Box1Notch1 = {-1775,1277.9,2118.11};
-vector<double> ExtShieldDownstream.notchDimType17Box1Notch1 = {560,508,1011.78};
+vector<double> ExtShieldDownstream.notchCenterType17Box1Notch1 = {-1775,1265.2,2118.11};
+vector<double> ExtShieldDownstream.notchDimType17Box1Notch1 = {560,533.4,1011.78};
 vector<double> ExtShieldDownstream.notchCenterType17Box1Notch2 = {1775,0.0,-2400.0};
 vector<double> ExtShieldDownstream.notchDimType17Box1Notch2 = {762.,762.,762.};
 
