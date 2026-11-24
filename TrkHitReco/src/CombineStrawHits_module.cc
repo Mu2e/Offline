@@ -63,10 +63,10 @@ namespace mu2e {
       void produce( art::Event& e);
 
     private:
-      // origIndex maps a position in chcOrig to the corresponding index in chcol's parent
-      // collection; it is the identity unless the input was re-sorted first
+      // order lists the positions in chcOrig in the order they are combined (grouped by panel);
+      // it is the identity unless the input had to be sorted first
       void combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
-                   std::vector<uint16_t> const& origIndex);
+                   std::vector<uint16_t> const& order);
       void combineHits(const ComboHitCollection& chcOrig, ComboHit& combohit);
 
       int           _debug;
@@ -135,42 +135,34 @@ namespace mu2e {
     chcolNew->reserve(chcOrig.size());
     chcolNew->setParent(chcH);
 
+    // combine() needs the hits grouped by panel.  Rather than copying the input into a sorted
+    // collection, visit chcOrig through a list of its positions: every index stored in, or read
+    // back from, a ComboHit is then a position in chcOrig, which is chcolNew's parent
+    std::vector<uint16_t> order;
+    order.reserve(chcOrig.size());
     if (_unsorted){
       // currently VST data is not sorted by panel number so we must sort manually
       // sort hits by panel
-      ComboHitCollection chcolsort;
-      chcolsort.reserve(chcOrig.size());
-      chcolsort.setParent(chcOrig.parent());
       std::array<std::vector<uint16_t>,StrawId::_nupanels> panels;
       size_t nsh = chcOrig.size();
       for(uint16_t ish=0;ish<nsh;++ish){
         ComboHit const& ch = chcOrig[ish];
-        // select hits based on flag
         panels[ch.strawId().uniquePanel()].push_back(ish);
       }
-      // chcolNew's parent is chcH (the unsorted input), so record where each sorted hit came
-      // from: without this the ComboHits would store positions in chcolsort while resolving
-      // them against chcOrig, silently corrupting per-hit provenance
-      std::vector<uint16_t> origIndex;
-      origIndex.reserve(nsh);
-      for (uint16_t ipanel=0;ipanel<StrawId::_nupanels;ipanel++){
-        for (uint16_t ish=0;ish<panels[ipanel].size();ish++){
-          chcolsort.push_back(chcOrig.at(panels[ipanel][ish]));
-          origIndex.push_back(panels[ipanel][ish]);
-        }
-      }
-      combine(ewm, chcolsort, *chcolNew, origIndex);
+      for (auto const& panel : panels)
+        order.insert(order.end(), panel.begin(), panel.end());
     }else{
-      std::vector<uint16_t> origIndex(chcOrig.size());
-      std::iota(origIndex.begin(), origIndex.end(), 0);
-      combine(ewm, chcOrig, *chcolNew, origIndex);
+      // sim data are already sorted by panel
+      order.resize(chcOrig.size());
+      std::iota(order.begin(), order.end(), 0);
     }
+    combine(ewm, chcOrig, *chcolNew, order);
     event.put(std::move(chcolNew));
   }
 
 
   void CombineStrawHits::combine(EventWindowMarker const& ewm, ComboHitCollection const& chcOrig, ComboHitCollection& chcol,
-                                 std::vector<uint16_t> const& origIndex)
+                                 std::vector<uint16_t> const& order)
   {
 
     float minT = _minT;
@@ -180,25 +172,26 @@ namespace mu2e {
     if (ewm.spillType() == EventWindowMarker::offspill && _overridemaxTOff)
       maxT = _maxTOff;
 
-    std::vector<bool> isUsed(chcOrig.size(),false);
-    for (size_t ich=0;ich<chcOrig.size();++ich) {
+    // ich and jch are positions in order; order[ich] is the position in chcOrig
+    std::vector<bool> isUsed(order.size(),false);
+    for (size_t ich=0;ich<order.size();++ich) {
       if (isUsed[ich]) continue;
       isUsed[ich] = true;
 
-      const ComboHit& hit1 = chcOrig[ich];
+      const ComboHit& hit1 = chcOrig[order[ich]];
       if ( _testflag && hit1.flag().hasAnyProperty(StrawHitFlag::dead)) continue;
       if ( _testflag && (!hit1.flag().hasAllProperties(_shsel) || hit1.flag().hasAnyProperty(_shmask))) continue;
       ComboHit combohit;
-      combohit.init(hit1,origIndex[ich]);
+      combohit.init(hit1,order[ich]);
       // TimeDivision is a quality tag: StrawHitRecoUtils sets it only when the longitudinal
       // position was actually measured, and leaves it off when StrawResponse had to clamp the
       // position to the straw end.  It must therefore be propagated from the constituents.
       bool tdiv = hit1.flag().hasAllProperties(StrawHitFlag::tdiv);
       int panel1 = hit1.strawId().uniquePanel();
 
-      for (size_t jch=ich+1;jch<chcOrig.size();++jch) {
+      for (size_t jch=ich+1;jch<order.size();++jch) {
         if (isUsed[jch]) continue;
-        const ComboHit& hit2 = chcOrig[jch];
+        const ComboHit& hit2 = chcOrig[order[jch]];
 
         if (hit2.strawId().uniquePanel() != panel1) break;
         if (abs(hit2.strawId().straw()-hit1.strawId().straw())> _maxds ) continue; // hits are not sorted by straw number
@@ -212,7 +205,7 @@ namespace mu2e {
         float wdchi = fabs(hit1.wireDist() - hit2.wireDist())/wderr;
         if (wdchi > _maxwdchi) continue;
 
-        bool ok = combohit.addIndex(origIndex[jch]);
+        bool ok = combohit.addIndex(order[jch]);
         if (!ok){
           std::cout << "CombineStrawHits past limit" << std::endl;
         } else {
