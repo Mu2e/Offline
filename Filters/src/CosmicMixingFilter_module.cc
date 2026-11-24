@@ -1,13 +1,19 @@
 // Select cosmic events for mixing: this requires a 'signal-like' particle in the tracker
 //  Original author; Dave Brown (LBNL) 2022
+// Particles are told apart by the product ID and key of the steps' art::Ptr. With SimParticles set, a candidate's
+// SimParticle is looked up in that collection by key and no Ptr is dereferenced, so the filter also runs where
+// those Ptr cannot resolve: in a FamilySplitSource job, whose products the source re-creates
+// (Production/JobConfig/cosmic/S2FamilySplitSignal.fcl).
 
 #include <string>
 #include <map>
 #include <sstream>
+#include <utility>
 
 // art includes.
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "cetlib_except/exception.h"
@@ -15,6 +21,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "Offline/DataProducts/inc/PDGCode.hh"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "Offline/MCDataProducts/inc/StepPointMC.hh"
@@ -54,6 +61,9 @@ namespace mu2e {
         using Comment=fhicl::Comment;
 
         fhicl::Atom<art::InputTag> trkSteps { Name("StrawGasSteps"), Comment("StrawGasStep collection") };
+        fhicl::OptionalAtom<art::InputTag> simParticles { Name("SimParticles"),
+          Comment("SimParticle collection the steps point to. If set, particles are looked up in it by key instead of\n"
+                  "through the steps' art::Ptr, for jobs in which those Ptr do not resolve (FamilySplitSource)") };
         fhicl::Atom<int> diagLevel { Name("DiagLevel"), Comment("Diag printout level"),0 };
         fhicl::Atom<double> minTrkStepEnergy { Name("MinimumTrkStepEnergy"), Comment("Minimum Trk step energy"), 0.0 };
         fhicl::Atom<double> minPartMom { Name("MinimumPartMom"), Comment("Minimum particle momentum") };
@@ -74,6 +84,8 @@ namespace mu2e {
     private:
       bool timeCut(double time) const; // particle time
       art::InputTag trkStepCol_;
+      art::InputTag simTag_;
+      bool useSimTag_;
       int diagLevel_;
       double minTrkE_, minPartM_, maxPartM_;
       unsigned minNTrk_, minNPlanes_, minPlaneSpan_;
@@ -86,6 +98,7 @@ namespace mu2e {
   //================================================================
   CosmicMixingFilter::CosmicMixingFilter(const Parameters& conf) : art::EDFilter{conf}
   , trkStepCol_(conf().trkSteps())
+    , useSimTag_(conf().simParticles(simTag_))
     , diagLevel_(conf().diagLevel())
     , minTrkE_(conf().minTrkStepEnergy())
     , minPartM_(conf().minPartMom())
@@ -100,6 +113,7 @@ namespace mu2e {
     , nPassed_(0)
     {
       consumes<StrawGasStepCollection>(trkStepCol_);
+      if(useSimTag_) consumes<SimParticleCollection>(simTag_);
       TimeCutConfig tc;
       if(conf().timeCutConfig(tc)) {
         timecut_ = true;
@@ -118,8 +132,10 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     bool selecttrk(false);
     ++nEvt_;
-    // Count Trk step from same particle
-    using CT = std::map<const SimParticle*,TrkHitCount>;
+    // Count Trk step from same particle, named by the product ID and key of its Ptr
+    using PKey = std::pair<art::ProductID,std::size_t>;
+    auto keyOf = [](StrawGasStep const& sgs) { return PKey(sgs.simParticle().id(), sgs.simParticle().key()); };
+    using CT = std::map<PKey,TrkHitCount>;
     CT counttrk;
     auto sgscolH = event.getValidHandle<StrawGasStepCollection>(trkStepCol_);
     for(const auto& sgs : *sgscolH ) {
@@ -127,13 +143,13 @@ namespace mu2e {
       if(sgs.ionizingEdep() > minTrkE_ &&
           mom > minPartM_ && mom < maxPartM_ &&
           timeCut(fmod(sgs.time(),mbtime))) {
-        auto ifndhit = counttrk.find(sgs.simParticle().get());
+        auto ifndhit = counttrk.find(keyOf(sgs));
         if(ifndhit == counttrk.end()){
           TrkHitCount thc;
           thc.nhits_ = 1;
           thc.planes_.insert(sgs.strawId().plane());
           thc.minplane_ = thc.maxplane_ = sgs.strawId().plane();
-          counttrk.insert(CT::value_type(sgs.simParticle().get(),thc));
+          counttrk.insert(CT::value_type(keyOf(sgs),thc));
         } else {
           ifndhit->second.nhits_++;
           ifndhit->second.planes_.insert(sgs.strawId().plane());
@@ -148,11 +164,28 @@ namespace mu2e {
           && itrk->second.planes_.size() >= minNPlanes_
           && unsigned(abs(itrk->second.maxplane_-itrk->second.minplane_)) >= minPlaneSpan_){
         // test the impact parameter.  Use info from the first sgs
-        auto sp = itrk->first;
+        auto const& key = itrk->first;
+        SimParticle const* sp = nullptr;
+        if(useSimTag_) {
+          auto simsH = event.getValidHandle<SimParticleCollection>(simTag_);
+          if(simsH.id() != key.first) {
+            throw cet::exception("CosmicMixingFilter") << "a StrawGasStep points to product " << key.first
+                                                       << ", not to the SimParticles " << simTag_ << "\n";
+          }
+          sp = simsH->getOrNull(cet::map_vector_key(key.second));
+        } else {
+          for(const auto& sgs : *sgscolH ) {
+            if(keyOf(sgs) == key) { sp = sgs.simParticle().get(); break; }
+          }
+        }
+        if(sp == nullptr) {
+          throw cet::exception("CosmicMixingFilter") << "SimParticle " << key.first << ":" << key.second
+                                                     << " of a StrawGasStep not found\n";
+        }
         double charge = pdt->particle(sp->pdgId()).charge();
         RobustHelix rh;
         for(const auto& sgs : *sgscolH ) {
-          if(sgs.simParticle().get() == sp){
+          if(keyOf(sgs) == key){
             CLHEP::Hep3Vector pos = sgs.position();
             CLHEP::Hep3Vector mom = sgs.momvec();
             double bz = bfmgr->getBField(det->toMu2e(pos)).z();
