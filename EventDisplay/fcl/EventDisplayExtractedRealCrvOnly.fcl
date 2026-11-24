@@ -13,3 +13,12 @@ services.DbService.verbose : 0
 #services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260816.txt","Offline/CRVConditions/data/calibSiPM_extracted_20260816.txt","Offline/CRVConditions/data/calibTime_extracted_20260816.txt"]
 #older data
 #services.DbService.textFile : ["Offline/CRVConditions/data/status_extracted_20260716.txt","Offline/CRVConditions/data/calib_extracted_20260716.txt"]
+
+#physics.analyzers.eventdisplay.imageOutput :
+#      {
+#        imageSize : [ 2000, 1200 ]
+#        tracks  : [ ]
+#        crvHits : "CrvRecoPulse:CrvRecoPulses:"
+#        views   : [ { view : "side" file : "evd_%r_%s_%e_side.png" },
+#                    { view : "end"  file : "evd_%r_%s_%e_end.png" } ]
+#      }

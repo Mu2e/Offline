@@ -94,6 +94,43 @@ namespace
     private:
     bool _active;
   };
+
+  //Workaround for a ROOT problem (seen with ROOT 6.32.06 and 6.38.00): in batch mode, TASImage gives
+  //libAfterImage a fake display pointer (1), and reading an XPM icon which uses named colors
+  //(scroll bars, combo boxes) then crashes in asim_parse_argb_color; in ROOT alone:
+  //  root -b -e 'TImage::Open(TROOT::GetDataDir()+"/icons/arrow_left.xpm")'
+  //With a null pointer the color lookup through X is skipped. Icons are not shown in batch mode.
+  //The null pointer may only stay while the GUI objects get built: TASImage::InitVisual takes a null
+  //pointer as "not initialized" and makes a new visual for every line drawn into an image (never freed,
+  //about 15 MB per event).
+  //(InitVisual also replaces the visual each time, so the pointer gets restored in the current visual.)
+  //The display pointer is the first member of ASVisual.
+  void **afterImageDisplay()
+  {
+    return reinterpret_cast<void**>(const_cast<ASVisual*>(TASImage::GetVisual()));
+  }
+  class NullAfterImageDisplay
+  {
+    public:
+    explicit NullAfterImageDisplay(bool active) : _active(false)
+    {
+      if(!active) return;
+      ASImageVisual::init();
+      void **display=afterImageDisplay();
+      if(display!=nullptr && *display==reinterpret_cast<void*>(1)) {_active=true; *display=nullptr;}
+    }
+    ~NullAfterImageDisplay()
+    {
+      if(!_active) return;
+      void **display=afterImageDisplay();
+      if(display!=nullptr && *display==nullptr) *display=reinterpret_cast<void*>(1);
+    }
+    NullAfterImageDisplay(const NullAfterImageDisplay&) = delete;
+    NullAfterImageDisplay& operator=(const NullAfterImageDisplay&) = delete;
+
+    private:
+    bool _active;
+  };
 }
 
 namespace mu2e_eventdisplay
@@ -112,16 +149,6 @@ void EventDisplayFrame::prepareBatchMode()
   if(gClient==nullptr) new TGClient();
   if(gClient==nullptr || gClient->IsZombie())
     throw cet::exception("EventDisplay")<<"imageOutput: could not make ROOT's GUI client\n";
-
-  //Workaround for a ROOT problem (seen with ROOT 6.32.06 and 6.38.00): in batch mode, TASImage gives
-  //libAfterImage a fake display pointer (1), and reading an XPM icon which uses named colors
-  //(scroll bars, combo boxes) then crashes in asim_parse_argb_color; in ROOT alone:
-  //  root -b -e 'TImage::Open(TROOT::GetDataDir()+"/icons/arrow_left.xpm")'
-  //With a null pointer the color lookup through X is skipped. Icons are not shown in batch mode.
-  //The display pointer is the first member of ASVisual.
-  ASImageVisual::init();
-  void **display=reinterpret_cast<void**>(const_cast<ASVisual*>(TASImage::GetVisual()));
-  if(display!=nullptr && *display==reinterpret_cast<void*>(1)) *display=nullptr;
 }
 
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) :
@@ -166,7 +193,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
     _imageWidth=imageSize[0];
     _imageHeight=imageSize[1];
   }
-  ExpectedRootMessages expectedRootMessages(isBatchMode());  //while the GUI objects get built in this constructor
+  ExpectedRootMessages expectedRootMessages(isBatchMode());    //while the GUI objects get built in this constructor
+  NullAfterImageDisplay nullAfterImageDisplay(isBatchMode());  //while the GUI objects get built in this constructor
 
   SetCleanup(kDeepCleanup);
   Move(20,20);

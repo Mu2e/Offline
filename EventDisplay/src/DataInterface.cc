@@ -1140,10 +1140,17 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             double fitParam2 = recoPulse.GetPulseBeta();
 
             TList *functionList = boost::dynamic_pointer_cast<TMultiGraph>(v[k])->GetListOfFunctions();
-            if(functionList->GetSize()==0) functionList->Add(new TF1("pedestal",Form("%f",recoPulsePedestal))); //TODO: Use compiled function
+            //the formulas have parameters instead of the numbers, so that cling compiles each formula only once
+            //(every new formula text gets JIT-compiled, and that memory is never released)
+            if(functionList->GetSize()==0)
+            {
+              TF1 *pedestal = new TF1("pedestal","[0]");
+              pedestal->SetParameter(0,recoPulsePedestal);
+              functionList->Add(pedestal);
+            }
             TF1 *f = new TF1(Form("peakFitter%i",functionList->GetSize()),
-                             Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
-                             fitParam0,fitParam1,fitParam2,fitParam1,fitParam2));  //TODO: Use compiled function
+                             "[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
+            f->SetParameters(fitParam0,fitParam1,fitParam2);
             f->SetLineWidth(1);
             f->SetLineStyle(1);
             f->SetLineColor(2);
@@ -1158,8 +1165,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               double ringingParam2 = recoPulse.GetRingingArtifactBeta();
 
               TF1 *f2 = new TF1(Form("ringingArtifact%i",functionList->GetSize()),
-                                Form("%f*(TMath::Exp(-(x-%f)/%f-TMath::Exp(-(x-%f)/%f)))",
-                                ringingParam0,ringingParam1,ringingParam2,ringingParam1,ringingParam2));  //TODO: Use compiled function
+                                "[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
+              f2->SetParameters(ringingParam0,ringingParam1,ringingParam2);
               f2->SetLineWidth(1);
               f2->SetLineStyle(1);
               f2->SetLineColor(17);
