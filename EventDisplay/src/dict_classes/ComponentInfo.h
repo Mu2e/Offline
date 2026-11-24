@@ -173,16 +173,17 @@ namespace mu2e_eventdisplay
           if(functionList->GetSize()>0)
           {
             //1st function is the pedestal that gets added to each reco pulse fitted function
+            //(the functions have parameters; option "P" writes their values into the formula text)
             TF1 *fpedestal = dynamic_cast<TF1*>(functionList->At(0));
             TString functionStringSum;
-            functionStringSum.Append(fpedestal->GetExpFormula());
+            functionStringSum.Append(fpedestal->GetExpFormula("P"));
             for(int iFunction=1; iFunction<functionList->GetSize(); ++iFunction)
             {
               TF1 *f = dynamic_cast<TF1*>(functionList->At(iFunction));
               TString functionString;
-              functionString.Append(fpedestal->GetExpFormula());
+              functionString.Append(fpedestal->GetExpFormula("P"));
               functionString.Append("+");
-              functionString.Append(f->GetExpFormula());
+              functionString.Append(f->GetExpFormula("P"));
 
               TF1 *fWithPedestal = new TF1("recoFunctionWithPedestal",functionString.Data());
               fWithPedestal->DrawF1(m->GetXaxis()->GetXmin(),m->GetXaxis()->GetXmax(),"csame");
@@ -191,7 +192,7 @@ namespace mu2e_eventdisplay
               fWithPedestal->SetLineStyle(f->GetLineStyle());
 
               functionStringSum.Append("+");
-              functionStringSum.Append(f->GetExpFormula());
+              functionStringSum.Append(f->GetExpFormula("P"));
             }
 
             TF1 *fSum = new TF1("recoFunctionSum",functionStringSum.Data());
