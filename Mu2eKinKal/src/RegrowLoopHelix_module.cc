@@ -61,6 +61,9 @@
 #include "Offline/Mu2eKinKal/inc/KKCaloHit.hh"
 #include "Offline/Mu2eKinKal/inc/KKBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
+#include "Offline/Mu2eKinKal/inc/KKSTTransit.hh"
+#include "Offline/RecoDataProducts/inc/TrkMaterialTransit.hh"
+#include "Offline/RecoDataProducts/inc/KalSeedAssns.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -99,6 +102,7 @@ namespace mu2e {
     fhicl::Atom<std::string> mustRegrow{ Name("MustRegrow"), Comment("Required track regrowing success for event to pass: 'None', 'Any' or 'All'")};
 
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
+    fhicl::OptionalTable<KKSTTransitConfig> stTransitSettings { Name("STTransitSettings"), Comment("If present, estimate the stopping target material transited by the fit (including extrapolation) and save it as TrkMaterialTransit, associated to the regrown KalSeed") };
   };
 
   class RegrowLoopHelix : public art::EDFilter {
@@ -162,6 +166,7 @@ namespace mu2e {
       bool extend_;
       bool has_cccol_, has_kseedcol_, has_kseedptrcol_;
       std::unique_ptr<KKExtrap> extrap_;
+      std::unique_ptr<KKSTTransit> sttransit_; // ST material transit helper
       PDGCode::type tpart_ = PDGCode::unknown;
       regrown mustregrow_; // requirement on tracks to regrow for the event to pass
   };
@@ -182,6 +187,11 @@ namespace mu2e {
     produces<KalSeedCollection>();
     if(settings().extrapSettings())extrap_ = make_unique<KKExtrap>(*settings().extrapSettings());
     if(extrap_) extrap_->checkConfig(config_);
+    if(settings().stTransitSettings()){
+      sttransit_ = make_unique<KKSTTransit>(*settings().stTransitSettings());
+      produces<TrkMaterialTransitCollection>();
+      produces<KalMaterialTransitAssns>();
+    }
     if( fillMCAssns_){
       consumes<KalSeedMCAssns>(ksmca_T_);
       produces <KalSeedMCAssns>();
@@ -215,6 +225,7 @@ namespace mu2e {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
+    if(sttransit_) sttransit_->beginRun();
     return true;
   }
 
@@ -234,6 +245,14 @@ namespace mu2e {
     const auto& indexmap = *indexmap_H;
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
     auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
+    unique_ptr<TrkMaterialTransitCollection> sttcol(new TrkMaterialTransitCollection);
+    unique_ptr<KalMaterialTransitAssns> sttassns(new KalMaterialTransitAssns);
+    art::ProductID sttPID;
+    art::EDProductGetter const* sttGetter(nullptr);
+    if(sttransit_){
+      sttPID = event.getProductID<TrkMaterialTransitCollection>();
+      sttGetter = event.productGetter(sttPID);
+    }
     art::ProductID KalSeedMCCollectionPID;
     art::Handle<KalSeedMCAssns> ksmca_H;
     // create outputs
@@ -310,6 +329,11 @@ namespace mu2e {
             auto rgks = kkfit_.createSeed(*ktrk,fitflag,*calo_h,*nominalTracker_h,*trackerstatus);
             rgkseedcol->push_back(rgks);
             auto rgksp = art::Ptr<KalSeed>(KalSeedCollectionPID,rgkseedcol->size()-1,KalSeedCollectionGetter);
+            // estimate the ST material transited by the fit and its extrapolation
+            if(sttransit_){
+              sttcol->push_back(sttransit_->STTransit(ktrk->fitTraj()));
+              sttassns->addSingle(rgksp,art::Ptr<TrkMaterialTransit>(sttPID,sttcol->size()-1,sttGetter));
+            }
             if(fillMCAssns_){
               // find the MC assns
               auto ksmca = *ksmca_H;
@@ -356,6 +380,10 @@ namespace mu2e {
     event.put(move(rgkseedcol));
     if(fillMCAssns_)event.put(move(rgksmca));
     if(copyKalSeedMCs_)event.put(move(rgksmcc));
+    if(sttransit_){
+      event.put(move(sttcol));
+      event.put(move(sttassns));
+    }
     return accept;
   }
 

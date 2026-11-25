@@ -260,6 +260,17 @@
  <class name="art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void>"/>
  <class name="art::Wrapper<art::Assns<mu2e::HelixSeed,mu2e::KalSeed,void> >"/>
 
+<!-- material transit estimates -->
+ <class name="mu2e::TrkArcTransit"/>
+ <class name="std::vector<mu2e::TrkArcTransit>"/>
+ <class name="mu2e::TrkMaterialTransit"/>
+ <class name="mu2e::TrkMaterialTransitCollection"/>
+ <class name="art::Wrapper<mu2e::TrkMaterialTransitCollection>"/>
+ <class name="mu2e::KalMaterialTransitAssns" />
+ <class name="art::Wrapper<mu2e::KalMaterialTransitAssns>"/>
+ <class name="art::Assns<mu2e::TrkMaterialTransit,mu2e::KalSeed,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::TrkMaterialTransit,mu2e::KalSeed,void> >"/>
+
  <class name="mu2e::KalLineAssns" />
  <class name="art::Wrapper<mu2e::KalLineAssns>"/>
  <class name="art::Assns<mu2e::CosmicTrackSeed,mu2e::KalSeed,void>"/>
