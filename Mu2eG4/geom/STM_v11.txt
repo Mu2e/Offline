@@ -1599,6 +1599,50 @@ double  vd.STMSSCollUpStr.r                        = 100;
 // 924.3), so this keeps VD116 at its STM_v09 z.
 double  vd.STMUpStrLarge.offset                    = 2624.9;
 
+// VD136 STM_DnStrPlane: hall-wide plane whose center is
+// vd.STMDnStrPlane.offset = 600 mm from the cradle front in the -z
+// direction (upstream), z = 40325.3 - 600 = 39725.3. It is placed in
+// HallAir, not in the downstream envelope: constructSTM cuts a slab of
+// the envelope's full x-y cross-section out of it at this z, of half
+// thickness vd.halfLength + 0.01, and the VD passes through that slot.
+// Nothing else in the envelope crosses this z: the nearest piece, the
+// electronic shielding concrete's upstream face (41351.2 - 1130.3 - 457.2
+// = 39763.7), is 38.39 in +z from the VD's downstream face; VD116 is in
+// -z of it.
+//
+// The main rectangle spans the hall at this z, in Mu2e coordinates. The
+// bldg/dsArea*.txt polygons give Mu2e x = 947.4 + yPositions and
+// z = xPositions - 3581.4 (the east wall's inner face, x 44932.6, is at
+// z = 41351.2); their y is measured from the floor, at y = -2312
+// (yOfFloorSurface.below.mu2eOrigin). Each edge is 1 mm inside the
+// concrete:
+//   xMin    south wall inner face, dsArea yPositions -8661.4 -> x = -7714.0
+//   xMax    north pilaster line, dsArea -1041.4 -> x = -94.0 (the main
+//           rectangle is then centered on the DS axis, x = -3904.0)
+//   yBottom floor, y = -2312
+//   yTop    underside of dsAreaDownstreamCeiling, offsetFromFloorSurface
+//           5600.7 - yHalfThickness 114.3 = 5486.4 above the floor,
+//           y = 3174.4
+// The VD is registered at the main rectangle's center,
+// (-3904.0, 431.2, 39725.3).
+bool    vd.STMDnStrPlane.build                     = true;
+double  vd.STMDnStrPlane.offset                    = 600.0;
+double  vd.STMDnStrPlane.xMin                      = -7713.0;
+double  vd.STMDnStrPlane.xMax                      = -95.0;
+double  vd.STMDnStrPlane.yBottom                   = -2311.0;
+double  vd.STMDnStrPlane.yTop                      = 3173.4;
+// Optional tab into the hall's north alcove 3 (dsArea xPositions 37820.6
+// to 44932.6, z = 34239.2 to 41351.2, so it is open at this z). It runs
+// from x = xMax - 10 (inside the main rectangle) to alcove.xMax, and from
+// yBottom to alcove.yTop, each edge again 1 mm inside the concrete:
+//   alcove.xMax alcove back wall, dsArea yPositions 2006.6 -> x = 2954.0
+//   alcove.yTop underside of dsAreaAlcove3Ceiling, offsetFromFloorSurface
+//               3251.2 - yHalfThickness 203.2 = 3048.0 above the floor,
+//               y = 736.0
+bool    vd.STMDnStrPlane.alcove.build              = true;
+double  vd.STMDnStrPlane.alcove.xMax               = 2953.0;
+double  vd.STMDnStrPlane.alcove.yTop               = 735.0;
+
 // VD88 STM_CollDnStr: disk on the beam axis, 25.4 mm downstream of the
 // front shielding's back face (the FSR copper lining's back, 327.4 from
 // the cradle front), z = 40678.11. Turned off, and should stay off in
