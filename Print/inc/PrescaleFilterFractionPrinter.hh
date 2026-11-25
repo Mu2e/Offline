@@ -4,13 +4,12 @@
 #ifndef Print_inc_PrescaleFilterFractionPrinter_hh
 #define Print_inc_PrescaleFilterFractionPrinter_hh
 
-#include <cstring>
 #include <iostream>
+#include <string>
 
 #include "Offline/DataProducts/inc/PrescaleFilterFraction.hh"
 #include "Offline/Print/inc/ProductPrinter.hh"
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Persistency/Common/Ptr.h"
 
 namespace mu2e {
 
