@@ -14,19 +14,19 @@ namespace mu2e
   namespace {
     // A particle simulated in several stages has one SimParticle per stage. Each later copy's parent is the copy
     // before it, and selfParent() is true for the later copy. Relationships are between physical particles, so
-    // every Ptr is mapped to its first copy before comparing.
+    // every Ptr is mapped to its origin particle (SimParticle::originParticlePtr) before comparing.
     // Example, a two-stage cosmic: P1 is the stage-1 primary, P2 its stage-2 copy (P2.parent() is P1), and E2 a
     // daughter made in stage 2 (E2.parent() is P2). MCRelationship(P2,P1) is 'same' and MCRelationship(E2,P1)
     // is 'daughter'. Comparing raw Ptrs gave 'none' for both: P2 != P1, and the walk up from P2 jumped straight
     // to P1's parent (null), so P1 itself was never compared.
-    MCRelationship::SPPtr firstCopy(MCRelationship::SPPtr sp) {
-      while(sp->selfParent()) sp = sp->parent();
-      return sp;
+    MCRelationship::SPPtr originPtr(MCRelationship::SPPtr const& sp) {
+      auto origin = sp->originParticlePtr();
+      return origin.isNonnull() ? origin : sp; // null: sp is its own origin
     }
-    // the first copy of the parent of a first copy, or a null Ptr for a primary
-    MCRelationship::SPPtr parentCopy(MCRelationship::SPPtr const& sp) {
+    // the origin of the parent of an origin particle, or a null Ptr for a primary
+    MCRelationship::SPPtr parentOriginPtr(MCRelationship::SPPtr const& sp) {
       auto const& parent = sp->parent();
-      return parent.isNonnull() ? firstCopy(parent) : parent;
+      return parent.isNonnull() ? originPtr(parent) : parent;
     }
   }
 
@@ -40,14 +40,14 @@ namespace mu2e
 
   MCRelationship::MCRelationship(SPPtr const& sppi_in,SPPtr const& sppj_in) : _rel(none), _rem(-1) {
     if(sppi_in.isNonnull() && sppj_in.isNonnull()){
-      SPPtr const sppi = firstCopy(sppi_in);
-      SPPtr const sppj = firstCopy(sppj_in);
+      SPPtr const sppi = originPtr(sppi_in);
+      SPPtr const sppj = originPtr(sppj_in);
       if(sppi == sppj){
         _rel= same;
         _rem = 0;
       } else {
-        SPPtr pi = parentCopy(sppi);
-        SPPtr pj = parentCopy(sppj);
+        SPPtr pi = parentOriginPtr(sppi);
+        SPPtr pj = parentOriginPtr(sppj);
         if(pi.isNonnull() && pi == sppj){
           _rel = daughter;
           _rem = 1;
@@ -63,11 +63,11 @@ namespace mu2e
           pvj.push_back(sppj);
           while(pi.isNonnull()){
             pvi.push_back(pi);
-            pi = parentCopy(pi);
+            pi = parentOriginPtr(pi);
           }
           while(pj.isNonnull()){
             pvj.push_back(pj);
-            pj = parentCopy(pj);
+            pj = parentOriginPtr(pj);
           }
           auto idau = find(pvi.begin(),pvi.end(),sppj);
           auto jdau = find(pvj.begin(),pvj.end(),sppi);

@@ -168,6 +168,13 @@ namespace mu2e {
     SimParticle const& originParticle() const {
       return selfParent() ? parent()->originParticle() : *this;
     }
+    // The same walk, as a Ptr: the earliest representation of this physical particle if this is a
+    // later-stage copy (selfParent() true), otherwise a null Ptr, since a SimParticle does not know its
+    // own Ptr. A caller holding this particle's Ptr uses that one when the result is null.
+    art::Ptr<SimParticle> originParticlePtr() const {
+      if(!selfParent()) return art::Ptr<SimParticle>();
+      return parent()->selfParent() ? parent()->originParticlePtr() : parent();
+    }
 
     // The genparticle corresponding to this track; may be null.
     art::Ptr<GenParticle> const& genParticle() const { return _genParticle;}
