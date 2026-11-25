@@ -12,7 +12,9 @@
 // - Near misses: a target with nearfrac_ > 0 also accepts an out-of-bounds crossing when at least that fraction of the trajectory position covariance,
 //   projected onto the surface, lies within the surface bounds (KinKal::Intersection::inbfrac_).  KKExtrap adds it like an in-bounds crossing; its
 //   material xing is inactive (it has no effect unless a refit moves it in bounds), and it doesn't count against maxcross_ or the target group.
-//   The projected covariance is filled for every crossing of such a target.
+//   The projected covariance is filled for every crossing of such a target with |cos| between the surface normal and the direction of at least covmincos_.
+//   Below that the linear projection along the direction misestimates the bounds fraction (steep crossings of thin foils), so the crossing carries no
+//   projected covariance and cannot be a near miss; in-bounds crossings are still recorded and the sweep continues.
 // - Planes: the signed plane distance of a helix or line is monotonic between the extrema of its normal velocity, which are known in closed form (visitPlaneExtrema), so plane roots are bracketed and bisected (planeCrossing); cylinders use KinKal::intersect.
 //   TEMPORARY: this works around KFTrack/KinKal#233 (KinKal::intersect can return a plane root outside the query). Once Offline uses a KinKal release
 //   with KFTrack/KinKal#235, remove visitPlaneExtrema and planeCrossing and use KinKal::intersect for planes too.
@@ -78,6 +80,7 @@ namespace mu2e {
     double nearfrac_ = 0.0; // if inbounds_, also accept out-of-bounds crossings (near misses) with at least this fraction of the projected position covariance in bounds; 0 to disable
     bool active_ = true; // initial state; the upstream reflection logic switches targets on and off
     double mincos_ = 0.0; // minimum |cos| between the surface normal and the direction at the crossing
+    double covmincos_ = 0.0; // minimum |cos| to project the position covariance onto the surface (near-miss test and Intersection::inbfrac_)
     double rmax_ = inf; // unreachable beyond this transverse radius when moving outward (mm)
     double zval_ = 0.0; // plane z for zplane reach (mm)
     double rreg_ = inf, zreglo_ = -inf, zreghi_ = inf; // region for inside and zrange reach (mm)
@@ -457,8 +460,9 @@ namespace mu2e {
       ownBoundary(piece,tg,inter);
       if(sgn*(inter.time_ - ts) < 0.0 || sgn*(stop - inter.time_) < 0.0) return false;
       if(!inter.inrange_) throw std::runtime_error("KKExtrap: surface root has no owning piece");
-      bool grazing = std::fabs(inter.norm_.Dot(inter.pdir_)) < tg.mincos_;
-      bool near = !inter.inbounds_ && tg.inbounds_ && tg.nearfrac_ > 0.0 && !grazing && nearMissCrossing(piece,tg,inter);
+      double incidence = std::fabs(inter.norm_.Dot(inter.pdir_));
+      bool grazing = incidence < tg.mincos_;
+      bool near = !inter.inbounds_ && tg.inbounds_ && tg.nearfrac_ > 0.0 && !grazing && incidence >= tg.covmincos_ && nearMissCrossing(piece,tg,inter);
       if((inter.inbounds_ || !tg.inbounds_ || near) && !grazing && (!guarded_[itg] || departed(ptraj,itg,tlast_[itg],inter.time_))) return true;
       // Roots within four intersection tolerances of path length are unresolved by this search; a grazing track first leaves the tolerance.
       double next = inter.time_ + sgn*(grazing ? std::max(step,2.0*intertol_/(tg.mincos_*speed)) : step);
@@ -505,7 +509,8 @@ namespace mu2e {
       }
       if(found){
         // the projected covariance of a near-miss target crossing (filled already for a near miss), only for the winning candidate as it is costly
-        if(targets_[best.itarget_].nearfrac_ > 0.0 && !best.inter_.hascov_)
+        auto const& btg = targets_[best.itarget_];
+        if(btg.nearfrac_ > 0.0 && !best.inter_.hascov_ && std::fabs(best.inter_.norm_.Dot(best.inter_.pdir_)) >= btg.covmincos_)
           KinKal::fillPlaneCovariance(ptraj.piece(bestpiece),*targets_[best.itarget_].surf_,best.inter_,intertol_);
         crossing_ = best;
         found_ = true;

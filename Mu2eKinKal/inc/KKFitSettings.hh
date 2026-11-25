@@ -135,6 +135,7 @@ namespace mu2e {
       fhicl::Atom<bool> ToCaloMaterial { Name("ToCaloMaterial"), Comment("Add material effects from the calorimeter front panels when extrapolating to the calorimeter disks"), false };
       fhicl::Atom<float> NearMissFraction { Name("NearMissFraction"), Comment("Record out-of-bounds material crossings (as inactive material) when at least this fraction of the projected position covariance is in bounds; 0 to disable"), 0.0 };
       fhicl::Atom<float> CRVNearMissFraction { Name("CRVNearMissFraction"), Comment("NearMissFraction for the CRV sectors"), 0.0 };
+      fhicl::Atom<float> STCovMinCos { Name("STCovMinCos"), Comment("Minimum |cos| between an ST foil normal and the track direction to project the position covariance onto the foil (near misses and the in-bounds fraction); steeper crossings are recorded only in bounds, without that projection"), 0.0 };
     };
   }
 }

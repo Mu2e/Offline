@@ -790,6 +790,21 @@ namespace {
     // 10 sigma out: rejected by the pre-filter
     first(makeTraj(60.0),target(1.0e-3),found);
     require(!found,"10-sigma miss accepted");
+    // the covariance projection requires |cos| >= covmincos_ (the line has |cos| = 100/sqrt(10900) = 0.958): steeper crossings
+    // are still found in bounds, without the projected covariance, and cannot be near misses
+    {
+      auto steep = target(0.1);
+      steep.covmincos_ = 0.99;
+      inter = first(makeTraj(0.0),steep,found);
+      require(found && inter.inbounds_ && !inter.hascov_,"in-bounds crossing below covmincos_ has a projected covariance");
+      first(makeTraj(50.5),steep,found);
+      require(!found,"near miss accepted below covmincos_");
+      steep.covmincos_ = 0.95;
+      inter = first(makeTraj(0.0),steep,found);
+      require(found && inter.inbounds_ && inter.hascov_,"in-bounds crossing above covmincos_ lacks its projected covariance");
+      inter = first(makeTraj(50.5),steep,found);
+      require(found && !inter.inbounds_ && inter.hascov_,"near miss above covmincos_ rejected");
+    }
     // a near miss doesn't use up its group: a later in-bounds group member is still crossed
     {
       auto traj = makeTraj(50.5);

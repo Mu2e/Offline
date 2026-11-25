@@ -60,6 +60,7 @@ namespace mu2e {
       mutable std::atomic<unsigned> nRangedOut_{0}, nNotTruncated_{0}; // counted in rangeOut, reported by printSummary
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
       double nearfrac_, crvnearfrac_; // near-miss bounds fractions for material targets (see ExtrapolateSweep), 0 to disable
+      double stcovmincos_; // minimum |cos| for the ST foil covariance projection (see SweepTarget::covmincos_)
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
       // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
@@ -80,6 +81,7 @@ namespace mu2e {
     minv_(extrapconfig.MinV()),
     nearfrac_(extrapconfig.NearMissFraction()),
     crvnearfrac_(extrapconfig.CRVNearMissFraction()),
+    stcovmincos_(extrapconfig.STCovMinCos()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
@@ -213,6 +215,7 @@ namespace mu2e {
         tg.thick_ = st.foilThickness(ifoil);
         tg.maxcross_ = 0;
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
+        tg.covmincos_ = stcovmincos_;
         tg.nearfrac_ = nearfrac_;
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
         tgts.push_back(tg);
