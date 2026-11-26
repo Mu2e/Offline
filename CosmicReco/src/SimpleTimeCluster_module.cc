@@ -43,6 +43,7 @@ public:
     using Comment = fhicl::Comment;
     fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints")};
     fhicl::Atom<int> minnsh{Name("minNStrawHits"), Comment("minimum number of straw hits ")};
+    fhicl::Atom<int> minnshgood{Name("minNGoodStrawHits"), Comment("minimum number of straw hits passing noise cuts"), 1};
     fhicl::Atom<int> minnpanels{Name("minNPanels"), Comment("minimum number of panels ")};
     fhicl::OptionalAtom<int> maxnsh{Name("maxNStrawHits"), Comment("maximum number of straw hits ")};
     fhicl::Atom<int> timewindow{Name("TimeWindow"), Comment("Width of time window in ns")};
@@ -66,6 +67,7 @@ private:
   int _iev;
   int _debug;
   int _minnsh;
+  int _minnshgood;
   int _minnpanels;
   bool _hasmaxnsh;
   int _maxnsh;
@@ -88,6 +90,7 @@ SimpleTimeCluster::SimpleTimeCluster(const Parameters& conf) :
     art::EDProducer(conf),
     _debug(conf().debug()),
     _minnsh(conf().minnsh()),
+    _minnshgood(conf().minnshgood()),
     _minnpanels(conf().minnpanels()),
     _hasmaxnsh(false),
     _maxnsh(0),
@@ -153,49 +156,34 @@ void SimpleTimeCluster::findClusters(TimeClusterCollection& tccol) {
   std::sort(ordChCol.begin(), ordChCol.end(), tcomp());
 
   // modified to search for multiple peaks
-  std::vector<size_t> peakStart, peakEnd;
-  std::vector<size_t> peakHits;
-  size_t endIndex = 0;
-  int count = 0;
-  for (size_t startIndex = 0; startIndex < ordChCol.size(); startIndex++) {
-    count = ordChCol[startIndex].nStrawHits();
-    bool hasNonNoise = false;
-    if (endIndex >= ordChCol.size())
-      break;
-    if (startIndex < endIndex)
-      continue;
-    if (startIndex > endIndex)
-      endIndex = startIndex;
-    double startTime = ordChCol[startIndex].correctedTime();
-    double endTime = -1;
-    if (ordChCol[endIndex].flag().hasAllProperties(_hnotnoise))
-      hasNonNoise = true;
-    while (true) {
-      endIndex++;
-      if (endIndex >= ordChCol.size())
-        break;
-      endTime = ordChCol[endIndex].correctedTime();
-      count += ordChCol[endIndex].nStrawHits();
-      if (ordChCol[endIndex].flag().hasAllProperties(_hnotnoise))
-        hasNonNoise = true;
-      if (_usetimeStep && endTime - ordChCol[endIndex - 1].correctedTime() > _timeStep)
-        break;
-      if (endTime - startTime < 0)
-        break;
-      if (_usetimeWindow && endTime - startTime > _timeWindow)
-        break;
+  std::vector<size_t> peakStart, peakEnd, peakHits;
+  const size_t n = ordChCol.size();
+
+  size_t next = 0;
+  for (size_t start = 0; start < n; start = next) {
+    const double startTime = ordChCol[start].correctedTime();
+    int count    = ordChCol[start].nStrawHits();
+    int nonNoise = ordChCol[start].flag().hasAllProperties(_hnotnoise) ? ordChCol[start].nStrawHits() : 0;
+
+    size_t end = start;
+    while (end + 1 < n) {
+      const double t = ordChCol[end + 1].correctedTime();
+      if (_usetimeStep   && t - ordChCol[end].correctedTime() > _timeStep) break;
+      if (t < startTime) break;                                   // shouldn't happen if sorted on correctedTime
+      if (_usetimeWindow && t - startTime > _timeWindow) break;
+      ++end;                                                      // hit accepted into cluster
+      count += ordChCol[end].nStrawHits();
+      if (ordChCol[end].flag().hasAllProperties(_hnotnoise))
+        nonNoise += ordChCol[end].nStrawHits();
     }
-    if (endIndex < ordChCol.size())
-      count -= ordChCol[endIndex].nStrawHits();
-    endIndex--;
-    endTime = ordChCol[endIndex].correctedTime();
-    if (_hasmaxnsh && count > _maxnsh)
-      continue;
-    if (!_usetimeWindow && endTime - startTime > _timeWindow)
-      continue;
-    if (count >= _minnsh && hasNonNoise) {
-      peakStart.push_back(startIndex);
-      peakEnd.push_back(endIndex);
+    next = end + 1;                                               // no shared hits
+
+    const double endTime = ordChCol[end].correctedTime();
+    if (_hasmaxnsh && count > _maxnsh) continue;
+    if (!_usetimeWindow && endTime - startTime > _timeWindow) continue;
+    if (count >= _minnsh && nonNoise >= _minnshgood) {            // check >= vs > intent
+      peakStart.push_back(start);
+      peakEnd.push_back(end);
       peakHits.push_back(count);
     }
   }
