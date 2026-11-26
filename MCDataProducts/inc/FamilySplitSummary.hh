@@ -4,7 +4,7 @@
 // write only the events a later selection needs:
 //   stripped-event weight = 1 - sumWeights / nKept
 // nEvents: events the counter saw; nKept: those kept by the source's muon-decay rule; sumWeights: the sum of
-// 1/factor over the forced families of the kept events.
+// weights (1/N) of the forced families of the kept events.
 #ifndef MCDataProducts_inc_FamilySplitSummary_hh
 #define MCDataProducts_inc_FamilySplitSummary_hh
 

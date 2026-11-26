@@ -21,6 +21,14 @@ namespace mu2e {
       simStageOverride_.emplace(simStage);
     }
 
+    art::InputTag weights;
+    if(conf.primaryWeights(weights)) {
+      if(primaryType_.id() != Mu2eG4PrimaryType::StepPoints) {
+        throw cet::exception("CONFIG") << "Mu2eG4 inputs.primaryWeights needs primaryType StepPoints\n";
+      }
+      primaryWeights_.emplace(weights);
+    }
+
     Mu2eG4Config::EventLevelVolInfos evconf;
     if(conf.updateEventLevelVolumeInfos(evconf)) {
       elvi_.emplace(EventLevelVolInfos{evconf.input(), evconf.outInstance()});

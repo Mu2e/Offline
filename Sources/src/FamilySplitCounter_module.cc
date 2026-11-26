@@ -1,5 +1,5 @@
 // FamilySplitCounter: in a cosmic stage-2 job made with Geant4 secondary splitting, counts for each SubRun the
-// events, those the muon-decay rule keeps, and the sum of 1/factor over their forced families, with the rules of
+// events, those the muon-decay rule keeps, and the sum of the weights of their forced families, with the rules of
 // FamilySplitSource (FamilySplitRules), and writes them as a FamilySplitSummary in the SubRun. Placed in the
 // stage-2 path before an event selection, it lets FamilySplitSource (countsLabel) give the stripped events the
 // weight they would have without the selection. Its rules must be those of the FamilySplitSource job that reads
@@ -18,7 +18,6 @@
 #include "fhiclcpp/types/TableFragment.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Offline/MCDataProducts/inc/EventWeight.hh"
 #include "Offline/MCDataProducts/inc/FamilySplitSummary.hh"
 #include "Offline/MCDataProducts/inc/SimParticle.hh"
 #include "Offline/Sources/inc/FamilySplitRules.hh"
@@ -42,12 +41,7 @@ namespace mu2e {
   private:
     art::InputTag simsTag_;
     FamilySplitRules rules_;
-    art::InputTag copierTag_;
-    std::vector<FamilySplitRules::Forced> forced_;
-    unsigned long nEvents_ = 0, nKept_ = 0;
-    double sumWeights_ = 0.;
-    unsigned long nEventsJob_ = 0, nKeptJob_ = 0;
-    double sumWeightsJob_ = 0.;
+    FamilySplitSummary subRun_, job_;
   };
 
   FamilySplitCounter::FamilySplitCounter(Parameters const& conf)
@@ -55,45 +49,26 @@ namespace mu2e {
     , simsTag_(conf().simParticles())
     , rules_(conf().rules()) {
     consumes<SimParticleCollection>(simsTag_);
-    if (rules_.copyFactor() > 0) {
-      copierTag_ = art::InputTag(rules_.copierLabel());
-      consumes<EventWeight>(copierTag_);
-    }
     produces<FamilySplitSummary, art::InSubRun>();
   }
 
-  void FamilySplitCounter::beginSubRun(art::SubRun&) {
-    nEvents_ = 0;
-    nKept_ = 0;
-    sumWeights_ = 0.;
-  }
+  void FamilySplitCounter::beginSubRun(art::SubRun&) { subRun_ = FamilySplitSummary(); }
 
   void FamilySplitCounter::produce(art::Event& event) {
-    ++nEvents_;
     auto const& simsH = event.getValidHandle<SimParticleCollection>(simsTag_);
-    if (!rules_.keepByDecay(*simsH)) { return; }
-    ++nKept_;
-    unsigned copyFactor = 0;
-    if (rules_.copyFactor() > 0) {
-      copyFactor = rules_.copyFactorFromWeight(event.getValidHandle<EventWeight>(copierTag_)->weight(),
-                                               copierTag_.encode() + " in event " + std::to_string(event.event()));
-    }
-    rules_.findForced(*simsH, simsH.id(), copyFactor, forced_);
-    for (auto const& x : forced_) { sumWeights_ += 1. / x.factor; }
+    rules_.count(*simsH, simsH.id(), subRun_);
   }
 
   void FamilySplitCounter::endSubRun(art::SubRun& sr) {
-    mf::LogInfo("Summary") << "FamilySplitCounter: " << sr.id() << ": " << nEvents_ << " events, " << nKept_
-                           << " kept, sum of family weights " << sumWeights_ << "\n";
-    sr.put(std::make_unique<FamilySplitSummary>(nEvents_, nKept_, sumWeights_), art::fullSubRun());
-    nEventsJob_ += nEvents_;
-    nKeptJob_ += nKept_;
-    sumWeightsJob_ += sumWeights_;
+    mf::LogInfo("Summary") << "FamilySplitCounter: " << sr.id() << ": " << subRun_.nEvents() << " events, "
+                           << subRun_.nKept() << " kept, sum of family weights " << subRun_.sumWeights() << "\n";
+    sr.put(std::make_unique<FamilySplitSummary>(subRun_), art::fullSubRun());
+    job_.aggregate(subRun_);
   }
 
   void FamilySplitCounter::endJob() {
-    mf::LogInfo("Summary") << "FamilySplitCounter: " << nEventsJob_ << " events, " << nKeptJob_
-                           << " kept, sum of family weights " << sumWeightsJob_ << ", decay rule dropped "
+    mf::LogInfo("Summary") << "FamilySplitCounter: " << job_.nEvents() << " events, " << job_.nKept()
+                           << " kept, sum of family weights " << job_.sumWeights() << ", decay rule dropped "
                            << rules_.nDecayDropped() << "\n";
   }
 

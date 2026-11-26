@@ -208,8 +208,8 @@ namespace mu2e {
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
     // Geant4 track weight at the start of the track (G4Track::GetWeight): 1 unless an event-biasing
-    // method made the track, e.g. Mu2eG4 physics.secondaryBiasing or physics.processCopies, which give
-    // each of N alternative secondaries 1/N of their parent's weight; descendants inherit it.
+    // method made the track, e.g. Mu2eG4 physics.processCopies, which gives each of N alternative
+    // secondaries 1/N of their parent's weight; descendants inherit it.
     // Files written before this member existed read 1.
     double weight() const { return _weight; }
     void   setWeight(double w) { _weight = w; }

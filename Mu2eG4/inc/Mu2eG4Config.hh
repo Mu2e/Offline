@@ -97,25 +97,6 @@ namespace mu2e {
       fhicl::Atom<size_t> minTrackerStepPoints {Name("minTrackerStepPoints"), 15};
     };
 
-    // Geant4 EM secondary biasing (G4VEnergyLossProcess/G4VEmProcess::ActivateSecondaryBiasing)
-    // for one process, in one or more G4Regions.  Unlike /process/em/setSecBiasing, which
-    // activates only the first region given for a process, every listed region is biased.
-    struct SecondaryBiasing {
-      using Name = fhicl::Name;
-      using Comment = fhicl::Comment;
-      fhicl::Atom<std::string> process {Name("process"),
-          Comment("Geant4 process name, e.g. muIoni, muBrems. Applied to every particle that has it.\n"
-                  "Geant4 splits only interactions with one secondary, so pair production is refused for factor > 1")};
-      fhicl::Sequence<std::string> regions {Name("regions"),
-          Comment("G4Region names, e.g. DS2Vacuum (regions are made by minRangeRegionCuts)")};
-      fhicl::Atom<double> factor {Name("factor"),
-          Comment("N >= 1: each secondary is sampled N times with weight 1/N;\n"
-                  "0 < f < 1: Russian roulette with weight 1/f")};
-      fhicl::Atom<double> energyLimit {Name("energyLimit"),
-          Comment("In MeV. Biasing is applied only if the first secondary is below this kinetic energy"),
-          1.e8};
-    };
-
     // Make every interaction of one process N times where it happens (Mu2eG4ProcessCopier): the
     // secondaries of all N samples are kept with weight 1/N, the primary continues with the last sample.
     // Works for interactions with any number of secondaries (pair production) and for decays in flight.
@@ -202,14 +183,9 @@ namespace mu2e {
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};
 
-      fhicl::OptionalSequence<fhicl::Table<SecondaryBiasing>> secondaryBiasing {Name("secondaryBiasing"),
-          Comment("Split (or Russian-roulette) EM secondaries of the named processes in the listed G4Regions.\n"
-                  "Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
-
       fhicl::OptionalSequence<fhicl::Table<ProcessCopies>> processCopies {Name("processCopies"),
           Comment("Make each interaction of the named processes N times (Mu2eG4ProcessCopier), in the listed\n"
-                  "G4Regions or everywhere. A process may not be in secondaryBiasing too.\n"
-                  "Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
+                  "G4Regions or everywhere. Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
 
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
     };
@@ -256,6 +232,10 @@ namespace mu2e {
       bool multiStage() const { return primaryType() != "GenParticles"; }
 
       fhicl::Atom<art::InputTag> primaryTag {Name("primaryTag"), Comment("Tag of the input collection for G4 primaries")};
+
+      fhicl::OptionalAtom<art::InputTag> primaryWeights {Name("primaryWeights"),
+          Comment("primaryType StepPoints only: a std::vector<double> with one weight per step of primaryTag, given to\n"
+                  "the Geant4 primaries and so saved as SimParticle::weight(); absent: weight 1")};
 
       fhicl::Atom<art::InputTag> inputMCTrajectories {Name("inputMCTrajectories"),
           Comment("MCTrajectoryCollection from the previous simulation stage, required for non-GenParticles primaries"),

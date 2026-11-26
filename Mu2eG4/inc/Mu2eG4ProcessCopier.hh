@@ -7,9 +7,9 @@
 // same interaction, so every quantity carried by the secondaries keeps its expectation, and the primary
 // is as after one unbiased interaction.
 //
-// Geant4 EM secondary biasing (G4EmBiasingManager, Mu2eG4 physics.secondaryBiasing) splits only
-// interactions with exactly one secondary. This wrapper works for any process: pair production (two
-// secondaries) or a decay in flight (the primary disappears). Decays at rest (AtRestDoIt) and the
+// Unlike Geant4's own EM secondary splitting (G4EmBiasingManager), which splits only interactions with
+// exactly one secondary, this wrapper works for any process: ionisation or bremsstrahlung (one secondary),
+// pair production (two) or a decay in flight (the primary disappears). Decays at rest (AtRestDoIt) and the
 // continuous part (AlongStepDoIt) are passed through unchanged.
 //
 // The wrapper keeps the name, type and subtype of the wrapped process, so the creation codes of the
@@ -30,8 +30,8 @@ namespace mu2e {
 
   class Mu2eG4ProcessCopier : public G4WrapperProcess {
   public:
-    // everywhere > 0: N in every volume (regions must be empty); otherwise N per G4Region, 1 elsewhere
-    Mu2eG4ProcessCopier(G4VProcess* wrapped, unsigned everywhere,
+    // N per G4Region in `regions`, `elsewhere` (1: run once) in every other volume
+    Mu2eG4ProcessCopier(G4VProcess* wrapped, unsigned elsewhere,
                         std::vector<std::pair<const G4Region*, unsigned>> const& regions);
 
     G4VParticleChange* PostStepDoIt(const G4Track& track, const G4Step& step) override;
@@ -43,7 +43,7 @@ namespace mu2e {
     unsigned factor(const G4Step& step) const;
 
   private:
-    unsigned everywhere_;
+    unsigned elsewhere_;
     std::vector<std::pair<const G4Region*, unsigned>> regions_;
     std::vector<G4Track*> saved_;
   };

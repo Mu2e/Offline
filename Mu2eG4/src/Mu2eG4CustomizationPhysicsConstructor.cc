@@ -3,7 +3,6 @@
 
 // C++ includes
 #include <map>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,121 +22,14 @@
 #include "Geant4/G4EmParameters.hh"
 #include "Geant4/G4ParticleTable.hh"
 #include "Geant4/G4ProcessManager.hh"
-#include "Geant4/G4ProductionCuts.hh"
 #include "Geant4/G4Region.hh"
 #include "Geant4/G4RegionStore.hh"
-#include "Geant4/G4SystemOfUnits.hh"
-#include "Geant4/G4VEmProcess.hh"
-#include "Geant4/G4VEnergyLossProcess.hh"
 
 // factory
 #include "Geant4/G4PhysicsConstructorFactory.hh"
 //
 
 namespace {
-
-  // Activate Geant4 EM secondary biasing for each requested process in every listed region.
-  // G4EmParameters (and so /process/em/setSecBiasing) activates only the first region
-  // given for a process, so the process objects are configured directly here.
-  void activateSecondaryBiasing(const mu2e::Mu2eG4Config::Physics& phys,
-                                const mu2e::Mu2eG4Config::Debug& debug) {
-
-    std::vector<mu2e::Mu2eG4Config::SecondaryBiasing> requests;
-    if (!phys.secondaryBiasing(requests)) { return; }
-
-    // Geant4 maps material-cuts couples to a biased region by the production-cuts pointer,
-    // and ActivateSecondaryBiasing only prints a warning for an unknown region.  Check both
-    // here: every region must exist and own production cuts that no other region uses,
-    // otherwise biasing would silently be skipped or leak into other regions.
-    G4RegionStore* regionStore = G4RegionStore::GetInstance();
-    std::set<std::string> biasedRegions;
-    for (const auto& req : requests) {
-      for (const auto& rname : req.regions()) { biasedRegions.insert(rname); }
-    }
-    for (const auto& rname : biasedRegions) {
-      const G4Region* region = regionStore->GetRegion(rname, false);
-      if (region == nullptr) {
-        throw cet::exception("BADINPUT")
-          << "physics.secondaryBiasing: unknown G4Region " << rname
-          << " (regions are made by physics.minRangeRegionCuts)\n";
-      }
-      const G4ProductionCuts* cuts = region->GetProductionCuts();
-      if (cuts == nullptr) {
-        throw cet::exception("BADINPUT")
-          << "physics.secondaryBiasing: G4Region " << rname
-          << " has no production cuts of its own, so Geant4 would bias every volume that"
-          << " shares the default cuts; give it an entry in physics.minRangeRegionCuts\n";
-      }
-      for (const G4Region* other : *regionStore) {
-        if (other != region && other->GetProductionCuts() == cuts
-            && biasedRegions.count(other->GetName()) == 0) {
-          throw cet::exception("BADINPUT")
-            << "physics.secondaryBiasing: G4Region " << rname
-            << " shares its production cuts with unbiased G4Region " << other->GetName() << "\n";
-        }
-      }
-    }
-
-    const bool print = G4Threading::IsMasterThread() || debug.diagLevel() > 0;
-    for (const auto& req : requests) {
-      const std::string pname = req.process();
-      const double factor = req.factor();
-      const double energyLimit = req.energyLimit()*CLHEP::MeV;
-      if (!(factor > 0.)) {
-        throw cet::exception("BADINPUT")
-          << "physics.secondaryBiasing: factor for " << pname << " must be > 0, got " << factor << "\n";
-      }
-      // G4EmBiasingManager splits only interactions that make exactly one secondary; an interaction
-      // with two (a pair, two annihilation photons) is left alone, without any message, while a user
-      // would weight its secondaries 1/factor. Seen in Mu2e: muPairProd split x10 in the tracker gave
-      // 1/10 of the unbiased pair electrons.
-      static const std::set<std::string> twoSecondaries{"muPairProd", "hPairProd", "conv", "annihil"};
-      if (factor > 1. && twoSecondaries.count(pname) != 0) {
-        throw cet::exception("BADINPUT")
-          << "physics.secondaryBiasing: Geant4 splits only interactions with one secondary; " << pname
-          << " makes two, so splitting it would do nothing; use physics.processCopies\n";
-      }
-
-      // a process object may be shared by several particles
-      std::set<const G4VProcess*> done;
-      G4ParticleTable::G4PTblDicIterator* iter = G4ParticleTable::GetParticleTable()->GetIterator();
-      iter->reset();
-      while ( (*iter)() ) {
-        G4ParticleDefinition* particle = iter->value();
-        G4ProcessManager* pmanager = particle->GetProcessManager();
-        if (pmanager == nullptr) { continue; }
-        G4ProcessVector* plist = pmanager->GetProcessList();
-        for (G4int j = 0; j < pmanager->GetProcessListLength(); ++j) {
-          G4VProcess* proc = (*plist)[j];
-          if (proc->GetProcessName() != pname || done.count(proc) > 0) { continue; }
-          done.insert(proc);
-          auto* eloss = dynamic_cast<G4VEnergyLossProcess*>(proc);
-          auto* emproc = dynamic_cast<G4VEmProcess*>(proc);
-          if (eloss == nullptr && emproc == nullptr) {
-            throw cet::exception("BADINPUT")
-              << "physics.secondaryBiasing: process " << pname << " of "
-              << particle->GetParticleName()
-              << " is neither a G4VEnergyLossProcess nor a G4VEmProcess\n";
-          }
-          for (const auto& rname : req.regions()) {
-            if (eloss != nullptr) { eloss->ActivateSecondaryBiasing(rname, factor, energyLimit); }
-            else { emproc->ActivateSecondaryBiasing(rname, factor, energyLimit); }
-          }
-          if (print) {
-            G4cout << "Mu2eG4 secondaryBiasing: " << pname << " of " << particle->GetParticleName()
-                   << " factor " << factor << " energyLimit " << energyLimit/CLHEP::MeV
-                   << " MeV in G4Regions:";
-            for (const auto& rname : req.regions()) { G4cout << " " << rname; }
-            G4cout << G4endl;
-          }
-        }
-      }
-      if (done.empty()) {
-        throw cet::exception("BADINPUT")
-          << "physics.secondaryBiasing: no particle has a process named " << pname << "\n";
-      }
-    }
-  }
 
   // Replace each requested process of each requested particle by a Mu2eG4ProcessCopier that wraps it.
   // Runs on the master and on every worker thread in the same order, so the process lists stay aligned
@@ -147,12 +39,6 @@ namespace {
 
     std::vector<mu2e::Mu2eG4Config::ProcessCopies> requests;
     if (!phys.processCopies(requests)) { return; }
-
-    std::set<std::string> biased;
-    std::vector<mu2e::Mu2eG4Config::SecondaryBiasing> biasing;
-    if (phys.secondaryBiasing(biasing)) {
-      for (const auto& b : biasing) { biased.insert(b.process()); }
-    }
 
     struct Plan {
       unsigned everywhere = 0;
@@ -166,10 +52,6 @@ namespace {
       if (factor < 2) {
         throw cet::exception("BADINPUT")
           << "physics.processCopies: factor for " << pname << " must be >= 2, got " << factor << "\n";
-      }
-      if (biased.count(pname) != 0) {
-        throw cet::exception("BADINPUT")
-          << "physics.processCopies: " << pname << " is in physics.secondaryBiasing too\n";
       }
       if (req.particles().empty()) {
         throw cet::exception("BADINPUT") << "physics.processCopies: no particles for " << pname << "\n";
@@ -244,7 +126,7 @@ namespace {
       if (pmanager->RemoveProcess(proc) != proc) {
         throw cet::exception("BADINPUT") << "physics.processCopies: could not remove " << pname << " of " << part << "\n";
       }
-      auto* copier = new mu2e::Mu2eG4ProcessCopier(proc, plan.everywhere, plan.regions);
+      auto* copier = new mu2e::Mu2eG4ProcessCopier(proc, plan.everywhere > 0 ? plan.everywhere : 1, plan.regions);
       if (pmanager->AddProcess(copier, ordAtRest, ordAlongStep, ordPostStep) < 0) {
         throw cet::exception("BADINPUT") << "physics.processCopies: could not add the copier of " << pname
                                          << " to " << part << "\n";
@@ -320,10 +202,8 @@ namespace mu2e {
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture if requested
     switchCaptureDModel(*phys_, *debug_);
 
-    // EM secondary splitting in several G4Regions if requested
-    activateSecondaryBiasing(*phys_, *debug_);
-
-    // repeat the interactions of some processes (pair production, decays in flight) if requested
+    // repeat the interactions of some processes (muon knock-ons, bremsstrahlung, pair production, decays in
+    // flight) if requested: Geant4 secondary splitting with any number of secondaries
     activateProcessCopies(*phys_, *debug_);
 
     // use more accurate boundary crossing algorithm for muons and hadrons

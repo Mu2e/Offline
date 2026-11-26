@@ -38,7 +38,8 @@ namespace mu2e {
                        const G4ThreeVector& pos,
                        double time,
                        double properTime,
-                       const G4ThreeVector& mom);
+                       const G4ThreeVector& mom,
+                       double weight = 1.);
 
     int verbosityLevel_;
     // a tuple for ion tests

@@ -11,10 +11,10 @@
 
 namespace mu2e {
 
-  Mu2eG4ProcessCopier::Mu2eG4ProcessCopier(G4VProcess* wrapped, unsigned everywhere,
+  Mu2eG4ProcessCopier::Mu2eG4ProcessCopier(G4VProcess* wrapped, unsigned elsewhere,
                                            std::vector<std::pair<const G4Region*, unsigned>> const& regions)
     : G4WrapperProcess("", wrapped->GetProcessType())   // RegisterProcess appends the wrapped name to ""
-    , everywhere_(everywhere)
+    , elsewhere_(elsewhere)
     , regions_(regions) {
     RegisterProcess(wrapped);
     SetProcessSubType(wrapped->GetProcessSubType());
@@ -22,16 +22,15 @@ namespace mu2e {
   }
 
   unsigned Mu2eG4ProcessCopier::factor(const G4Step& step) const {
-    if (everywhere_ > 0) { return everywhere_; }
     // a discrete interaction happens inside the volume of the pre-step point (a step that ends on a
     // boundary is limited by the geometry, not by this process)
     const G4VPhysicalVolume* pv = step.GetPreStepPoint()->GetPhysicalVolume();
-    if (pv == nullptr) { return 1; }
+    if (pv == nullptr) { return elsewhere_; }
     const G4Region* region = pv->GetLogicalVolume()->GetRegion();
     for (auto const& r : regions_) {
       if (r.first == region) { return r.second; }
     }
-    return 1;
+    return elsewhere_;
   }
 
   G4VParticleChange* Mu2eG4ProcessCopier::PostStepDoIt(const G4Track& track, const G4Step& step) {

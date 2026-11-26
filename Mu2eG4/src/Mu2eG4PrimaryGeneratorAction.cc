@@ -97,7 +97,16 @@ namespace mu2e {
 
     case Mu2eG4PrimaryType::StepPoints: {
       auto const h = artEvent->getValidHandle<StepPointMCCollection>(inputs.primaryTag());
-      for(const auto& hit : *h) {
+      std::vector<double> const* weights = nullptr;
+      if(inputs.primaryWeights()) {
+        weights = artEvent->getValidHandle<std::vector<double>>(*inputs.primaryWeights()).product();
+        if(weights->size() != h->size()) {
+          throw cet::exception("GENE") << "Mu2eG4 inputs.primaryWeights: " << weights->size() << " weights for "
+                                       << h->size() << " primaries\n";
+        }
+      }
+      for(size_t i = 0; i < h->size(); ++i) {
+        const auto& hit = (*h)[i];
         addG4Particle(event,
                       hit.simParticle()->pdgId(),
                       hit.simParticle()->startExcitationEnergy(),
@@ -106,7 +115,8 @@ namespace mu2e {
                       hit.position() + mu2eOrigin,
                       hit.time(),
                       hit.properTime(),
-                      hit.momentum());
+                      hit.momentum(),
+                      weights ? (*weights)[i] : 1.);
 
         perThreadObjects_->simParticlePrimaryHelper->addEntry(&hit);
       }
@@ -203,7 +213,8 @@ namespace mu2e {
                                              const G4ThreeVector& pos,
                                              double time,
                                              double properTime,
-                                             const G4ThreeVector& mom)
+                                             const G4ThreeVector& mom,
+                                             double weight)
   {
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
@@ -264,9 +275,11 @@ namespace mu2e {
 
     // note that the particle definition not the pdg code is used for ions
     // Add the particle to the event.
-    vertex->SetPrimary( pDef ?
-                        new G4PrimaryParticle(pDef, mom.x(),mom.y(),mom.z()) :
-                        new G4PrimaryParticle(pdgId,mom.x(),mom.y(),mom.z()) );
+    G4PrimaryParticle* primary = pDef ?
+      new G4PrimaryParticle(pDef, mom.x(),mom.y(),mom.z()) :
+      new G4PrimaryParticle(pdgId,mom.x(),mom.y(),mom.z());
+    primary->SetWeight(weight);   // Geant4 gives the track this weight
+    vertex->SetPrimary(primary);
 
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
