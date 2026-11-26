@@ -74,10 +74,12 @@ namespace mu2e {
     //                 parent, 0, G4Colour::Blue(), "PSShield");
 
     // Now make the volume to subtract from HRS.
+    // Define the beam inlet asa tube: use 2mm as safety margin in Rmax and 1000 mm as additional half length in Z to cover all the shields
+
     G4Tubs* beamPassTub = new G4Tubs( "beampipePassthrough",
                                       0.0,
                                       pssInletParams.getTubsParams().data()[1]+2*CLHEP::mm,
-                                      pssInletParams.getTubsParams().data()[2]+600.0*CLHEP::mm,
+                                      pssInletParams.getTubsParams().data()[2]+1000.0*CLHEP::mm,
                                       0.0*CLHEP::degree,
                                       360.0*CLHEP::degree );
 
