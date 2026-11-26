@@ -1,7 +1,7 @@
 //
 // StepPointMCCopier: copy a StepPointMC collection, writing each selected step `copies` (N) times in a row
 // and every other step once, and a std::vector<double> with the weight of each written step: 1/N for a copy,
-// 1 otherwise. Used in cosmic stage 2 (Production/JobConfig/cosmic/S2ResamplerSplit.fcl): Mu2eG4 makes a
+// 1 otherwise. Used in cosmic stage 2 (Production/JobConfig/cosmic/S2ResamplerSplitMain.fcl): Mu2eG4 makes a
 // Geant4 primary of each written step with that weight (inputs.primaryWeights), so each stage-1 e+-/gamma
 // above the momentum cut (|p| > minMomentum) enters Geant4 N times with weight 1/N, and FamilySplitSource
 // finds the copies by their weight.

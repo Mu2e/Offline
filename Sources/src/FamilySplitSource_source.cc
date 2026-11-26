@@ -3,7 +3,7 @@
 //   j = 0      the event with every split ("forced") family removed (the "stripped" event), and
 //   j = 1..k   one event per forced family, holding the rest of the event plus that family only.
 // Output event number = input event number * stride + j.  Configuration:
-// Production/JobConfig/cosmic/S2FamilySplit.fcl.
+// Production/JobConfig/cosmic/S2FamilySplitMain.fcl.
 //
 // Why: splitting makes N alternative secondaries at one interaction, all in one event. Downstream
 // stages count events, so two alternatives that both reach the tracker would be counted once and
@@ -30,7 +30,7 @@
 // Counts from stage 2 (optional, countsLabel = the FamilySplitCounter module label of the stage-2 job). S and E
 // above then come from the FamilySplitSummary that FamilySplitCounter wrote for each SubRun of the file, summed,
 // instead of from the events found in the file. FamilySplitCounter runs in the stage-2 job before an event
-// selection (S2ResamplerSplitSignal.fcl), so stage 2 can drop the events that no output event of this source
+// selection (S2ResamplerSplitMain.fcl), so stage 2 can drop the events that no output event of this source
 // would pass, and the stripped events keep the weight they have without the selection. The source checks that
 // the events in the file give at most those counts (equal when stage 2 dropped nothing). Without countsLabel, a
 // FamilySplitSummary in the file must equal the file's own counts: a file that stage 2 thinned stops the job.
