@@ -14,7 +14,8 @@
 //
 // The wrapper keeps the name, type and subtype of the wrapped process, so the creation codes of the
 // secondaries and the stopping code of the primary do not change. N depends on the G4Region of the volume
-// in which the interaction happens; elsewhere the wrapped process runs once (N = 1).
+// in which the interaction happens, or is one factor everywhere (an entry without regions); elsewhere the
+// wrapped process runs once (N = 1).
 //
 // Configured by Mu2eG4 physics.processCopies (Mu2eG4CustomizationPhysicsConstructor).
 //
