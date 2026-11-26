@@ -136,6 +136,7 @@ namespace mu2e {
       fhicl::Atom<float> NearMissFraction { Name("NearMissFraction"), Comment("Record out-of-bounds material crossings (as inactive material) when at least this fraction of the projected position covariance is in bounds; 0 to disable"), 0.0 };
       fhicl::Atom<float> CRVNearMissFraction { Name("CRVNearMissFraction"), Comment("NearMissFraction for the CRV sectors"), 0.0 };
       fhicl::Atom<float> STCovMinCos { Name("STCovMinCos"), Comment("Minimum |cos| between an ST foil normal and the track direction to project the position covariance onto the foil (near misses and the in-bounds fraction); steeper crossings are recorded only in bounds, without that projection"), 0.0 };
+      fhicl::Atom<bool> LocalReference { Name("LocalReference"), Comment("In the upstream extrapolation, define the t0 and phi0 parameters of each extrapolated LoopHelix piece at that piece's own z instead of z=0. This avoids ill-conditioned covariances far from z=0 and near magnetic-mirror reflections. The fit and the downstream extrapolation (which can be refit) always use z=0. Ignored for other trajectory types"), false };
     };
   }
 }

@@ -25,30 +25,6 @@ namespace mu2e {
     // returns phi angle from 0 to pi/2, where 0 is in B field direction
     double LorentzAngle(KinKal::ClosestApproachData const& ptca, KinKal::VEC3 const& bdir);
 
-    // this finds the time at which the traj crosses the given z value
-    template <class KTRAJ> double zTime(KTRAJ const& ktraj, double zpos, double thint) {
-      double zhint = ktraj.position3(thint).Z();
-      double vz = ktraj.velocity(thint).Z();
-      double ztime = thint + (zpos-zhint)/vz;
-      return ztime;
-    }
-    // this finds the time at which the traj crosses the given z value
-    template <class KTRAJ> double zTime(KinKal::ParticleTrajectory<KTRAJ> const& ptraj, double zpos, double thint) {
-      double ztime(thint);
-      auto zindex = ptraj.nearestIndex(ztime);
-      size_t oldzindex;
-      unsigned ntries(0);
-      static const unsigned maxntries(100);// this usually converges in 1 iteration, but it can oscillate with bad fits
-      do {
-        oldzindex = zindex;
-        auto const& traj = ptraj.piece(zindex);
-        ztime = zTime(traj,zpos,ztime);
-        zindex = ptraj.nearestIndex(ztime);
-        ++ntries;
-      } while (ntries < maxntries && zindex != oldzindex);
-//      if(ntries == maxntries) throw cet::exception("RECO")<<"mu2e::KKFitUtilities: zTime failure" << std::endl;
-      return ztime;
-    }
     bool insideStraw(KinKal::ClosestApproachData const& tpdata,Straw const& straw,double tolerance=0.0);
     // return the time range bounding a set of hits
     KinKal::TimeRange timeBounds(ComboHitCollection const& chits);

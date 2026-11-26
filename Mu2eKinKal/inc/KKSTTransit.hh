@@ -101,7 +101,7 @@ namespace mu2e {
       arc.matlen_ = fill_*arc.vollen_;
       if(arc.matlen_ > 0.0 && arc.mom_ > 0.0){
         arc.eloss_ = -mat_->energyLoss(arc.mom_,arc.matlen_,mass); // DetMaterial energy loss is negative
-        arc.elossrms_ = mat_->energyLossRMS(arc.mom_,arc.matlen_,mass);
+        arc.elossvar_ = mat_->energyLossVar(arc.mom_,arc.matlen_,mass);
       }
       retval.arcs_.push_back(arc);
       arc = TrkArcTransit();

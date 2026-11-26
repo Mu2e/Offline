@@ -496,7 +496,7 @@ namespace mu2e {
     bool retval = ktrk.fitStatus().usable();
     if(retval){
       // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
-      auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
+      auto t0 = ktrk.fitTraj().zTime(0.0,ktrk.fitTraj().range().mid());
       auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
       retval = t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
       // also check that the fit is inside the physical detector volume.  Test where the StrawHits are

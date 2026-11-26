@@ -36,7 +36,10 @@ namespace mu2e {
     KinKal::VEC3 velocity() const { return _pstate.velocity(); }
     KinKal::VEC3 position3() const { return _pstate.position3(); }
     // convert content to a Trajectory. Optionally override the particle mass
-    KinKal::LoopHelix loopHelix(double mass = -1.0) const;
+    // localref: define t0 and phi0 at the segment z instead of z=0 (KinKal::LoopHelix::LocalReference).  The geometry and the
+    // state covariance are the same, but the parameter covariance is better conditioned far from z=0 and near reflections.
+    // The persisted state doesn't depend on this choice.
+    KinKal::LoopHelix loopHelix(double mass = -1.0, bool localref=false) const;
     KinKal::CentralHelix centralHelix(double mass = -1.0) const;
     KinKal::KinematicLine kinematicLine(double mass = -1.0) const;
     double const& tmin() const { return _tmin; }

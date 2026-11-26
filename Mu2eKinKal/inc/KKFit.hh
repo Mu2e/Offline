@@ -369,7 +369,7 @@ namespace mu2e {
     auto caxis = caloAxis(*cluster,calo);
     // find the time the seed traj passes the middle of the crystal to form the hint
     auto pmid = caxis->position3(caxis->timeAtMidpoint());
-    double zt = Mu2eKinKal::zTime(pktraj,pmid.Z(),pktraj.range().end());
+    double zt = pktraj.zTime(pmid.Z(),pktraj.range().end());
     CAHint hint( zt, caxis->measurementTime());
     // compute a preliminary PCA between the seed trajectory and the cluster axis
     auto pca = PCA(pktraj, caxis, hint, tprec_ );
@@ -495,7 +495,7 @@ namespace mu2e {
         ComboHit const& strawhit = chcol[ich];
         if(strawhit.flag().hasAllProperties(addsel_) && (!strawhit.flag().hasAnyProperty(addrej_))){
           if(brange.inRange(strawhit.correctedTime())){
-            double zt = Mu2eKinKal::zTime(ptraj,strawhit.pos().Z(),strawhit.correctedTime());
+            double zt = ptraj.zTime(strawhit.pos().Z(),strawhit.correctedTime());
             if(fabs(strawhit.correctedTime()-zt) < maxStrawHitDt_) {      // compare the measured time with the estimate from the fit
               const Straw& straw = tracker.getStraw(strawhit.strawId());
               auto wline = Mu2eKinKal::hitLine(strawhit,straw,strawresponse);
@@ -602,7 +602,7 @@ namespace mu2e {
         if(tracker.planeExists(plane.id())) {
           double plz = plane.origin().z();
           // find the track position in at this plane's central z.
-          double zt = Mu2eKinKal::zTime(ptraj,plz,ptraj.range().begin());
+          double zt = ptraj.zTime(plz,ptraj.range().begin());
           auto plpos = ptraj.position3(zt);
           // rough check on the point radius
           double rho = plpos.Rho();
@@ -675,7 +675,7 @@ namespace mu2e {
       // test at both faces; if the track is in the right area, test the clusters on this disk
       // Replace this with an intersection with the calo face TODO
       for(int iface=0; iface<2; ++iface){
-        double zt = Mu2eKinKal::zTime(ptraj,ffpos.z()+iface*crystalLength,ptraj.range().end());
+        double zt = ptraj.zTime(ffpos.z()+iface*crystalLength,ptraj.range().end());
         auto tpos = ptraj.position3(zt);
         double rho = tpos.Rho();
         test[idisk] |= rho > rmin && rho < rmax;
@@ -690,7 +690,7 @@ namespace mu2e {
         auto caxis = caloAxis(cc,calo);
         // find the time the seed traj passes the middle of the crystal to form the hint
         auto pmid = caxis->position3(caxis->timeAtMidpoint());
-        double zt = Mu2eKinKal::zTime(ptraj,pmid.Z(),ptraj.range().end());
+        double zt = ptraj.zTime(pmid.Z(),ptraj.range().end());
         CAHint hint( zt, caxis->timeAtMidpoint());
         // compute closest approach between the fit trajectory and the cluster axis
         auto pca = PCA(ptraj, caxis, hint, tprec_ );

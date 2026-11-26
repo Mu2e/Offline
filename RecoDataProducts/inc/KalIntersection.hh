@@ -35,7 +35,10 @@ namespace mu2e {
     auto const& surfaceNormal() const { return kkinter_.norm_; }
     auto gap() const { return kkinter_.gap_; }
      // convert content to a LoopHelix
-    KinKal::LoopHelix loopHelix() const { return KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_)); }
+    // localref: define t0 and phi0 at the intersection z instead of z=0 (see KalSegment::loopHelix)
+    KinKal::LoopHelix loopHelix(bool localref=false) const {
+      return localref ? KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_), KinKal::TimeRange(), KinKal::LoopHelix::LocalReference())
+        : KinKal::LoopHelix(pstate_, KinKal::VEC3(bnom_)); }
     // convert to a CentralHelix
     KinKal::CentralHelix centralHelix() const { return KinKal::CentralHelix(pstate_, KinKal::VEC3(bnom_)); }
     // convert to a KinematicLine

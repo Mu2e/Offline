@@ -168,7 +168,7 @@ namespace mu2e {
     double dz = straw().origin().z() - pca.particlePoca().Z();
     double maxdz(100.0);// need a better absolute scale; should come from KTRAJ FIXME
     if((!pca.usable()) || fabs(dz) >  maxdz) {
-      tphint = CAHint(Mu2eKinKal::zTime(ptraj,straw().origin().z(),mtime-chit_.driftTime()),mtime);
+      tphint = CAHint(ptraj.zTime(straw().origin().z(),mtime-chit_.driftTime()),mtime);
       pca = PCA(ptraj,wirePtr(),tphint,precision(),maxiter);
       dz = straw().origin().z() - pca.particlePoca().Z();
       if((!pca.usable()) || fabs(dz) >  maxdz) whstate_.state_ = WireHitState::unusable;// give up on 2nd try

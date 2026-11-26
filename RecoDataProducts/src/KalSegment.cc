@@ -2,15 +2,14 @@
 #include "cetlib_except/exception.h"
 namespace mu2e {
 
-  KinKal::LoopHelix KalSegment::loopHelix(double mass) const {
-    if(mass < 0.0){
-      return KinKal::LoopHelix(_pstate, bnom(),timeRange());
-    } else {
-      return KinKal::LoopHelix(KinKal::ParticleStateEstimate(
-            KinKal::ParticleState(_pstate.position3(),_pstate.momentum3(),_pstate.time(),mass,_pstate.charge()),
-            _pstate.stateCovariance()),
-          bnom(),timeRange());
-    }
+  KinKal::LoopHelix KalSegment::loopHelix(double mass, bool localref) const {
+    auto pse = mass < 0.0 ? _pstate : KinKal::ParticleStateEstimate(
+        KinKal::ParticleState(_pstate.position3(),_pstate.momentum3(),_pstate.time(),mass,_pstate.charge()),
+        _pstate.stateCovariance());
+    if(localref)
+      return KinKal::LoopHelix(pse, bnom(),timeRange(),KinKal::LoopHelix::LocalReference());
+    else
+      return KinKal::LoopHelix(pse, bnom(),timeRange());
   }
   KinKal::CentralHelix KalSegment::centralHelix(double mass ) const {
     if(mass < 0.0){

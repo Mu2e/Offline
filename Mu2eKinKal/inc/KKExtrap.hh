@@ -36,6 +36,7 @@ namespace mu2e {
       explicit KKExtrap(KKExtrapConfig const& exconfig);
       // throw at configuration if the fit config's minimum domain step can't fit this extrapolation's maximum step
       void checkConfig(KinKal::Config const& config) const;
+      bool localReference() const { return localref_; }
       // extrapolate the fit in both time directions through every requested surface
       template <class KTRAJ> void extrapolate(KKTrack<KTRAJ>& ktrk) const;
       // the surfaces requested in one time direction; updir is the direction that leaves the tracker upstream
@@ -63,6 +64,7 @@ namespace mu2e {
       double stcovmincos_; // minimum |cos| for the ST foil covariance projection (see SweepTarget::covmincos_)
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
+      bool localref_; // upstream extrapolated LoopHelix pieces reference t0 and phi0 to their own z (ExtrapolateSweep::setLocalReference)
       // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
       // The ST foil thicknesses come from the geometry service (KKGeom::StoppingTarget::foilThickness)
       double ipathick_ = 0.511; // ipa thickness (mm)
@@ -89,7 +91,8 @@ namespace mu2e {
     toCRV_(extrapconfig.ToCRV()),
     toCaloD0_(extrapconfig.ToCaloD0()),
     toCaloD1_(extrapconfig.ToCaloD1()),
-    toCaloMaterial_(extrapconfig.ToCaloMaterial())
+    toCaloMaterial_(extrapconfig.ToCaloMaterial()),
+    localref_(extrapconfig.LocalReference())
   {}
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
@@ -111,7 +114,10 @@ namespace mu2e {
       auto midinter = KinKal::intersect(ftraj,kkg_h->tracker()->middle(),ftraj.range(),intertol_);
       if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
     }
-    for(auto tdir : {TimeDir::backwards, TimeDir::forwards}){
+    // Downstream first: its calorimeter material can be refit, so its pieces keep the fit's z=0 reference, and no upstream piece
+    // with a local reference (see LocalReference) exists yet when that happens
+    TimeDir downdir = updir == TimeDir::forwards ? TimeDir::backwards : TimeDir::forwards;
+    for(auto tdir : {downdir, updir}){
       auto tgts = targets(updir == tdir); // geometry or service failures stop the job
       try {
         sweep(ktrk,tgts,tdir,t0,updir == tdir);
@@ -376,6 +382,7 @@ namespace mu2e {
     if(tgts.empty() || !ktrk.fitStatus().usable()) return;
     auto const& ftraj = ktrk.fitTraj();
     ExtrapolateSweep xs(tgts,tdir,maxdt_,maxdtstep_,btol_,intertol_,minv_,debug_);
+    xs.setLocalReference(updir && localref_);
     // material can only be added on the end piece: the sweep starts there, never before t0
     double tend = tdir == TimeDir::forwards ? ftraj.back().range().begin() : ftraj.front().range().end();
     double tstart = tdir == TimeDir::forwards ? std::max(t0,tend) : std::min(t0,tend);

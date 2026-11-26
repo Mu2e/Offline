@@ -124,6 +124,9 @@ namespace mu2e {
       SweepTargetCollection const& targets() const { return targets_; }
       // mark the cached crossing processed and move the search start to it
       void accept();
+      // extrapolated LoopHelix pieces reference t0 and phi0 to their own z instead of z=0 (KinKal::Track::extrapolate reads this)
+      void setLocalReference(bool localref) { localref_ = localref; }
+      bool localReference() const { return localref_; }
     private:
       template <class KTRAJ> bool extend(KinKal::ParticleTrajectory<KTRAJ> const& ptraj) const; // the predicate body: search, then decide whether KinKal keeps extending
       bool usable(size_t itg) const; // active, not over its crossing count or group, and allowed by the limit
@@ -157,6 +160,7 @@ namespace mu2e {
       mutable bool found_ = false, reflected_ = false;
       mutable Crossing crossing_;
       mutable std::string error_;
+      bool localref_ = false;
       static constexpr unsigned maxRootTrials_ = 256; // per target, piece and window
   };
 

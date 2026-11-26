@@ -29,7 +29,7 @@ namespace mu2e {
     float matlen_ = 0.0; // expected path length through material = fill factor * vollen_ (mm)
     float mom_ = 0.0; // scalar momentum at the arc entrance (MeV/c)
     float eloss_ = 0.0; // energy loss estimated for the expected material path length matlen_ (MeV, positive for a loss)
-    float elossrms_ = 0.0; // RMS of that energy loss (MeV)
+    float elossvar_ = 0.0; // Variance of that energy loss (MeV^2)
     TrkArcTransit() {}
     double duration() const { return texit_ - tentry_; }
   };
@@ -41,6 +41,7 @@ namespace mu2e {
     auto const& arcs() const { return arcs_; }
     float matlen() const { float retval(0.0); for(auto const& arc : arcs_) retval += arc.matlen_; return retval; }
     float eloss() const { float retval(0.0); for(auto const& arc : arcs_) retval += arc.eloss_; return retval; }
+    float elossVariance() const { float retval(0.0); for(auto const& arc : arcs_) retval += arc.elossvar_; return retval; }
   };
   using TrkMaterialTransitCollection = std::vector<TrkMaterialTransit>;
 }
