@@ -20,12 +20,16 @@
 #include "Offline/RecoDataProducts/inc/StrawHit.hh"
 
 #include "TRACE/tracemf.h"
+#define TRACE_NAME "StrawHitFilter"
 
 // c++
 #include <format>
 #include <iostream>
 #include <memory>
 #include <map>
+
+#include "Offline/ProditionsService/inc/ProditionsHandle.hh"
+#include "Offline/TrackerConditions/inc/TrackerPanelMap.hh"
 
 namespace mu2e {
   class StrawHitFilter : public art::EDFilter {
@@ -40,6 +44,7 @@ namespace mu2e {
       fhicl::Atom<float>           maxDt         {Name("maxDt"         ), Comment("max abs(DT)")};
       fhicl::Atom<float>           minEDep       {Name("minEDep"       ), Comment("min EDep")};
       fhicl::Atom<int>             minNGoodHits  {Name("minNGoodHits"  ), Comment("minNStrawDigis")};
+      fhicl::Sequence<int>         channelsToSkip{Name("channelsToSkip"), Comment("pairs of MN id and straw to leave out of the good-hit count"), std::vector<int>{}};
       fhicl::Atom<bool>            fillHistograms{Name("fillHistograms"), Comment("fill histogrms, default:false")};
     };
 
@@ -50,6 +55,11 @@ namespace mu2e {
       TH1F* dt  ;
       TH1F* edep;
     } _hist[2];
+                                        // channels disabled from the trigger
+    struct Channel_t {
+      int mnid;
+      int straw;
+    };
 
     using Parameters = art::EDFilter::Table<Config>;
 
@@ -75,6 +85,7 @@ namespace mu2e {
     float                    _maxDt;
     float                    _minEDep;
     int                      _minNGoodHits;
+    std::vector<Channel_t>   _channelsToSkip;       // channels not to look at when searching for good hits
     int                      _fillHistograms;
 
     int                      _nevt;
@@ -82,7 +93,9 @@ namespace mu2e {
     int                      _nsht;
     int                      _nshg;
 
-    const mu2e::StrawHitCollection* _shc;
+    const mu2e::StrawHitCollection*   _shc;
+    ProditionsHandle<TrackerPanelMap> _tpm_h;
+    const TrackerPanelMap*            _trkPanelMap;
 
     const art::Event* _event;
     int               _rn;
@@ -112,6 +125,23 @@ namespace mu2e {
       sscanf(key,"bit%i:%i",&index,&value);
       _debugBit[index]  = value;
     }
+//-----------------------------------------------------------------------------
+// parse channels to skip
+//-----------------------------------------------------------------------------
+    int ndat = conf().channelsToSkip().size();
+    for (int i=0; i<ndat; i+=2) {
+      Channel_t ch;
+      ch.mnid  = conf().channelsToSkip().at(i);
+      ch.straw = conf().channelsToSkip().at(i+1);
+      _channelsToSkip.push_back(ch);
+    }
+
+    int n_disabled_channels = _channelsToSkip.size();
+    for (int i=0; i<n_disabled_channels; i++) {
+      Channel_t* ch = & _channelsToSkip[i];
+      std::cout << std::format("disabled : mnid:MN{:03d} straw:{:02d}\n",ch->mnid, ch->straw);
+    }
+
     _run_initialized = false;
   }
 
@@ -194,6 +224,9 @@ namespace mu2e {
 
     _event         = &ArtEvent;         // should always be the first line
 
+    // the panel map is only needed to resolve the channels to skip
+    _trkPanelMap = _channelsToSkip.empty() ? nullptr : &_tpm_h.get(_event->id());
+
     if (_debugMode) print_("-- START");
 
     ++_nevt;
@@ -214,16 +247,44 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _nshg          = 0;
 
+    float _edepp = 0;
+
     for (int i = 0; i<_nsht; ++i) {
       const mu2e::StrawHit* sh = &_shc->at(i);
+
+      if (sh->energyDep() > _edepp) _edepp = sh->energyDep();
+
+      if (_trkPanelMap) {
+        int pln  = sh->strawId().plane();
+        int pnl  = sh->strawId().panel();
+        const TrkPanelMap::Row* tpm = _trkPanelMap->panel_map_by_offline_ind(pln,pnl);
+        if (tpm) {
+          int  hit_mnid = tpm->mnid();
+          bool skip     = false;
+          for (const Channel_t& ch : _channelsToSkip) {
+            if ((hit_mnid == ch.mnid) and (sh->strawId().straw() == ch.straw)) {
+              skip = true;
+              break;
+            }
+          }
+          if (skip) continue;
+        }
+      }
+
       if (fabs(sh->dt())  > _maxDt  ) continue;
       if (sh->energyDep() < _minEDep) continue;
       _nshg++;
     }
 
+    //    TLOG(TLVL_DEBUG+1) << std::format("eventNumber:{:8d} _nsht:{} _nshg:{}",
+    // _event->event(),_nsht,_nshg);
+
     if (_fillHistograms) fill_histograms(&_hist[0]);
 
-    if (_debugMode) print_(std::format("-- END, n good hits:{}",_nshg));
+    if (_debugMode) {
+      std::cout << std::format("eventNumber:{:8d} _nsht:{} _nshg:{} _edepp:{:8.5f}\n",
+                               _event->event(),_nsht,_nshg,_edepp);
+    }
 
     bool passed = false;
     if (_nshg >= _minNGoodHits) {

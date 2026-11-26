@@ -23,7 +23,8 @@ namespace mu2e {
                                         // need extra slots to handle test stands
                                         // and other non-standard readout configuration
       kMaxPlanes = 100,
-      kMaxPanels = 600
+      kMaxPanels = 600,
+      kMaxDtcIDs = 100,                 // can do 64, but keep memory allocation the same
     };
 
     typedef std::shared_ptr<TrackerPanelMap> ptr_t;
@@ -56,11 +57,11 @@ namespace mu2e {
                                         // panel map for a given run
     std::vector<TrkPanelMap::Row> _map;
 //-----------------------------------------------------------------------------
-// assume less than 100 planes, 600 panels
+// assume less than 100 planes, 600 panels, 100 DTC IDs
 //-----------------------------------------------------------------------------
     const TrkPanelMap::Row*  _tpm_by_mnid   [kMaxPanels];                    // indexed by 'minnesota ID'
     const TrkPanelMap::Row*  _tpm_by_offline[kMaxPlanes][StrawId::_npanels]; // indexed by the offline uniquePlane and panel
-    const TrkPanelMap::Row*  _tpm_by_online [kMaxPlanes][StrawId::_npanels]; // indexed by the DTC ID and link ID
+    const TrkPanelMap::Row*  _tpm_by_online [kMaxDtcIDs][StrawId::_npanels]; // indexed by the DTC ID and link ID
   };
 
 }
