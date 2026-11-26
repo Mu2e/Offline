@@ -26,6 +26,11 @@
 //            says which, and in an event that was not copied these primaries are not forced.
 // The factors here must be those used in stage 2; the job checks only that no muon decay and no stage-1 step
 // has more copies than the factor.
+// With useTrackWeights the region and decay families are found by the Geant4 track weight that Mu2eG4 saves in
+// SimParticle::weight instead of by processes and regions: a stage-2 particle whose weight is below its parent's
+// (weight 1) is forced, factor = 1 / its weight, a decay family if it is a decay product of a muon that decayed in
+// flight and a region family otherwise. The factors then need no repeating here, and the job stops on a file
+// written before SimParticle had a weight.
 //
 // Every output event carries an EventWeight (label `weightLabel`), times the base weight (1, or the
 // forced-decay weight below):
@@ -87,6 +92,9 @@
 
 #include "TBranch.h"
 #include "TFile.h"
+#include "TList.h"
+#include "TObjArray.h"
+#include "TStreamerInfo.h"
 #include "TTree.h"
 
 #include "art/Framework/Core/InputSourceMacros.h"
@@ -323,9 +331,13 @@ namespace mu2e {
               << " family events " << nFamilies_ << " | families per input event";
     for (auto const& [k, n] : multiplicity_) { std::cout << " " << k << ":" << n; }
     std::cout << std::endl;
-    std::cout << "FamilySplitSource: family events by kind: region " << nFamiliesByKind_[FamilySplitRules::kRegion]
-              << " (factors by region, processes";
-    for (auto const& p : rules_.processes()) { std::cout << " " << p; }
+    std::cout << "FamilySplitSource: family events by kind: region " << nFamiliesByKind_[FamilySplitRules::kRegion];
+    if (rules_.useTrackWeights()) {
+      std::cout << " (factors from track weights";
+    } else {
+      std::cout << " (factors by region, processes";
+      for (auto const& p : rules_.processes()) { std::cout << " " << p; }
+    }
     std::cout << "), decay " << nFamiliesByKind_[FamilySplitRules::kDecay] << " (factor " << rules_.decayFactor()
               << "), stage-1 copies " << nFamiliesByKind_[FamilySplitRules::kPrimary] << " (factor "
               << rules_.copyFactor() << "; input events not copied " << nNotCopied_ << ")" << std::endl;
@@ -424,6 +436,24 @@ namespace mu2e {
       throw cet::exception("FamilySplitSource") << filename << ": missing Events, SubRuns or Runs tree\n";
     }
     checkBranches();
+    if (rules_.useTrackWeights()) {
+      // a file written before SimParticle had a weight reads weight 1 everywhere, so no family would be found
+      bool hasWeight = false;
+      if (TList const* infos = file_->GetStreamerInfoCache()) {
+        for (TObject const* obj : *infos) {
+          auto const* info = dynamic_cast<TStreamerInfo const*>(obj);
+          if (info != nullptr && std::string(info->GetName()) == "mu2e::SimParticle" &&
+              info->GetElements()->FindObject("_weight") != nullptr) {
+            hasWeight = true;
+            break;
+          }
+        }
+      }
+      if (!hasWeight) {
+        throw cet::exception("FamilySplitSource") << filename << ": useTrackWeights, but its SimParticles have no weight"
+                                                  << " (written before SimParticle::weight); use processes and regions\n";
+      }
+    }
     if (runs->GetListOfBranches()->GetEntries() != 1) {
       throw cet::exception("FamilySplitSource") << filename << ": Runs tree has products, not handled\n";
     }

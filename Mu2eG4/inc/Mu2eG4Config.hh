@@ -204,12 +204,12 @@ namespace mu2e {
 
       fhicl::OptionalSequence<fhicl::Table<SecondaryBiasing>> secondaryBiasing {Name("secondaryBiasing"),
           Comment("Split (or Russian-roulette) EM secondaries of the named processes in the listed G4Regions.\n"
-                  "Secondaries carry the G4Track weight; SimParticle does not store it.")};
+                  "Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
 
       fhicl::OptionalSequence<fhicl::Table<ProcessCopies>> processCopies {Name("processCopies"),
           Comment("Make each interaction of the named processes N times (Mu2eG4ProcessCopier), in the listed\n"
                   "G4Regions or everywhere. A process may not be in secondaryBiasing too.\n"
-                  "Secondaries carry the G4Track weight; SimParticle does not store it.")};
+                  "Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
 
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
     };

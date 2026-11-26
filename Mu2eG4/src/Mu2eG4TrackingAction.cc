@@ -562,6 +562,9 @@ namespace mu2e {
                                                          trk->GetTrackStatus(),
                                                          creationCode,
                                                          ion)));
+    // the Geant4 track weight: below the parent's for the copies made by event biasing
+    // (physics.secondaryBiasing, physics.processCopies), inherited by their descendants
+    _transientMap.find(kid)->second.setWeight(trk->GetWeight());
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){
