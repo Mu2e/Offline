@@ -39,7 +39,7 @@ namespace mu2e {
         fhicl::Sequence<double> dtXingWindow{Name("DtXingWindow"), Comment("storage window on t_cluster - t_track at the cluster plane [ns]")};
         fhicl::Atom<double> maxDv{Name("MaxDv"), Comment("storage window on |across-bar residual| [mm]")};
         fhicl::Atom<double> maxDu{Name("MaxDu"), Comment("storage window on |along-bar residual| for two-ended clusters [mm]")};
-        fhicl::Atom<bool> doGeometric{Name("DoGeometric"), Comment("form geometric candidates from CRV KalIntersections, or, for a line fit with none, from its projections onto the sectors' extended planes")};
+        fhicl::Atom<bool> doGeometric{Name("DoGeometric"), Comment("form geometric candidates from CRV KalIntersections, including the out-of-bounds near misses the extrapolation records")};
         fhicl::Atom<bool> requireSameSector{Name("RequireSameSector"), Comment("project only from a crossing of the cluster's own sector (A/B tests)"), false};
         fhicl::Sequence<double> sigmaV{Name("SigmaV"), Comment("CRV across-bar resolution [mm], indexed by the cluster's sector type (1 first): one entry per sector type of the loaded CRV geometry, or one entry for all; sector type numbering depends on the geometry")};
         fhicl::Sequence<double> sigmaU{Name("SigmaU"), Comment("CRV along-bar resolution of two-ended clusters [mm], by sector type")};
@@ -80,10 +80,8 @@ namespace mu2e {
       };
       double resolution(std::vector<double> const& tab, int sectorType) const;
       void checkResolutions() const;   // throws if a Sigma* list does not describe the loaded CRV geometry's sector types
-      TrkCrvPlaneCov errorModel(ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>> const& cov) const;   // k^2 C + a^2 I
+      TrkCrvPlaneCov errorModel(KinKal::PMAT const& cov) const;   // k^2 C + a^2 I
       void probe(TrkCrvXing& x, double speed) const;
-      // a straight-line fit's crossing of a sector's extended plane, if out of bounds; false if in bounds or parallel
-      bool projectXing(KalSeed const& ks, int shield, double sigT, TrkCrvXing& x) const;
       static bool sameCluster(art::Ptr<CrvCoincidenceCluster> const& a, art::Ptr<CrvCoincidenceCluster> const& b);
 
       std::vector<SurfaceId> refSurfaces_;

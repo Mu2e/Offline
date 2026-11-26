@@ -67,6 +67,11 @@ namespace mu2e {
     _hSTdP = tfs.make<TH1D>( "STdP", "Momentum Change Crossing a ST Foil;MeV", 100, -1.0, 0.0);
     _hNIPA = tfs.make<TH1D>( "NIPA", "Number of IPA intersections", 20, -0.5, 19.5);
     _hIPAdP = tfs.make<TH1D>( "IPAdP", "Momentum Change Crossing the IPA;MeV", 100, -0.5, 0.0);
+    // the in-bounds fraction is in [0,1]; the range is padded so that 0 and 1 are not on a bin edge
+    _hSTInbFrac = tfs.make<TH1D>( "STInbFrac", "In-bounds fraction of in-bounds ST Foil intersections;in-bounds fraction", 102, -0.01, 1.01);
+    _hSTNearInbFrac = tfs.make<TH1D>( "STNearInbFrac", "In-bounds fraction of near-miss ST Foil intersections;in-bounds fraction", 102, -0.01, 1.01);
+    _hIPAInbFrac = tfs.make<TH1D>( "IPAInbFrac", "In-bounds fraction of in-bounds IPA intersections;in-bounds fraction", 102, -0.01, 1.01);
+    _hIPANearInbFrac = tfs.make<TH1D>( "IPANearInbFrac", "In-bounds fraction of near-miss IPA intersections;in-bounds fraction", 102, -0.01, 1.01);
     // one labelled bin per CRV sector SurfaceId, so new sectors appear without code changes
     for (auto const& [sid, sname] : SurfaceIdDetail::names()) {
       if (sid >= SurfaceIdDetail::CRV_EX && sid < SurfaceIdDetail::CRV_StrongBack) {
@@ -109,7 +114,7 @@ namespace mu2e {
     auto const& ptable = GlobalConstantsHandle<ParticleDataList>();
     // increment this by 1 any time the defnitions of the histograms or the
     // histogram contents change, and will not match previous versions
-    _hVer->Fill(16.0);
+    _hVer->Fill(17.0);
 
     _hN->Fill(coll.size());
     for (auto const& ks : coll) {
@@ -186,12 +191,19 @@ namespace mu2e {
       }
       auto stinters = ks.intersections(SurfaceId("ST_Foils",SurfaceId::allIndices_)); // match all foils
       _hNST->Fill(stinters.size());
-      for (auto stinter : stinters)
+      // the in-bounds fraction is only filled when the intersection has a projected covariance
+      for (auto stinter : stinters){
         _hSTdP->Fill(stinter->dMom());
+        auto const& kkinter = stinter->intersection();
+        if (kkinter.hascov_) (kkinter.inbounds_ ? _hSTInbFrac : _hSTNearInbFrac)->Fill(kkinter.inbfrac_);
+      }
       auto ipainters = ks.intersections(SurfaceId("IPA"));
       _hNIPA->Fill(ipainters.size());
-      for (auto ipainter : ipainters)
+      for (auto ipainter : ipainters){
         _hIPAdP->Fill(ipainter->dMom());
+        auto const& kkinter = ipainter->intersection();
+        if (kkinter.hascov_) (kkinter.inbounds_ ? _hIPAInbFrac : _hIPANearInbFrac)->Fill(kkinter.inbfrac_);
+      }
       unsigned ncrv(0), ncrvsb(0);
       for (auto const& inter : ks.intersections()) {
         auto sid = inter.surfaceId().id().id();

@@ -4,7 +4,6 @@
 #include "cetlib_except/exception.h"
 namespace mu2e {
   using Grad = ROOT::Math::SMatrix<double,3>;
-  using SVEC3 = KinKal::SVEC3;
 
   KKBField::KKBField(BFieldManager const& bfmgr, DetectorSystem const& det) :
     KinKal::BFieldMap(GeomHandle<BFieldConfig>()->minUsableField()), bfmgr_(bfmgr), det_(det) {}
@@ -24,17 +23,18 @@ namespace mu2e {
   }
 
   Grad KKBField::fieldGrad(VEC3 const& position) const {
+    // central differences of the field map: Grad(i,j) = dB_i/dx_j.  The step is small compared to the map grid spacing (25 mm)
+    static const double step(5.0); // mm
     Grad retval;
-    auto dBdx = fieldDeriv(position,VEC3(1.0,0.0,0.0));
-    auto dBdy = fieldDeriv(position,VEC3(0.0,1.0,0.0));
-    auto dBdz = fieldDeriv(position,VEC3(0.0,0.0,1.0));
-    SVEC3 dBdxv(dBdx.X(),dBdx.Y(), dBdx.Z());
-    SVEC3 dBdyv(dBdy.X(),dBdy.Y(), dBdy.Z());
-    SVEC3 dBdzv(dBdz.X(),dBdz.Y(), dBdz.Z());
-    // Grad(i,j) = dB_i/dx_j, so the derivative along an axis fills a column, not a row
-    retval.Place_in_col(dBdxv,0,0);
-    retval.Place_in_col(dBdyv,0,1);
-    retval.Place_in_col(dBdzv,0,2);
+    CLHEP::Hep3Vector vpoint_mu2e = det_.toMu2e(CLHEP::Hep3Vector(position.x(),position.y(),position.z()));
+    for(int jdim=0;jdim<3;jdim++){
+      CLHEP::Hep3Vector dx; dx[jdim] = step;
+      CLHEP::Hep3Vector bplus, bminus;
+      // outside the map, or too close to its edge, return a null gradient
+      if(!(bfmgr_.getBFieldWithStatus(vpoint_mu2e+dx,bplus) && bfmgr_.getBFieldWithStatus(vpoint_mu2e-dx,bminus))) return Grad();
+      auto dbdx = (bplus-bminus)/(2.0*step);
+      for(int idim=0;idim<3;idim++) retval(idim,jdim) = dbdx[idim];
+    }
     return retval;
   }
   // numerical derivatives for now: TODO!

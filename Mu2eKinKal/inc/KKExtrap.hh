@@ -36,6 +36,7 @@ namespace mu2e {
       explicit KKExtrap(KKExtrapConfig const& exconfig);
       // throw at configuration if the fit config's minimum domain step can't fit this extrapolation's maximum step
       void checkConfig(KinKal::Config const& config) const;
+      bool localReference() const { return localref_; }
       // extrapolate the fit in both time directions through every requested surface
       template <class KTRAJ> void extrapolate(KKTrack<KTRAJ>& ktrk) const;
       // the surfaces requested in one time direction; updir is the direction that leaves the tracker upstream
@@ -59,8 +60,11 @@ namespace mu2e {
       int debug_;
       mutable std::atomic<unsigned> nRangedOut_{0}, nNotTruncated_{0}; // counted in rangeOut, reported by printSummary
       double btol_, intertol_, maxdt_, maxdtstep_, minv_;
+      double nearfrac_, crvnearfrac_; // near-miss bounds fractions for material targets (see ExtrapolateSweep), 0 to disable
+      double stcovmincos_; // minimum |cos| for the ST foil covariance projection (see SweepTarget::covmincos_)
       bool backToTracker_, extrapolateOPA_, toTrackerPerimeter_, upstream_, toCRV_;
       bool toCaloD0_, toCaloD1_, toCaloMaterial_;
+      bool localref_; // upstream extrapolated LoopHelix pieces reference t0 and phi0 to their own z (ExtrapolateSweep::setLocalReference)
       // nominal literal like the hard-coded KinKalGeom IPA surface (KinKalGeomMaker::makeDS); TODO: take it from the geometry service.
       // The ST foil thicknesses come from the geometry service (KKGeom::StoppingTarget::foilThickness)
       double ipathick_ = 0.511; // ipa thickness (mm)
@@ -77,6 +81,9 @@ namespace mu2e {
     maxdt_(extrapconfig.MaxDt()),
     maxdtstep_(extrapconfig.MaxDtStep()),
     minv_(extrapconfig.MinV()),
+    nearfrac_(extrapconfig.NearMissFraction()),
+    crvnearfrac_(extrapconfig.CRVNearMissFraction()),
+    stcovmincos_(extrapconfig.STCovMinCos()),
     backToTracker_(extrapconfig.BackToTracker()),
     extrapolateOPA_(extrapconfig.ToOPA()),
     toTrackerPerimeter_(extrapconfig.ToTrackerPerimeter()),
@@ -84,7 +91,8 @@ namespace mu2e {
     toCRV_(extrapconfig.ToCRV()),
     toCaloD0_(extrapconfig.ToCaloD0()),
     toCaloD1_(extrapconfig.ToCaloD1()),
-    toCaloMaterial_(extrapconfig.ToCaloMaterial())
+    toCaloMaterial_(extrapconfig.ToCaloMaterial()),
+    localref_(extrapconfig.LocalReference())
   {}
 
   inline void KKExtrap::checkConfig(KinKal::Config const& config) const {
@@ -106,7 +114,10 @@ namespace mu2e {
       auto midinter = KinKal::intersect(ftraj,kkg_h->tracker()->middle(),ftraj.range(),intertol_);
       if(midinter.good()) ktrk.addIntersection(tt_mid,midinter);
     }
-    for(auto tdir : {TimeDir::backwards, TimeDir::forwards}){
+    // Downstream first: its calorimeter material can be refit, so its pieces keep the fit's z=0 reference, and no upstream piece
+    // with a local reference (see LocalReference) exists yet when that happens
+    TimeDir downdir = updir == TimeDir::forwards ? TimeDir::backwards : TimeDir::forwards;
+    for(auto tdir : {downdir, updir}){
       auto tgts = targets(updir == tdir); // geometry or service failures stop the job
       try {
         sweep(ktrk,tgts,tdir,t0,updir == tdir);
@@ -191,6 +202,7 @@ namespace mu2e {
       ipatg.thick_ = ipathick_;
       ipatg.maxcross_ = 0;
       ipatg.mincos_ = std::max(minv_,ipaMinCos_);
+      ipatg.nearfrac_ = nearfrac_;
       zrange(*ipa,ipatg.zreglo_,ipatg.zreghi_);
       tgts.push_back(ipatg);
       auto const& st = *kkg_h->ST();
@@ -209,6 +221,8 @@ namespace mu2e {
         tg.thick_ = st.foilThickness(ifoil);
         tg.maxcross_ = 0;
         tg.mincos_ = std::max(minv_,stFoilMinCos_);
+        tg.covmincos_ = stcovmincos_;
+        tg.nearfrac_ = nearfrac_;
         tg.zreglo_ = stzlo; tg.zreghi_ = stzhi;
         tgts.push_back(tg);
       }
@@ -253,6 +267,7 @@ namespace mu2e {
         tg.thick_ = cyl.thickness_;
         tg.mincos_ = std::max(minv_,dsShellMinCos_);
         tg.rmax_ = cyl.surface_->radius() + 0.5*cyl.thickness_;
+        tg.nearfrac_ = nearfrac_;
         tgts.push_back(tg);
       }
       auto plane = [&](SweepTarget& tg, KinKal::Plane const& pl){
@@ -267,6 +282,7 @@ namespace mu2e {
         tg.plane_ = pmp.surface_;
         tg.mat_ = &*kkmat_h->material(pmp.material_);
         tg.thick_ = pmp.thickness_;
+        tg.nearfrac_ = nearfrac_;
         plane(tg,*pmp.surface_);
         tgts.push_back(tg);
       }
@@ -280,6 +296,7 @@ namespace mu2e {
           tg.mat_ = &*kkmat_h->CRVMaterial();
           tg.thick_ = 2*sector.whw_;
           tg.crvsector_ = &sector;
+          tg.nearfrac_ = crvnearfrac_;
           plane(tg,*sector.sector_);
           tgts.push_back(tg);
         }
@@ -298,6 +315,7 @@ namespace mu2e {
         tg.mat_ = &*kkmat_h->material(*layer.material_);
         tg.thick_ = layer.thickness_;
         tg.pipes_ = layer.pipes_;
+        tg.nearfrac_ = nearfrac_;
         tg.rmax_ = bore;
         tgts.push_back(tg);
       }
@@ -364,6 +382,7 @@ namespace mu2e {
     if(tgts.empty() || !ktrk.fitStatus().usable()) return;
     auto const& ftraj = ktrk.fitTraj();
     ExtrapolateSweep xs(tgts,tdir,maxdt_,maxdtstep_,btol_,intertol_,minv_,debug_);
+    xs.setLocalReference(updir && localref_);
     // material can only be added on the end piece: the sweep starts there, never before t0
     double tend = tdir == TimeDir::forwards ? ftraj.back().range().begin() : ftraj.front().range().end();
     double tstart = tdir == TimeDir::forwards ? std::max(t0,tend) : std::min(t0,tend);
@@ -462,8 +481,21 @@ namespace mu2e {
       ktrk.addIntersection(tg.sid_,inter);
       return true;
     }
+    // a near miss (out of bounds, see ExtrapolateSweep) is added as an inactive xing: it has no effect unless a refit moves it in bounds
+    bool near = ExtrapolateSweep::nearMiss(tg,inter);
     double thick = tg.pipes_ ? tg.pipes_->wallDepth(inter.pos_) : tg.thick_;
-    if(tg.crvsector_) thick *= tg.crvsector_->layerFraction(inter.pos_,inter.pdir_); // near a seam, the staggered layers are shared with the next sector
+    if(tg.crvsector_){
+      // near a seam, the staggered layers are shared with the next sector. A near miss uses the closest point on the sector edge
+      auto lpos = inter.pos_;
+      if(near){
+        auto const& rect = *tg.crvsector_->sector_;
+        auto rel = lpos - rect.center();
+        double u = std::clamp(rel.Dot(rect.uDirection()),-rect.uHalfLength(),rect.uHalfLength());
+        double v = std::clamp(rel.Dot(rect.vDirection()),-rect.vHalfLength(),rect.vHalfLength());
+        lpos = rect.center() + u*rect.uDirection() + v*rect.vDirection() + rel.Dot(rect.normal())*rect.normal();
+      }
+      thick *= tg.crvsector_->layerFraction(lpos,inter.pdir_);
+    }
     if(tg.effect_ == SweepTarget::calopanel && thick <= 0.0) return true; // the pipe plane between the pipes
     if(tg.effect_ == SweepTarget::crvsector && thick <= 0.0){ ktrk.addIntersection(tg.sid_,inter); return true; } // inside the envelope but between layers
     // KinKal records why a fit became unusable (e.g. a failed domain walk); the direction just ends
@@ -482,27 +514,27 @@ namespace mu2e {
       case SweepTarget::cylshell:
       case SweepTarget::ipashell: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Cylinder>>(tg.cyl_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         if(tg.effect_ == SweepTarget::cylshell) ktrk.addMaterialCylXing(shell,tdir);
         else ktrk.addIPAXing(shell,tdir);
         return true;
       }
       case SweepTarget::stfoil: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Annulus>>(tg.ann_,tg.sid_,*tg.mat_,inter,reftrajptr,tg.thick_,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addSTXing(shell,tdir);
         return true;
       }
       case SweepTarget::planeshell:
       case SweepTarget::calopanel: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Plane>>(tg.plane_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addMaterialPlaneXing(shell,tdir);
         return true;
       }
       case SweepTarget::crvsector: {
         auto shell = std::make_shared<KKShellXing<KTRAJ,KinKal::Rectangle>>(tg.rect_,tg.sid_,*tg.mat_,inter,reftrajptr,thick,intertol_);
-        if(rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
+        if(!near && rangesOut(*shell,tdir)) return rangeOut(ktrk,tg,inter);
         ktrk.addCRVXing(shell,tdir);
         return true;
       }

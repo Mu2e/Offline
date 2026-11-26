@@ -71,6 +71,11 @@ class ValKalSeed {
   TH1D* _hSTdP;
   TH1D* _hNIPA;
   TH1D* _hIPAdP;
+  // covariance in-bounds fraction of the ST foil and IPA intersections, for in-bounds crossings and near misses
+  TH1D* _hSTInbFrac;
+  TH1D* _hSTNearInbFrac;
+  TH1D* _hIPAInbFrac;
+  TH1D* _hIPANearInbFrac;
   // intersections with the CRV sectors (from the CentralHelix and KinematicLine extrapolation)
   std::map<SurfaceIdDetail::enum_type,int> _crvbin; // CRV sector -> bin of _hCRVSector
   TH1D* _hNCRV;

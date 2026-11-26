@@ -393,6 +393,10 @@ Mu2eKinKal : {
     ToCaloD0 : true
     ToCaloD1 : true
     ToCaloMaterial : false # calo front panel material; off until validated against MC truth
+    NearMissFraction : 0.1 # record out-of-bounds material crossings with at least this fraction of the position covariance in bounds, as inactive material
+    STCovMinCos : 0.4 # project the covariance onto ST foils only for |cos(normal,direction)| above this; the projected in-bounds fraction is biased low for steeper crossings
+    CRVNearMissFraction : 1e-3 # the same for CRV sectors
+    LocalReference : false # upstream extrapolation: define LoopHelix piece t0/phi0 at the piece z instead of z=0
   }
 
   LHSEEDXTRAP : {
@@ -423,6 +427,9 @@ Mu2eKinKal : {
     ToCRV : true
     ToCaloD0 : true
     ToCaloD1 : true
+    NearMissFraction : 0.1 # record out-of-bounds material crossings with at least this fraction of the position covariance in bounds, as inactive material
+    STCovMinCos : 0.4 # project the covariance onto ST foils only for |cos(normal,direction)| above this; the projected in-bounds fraction is biased low for steeper crossings
+    CRVNearMissFraction : 1e-3 # the same for CRV sectors
   }
 
   CHXTRAP : {
@@ -438,6 +445,9 @@ Mu2eKinKal : {
     ToCRV : true
     ToCaloD0 : true
     ToCaloD1 : true
+    NearMissFraction : 0.1 # record out-of-bounds material crossings with at least this fraction of the position covariance in bounds, as inactive material
+    STCovMinCos : 0.4 # project the covariance onto ST foils only for |cos(normal,direction)| above this; the projected in-bounds fraction is biased low for steeper crossings
+    CRVNearMissFraction : 1e-3 # the same for CRV sectors
   }
 
   CENTRALHELIX : {

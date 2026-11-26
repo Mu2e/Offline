@@ -61,6 +61,8 @@
 #include "Offline/Mu2eKinKal/inc/KKConstantBField.hh"
 #include "Offline/Mu2eKinKal/inc/KKFitUtilities.hh"
 #include "Offline/Mu2eKinKal/inc/KKExtrap.hh"
+#include "Offline/Mu2eKinKal/inc/KKSTTransit.hh"
+#include "Offline/RecoDataProducts/inc/TrkMaterialTransit.hh"
 // C++
 #include <iostream>
 #include <string>
@@ -129,6 +131,7 @@ namespace mu2e {
     fhicl::Table<KKConfig> extSettings { Name("ExtensionSettings") };
     fhicl::OptionalTable<KKFinalConfig> finalSettings { Name("FinalSettings") };
     fhicl::OptionalTable<KKExtrapConfig> extrapSettings { Name("ExtrapolationSettings") };
+    fhicl::OptionalTable<KKSTTransitConfig> stTransitSettings { Name("STTransitSettings"), Comment("If present, estimate the stopping target material transited by the fit (including extrapolation) and save it as TrkMaterialTransit, associated to the KalSeed") };
     // LoopHelix module specific config
     fhicl::OptionalAtom<double> slopeSigThreshold{ Name("SlopeSigThreshold"), Comment("Input helix seed slope significance threshold to assume the direction")};
     fhicl::OptionalAtom<std::string> fitDirection { Name("FitDirection"), Comment("Particle direction to fit, either \"upstream\" or \"downstream\"")};
@@ -177,6 +180,7 @@ namespace mu2e {
       Config exconfig_; // extension configuration object
       Config fconfig_; // final final configuration object
       std::unique_ptr<KKExtrap> extrap_; // extrapolation helper
+      std::unique_ptr<KKSTTransit> sttransit_; // ST material transit helper
       bool fixedfield_; // special case usage for seed fits, if no BField corrections are needed
       //Helix Mask params
       float minHelixP_ = -1.;
@@ -210,6 +214,11 @@ namespace mu2e {
       produces<KKTRKCOL>();
       produces<KalSeedCollection>();
       produces<KalHelixAssns>();
+      if(settings().stTransitSettings()){
+        sttransit_ = make_unique<KKSTTransit>(*settings().stTransitSettings());
+        produces<TrkMaterialTransitCollection>();
+        produces<KalMaterialTransitAssns>();
+      }
       // build the initial seed covariance
       auto const& seederrors = settings().modSettings().seederrors();
       if(seederrors.size() != KinKal::NParams())
@@ -257,6 +266,7 @@ namespace mu2e {
       kkbf_ = std::move(std::make_unique<KKBField>(*bfmgr,*det));
     }
     if(print_ > 0) kkbf_->print(std::cout);
+    if(sttransit_) sttransit_->beginRun();
 
     // Print the fit direction configuration
     if(print_ > 0) printf("[LoopHelixFit::%s::%s] Fit dz/dt direction = %.0f, PDG = %i, use helix slope = %o with threshold %.1f\n",
@@ -384,6 +394,14 @@ namespace mu2e {
     unique_ptr<KalHelixAssns> kkseedassns(new KalHelixAssns());
     auto KalSeedCollectionPID = event.getProductID<KalSeedCollection>();
     auto KalSeedCollectionGetter = event.productGetter(KalSeedCollectionPID);
+    unique_ptr<TrkMaterialTransitCollection> sttcol(new TrkMaterialTransitCollection);
+    unique_ptr<KalMaterialTransitAssns> sttassns(new KalMaterialTransitAssns);
+    art::ProductID sttPID;
+    art::EDProductGetter const* sttGetter(nullptr);
+    if(sttransit_){
+      sttPID = event.getProductID<TrkMaterialTransitCollection>();
+      sttGetter = event.productGetter(sttPID);
+    }
     // find the helix seed collections
     unsigned nseed(0);
     for (auto const& hseedtag : hseedCols_) {
@@ -425,6 +443,11 @@ namespace mu2e {
           // fill assns with the helix seed
           auto kseedptr = art::Ptr<KalSeed>(KalSeedCollectionPID,kkseedcol->size()-1,KalSeedCollectionGetter);
           kkseedassns->addSingle(kseedptr,hptr);
+          // estimate the ST material transited by the fit and its extrapolation
+          if(sttransit_){
+            sttcol->push_back(sttransit_->STTransit(ktrk->fitTraj()));
+            sttassns->addSingle(kseedptr,art::Ptr<TrkMaterialTransit>(sttPID,sttcol->size()-1,sttGetter));
+          }
           // save (unpersistable) KKTrk in the event
           ktrkcol->push_back(ktrk.release());
           //increment the counts
@@ -439,6 +462,10 @@ namespace mu2e {
     event.put(move(ktrkcol));
     event.put(move(kkseedcol));
     event.put(move(kkseedassns));
+    if(sttransit_){
+      event.put(move(sttcol));
+      event.put(move(sttassns));
+    }
   }
 
   KTRAJ LoopHelixFit::makeSeedTraj(HelixSeed const& hseed,TimeRange const& trange,VEC3 const& bnom, int charge) const {
@@ -469,7 +496,7 @@ namespace mu2e {
     bool retval = ktrk.fitStatus().usable();
     if(retval){
       // require physical consistency: fit can succeed but the result can have changed charge or helicity. Test at the t0 segment
-      auto t0 = Mu2eKinKal::zTime(ktrk.fitTraj(),0.0,ktrk.fitTraj().range().mid());
+      auto t0 = ktrk.fitTraj().zTime(0.0,ktrk.fitTraj().range().mid());
       auto const& t0seg = ktrk.fitTraj().nearestPiece(t0);
       retval = t0seg.parameterSign()*seed.parameterSign() > 0 && t0seg.helicity()*seed.helicity() > 0;
       // also check that the fit is inside the physical detector volume.  Test where the StrawHits are

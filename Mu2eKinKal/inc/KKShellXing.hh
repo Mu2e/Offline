@@ -85,12 +85,17 @@ namespace mu2e {
     if(neartrajptr != reftrajptr_){
       // traj has changed; try intersecting with this piece
       reftrajptr_ = neartrajptr;
-      auto newinter = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_);
+      // keep the projected covariance (and bounds fraction) up to date if the crossing has one (see ExtrapolateSweep near misses)
+      bool pcov = inter_.hascov_;
+      // only a near miss (an out-of-bounds crossing) may be refreshed with another out-of-bounds crossing.  An in-bounds crossing must
+      // not be replaced by an out-of-bounds crossing found elsewhere on the surface, which would switch off its material
+      bool oob = !inter_.inbounds_;
+      auto newinter = KinKal::intersect(*reftrajptr_,*surf_, reftrajptr_->range(),tol_,KinKal::TimeDir::forwards,pcov,oob);
       // a crossing inside the fit can move into a neighboring piece (ie when the fit is split into BField domains):
       // search the full trajectory near the previous crossing
       if(!(newinter.onsurface_ && newinter.inrange_)){
         static const double dt(1.0); // ns
-        newinter = KinKal::intersect(ptraj,*surf_,KinKal::TimeRange(inter_.time_-dt,inter_.time_+dt),tol_);
+        newinter = KinKal::intersect(ptraj,*surf_,KinKal::TimeRange(inter_.time_-dt,inter_.time_+dt),tol_,KinKal::TimeDir::forwards,pcov,oob);
         if(newinter.onsurface_ && newinter.inrange_)reftrajptr_ = ptraj.nearestTraj(newinter.time_);
       }
       // keep the previous crossing rather than one with an invalid time if the surface can't be found
