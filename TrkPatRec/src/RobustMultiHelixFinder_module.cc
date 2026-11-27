@@ -19,6 +19,7 @@
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 #include "Offline/TrkPatRec/inc/RobustMultiHelixFinder_types.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 #include <numeric>
 #include <stdint.h>
@@ -359,7 +360,18 @@ chi2dXY = bestHelix.fita_zt_;
       hseed._helix._chi2dXY   = chi2dXY;
       hseed._helix._chi2dZPhi = chi2dZPhi;
       hseed._t0 = TrkT0(t0,t0err);
-      for (const auto& ich : bestHelix.hitIndices_) hseed._hhits.emplace_back(chcol[ich]);
+      // Store each hit's azimuth about the helix center, put on the loop that the helix
+      // predicts at the hit z (the convention of RobustHelixFit::initPhi and resolvePhi).
+      // MergeHelices fits these values against z to get chi2dZPhi; left at the default 0,
+      // that chi2 was always 0.
+      for (const auto& ich : bestHelix.hitIndices_) {
+        ComboHit hhit(chcol[ich]);
+        float phi   = polyAtan2(hhit.pos().y() - hseed._helix.center().y(), hhit.pos().x() - hseed._helix.center().x());
+        float phiex = hseed._helix.circleAzimuth(hhit.pos().z());
+        int   nloop = (int)rint((phiex - phi)/CLHEP::twopi);
+        hhit._hphi  = phi + nloop*CLHEP::twopi;
+        hseed._hhits.push_back(std::move(hhit));
+      }
       hseed._status.merge(TrkFitFlag::MPRHelix);
       hseed._status.merge(TrkFitFlag::helixOK);
       hseed._timeCluster = tcArtPtr;
