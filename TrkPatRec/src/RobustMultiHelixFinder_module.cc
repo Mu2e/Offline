@@ -19,6 +19,7 @@
 #include "Offline/RecoDataProducts/inc/RobustHelix.hh"
 #include "Offline/Mu2eUtilities/inc/polyAtan2.hh"
 #include "Offline/TrkPatRec/inc/RobustMultiHelixFinder_types.hh"
+#include "CLHEP/Units/PhysicalConstants.h"
 
 #include <numeric>
 #include <stdint.h>
@@ -328,6 +329,9 @@ namespace mu2e {
       const Helicity bestHelicity = poshelix.nStrawHits_ >= neghelix.nStrawHits_ ? Helicity::poshel: Helicity::neghel;
       CandHelix& bestHelix        = poshelix.nStrawHits_ >= neghelix.nStrawHits_ ? poshelix : neghelix;
       for (const auto& ich : bestHelix.hitIndices_) usedHits.push_back(ich);
+      // No hit was used: the next iteration would search the same hits again and find the same
+      // nothing, so stop here. When hits were used, the next iteration searches the rest.
+      if (bestHelix.hitIndices_.empty()) break;
       if (bestHelix.nStrawHits_ < minStrawHits_) continue;
 
       // other criteria to reject fake helices
@@ -542,8 +546,9 @@ chi2dXY = bestHelix.fita_zt_;
      float phiMax = (imax+0.5)*clusteringPhiBin_;
      for (const auto& ich : hitsToProcess){
        float dphi = phiVec[ich]-phiMax;
-       if (dphi > 6.2831) dphi -= 6.2831;
-       if (dphi < -6.2831) dphi += 6.2831;
+       // bring the azimuth difference into [-pi, pi], so hits on both sides of phi = 0 are compared correctly
+       if (dphi >  CLHEP::pi) dphi -= CLHEP::twopi;
+       if (dphi < -CLHEP::pi) dphi += CLHEP::twopi;
        if (abs(dphi) < 1.5*clusteringPhiBin_) comptonFlags[ich]=true;
      }
 
