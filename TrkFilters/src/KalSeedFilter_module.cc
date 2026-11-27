@@ -9,6 +9,7 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "cetlib_except/exception.h"
 #include "Offline/RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "Offline/GeneralUtilities/inc/ParameterSetHelpers.hh"
@@ -37,7 +38,7 @@ namespace mu2e
       fhicl::OptionalAtom<int>                fitparticle         {     Name("fitparticle"),             Comment("fitparticle       ") };
       fhicl::OptionalAtom<std::string>        fitdirection        {     Name("fitdirection"),            Comment("fitdirection (\"downstream\" or \"upstream\")") };
       fhicl::Atom<double>             minFitCons          {     Name("minFitCons"),              Comment("minFitCons        ") };
-      fhicl::Atom<double>             minNHits            {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
+      fhicl::Atom<unsigned>           minNHits            {     Name("minNStrawHits"),           Comment("minNStrawHits     ") };
       fhicl::Atom<double>             minMomentum         {     Name("minMomentum"),             Comment("minMomentum       ") };
       fhicl::Atom<double>             maxMomentum         {     Name("maxMomentum"),             Comment("maxMomentum       ") };
       fhicl::Atom<double>             minTanDip           {     Name("minTanDip"),               Comment("minTanDip         ") };
@@ -73,7 +74,13 @@ namespace mu2e
         if(_doParticleTypeCheck)_tpart = (PDGCode::type)tpart;
         std::string fdir;
         _doZPropDirCheck = config.fitdirection(fdir);
-        if(_doZPropDirCheck)_fdir = TrkFitDirection::fitDirectionFromName(fdir);
+        if(_doZPropDirCheck){
+          _fdir = TrkFitDirection::fitDirectionFromName(fdir);
+          // an unknown name has dzdt() = 0, and the direction cut would never reject anything
+          if(_fdir.fitDirection() == TrkFitDirection::unknown)
+            throw cet::exception("BADCONFIG") << "KalSeedFilter: unknown fitdirection \"" << fdir
+                                              << "\"; use \"downstream\" or \"upstream\", or leave fitdirection out for no direction cut\n";
+        }
       }
 
       KalSeedCutsTool() {}
