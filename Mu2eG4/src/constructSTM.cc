@@ -1093,20 +1093,71 @@ namespace mu2e {
     G4ThreeVector stmDnStrEnvPositionInParent = pSTMDnStrEnvParams.originInMu2e() - parentCenterInMu2e;
 
     if (pSTMDnStrEnvParams.build()){
-      VolumeInfo stmDnStrEnvInfo = nestBox("stmDownstreamEnvelope",
-                                           stmDnStrEnvHalfLengths,
-                                           stmDnStrEnvMaterial,
-                                           0x0,
-                                           stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
-                                           parentInfo,
-                                           0,
-                                           STMisVisible,
-                                           G4Color::Gray(),
-                                           STMisSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
+      // VD136 is built in HallAir across the whole hall, so where its z
+      // falls inside the envelope a slab of the envelope's full x-y
+      // cross-section is cut out for it, half a thickness vdHL + 0.01 to
+      // avoid overlap with the VD (as for VD81 and VD86 above). Without
+      // VD136, or with it outside the envelope, the envelope is the
+      // plain box it always was.
+      const bool vdSTM_DnStrPlaneBuilt = vdg->exist(VirtualDetectorId::STM_DnStrPlane);
+      const double vdSTM_DnStrPlaneZInEnv = vdSTM_DnStrPlaneBuilt ?
+        vdg->getGlobal(VirtualDetectorId::STM_DnStrPlane).z() - pSTMDnStrEnvParams.originInMu2e().z() : 0.0;
+      const bool cutSlotForVDSTM_DnStrPlane = vdSTM_DnStrPlaneBuilt &&
+        std::abs(vdSTM_DnStrPlaneZInEnv) - (vdHL + 0.01) < stmDnStrEnvHalfLengths[2];
+
+      VolumeInfo stmDnStrEnvInfo;
+      if (cutSlotForVDSTM_DnStrPlane) {
+        G4Box* envBox  = new G4Box("stmDownstreamEnvelopeBox",
+                                   stmDnStrEnvHalfLengths[0],
+                                   stmDnStrEnvHalfLengths[1],
+                                   stmDnStrEnvHalfLengths[2]);
+        // 1 mm beyond the envelope in x and y so the cut goes clean through.
+        G4Box* slotBox = new G4Box("subtSpaceForVDSTM_DnStrPlane",
+                                   stmDnStrEnvHalfLengths[0] + 1.0,
+                                   stmDnStrEnvHalfLengths[1] + 1.0,
+                                   vdHL + 0.01);
+        stmDnStrEnvInfo.name  = "stmDownstreamEnvelope";
+        stmDnStrEnvInfo.solid = new G4SubtractionSolid(stmDnStrEnvInfo.name,
+                                                       envBox,
+                                                       slotBox,
+                                                       0,
+                                                       G4ThreeVector(0., 0., vdSTM_DnStrPlaneZInEnv));
+        stmDnStrEnvInfo.centerInParent = stmDnStrEnvPositionInParent;
+        stmDnStrEnvInfo.centerInWorld  = stmDnStrEnvPositionInParent + parentInfo.centerInWorld;
+        finishNesting(stmDnStrEnvInfo,
+                      stmDnStrEnvMaterial,
+                      0x0,
+                      stmDnStrEnvPositionInParent,
+                      parentInfo.logical,
+                      0,
+                      STMisVisible,
+                      G4Color::Gray(),
+                      STMisSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck
+                      );
+        if (verbosityLevel > 0) {
+          cout << __func__ << " stmDownstreamEnvelope: slot for VD136 (STM_DnStrPlane) cut at z = "
+               << pSTMDnStrEnvParams.originInMu2e().z() + vdSTM_DnStrPlaneZInEnv
+               << " (Mu2e), half thickness " << vdHL + 0.01 << endl;
+        }
+      } else {
+        stmDnStrEnvInfo = nestBox("stmDownstreamEnvelope",
+                                  stmDnStrEnvHalfLengths,
+                                  stmDnStrEnvMaterial,
+                                  0x0,
+                                  stmDnStrEnvPositionInParent, //mstmDetectorStandPositionInMother,
+                                  parentInfo,
+                                  0,
+                                  STMisVisible,
+                                  G4Color::Gray(),
+                                  STMisSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  doSurfaceCheck
+                                  );
+      }
 
       VolumeInfo const & parentInfo = stmDnStrEnvInfo;
       G4ThreeVector parentCenterInMu2e = parentInfo.centerInMu2e();

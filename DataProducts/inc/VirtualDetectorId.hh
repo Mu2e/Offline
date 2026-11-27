@@ -107,6 +107,7 @@ namespace mu2e {
       Tracker_FEB_16_SurfIn, // 133 before tracker station 16
       Tracker_FEB_17_SurfIn, // 134 before tracker station 17
       Tracker_FEB_18_SurfIn, // 135 after tracker station 17
+      STM_DnStrPlane, // 136 hall-wide plane 600 mm upstream of the STM cradle front
       lastEnum
     };
 
@@ -177,7 +178,8 @@ namespace mu2e {
       "Tracker_FEB_15_SurfIn", \
       "Tracker_FEB_16_SurfIn", \
       "Tracker_FEB_17_SurfIn", \
-      "Tracker_FEB_18_SurfIn"
+      "Tracker_FEB_18_SurfIn", \
+      "STM_DnStrPlane"
   public:
 
     // The most important c'tor and accessor methods are first.

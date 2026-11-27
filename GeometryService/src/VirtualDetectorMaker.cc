@@ -692,6 +692,59 @@ namespace mu2e {
         }
       }
 
+      if ( c.getBool("vd.STMDnStrPlane.build", false) ) {//VD136, hall-wide plane upstream of the cradle front
+        // offset is the distance from STMShieldingRef (the cradle front) to
+        // the VD's center, going in -z (upstream): unlike VD116,
+        // vd->_halfLength is not subtracted.
+        // xMin..xMax and yBottom..yTop are the main rectangle's edges in
+        // Mu2e coordinates; the VD is registered at its center. The
+        // solid, including the optional alcove tab, is built in
+        // constructVirtualDetectors (in HallAir); constructSTM cuts a slot
+        // for it through the downstream envelope. The alcove keys are
+        // only checked here.
+        const double VD136_offset  = c.getDouble("vd.STMDnStrPlane.offset");
+        const double VD136_xMin    = c.getDouble("vd.STMDnStrPlane.xMin");
+        const double VD136_xMax    = c.getDouble("vd.STMDnStrPlane.xMax");
+        const double VD136_yBottom = c.getDouble("vd.STMDnStrPlane.yBottom");
+        const double VD136_yTop    = c.getDouble("vd.STMDnStrPlane.yTop");
+        if ( VD136_xMin >= VD136_xMax || VD136_yBottom >= VD136_yTop ) {
+          throw cet::exception("GEOM")
+            << "VirtualDetectorMaker: vd.STMDnStrPlane needs xMin < xMax and"
+            << " yBottom < yTop; got x " << VD136_xMin << " .. " << VD136_xMax
+            << ", y " << VD136_yBottom << " .. " << VD136_yTop << ".\n";
+        }
+        if ( c.getBool("vd.STMDnStrPlane.alcove.build", true) ) {
+          // The tab runs from inside the main rectangle (x = xMax - 10 in
+          // constructVirtualDetectors) to alcove.xMax, and from yBottom
+          // to alcove.yTop.
+          const double VD136_alcoveXMax = c.getDouble("vd.STMDnStrPlane.alcove.xMax");
+          const double VD136_alcoveYTop = c.getDouble("vd.STMDnStrPlane.alcove.yTop");
+          if ( VD136_alcoveXMax <= VD136_xMax ||
+               VD136_alcoveYTop <= VD136_yBottom || VD136_alcoveYTop > VD136_yTop ) {
+            throw cet::exception("GEOM")
+              << "VirtualDetectorMaker: vd.STMDnStrPlane.alcove needs xMax > "
+              << VD136_xMax << " (the main xMax) and yBottom < yTop <= the main"
+              << " yTop (" << VD136_yBottom << " .. " << VD136_yTop << "); got"
+              << " xMax " << VD136_alcoveXMax << ", yTop " << VD136_alcoveYTop << ".\n";
+          }
+        }
+        const double zOffset = stmDnStrEnvToSSCBack // Get to back of SSC
+          - frontShieldingBackZ // Get to front of SSC
+          - VD136_offset; // center of the VD
+        CLHEP::Hep3Vector vdPositionWRTparent(0.5*(VD136_xMin + VD136_xMax) - stmDnStrEnvPositionInMu2e.x(),
+                                              0.5*(VD136_yBottom + VD136_yTop) - stmDnStrEnvPositionInMu2e.y(),
+                                              zOffset);
+        vd->addVirtualDetector(VirtualDetectorId::STM_DnStrPlane, //ID
+                               stmDnStrEnvPositionInMu2e, //reference position
+                               0x0,                  //rotation
+                               vdPositionWRTparent); //placement w.r.t. reference
+
+        if ( verbosityLevel > 0) {
+          cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_DnStrPlane) << endl;
+          cout << "  at local=" << vd->getLocal(VirtualDetectorId::STM_DnStrPlane) << " global="<< vd->getGlobal(VirtualDetectorId::STM_DnStrPlane) <<endl;
+        }
+      }
+
 
 
       if ( c.getBool("vd.STMCollDnStr.build", false) ) { // VD88, just downstream of Spot Size Collimator

@@ -50,6 +50,7 @@
 #include "Geant4/G4Cons.hh"
 #include "Geant4/G4SubtractionSolid.hh"
 #include "Geant4/G4IntersectionSolid.hh"
+#include "Geant4/G4UnionSolid.hh"
 #include "Geant4/G4Box.hh"
 
 using namespace std;
@@ -1567,6 +1568,79 @@ namespace mu2e {
              << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
         cout << __func__ << "    VD parameters: " << vdParams << endl;
         cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+    }
+
+    // VD136: a hall-wide plane 600 mm upstream of the STM cradle front,
+    // placed in HallAir; constructSTM cuts a slot for it through the
+    // downstream envelope. VirtualDetectorMaker registers it at the center
+    // of the main rectangle (xMin..xMax, yBottom..yTop) and checks the
+    // keys. The optional alcove tab extends it into the hall's north
+    // alcove, from x = xMax - 10 (inside the main rectangle, so the two
+    // boxes share no face) to alcove.xMax, and from yBottom to
+    // alcove.yTop.
+    vdId = VirtualDetectorId::STM_DnStrPlane;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      const double xMin    = _config.getDouble("vd.STMDnStrPlane.xMin");
+      const double xMax    = _config.getDouble("vd.STMDnStrPlane.xMax");
+      const double yBottom = _config.getDouble("vd.STMDnStrPlane.yBottom");
+      const double yTop    = _config.getDouble("vd.STMDnStrPlane.yTop");
+      const double mainHalfX = (xMax - xMin)/2.;
+      const double mainHalfY = (yTop - yBottom)/2.;
+
+      VolumeInfo vdInfo;
+      vdInfo.name = VirtualDetector::volumeName(vdId);
+      G4Box* mainBox = new G4Box(vdInfo.name + "_Main",
+                                 mainHalfX, mainHalfY, vdg->getHalfLength());
+
+      if ( _config.getBool("vd.STMDnStrPlane.alcove.build", true) ) {
+        const double alcoveXMax = _config.getDouble("vd.STMDnStrPlane.alcove.xMax");
+        const double alcoveYTop = _config.getDouble("vd.STMDnStrPlane.alcove.yTop");
+        const double alcoveXMin = xMax - 10.0;
+        G4Box* alcoveBox = new G4Box(vdInfo.name + "_Alcove",
+                                     (alcoveXMax - alcoveXMin)/2.,
+                                     (alcoveYTop - yBottom)/2.,
+                                     vdg->getHalfLength());
+        // Alcove center relative to the main rectangle's center.
+        const G4ThreeVector alcoveOffset(0.5*(alcoveXMin + alcoveXMax) - 0.5*(xMin + xMax),
+                                         0.5*(yBottom + alcoveYTop) - 0.5*(yBottom + yTop),
+                                         0.);
+        vdInfo.solid = new G4UnionSolid(vdInfo.name, mainBox, alcoveBox, 0, alcoveOffset);
+      } else {
+        vdInfo.solid = mainBox;
+      }
+
+      const G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
+      vdInfo.centerInParent = vdLocalOffset;
+      vdInfo.centerInWorld  = vdInfo.centerInParent + parent.centerInWorld;
+
+      // Made of the hall's own air, not downstreamVacuumMaterial: VD86,
+      // VD100 and the VDs in the downstream envelope keep the vacuum they
+      // have always had, so the VD positions and materials behind past
+      // analyses are not disturbed.
+      finishNesting(vdInfo,
+                    parent.logical->GetMaterial(),
+                    0,
+                    vdLocalOffset,
+                    parent.logical,
+                    vdId,
+                    vdIsVisible,
+                    G4Color::Red(),
+                    vdIsSolid,
+                    forceAuxEdgeVisible,
+                    placePV,
+                    false);
+
+      if ( verbosityLevel > 0) {
+        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+             << " at " << vdg->getGlobal(vdId) << endl
+             << " at " << vdLocalOffset << " w.r.t. parent (HallAir) " << endl;
+        cout << __func__ << "    VD main half lengths: " << mainHalfX << ", " << mainHalfY
+             << ", " << vdg->getHalfLength() << "; material "
+             << parent.logical->GetMaterial()->GetName() << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
