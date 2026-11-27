@@ -1,0 +1,49 @@
+# Test job for the STMDet genealogy: one row per STMDet StepPointMC with the depositing
+# particle's provenance, HPGeTree's top parent for it, and its full genealogy root.
+#
+# Run it on the crystal-path art output of VDResamplerToCrystals.fcl:
+#   mu2e -c Offline/STMMC/fcl/STMDetProvenance.fcl -s dts.owner.STMVDResamplerToCrystals.*.art
+#
+# The input must keep SimParticles with their full genealogy (noCompression,
+# keepNGenerations:-1); the TRUNCATED count in the endJob summary should then be 0.
+#
+# Author: Yongyi Wu, Oct 2026
+
+#include "Offline/fcl/standardServices.fcl"
+
+process_name: STMDetProvenance
+
+source : {
+  module_type : RootInput
+}
+
+services : @local::Services.Core
+
+physics : {
+  analyzers : {
+    provenance : {
+      module_type : STMDetProvenance
+      # Same two products HPGeTree reads, so the comparison is apples to apples.
+      StepPointMCsTag  : "compressSTMDet:STMDet"
+      SimParticlemvTag : "compressSTMDet"
+      # Optional: resolves volume indices to names in the endJob summary only. Omit it and
+      # the summary lists raw indices; nothing else changes.
+      #
+      # This is a SubRun-level product written by Mu2eG4, so the label is the g4run module,
+      # NOT compressSTMDet - the compression passes the collection through under the
+      # producing module's label. VDResamplerToCrystals.fcl keeps it via
+      # "keep mu2e::PhysicalVolumeInfomvs_*_*_*".
+      PhysicalVolumesTag : "g4run"
+      # The split HPGeTree applies to separate HPGe (x<) from LaBr (x>). Recorded per row
+      # rather than applied, so both crystals' steps are present and the cut is auditable.
+      xBeamCentre : -3904.0
+    }
+  }
+  provenancePath : [provenance]
+  end_paths : [provenancePath]
+}
+
+services.TFileService.fileName : "stmdet_provenance.root"
+
+# Keep the full summary - the volume tables at the end are the point of the job.
+services.message.destinations.log.categories.default.limit : -1
