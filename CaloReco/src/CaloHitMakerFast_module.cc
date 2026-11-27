@@ -16,6 +16,9 @@
 #include "Offline/GeometryService/inc/GeomHandle.hh"
 #include "Offline/GeometryService/inc/GeometryService.hh"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
 #include <numeric>
 
 
@@ -168,7 +171,7 @@ namespace mu2e {
 
        // Evaluate intensity stream information
        const Calorimeter& cal = *(GeomHandle<Calorimeter>()); // to get crystal positions
-       unsigned short evtEnergy(0); // total calorimeter energy
+       double evtEnergy(0); // total calorimeter energy [MeV]; stored as a whole number of MeV below
        std::array<unsigned short, 2> nhits = {0, 0}; // calo hits in each disk
        for (auto& crystal : pulseMap)
        {
@@ -197,7 +200,9 @@ namespace mu2e {
            }
        }
 
-       intInfo.setCaloEnergy(evtEnergy);
+       // Round the sum once, to the nearest MeV, when it is stored in the 16-bit field
+       constexpr double maxCaloEnergy = std::numeric_limits<unsigned short>::max();
+       intInfo.setCaloEnergy(static_cast<unsigned short>(std::lround(std::clamp(evtEnergy, 0.0, maxCaloEnergy))));
        intInfo.setNCaloHits(nhits);
 
        if ( diagLevel_ > 0 ) std::cout<<"[CaloHitMakerFast] extracted "<<caloHitsColl.size()<<" CaloDigis"<<std::endl;
