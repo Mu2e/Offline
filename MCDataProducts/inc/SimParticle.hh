@@ -65,6 +65,7 @@ namespace mu2e {
       _startG4Status(),
       _creationCode(),
       _ion(),
+      _weight(1.),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -106,6 +107,7 @@ namespace mu2e {
       _startG4Status(astartG4Status),
       _creationCode(acreationCode),
       _ion(ion),
+      _weight(1.),
       _endPosition(),
       _endMomentum(),
       _endGlobalTime(0.),
@@ -206,6 +208,13 @@ namespace mu2e {
     float            startExcitationEnergy()    const { return _ion.excitationEnergy;}
     int              startFloatLevelBaseIndex() const { return _ion.floatLevelBaseIndex;};
 
+    // Geant4 track weight at the start of the track (G4Track::GetWeight): 1 unless an event-biasing
+    // method made the track, e.g. Mu2eG4 physics.processCopies, which gives each of N alternative
+    // secondaries 1/N of their parent's weight; descendants inherit it.
+    // Files written before this member existed read 1.
+    double weight() const { return _weight; }
+    void   setWeight(double w) { _weight = w; }
+
     // Information at the end of the track.
     CLHEP::Hep3Vector endPosition()  const { return GenVector::Hep3Vec(_endPosition);}
     CLHEP::HepLorentzVector endMomentum() const { return GenVector::HepLorentzVec(_endMomentum);}
@@ -279,6 +288,7 @@ namespace mu2e {
     unsigned               _startG4Status;
     ProcessCode            _creationCode;
     IonDetail              _ion;
+    double                 _weight;
 
     // Information at the end of the track.
     XYZVectorD             _endPosition;

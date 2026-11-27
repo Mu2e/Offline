@@ -61,6 +61,8 @@ namespace mu2e {
 
     const art::InputTag& primaryTag() const { return primaryTag_; }
 
+    const std::optional<art::InputTag>& primaryWeights() const { return primaryWeights_; }
+
     const art::InputTag& inputMCTrajectories() const { return inputMCTrajectories_; }
 
     std::optional<unsigned> simStageOverride() const { return simStageOverride_; }
@@ -74,6 +76,7 @@ namespace mu2e {
   private:
     Mu2eG4PrimaryType primaryType_;
     art::InputTag primaryTag_;
+    std::optional<art::InputTag> primaryWeights_;
     art::InputTag inputMCTrajectories_;
     std::optional<unsigned> simStageOverride_;
     art::InputTag inputPhysVolumeMultiInfo_;

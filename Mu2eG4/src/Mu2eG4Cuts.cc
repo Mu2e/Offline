@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <unordered_map>
 
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -700,6 +701,63 @@ namespace mu2e {
     }
 
     //================================================================
+    // True for a track made by one of the named Geant4 processes (creatorProcess), or by none of them
+    // (notCreatorProcess). A primary has no creator process and matches no name. The names are Geant4's
+    // (G4VProcess::GetProcessName, e.g. eIoni, eBrem, conv, compt, phot, annihil, muIoni). Cuts live in
+    // per-thread storage, so the cache of process objects needs no lock.
+    class CreatorProcessCut: virtual public IMu2eG4Cut,
+                             public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit CreatorProcessCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim);
+    private:
+      std::vector<std::string> names_;
+      bool negate_;
+      std::unordered_map<const G4VProcess*, bool> cache_;
+      bool cut_impl(const G4Track* trk);
+    };
+
+    CreatorProcessCut::CreatorProcessCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , names_(pset.get<std::vector<std::string> >("pars"))
+      , negate_(negate)
+    {
+      if(names_.empty()) {
+        throw cet::exception("CONFIG") << "Mu2eG4Cuts: creatorProcess needs at least one process name\n";
+      }
+    }
+
+    bool CreatorProcessCut::cut_impl(const G4Track* trk) {
+      bool found = false;
+      const G4VProcess* proc = trk->GetCreatorProcess();
+      if(proc != nullptr) {
+        const auto it = cache_.find(proc);
+        if(it != cache_.end()) {
+          found = it->second;
+        } else {
+          found = std::find(names_.begin(), names_.end(), proc->GetProcessName()) != names_.end();
+          cache_.emplace(proc, found);
+        }
+      }
+      return negate_ ? !found : found;
+    }
+
+    bool CreatorProcessCut::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && steppingOutput_) {
+        addHit(step);
+      }
+      return result;
+    }
+
+    bool CreatorProcessCut::stackingActionCut(const G4Track *trk) {
+      return cut_impl(trk);
+    }
+
+    //================================================================
     class Constant: virtual public IMu2eG4Cut,
                     public IOHelper
     {
@@ -759,6 +817,9 @@ namespace mu2e {
     if(cuttype == "kineticEnergy") return make_unique<KineticEnergy>(pset, lim);
     if(cuttype == "globalTime") return make_unique<GlobalTime>(pset, lim);
     if(cuttype == "primary") return make_unique<PrimaryOnly>(pset, lim);
+
+    if(cuttype == "creatorProcess") return make_unique<CreatorProcessCut>(pset, false, lim);
+    if(cuttype == "notCreatorProcess") return make_unique<CreatorProcessCut>(pset, true, lim);
 
     if(cuttype == "constant") return make_unique<Constant>(pset, lim);
 

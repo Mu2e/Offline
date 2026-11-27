@@ -26,6 +26,8 @@
 
  <class name="mu2e::GenEventCount"/>
  <class name="art::Wrapper<mu2e::GenEventCount>"/>
+ <class name="mu2e::FamilySplitSummary"/>
+ <class name="art::Wrapper<mu2e::FamilySplitSummary>"/>
 
  <class name="mu2e::GenParticleSPMHistory" />
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>

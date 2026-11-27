@@ -17,6 +17,20 @@ cet_make_library(
       Offline::RecoDataProducts
       Offline::SeedService
 )
+cet_build_plugin(FamilySplitSource art::source
+    REG_SOURCE src/FamilySplitSource_source.cc
+    LIBRARIES REG
+      Offline::DataProducts
+      Offline::MCDataProducts
+      ROOT::RIO
+      ROOT::Tree
+)
+cet_build_plugin(FamilySplitCounter art::module
+    REG_SOURCE src/FamilySplitCounter_module.cc
+    LIBRARIES REG
+      Offline::MCDataProducts
+      messagefacility::MF_MessageLogger
+)
 cet_build_plugin(FromCorsikaBinary art::source
     REG_SOURCE src/FromCorsikaBinary_source.cc
     LIBRARIES REG

@@ -97,6 +97,22 @@ namespace mu2e {
       fhicl::Atom<size_t> minTrackerStepPoints {Name("minTrackerStepPoints"), 15};
     };
 
+    // Make every interaction of one process N times where it happens (Mu2eG4ProcessCopier): the
+    // secondaries of all N samples are kept with weight 1/N, the primary continues with the last sample.
+    // Works for interactions with any number of secondaries (pair production) and for decays in flight.
+    struct ProcessCopies {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+      fhicl::Atom<std::string> process {Name("process"),
+          Comment("Geant4 process name, e.g. muPairProd, Decay. Only its discrete part (PostStepDoIt) is repeated:\n"
+                  "decays at rest are not")};
+      fhicl::Sequence<std::string> particles {Name("particles"),
+          Comment("Geant4 particle names, e.g. [ \"mu-\", \"mu+\" ]")};
+      fhicl::OptionalSequence<std::string> regions {Name("regions"),
+          Comment("G4Region names; absent: everywhere. Interactions in other regions are made once")};
+      fhicl::Atom<unsigned> factor {Name("factor"), Comment("N >= 2")};
+    };
+
     struct Physics {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
@@ -167,6 +183,10 @@ namespace mu2e {
       OptionalDelegatedParameter BirksConsts {Name("BirksConsts")};
       OptionalDelegatedParameter minRangeRegionCuts {Name("minRangeRegionCuts")};
 
+      fhicl::OptionalSequence<fhicl::Table<ProcessCopies>> processCopies {Name("processCopies"),
+          Comment("Make each interaction of the named processes N times (Mu2eG4ProcessCopier), in the listed\n"
+                  "G4Regions or everywhere. Secondaries carry the G4Track weight, saved as SimParticle::weight().")};
+
       fhicl::Atom<double> rangeToIgnore {Name("rangeToIgnore")};
     };
 
@@ -212,6 +232,10 @@ namespace mu2e {
       bool multiStage() const { return primaryType() != "GenParticles"; }
 
       fhicl::Atom<art::InputTag> primaryTag {Name("primaryTag"), Comment("Tag of the input collection for G4 primaries")};
+
+      fhicl::OptionalAtom<art::InputTag> primaryWeights {Name("primaryWeights"),
+          Comment("primaryType StepPoints only: a std::vector<double> with one weight per step of primaryTag, given to\n"
+                  "the Geant4 primaries and so saved as SimParticle::weight(); absent: weight 1")};
 
       fhicl::Atom<art::InputTag> inputMCTrajectories {Name("inputMCTrajectories"),
           Comment("MCTrajectoryCollection from the previous simulation stage, required for non-GenParticles primaries"),

@@ -50,6 +50,7 @@ namespace mu2e {
 
     case Mu2eG4PrimaryType::StepPoints:
       cc.consumes<StepPointMCCollection>(inputs_.primaryTag());
+      if(inputs_.primaryWeights()) { cc.consumes<std::vector<double>>(*inputs_.primaryWeights()); }
       break;
 
     case Mu2eG4PrimaryType::SimParticleLeaves:

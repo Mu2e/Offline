@@ -549,7 +549,7 @@ namespace mu2e {
       ion.floatLevelBaseIndex = dynamic_cast<const G4Ions*>(pDef)->GetFloatLevelBaseIndex();
     }
 
-    _transientMap.insert(std::make_pair(kid,SimParticle( kid,
+    auto const inserted = _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          perThreadObjects_->simParticleHelper->simStage(),
                                                          parentPtr,
                                                          ppdgId,
@@ -562,6 +562,9 @@ namespace mu2e {
                                                          trk->GetTrackStatus(),
                                                          creationCode,
                                                          ion)));
+    // the Geant4 track weight: below the parent's for the copies made by event biasing
+    // (physics.processCopies) or for primaries with a weight (inputs.primaryWeights), inherited by their descendants
+    inserted.first->second.setWeight(trk->GetWeight());
 
     // If this track has a parent, tell the parent about this track.
     if ( parentPtr.isNonnull() ){
