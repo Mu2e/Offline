@@ -14,14 +14,15 @@ namespace mu2e
   namespace {
     // A particle simulated in several stages has one SimParticle per stage. Each later copy's parent is the copy
     // before it, and selfParent() is true for the later copy. Relationships are between physical particles, so
-    // every Ptr is mapped to its origin particle (SimParticle::originParticlePtr) before comparing.
+    // every Ptr is mapped to its origin particle, the earliest copy (the Ptr form of SimParticle::originParticle),
+    // before comparing.
     // Example, a two-stage cosmic: P1 is the stage-1 primary, P2 its stage-2 copy (P2.parent() is P1), and E2 a
     // daughter made in stage 2 (E2.parent() is P2). MCRelationship(P2,P1) is 'same' and MCRelationship(E2,P1)
     // is 'daughter'. Comparing raw Ptrs gave 'none' for both: P2 != P1, and the walk up from P2 jumped straight
     // to P1's parent (null), so P1 itself was never compared.
-    MCRelationship::SPPtr originPtr(MCRelationship::SPPtr const& sp) {
-      auto origin = sp->originParticlePtr();
-      return origin.isNonnull() ? origin : sp; // null: sp is its own origin
+    MCRelationship::SPPtr originPtr(MCRelationship::SPPtr sp) {
+      while(sp->selfParent()) sp = sp->parent();
+      return sp;
     }
     // the origin of the parent of an origin particle, or a null Ptr for a primary
     MCRelationship::SPPtr parentOriginPtr(MCRelationship::SPPtr const& sp) {
