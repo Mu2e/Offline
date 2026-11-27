@@ -101,7 +101,7 @@ namespace mu2e {
     private:
 
        void   makeDigitization  (const CaloShowerROCollection&, CaloDigiCollection&, const EventWindowMarker&, const ProtonBunchTimeMC&, const CalSimParams&);
-       bool   fillROHits        (unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection&, const ProtonBunchTimeMC&, const CalSimParams&);
+       bool   fillROHits        (unsigned iRO, std::vector<double>& waveform, const std::vector<const CaloShowerRO*>&, const ProtonBunchTimeMC&, const CalSimParams&);
        void   addWFNoise        (std::vector<double>& waveform, int noiseWFID);
        void   buildOutputDigi   (unsigned iRO, std::vector<double>& waveform, double pedestal, CaloDigiCollection&);
        void   extract           (const std::vector<int>& wf, std::vector<size_t>& starts, std::vector<size_t>& stops) const;
@@ -190,9 +190,16 @@ namespace mu2e {
       bool resetWaveform(false);
       std::vector<double> waveform(waveformSize,0.0);
 
+      // CaloShowerROs of each readout, in collection order
+      std::vector<std::vector<const CaloShowerRO*>> showerROsOfRO(nWaveforms);
+      for (const auto& showerRO : CaloShowerROs) {
+          unsigned SiPMID = showerRO.SiPMID();
+          if (SiPMID < unsigned(nWaveforms)) showerROsOfRO[SiPMID].push_back(&showerRO);
+      }
+
       for (int iRO=0;iRO<nWaveforms;++iRO) {
           if (resetWaveform) std::fill(waveform.begin(), waveform.end(), 0.0);
-          bool isEmpty = fillROHits(iRO, waveform, CaloShowerROs, pbtmc, calCrystalConds );
+          bool isEmpty = fillROHits(iRO, waveform, showerROsOfRO[iRO], pbtmc, calCrystalConds );
           resetWaveform = !isEmpty;
           if (isEmpty) continue;
 
@@ -252,18 +259,15 @@ namespace mu2e {
   }
 
   //--------------------------------------------------------------------------
-  bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const CaloShowerROCollection& CaloShowerROs,
+  bool CaloDigiMaker::fillROHits(unsigned iRO, std::vector<double>& waveform, const std::vector<const CaloShowerRO*>& showerROs,
                                  const ProtonBunchTimeMC& pbtmc, const CalSimParams& calCrystalConds)
   {
       bool isEmpty = true;
       const double scaleFactor = readoutScaleFactor(iRO, calCrystalConds);
 
-      for (const auto& CaloShowerRO : CaloShowerROs) {
-          unsigned SiPMID = CaloShowerRO.SiPMID();
-          if (SiPMID != iRO) continue;
-
+      for (const auto* showerRO : showerROs) {
           isEmpty = false;
-          for (const auto PEtime : CaloShowerRO.PETime()) {
+          for (const auto PEtime : showerRO->PETime()) {
               //PE time is given in DR frame, we need to subtract the event window start and the digi Start time
               float       time           = PEtime + pbtmc.pbtime_- digitizationStart_ + timeFromProtonsToDRMarker_ + startTimeBuffer_;
               unsigned    startSample    = std::max(0u,unsigned(time/CaloConst::_digitizationPeriod));
