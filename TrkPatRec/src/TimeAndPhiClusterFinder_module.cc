@@ -298,7 +298,8 @@ namespace mu2e {
            if (idx+k/2 == i && timeHist[idx] >= minTimeYbin_) {
                float sumBins = timeHist[idx]+timeHist[idx-1]+timeHist[idx+1];
                float average = float(idx*timeHist[idx]+(idx-1)*timeHist[idx-1]+(idx+1)*timeHist[idx+1])/sumBins;
-               timePeaks.push_back(tmin + average*tbin_);
+               // bin i covers [tmin+i*tbin, tmin+(i+1)*tbin), so its centre is at i+0.5
+               timePeaks.push_back(tmin + (average+0.5f)*tbin_);
            }
       }
       if (timePeaks.empty()) return;
@@ -370,11 +371,16 @@ namespace mu2e {
   void TimeAndPhiClusterFinder::addCaloPtr(const art::Handle<CaloClusterCollection>& ccH, TimePhiCandidate& tc, float t0){
 
       const CaloClusterCollection& cccol = *ccH.product();
-      if (cccol.empty()) return;
 
-      auto caloFcn  = [t0](const CaloCluster& a, const CaloCluster& b) {return abs(a.time()-t0)<abs(b.time()-t0);};
-      unsigned icalo = std::distance(cccol.begin(),std::min_element(cccol.begin(),cccol.end(),caloFcn));
-      if (abs(cccol.at(icalo).time()-t0) < maxTimeDT_) tc.caloCluster_ = art::Ptr<CaloCluster>(ccH,icalo);
+      // attach the cluster closest in time, among those passing the same energy cut as addCalo
+      size_t ibest(cccol.size());
+      float  dtbest(maxTimeDT_);
+      for (size_t icalo=0;icalo < cccol.size();++icalo){
+          if (cccol[icalo].energyDep() <= ccmine_) continue;
+          float dt = std::abs(cccol[icalo].time()-t0);
+          if (dt < dtbest) {dtbest = dt; ibest = icalo;}
+      }
+      if (ibest < cccol.size()) tc.caloCluster_ = art::Ptr<CaloCluster>(ccH,ibest);
    }
 
 
@@ -396,7 +402,7 @@ namespace mu2e {
            // Sort hits in ascending azimuthal angle
            auto& hits = tc.strawIdx_;
            sort(hits.begin(),hits.end(),[&chPhi](const int a, const int b){return chPhi[a]<chPhi[b];});
-           if (hits.size()<minNSHits_) continue;
+           if (tc.nsh_<minNSHits_) continue;
 
            // Start by fast forwarding to first large gap in phi.
            // note: (idx+vector_size)%vector_size maps negative and overflow indices -> valid vector indices
@@ -492,7 +498,7 @@ namespace mu2e {
       if (tc._strawHitIdxs.empty()){tc._pos = XYZVectorF(0,0,0);tc._t0._t0=0;tc._t0._t0err=0;tc._nsh=0; return;};
 
       tc._nsh = 0;
-      float tacc(0),tacc2(0),xacc(0),yacc(0),zacc(0),weight(0);
+      float tacc(0),xacc(0),yacc(0),zacc(0),weight(0);
       for (const auto& ish :tc._strawHitIdxs){
           const ComboHit& ch = chcol[ish];
           tc._nsh += ch.nStrawHits();
@@ -502,20 +508,28 @@ namespace mu2e {
 
           weight += hwt;
           tacc   += htime*hwt;
-          tacc2  += htime*htime*hwt;
           xacc   += ch.pos().x()*hwt;
           yacc   += ch.pos().y()*hwt;
           zacc   += ch.pos().z()*hwt;
       }
 
       tacc/=weight;
-      tacc2/=weight;
       xacc/=weight;
       yacc/=weight;
       zacc/=weight;
 
+      // time spread from the deviations to the mean (second pass). The one-pass form <t^2>-<t>^2
+      // in float can round below zero when the hit times are close, and sqrt then gives NaN.
+      float tvar(0);
+      for (const auto& ish :tc._strawHitIdxs){
+          const ComboHit& ch = chcol[ish];
+          float dt = ch.correctedTime() - tacc;
+          tvar += dt*dt*ch.nStrawHits();
+      }
+      tvar/=weight;
+
       tc._t0._t0    = tacc;
-      tc._t0._t0err = sqrtf(tacc2-tacc*tacc);
+      tc._t0._t0err = sqrtf(tvar);
       tc._pos       = XYZVectorF(xacc, yacc, zacc);
   }
 
