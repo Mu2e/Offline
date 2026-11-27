@@ -1,5 +1,7 @@
 // C++ includes
 #include <iostream>
+#include <limits>
+#include <string>
 #include <vector>
 // art includes
 #include "cetlib_except/exception.h"
@@ -39,21 +41,30 @@ namespace mu2e {
           << "\n";
       }
 
-      uint16_t plane=0;
-      uint16_t panel=0;
-      uint16_t straw=0;
-      if ( v.size() >= 1 ){
-        istringstream sdev(v[0]);
-        sdev >> plane;
-      }
-      if ( v.size() >= 2){
-        istringstream span(v[1]);
-        span >> panel;
-      }
-      if ( v.size() >= 3){
-        istringstream sstr(v[2]);
-        sstr >> straw;
-      }
+      // each field must be a non-negative integer, optionally surrounded by blanks
+      auto field = [&s]( string const& f ) -> uint16_t {
+        auto b = f.find_first_not_of(" \t\r\n");
+        auto e = f.find_last_not_of(" \t\r\n");
+        string d = ( b == string::npos ) ? string() : f.substr(b, e-b+1);
+        if ( d.empty() || d.size() > 5 || d.find_first_not_of("0123456789") != string::npos ){
+          throw cet::exception("CONFIG")
+            << "strawIdFromString: field \"" << f << "\" is not a non-negative integer\n"
+            << "  Input was: " << s
+            << "\n";
+        }
+        unsigned long value = std::stoul(d);
+        if ( value > std::numeric_limits<uint16_t>::max() ){
+          throw cet::exception("CONFIG")
+            << "strawIdFromString: field \"" << f << "\" is out of range\n"
+            << "  Input was: " << s
+            << "\n";
+        }
+        return static_cast<uint16_t>(value);
+      };
+
+      uint16_t plane = field(v[0]);
+      uint16_t panel = ( v.size() >= 2 ) ? field(v[1]) : 0;
+      uint16_t straw = ( v.size() >= 3 ) ? field(v[2]) : 0;
       return StrawId(plane,panel,straw);
     }
 

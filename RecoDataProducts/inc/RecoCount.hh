@@ -20,6 +20,7 @@ namespace mu2e {
     AHist<uint16_t, _nshtbins> _shthist;
     RecoCount() : _nstrawdigi(0), _ncalodigi(0),_ncrvdigi(0),
     _nshfesel(0), _nshfrsel(0), _nshftsel(0), _nshfbkg(0), _nshftpk(0),
+    _ncc(0), _cce(0.0),
     _shthist(-25.0,1725.0) {}
   };
 }
